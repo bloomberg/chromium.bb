@@ -9,6 +9,8 @@ import os
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 NATIVE_CLIENT_DIR = os.path.dirname(os.path.dirname(__file__))
 TOOLCHAIN_DIR = os.path.join(NATIVE_CLIENT_DIR, 'toolchain')
@@ -92,19 +94,18 @@ def Run(cmd_line):
 
 def GetToolchainPath(tool):
   """Given the requested tool, compute the path to that toolchain."""
-  prefix = ''
-  suffix = ''
+  os_name = pynacl.platform.GetOS()
 
   if tool == 'newlib':
-    suffix = 'newlib'
+    lib_name = 'newlib'
+  else:
+    lib_name = 'glibc'
 
-  if sys.platform in ['win32', 'cygwin']:
-    return os.path.join(TOOLCHAIN_DIR, prefix + 'win_x86' + suffix)
-  if sys.platform.startswith('linux'):
-    return os.path.join(TOOLCHAIN_DIR, prefix + 'linux_x86' + suffix)
-  if sys.platform.startswith('darwin'):
-    return os.path.join(TOOLCHAIN_DIR, prefix + 'mac_x86' + suffix)
-  raise RuntimeError('Unsupported platform: %s\n' % sys.platform)
+  return os.path.join(
+      TOOLCHAIN_DIR,
+      '%s_x86_nacl_x86' % (os_name),
+      'nacl_x86_%s' % lib_name
+  )
 
 
 def GetLibPath(tool, arch):

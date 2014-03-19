@@ -43,23 +43,6 @@
     ['target_arch=="ia32" or target_arch=="x64"', {
       # Common defaults for all x86 nacl-gcc targets
       'target_defaults': {
-        'conditions': [
-          ['OS=="win"', {
-            'variables': {
-              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/win_x86',
-            },
-          }],
-          ['OS=="mac"', {
-            'variables': {
-              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/mac_x86',
-            },
-          }],
-          ['OS=="linux"', {
-            'variables': {
-              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/linux_x86',
-            },
-          }],
-        ],
         'defines': [],
         'sources': [],
         'compile_flags': [],
@@ -233,7 +216,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -277,7 +260,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -321,7 +304,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                     '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -369,7 +352,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -414,7 +397,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -458,7 +441,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -502,7 +485,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                     '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -549,7 +532,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -599,7 +582,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_arm/nacl_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -643,7 +626,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_arm/nacl_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -686,7 +669,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_bionic_arm)',
                    '^(source_list_bionic_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_bionic/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_arm/nacl_arm_bionic',
                 ],
                 'outputs': ['>(out_bionic_arm)'],
                 'action': [
@@ -730,7 +713,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_arm/nacl_arm_newlib/stamp.prep',
                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -777,7 +760,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_arm/nacl_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -827,7 +810,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -871,7 +854,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -915,7 +898,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -962,7 +945,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -1012,7 +995,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1056,7 +1039,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1100,7 +1083,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1144,7 +1127,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1188,7 +1171,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1232,7 +1215,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_nacl_x86/nacl_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1339,7 +1322,7 @@
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
-               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
              ],
              'outputs': ['>(out_pnacl_newlib)'],
              'action': [
@@ -1485,7 +1468,7 @@
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
-               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep',
              ],
              'outputs': ['>(out_pnacl_newlib)'],
              'action': [
@@ -1534,7 +1517,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_arm)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep'
                 ],
                 'outputs': ['>(out_pnacl_newlib_arm)'],
                 'action': [
@@ -1584,7 +1567,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_64)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep'
                  ],
                  'outputs': ['>(out_pnacl_newlib_x86_64)'],
                  'action': [
@@ -1629,7 +1612,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_32)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep'
                  ],
                  'outputs': ['>(out_pnacl_newlib_x86_32)'],
                  'action': [
@@ -1678,7 +1661,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_mips)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/pnacl_newlib/stamp.prep'
                 ],
                 'outputs': ['>(out_pnacl_newlib_mips)'],
                 'action': [
