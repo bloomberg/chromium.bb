@@ -608,6 +608,17 @@ bool IsWindowVisible(XID window) {
     return false;
   if (win_attributes.map_state != IsViewable)
     return false;
+
+  // Minimized windows are not visible.
+  std::vector<Atom> wm_states;
+  if (GetAtomArrayProperty(window, "_NET_WM_STATE", &wm_states)) {
+    Atom hidden_atom = GetAtom("_NET_WM_STATE_HIDDEN");
+    if (std::find(wm_states.begin(), wm_states.end(), hidden_atom) !=
+            wm_states.end()) {
+      return false;
+    }
+  }
+
   // Some compositing window managers (notably kwin) do not actually unmap
   // windows on desktop switch, so we also must check the current desktop.
   int window_desktop, current_desktop;

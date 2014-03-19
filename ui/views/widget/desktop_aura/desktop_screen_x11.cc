@@ -82,9 +82,14 @@ class ToplevelWindowFinder : public ui::EnumerateWindowsDelegate {
 
  protected:
   virtual bool ShouldStopIterating(XID xid) OVERRIDE {
+   if (!ui::IsWindowVisible(xid))
+     return false;
+
     aura::Window* window =
         views::DesktopWindowTreeHostX11::GetContentWindowForXID(xid);
     if (window) {
+      // Currently |window|->IsVisible() always returns true.
+      // TODO(pkotwicz): Fix this. crbug.com/353038
       if (window->IsVisible() &&
           window->GetBoundsInScreen().Contains(screen_loc_)) {
         toplevel_ = window;
@@ -93,8 +98,7 @@ class ToplevelWindowFinder : public ui::EnumerateWindowsDelegate {
       return false;
     }
 
-    if (ui::IsWindowVisible(xid) &&
-        ui::WindowContainsPoint(xid, screen_loc_)) {
+    if (ui::WindowContainsPoint(xid, screen_loc_)) {
       // toplevel_ = NULL
       return true;
     }
