@@ -6,23 +6,90 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/prefs/tracked/hash_store_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PrefHashStoreImplTest : public testing::Test {
+class MockHashStoreContents : public HashStoreContents {
  public:
-  virtual void SetUp() OVERRIDE {
-    PrefHashStoreImpl::RegisterPrefs(local_state_.registry());
+  // Keep the data separate from the API implementation so that it can be owned
+  // by the test and reused. The API implementation is owned by the
+  // PrefHashStoreImpl.
+  struct Data {
+    scoped_ptr<base::DictionaryValue> contents;
+    std::string super_mac;
+    scoped_ptr<int> version;
+  };
+
+  explicit MockHashStoreContents(Data* data) : data_(data) {}
+
+  // HashStoreContents implementation
+  virtual std::string hash_store_id() const OVERRIDE { return "store_id"; }
+
+  virtual void Reset() OVERRIDE {
+    data_->contents.reset();
+    data_->super_mac = "";
+    data_->version.reset();
   }
 
+  virtual bool IsInitialized() const OVERRIDE { return data_->contents; }
+
+  virtual bool GetVersion(int* version) const OVERRIDE {
+    if (data_->version)
+      *version = *data_->version;
+    return data_->version;
+  }
+
+  virtual void SetVersion(int version) OVERRIDE {
+    data_->version.reset(new int(version));
+  }
+
+  virtual const base::DictionaryValue* GetContents() const OVERRIDE {
+    return data_->contents.get();
+  }
+
+  virtual scoped_ptr<MutableDictionary> GetMutableContents() OVERRIDE {
+    return scoped_ptr<MutableDictionary>(new MockMutableDictionary(data_));
+  }
+
+  virtual std::string GetSuperMac() const OVERRIDE { return data_->super_mac; }
+
+  virtual void SetSuperMac(const std::string& super_mac) OVERRIDE {
+    data_->super_mac = super_mac;
+  }
+
+ private:
+  class MockMutableDictionary : public MutableDictionary {
+   public:
+    explicit MockMutableDictionary(Data* data) : data_(data) {}
+
+    // MutableDictionary implementation
+    virtual base::DictionaryValue* operator->() OVERRIDE {
+      if (!data_->contents)
+        data_->contents.reset(new base::DictionaryValue);
+      return data_->contents.get();
+    }
+
+   private:
+    Data* data_;
+    DISALLOW_COPY_AND_ASSIGN(MockMutableDictionary);
+  };
+  Data* data_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockHashStoreContents);
+};
+
+class PrefHashStoreImplTest : public testing::Test {
  protected:
-  TestingPrefServiceSimple local_state_;
+  scoped_ptr<HashStoreContents> CreateHashStoreContents() {
+    return scoped_ptr<HashStoreContents>(
+        new MockHashStoreContents(&hash_store_data_));
+  }
+
+  MockHashStoreContents::Data hash_store_data_;
 };
 
 TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
@@ -32,7 +99,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   {
     // 32 NULL bytes is the seed that was used to generate the legacy hash.
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -59,16 +126,11 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     dict.Set("b", new base::StringValue("bar"));
     dict.Set("c", new base::StringValue("baz"));
 
-    {
-      // Manually shove in a legacy hash.
-      DictionaryPrefUpdate update(&local_state_,
-                                  prefs::kProfilePreferenceHashes);
-      base::DictionaryValue* child_dictionary = NULL;
-      ASSERT_TRUE(update->GetDictionary("store_id", &child_dictionary));
-      child_dictionary->SetString(
-          "path1",
-          "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2");
-    }
+    // Manually shove in a legacy hash.
+    (*CreateHashStoreContents()->GetMutableContents())->SetString(
+        "path1",
+        "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2");
+
     EXPECT_EQ(PrefHashStoreTransaction::WEAK_LEGACY,
               transaction->CheckValue("path1", &dict));
     transaction->StoreHash("path1", &dict);
@@ -80,7 +142,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
@@ -91,22 +153,14 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
               transaction->CheckValue("new_path", NULL));
   }
 
-  {
-    // Manually corrupt the hash of hashes for "store_id".
-    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
-    base::DictionaryValue* hash_of_hashes_dict = NULL;
-    ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
-        internals::kHashOfHashesDict, &hash_of_hashes_dict));
-    hash_of_hashes_dict->SetString("store_id", std::string(64, 'A'));
-    // This shouldn't have increased the number of existing hash of hashes.
-    ASSERT_EQ(1U, hash_of_hashes_dict->size());
-  }
+  // Manually corrupt the super MAC.
+  hash_store_data_.super_mac = std::string(64, 'A');
 
   {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust non-NULL unknown values.
     PrefHashStoreImpl pref_hash_store3(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
@@ -135,7 +189,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
 
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -161,18 +215,19 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     EXPECT_EQ(PrefHashStoreTransaction::CLEARED,
               transaction->CheckSplitValue("path1", NULL, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
-    EXPECT_EQ(PrefHashStoreTransaction::CLEARED,
-              transaction->CheckSplitValue("path1", &empty_dict,
-                                              &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::CLEARED,
+        transaction->CheckSplitValue("path1", &empty_dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
 
     // Verify changes are properly detected.
-    EXPECT_EQ(PrefHashStoreTransaction::CHANGED,
-              transaction->CheckSplitValue("path1", &modified_dict,
-                                              &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::CHANGED,
+        transaction->CheckSplitValue("path1", &modified_dict, &invalid_keys));
     std::vector<std::string> expected_invalid_keys1;
     expected_invalid_keys1.push_back("a");
     expected_invalid_keys1.push_back("c");
+    expected_invalid_keys1.push_back("o");
     EXPECT_EQ(expected_invalid_keys1, invalid_keys);
     invalid_keys.clear();
 
@@ -185,9 +240,9 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     transaction->StoreSplitHash("path1", &modified_dict);
 
     // Verify |modified_dict| is now the one that verifies correctly.
-    EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
-              transaction->CheckSplitValue("path1", &modified_dict,
-                                              &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::UNCHANGED,
+        transaction->CheckSplitValue("path1", &modified_dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
 
     // Verify old dict no longer matches.
@@ -196,6 +251,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     std::vector<std::string> expected_invalid_keys2;
     expected_invalid_keys2.push_back("a");
     expected_invalid_keys2.push_back("o");
+    expected_invalid_keys2.push_back("c");
     EXPECT_EQ(expected_invalid_keys2, invalid_keys);
     invalid_keys.clear();
   }
@@ -204,7 +260,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
@@ -212,22 +268,14 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     EXPECT_TRUE(invalid_keys.empty());
   }
 
-  {
-    // Manually corrupt the hash of hashes for "store_id".
-    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
-    base::DictionaryValue* hash_of_hashes_dict = NULL;
-    ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
-        internals::kHashOfHashesDict, &hash_of_hashes_dict));
-    hash_of_hashes_dict->SetString("store_id", std::string(64, 'A'));
-    // This shouldn't have increased the number of existing hash of hashes.
-    ASSERT_EQ(1U, hash_of_hashes_dict->size());
-  }
+  // Manually corrupt the super MAC.
+  hash_store_data_.super_mac = std::string(64, 'A');
 
   {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust unknown values.
     PrefHashStoreImpl pref_hash_store3(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
@@ -243,7 +291,7 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
 
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -257,9 +305,9 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
               transaction->CheckSplitValue("path1", NULL, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
-    EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
-              transaction->CheckSplitValue("path1", &empty_dict,
-                                              &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::UNCHANGED,
+        transaction->CheckSplitValue("path1", &empty_dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
 
     // Same when storing NULL directly.
@@ -267,29 +315,29 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
               transaction->CheckSplitValue("path1", NULL, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
-    EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
-              transaction->CheckSplitValue("path1", &empty_dict,
-                                              &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::UNCHANGED,
+        transaction->CheckSplitValue("path1", &empty_dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
   }
 
   {
     // |pref_hash_store2| should trust its initial hashes dictionary (and thus
-    // trust new unknown values) even though the last action done on local_state
-    // was to clear the hashes for path1 by setting its value to NULL (this is a
-    // regression test ensuring that the internal action of clearing some hashes
-    // does update the stored hash of hashes).
+    // trust new unknown values) even though the last action done was to clear
+    // the hashes for path1 by setting its value to NULL (this is a regression
+    // test ensuring that the internal action of clearing some hashes does
+    // update the stored hash of hashes).
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
 
     base::DictionaryValue tested_dict;
     tested_dict.Set("a", new base::StringValue("foo"));
     tested_dict.Set("b", new base::StringValue("bar"));
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
-              transaction->CheckSplitValue("new_path", &tested_dict,
-                                           &invalid_keys));
+    EXPECT_EQ(
+        PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+        transaction->CheckSplitValue("new_path", &tested_dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
   }
 }
@@ -311,7 +359,7 @@ TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
 
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -323,7 +371,7 @@ TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   {
     // Load a new |pref_hash_store2| in which the hashes dictionary is trusted.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     std::vector<std::string> invalid_keys;
@@ -338,7 +386,7 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
                  new_versions_should_be_tested_here);
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
 
     // VERSION_UNINITIALIZED when no hashes are stored.
     EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
@@ -351,31 +399,21 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
   }
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
 
     // VERSION_LATEST after storing a hash.
     EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
               pref_hash_store.GetCurrentVersion());
   }
-  {
-    // Manually clear the version number.
-    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
-    base::DictionaryValue* store_versions_dict = NULL;
-    ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
-        internals::kStoreVersionsDict, &store_versions_dict));
-    scoped_ptr<base::Value> stored_value;
-    store_versions_dict->Remove("store_id", &stored_value);
-    int stored_version;
-    EXPECT_TRUE(stored_value->GetAsInteger(&stored_version));
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST, stored_version);
-    // There should be no versions left in the versions dictionary.
-    EXPECT_TRUE(store_versions_dict->empty());
-  }
+
+  // Manually clear the version number.
+  hash_store_data_.version.reset();
+
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
 
-    // VERSION_PRE_MIGRATION when no version is present for "store_id".
+    // VERSION_PRE_MIGRATION when no version is stored.
     EXPECT_EQ(PrefHashStoreImpl::VERSION_PRE_MIGRATION,
               pref_hash_store.GetCurrentVersion());
 
@@ -384,62 +422,12 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
   }
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state_);
+        std::string(32, 0), "device_id", CreateHashStoreContents());
 
     // Back to VERSION_LATEST after performing a transaction from
     // VERSION_PRE_MIGRATION (the presence of an existing hash should be
     // sufficient, no need for the transaction itself to perform any work).
     EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
               pref_hash_store.GetCurrentVersion());
-  }
-}
-
-TEST_F(PrefHashStoreImplTest, ResetAllPrefHashStores) {
-  {
-    PrefHashStoreImpl pref_hash_store_1(
-        "store_id_1", std::string(32, 0), "device_id", &local_state_);
-    PrefHashStoreImpl pref_hash_store_2(
-        "store_id_2", std::string(32, 0), "device_id", &local_state_);
-
-    // VERSION_UNINITIALIZED when no hashes are stored.
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
-              pref_hash_store_1.GetCurrentVersion());
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
-              pref_hash_store_2.GetCurrentVersion());
-
-    scoped_ptr<PrefHashStoreTransaction> transaction_1(
-        pref_hash_store_1.BeginTransaction());
-    transaction_1->StoreHash("path1", NULL);
-
-    scoped_ptr<PrefHashStoreTransaction> transaction_2(
-        pref_hash_store_2.BeginTransaction());
-    transaction_2->StoreHash("path2", NULL);
-  }
-  {
-    PrefHashStoreImpl pref_hash_store_1(
-        "store_id_1", std::string(32, 0), "device_id", &local_state_);
-    PrefHashStoreImpl pref_hash_store_2(
-        "store_id_2", std::string(32, 0), "device_id", &local_state_);
-
-    // VERSION_LATEST after storing a hash.
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
-              pref_hash_store_1.GetCurrentVersion());
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
-              pref_hash_store_2.GetCurrentVersion());
-  }
-
-  PrefHashStoreImpl::ResetAllPrefHashStores(&local_state_);
-
-  {
-    PrefHashStoreImpl pref_hash_store_1(
-        "store_id_1", std::string(32, 0), "device_id", &local_state_);
-    PrefHashStoreImpl pref_hash_store_2(
-        "store_id_2", std::string(32, 0), "device_id", &local_state_);
-
-    // VERSION_UNINITIALIZED after ResetAllPrefHashStores.
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
-              pref_hash_store_1.GetCurrentVersion());
-    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
-              pref_hash_store_2.GetCurrentVersion());
   }
 }

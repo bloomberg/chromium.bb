@@ -35,6 +35,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
+#include "chrome/browser/prefs/tracked/pref_service_hash_store_contents.h"
 #include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -312,10 +313,10 @@ scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
 #endif
 
   return make_scoped_ptr(new PrefHashStoreImpl(
-      profile_path.AsUTF8Unsafe(),
       seed,
       device_id,
-      g_browser_process->local_state()));
+      scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
+          profile_path.AsUTF8Unsafe(), g_browser_process->local_state()))));
 }
 
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
@@ -565,7 +566,8 @@ void DisableDelaysAndDomainCheckForTesting() {
 void SchedulePrefHashStoresUpdateCheck(
     const base::FilePath& initial_profile_path) {
   if (!kCanUsePrefHashStoreOnPlatform) {
-    PrefHashStoreImpl::ResetAllPrefHashStores(g_browser_process->local_state());
+    PrefServiceHashStoreContents::ResetAllPrefHashStores(
+        g_browser_process->local_state());
     return;
   }
 
@@ -627,7 +629,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  PrefHashStoreImpl::RegisterPrefs(registry);
+  PrefServiceHashStoreContents::RegisterPrefs(registry);
 }
 
 }  // namespace chrome_prefs

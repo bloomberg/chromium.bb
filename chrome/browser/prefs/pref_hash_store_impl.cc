@@ -6,18 +6,26 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/prefs/tracked/hash_store_contents.h"
 
-namespace internals {
+namespace {
 
-const char kHashOfHashesDict[] = "hash_of_hashes";
-const char kStoreVersionsDict[] = "store_versions";
+// Returns true if the dictionary of hashes stored in |contents| is trusted
+// (which implies unknown values can be trusted as newly tracked values).
+bool IsHashDictionaryTrusted(const PrefHashCalculator& calculator,
+                             const HashStoreContents& contents) {
+  const base::DictionaryValue* store_contents = contents.GetContents();
+  std::string super_mac = contents.GetSuperMac();
+  // The store must be initialized and have a valid super MAC to be trusted.
+  return store_contents && !super_mac.empty() &&
+         calculator.Validate(contents.hash_store_id(),
+                             store_contents,
+                             super_mac) == PrefHashCalculator::VALID;
+}
 
-}  // namespace internals
+}  // namespace
 
 class PrefHashStoreImpl::PrefHashStoreTransactionImpl
     : public PrefHashStoreTransaction {
@@ -41,68 +49,30 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
       const base::DictionaryValue* split_value) OVERRIDE;
 
  private:
-  // Clears any hashes stored for |path| through |update|.
-  void ClearPath(const std::string& path,
-                 DictionaryPrefUpdate* update);
-
-  // Returns true if there are split hashes stored for |path|.
-  bool HasSplitHashesAtPath(const std::string& path) const;
-
-  // Used by StoreHash and StoreSplitHash to store the hash of |new_value| at
-  // |path| under |update|. Allows multiple hashes to be stored under the same
-  // |update|.
-  void StoreHashInternal(const std::string& path,
-                         const base::Value* new_value,
-                         DictionaryPrefUpdate* update);
-
+  bool GetSplitMacs(const std::string& path,
+                    std::map<std::string, std::string>* split_macs) const;
   PrefHashStoreImpl* outer_;
   bool has_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreTransactionImpl);
 };
 
-PrefHashStoreImpl::PrefHashStoreImpl(const std::string& hash_store_id,
-                                     const std::string& seed,
+PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
                                      const std::string& device_id,
-                                     PrefService* local_state)
-    : hash_store_id_(hash_store_id),
-      pref_hash_calculator_(seed, device_id),
-      local_state_(local_state),
-      initial_hashes_dictionary_trusted_(IsHashDictionaryTrusted()) {
+                                     scoped_ptr<HashStoreContents> contents)
+    : pref_hash_calculator_(seed, device_id),
+      contents_(contents.Pass()),
+      initial_hashes_dictionary_trusted_(
+          IsHashDictionaryTrusted(pref_hash_calculator_, *contents_)) {
+  DCHECK(contents_);
   UMA_HISTOGRAM_BOOLEAN("Settings.HashesDictionaryTrusted",
                         initial_hashes_dictionary_trusted_);
 }
 
-// static
-void PrefHashStoreImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  // Register the top level dictionary to map profile names to dictionaries of
-  // tracked preferences.
-  registry->RegisterDictionaryPref(prefs::kProfilePreferenceHashes);
-}
-
-// static
-void PrefHashStoreImpl::ResetAllPrefHashStores(PrefService* local_state) {
-  local_state->ClearPref(prefs::kProfilePreferenceHashes);
-}
+PrefHashStoreImpl::~PrefHashStoreImpl() {}
 
 void PrefHashStoreImpl::Reset() {
-  DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
-
-  // Remove the dictionary corresponding to the profile name, which may have a
-  // '.'
-  update->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-
-  // Remove this store's entry in the kStoreVersionsDict.
-  base::DictionaryValue* version_dict;
-  if (update->GetDictionary(internals::kStoreVersionsDict, &version_dict))
-    version_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-
-  // Remove this store's entry in the kHashOfHashesDict.
-  base::DictionaryValue* hash_of_hashes_dict;
-  if (update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesDict,
-                                                &hash_of_hashes_dict)) {
-    hash_of_hashes_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-  }
+  contents_->Reset();
 }
 
 scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction() {
@@ -111,44 +81,16 @@ scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction() {
 }
 
 PrefHashStoreImpl::StoreVersion PrefHashStoreImpl::GetCurrentVersion() const {
-  const base::DictionaryValue* pref_hash_data =
-      local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-
-  if (!pref_hash_data->GetDictionaryWithoutPathExpansion(hash_store_id_, NULL))
+  if (!contents_->IsInitialized())
     return VERSION_UNINITIALIZED;
 
-  const base::DictionaryValue* version_dict;
   int current_version;
-  if (!pref_hash_data->GetDictionary(internals::kStoreVersionsDict,
-                                     &version_dict) ||
-      !version_dict->GetIntegerWithoutPathExpansion(hash_store_id_,
-                                                    &current_version)) {
+  if (!contents_->GetVersion(&current_version)) {
     return VERSION_PRE_MIGRATION;
   }
 
   DCHECK_GT(current_version, VERSION_PRE_MIGRATION);
   return static_cast<StoreVersion>(current_version);
-}
-
-bool PrefHashStoreImpl::IsHashDictionaryTrusted() const {
-  const base::DictionaryValue* pref_hash_data =
-      local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-  const base::DictionaryValue* hashes_dict = NULL;
-  const base::DictionaryValue* hash_of_hashes_dict = NULL;
-  std::string hash_of_hashes;
-  // The absence of the hashes dictionary isn't trusted. Nor is the absence of
-  // the hash of hashes for this |hash_store_id_|.
-  if (!pref_hash_data->GetDictionaryWithoutPathExpansion(
-          hash_store_id_, &hashes_dict) ||
-      !pref_hash_data->GetDictionaryWithoutPathExpansion(
-          internals::kHashOfHashesDict, &hash_of_hashes_dict) ||
-      !hash_of_hashes_dict->GetStringWithoutPathExpansion(
-          hash_store_id_, &hash_of_hashes)) {
-    return false;
-  }
-
-  return pref_hash_calculator_.Validate(
-      hash_store_id_, hashes_dict, hash_of_hashes) == PrefHashCalculator::VALID;
 }
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
@@ -157,31 +99,13 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     ~PrefHashStoreTransactionImpl() {
-  DictionaryPrefUpdate update(outer_->local_state_,
-                              prefs::kProfilePreferenceHashes);
-  // Update the hash_of_hashes if and only if the hashes dictionary has been
+  // Update the super MAC if and only if the hashes dictionary has been
   // modified in this transaction.
   if (has_changed_) {
-    // Get the dictionary where the hash of hashes are stored.
-    base::DictionaryValue* hash_of_hashes_dict = NULL;
-    if (!update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesDict,
-                                                   &hash_of_hashes_dict)) {
-      hash_of_hashes_dict = new base::DictionaryValue;
-      update->SetWithoutPathExpansion(internals::kHashOfHashesDict,
-                                      hash_of_hashes_dict);
-    }
-
     // Get the dictionary of hashes (or NULL if it doesn't exist).
-    base::DictionaryValue* hashes_dict = NULL;
-    update->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
-                                              &hashes_dict);
-
-    // Use the |hash_store_id_| as the hashed path to avoid having the hash
-    // depend on kProfilePreferenceHashes.
-    std::string hash_of_hashes(outer_->pref_hash_calculator_.Calculate(
-        outer_->hash_store_id_, hashes_dict));
-    hash_of_hashes_dict->SetStringWithoutPathExpansion(outer_->hash_store_id_,
-                                                       hash_of_hashes);
+    const base::DictionaryValue* hashes_dict = outer_->contents_->GetContents();
+    outer_->contents_->SetSuperMac(outer_->pref_hash_calculator_.Calculate(
+        outer_->contents_->hash_store_id(), hashes_dict));
   }
 
   // Mark this hash store has having been updated to the latest version (in
@@ -189,27 +113,19 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
   // since they always occur before minor update transaction it's okay
   // to unconditionally do this here). Do this even if |!has_changed_| to also
   // seed version number on unchanged profiles.
-  base::DictionaryValue* store_versions_dict = NULL;
-  if (!update->GetDictionary(internals::kStoreVersionsDict,
-                             &store_versions_dict)) {
-    store_versions_dict = new base::DictionaryValue;
-    update->Set(internals::kStoreVersionsDict, store_versions_dict);
-  }
-  store_versions_dict->SetIntegerWithoutPathExpansion(outer_->hash_store_id_,
-                                                      VERSION_LATEST);
+  outer_->contents_->SetVersion(VERSION_LATEST);
 }
 
 PrefHashStoreTransaction::ValueState
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
     const std::string& path, const base::Value* initial_value) const {
-  const base::DictionaryValue* pref_hash_data =
-      outer_->local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-  const base::DictionaryValue* hashed_prefs = NULL;
-  pref_hash_data->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
-                                                     &hashed_prefs);
+  const base::DictionaryValue* hashed_prefs = outer_->contents_->GetContents();
 
   std::string last_hash;
-  if (!hashed_prefs || !hashed_prefs->GetString(path, &last_hash)) {
+  if (hashed_prefs)
+    hashed_prefs->GetString(path, &last_hash);
+
+  if (last_hash.empty()) {
     // In the absence of a hash for this pref, always trust a NULL value, but
     // only trust an existing value if the initial hashes dictionary is trusted.
     return (!initial_value || outer_->initial_hashes_dictionary_trusted_) ?
@@ -235,9 +151,10 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
 
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreHash(
     const std::string& path, const base::Value* new_value) {
-  DictionaryPrefUpdate update(outer_->local_state_,
-                              prefs::kProfilePreferenceHashes);
-  StoreHashInternal(path, new_value, &update);
+  const std::string mac =
+      outer_->pref_hash_calculator_.Calculate(path, new_value);
+  (*outer_->contents_->GetMutableContents())->SetString(path, mac);
+  has_changed_ = true;
 }
 
 PrefHashStoreTransaction::ValueState
@@ -247,7 +164,8 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
     std::vector<std::string>* invalid_keys) const {
   DCHECK(invalid_keys && invalid_keys->empty());
 
-  const bool has_hashes = HasSplitHashesAtPath(path);
+  std::map<std::string, std::string> split_macs;
+  const bool has_hashes = GetSplitMacs(path, &split_macs);
 
   // Treat NULL and empty the same; otherwise we would need to store a hash
   // for the entire dictionary (or some other special beacon) to
@@ -267,43 +185,49 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
   const size_t common_part_length = keyed_path.length();
   for (base::DictionaryValue::Iterator it(*initial_split_value); !it.IsAtEnd();
        it.Advance()) {
-    // Keep the common part from the old |keyed_path| and replace the key to
-    // get the new |keyed_path|.
-    keyed_path.replace(common_part_length, std::string::npos, it.key());
-    ValueState value_state = CheckValue(keyed_path, &it.value());
-    switch (value_state) {
-      case CLEARED:
-        // CLEARED doesn't make sense as a NULL value would never be sampled
-        // by the DictionaryValue::Iterator; in fact it is a known weakness of
-        // this current algorithm to not detect the case where a single key is
-        // cleared entirely from the dictionary pref.
-        NOTREACHED();
-        break;
-      case WEAK_LEGACY:
-        // Split tracked preferences were introduced after the migration from
-        // the weaker legacy algorithm started so no migration is expected, but
-        // declare it invalid in Release builds anyways.
-        NOTREACHED();
-        invalid_keys->push_back(it.key());
-        break;
-      case SECURE_LEGACY:
-        // Secure legacy device IDs based hashes are still accepted, but we
-        // should make sure to notify the caller for him to update the legacy
-        // hashes.
-        has_secure_legacy_id_hashes = true;
-        break;
-      case UNCHANGED:
-        break;
-      case CHANGED:  // Falls through.
-      case UNTRUSTED_UNKNOWN_VALUE:  // Falls through.
-      case TRUSTED_UNKNOWN_VALUE:
-        // Declare this value invalid, whether it was changed or never seen
-        // before (note that the initial hashes being trusted is irrelevant for
-        // individual entries in this scenario).
-        invalid_keys->push_back(it.key());
-        break;
+    std::map<std::string, std::string>::iterator entry =
+        split_macs.find(it.key());
+    if (entry == split_macs.end()) {
+      invalid_keys->push_back(it.key());
+    } else {
+      // Keep the common part from the old |keyed_path| and replace the key to
+      // get the new |keyed_path|.
+      keyed_path.replace(common_part_length, std::string::npos, it.key());
+      switch (outer_->pref_hash_calculator_.Validate(
+          keyed_path, &it.value(), entry->second)) {
+        case PrefHashCalculator::VALID:
+          break;
+        case WEAK_LEGACY:
+          // Split tracked preferences were introduced after the migration from
+          // the weaker legacy algorithm started so no migration is expected,
+          // but declare it invalid in Release builds anyways.
+          NOTREACHED();
+          invalid_keys->push_back(it.key());
+          break;
+        case SECURE_LEGACY:
+          // Secure legacy device IDs based hashes are still accepted, but we
+          // should make sure to notify the caller for him to update the legacy
+          // hashes.
+          has_secure_legacy_id_hashes = true;
+          break;
+        case PrefHashCalculator::INVALID:
+          invalid_keys->push_back(it.key());
+          break;
+      }
+      // Remove processed MACs, remaining MACs at the end will also be
+      // considered invalid.
+      split_macs.erase(entry);
     }
   }
+
+  // Anything left in the map is missing from the data.
+  for (std::map<std::string, std::string>::const_iterator it =
+           split_macs.begin();
+       it != split_macs.end();
+       ++it) {
+    invalid_keys->push_back(it->first);
+  }
+
   return invalid_keys->empty()
       ? (has_secure_legacy_id_hashes ? SECURE_LEGACY : UNCHANGED)
       : CHANGED;
@@ -312,9 +236,9 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
     const std::string& path,
     const base::DictionaryValue* split_value) {
-  DictionaryPrefUpdate update(outer_->local_state_,
-                              prefs::kProfilePreferenceHashes);
-  ClearPath(path, &update);
+  scoped_ptr<HashStoreContents::MutableDictionary> mutable_dictionary =
+      outer_->contents_->GetMutableContents();
+  (*mutable_dictionary)->Remove(path, NULL);
 
   if (split_value) {
     std::string keyed_path(path);
@@ -325,46 +249,32 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
       // Keep the common part from the old |keyed_path| and replace the key to
       // get the new |keyed_path|.
       keyed_path.replace(common_part_length, std::string::npos, it.key());
-      StoreHashInternal(keyed_path, &it.value(), &update);
+      (*mutable_dictionary)->SetString(
+          keyed_path,
+          outer_->pref_hash_calculator_.Calculate(keyed_path, &it.value()));
     }
   }
-}
-
-void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ClearPath(
-    const std::string& path,
-    DictionaryPrefUpdate* update) {
-  base::DictionaryValue* hashes_dict = NULL;
-  if (update->Get()->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
-                                                       &hashes_dict)) {
-    hashes_dict->Remove(path, NULL);
-    has_changed_ = true;
-  }
-}
-
-bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::HasSplitHashesAtPath(
-    const std::string& path) const {
-  const base::DictionaryValue* pref_hash_data =
-      outer_->local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-  const base::DictionaryValue* hashed_prefs = NULL;
-  pref_hash_data->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
-                                                     &hashed_prefs);
-  return hashed_prefs && hashed_prefs->GetDictionary(path, NULL);
-}
-
-void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreHashInternal(
-    const std::string& path,
-    const base::Value* new_value,
-    DictionaryPrefUpdate* update) {
-  base::DictionaryValue* hashes_dict = NULL;
-
-  // Get the dictionary corresponding to the profile name, which may have a '.'
-  if (!update->Get()->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
-                                                        &hashes_dict)) {
-    hashes_dict = new base::DictionaryValue;
-    update->Get()->SetWithoutPathExpansion(outer_->hash_store_id_, hashes_dict);
-  }
-  hashes_dict->SetString(
-      path, outer_->pref_hash_calculator_.Calculate(path, new_value));
-
   has_changed_ = true;
+}
+
+bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::GetSplitMacs(
+    const std::string& key,
+    std::map<std::string, std::string>* split_macs) const {
+  DCHECK(split_macs);
+  DCHECK(split_macs->empty());
+
+  const base::DictionaryValue* hashed_prefs = outer_->contents_->GetContents();
+  const base::DictionaryValue* split_mac_dictionary = NULL;
+  if (!hashed_prefs || !hashed_prefs->GetDictionary(key, &split_mac_dictionary))
+    return false;
+  for (base::DictionaryValue::Iterator it(*split_mac_dictionary); !it.IsAtEnd();
+       it.Advance()) {
+    std::string mac_string;
+    if (!it.value().GetAsString(&mac_string)) {
+      NOTREACHED();
+      continue;
+    }
+    split_macs->insert(make_pair(it.key(), mac_string));
+  }
+  return true;
 }
