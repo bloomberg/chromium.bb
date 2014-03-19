@@ -8,7 +8,6 @@
 #include "apps/app_window_registry.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -17,12 +16,10 @@
 #include "chrome/browser/jumplist_updater_win.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_win.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -31,42 +28,6 @@
 #include "ui/base/win/shell.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
-
-namespace {
-
-void CreateIconAndSetRelaunchDetails(
-    const base::FilePath& web_app_path,
-    const base::FilePath& icon_file,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const HWND hwnd) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  // Set the relaunch data so "Pin this program to taskbar" has the app's
-  // information.
-  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      shortcut_info.url,
-      shortcut_info.extension_id,
-      shortcut_info.profile_path);
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-  command_line.SetProgram(chrome_exe);
-  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
-      shortcut_info.title, hwnd);
-
-  if (!base::PathExists(web_app_path) &&
-      !base::CreateDirectory(web_app_path)) {
-    return;
-  }
-
-  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
-}
-
-}  // namespace
 
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
     : weak_ptr_factory_(this) {}
@@ -86,27 +47,6 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
       chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
     chrome::ActivateMetroChrome();
   }
-}
-
-void ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  HWND hwnd = GetNativeAppWindowHWND();
-
-  // Set window's icon to the one we're about to create/update in the web app
-  // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id,
-      shortcut_info.url);
-  base::FilePath icon_file = web_app_path
-      .Append(web_app::internals::GetSanitizedFileName(shortcut_info.title))
-      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&CreateIconAndSetRelaunchDetails,
-                 web_app_path, icon_file, shortcut_info, hwnd));
 }
 
 HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
@@ -146,25 +86,11 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
     const apps::AppWindow::CreateParams& create_params) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
 
-  const extensions::Extension* extension = app_window()->extension();
-  std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(extension->id());
-  base::string16 app_name_wide = base::UTF8ToWide(app_name);
-  HWND hwnd = GetNativeAppWindowHWND();
-  Profile* profile =
-      Profile::FromBrowserContext(app_window()->browser_context());
-  app_model_id_ =
-      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
-                                                profile->GetPath());
-  ui::win::SetAppIdForWindow(app_model_id_, hwnd);
-
-  web_app::UpdateShortcutInfoAndIconForApp(
-      *extension,
-      profile,
-      base::Bind(&ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+  SetAppDetailsForWindow();
 
   UpdateShelfMenu();
 }
@@ -218,4 +144,47 @@ void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
   }
 
   jumplist_updater.CommitUpdate();
+}
+
+void ChromeNativeAppWindowViewsWin::SetAppDetailsForWindow() {
+  // Set the Application Model ID so that windows are grouped correctly.
+  const extensions::Extension* app = app_window()->extension();
+  std::string app_name =
+      web_app::GenerateApplicationNameFromExtensionId(app->id());
+  base::string16 app_name_wide = base::UTF8ToWide(app_name);
+  HWND hwnd = GetNativeAppWindowHWND();
+  Profile* profile =
+      Profile::FromBrowserContext(app_window()->browser_context());
+  app_model_id_ =
+      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
+                                                profile->GetPath());
+
+  // Set the relaunch data so "Pin this program to taskbar" has the app's
+  // information.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+
+  GURL url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
+  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
+      url, app->id(), profile->GetPath());
+  command_line.SetProgram(chrome_exe);
+
+  // Set window's icon to the one in the web app path. This was created when the
+  // app was installed. The icon cache would have been refreshed at that time.
+  base::string16 title = base::UTF8ToUTF16(app->name());
+  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
+      profile->GetPath(), app->id(), url);
+  base::FilePath icon_file = web_app_path
+      .Append(web_app::internals::GetSanitizedFileName(title))
+      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
+
+  ui::win::SetAppDetailsForWindow(
+      app_model_id_,
+      icon_file.value(),
+      command_line.GetCommandLineString(),
+      title,
+      hwnd);
 }

@@ -17,9 +17,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
  private:
   void ActivateParentDesktopIfNecessary();
 
-  void OnShortcutInfoLoaded(
-      const ShellIntegration::ShortcutInfo& shortcut_info);
-
   HWND GetNativeAppWindowHWND() const;
 
   // Overridden from ChromeNativeAppWindowViews:
@@ -34,6 +31,9 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
 
   // Overridden from apps::NativeAppWindow:
   virtual void UpdateShelfMenu() OVERRIDE;
+
+  // Calls ui::win::SetAppDetailsForWindow with the required strings.
+  void SetAppDetailsForWindow();
 
   base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
 

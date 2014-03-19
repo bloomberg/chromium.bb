@@ -441,13 +441,10 @@ void UpdatePlatformShortcuts(
     }
   }
 
-  // If an icon file exists, and is out of date, replace it with the new icon
-  // and let the shell know the icon has been modified.
+  // Update the icon if necessary.
   base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
-  if (base::PathExists(icon_file)) {
-    web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
-  }
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
 }
 
 void DeletePlatformShortcuts(
