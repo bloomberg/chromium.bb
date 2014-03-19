@@ -91,7 +91,7 @@ static HashSet<AtomicString>& clipperFilterMaskerTags()
     return s_tagList;
 }
 
-static HashSet<AtomicString>& markerTags()
+bool SVGResources::supportsMarkers(const SVGElement& element)
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
     if (s_tagList.isEmpty()) {
@@ -101,7 +101,7 @@ static HashSet<AtomicString>& markerTags()
         s_tagList.add(SVGNames::polylineTag.localName());
     }
 
-    return s_tagList;
+    return s_tagList.contains(element.localName());
 }
 
 static HashSet<AtomicString>& fillAndStrokeTags()
@@ -250,7 +250,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
         }
     }
 
-    if (markerTags().contains(tagName) && style->hasMarkers()) {
+    if (style->hasMarkers() && supportsMarkers(*element)) {
         const AtomicString& markerStartId = style->markerStartResource();
         if (!ensureResources(resources)->setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerStartId)))
             registerPendingResource(extensions, markerStartId, element);

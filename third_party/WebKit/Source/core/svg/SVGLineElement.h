@@ -46,8 +46,6 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
-    virtual bool supportsMarkers() const OVERRIDE { return true; }
-
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
     RefPtr<SVGAnimatedLength> m_x1;

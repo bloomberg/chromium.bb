@@ -55,7 +55,6 @@ public:
 
     virtual String title() const OVERRIDE;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
-    virtual bool supportsMarkers() const { return false; }
     PassRefPtrWillBeRawPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
     static bool isAnimatableCSSProperty(const QualifiedName&);
     enum CTMScope {

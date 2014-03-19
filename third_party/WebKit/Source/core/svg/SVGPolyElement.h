@@ -45,8 +45,6 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
 
-    virtual bool supportsMarkers() const OVERRIDE FINAL { return true; }
-
 private:
     RefPtr<SVGAnimatedPointList> m_points;
 

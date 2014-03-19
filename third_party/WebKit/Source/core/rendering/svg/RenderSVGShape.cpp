@@ -196,7 +196,7 @@ bool RenderSVGShape::shouldGenerateMarkerPositions() const
     if (!style()->svgStyle()->hasMarkers())
         return false;
 
-    if (!toSVGGraphicsElement(element())->supportsMarkers())
+    if (!SVGResources::supportsMarkers(*toSVGGraphicsElement(element())))
         return false;
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
