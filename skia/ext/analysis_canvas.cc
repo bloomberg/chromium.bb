@@ -31,6 +31,7 @@ bool IsSolidColorPaint(const SkPaint& paint) {
           !paint.getLooper() &&
           !paint.getMaskFilter() &&
           !paint.getColorFilter() &&
+          !paint.getImageFilter() &&
           paint.getStyle() == SkPaint::kFill_Style &&
           (xfermode == SkXfermode::kSrc_Mode ||
            xfermode == SkXfermode::kSrcOver_Mode));

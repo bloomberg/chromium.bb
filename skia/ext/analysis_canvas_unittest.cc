@@ -4,8 +4,10 @@
 
 #include "base/compiler_specific.h"
 #include "skia/ext/analysis_canvas.h"
+#include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
 namespace {
 
@@ -174,6 +176,18 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
   canvas.rotate(50);
   canvas.drawRect(SkRect::MakeWH(255, 255), paint);
 
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+}
+
+TEST(AnalysisCanvasTest, FilterPaint) {
+  skia::AnalysisCanvas canvas(255, 255);
+  SkPaint paint;
+
+  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(SkOffsetImageFilter::Create(10, 10));
+  paint.setImageFilter(filter.get());
+  canvas.drawRect(SkRect::MakeWH(255, 255), paint);
+
+  SkColor outputColor;
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
 }
 
