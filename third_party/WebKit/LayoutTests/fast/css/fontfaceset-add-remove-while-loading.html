@@ -27,14 +27,12 @@ function testStep2() {
     shouldBeEqualToString('face2.status', 'unloaded');
 
     document.fonts.add(face2);
-    face2.load();
+    face2.load().then(testStep3);
     shouldBeEqualToString('document.fonts.status', 'loading');
 
     document.fonts.delete(face2);
     shouldBeEqualToString('document.fonts.status', 'loaded');
     shouldBeEqualToString('face2.status', 'loading');
-
-    face2.ready().then(testStep3);
 }
 
 function testStep3() {

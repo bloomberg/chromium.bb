@@ -13,7 +13,7 @@
 }
 </style>
 <script>
-description('Tests load() and ready() methods of FontFace.');
+description('Tests load() method of FontFace.');
 
 window.jsTestIsAsync = true;
 
@@ -35,18 +35,16 @@ function testStep1() {
     face1 = faces[0];
     face2 = faces[1];
 
-    face1.ready().then(testStep2, fail('face1.ready() rejected'));
     shouldBeEqualToString('face1.status', 'unloaded');
-    face1.load();
+    face1.load().then(testStep2, fail('face1.load() rejected'));
     shouldBeEqualToString('face1.status', 'loading');
 }
 
 function testStep2() {
     shouldBeEqualToString('face1.status', 'loaded');
 
-    face2.ready().then(fail('face2.ready() fulfilled'), testStep3);
     shouldBeEqualToString('face2.status', 'unloaded');
-    face2.load();
+    face2.load().then(fail('face2.load() fulfilled'), testStep3);
     shouldBeEqualToString('face2.status', 'loading');
 }
 
@@ -54,9 +52,8 @@ function testStep3() {
     shouldBeEqualToString('face2.status', 'error');
 
     face3 = new FontFace('Font3', 'url(../../resources/Ahem.ttf)', {});
-    face3.ready().then(testStep4, fail('face3.ready() rejected'));
     shouldBeEqualToString('face3.status', 'unloaded');
-    face3.load();
+    face3.load().then(testStep4, fail('face3.load() rejected'));
     shouldBeEqualToString('face3.status', 'loading');
 }
 
@@ -64,9 +61,8 @@ function testStep4() {
     shouldBeEqualToString('face3.status', 'loaded');
 
     face4 = new FontFace('Font4', 'url(../../resources/DownLoadErrorAhem.otf)', {});
-    face4.ready().then(fail('face4.ready() fulfilled'), testStep5);
     shouldBeEqualToString('face4.status', 'unloaded');
-    face4.load();
+    face4.load().then(fail('face4.load() fulfilled'), testStep5);
     shouldBeEqualToString('face4.status', 'loading');
 }
 

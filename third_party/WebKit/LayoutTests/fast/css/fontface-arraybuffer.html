@@ -25,7 +25,7 @@ document.fonts.add(face2);
 
 var face3 = new FontFace('FontFromEmptyArrayBuffer', new ArrayBuffer(0), {});
 shouldBeEqualToString('face3.status', 'error');
-face3.ready().catch(function(v) {
+face3.load().catch(function(v) {
     rejectionValue = v;
     shouldBeEqualToString('rejectionValue.name', 'SyntaxError');
     document.fonts.ready().then(verify);

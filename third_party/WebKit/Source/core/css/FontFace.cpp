@@ -382,23 +382,7 @@ void FontFace::setLoadStatus(LoadStatus status)
         resolveReadyPromises();
 }
 
-void FontFace::load(ExecutionContext* context)
-{
-    if (m_status != Unloaded)
-        return;
-
-    FontDescription fontDescription;
-    FontFamily fontFamily;
-    fontFamily.setFamily(m_family);
-    fontDescription.setFamily(fontFamily);
-    fontDescription.setTraits(traits());
-
-    CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
-    m_cssFontFace->load(fontDescription, fontSelector);
-    fontSelector->loadPendingFonts();
-}
-
-ScriptPromise FontFace::ready(ExecutionContext* context)
+ScriptPromise FontFace::load(ExecutionContext* context)
 {
     OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(context);
     ScriptPromise promise = resolver->promise();
@@ -406,6 +390,18 @@ ScriptPromise FontFace::ready(ExecutionContext* context)
         resolver->resolve(this);
     else
         m_readyResolvers.append(resolver.release());
+
+    if (m_status == Unloaded) {
+        FontDescription fontDescription;
+        FontFamily fontFamily;
+        fontFamily.setFamily(m_family);
+        fontDescription.setFamily(fontFamily);
+        fontDescription.setTraits(traits());
+
+        CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
+        m_cssFontFace->load(fontDescription, fontSelector);
+        fontSelector->loadPendingFonts();
+    }
     return promise;
 }
 
