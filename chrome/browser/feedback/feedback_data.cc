@@ -25,108 +25,23 @@ using content::BrowserThread;
 
 namespace {
 
-const char kMultilineIndicatorString[] = "<multiline>\n";
-const char kMultilineStartString[] = "---------- START ----------\n";
-const char kMultilineEndString[] = "---------- END ----------\n\n";
-
-const size_t kFeedbackMaxLength = 4 * 1024;
-const size_t kFeedbackMaxLineCount = 40;
-
 const char kTraceFilename[] = "tracing.zip\n";
 const char kPerformanceCategoryTag[] = "Performance";
 
-const char kZipExt[] = ".zip";
-
-const base::FilePath::CharType kLogsFilename[] =
-    FILE_PATH_LITERAL("system_logs.txt");
 const base::FilePath::CharType kHistogramsFilename[] =
     FILE_PATH_LITERAL("histograms.txt");
-
-// Converts the system logs into a string that we can compress and send
-// with the report. This method only converts those logs that we want in
-// the compressed zip file sent with the report, hence it ignores any logs
-// below the size threshold of what we want compressed.
-std::string LogsToString(const FeedbackData::SystemLogsMap& sys_info) {
-  std::string syslogs_string;
-  for (FeedbackData::SystemLogsMap::const_iterator it = sys_info.begin();
-      it != sys_info.end(); ++it) {
-    std::string key = it->first;
-    std::string value = it->second;
-
-    if (FeedbackData::BelowCompressionThreshold(value))
-      continue;
-
-    base::TrimString(key, "\n ", &key);
-    base::TrimString(value, "\n ", &value);
-
-    if (value.find("\n") != std::string::npos) {
-      syslogs_string.append(
-          key + "=" + kMultilineIndicatorString +
-          kMultilineStartString +
-          value + "\n" +
-          kMultilineEndString);
-    } else {
-      syslogs_string.append(key + "=" + value + "\n");
-    }
-  }
-  return syslogs_string;
-}
-
-void ZipFile(const base::FilePath& filename,
-             const std::string& data, std::string* compressed_data) {
-  if (!feedback_util::ZipString(filename, data, compressed_data))
-    compressed_data->clear();
-}
-
-void ZipLogs(const FeedbackData::SystemLogsMap& sys_info,
-             std::string* compressed_logs) {
-  DCHECK(compressed_logs);
-  std::string logs_string = LogsToString(sys_info);
-  if (logs_string.empty() ||
-      !feedback_util::ZipString(
-          base::FilePath(kLogsFilename), logs_string, compressed_logs)) {
-    compressed_logs->clear();
-  }
-}
-
-void ZipHistograms(const std::string& histograms,
-                   std::string* compressed_histograms) {
-  DCHECK(compressed_histograms);
-  if (histograms.empty() ||
-      !feedback_util::ZipString(
-          base::FilePath(kHistogramsFilename),
-          histograms,
-          compressed_histograms)) {
-    compressed_histograms->clear();
-  }
-}
+const char kHistogramsAttachmentName[] = "histograms.zip";
 
 }  // namespace
 
-// static
-bool FeedbackData::BelowCompressionThreshold(const std::string& content) {
-  if (content.length() > kFeedbackMaxLength)
-    return false;
-  const size_t line_count = std::count(content.begin(), content.end(), '\n');
-  if (line_count > kFeedbackMaxLineCount)
-    return false;
-  return true;
-}
-
-FeedbackData::FeedbackData() : profile_(NULL),
-                               trace_id_(0),
-                               feedback_page_data_complete_(false),
-                               syslogs_compression_complete_(false),
-                               histograms_compression_complete_(false),
-                               attached_file_compression_complete_(false),
-                               report_sent_(false) {
-}
+FeedbackData::FeedbackData()
+    : profile_(NULL), trace_id_(0), pending_op_count_(1), report_sent_(false) {}
 
 FeedbackData::~FeedbackData() {
 }
 
 void FeedbackData::OnFeedbackPageDataComplete() {
-  feedback_page_data_complete_ = true;
+  pending_op_count_--;
   SendReport();
 }
 
@@ -136,26 +51,23 @@ void FeedbackData::SetAndCompressSystemInfo(
 
   if (trace_id_ != 0) {
     TracingManager* manager = TracingManager::Get();
+    pending_op_count_++;
     if (!manager ||
         !manager->GetTraceData(
             trace_id_,
             base::Bind(&FeedbackData::OnGetTraceData, this, trace_id_))) {
+      pending_op_count_--;
       trace_id_ = 0;
     }
   }
 
-  sys_info_ = sys_info.Pass();
-  if (sys_info_.get()) {
-    std::string* compressed_logs_ptr = new std::string;
-    scoped_ptr<std::string> compressed_logs(compressed_logs_ptr);
+  AddLogs(sys_info.Pass());
+  if (sys_info.get()) {
+    pending_op_count_++;
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
-        base::Bind(&ZipLogs,
-                   *sys_info_,
-                   compressed_logs_ptr),
-        base::Bind(&FeedbackData::OnCompressLogsComplete,
-                   this,
-                   base::Passed(&compressed_logs)));
+        base::Bind(&FeedbackCommon::CompressLogs, this),
+        base::Bind(&FeedbackData::OnCompressComplete, this));
   }
 }
 
@@ -163,45 +75,39 @@ void FeedbackData::SetAndCompressHistograms(
     scoped_ptr<std::string> histograms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  histograms_ = histograms.Pass();
-  if (histograms_.get()) {
-    std::string* compressed_histograms_ptr = new std::string;
-    scoped_ptr<std::string> compressed_histograms(compressed_histograms_ptr);
-    BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&ZipHistograms,
-                   *histograms_,
-                   compressed_histograms_ptr),
-        base::Bind(&FeedbackData::OnCompressHistogramsComplete,
-                   this,
-                   base::Passed(&compressed_histograms)));
-  }
+  if (!histograms.get())
+    return;
+  pending_op_count_++;
+  BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&FeedbackCommon::CompressFile,
+                 this,
+                 base::FilePath(kHistogramsFilename),
+                 kHistogramsAttachmentName,
+                 base::Passed(&histograms)),
+      base::Bind(&FeedbackData::OnCompressComplete, this));
 }
 
 void FeedbackData::AttachAndCompressFileData(
     scoped_ptr<std::string> attached_filedata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  attached_filedata_ = attached_filedata.Pass();
-
-  if (!attached_filename_.empty() && attached_filedata_.get()) {
-    std::string* compressed_file_ptr = new std::string;
-    scoped_ptr<std::string> compressed_file(compressed_file_ptr);
+  if (!attached_filedata.get() || attached_filedata->empty())
+    return;
+  pending_op_count_++;
 #if defined(OS_WIN)
-    base::FilePath attached_file(base::UTF8ToWide(attached_filename_));
+  base::FilePath attached_file(base::UTF8ToWide(attached_filename_));
 #else
-    base::FilePath attached_file(attached_filename_);
+  base::FilePath attached_file(attached_filename_);
 #endif
-    BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&ZipFile,
-                   attached_file,
-                   *(attached_filedata_.get()),
-                   compressed_file_ptr),
-        base::Bind(&FeedbackData::OnCompressFileComplete,
-                   this,
-                   base::Passed(&compressed_file)));
-  }
+  BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&FeedbackCommon::CompressFile,
+                 this,
+                 attached_file,
+                 std::string(),
+                 base::Passed(&attached_filedata)),
+      base::Bind(&FeedbackData::OnCompressComplete, this));
 }
 
 void FeedbackData::OnGetTraceData(
@@ -215,58 +121,22 @@ void FeedbackData::OnGetTraceData(
   scoped_ptr<std::string> data(new std::string);
   data->swap(trace_data->data());
 
-  attached_filename_ = kTraceFilename;
-  attached_filedata_ = data.Pass();
-  attached_file_compression_complete_ = true;
-  trace_id_ = 0;
+  AddFile(kTraceFilename, data.Pass());
 
   set_category_tag(kPerformanceCategoryTag);
-
+  pending_op_count_--;
+  trace_id_ = 0;
   SendReport();
 }
 
-void FeedbackData::OnCompressLogsComplete(
-    scoped_ptr<std::string> compressed_logs) {
+void FeedbackData::OnCompressComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  compressed_logs_ = compressed_logs.Pass();
-  syslogs_compression_complete_ = true;
-
-  SendReport();
-}
-
-void FeedbackData::OnCompressHistogramsComplete(
-    scoped_ptr<std::string> compressed_histograms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  compressed_histograms_ = compressed_histograms.Pass();
-  histograms_compression_complete_ = true;
-
-  SendReport();
-}
-
-void FeedbackData::OnCompressFileComplete(
-    scoped_ptr<std::string> compressed_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (compressed_file.get()) {
-    attached_filedata_ = compressed_file.Pass();
-    attached_filename_.append(kZipExt);
-    attached_file_compression_complete_ = true;
-  } else {
-    attached_filename_.clear();
-    attached_filedata_.reset(NULL);
-  }
-
+  pending_op_count_--;
   SendReport();
 }
 
 bool FeedbackData::IsDataComplete() {
-  return (!sys_info_.get() || syslogs_compression_complete_) &&
-      (!histograms_.get() || histograms_compression_complete_) &&
-      (!attached_filedata_.get() || attached_file_compression_complete_) &&
-      !trace_id_ &&
-      feedback_page_data_complete_;
+  return pending_op_count_ == 0;
 }
 
 void FeedbackData::SendReport() {

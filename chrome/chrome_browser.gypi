@@ -402,6 +402,8 @@
         'browser/browsing_data/browsing_data_cookie_helper.h',
         'browser/browsing_data/cookies_tree_model.cc',
         'browser/browsing_data/cookies_tree_model.h',
+        'browser/feedback/feedback_common.cc',
+        'browser/feedback/feedback_common.h',
         'browser/feedback/feedback_data.cc',
         'browser/feedback/feedback_data.h',
         'browser/feedback/feedback_profile_observer.cc',

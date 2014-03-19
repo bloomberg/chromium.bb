@@ -68,42 +68,12 @@ GURL GetTargetTabUrl(int session_id, int index) {
   return GURL();
 }
 
-const char kPngMimeType[] = "image/png";
-const char kArbitraryMimeType[] = "application/octet-stream";
-const char kHistogramsAttachmentName[] = "histograms.zip";
-const char kLogsAttachmentName[] = "system_logs.zip";
 
 #if defined(OS_CHROMEOS)
 const int kChromeOSProductId = 208;
 #else
 const int kChromeBrowserProductId = 237;
 #endif
-
-void AddFeedbackData(userfeedback::ExtensionSubmit* feedback_data,
-                     const std::string& key, const std::string& value) {
-  // Don't bother with empty keys or values
-  if (key == "" || value == "") return;
-  // Create log_value object and add it to the web_data object
-  userfeedback::ProductSpecificData log_value;
-  log_value.set_key(key);
-  log_value.set_value(value);
-  userfeedback::WebData* web_data = feedback_data->mutable_web_data();
-  *(web_data->add_product_specific_data()) = log_value;
-}
-
-// Adds data as an attachment to feedback_data if the data is non-empty.
-void AddAttachment(userfeedback::ExtensionSubmit* feedback_data,
-                   const char* name,
-                   std::string* data) {
-  if (data == NULL || data->empty())
-    return;
-
-  userfeedback::ProductSpecificBinaryData* attachment =
-      feedback_data->add_product_specific_binary_data();
-  attachment->set_mime_type(kArbitraryMimeType);
-  attachment->set_name(name);
-  attachment->set_data(*data);
-}
 
 }  // namespace
 
@@ -151,67 +121,15 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   }
 
   userfeedback::ExtensionSubmit feedback_data;
-  // Unused field, needs to be 0 though.
-  feedback_data.set_type_id(0);
-
-  userfeedback::CommonData* common_data = feedback_data.mutable_common_data();
-  // We're not using gaia ids, we're using the e-mail field instead.
-  common_data->set_gaia_id(0);
-  common_data->set_user_email(data->user_email());
-  common_data->set_description(data->description());
+  data->PrepareReport(&feedback_data);
 
   std::string chrome_locale = g_browser_process->GetApplicationLocale();
-  common_data->set_source_description_language(chrome_locale);
 
-  userfeedback::WebData* web_data = feedback_data.mutable_web_data();
-  web_data->set_url(data->page_url());
-  web_data->mutable_navigator()->set_user_agent(GetUserAgent());
+  feedback_data.mutable_common_data()->set_source_description_language(
+      chrome_locale);
 
-  gfx::Rect screen_size;
-  if (data->sys_info()) {
-    for (FeedbackData::SystemLogsMap::const_iterator i =
-        data->sys_info()->begin(); i != data->sys_info()->end(); ++i) {
-      if (FeedbackData::BelowCompressionThreshold(i->second))
-        AddFeedbackData(&feedback_data, i->first, i->second);
-    }
-
-    AddAttachment(&feedback_data, kLogsAttachmentName, data->compressed_logs());
-  }
-
-  if (data->histograms()) {
-    AddAttachment(&feedback_data,
-                  kHistogramsAttachmentName,
-                  data->compressed_histograms());
-  }
-
-  if (!data->attached_filename().empty()) {
-    // We need to use the UTF8Unsafe methods here to accomodate Windows, which
-    // uses wide strings to store filepaths.
-    std::string name = base::FilePath::FromUTF8Unsafe(
-        data->attached_filename()).BaseName().AsUTF8Unsafe();
-    AddAttachment(&feedback_data, name.c_str(), data->attached_filedata());
-  }
-
-  // NOTE: Screenshot needs to be processed after system info since we'll get
-  // the screenshot dimensions from system info.
-  if (data->image() && data->image()->size()) {
-    userfeedback::PostedScreenshot screenshot;
-    screenshot.set_mime_type(kPngMimeType);
-
-    // Set that we 'have' dimensions of the screenshot. These dimensions are
-    // ignored by the server but are a 'required' field in the protobuf.
-    userfeedback::Dimensions dimensions;
-    dimensions.set_width(0.0);
-    dimensions.set_height(0.0);
-
-    *(screenshot.mutable_dimensions()) = dimensions;
-    screenshot.set_binary_content(*data->image());
-
-    *(feedback_data.mutable_screenshot()) = screenshot;
-  }
-
-  if (data->category_tag().size())
-    feedback_data.set_bucket(data->category_tag());
+  feedback_data.mutable_web_data()->mutable_navigator()->set_user_agent(
+      GetUserAgent());
 
   // Set whether we're reporting from ChromeOS or Chrome on another platform.
   userfeedback::ChromeData chrome_data;
@@ -266,6 +184,6 @@ bool ZipString(const base::FilePath& filename,
   base::DeleteFile(zip_file, false);
 
   return succeed;
-}
+}  // feedback_util
 
 }  // namespace feedback_util
