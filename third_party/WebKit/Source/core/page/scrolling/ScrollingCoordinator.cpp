@@ -29,13 +29,19 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/WheelController.h"
 #include "core/html/HTMLElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
+#include "core/plugins/PluginView.h"
+#include "core/rendering/RenderGeometryMap.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 #include "platform/exported/WebScrollbarImpl.h"
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
@@ -47,11 +53,6 @@
 #endif
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "core/plugins/PluginView.h"
-#include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayerPositionConstraint.h"
@@ -160,8 +161,15 @@ void ScrollingCoordinator::updateAfterCompositingChange()
 
     // The mainFrame view doesn't get included in the FrameTree below, so we
     // update its size separately.
-    if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : 0)
+    if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : 0) {
         scrollingWebLayer->setBounds(frameView->contentsSize());
+        // If there is a fullscreen element, set the scroll clip layer to 0 so main frame won't scroll.
+        Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*(m_page->mainFrame()->document()));
+        if (fullscreenElement)
+            scrollingWebLayer->setScrollClipLayer(0);
+        else
+            scrollingWebLayer->setScrollClipLayer(toWebLayer(frameView->layerForContainer()));
+    }
 
     const FrameTree& tree = m_page->mainFrame()->tree();
     for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {

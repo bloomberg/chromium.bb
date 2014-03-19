@@ -60,6 +60,7 @@
 #include "WebViewImpl.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -126,6 +127,8 @@ public:
     {
         return m_layerTreeView.get();
     }
+
+    virtual bool enterFullScreen() OVERRIDE { return true; }
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
@@ -5295,6 +5298,40 @@ TEST_F(WebFrameTest, FrameViewSetFrameRect)
     EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 200, 200), frameView->frameRect());
     frameView->setFrameRect(WebCore::IntRect(100, 100, 200, 200));
     EXPECT_EQ_RECT(WebCore::IntRect(100, 100, 200, 200), frameView->frameRect());
+}
+
+TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
+{
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("fullscreen_div.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, &configueCompositingWebView);
+    webViewImpl->settings()->setFullScreenEnabled(true);
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    Document* document = toWebFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    WebCore::UserGestureIndicator gesture(WebCore::DefinitelyProcessingUserGesture);
+    Element* divFullscreen = document->getElementById("div1");
+    divFullscreen->webkitRequestFullscreen();
+    webViewImpl->willEnterFullScreen();
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->layout();
+
+    // Verify that the main frame is not scrollable.
+    ASSERT_TRUE(WebCore::FullscreenElementStack::isFullScreen(*document));
+    WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
+    ASSERT_FALSE(webScrollLayer->scrollable());
+
+    // Verify that the main frame is scrollable upon exiting fullscreen.
+    webViewImpl->willExitFullScreen();
+    webViewImpl->didExitFullScreen();
+    webViewImpl->layout();
+    ASSERT_FALSE(WebCore::FullscreenElementStack::isFullScreen(*document));
+    webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
+    ASSERT_TRUE(webScrollLayer->scrollable());
 }
 
 } // namespace
