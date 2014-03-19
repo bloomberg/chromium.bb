@@ -529,6 +529,9 @@
       'enable_enhanced_bookmarks%': 0,
       'enable_hangout_services_extension%': 0,
 
+       # Enable the Syzygy optimization step.
+      'syzygy_optimize%': 0,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -958,6 +961,7 @@
     'asan%': '<(asan)',
     'asan_coverage%': '<(asan_coverage)',
     'syzyasan%': '<(syzyasan)',
+    'syzygy_optimize%': '<(syzygy_optimize)',
     'lsan%': '<(lsan)',
     'msan%': '<(msan)',
     'msan_blacklist%': '<(msan_blacklist)',
@@ -1307,6 +1311,13 @@
     'video_hole%': 0,
 
     'conditions': [
+      # Enable the Syzygy optimization step for the official builds.
+      ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
+        'syzygy_optimize%': 1,
+      }, {
+        'syzygy_optimize%': 0,
+      }],
+
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
       # platforms except Windows, Mac and iOS.

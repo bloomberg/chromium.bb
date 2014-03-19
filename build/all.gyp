@@ -236,7 +236,8 @@
       'target_name': 'All_syzygy',
       'type': 'none',
       'conditions': [
-        ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
+        ['OS=="win" and fastbuild==0 and target_arch=="ia32" and '
+            '(syzyasan==1 or syzygy_optimize==1)', {
           'dependencies': [
             '../chrome/installer/mini_installer_syzygy.gyp:*',
           ],
@@ -679,7 +680,7 @@
                 '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
               ],
             }], # internal_filter_fuzzer
-            ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
+            ['OS=="win" and fastbuild==0 and target_arch=="ia32" and syzyasan==1', {
               'dependencies': [
                 '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
                 '../content/content_shell_and_tests.gyp:content_shell_syzyasan',
