@@ -1,3 +1,51 @@
+Overview of changes leading to 0.9.27
+Tuesday, March 18, 2014
+=====================================
+
+- Don't use "register" storage class specifier
+- Wrap definition of free_langs() with HAVE_ATEXIT
+- Add coretext_aat shaper and hb_coretext_face_create() constructor
+- If HAVE_ICU_BUILTIN is defined, use hb-icu Unicode callbacks
+- Add Myanmar test case from OpenType Myanmar spec
+- Only do fallback Hebrew composition if no GPOS 'mark' available
+- Allow bootstrapping without gtk-doc
+- Use AM_MISSING_PROG for ragel and git
+- Typo in ucdn's Makefile.am
+- Improve MemoryBarrier() implementation
+
+
+Overview of changes leading to 0.9.26
+Thursday, January 30, 2014
+=====================================
+
+- Misc fixes.
+- Fix application of 'rtlm' feature.
+- Automatically apply frac/numr/dnom around U+2044 FRACTION SLASH.
+- New header: hb-ot-shape.h
+- Uniscribe: fix scratch-buffer accounting.
+- Reorder Tai Tham SAKOT to after tone-marks.
+- Add Hangul shaper.
+- New files:
+  hb-ot-shape-complex-hangul.cc
+  hb-ot-shape-complex-hebrew.cc
+  hb-ot-shape-complex-tibetan.cc
+- Disable 'cswh' feature in Arabic shaper.
+- Coretext: better handle surrogate pairs.
+- Add HB_TAG_MAX and _HB_SCRIPT_MAX_VALUE.
+
+
+Overview of changes leading to 0.9.25
+Wednesday, December 4, 2013
+=====================================
+
+- Myanmar shaper improvements.
+- Avoid font fallback in CoreText backend.
+- Additional OpenType language tag mappiongs.
+- More aggressive shape-plan caching.
+- Build with / require automake 1.13.
+- Build with libtool 2.4.2.418 alpha to support ppc64le.
+
+
 Overview of changes leading to 0.9.24
 Tuesday, November 13, 2013
 =====================================

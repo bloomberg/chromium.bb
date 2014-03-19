@@ -28,7 +28,6 @@
 #define HB_SHAPE_PLAN_PRIVATE_HH
 
 #include "hb-private.hh"
-#include "hb-shape-plan.h"
 #include "hb-object-private.hh"
 #include "hb-shaper-private.hh"
 
@@ -44,6 +43,9 @@ struct hb_shape_plan_t
 
   hb_shape_func_t *shaper_func;
   const char *shaper_name;
+
+  hb_feature_t *user_features;
+  unsigned int num_user_features;
 
   struct hb_shaper_data_t shaper_data;
 };

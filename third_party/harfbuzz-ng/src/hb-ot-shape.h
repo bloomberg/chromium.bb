@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011  Google, Inc.
+ * Copyright © 2013  Red Hat, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,46 +21,34 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
- * Google Author(s): Behdad Esfahbod
+ * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
-#error "Include <hb.h> instead."
-#endif
+#ifndef HB_OT_SHAPE_H
+#define HB_OT_SHAPE_H
+#define HB_OT_SHAPE_H_IN
 
-#ifndef HB_VERSION_H
-#define HB_VERSION_H
+#include "hb.h"
 
-#include "hb-common.h"
+#include "hb-ot-layout.h"
+#include "hb-ot-tag.h"
 
 HB_BEGIN_DECLS
 
-
-#define HB_VERSION_MAJOR 0
-#define HB_VERSION_MINOR 9
-#define HB_VERSION_MICRO 27
-
-#define HB_VERSION_STRING "0.9.27"
-
-#define HB_VERSION_CHECK(major,minor,micro) \
-	((major)*10000+(minor)*100+(micro) >= \
-	 HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)
-
+/* TODO port to shape-plan / set. */
+void
+hb_ot_shape_glyphs_closure (hb_font_t          *font,
+                hb_buffer_t        *buffer,
+                const hb_feature_t *features,
+                unsigned int        num_features,
+                hb_set_t           *glyphs);
 
 void
-hb_version (unsigned int *major,
-	    unsigned int *minor,
-	    unsigned int *micro);
-
-const char *
-hb_version_string (void);
-
-hb_bool_t
-hb_version_check (unsigned int major,
-		  unsigned int minor,
-		  unsigned int micro);
-
+hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
+                hb_tag_t         table_tag,
+                hb_set_t        *lookup_indexes /* OUT */);
 
 HB_END_DECLS
 
-#endif /* HB_VERSION_H */
+#undef HB_OT_SHAPE_H_IN
+#endif /* HB_OT_SHAPE_H */
