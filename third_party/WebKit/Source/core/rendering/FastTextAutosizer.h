@@ -212,7 +212,6 @@ private:
     float widthFromBlock(const RenderBlock*);
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float);
-    bool mightBeWiderOrNarrowerDescendant(const RenderBlock*);
     bool isWiderOrNarrowerDescendant(Cluster*);
     bool isLayoutRoot(const RenderBlock*) const;
 
