@@ -8,7 +8,13 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/common/fileapi/file_system_util.h"
+
+#define MAKE_PATH(path)                                       \
+  base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath( \
+      base::FilePath(FILE_PATH_LITERAL(path))))
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -147,6 +153,70 @@ class MultihopSyncTask : public SequentialSyncTask {
   base::WeakPtrFactory<MultihopSyncTask> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MultihopSyncTask);
+};
+
+class BackgroundTask : public SyncTask {
+ public:
+  struct Stats {
+    int64 running_background_task;
+    int64 finished_task;
+    int64 max_parallel_task;
+
+    Stats()
+        : running_background_task(0),
+          finished_task(0),
+          max_parallel_task(0) {}
+  };
+
+  BackgroundTask(const std::string& app_id,
+                 const base::FilePath& path,
+                 Stats* stats)
+      : app_id_(app_id),
+        path_(path),
+        stats_(stats),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~BackgroundTask() {
+  }
+
+  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE {
+    scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+    blocking_factor->app_id = app_id_;
+    blocking_factor->paths.push_back(path_);
+
+    SyncTaskManager::MoveTaskToBackground(
+        token.Pass(), blocking_factor.Pass(),
+        base::Bind(&BackgroundTask::RunAsBackgroundTask,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void RunAsBackgroundTask(scoped_ptr<SyncTaskToken> token) {
+    ++(stats_->running_background_task);
+    if (stats_->max_parallel_task < stats_->running_background_task)
+      stats_->max_parallel_task = stats_->running_background_task;
+
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundTask::CompleteTask,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&token)));
+  }
+
+  void CompleteTask(scoped_ptr<SyncTaskToken> token) {
+    ++(stats_->finished_task);
+    --(stats_->running_background_task);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
+  }
+
+  std::string app_id_;
+  base::FilePath path_;
+  Stats* stats_;
+
+  base::WeakPtrFactory<BackgroundTask> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundTask);
 };
 
 // Arbitrary non-default status values for testing.
@@ -320,6 +390,84 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
   EXPECT_EQ(kStatus4, callback_status4);
   EXPECT_EQ(kStatus5, callback_status5);
   EXPECT_EQ(5, callback_count);
+}
+
+TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
+  base::MessageLoop message_loop;
+  SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+  task_manager.Initialize(SYNC_STATUS_OK);
+
+  SyncStatusCode status = SYNC_STATUS_FAILED;
+  BackgroundTask::Stats stats;
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/hoge/fuga"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/hoge"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/hoge/fuga/piyo"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  message_loop.RunUntilIdle();
+
+  EXPECT_EQ(SYNC_STATUS_OK, status);
+  EXPECT_EQ(0, stats.running_background_task);
+  EXPECT_EQ(3, stats.finished_task);
+  EXPECT_EQ(1, stats.max_parallel_task);
+}
+
+TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
+  base::MessageLoop message_loop;
+  SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+  task_manager.Initialize(SYNC_STATUS_OK);
+
+  SyncStatusCode status = SYNC_STATUS_FAILED;
+  BackgroundTask::Stats stats;
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/hoge"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/fuga"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/piyo"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  message_loop.RunUntilIdle();
+
+  EXPECT_EQ(SYNC_STATUS_OK, status);
+  EXPECT_EQ(0, stats.running_background_task);
+  EXPECT_EQ(3, stats.finished_task);
+  EXPECT_EQ(3, stats.max_parallel_task);
 }
 
 }  // namespace drive_backend

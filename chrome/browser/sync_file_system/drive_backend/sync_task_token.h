@@ -15,33 +15,54 @@ namespace sync_file_system {
 namespace drive_backend {
 
 class SyncTaskManager;
+struct BlockingFactor;
 
 // Represents a running sequence of SyncTasks.  Owned by a callback chain that
 // should run exclusively, and held by SyncTaskManager when no task is running.
 class SyncTaskToken {
  public:
-  explicit SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager);
+  static const int64 kForegroundTaskTokenID;
+  static const int64 kMinimumBackgroundTaskTokenID;
+
+  static scoped_ptr<SyncTaskToken> CreateForForegroundTask(
+      const base::WeakPtr<SyncTaskManager>& manager);
+  static scoped_ptr<SyncTaskToken> CreateForBackgroundTask(
+      const base::WeakPtr<SyncTaskManager>& manager,
+      int64 token_id,
+      scoped_ptr<BlockingFactor> blocking_factor);
 
   void UpdateTask(const tracked_objects::Location& location,
                   const SyncStatusCallback& callback);
 
   const tracked_objects::Location& location() const { return location_; }
-  ~SyncTaskToken();
-
-  SyncTaskManager* manager() { return manager_.get(); }
-  const SyncStatusCallback& callback() { return callback_; }
-  void clear_callback() { callback_.Reset(); }
+  virtual ~SyncTaskToken();
 
   static SyncStatusCallback WrapToCallback(scoped_ptr<SyncTaskToken> token);
 
+  SyncTaskManager* manager() { return manager_.get(); }
+
+  const SyncStatusCallback& callback() const { return callback_; }
+  void clear_callback() { callback_.Reset(); }
+
+  const BlockingFactor* blocking_factor() const;
+  void clear_blocking_factor();
+
+  int64 token_id() const { return token_id_; }
+
  private:
+  SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
+                int64 token_id,
+                scoped_ptr<BlockingFactor> blocking_factor);
+
   base::WeakPtr<SyncTaskManager> manager_;
   tracked_objects::Location location_;
+  int64 token_id_;
   SyncStatusCallback callback_;
+
+  scoped_ptr<BlockingFactor> blocking_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskToken);
 };
-
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

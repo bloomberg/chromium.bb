@@ -53,7 +53,8 @@ bool SyncTaskManager::PendingTaskComparator::operator()(
 SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client)
     : client_(client),
-      pending_task_seq_(0) {
+      pending_task_seq_(0),
+      task_token_seq_(SyncTaskToken::kMinimumBackgroundTaskTokenID) {
 }
 
 SyncTaskManager::~SyncTaskManager() {
@@ -63,7 +64,7 @@ SyncTaskManager::~SyncTaskManager() {
 
 void SyncTaskManager::Initialize(SyncStatusCode status) {
   DCHECK(!token_);
-  NotifyTaskDone(make_scoped_ptr(new SyncTaskToken(AsWeakPtr())),
+  NotifyTaskDone(SyncTaskToken::CreateForForegroundTask(AsWeakPtr()),
                  status);
 }
 
@@ -125,20 +126,53 @@ void SyncTaskManager::NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
     manager->NotifyTaskDoneBody(token.Pass(), status);
 }
 
-bool SyncTaskManager::HasClient() const {
-  return !!client_;
+// static
+void SyncTaskManager::MoveTaskToBackground(
+    scoped_ptr<SyncTaskToken> token,
+    scoped_ptr<BlockingFactor> blocking_factor,
+    const Continuation& continuation) {
+  DCHECK(token);
+
+  SyncTaskManager* manager = token->manager();
+  if (!manager)
+    return;
+  manager->MoveTaskToBackgroundBody(token.Pass(), blocking_factor.Pass(),
+                                    continuation);
+}
+
+bool SyncTaskManager::IsRunningTask(int64 token_id) const {
+  // If the client is gone, all task should be aborted.
+  if (!client_)
+    return false;
+
+  if (token_id == SyncTaskToken::kForegroundTaskTokenID)
+    return true;
+
+  return ContainsKey(running_background_task_, token_id);
 }
 
 void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
                                          SyncStatusCode status) {
   DCHECK(token);
 
-  token_ = token.Pass();
-  scoped_ptr<SyncTask> task = running_task_.Pass();
-
   DVLOG(3) << "NotifyTaskDone: " << "finished with status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token_->location().ToString();
+
+  if (token->blocking_factor()) {
+    dependency_manager_.Erase(*token->blocking_factor());
+    token->clear_blocking_factor();
+  }
+
+  scoped_ptr<SyncTask> task;
+  SyncStatusCallback callback = token->callback();
+  token->clear_callback();
+  if (token->token_id() == SyncTaskToken::kForegroundTaskTokenID) {
+    token_ = token.Pass();
+    task = running_task_.Pass();
+  } else {
+    task = running_background_task_.take_and_erase(token->token_id());
+  }
 
   bool task_used_network = false;
   if (task)
@@ -147,21 +181,48 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
   if (client_)
     client_->NotifyLastOperationStatus(status, task_used_network);
 
-  if (!token_->callback().is_null()) {
-    SyncStatusCallback callback = token_->callback();
-    token_->clear_callback();
+  if (!callback.is_null())
     callback.Run(status);
-  }
 
-  if (!pending_tasks_.empty()) {
-    base::Closure closure = pending_tasks_.top().task;
-    pending_tasks_.pop();
-    closure.Run();
+  StartNextTask();
+}
+
+void SyncTaskManager::MoveTaskToBackgroundBody(
+    scoped_ptr<SyncTaskToken> token,
+    scoped_ptr<BlockingFactor> blocking_factor,
+    const Continuation& continuation) {
+  if (!dependency_manager_.Insert(*blocking_factor)) {
+    DCHECK(!running_background_task_.empty());
+
+    // Wait for NotifyTaskDone to release a |blocking_factor|.
+    pending_backgrounding_task_ =
+        base::Bind(&SyncTaskManager::MoveTaskToBackground,
+                   base::Passed(&token), base::Passed(&blocking_factor),
+                   continuation);
     return;
   }
 
-  if (client_)
-    client_->MaybeScheduleNextTask();
+  tracked_objects::Location from_here = token->location();
+  SyncStatusCallback callback = token->callback();
+  token->clear_callback();
+
+  scoped_ptr<SyncTaskToken> background_task_token =
+      SyncTaskToken::CreateForBackgroundTask(
+          AsWeakPtr(), task_token_seq_++, blocking_factor.Pass());
+  background_task_token->UpdateTask(from_here, callback);
+
+  NotifyTaskBackgrounded(token.Pass(), *background_task_token);
+  continuation.Run(background_task_token.Pass());
+}
+
+void SyncTaskManager::NotifyTaskBackgrounded(
+    scoped_ptr<SyncTaskToken> foreground_task_token,
+    const SyncTaskToken& background_task_token) {
+  token_ = foreground_task_token.Pass();
+  running_background_task_.set(background_task_token.token_id(),
+                               running_task_.Pass());
+
+  StartNextTask();
 }
 
 scoped_ptr<SyncTaskToken> SyncTaskManager::GetToken(
@@ -183,6 +244,25 @@ void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
   DCHECK(!running_task_);
   running_task_ = task.Pass();
   running_task_->Run(token.Pass());
+}
+
+void SyncTaskManager::StartNextTask() {
+  if (!pending_backgrounding_task_.is_null()) {
+    base::Closure closure = pending_backgrounding_task_;
+    pending_backgrounding_task_.Reset();
+    closure.Run();
+    return;
+  }
+
+  if (!pending_tasks_.empty()) {
+    base::Closure closure = pending_tasks_.top().task;
+    pending_tasks_.pop();
+    closure.Run();
+    return;
+  }
+
+  if (client_)
+    client_->MaybeScheduleNextTask();
 }
 
 }  // namespace drive_backend

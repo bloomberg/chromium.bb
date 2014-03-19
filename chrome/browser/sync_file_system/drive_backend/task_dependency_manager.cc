@@ -77,7 +77,8 @@ bool TaskDependencyManager::Insert(const BlockingFactor& blocking_factor) {
   if (!InsertAllOrNone(blocking_factor.file_ids, &file_ids_))
     goto fail_on_file_id_insertion;
 
-  if (!InsertPaths(blocking_factor.paths,
+  if (!blocking_factor.app_id.empty() &&
+      !InsertPaths(blocking_factor.paths,
                    &paths_by_app_id_[blocking_factor.app_id])) {
     if (paths_by_app_id_[blocking_factor.app_id].empty())
       paths_by_app_id_.erase(blocking_factor.app_id);
@@ -96,10 +97,12 @@ bool TaskDependencyManager::Insert(const BlockingFactor& blocking_factor) {
 }
 
 void TaskDependencyManager::Erase(const BlockingFactor& blocking_factor) {
-  EraseContainer(blocking_factor.paths,
-                 &paths_by_app_id_[blocking_factor.app_id]);
-  if (paths_by_app_id_[blocking_factor.app_id].empty())
-    paths_by_app_id_.erase(blocking_factor.app_id);
+  if (!blocking_factor.app_id.empty()) {
+    EraseContainer(blocking_factor.paths,
+                   &paths_by_app_id_[blocking_factor.app_id]);
+    if (paths_by_app_id_[blocking_factor.app_id].empty())
+      paths_by_app_id_.erase(blocking_factor.app_id);
+  }
 
   EraseContainer(blocking_factor.file_ids, &file_ids_);
   EraseContainer(blocking_factor.tracker_ids, &tracker_ids_);
