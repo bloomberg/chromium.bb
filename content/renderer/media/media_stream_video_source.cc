@@ -336,10 +336,10 @@ void MediaStreamVideoSource::InitAdapter() {
   // It needs the constraints so that constraints used by a PeerConnection
   // will be available such as constraints for CPU adaptation and a tab
   // capture.
-  bool is_screeencast =
+  bool is_screencast =
       device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
-  capture_adapter_ = factory_->CreateVideoCapturer(is_screeencast);
+  capture_adapter_ = factory_->CreateVideoCapturer(is_screencast);
   capture_adapter_->SetRequestedFormat(current_format_);
   adapter_ = factory_->CreateVideoSource(capture_adapter_,
                                          current_constraints_);

@@ -105,6 +105,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // |params|. When the source has started or the source failed to start
   // OnStartDone must be called. An implementation must call
   // DeliverVideoFrame with the captured frames.
+  // TODO(perkj): pass a VideoCaptureFormats instead of VideoCaptureParams for
+  // subclasses to customize.
   virtual void StartSourceImpl(const media::VideoCaptureParams& params) = 0;
   void OnStartDone(bool success);
 

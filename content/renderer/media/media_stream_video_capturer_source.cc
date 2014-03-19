@@ -36,14 +36,16 @@ namespace content {
 VideoCapturerDelegate::VideoCapturerDelegate(
     const StreamDeviceInfo& device_info)
     : session_id_(device_info.session_id),
-      capture_engine_(
-          RenderThreadImpl::current()->video_capture_impl_manager()
-              ->UseDevice(device_info.session_id)),
       is_screen_cast_(device_info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
                       device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE),
       got_first_frame_(false) {
   DVLOG(3) << "VideoCapturerDelegate::ctor";
-  DCHECK(capture_engine_);
+  // RenderThreadImpl::current() may be NULL in testing.
+  if (RenderThreadImpl::current()) {
+    capture_engine_ = RenderThreadImpl::current()->video_capture_impl_manager()
+              ->UseDevice(device_info.session_id);
+    DCHECK(capture_engine_);
+  }
   message_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
@@ -199,8 +201,13 @@ void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const media::VideoCaptureParams& params) {
+  media::VideoCaptureParams new_params(params);
+  if (device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+      device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    new_params.allow_resolution_change = true;
+  }
   delegate_->StartDeliver(
-      params,
+      new_params,
       base::Bind(&MediaStreamVideoCapturerSource::DeliverVideoFrame,
                  base::Unretained(this)),
       base::Bind(&MediaStreamVideoCapturerSource::OnStartDone,

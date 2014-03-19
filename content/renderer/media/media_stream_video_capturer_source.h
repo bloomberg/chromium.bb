@@ -18,7 +18,7 @@ class VideoCaptureHandle;
 // VideoCapturerDelegate is a delegate used by MediaStreamVideoCapturerSource
 // for local video capturer. It uses VideoCaptureImplManager to start / stop
 // and receive I420 frames from Chrome's video capture implementation.
-class VideoCapturerDelegate
+class CONTENT_EXPORT VideoCapturerDelegate
     : public media::VideoCapture::EventHandler,
       public base::RefCountedThreadSafe<VideoCapturerDelegate> {
  public:
@@ -68,6 +68,7 @@ class VideoCapturerDelegate
 
  private:
   friend class base::RefCountedThreadSafe<VideoCapturerDelegate>;
+  friend class MockVideoCapturerDelegate;
 
   virtual ~VideoCapturerDelegate();
 
@@ -98,7 +99,8 @@ class VideoCapturerDelegate
   DISALLOW_COPY_AND_ASSIGN(VideoCapturerDelegate);
 };
 
-class MediaStreamVideoCapturerSource : public MediaStreamVideoSource {
+class CONTENT_EXPORT MediaStreamVideoCapturerSource
+    : public MediaStreamVideoSource {
  public:
   MediaStreamVideoCapturerSource(
       const StreamDeviceInfo& device_info,
