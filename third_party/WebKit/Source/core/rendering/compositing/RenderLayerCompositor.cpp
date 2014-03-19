@@ -1338,8 +1338,7 @@ bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
-    // Before dumping the layer tree, finish any pending compositing update.
-    updateCompositingLayers();
+    ASSERT(m_renderView.document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     if (!m_rootContentLayer)
         return String();

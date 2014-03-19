@@ -1654,7 +1654,9 @@ String Internals::layerTreeAsText(Document* document, ExceptionState& exceptionS
 
 String Internals::elementLayerTreeAsText(Element* element, ExceptionState& exceptionState) const
 {
-    DisableCompositingQueryAsserts disabler;
+    FrameView* frameView = element->document().view();
+    frameView->updateLayoutAndStyleForPainting();
+
     return elementLayerTreeAsText(element, 0, exceptionState);
 }
 
@@ -1778,6 +1780,8 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionS
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
         return String();
     }
+
+    document->view()->updateLayoutAndStyleForPainting();
 
     return document->frame()->layerTreeAsText(flags);
 }

@@ -425,10 +425,10 @@ void LocalFrame::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigne
 
 String LocalFrame::layerTreeAsText(unsigned flags) const
 {
-    document()->updateLayout();
-
     if (!contentRenderer())
         return String();
+
+    ASSERT(document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     return contentRenderer()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
