@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center.h"

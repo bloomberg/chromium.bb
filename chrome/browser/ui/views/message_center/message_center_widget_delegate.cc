@@ -7,6 +7,7 @@
 #include <complex>
 
 #include "chrome/browser/ui/views/message_center/message_center_frame_view.h"
+#include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/screen.h"
