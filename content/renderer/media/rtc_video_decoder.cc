@@ -651,6 +651,8 @@ void RTCVideoDecoder::ReusePictureBuffer(
   size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
   DCHECK(num_erased);
 
+  factories_->WaitSyncPoint(mailbox_holder->sync_point);
+
   std::map<int32, media::PictureBuffer>::iterator it =
       assigned_picture_buffers_.find(picture_buffer_id);
 
@@ -662,8 +664,6 @@ void RTCVideoDecoder::ReusePictureBuffer(
     dismissed_picture_buffers_.erase(it);
     return;
   }
-
-  factories_->WaitSyncPoint(mailbox_holder->sync_point);
 
   vda_->ReusePictureBuffer(picture_buffer_id);
 }

@@ -515,6 +515,8 @@ void GpuVideoDecoder::ReusePictureBuffer(
   size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
   DCHECK(num_erased);
 
+  factories_->WaitSyncPoint(mailbox_holder->sync_point);
+
   PictureBufferMap::iterator it =
       assigned_picture_buffers_.find(picture_buffer_id);
 
@@ -527,7 +529,6 @@ void GpuVideoDecoder::ReusePictureBuffer(
     return;
   }
 
-  factories_->WaitSyncPoint(mailbox_holder->sync_point);
   ++available_pictures_;
 
   vda_->ReusePictureBuffer(picture_buffer_id);
