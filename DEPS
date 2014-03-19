@@ -57,7 +57,7 @@ vars = {
   # and V8 without interference from each other.
   "webrtc_revision": "5699",
   "jsoncpp_revision": "248",
-  "nss_revision": "256695",
+  "nss_revision": "257452",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
