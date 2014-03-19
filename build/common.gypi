@@ -3077,14 +3077,9 @@
             ],
             'cflags': [
               '-O>(debug_optimize)',
-              '-gdwarf-4',
+              '-g',
             ],
             'conditions' : [
-              ['fastbuild==0', {
-                'cflags': [
-                  '-g3',
-                ],
-              }],
               ['OS=="android"', {
                 'ldflags': [
                   # Only link with needed input sections. This is to avoid
