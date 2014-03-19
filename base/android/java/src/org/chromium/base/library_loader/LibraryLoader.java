@@ -41,14 +41,6 @@ public class LibraryLoader {
     // library_loader_hooks.cc).
     private static boolean sInitialized = false;
 
-    // TODO(cjhopman): Remove this once it's unused.
-    /**
-     * Doesn't do anything.
-     */
-    @Deprecated
-    public static void setLibraryToLoad(String library) {
-    }
-
     /**
      *  This method blocks until the library is fully loaded and initialized.
      */
@@ -87,7 +79,6 @@ public class LibraryLoader {
         }
     }
 
-
     /**
      * initializes the library here and now: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
@@ -101,7 +92,6 @@ public class LibraryLoader {
         }
     }
 
-
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
     private static void loadAlreadyLocked() throws ProcessInitException {
         try {
@@ -111,23 +101,22 @@ public class LibraryLoader {
                 long startTime = SystemClock.uptimeMillis();
                 boolean useChromiumLinker = Linker.isUsed();
 
-                if (useChromiumLinker)
-                    Linker.prepareLibraryLoad();
+                if (useChromiumLinker) Linker.prepareLibraryLoad();
 
                 for (String library : NativeLibraries.LIBRARIES) {
                     Log.i(TAG, "Loading: " + library);
-                    if (useChromiumLinker)
+                    if (useChromiumLinker) {
                         Linker.loadLibrary(library);
-                    else
+                    } else {
                         System.loadLibrary(library);
+                    }
                 }
-                if (useChromiumLinker)
-                    Linker.finishLibraryLoad();
+                if (useChromiumLinker) Linker.finishLibraryLoad();
                 long stopTime = SystemClock.uptimeMillis();
                 Log.i(TAG, String.format("Time to load native libraries: %d ms (timestamps %d-%d)",
-                                         stopTime - startTime,
-                                         startTime % 10000,
-                                         stopTime % 10000));
+                        stopTime - startTime,
+                        startTime % 10000,
+                        stopTime % 10000));
                 sLoaded = true;
             }
         } catch (UnsatisfiedLinkError e) {
@@ -142,9 +131,7 @@ public class LibraryLoader {
         if (!NativeLibraries.VERSION_NUMBER.equals(nativeGetVersionNumber())) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
         }
-
     }
-
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     private static void initializeAlreadyLocked(String[] initCommandLine)
@@ -163,9 +150,10 @@ public class LibraryLoader {
         CommandLine.enableNativeProxy();
         TraceEvent.setEnabledToMatchNative();
         // Record histogram for the Chromium linker.
-        if (Linker.isUsed())
+        if (Linker.isUsed()) {
             nativeRecordChromiumAndroidLinkerHistogram(Linker.loadAtFixedAddressFailed(),
-                                                    SysUtils.isLowEndDevice());
+                    SysUtils.isLowEndDevice());
+        }
     }
 
     // Only methods needed before or during normal JNI registration are during System.OnLoad.
@@ -180,8 +168,8 @@ public class LibraryLoader {
     // i.e. whether the library failed to be loaded at a fixed address, and
     // whether the device is 'low-memory'.
     private static native void nativeRecordChromiumAndroidLinkerHistogram(
-         boolean loadedAtFixedAddressFailed,
-         boolean isLowMemoryDevice);
+            boolean loadedAtFixedAddressFailed,
+            boolean isLowMemoryDevice);
 
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.
