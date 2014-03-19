@@ -31,10 +31,4 @@ specific_include_rules = {
   'request_autocomplete_manager_unittest.cc': [
     "!chrome/test/base/chrome_render_view_host_test_harness.h",
   ],
-  'wallet_client_unittest.cc': [
-    "!chrome/test/base/testing_profile.h"
-  ],
-  'wallet_signin_helper_unittest.cc': [
-    "!chrome/test/base/testing_profile.h"
-  ],
 }

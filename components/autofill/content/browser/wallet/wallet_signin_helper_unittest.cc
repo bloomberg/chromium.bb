@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,10 +49,14 @@ class MockWalletSigninHelperDelegate : public WalletSigninHelperDelegate {
 
 class WalletSigninHelperTest : public testing::Test {
  protected:
+  WalletSigninHelperTest()
+      : request_context_(new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current())) {}
+  virtual ~WalletSigninHelperTest() {}
+
   virtual void SetUp() OVERRIDE {
-    signin_helper_.reset(new WalletSigninHelper(
-        &mock_delegate_,
-        browser_context_.GetRequestContext()));
+    signin_helper_.reset(
+        new WalletSigninHelper(&mock_delegate_, request_context_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -100,7 +105,7 @@ class WalletSigninHelperTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<WalletSigninHelper> signin_helper_;
   MockWalletSigninHelperDelegate mock_delegate_;
-  TestingProfile browser_context_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 
  private:
   net::TestURLFetcherFactory factory_;
@@ -140,7 +145,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
   net::CookieList cookie_list;
   cookie_list.push_back(*cookie);
   cookie_monster->InitializeFrom(cookie_list);
-  browser_context_.GetRequestContext()->GetURLRequestContext()
+  request_context_->GetURLRequestContext()
       ->set_cookie_store(cookie_monster);
   signin_helper_->StartWalletCookieValueFetch();
   base::RunLoop().RunUntilIdle();
@@ -162,7 +167,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
   net::CookieList cookie_list;
   cookie_list.push_back(*cookie);
   cookie_monster->InitializeFrom(cookie_list);
-  browser_context_.GetRequestContext()->GetURLRequestContext()
+  request_context_->GetURLRequestContext()
       ->set_cookie_store(cookie_monster);
   signin_helper_->StartWalletCookieValueFetch();
   base::RunLoop().RunUntilIdle();

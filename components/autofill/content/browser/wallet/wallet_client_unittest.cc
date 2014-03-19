@@ -6,13 +6,13 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
@@ -28,6 +28,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -702,9 +703,14 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
 class WalletClientTest : public testing::Test {
  public:
+  WalletClientTest()
+      : request_context_(new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current())) {}
+  virtual ~WalletClientTest() {}
+
   virtual void SetUp() OVERRIDE {
     wallet_client_.reset(
-        new WalletClient(browser_context_.GetRequestContext(),
+        new WalletClient(request_context_,
                          &delegate_,
                          GURL(kMerchantUrl)));
   }
@@ -851,7 +857,7 @@ class WalletClientTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<WalletClient> wallet_client_;
-  TestingProfile browser_context_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   MockWalletClientDelegate delegate_;
 
  private:
