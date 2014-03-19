@@ -91,7 +91,7 @@ void CommandBufferClientImpl::WaitForTokenInRange(int32 start, int32 end) {
 
 void CommandBufferClientImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
   TryUpdateState();
-  while (!InRange(start, end, last_state_.token) &&
+  while (!InRange(start, end, last_state_.get_offset) &&
          last_state_.error == gpu::error::kNoError) {
     MakeProgressAndUpdateState();
     TryUpdateState();
