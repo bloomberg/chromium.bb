@@ -31,7 +31,6 @@
 #define GlyphBuffer_h
 
 #include "platform/fonts/Glyph.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/Vector.h"
 

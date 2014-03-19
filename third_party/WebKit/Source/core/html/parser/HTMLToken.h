@@ -27,7 +27,6 @@
 #define HTMLToken_h
 
 #include "core/dom/Attribute.h"
-#include "core/html/parser/HTMLToken.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
