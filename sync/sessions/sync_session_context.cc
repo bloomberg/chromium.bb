@@ -42,9 +42,12 @@ SyncSessionContext::SyncSessionContext(
 SyncSessionContext::~SyncSessionContext() {
 }
 
+ModelTypeSet SyncSessionContext::GetEnabledTypes() const {
+  return model_type_registry_->GetEnabledTypes();
+}
+
 void SyncSessionContext::SetRoutingInfo(
     const ModelSafeRoutingInfo& routing_info) {
-  enabled_types_ = GetRoutingInfoTypes(routing_info);
   model_type_registry_->SetEnabledDirectoryTypes(routing_info);
 }
 

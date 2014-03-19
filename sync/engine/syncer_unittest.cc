@@ -194,7 +194,7 @@ class SyncerTest : public testing::Test,
 
     EXPECT_TRUE(
         syncer_->NormalSyncShare(
-            context_->enabled_types(),
+            context_->GetEnabledTypes(),
             nudge_tracker_,
             session_.get()));
   }
@@ -202,7 +202,7 @@ class SyncerTest : public testing::Test,
   void SyncShareConfigure() {
     ResetSession();
     EXPECT_TRUE(syncer_->ConfigureSyncShare(
-            context_->enabled_types(),
+            context_->GetEnabledTypes(),
             sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             session_.get()));
   }
@@ -551,10 +551,10 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
 
   // Now sync without enabling bookmarks.
   mock_server_->ExpectGetUpdatesRequestTypes(
-      Difference(context_->enabled_types(), ModelTypeSet(BOOKMARKS)));
+      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)));
   ResetSession();
   syncer_->NormalSyncShare(
-      Difference(context_->enabled_types(), ModelTypeSet(BOOKMARKS)),
+      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
       nudge_tracker_,
       session_.get());
 
@@ -567,7 +567,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   }
 
   // Sync again with bookmarks enabled.
-  mock_server_->ExpectGetUpdatesRequestTypes(context_->enabled_types());
+  mock_server_->ExpectGetUpdatesRequestTypes(context_->GetEnabledTypes());
   SyncShareNudge();
   {
     // It should have been committed.

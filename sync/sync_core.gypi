@@ -64,6 +64,8 @@
     'engine/net/server_connection_manager.h',
     'engine/net/url_translator.cc',
     'engine/net/url_translator.h',
+    'engine/non_blocking_type_processor_core.cc',
+    'engine/non_blocking_type_processor_core.h',
     'engine/nudge_source.cc',
     'engine/nudge_source.h',
     'engine/process_updates_util.cc',

@@ -245,7 +245,7 @@ void SyncSchedulerImpl::Start(Mode mode) {
 }
 
 ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
-  ModelTypeSet enabled_types = session_context_->enabled_types();
+  ModelTypeSet enabled_types = session_context_->GetEnabledTypes();
   ModelTypeSet enabled_protocol_types =
       Intersection(ProtocolTypes(), enabled_types);
   ModelTypeSet throttled_types = nudge_tracker_.GetThrottledTypes();
@@ -341,7 +341,7 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  const ModelTypeSet enabled_types = session_context_->enabled_types();
+  const ModelTypeSet enabled_types = session_context_->GetEnabledTypes();
   if (nudge_tracker_.GetThrottledTypes().HasAll(enabled_types)) {
     SDVLOG(1) << "Not running a nudge because we're fully type throttled.";
     return false;
@@ -458,7 +458,7 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   DCHECK(CanRunNudgeJobNow(priority));
 
   DVLOG(2) << "Will run normal mode sync cycle with types "
-           << ModelTypeSetToString(session_context_->enabled_types());
+           << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->NormalSyncShare(
       GetEnabledAndUnthrottledTypes(),
@@ -501,10 +501,10 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   }
 
   SDVLOG(2) << "Will run configure SyncShare with types "
-            << ModelTypeSetToString(session_context_->enabled_types());
+            << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->ConfigureSyncShare(
-      session_context_->enabled_types(),
+      session_context_->GetEnabledTypes(),
       pending_configure_params_->source,
       session.get());
   AdjustPolling(FORCE_RESET);

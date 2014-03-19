@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -21,7 +22,7 @@ class Directory;
 //
 // When asked, it can return CommitContribution objects that contain a set of
 // items to be committed from this source.
-class CommitContributor {
+class SYNC_EXPORT_PRIVATE CommitContributor {
  public:
   CommitContributor();
   virtual ~CommitContributor() = 0;

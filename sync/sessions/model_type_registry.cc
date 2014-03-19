@@ -6,15 +6,14 @@
 
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
+#include "sync/engine/non_blocking_type_processor_core.h"
 
 namespace syncer {
 
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
     syncable::Directory* directory)
-    : update_handler_deleter_(&update_handler_map_),
-      commit_contributor_deleter_(&commit_contributor_map_),
-      directory_(directory) {
+    : directory_(directory) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
         std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));
@@ -25,11 +24,21 @@ ModelTypeRegistry::~ModelTypeRegistry() {}
 
 void ModelTypeRegistry::SetEnabledDirectoryTypes(
     const ModelSafeRoutingInfo& routing_info) {
-  STLDeleteValues(&update_handler_map_);
-  STLDeleteValues(&commit_contributor_map_);
-  update_handler_map_.clear();
-  commit_contributor_map_.clear();
+  // Remove all existing directory processors and delete them.
+  for (ModelTypeSet::Iterator it = enabled_directory_types_.First();
+       it.Good(); it.Inc()) {
+    size_t result1 = update_handler_map_.erase(it.Get());
+    size_t result2 = commit_contributor_map_.erase(it.Get());
+    DCHECK_EQ(1U, result1);
+    DCHECK_EQ(1U, result2);
+  }
 
+  // Clear the old instances of directory update handlers and commit
+  // contributors, deleting their contents in the processs.
+  directory_update_handlers_.clear();
+  directory_commit_contributors_.clear();
+
+  // Create new ones and add them to the appropriate containers.
   for (ModelSafeRoutingInfo::const_iterator routing_iter = routing_info.begin();
        routing_iter != routing_info.end(); ++routing_iter) {
     ModelType type = routing_iter->first;
@@ -44,6 +53,10 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     DirectoryUpdateHandler* updater =
         new DirectoryUpdateHandler(directory_, type, worker);
 
+    // These containers take ownership of their contents.
+    directory_commit_contributors_.push_back(committer);
+    directory_update_handlers_.push_back(updater);
+
     bool inserted1 =
         update_handler_map_.insert(std::make_pair(type, updater)).second;
     DCHECK(inserted1) << "Attempt to override existing type handler in map";
@@ -51,8 +64,51 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     bool inserted2 =
         commit_contributor_map_.insert(std::make_pair(type, committer)).second;
     DCHECK(inserted2) << "Attempt to override existing type handler in map";
-
   }
+
+  enabled_directory_types_ = GetRoutingInfoTypes(routing_info);
+}
+
+void ModelTypeRegistry::InitializeNonBlockingType(syncer::ModelType type) {
+  DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
+
+  scoped_ptr<NonBlockingTypeProcessorCore> core(
+      new NonBlockingTypeProcessorCore(type));
+
+  DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
+  DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
+
+  update_handler_map_.insert(std::make_pair(type, core.get()));
+  commit_contributor_map_.insert(std::make_pair(type, core.get()));
+
+  // The container takes ownership.
+  non_blocking_type_processor_cores_.push_back(core.release());
+}
+
+void ModelTypeRegistry::RemoveNonBlockingType(ModelType type) {
+  DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
+  DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
+  DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
+
+  size_t updaters_erased = update_handler_map_.erase(type);
+  size_t committers_erased = commit_contributor_map_.erase(type);
+
+  DCHECK_EQ(1U, updaters_erased);
+  DCHECK_EQ(1U, committers_erased);
+
+  // Remove from the ScopedVector, deleting the core in the process.
+  for (ScopedVector<NonBlockingTypeProcessorCore>::iterator it =
+       non_blocking_type_processor_cores_.begin();
+       it != non_blocking_type_processor_cores_.end(); ++it) {
+    if ((*it)->GetModelType() == type) {
+      non_blocking_type_processor_cores_.erase(it);
+      break;
+    }
+  }
+}
+
+ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
+  return Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes());
 }
 
 UpdateHandlerMap* ModelTypeRegistry::update_handler_map() {
@@ -61,6 +117,20 @@ UpdateHandlerMap* ModelTypeRegistry::update_handler_map() {
 
 CommitContributorMap* ModelTypeRegistry::commit_contributor_map() {
   return &commit_contributor_map_;
+}
+
+ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
+  return enabled_directory_types_;
+}
+
+ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {
+  ModelTypeSet enabled_off_thread_types;
+  for (ScopedVector<NonBlockingTypeProcessorCore>::const_iterator it =
+           non_blocking_type_processor_cores_.begin();
+       it != non_blocking_type_processor_cores_.end(); ++it) {
+    enabled_off_thread_types.Put((*it)->GetModelType());
+  }
+  return enabled_off_thread_types;
 }
 
 }  // namespace syncer
