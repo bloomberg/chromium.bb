@@ -97,6 +97,9 @@ var KEYCODE_TO_LABEL = {
   222: '\'',
 };
 
+var IME_ID_PREFIX = '_comp_ime_';
+var EXTENSION_ID_LEN = 32;
+
 var keyboardOverlayId = 'en_US';
 var identifierMap = {};
 
@@ -680,6 +683,13 @@ function initKeyboardOverlayId(inputMethodId) {
   var inputMethodIdToOverlayId =
       keyboardOverlayData['inputMethodIdToOverlayId'];
   if (inputMethodId) {
+    if (inputMethodId.indexOf(IME_ID_PREFIX) == 0) {
+      // If the input method is a component extension IME, remove the prefix:
+      //   _comp_ime_<ext_id>
+      // The extension id is a hash value with 32 characters.
+      inputMethodId = inputMethodId.slice(
+          IME_ID_PREFIX.length + EXTENSION_ID_LEN);
+    }
     keyboardOverlayId = inputMethodIdToOverlayId[inputMethodId];
   }
   if (!keyboardOverlayId) {
