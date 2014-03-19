@@ -14,7 +14,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class MapsMeasurement(page_measurement.PageMeasurement):
+class _MapsMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     js_get_results = 'document.getElementsByTagName("pre")[0].innerText'
     test_results = tab.EvaluateJavaScript(js_get_results)
@@ -27,7 +27,7 @@ class MapsMeasurement(page_measurement.PageMeasurement):
 @test.Disabled
 class MapsBenchmark(test.Test):
   """Basic Google Maps benchmarks."""
-  test = MapsMeasurement
+  test = _MapsMeasurement
 
   def CreatePageSet(self, options):
     page_set_path = os.path.join(

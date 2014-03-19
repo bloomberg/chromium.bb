@@ -23,7 +23,7 @@ from telemetry.util import statistics
 from telemetry.value import merge_values
 from telemetry.value import scalar
 
-class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
+class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
@@ -72,7 +72,7 @@ class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
 class PeaceKeeperBenchmark(test.Test):
   """A base class for Peackeeper benchmarks."""
-  test = PeaceKeeperMeasurement
+  test = _PeaceKeeperMeasurement
 
   def CreatePageSet(self, options):
     """Makes a PageSet for PeaceKeeper benchmarks."""

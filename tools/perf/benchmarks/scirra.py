@@ -15,7 +15,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class ScirraMeasurement(page_measurement.PageMeasurement):
+class _ScirraMeasurement(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = 'window.sprites = 0;'
@@ -52,7 +52,7 @@ class ScirraMeasurement(page_measurement.PageMeasurement):
 
 class ScirraBenchmark(test.Test):
   """WebGL and Canvas2D rendering benchmark suite."""
-  test = ScirraMeasurement
+  test = _ScirraMeasurement
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
         'archive_data_file': '../page_sets/data/scirra.json',

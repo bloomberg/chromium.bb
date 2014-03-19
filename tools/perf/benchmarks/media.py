@@ -7,7 +7,7 @@ from telemetry import test
 from telemetry.page import page_measurement
 
 
-class MSEMeasurement(page_measurement.PageMeasurement):
+class _MSEMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     media_metric = tab.EvaluateJavaScript('window.__testMetrics')
     trace = media_metric['id'] if 'id' in media_metric else None
@@ -67,7 +67,7 @@ class MediaChromeOS(test.Test):
 
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
-  test = MSEMeasurement
+  test = _MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
 
   def CustomizeBrowserOptions(self, options):
