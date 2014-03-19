@@ -65,38 +65,11 @@ namespace {
 KURL getSubResourceURLFromElement(Element* element)
 {
     ASSERT(element);
-    const QualifiedName* attributeName = 0;
-    if (element->hasTagName(HTMLNames::imgTag) || element->hasTagName(HTMLNames::scriptTag))
-        attributeName = &HTMLNames::srcAttr;
-    else if (element->hasTagName(HTMLNames::inputTag)) {
-        if (toHTMLInputElement(element)->isImageButton())
-            attributeName = &HTMLNames::srcAttr;
-    } else if (element->hasTagName(HTMLNames::bodyTag)
-        || element->hasTagName(HTMLNames::tableTag)
-        || element->hasTagName(HTMLNames::trTag)
-        || element->hasTagName(HTMLNames::tdTag))
-        attributeName = &HTMLNames::backgroundAttr;
-    else if (element->hasTagName(HTMLNames::blockquoteTag)
-             || element->hasTagName(HTMLNames::qTag)
-             || element->hasTagName(HTMLNames::delTag)
-             || element->hasTagName(HTMLNames::insTag))
-        attributeName = &HTMLNames::citeAttr;
-    else if (element->hasTagName(HTMLNames::linkTag)) {
-        // If the link element is not css, ignore it.
-        if (equalIgnoringCase(element->getAttribute(HTMLNames::typeAttr), "text/css")) {
-            // FIXME: Add support for extracting links of sub-resources which
-            // are inside style-sheet such as @import, @font-face, url(), etc.
-            attributeName = &HTMLNames::hrefAttr;
-        }
-    } else if (element->hasTagName(HTMLNames::objectTag))
-        attributeName = &HTMLNames::dataAttr;
-    else if (element->hasTagName(HTMLNames::embedTag))
-        attributeName = &HTMLNames::srcAttr;
-
-    if (!attributeName)
+    const QualifiedName& attributeName = element->subResourceAttributeName();
+    if (attributeName == nullQName())
         return KURL();
 
-    String value = element->getAttribute(*attributeName);
+    String value = element->getAttribute(attributeName);
     // Ignore javascript content.
     if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", false))
         return KURL();

@@ -182,6 +182,7 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
+    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
     virtual bool sheetLoaded() OVERRIDE;
     virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) OVERRIDE;
     virtual void startLoadingDynamicSheet() OVERRIDE;

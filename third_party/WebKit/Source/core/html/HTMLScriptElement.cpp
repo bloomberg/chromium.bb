@@ -59,6 +59,11 @@ bool HTMLScriptElement::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == srcAttr || HTMLElement::hasLegalLinkAttribute(name);
 }
 
+const QualifiedName& HTMLScriptElement::subResourceAttributeName() const
+{
+    return srcAttr;
+}
+
 void HTMLScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);

@@ -49,6 +49,7 @@ private:
     explicit HTMLTableRowElement(Document&);
 
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
+    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
 };
 
 } // namespace

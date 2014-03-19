@@ -50,4 +50,9 @@ bool HTMLModElement::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == citeAttr || HTMLElement::hasLegalLinkAttribute(name);
 }
 
+const QualifiedName& HTMLModElement::subResourceAttributeName() const
+{
+    return citeAttr;
+}
+
 }

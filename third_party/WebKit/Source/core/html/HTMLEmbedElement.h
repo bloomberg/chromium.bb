@@ -43,6 +43,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual RenderWidget* existingRenderWidget() const OVERRIDE;

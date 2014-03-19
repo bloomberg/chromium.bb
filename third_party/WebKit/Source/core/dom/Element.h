@@ -312,6 +312,7 @@ public:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) { }
 
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
+    virtual const QualifiedName& subResourceAttributeName() const;
 
     // Only called by the parser immediately after element construction.
     void parserSetAttributes(const Vector<Attribute>&);

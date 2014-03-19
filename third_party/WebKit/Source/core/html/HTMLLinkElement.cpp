@@ -405,6 +405,17 @@ bool HTMLLinkElement::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == hrefAttr || HTMLElement::hasLegalLinkAttribute(name);
 }
 
+const QualifiedName& HTMLLinkElement::subResourceAttributeName() const
+{
+    // If the link element is not css, ignore it.
+    if (equalIgnoringCase(getAttribute(typeAttr), "text/css")) {
+        // FIXME: Add support for extracting links of sub-resources which
+        // are inside style-sheet such as @import, @font-face, url(), etc.
+        return hrefAttr;
+    }
+    return HTMLElement::subResourceAttributeName();
+}
+
 KURL HTMLLinkElement::href() const
 {
     return document().completeURL(getAttribute(hrefAttr));

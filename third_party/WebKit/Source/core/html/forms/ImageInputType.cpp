@@ -240,4 +240,9 @@ bool ImageInputType::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == srcAttr || BaseButtonInputType::hasLegalLinkAttribute(name);
 }
 
+const QualifiedName& ImageInputType::subResourceAttributeName() const
+{
+    return srcAttr;
+}
+
 } // namespace WebCore

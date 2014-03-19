@@ -190,6 +190,11 @@ bool HTMLEmbedElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == srcAttr || HTMLPlugInElement::isURLAttribute(attribute);
 }
 
+const QualifiedName& HTMLEmbedElement::subResourceAttributeName() const
+{
+    return srcAttr;
+}
+
 const AtomicString HTMLEmbedElement::imageSourceURL() const
 {
     return getAttribute(srcAttr);

@@ -339,6 +339,7 @@ private:
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE FINAL;
+    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE FINAL;
     virtual bool isInRange() const OVERRIDE FINAL;
     virtual bool isOutOfRange() const OVERRIDE FINAL;
 

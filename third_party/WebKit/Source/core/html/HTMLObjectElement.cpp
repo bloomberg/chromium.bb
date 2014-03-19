@@ -375,6 +375,11 @@ bool HTMLObjectElement::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == classidAttr || name == dataAttr || name == codebaseAttr || HTMLPlugInElement::hasLegalLinkAttribute(name);
 }
 
+const QualifiedName& HTMLObjectElement::subResourceAttributeName() const
+{
+    return dataAttr;
+}
+
 const AtomicString HTMLObjectElement::imageSourceURL() const
 {
     return getAttribute(dataAttr);
