@@ -9,6 +9,7 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class HotwordServiceTest : public testing::Test {
@@ -27,6 +28,7 @@ class HotwordServiceTest : public testing::Test {
 
  private:
   base::FieldTrialList field_trial_list_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(HotwordServiceTest, ShouldShowOptInPopup) {

@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -120,6 +121,8 @@ class ComponentLoaderTest : public testing::Test {
 
   // The contents of the text extension's manifest file.
   std::string manifest_contents_;
+
+  content::TestBrowserThreadBundle thread_bundle_;
 
   base::FilePath GetBasePath() {
     base::FilePath test_data_dir;

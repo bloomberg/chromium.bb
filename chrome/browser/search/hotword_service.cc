@@ -61,6 +61,16 @@ void RecordAvailabilityMetrics(
                             NUM_HOTWORD_EXTENSION_AVAILABILITY_METRICS);
 }
 
+ExtensionService* GetExtensionService(Profile* profile) {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  if (extension_system)
+    return extension_system->extension_service();
+  return NULL;
+}
+
 }  // namespace
 
 namespace hotword_internal {
@@ -94,9 +104,19 @@ HotwordService::HotwordService(Profile* profile)
       enabled_state = ENABLED;
     else
       enabled_state = DISABLED;
+  } else {
+    // If the preference has not been set the hotword extension should
+    // not be running.
+    DisableHotwordExtension(GetExtensionService(profile_));
   }
   UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
                             NUM_HOTWORD_ENABLED_METRICS);
+
+  pref_registrar_.Init(profile_->GetPrefs());
+  pref_registrar_.Add(
+      prefs::kHotwordSearchEnabled,
+      base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
+                 base::Unretained(this)));
 }
 
 HotwordService::~HotwordService() {
@@ -131,10 +151,10 @@ bool HotwordService::IsServiceAvailable() {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile_);
   ExtensionService* service = system->extension_service();
-  // Do not include disabled extension (false parameter) because if the
-  // extension is disabled, it's not available.
+  // Include disabled extensions (true parameter) since it may not be enabled
+  // if the user opted out.
   const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kHotwordExtensionId, false);
+      service->GetExtensionById(extension_misc::kHotwordExtensionId, true);
 
   RecordAvailabilityMetrics(service, extension);
 
@@ -150,14 +170,36 @@ bool HotwordService::IsHotwordAllowed() {
 }
 
 bool HotwordService::RetryHotwordExtension() {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile_);
-  if (!extension_system || !extension_system->extension_service())
+  ExtensionService* extension_service = GetExtensionService(profile_);
+  if (!extension_service)
     return false;
-  ExtensionService* extension_service = extension_system->extension_service();
 
   extension_service->ReloadExtension(extension_misc::kHotwordExtensionId);
   return true;
+}
+
+void HotwordService::EnableHotwordExtension(
+    ExtensionService* extension_service) {
+  if (extension_service)
+    extension_service->EnableExtension(extension_misc::kHotwordExtensionId);
+}
+
+void HotwordService::DisableHotwordExtension(
+    ExtensionService* extension_service) {
+  if (extension_service) {
+    extension_service->DisableExtension(
+        extension_misc::kHotwordExtensionId,
+        extensions::Extension::DISABLE_USER_ACTION);
+  }
+}
+
+void HotwordService::OnHotwordSearchEnabledChanged(
+    const std::string& pref_name) {
+  DCHECK_EQ(pref_name, std::string(prefs::kHotwordSearchEnabled));
+
+  ExtensionService* extension_service = GetExtensionService(profile_);
+  if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
+    EnableHotwordExtension(extension_service);
+  else
+    DisableHotwordExtension(extension_service);
 }
