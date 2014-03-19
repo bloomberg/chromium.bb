@@ -81,6 +81,7 @@ generator_additional_non_configuration_keys = [
     'msvs_external_builder_out_dir',
     'msvs_external_builder_build_cmd',
     'msvs_external_builder_clean_cmd',
+    'msvs_external_builder_clcompile_cmd',
 ]
 
 
@@ -1862,6 +1863,14 @@ def _InitNinjaFlavor(options, target_list, target_dicts):
         'clean',
         '$(ProjectName)',
       ]
+    if not spec.get('msvs_external_builder_clcompile_cmd'):
+      spec['msvs_external_builder_clcompile_cmd'] = [
+        sys.executable,
+        '$(OutDir)/gyp-win-tool',
+        'cl-compile',
+        '$(ProjectDir)',
+        '$(SelectedFiles)',
+      ]
 
 
 def CalculateVariables(default_variables, params):
@@ -3233,7 +3242,9 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
 def _GetMSBuildExternalBuilderTargets(spec):
   """Return a list of MSBuild targets for external builders.
 
-  Right now, only "Build" and "Clean" targets are generated.
+  The "Build" and "Clean" targets are always generated.  If the spec contains
+  'msvs_external_builder_clcompile_cmd', then the "ClCompile" target will also
+  be generated, to support building selected C/C++ files.
 
   Arguments:
     spec: The gyp target spec.
@@ -3252,7 +3263,17 @@ def _GetMSBuildExternalBuilderTargets(spec):
   clean_target = ['Target', {'Name': 'Clean'}]
   clean_target.append(['Exec', {'Command': clean_cmd}])
 
-  return [build_target, clean_target]
+  targets = [build_target, clean_target]
+
+  if spec.get('msvs_external_builder_clcompile_cmd'):
+    clcompile_cmd = _BuildCommandLineForRuleRaw(
+        spec, spec['msvs_external_builder_clcompile_cmd'],
+        False, False, False, False)
+    clcompile_target = ['Target', {'Name': 'ClCompile'}]
+    clcompile_target.append(['Exec', {'Command': clcompile_cmd}])
+    targets.append(clcompile_target)
+
+  return targets
 
 
 def _GetMSBuildExtensions(props_files_of_rules):
