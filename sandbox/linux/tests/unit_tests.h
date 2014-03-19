@@ -47,7 +47,7 @@ bool IsRunningOnValgrind();
   sandbox::UnitTests::DeathExitCode, \
       reinterpret_cast<void*>(static_cast<intptr_t>(rc))
 #define DEATH_BY_SIGNAL(s)           \
-  sandbox::UnitTests::DeathExitCode, \
+  sandbox::UnitTests::DeathBySignal, \
       reinterpret_cast<void*>(static_cast<intptr_t>(s))
 
 // A SANDBOX_DEATH_TEST is just like a SANDBOX_TEST (see below), but it assumes

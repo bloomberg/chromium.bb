@@ -19,6 +19,7 @@
     'tests/test_utils.h',
     'tests/unit_tests.cc',
     'tests/unit_tests.h',
+    'tests/unit_tests_unittest.cc',
     'services/broker_process_unittest.cc',
     'services/scoped_process_unittest.cc',
     'services/thread_helpers_unittests.cc',
