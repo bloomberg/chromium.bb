@@ -326,6 +326,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
         m_videoTracks.append(track);
         break;
     }
+    track->addObserver(this);
     m_descriptor->addComponent(component);
 
     scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::addtrack, false, false, track));
@@ -359,6 +360,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
     m_descriptor->removeComponent(component);
 
     RefPtr<MediaStreamTrack> track = (*tracks)[index];
+    track->removeObserver(this);
     tracks->remove(index);
     scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::removetrack, false, false, track));
 }

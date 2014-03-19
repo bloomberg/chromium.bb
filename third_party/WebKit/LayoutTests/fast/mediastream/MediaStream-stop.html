@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Test cloning mediastreams onended.");
+
+var cloned_stream;
+
+function onStreamEnded() {
+    testPassed('Stream ended.');
+    finishJSTest();
+}
+
+function onTrackAdded() {
+    testPassed('Mock test track added.');
+    shouldBe('cloned_stream.getVideoTracks().length', '1');
+    cloned_stream.getVideoTracks()[0].stop();
+}
+
+function run(s) {
+    cloned_stream = new webkitMediaStream();
+    cloned_stream.onaddtrack = onTrackAdded;
+    cloned_stream.onended = onStreamEnded;
+}
+
+run();
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

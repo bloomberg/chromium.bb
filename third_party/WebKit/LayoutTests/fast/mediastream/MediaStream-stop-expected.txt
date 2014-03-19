@@ -1,0 +1,12 @@
+Test cloning mediastreams onended.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Mock test track added.
+PASS cloned_stream.getVideoTracks().length is 1
+PASS Stream ended.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
