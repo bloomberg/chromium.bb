@@ -161,13 +161,8 @@ def main():
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
-    scm_obj = checkout.GitCheckout(root_dir=full_dir,
-                                   project_name=None,
-                                   remote_branch='master',
-                                   git_url=None,
-                                   commit_user=None,
-                                   base_ref=options.base_ref,
-                                   post_processors=None)
+    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None,
+                                   base_ref=options.base_ref,)
   elif scm_type == None:
     scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:

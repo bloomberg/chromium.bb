@@ -562,7 +562,6 @@ class GitCheckout(CheckoutBase):
     self.git_url = git_url
     self.commit_user = commit_user
     self.remote_branch = remote_branch
-    assert self.remote_branch
     # The working branch where patches will be applied. It will track the
     # remote branch.
     self.working_branch = 'working_branch'
@@ -625,8 +624,7 @@ class GitCheckout(CheckoutBase):
     # trying again?
     if self.remote_branch:
       self._check_call_git(
-          ['checkout', 
-           '-b', self.working_branch, 
+          ['checkout', '-b', self.working_branch,
            '-t', '%s/%s' % (self.pull_remote, self.remote_branch),
            '--quiet'])
 
