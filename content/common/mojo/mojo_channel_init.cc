@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
-#include "mojo/system/embedder/embedder.h"
+#include "mojo/embedder/embedder.h"
 
 namespace content {
 

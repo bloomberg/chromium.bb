@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/embedder/embedder.h"
+#include "mojo/embedder/embedder.h"
 
 #include <string.h>
 
@@ -13,9 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/common/test/multiprocess_test_helper.h"
+#include "mojo/embedder/platform_channel_pair.h"
+#include "mojo/embedder/test_embedder.h"
 #include "mojo/public/system/core.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
-#include "mojo/system/embedder/test_embedder.h"
 #include "mojo/system/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

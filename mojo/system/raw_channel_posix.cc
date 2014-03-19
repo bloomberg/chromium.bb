@@ -20,7 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
-#include "mojo/system/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
 namespace system {

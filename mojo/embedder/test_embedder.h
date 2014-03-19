@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
-#define MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
+#ifndef MOJO_EMBEDDER_TEST_EMBEDDER_H_
+#define MOJO_EMBEDDER_TEST_EMBEDDER_H_
 
 #include "mojo/system/system_impl_export.h"
 
@@ -22,4 +22,4 @@ MOJO_SYSTEM_IMPL_EXPORT bool Shutdown();
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_EMBEDDER_EMBEDDER_H_
+#endif  // MOJO_EMBEDDER_EMBEDDER_H_

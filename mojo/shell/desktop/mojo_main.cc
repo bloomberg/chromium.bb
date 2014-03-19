@@ -8,12 +8,12 @@
 #include "base/macros.h"  // TODO(vtl): Remove.
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"
+#include "mojo/embedder/embedder.h"
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/child_process_host.h"  // TODO(vtl): Remove.
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
-#include "mojo/system/embedder/embedder.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {

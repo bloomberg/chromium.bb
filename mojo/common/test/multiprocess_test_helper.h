@@ -12,7 +12,7 @@
 #include "base/process/process_handle.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/system/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace mojo {

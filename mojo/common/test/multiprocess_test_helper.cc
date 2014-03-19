@@ -9,7 +9,7 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
+#include "mojo/embedder/platform_channel_pair.h"
 
 namespace mojo {
 namespace test {

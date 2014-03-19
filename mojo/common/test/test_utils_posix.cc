@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "base/posix/eintr_wrapper.h"
-#include "mojo/system/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
 namespace test {

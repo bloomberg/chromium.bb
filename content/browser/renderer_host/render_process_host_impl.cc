@@ -163,7 +163,7 @@
 #if defined(USE_MOJO)
 #include "content/common/mojo/mojo_channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
+#include "mojo/embedder/platform_channel_pair.h"
 #endif
 
 extern bool g_exited_main_message_loop;

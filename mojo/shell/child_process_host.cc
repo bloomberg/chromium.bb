@@ -15,9 +15,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/switches.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
 
 namespace mojo {
 namespace shell {

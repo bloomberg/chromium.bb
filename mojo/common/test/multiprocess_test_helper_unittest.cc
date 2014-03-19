@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "mojo/common/test/test_utils.h"
-#include "mojo/system/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)

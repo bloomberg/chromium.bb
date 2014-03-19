@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/embedder/test_embedder.h"
+#include "mojo/embedder/test_embedder.h"
 
 #include "base/logging.h"
 #include "base/macros.h"

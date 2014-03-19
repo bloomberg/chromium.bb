@@ -5,13 +5,13 @@
 #include "mojo/shell/context.h"
 
 #include "base/command_line.h"
+#include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/network_delegate.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
-#include "mojo/system/embedder/embedder.h"
 
 namespace mojo {
 namespace shell {

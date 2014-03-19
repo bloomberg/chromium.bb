@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
-#define MOJO_SYSTEM_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
+#ifndef MOJO_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
+#define MOJO_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
-#include "mojo/system/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
@@ -86,4 +86,4 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
+#endif  // MOJO_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_

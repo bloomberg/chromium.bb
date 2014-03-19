@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
+#include "mojo/embedder/platform_channel_pair.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/channel.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
-#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"

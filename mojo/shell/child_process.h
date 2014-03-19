@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/system/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 
 namespace base {
 class CommandLine;
