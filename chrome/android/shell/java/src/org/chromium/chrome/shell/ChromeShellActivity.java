@@ -240,30 +240,37 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        ChromeShellTab activeTab = getActiveTab();
         switch (item.getItemId()) {
             case R.id.signin:
-                if (ChromeSigninController.get(this).isSignedIn())
+                if (ChromeSigninController.get(this).isSignedIn()) {
                     SyncController.openSignOutDialog(getFragmentManager());
-                else
+                } else {
                     SyncController.openSigninDialog(getFragmentManager());
+                }
                 return true;
             case R.id.print:
-                if (getActiveTab() != null) {
-                    mPrintingController.startPrint(new TabPrinter(getActiveTab()),
+                if (activeTab != null) {
+                    mPrintingController.startPrint(new TabPrinter(activeTab),
                             new PrintManagerDelegateImpl(this));
                 }
                 return true;
             case R.id.distill_page:
-                ChromeShellTab activeTab = getActiveTab();
-                String viewUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
-                        CHROME_DISTILLER_SCHEME, getActiveTab().getUrl());
-                activeTab.loadUrlWithSanitization(viewUrl);
+                if (activeTab != null) {
+                    String viewUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
+                            CHROME_DISTILLER_SCHEME, activeTab.getUrl());
+                    activeTab.loadUrlWithSanitization(viewUrl);
+                }
                 return true;
             case R.id.back_menu_id:
-                if (getActiveTab().canGoBack()) getActiveTab().goBack();
+                if (activeTab != null && activeTab.canGoBack()) {
+                    activeTab.goBack();
+                }
                 return true;
             case R.id.forward_menu_id:
-                if (getActiveTab().canGoForward()) getActiveTab().goForward();
+                if (activeTab != null && activeTab.canGoForward()) {
+                    activeTab.goForward();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
