@@ -9,10 +9,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 

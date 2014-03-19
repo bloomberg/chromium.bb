@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
+#include "components/signin/core/mutable_profile_oauth2_token_service.h"
 
 #include "components/signin/core/signin_client.h"
 #include "components/signin/core/webdata/token_web_data.h"

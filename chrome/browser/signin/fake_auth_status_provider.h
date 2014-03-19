@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_AUTH_STATUS_PROVIDER_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_AUTH_STATUS_PROVIDER_H_
 
-#include "chrome/browser/signin/signin_error_controller.h"
+#include "components/signin/core/signin_error_controller.h"
 
 // Helper class that reports auth errors to SigninErrorController. Automatically
 // registers and de-registers itself as an AuthStatusProvider in the

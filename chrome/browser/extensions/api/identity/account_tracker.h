@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/signin_error_controller.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
