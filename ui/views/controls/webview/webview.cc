@@ -29,16 +29,17 @@ const char WebView::kViewClassName[] = "WebView";
 // WebView, public:
 
 WebView::WebView(content::BrowserContext* browser_context)
-    : wcv_holder_(new NativeViewHost),
+    : holder_(new NativeViewHost()),
       embed_fullscreen_widget_mode_enabled_(false),
       is_embedding_fullscreen_widget_(false),
       browser_context_(browser_context),
       allow_accelerators_(false) {
-  AddChildView(wcv_holder_);
+  AddChildView(holder_);  // Takes ownership of |holder_|.
   NativeViewAccessibility::RegisterWebView(this);
 }
 
 WebView::~WebView() {
+  SetWebContents(NULL);  // Make sure all necessary tear-down takes place.
   NativeViewAccessibility::UnregisterWebView(this);
 }
 
@@ -54,32 +55,24 @@ content::WebContents* WebView::GetWebContents() {
 void WebView::SetWebContents(content::WebContents* replacement) {
   if (replacement == web_contents())
     return;
-  DetachWebContents();
-  if (wc_owner_ != replacement)
-    wc_owner_.reset();
+  DetachWebContents(web_contents());
   WebContentsObserver::Observe(replacement);
   // web_contents() now returns |replacement| from here onwards.
+  if (wc_owner_ != replacement)
+    wc_owner_.reset();
   if (embed_fullscreen_widget_mode_enabled_) {
     is_embedding_fullscreen_widget_ =
         web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
   } else {
-    is_embedding_fullscreen_widget_ = false;
+    DCHECK(!is_embedding_fullscreen_widget_);
   }
   AttachWebContents();
 }
 
 void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
-  bool should_be_embedded = enable;
-  if (!embed_fullscreen_widget_mode_enabled_ && enable) {
-    DCHECK(!is_embedding_fullscreen_widget_);
-    embed_fullscreen_widget_mode_enabled_ = true;
-    should_be_embedded =
-        web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
-  } else if (embed_fullscreen_widget_mode_enabled_ && !enable) {
-    embed_fullscreen_widget_mode_enabled_ = false;
-  }
-  if (should_be_embedded != is_embedding_fullscreen_widget_)
-    ReattachForFullscreenChange(should_be_embedded);
+  DCHECK(!web_contents())
+      << "Cannot change mode while a WebContents is attached.";
+  embed_fullscreen_widget_mode_enabled_ = enable;
 }
 
 void WebView::LoadInitialURL(const GURL& url) {
@@ -89,7 +82,7 @@ void WebView::LoadInitialURL(const GURL& url) {
 }
 
 void WebView::SetFastResize(bool fast_resize) {
-  wcv_holder_->set_fast_resize(fast_resize);
+  holder_->set_fast_resize(fast_resize);
 }
 
 void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
@@ -111,7 +104,49 @@ const char* WebView::GetClassName() const {
 }
 
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  wcv_holder_->SetSize(bounds().size());
+  // In most cases, the holder is simply sized to fill this WebView's bounds.
+  // Only WebContentses that are in fullscreen mode and being screen-captured
+  // will engage the special layout/sizing behavior.
+  gfx::Rect holder_bounds(bounds().size());
+  if (!embed_fullscreen_widget_mode_enabled_ ||
+      !web_contents() ||
+      web_contents()->GetCapturerCount() == 0 ||
+      web_contents()->GetPreferredSize().IsEmpty() ||
+      !(is_embedding_fullscreen_widget_ ||
+        (web_contents()->GetDelegate() &&
+         web_contents()->GetDelegate()->
+             IsFullscreenForTabOrPending(web_contents())))) {
+    holder_->SetBoundsRect(holder_bounds);
+    return;
+  }
+
+  // Size the holder to the capture video resolution and center it.  If this
+  // WebView is not large enough to contain the holder at the preferred size,
+  // scale down to fit (preserving aspect ratio).
+  const gfx::Size capture_size = web_contents()->GetPreferredSize();
+  if (capture_size.width() <= holder_bounds.width() &&
+      capture_size.height() <= holder_bounds.height()) {
+    // No scaling, just centering.
+    holder_bounds.ClampToCenteredSize(capture_size);
+  } else {
+    // Scale down, preserving aspect ratio, and center.
+    // TODO(miu): This is basically media::ComputeLetterboxRegion(), and it
+    // looks like others have written this code elsewhere.  Let's considate
+    // into a shared function ui/gfx/geometry or around there.
+    const int64 x = static_cast<int64>(capture_size.width()) *
+        holder_bounds.height();
+    const int64 y = static_cast<int64>(capture_size.height()) *
+        holder_bounds.width();
+    if (y < x) {
+      holder_bounds.ClampToCenteredSize(gfx::Size(
+          holder_bounds.width(), static_cast<int>(y / capture_size.width())));
+    } else {
+      holder_bounds.ClampToCenteredSize(gfx::Size(
+          static_cast<int>(x / capture_size.height()), holder_bounds.height()));
+    }
+  }
+
+  holder_->SetBoundsRect(holder_bounds);
 }
 
 void WebView::ViewHierarchyChanged(
@@ -202,11 +237,7 @@ void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
 }
 
 void WebView::WebContentsDestroyed(content::WebContents* web_contents) {
-  // We watch for destruction of WebContents that we host but do not own. If we
-  // own a WebContents that is being destroyed, we're doing the destroying, so
-  // we don't want to recursively tear it down while it's being torn down.
-  if (!wc_owner_.get())
-    SetWebContents(NULL);
+  DetachWebContents(web_contents);
 }
 
 void WebView::DidShowFullscreenWidget(int routing_id) {
@@ -217,6 +248,11 @@ void WebView::DidShowFullscreenWidget(int routing_id) {
 void WebView::DidDestroyFullscreenWidget(int routing_id) {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(false);
+}
+
+void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen) {
+  if (embed_fullscreen_widget_mode_enabled_)
+    ReattachForFullscreenChange(entered_fullscreen);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,9 +267,10 @@ void WebView::AttachWebContents() {
   const gfx::NativeView view_to_attach = is_embedding_fullscreen_widget_ ?
       web_contents()->GetFullscreenRenderWidgetHostView()->GetNativeView() :
       web_contents()->GetView()->GetNativeView();
-  if (wcv_holder_->native_view() == view_to_attach)
+  OnBoundsChanged(bounds());
+  if (holder_->native_view() == view_to_attach)
     return;
-  wcv_holder_->Attach(view_to_attach);
+  holder_->Attach(view_to_attach);
 
   // The view will not be focused automatically when it is attached, so we need
   // to pass on focus to it if the FocusManager thinks the view is focused. Note
@@ -250,21 +287,32 @@ void WebView::AttachWebContents() {
 #endif
 }
 
-void WebView::DetachWebContents() {
-  if (web_contents()) {
-    wcv_holder_->Detach();
+void WebView::DetachWebContents(content::WebContents* web_contents) {
+  if (web_contents) {
+    holder_->Detach();
 #if defined(OS_WIN)
     if (!is_embedding_fullscreen_widget_)
-      web_contents()->SetParentNativeViewAccessible(NULL);
+      web_contents->SetParentNativeViewAccessible(NULL);
 #endif
   }
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
-  DetachWebContents();
-  is_embedding_fullscreen_widget_ = enter_fullscreen &&
+  DCHECK(embed_fullscreen_widget_mode_enabled_);
+  const bool web_contents_has_separate_fs_widget =
       web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
-  AttachWebContents();
+  if (is_embedding_fullscreen_widget_ || web_contents_has_separate_fs_widget) {
+    // Shutting down or starting up the embedding of the separate fullscreen
+    // widget.  Need to detach and re-attach to a different native view.
+    DetachWebContents(web_contents());
+    is_embedding_fullscreen_widget_ =
+        enter_fullscreen && web_contents_has_separate_fs_widget;
+    AttachWebContents();
+  } else {
+    // Entering or exiting "non-Flash" fullscreen mode, where the native view is
+    // the same.  So, do not change attachment.
+    OnBoundsChanged(bounds());
+  }
 }
 
 content::WebContents* WebView::CreateWebContents(

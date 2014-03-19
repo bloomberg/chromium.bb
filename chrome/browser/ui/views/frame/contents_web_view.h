@@ -24,6 +24,9 @@ class ContentsWebView : public views::WebView {
   // views::View overrides:
   virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
   virtual void OnVisibleBoundsChanged() OVERRIDE;
+  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
+      OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
  private:
   StatusBubbleViews* status_bubble_;

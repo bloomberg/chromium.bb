@@ -17,6 +17,20 @@ namespace views {
 
 class NativeViewHost;
 
+// Provides a view of a WebContents instance.  WebView can be used standalone,
+// creating and displaying an internally-owned WebContents; or within a full
+// browser where the browser swaps its own WebContents instances in/out (e.g.,
+// for browser tabs).
+//
+// WebView creates and owns a single child view, a NativeViewHost, which will
+// hold and display the native view provided by a WebContents.
+//
+// EmbedFullscreenWidgetMode: When enabled, WebView will observe for WebContents
+// fullscreen changes and automatically swap the normal native view with the
+// fullscreen native view (if different).  In addition, if the WebContents is
+// being screen-captured, the view will be centered within WebView, sized to
+// the aspect ratio of the capture video resolution, and scaling will be avoided
+// whenever possible.
 class WEBVIEW_EXPORT WebView : public View,
                                public content::WebContentsDelegate,
                                public content::WebContentsObserver {
@@ -81,7 +95,7 @@ class WEBVIEW_EXPORT WebView : public View,
   // Overridden from View:
   virtual const char* GetClassName() const OVERRIDE;
 
- private:
+ protected:
   // Overridden from View:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void ViewHierarchyChanged(
@@ -107,13 +121,15 @@ class WEBVIEW_EXPORT WebView : public View,
       content::WebContents* web_contents) OVERRIDE;
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
   // Workaround for MSVC++ linker bug/feature that requires
   // instantiation of the inline IPC::Listener methods in all translation units.
   virtual void OnChannelConnected(int32 peer_id) OVERRIDE {}
   virtual void OnChannelError() OVERRIDE {}
 
+ private:
   void AttachWebContents();
-  void DetachWebContents();
+  void DetachWebContents(content::WebContents* web_contents);
   void ReattachForFullscreenChange(bool enter_fullscreen);
 
   // Create a regular or test web contents (based on whether we're running
@@ -121,13 +137,14 @@ class WEBVIEW_EXPORT WebView : public View,
   content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context);
 
-  NativeViewHost* wcv_holder_;
+  NativeViewHost* const holder_;
   // Non-NULL if |web_contents()| was created and is owned by this WebView.
   scoped_ptr<content::WebContents> wc_owner_;
   // When true, WebView auto-embeds fullscreen widgets as a child view.
   bool embed_fullscreen_widget_mode_enabled_;
   // Set to true while WebView is embedding a fullscreen widget view as a child
-  // view instead of the normal WebContentsView render view.
+  // view instead of the normal WebContentsView render view. Note: This will be
+  // false in the case of non-Flash fullscreen.
   bool is_embedding_fullscreen_widget_;
   content::BrowserContext* browser_context_;
   bool allow_accelerators_;

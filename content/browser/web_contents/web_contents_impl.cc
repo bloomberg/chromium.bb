@@ -1256,6 +1256,10 @@ void WebContentsImpl::ToggleFullscreenMode(bool enter_fullscreen) {
 
   if (delegate_)
     delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
+
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab()));
 }
 
 bool WebContentsImpl::IsFullscreenForCurrentTab() const {
