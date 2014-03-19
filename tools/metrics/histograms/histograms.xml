@@ -11239,6 +11239,35 @@ other types of suffix sets.
   <summary>Time spent to load QUIC server information from disk cache.</summary>
 </histogram>
 
+<histogram name="Net.QuicSession.21CumulativePacketsReceived"
+    units="Received in Ranges">
+  <summary>
+    This histogram summarizes information about a 21 packet sequence, indicating
+    for each of the 21 possible prefixes of this pattern, how many packets were
+    received in that prefix.  The first range uses buckets 0 and 1, and it
+    describes the 1st packet in the sequence.  It indicates if the first packet
+    was missing (bucket 0), or the first packet was present (bucket 1).  The
+    second range uses buckets 2 through 4, and describes the first 2 packets in
+    the prefix of this sequence.  It indicates if there were no packets received
+    in the first two packets (bucket 2), or there was one out of two packets
+    received (bucket 3), or if there was two out of tow received (bucket 4).
+    etc. etc.  Reading this histogram may require post-processing in a spread
+    sheet, but can indicate the potential value of using FEC packets to convey
+    data.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.6PacketsPatternsReceived"
+    units="Binay of Packets ACKed">
+  <summary>
+    Each of the 64 buckets represents a different binary pattern of 6
+    consecutive packets that were received by the client.  The LSB of the bucket
+    number corresponds to the reception of the oldest packet.  A bit in the
+    bucket-number being 1 indicates the packet was received, and a 0 means the
+    packet was never received (by the client).
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
   <summary>
     The network error code which resulted in the session being closed.
@@ -38272,6 +38301,24 @@ other types of suffix sets.
   <affected-histogram name="Media.VideoCaptureManager"/>
 </fieldtrial>
 
+<fieldtrial name="Net.QuicSession.21CumulativePackets" separator="_">
+  <group name="First21"
+      label="Only the first group of 21 packets in a connection are recorded."/>
+  <group name="Some21s"
+      label="After the first 21, this records data for some groups of 21
+             consecutive sequence nmubers."/>
+  <affected-histogram name="Net.QuicSession.21CumulativePacketsReceived"/>
+</fieldtrial>
+
+<fieldtrial name="Net.QuicSession.6PacketPatterns" separator="_">
+  <group name="First6"
+      label="Only the first group of 6 packets in a connection are recorded."/>
+  <group name="Some6s"
+      label="After the first 6, this records patters for some groups of 6
+             consecutive sequence numbers."/>
+  <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived"/>
+</fieldtrial>
+
 <fieldtrial name="Net.QuicSession.PacketReceived" separator="_">
   <group name="CONNECTION_UNKNOWN" label="Connections via WiFi are tallied."/>
   <group name="CONNECTION_ETHERNET"
@@ -38296,6 +38343,12 @@ other types of suffix sets.
   <group name="CONNECTION_4G" label="Connections via mobile 4G are tallied."/>
   <group name="CONNECTION_NONE"
       label="Connections via NO(?) network are tallied (should be empty)."/>
+  <affected-histogram
+      name="Net.QuicSession.21CumulativePacketsReceived_First21"/>
+  <affected-histogram
+      name="Net.QuicSession.21CumulativePacketsReceived_Some21s"/>
+  <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived_First6"/>
+  <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived_Some6s"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_Ack"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_Nack"/>
 </fieldtrial>

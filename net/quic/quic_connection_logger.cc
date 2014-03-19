@@ -27,6 +27,11 @@ namespace net {
 
 namespace {
 
+// We have ranges-of-buckets in the cumulative histogram (covering 21 packet
+// sequences) of length 2, 3, 4, ... 22.
+// Hence the largest sample is bounded by the sum of those numbers.
+const int kBoundingSampleInCumulativeHistogram = ((2 + 22) * 21) / 2;
+
 base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
                                       const IPEndPoint* peer_address,
                                       size_t packet_size,
@@ -313,7 +318,7 @@ QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
                        num_truncated_acks_received_);
 
-  RecordAckNackHistograms();
+  RecordLossHistograms();
 }
 
 void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
@@ -578,7 +583,7 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
 }
 
 base::HistogramBase* QuicConnectionLogger::GetAckHistogram(
-    const char* ack_or_nack) {
+    const char* ack_or_nack) const {
   string prefix("Net.QuicSession.PacketReceived_");
   return base::LinearHistogram::FactoryGet(
       prefix + ack_or_nack + connection_description_,
@@ -586,22 +591,109 @@ base::HistogramBase* QuicConnectionLogger::GetAckHistogram(
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
-void QuicConnectionLogger::RecordAckNackHistograms() {
+base::HistogramBase* QuicConnectionLogger::Get6PacketHistogram(
+    const char* which_6) const {
+  // This histogram takes a binary encoding of the 6 consecutive packets
+  // received.  As a result, there are 64 possible sample-patterns.
+  string prefix("Net.QuicSession.6PacketsPatternsReceived_");
+  return base::LinearHistogram::FactoryGet(
+      prefix + which_6 + connection_description_, 1, 64, 65,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+base::HistogramBase* QuicConnectionLogger::Get21CumulativeHistogram(
+  const char* which_21) const {
+  // This histogram contains, for each sequence of 21 packets, the results from
+  // 21 distinct questions about that sequence.  Conceptually the histogtram is
+  // broken into 21 distinct ranges, and one sample is added into each of those
+  // ranges whenever we process a set of 21 packets.
+  // There is a little rendundancy, as each "range" must have the same number
+  // of samples, all told, but the histogram is a tad easier to read this way.
+  // The questions are:
+  // Was the first packet present (bucket 0==>no; bucket 1==>yes)
+  // Of the first two packets, how many were present? (bucket 2==> none;
+  //   bucket 3==> 1 of 2; bucket 4==> 2 of 2)
+  // Of the  first three packets, how many were present? (bucket 5==>none;
+  //   bucket 6==> 1 of 3; bucket 7==> 2 of 3; bucket 8==> 3 of 3).
+  // etc.
+  string prefix("Net.QuicSession.21CumulativePacketsReceived_");
+  return base::LinearHistogram::FactoryGet(
+      prefix + which_21 + connection_description_,
+      1, kBoundingSampleInCumulativeHistogram,
+      kBoundingSampleInCumulativeHistogram + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+// static
+void QuicConnectionLogger::AddTo21CumulativeHistogram(
+    base::HistogramBase* histogram,
+    int bit_mask_21_packets) {
+  DCHECK_LT(bit_mask_21_packets, 1 << 21);
+  int bits_so_far = 0;
+  int range_start = 0;
+  for (int i = 1; i <= 21; ++i) {
+    bits_so_far += bit_mask_21_packets & 1;
+    bit_mask_21_packets >>= 1;
+    DCHECK_LT(range_start + bits_so_far, kBoundingSampleInCumulativeHistogram);
+    histogram->Add(range_start + bits_so_far);
+    range_start += i + 1;
+  }
+}
+
+void QuicConnectionLogger::RecordLossHistograms() const {
   if (largest_received_packet_sequence_number_ == 0)
     return;  // Connection was never used.
   base::HistogramBase* packet_ack_histogram = GetAckHistogram("Ack_");
   base::HistogramBase* packet_nack_histogram = GetAckHistogram("Nack_");
+  base::HistogramBase* six_packet_histogram = Get6PacketHistogram("Some6s_");
+  base::HistogramBase* twenty_one_cumulative_packet_histogram =
+      Get21CumulativeHistogram("Some21s_");
   const QuicPacketSequenceNumber last_index =
       std::min<QuicPacketSequenceNumber>(
           packets_received_.size() - 1,
           largest_received_packet_sequence_number_);
+  // Bit pattern of consecutively received packets that is maintained as we scan
+  // through the packets_received_ vector. Less significant bits correpsond to
+  // less recent packets, and only the low order 21 bits are ever defined.
+  // Bit is 1 iff corresponding packet was received.
+  int packet_pattern_21 = 0;
   // Zero is an invalid packet sequence number.
   DCHECK(!packets_received_[0]);
   for (size_t i = 1; i <= last_index; ++i) {
-    if (packets_received_[i])
+    packet_pattern_21 >>= 1;
+    if (packets_received_[i]) {
       packet_ack_histogram->Add(i);
-    else
+      packet_pattern_21 |= (1 << 20);  // Turn on the 21st bit.
+    } else {
       packet_nack_histogram->Add(i);
+    }
+
+    if (i < 6)
+      continue;  // Not enough packets to do any pattern recording.
+    int recent_6_mask = packet_pattern_21 >> 15;
+    DCHECK_LT(recent_6_mask, 64);
+    if (i == 6) {
+      Get6PacketHistogram("First6_")->Add(recent_6_mask);
+      continue;
+    }
+    // Record some overlapping patterns, to get a better picture, since this is
+    // not very expensive.
+    if (i % 3 == 0)
+      six_packet_histogram->Add(recent_6_mask);
+
+    if (i < 21)
+      continue;
+    if (i == 21) {
+      AddTo21CumulativeHistogram(Get21CumulativeHistogram("First21_"),
+                                 packet_pattern_21);
+      continue;
+    }
+    // We'll just record for non-overlapping ranges, to reduce histogramming
+    // cost for now.  Each call does 21 separate histogram additions.
+    if (i % 21 != 0)
+      continue;
+    AddTo21CumulativeHistogram(twenty_one_cumulative_packet_histogram,
+                               packet_pattern_21);
   }
 }
 

@@ -67,10 +67,28 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
  private:
   // Do a factory get for an "Ack_" or "Nack_" style histogram for recording
   // packet loss stats.
-  base::HistogramBase* GetAckHistogram(const char* ack_or_nack);
+  base::HistogramBase* GetAckHistogram(const char* ack_or_nack) const;
+  // Do a factory get for a histogram to record a 6-packet loss-sequence as a
+  // sample. The histogram will record the 64 distinct possible combinations.
+  // |which_6| is used to adjust the name of the histogram to distinguish the
+  // first 6 packets in a connection, vs. some later 6 packets.
+  base::HistogramBase* Get6PacketHistogram(const char*  which_6) const;
+  // Do a factory get for a histogram to record cumulative stats across a 21
+  // packet sequence.  |which_21| is used to adjust the name of the histogram
+  // to distinguish the first 21 packets' loss data, vs. some later 21 packet
+  // sequences' loss data.
+  base::HistogramBase* Get21CumulativeHistogram(const char*  which_21) const;
+  // Add samples associated with a |bit_mask_21_packets| to the given histogram
+  // that was provided by Get21CumulativeHistogram().  The LSB of that mask
+  // corresponds to the oldest packet packet sequence number in the series of 21
+  // packets.  A bit value of 0 indicates that a packet was never received, and
+  // a 1 indicates the packet was received.
+  static void AddTo21CumulativeHistogram(base::HistogramBase* histogram,
+                                         int bit_mask_21_packets);
+
   // At destruction time, this records results of |pacaket_received_| into
   // histograms for specific connection types.
-  void RecordAckNackHistograms();
+  void RecordLossHistograms() const;
 
   BoundNetLog net_log_;
   // The last packet sequence number received.
@@ -92,8 +110,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   IPEndPoint client_address_;
   // Vector of inital packets status' indexed by packet sequence numbers, where
   // false means never received.  Zero is not a valid packet sequence number, so
-  // that offset is never used, and we'll track 100 packets.
-  std::bitset<101> packets_received_;
+  // that offset is never used, and we'll track 150 packets.
+  std::bitset<151> packets_received_;
   // The available type of connection (WiFi, 3G, etc.) when connection was first
   // used.
   const char* const connection_description_;
