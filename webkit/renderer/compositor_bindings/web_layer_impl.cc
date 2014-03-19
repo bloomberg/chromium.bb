@@ -258,9 +258,11 @@ WebSize WebLayerImpl::maxScrollPosition() const {
 }
 
 void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {
-  cc::Layer* cc_clip_layer =
-      clip_layer ? static_cast<WebLayerImpl*>(clip_layer)->layer() : 0;
-  layer_->SetScrollClipLayerId(cc_clip_layer->id());
+  if (!clip_layer) {
+    layer_->SetScrollClipLayerId(Layer::INVALID_ID);
+    return;
+  }
+  layer_->SetScrollClipLayerId(clip_layer->id());
 }
 
 bool WebLayerImpl::scrollable() const { return layer_->scrollable(); }
