@@ -21,20 +21,20 @@
     function runTest() {
         if (window.testRunner) {
           testRunner.waitUntilDone();
-          testRunner.display();
         }
 
-        setTimeout(function() {
-            document.getElementById('div').style.backgroundColor = 'green';
-            document.getElementById('div').style.width = '100px';
+        window.requestAnimationFrame(function() {
+            setTimeout(function() {
+                document.getElementById('div').style.backgroundColor = 'green';
+                document.getElementById('div').style.width = '100px';
 
-            // Force a full redraw to get rid of the display() shade and make ref-testing feasible.
-            document.getElementById('r').setAttribute('fill', 'none');
+                // Force a full redraw to get rid of the display() shade and make ref-testing feasible.
+                document.getElementById('r').setAttribute('fill', 'none');
 
-            if (window.testRunner)
-              testRunner.notifyDone();
-        }, 0);
-
+                if (window.testRunner)
+                  testRunner.notifyDone();
+            }, 0);
+        });
     }
   </script>
 </svg>

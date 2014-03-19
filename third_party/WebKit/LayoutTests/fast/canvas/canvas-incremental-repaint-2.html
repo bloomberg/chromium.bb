@@ -10,25 +10,13 @@
       border: 20px solid black;
     }
   </style>
+  <script src="resources/repaint.js"></script>
   <script type="text/javascript" charset="utf-8">
 
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
-      testRunner.waitUntilDone();
     }
 
-    function runRepaintTest()
-    {
-        if (window.testRunner) {
-            document.body.offsetTop;
-            testRunner.display();
-            repaintTest();
-            testRunner.notifyDone();
-        } else {
-            setTimeout(repaintTest, 0);
-        }
-    }
-    
     function repaintTest()
     {
       var canvas = document.getElementById('canvas1');

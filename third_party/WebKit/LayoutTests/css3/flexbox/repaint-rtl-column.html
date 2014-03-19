@@ -33,17 +33,25 @@ function setFlex(value)
 
 window.onload = function() {
     if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+        testRunner.dumpAsText();
         document.body.offsetTop;
-        testRunner.display();
+        window.internals.startTrackingRepaints(document);
         testRunner.waitUntilDone();
     }
     setTimeout(function() {
         setFlex(4.6);
         setTimeout(function() {
             setFlex(5);
-            if (window.testRunner)
+            if (window.testRunner) {
+                document.body.offsetTop;
+                var repaintRects = window.internals.repaintRectsAsText(document);
+                window.internals.stopTrackingRepaints(document);
+                var pre = document.createElement('pre');
+                document.body.appendChild(pre);
+                pre.textContent += repaintRects;
+
                 testRunner.notifyDone();
+            }
         })
     })
 };

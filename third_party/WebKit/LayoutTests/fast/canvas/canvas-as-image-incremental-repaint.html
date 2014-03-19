@@ -8,33 +8,11 @@
        content: -webkit-canvas(squares);
      }
    </style>
- 
+  <script src="resources/repaint.js"></script>
   <script type="application/x-javascript">
-    if (window.testRunner)
-      testRunner.waitUntilDone();
-
-    var canvasContext;
-    function runRepaintTest()
-    {
-      canvasContext = document.getCSSCanvasContext("2d", "squares", 300, 300);
-      if (window.testRunner) {
-        document.body.offsetTop;
-        testRunner.display();
-        repaintTest();
-        testRunner.notifyDone();
-      } else {
-        setTimeout(repaintTest, 2000);
-      }
-    }
-
     function repaintTest()
     {
-      draw();
-    }
-
-    function draw()
-    {
-      var ctx = canvasContext;
+      var ctx = document.getCSSCanvasContext("2d", "squares", 300, 300);
 
       ctx.fillStyle = "rgb(200,0,0)";
       ctx.fillRect (10, 10, 100, 100);

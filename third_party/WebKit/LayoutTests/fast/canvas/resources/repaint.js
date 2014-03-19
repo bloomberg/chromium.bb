@@ -1,10 +1,13 @@
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
 function runRepaintTest()
 {
-    if (window.testRunner) {
-        document.body.offsetTop;
-        testRunner.display();
-        repaintTest();
-    } else {
-        setTimeout(repaintTest, 100);
-    }
+    window.requestAnimationFrame(function() {
+        window.setTimeout(function() {
+            repaintTest();
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }, 0);
+    });
 }

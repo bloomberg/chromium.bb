@@ -2,6 +2,7 @@
 <head>
 <script>jsTestIsAsync = true;</script>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 <style type="text/css">
     #test1 div {
         height: 100px;
@@ -50,12 +51,10 @@
     {
         document.body.offsetTop;
         window.internals.startTrackingRepaints(document);
-        testRunner.display();
-        setTimeout(logRepaints, 200);
+        runAfterDisplay(logRepaints);
     }
 
-    function logRepaints()
-    {
+    function logRepaints() {
         repaintRects = window.internals.repaintRectsAsText(document);
         window.internals.stopTrackingRepaints(document);
 

@@ -23,49 +23,33 @@ function draw()
 
 function testResult() {
     debug("Test that the image is not filtered");
-	left_of_center_pixel = dstCtx.getImageData(149, 150, 1, 1);
-	shouldBe("left_of_center_pixel.data[0]", "255");
-	shouldBe("left_of_center_pixel.data[1]", "0");
-	shouldBe("left_of_center_pixel.data[2]", "0");
-	right_of_center_pixel = dstCtx.getImageData(150, 150, 1, 1);
-	shouldBe("right_of_center_pixel.data[0]", "0");
-	shouldBe("right_of_center_pixel.data[1]", "255");
-	shouldBe("right_of_center_pixel.data[2]", "0");
+    left_of_center_pixel = dstCtx.getImageData(149, 150, 1, 1);
+    shouldBe("left_of_center_pixel.data[0]", "255");
+    shouldBe("left_of_center_pixel.data[1]", "0");
+    shouldBe("left_of_center_pixel.data[2]", "0");
+    right_of_center_pixel = dstCtx.getImageData(150, 150, 1, 1);
+    shouldBe("right_of_center_pixel.data[0]", "0");
+    shouldBe("right_of_center_pixel.data[1]", "255");
+    shouldBe("right_of_center_pixel.data[2]", "0");
     finishJSTest();
 }
 
 // Bug 89018 requires 2 draw iteration in order to manifest itself.
 var drawIterations = 2;
 
-// Unrolled repaint loop for running the test in DumpRenderTree
-function TestControllerPaint() {
-    while (drawIterations > 0) {
-        draw();
-        testRunner.display();
-        drawIterations = drawIterations - 1;
-    }
-    draw();
-    testResult();
-}
-
-// Repaint loop for running the test in the browser
 function BrowserPaint(){
     draw();
-	if (drawIterations > 0) {
-		drawIterations = drawIterations - 1;
-		window.requestAnimationFrame(BrowserPaint);
+    if (drawIterations > 0) {
+        drawIterations = drawIterations - 1;
+        window.requestAnimationFrame(BrowserPaint);
     } else {
-	    testResult();
-	}
+        testResult();
+    }
 }
 
 function onLoadHandler()
 {
-    if (window.testRunner) {
-        TestControllerPaint();
-    } else {
-        BrowserPaint();
-    }
+    BrowserPaint();
 }
 
 window.jsTestIsAsync = true;

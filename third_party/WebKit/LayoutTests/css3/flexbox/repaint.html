@@ -33,18 +33,23 @@ function step(count) {
 
     if (!count)
         setTimeout(step.bind(null, 1));
-    else {
-        if (window.testRunner)
-            testRunner.notifyDone();
+    else if (window.testRunner) {
+        var repaintRects = window.internals.repaintRectsAsText(document);
+        window.internals.stopTrackingRepaints(document);
+        var pre = document.createElement('pre');
+        document.body.appendChild(pre);
+        pre.textContent += repaintRects;
+
+        testRunner.notifyDone();
     }
 }
 
 window.onload = function() {
     if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
-        document.body.offsetTop;
-        testRunner.display();
+        testRunner.dumpAsText();
         testRunner.waitUntilDone();
+        document.body.offsetTop;
+        window.internals.startTrackingRepaints(document);
     }
     window.startTime = Date.now();
 

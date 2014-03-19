@@ -1,3 +1,13 @@
+<style>
+    body {
+        overflow: hidden
+    }
+    pre {
+        position: absolute;
+        top: 10000px;
+    }
+</style>
+<script src="../resources/run-after-display.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
@@ -5,13 +15,20 @@
     function onPause()
     {
         var videoElement = document.getElementById("fr").contentDocument.querySelector("video");
-        if (window.testRunner)
-            testRunner.display();
-        videoElement.currentTime = videoElement.duration * 0.50;
+        window.internals.startTrackingRepaints(document);
+        runAfterDisplay(function() {
+            videoElement.currentTime = videoElement.duration * 0.50;
+        });
     }
 
     function onSeeked()
     {
+        var repaintRects = window.internals.repaintRectsAsText(document);
+        var pre = document.createElement('pre');
+        document.body.appendChild(pre);
+        pre.textContent += repaintRects;
+        window.internals.stopTrackingRepaints(document);
+
         if (window.testRunner)
             testRunner.notifyDone();
     }

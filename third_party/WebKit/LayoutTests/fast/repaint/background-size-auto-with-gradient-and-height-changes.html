@@ -33,7 +33,7 @@ function start() {
         return;
 
     window.internals.startTrackingRepaints(document);
-    window.testRunner.display();
+    var dummy = document.body.offsetTop;
 }
 
 function logRepaints() {
