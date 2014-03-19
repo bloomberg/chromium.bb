@@ -28,6 +28,8 @@
 
 #include "modules/webaudio/ConvolverNode.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/audio/Reverb.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"
@@ -107,12 +109,20 @@ void ConvolverNode::uninitialize()
     AudioNode::uninitialize();
 }
 
-void ConvolverNode::setBuffer(AudioBuffer* buffer)
+void ConvolverNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     if (!buffer)
         return;
+
+    if (buffer->sampleRate() != context()->sampleRate()) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            "The buffer sample rate of " + String::number(buffer->sampleRate())
+            + " does not match the context rate of " + String::number(context()->sampleRate())
+            + " Hz.");
+    }
 
     unsigned numberOfChannels = buffer->numberOfChannels();
     size_t bufferLength = buffer->length();

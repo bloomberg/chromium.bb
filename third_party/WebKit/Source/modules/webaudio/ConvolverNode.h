@@ -33,6 +33,7 @@
 namespace WebCore {
 
 class AudioBuffer;
+class ExceptionState;
 class Reverb;
 
 class ConvolverNode FINAL : public AudioNode {
@@ -50,7 +51,7 @@ public:
     virtual void uninitialize() OVERRIDE;
 
     // Impulse responses
-    void setBuffer(AudioBuffer*);
+    void setBuffer(AudioBuffer*, ExceptionState&);
     AudioBuffer* buffer();
 
     bool normalize() const { return m_normalize; }

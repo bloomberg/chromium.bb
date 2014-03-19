@@ -165,6 +165,13 @@ function runTest() {
     node.connect(context.destination);
     shouldThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
     shouldThrow("node.gain.exponentialRampToValueAtTime(0, 0.1)");
+
+    // Convolver buffer rate must match context rate. Create on offline context so we
+    // specify the context rate exactly, in case the test is run on platforms with different
+    // HW sample rates.
+    shouldNotThrow("oc = new webkitOfflineAudioContext(1, 44100, 44100)");
+    shouldNotThrow("conv = oc.createConvolver()");
+    shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
 }
 
 runTest();
