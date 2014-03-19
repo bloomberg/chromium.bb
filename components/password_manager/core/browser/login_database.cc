@@ -287,8 +287,10 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
           ENCRYPTION_RESULT_SUCCESS)
     return false;
 
+  // Replacement is necessary to deal with updating imported credentials. See
+  // crbug.com/349138 for details.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE logins SET "
+      "UPDATE OR REPLACE logins SET "
       "action_url = ?, "
       "password_value = ?, "
       "ssl_valid = ?, "

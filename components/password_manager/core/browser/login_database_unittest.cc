@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -702,6 +703,55 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
 #endif  // OS_MACOSX && !OS_IOS
   EXPECT_EQ(expected_form, *result[0]);
   ClearResults(&result);
+}
+
+TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
+  // Save an incomplete form. Note that it only has a few fields set, ex. it's
+  // missing 'action', 'username_element' and 'password_element'. Such forms
+  // are sometimes inserted during import from other browsers (which may not
+  // store this info).
+  PasswordForm incomplete_form;
+  incomplete_form.origin = GURL("http://accounts.google.com/LoginAuth");
+  incomplete_form.signon_realm = "http://accounts.google.com/";
+  incomplete_form.username_value = ASCIIToUTF16("my_username");
+  incomplete_form.password_value = ASCIIToUTF16("my_password");
+  incomplete_form.ssl_valid = false;
+  incomplete_form.preferred = true;
+  incomplete_form.blacklisted_by_user = false;
+  incomplete_form.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_TRUE(db_.AddLogin(incomplete_form));
+
+  // Save a complete version of the previous form. Both forms could exist if
+  // the user created the complete version before importing the incomplete
+  // version from a different browser.
+  PasswordForm complete_form = incomplete_form;
+  complete_form.action = GURL("http://accounts.google.com/Login");
+  complete_form.username_element = ASCIIToUTF16("username_element");
+  complete_form.password_element = ASCIIToUTF16("password_element");
+  complete_form.submit_element = ASCIIToUTF16("submit");
+  EXPECT_TRUE(db_.AddLogin(complete_form));
+
+  // Make sure both passwords exist.
+  ScopedVector<autofill::PasswordForm> result;
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
+  ASSERT_EQ(2U, result.size());
+  result.clear();
+
+  // Simulate the user changing their password.
+  complete_form.password_value = ASCIIToUTF16("new_password");
+  EXPECT_TRUE(db_.UpdateLogin(complete_form, NULL));
+
+  // Only one updated form should exist now.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
+  ASSERT_EQ(1U, result.size());
+
+  PasswordForm expected_form(complete_form);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // On Mac, passwords are not stored in login database, instead they're in
+  // the keychain.
+  expected_form.password_value.clear();
+#endif  // OS_MACOSX && !OS_IOS
+  EXPECT_EQ(expected_form, *result[0]);
 }
 
 #if defined(OS_POSIX)
