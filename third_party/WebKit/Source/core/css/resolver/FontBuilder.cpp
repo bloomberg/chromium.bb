@@ -139,14 +139,7 @@ void FontBuilder::setFontFamilyInitial()
 {
     FontDescriptionChangeScope scope(this);
 
-    FontDescription initialDesc = FontDescription();
-
-    // We need to adjust the size to account for the generic family change from monospace to non-monospace.
-    if (scope.fontDescription().keywordSize() && scope.fontDescription().useFixedDefaultSize())
-        scope.fontDescription().setSpecifiedSize(FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, false));
-    scope.fontDescription().setGenericFamily(initialDesc.genericFamily());
-    if (!initialDesc.firstFamily().familyIsEmpty())
-        scope.fontDescription().setFamily(initialDesc.firstFamily());
+    scope.fontDescription().setGenericFamily(FontBuilder::initialGenericFamily());
 }
 
 void FontBuilder::setFontFamilyInherit(const FontDescription& parentFontDescription)
