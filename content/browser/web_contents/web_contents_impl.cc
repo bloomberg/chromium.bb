@@ -2068,12 +2068,13 @@ void WebContentsImpl::DidStartProvisionalLoad(
   }
 
   // Notify observers about the start of the provisional load.
+  int render_frame_id = render_frame_host->GetRoutingID();
+  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(
-                        render_frame_host->GetRoutingID(), parent_routing_id,
-                        is_main_frame, validated_url, is_error_page,
-                        is_iframe_srcdoc,
-                        render_frame_host->render_view_host()));
+                        render_frame_id, parent_routing_id, is_main_frame,
+                        validated_url, is_error_page, is_iframe_srcdoc,
+                        render_view_host));
 
   if (is_main_frame) {
     FOR_EACH_OBSERVER(
@@ -2088,16 +2089,18 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   GURL validated_url(params.url);
+  int render_frame_id = render_frame_host->GetRoutingID();
+  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidFailProvisionalLoad(render_frame_host->GetRoutingID(),
+      DidFailProvisionalLoad(render_frame_id,
                              params.frame_unique_name,
                              params.is_main_frame,
                              validated_url,
                              params.error_code,
                              params.error_description,
-                             render_frame_host->render_view_host()));
+                             render_view_host));
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -2106,11 +2109,11 @@ void WebContentsImpl::DidFailLoadWithError(
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
+  int render_frame_id = render_frame_host->GetRoutingID();
+  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFailLoad(render_frame_host->GetRoutingID(),
-                                url, is_main_frame,
-                                error_code, error_description,
-                                render_frame_host->render_view_host()));
+                    DidFailLoad(render_frame_id, url, is_main_frame, error_code,
+                                error_description, render_view_host));;
 }
 
 void WebContentsImpl::NotifyChangedNavigationState(
@@ -2121,10 +2124,11 @@ void WebContentsImpl::NotifyChangedNavigationState(
 void WebContentsImpl::AboutToNavigateRenderFrame(
       RenderFrameHostImpl* render_frame_host) {
   // Notify observers that we will navigate in this RenderView.
+  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      AboutToNavigateRenderView(render_frame_host->render_view_host()));
+      AboutToNavigateRenderView(render_view_host));
 }
 
 void WebContentsImpl::DidStartNavigationToPendingEntry(
@@ -2172,8 +2176,8 @@ void WebContentsImpl::DidCommitProvisionalLoad(
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   int render_frame_id = render_frame_host->GetRoutingID();
+  RenderViewHost* render_view_host = render_frame_host->render_view_host();
   // Notify observers about the commit of the provisional load.
   FOR_EACH_OBSERVER(
       WebContentsObserver,
@@ -2309,10 +2313,11 @@ void WebContentsImpl::OnDocumentLoadedInFrame() {
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
 
+  int render_frame_id = rfh->GetRoutingID();
+  RenderViewHost* render_view_host = rfh->render_view_host();
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    DocumentLoadedInFrame(rfh->GetRoutingID(),
-                                          rfh->render_view_host()));
+                    DocumentLoadedInFrame(render_frame_id, render_view_host));
 }
 
 void WebContentsImpl::OnDidFinishLoad(
@@ -2340,9 +2345,11 @@ void WebContentsImpl::OnDidFinishLoad(
       render_frame_message_source_->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
 
+  int render_frame_id = rfh->GetRoutingID();
+  RenderViewHost* render_view_host = rfh->render_view_host();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFinishLoad(rfh->GetRoutingID(), validated_url,
-                                  is_main_frame, rfh->render_view_host()));
+                    DidFinishLoad(render_frame_id, validated_url,
+                                  is_main_frame, render_view_host));
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
