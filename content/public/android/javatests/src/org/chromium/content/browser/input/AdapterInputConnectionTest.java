@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.text.Editable;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -25,6 +26,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     private AdapterInputConnection mConnection;
     private TestInputMethodManagerWrapper mWrapper;
+    private Editable mEditable;
 
     @Override
     public void setUp() throws Exception {
@@ -35,8 +37,9 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         ImeAdapterDelegate delegate = new TestImeAdapterDelegate();
         ImeAdapter imeAdapter = new TestImeAdapter(mWrapper, delegate);
         EditorInfo info = new EditorInfo();
+        mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
-                getActivity().getActiveContentView(), imeAdapter, info);
+                getActivity().getActiveContentView(), imeAdapter, mEditable, info);
     }
 
     @MediumTest

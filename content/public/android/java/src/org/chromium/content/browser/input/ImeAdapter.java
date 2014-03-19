@@ -7,6 +7,7 @@ package org.chromium.content.browser.input;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -63,8 +64,7 @@ public class ImeAdapter {
 
         @Override
         public void run() {
-            attach(mNativeImeAdapter, sTextInputTypeNone, AdapterInputConnection.INVALID_SELECTION,
-                    AdapterInputConnection.INVALID_SELECTION);
+            attach(mNativeImeAdapter, sTextInputTypeNone);
             dismissInput(true);
         }
     }
@@ -106,8 +106,6 @@ public class ImeAdapter {
     private final Handler mHandler;
     private DelayedDismissInput mDismissInput = null;
     private int mTextInputType;
-    private int mInitialSelectionStart;
-    private int mInitialSelectionEnd;
 
     @VisibleForTesting
     boolean mIsShowWithoutHideOutstanding = false;
@@ -127,8 +125,9 @@ public class ImeAdapter {
      * Default factory for AdapterInputConnection classes.
      */
     public static class AdapterInputConnectionFactory {
-        public AdapterInputConnection get(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
-            return new AdapterInputConnection(view, imeAdapter, outAttrs);
+        public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
+                Editable editable, EditorInfo outAttrs) {
+            return new AdapterInputConnection(view, imeAdapter, editable, outAttrs);
         }
     }
 
@@ -160,22 +159,6 @@ public class ImeAdapter {
      */
     int getTextInputType() {
         return mTextInputType;
-    }
-
-    /**
-     * Should be only used by AdapterInputConnection.
-     * @return The starting index of the initial text selection.
-     */
-    int getInitialSelectionStart() {
-        return mInitialSelectionStart;
-    }
-
-    /**
-     * Should be only used by AdapterInputConnection.
-     * @return The ending index of the initial text selection.
-     */
-    int getInitialSelectionEnd() {
-        return mInitialSelectionEnd;
     }
 
     public static int getTextInputTypeNone() {
@@ -212,7 +195,7 @@ public class ImeAdapter {
     }
 
     public void attachAndShowIfNeeded(long nativeImeAdapter, int textInputType,
-            int selectionStart, int selectionEnd, boolean showIfNeeded) {
+            boolean showIfNeeded) {
         mHandler.removeCallbacks(mDismissInput);
 
         // If current input type is none and showIfNeeded is false, IME should not be shown
@@ -230,7 +213,7 @@ public class ImeAdapter {
                 return;
             }
 
-            attach(nativeImeAdapter, textInputType, selectionStart, selectionEnd);
+            attach(nativeImeAdapter, textInputType);
 
             mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
             if (showIfNeeded) {
@@ -241,15 +224,12 @@ public class ImeAdapter {
         }
     }
 
-    public void attach(long nativeImeAdapter, int textInputType, int selectionStart,
-            int selectionEnd) {
+    public void attach(long nativeImeAdapter, int textInputType) {
         if (mNativeImeAdapterAndroid != 0) {
             nativeResetImeAdapter(mNativeImeAdapterAndroid);
         }
         mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputType = textInputType;
-        mInitialSelectionStart = selectionStart;
-        mInitialSelectionEnd = selectionEnd;
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
         }

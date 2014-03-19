@@ -26,6 +26,7 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ActionMode;
@@ -419,6 +420,12 @@ public class ContentViewCore
 
     private SmartClipDataListener mSmartClipDataListener = null;
 
+    // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
+    // a focused element.
+    // Every time the user, IME, javascript (Blink), autofill etc. modifies the content, the new
+    //  state must be reflected to this to keep consistency.
+    private Editable mEditable;
+
     /**
      * PID used to indicate an invalid render process.
      */
@@ -453,6 +460,9 @@ public class ContentViewCore
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         mGestureStateListeners = new ObserverList<GestureStateListener>();
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
+
+        mEditable = Editable.Factory.getInstance().newEditable("");
+        Selection.setSelection(mEditable, 0);
     }
 
     /**
@@ -583,6 +593,11 @@ public class ContentViewCore
     @VisibleForTesting
     public AdapterInputConnection getInputConnectionForTest() {
         return mInputConnection;
+    }
+
+    @VisibleForTesting
+    public void setContainerViewForTest(ViewGroup view) {
+        mContainerView = view;
     }
 
     private ImeAdapter createImeAdapter(Context context) {
@@ -1499,13 +1514,19 @@ public class ContentViewCore
             // enter fullscreen mode.
             outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
         }
-        mInputConnection =
-                mAdapterInputConnectionFactory.get(mContainerView, mImeAdapter, outAttrs);
+        mInputConnection = mAdapterInputConnectionFactory.get(mContainerView, mImeAdapter,
+                mEditable, outAttrs);
         return mInputConnection;
     }
 
+    @VisibleForTesting
+    public AdapterInputConnection getAdapterInputConnectionForTest() {
+        return mInputConnection;
+    }
+
+    @VisibleForTesting
     public Editable getEditableForTest() {
-        return mInputConnection.getEditable();
+        return mEditable;
     }
 
     /**
@@ -1524,9 +1545,7 @@ public class ContentViewCore
 
         if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
             mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                    ImeAdapter.getTextInputTypeNone(),
-                    AdapterInputConnection.INVALID_SELECTION,
-                    AdapterInputConnection.INVALID_SELECTION);
+                    ImeAdapter.getTextInputTypeNone());
             mInputMethodManagerWrapper.restartInput(mContainerView);
         }
         mContainerViewInternals.super_onConfigurationChanged(newConfig);
@@ -2351,8 +2370,7 @@ public class ContentViewCore
 
         if (mActionMode != null) mActionMode.invalidate();
 
-        mImeAdapter.attachAndShowIfNeeded(nativeImeAdapterAndroid, textInputType,
-                selectionStart, selectionEnd, showImeIfNeeded);
+        mImeAdapter.attachAndShowIfNeeded(nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
 
         if (mInputConnection != null) {
             mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,

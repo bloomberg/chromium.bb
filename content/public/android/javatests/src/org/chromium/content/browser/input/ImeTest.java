@@ -10,6 +10,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -451,16 +452,17 @@ public class ImeTest extends ContentShellTestBase {
             ImeAdapter.AdapterInputConnectionFactory {
         @Override
         public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
-                EditorInfo outAttrs) {
-            return new TestAdapterInputConnection(view, imeAdapter, outAttrs);
+                Editable editable, EditorInfo outAttrs) {
+            return new TestAdapterInputConnection(view, imeAdapter, editable, outAttrs);
         }
     }
 
     private static class TestAdapterInputConnection extends AdapterInputConnection {
         private final ArrayList<TestImeState> mImeUpdateQueue = new ArrayList<TestImeState>();
 
-        public TestAdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
-            super(view, imeAdapter, outAttrs);
+        public TestAdapterInputConnection(View view, ImeAdapter imeAdapter,
+                Editable editable, EditorInfo outAttrs) {
+            super(view, imeAdapter, editable, outAttrs);
         }
 
         @Override
