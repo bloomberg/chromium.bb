@@ -91,15 +91,15 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
     bool boolean = false;
     int int_num = 0;
     double double_num = 0.0;
-    if (it.value().GetAsString(&str))
+    if (it.value().GetAsString(&str)) {
       arg_strings[it.key()] = str;
-    else if (it.value().GetAsInteger(&int_num))
+    } else if (it.value().GetAsInteger(&int_num)) {
       arg_numbers[it.key()] = static_cast<double>(int_num);
-    else if (it.value().GetAsBoolean(&boolean))
+    } else if (it.value().GetAsBoolean(&boolean)) {
       arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
-    else if (it.value().GetAsDouble(&double_num))
+    } else if (it.value().GetAsDouble(&double_num)) {
       arg_numbers[it.key()] = double_num;
-    else {
+    } else {
       LOG(WARNING) << "Value type of argument is not supported: " <<
           static_cast<int>(it.value().GetType());
       continue;  // Skip non-supported arguments.
@@ -143,34 +143,30 @@ bool TraceEvent::HasNumberArg(const std::string& name) const {
 
 std::string TraceEvent::GetKnownArgAsString(const std::string& name) const {
   std::string arg_string;
-  if (GetArgAsString(name, &arg_string))
-    return arg_string;
-  NOTREACHED();
-  return std::string();
+  bool result = GetArgAsString(name, &arg_string);
+  DCHECK(result);
+  return arg_string;
 }
 
 double TraceEvent::GetKnownArgAsDouble(const std::string& name) const {
   double arg_double;
-  if (GetArgAsNumber(name, &arg_double))
-    return arg_double;
-  NOTREACHED();
-  return 0;
+  bool result = GetArgAsNumber(name, &arg_double);
+  DCHECK(result);
+  return arg_double;
 }
 
 int TraceEvent::GetKnownArgAsInt(const std::string& name) const {
   double arg_double;
-  if (GetArgAsNumber(name, &arg_double))
-    return static_cast<int>(arg_double);
-  NOTREACHED();
-  return 0;
+  bool result = GetArgAsNumber(name, &arg_double);
+  DCHECK(result);
+  return static_cast<int>(arg_double);
 }
 
 bool TraceEvent::GetKnownArgAsBool(const std::string& name) const {
   double arg_double;
-  if (GetArgAsNumber(name, &arg_double))
-    return (arg_double != 0.0);
-  NOTREACHED();
-  return false;
+  bool result = GetArgAsNumber(name, &arg_double);
+  DCHECK(result);
+  return (arg_double != 0.0);
 }
 
 // QueryNode
@@ -259,9 +255,10 @@ bool Query::Evaluate(const TraceEvent& event) const {
   if (is_str)
     return !str_value.empty();
 
-  DCHECK(type_ == QUERY_BOOLEAN_OPERATOR)
+  DCHECK_EQ(QUERY_BOOLEAN_OPERATOR, type_)
       << "Invalid query: missing boolean expression";
-  DCHECK(left_.get() && (right_.get() || is_unary_operator()));
+  DCHECK(left_.get());
+  DCHECK(right_.get() || is_unary_operator());
 
   if (is_comparison_operator()) {
     DCHECK(left().is_value() && right().is_value())
@@ -270,7 +267,7 @@ bool Query::Evaluate(const TraceEvent& event) const {
     bool compare_result = false;
     if (CompareAsDouble(event, &compare_result))
       return compare_result;
-    else if (CompareAsString(event, &compare_result))
+    if (CompareAsString(event, &compare_result))
       return compare_result;
     return false;
   }
@@ -362,8 +359,9 @@ bool Query::CompareAsString(const TraceEvent& event, bool* result) const {
 
 bool Query::EvaluateArithmeticOperator(const TraceEvent& event,
                                        double* num) const {
-  DCHECK(type_ == QUERY_ARITHMETIC_OPERATOR);
-  DCHECK(left_.get() && (right_.get() || is_unary_operator()));
+  DCHECK_EQ(QUERY_ARITHMETIC_OPERATOR, type_);
+  DCHECK(left_.get());
+  DCHECK(right_.get() || is_unary_operator());
 
   double lhs = 0, rhs = 0;
   if (!left().GetAsDouble(event, &lhs))
@@ -425,7 +423,7 @@ bool Query::GetAsString(const TraceEvent& event, std::string* str) const {
 
 bool Query::GetMemberValueAsDouble(const TraceEvent& event,
                                    double* num) const {
-  DCHECK(type_ == QUERY_EVENT_MEMBER);
+  DCHECK_EQ(QUERY_EVENT_MEMBER, type_);
 
   // This could be a request for a member of |event| or a member of |event|'s
   // associated event. Store the target event in the_event:
@@ -450,17 +448,15 @@ bool Query::GetMemberValueAsDouble(const TraceEvent& event,
       *num = the_event->timestamp;
       return true;
     case EVENT_DURATION:
-      if (the_event->has_other_event()) {
-        *num = the_event->GetAbsTimeToOtherEvent();
-        return true;
-      }
-      return false;
+      if (!the_event->has_other_event())
+        return false;
+      *num = the_event->GetAbsTimeToOtherEvent();
+      return true;
     case EVENT_COMPLETE_DURATION:
-      if (the_event->phase == TRACE_EVENT_PHASE_COMPLETE) {
-        *num = the_event->duration;
-        return true;
-      }
-      return false;
+      if (the_event->phase != TRACE_EVENT_PHASE_COMPLETE)
+        return false;
+      *num = the_event->duration;
+      return true;
     case EVENT_PHASE:
     case OTHER_PHASE:
       *num = static_cast<double>(the_event->phase);
@@ -494,7 +490,7 @@ bool Query::GetMemberValueAsDouble(const TraceEvent& event,
 
 bool Query::GetMemberValueAsString(const TraceEvent& event,
                                    std::string* str) const {
-  DCHECK(type_ == QUERY_EVENT_MEMBER);
+  DCHECK_EQ(QUERY_EVENT_MEMBER, type_);
 
   // This could be a request for a member of |event| or a member of |event|'s
   // associated event. Store the target event in the_event:
@@ -733,8 +729,8 @@ void TraceAnalyzer::AssociateAsyncBeginEndEvents() {
 void TraceAnalyzer::AssociateEvents(const Query& first,
                                     const Query& second,
                                     const Query& match) {
-  DCHECK(allow_assocation_changes_) << "AssociateEvents not allowed after "
-                                      "FindEvents";
+  DCHECK(allow_assocation_changes_)
+      << "AssociateEvents not allowed after FindEvents";
 
   // Search for matching begin/end event pairs. When a matching end is found,
   // it is associated with the begin event.
@@ -838,7 +834,7 @@ void TraceAnalyzer::ParseMetadata() {
 bool GetRateStats(const TraceEventVector& events,
                   RateStats* stats,
                   const RateStatsOptions* options) {
-  CHECK(stats);
+  DCHECK(stats);
   // Need at least 3 events to calculate rate stats.
   const size_t kMinEvents = 3;
   if (events.size() < kMinEvents) {
@@ -892,9 +888,9 @@ bool FindFirstOf(const TraceEventVector& events,
                  const Query& query,
                  size_t position,
                  size_t* return_index) {
-  CHECK(return_index);
+  DCHECK(return_index);
   for (size_t i = position; i < events.size(); ++i) {
-    if (query.Evaluate(*events.at(i))) {
+    if (query.Evaluate(*events[i])) {
       *return_index = i;
       return true;
     }
@@ -906,12 +902,12 @@ bool FindLastOf(const TraceEventVector& events,
                 const Query& query,
                 size_t position,
                 size_t* return_index) {
-  CHECK(return_index);
+  DCHECK(return_index);
   if (events.empty())
     return false;
   position = (position < events.size()) ? position : events.size() - 1;
   for (;;) {
-    if (query.Evaluate(*events.at(position))) {
+    if (query.Evaluate(*events[position])) {
       *return_index = position;
       return true;
     }
@@ -927,7 +923,7 @@ bool FindClosest(const TraceEventVector& events,
                  size_t position,
                  size_t* return_closest,
                  size_t* return_second_closest) {
-  CHECK(return_closest);
+  DCHECK(return_closest);
   if (events.empty() || position >= events.size())
     return false;
   size_t closest = events.size();

@@ -43,10 +43,9 @@ class TestConsumer: public EtwTraceConsumerBase<TestConsumer> {
   }
 
   void ClearQueue() {
-    EventQueue::const_iterator it(events_.begin()), end(events_.end());
-
-    for (; it != end; ++it) {
-      delete [] it->MofData;
+    for (EventQueue::const_iterator it(events_.begin()), end(events_.end());
+         it != end; ++it) {
+      delete[] it->MofData;
     }
 
     events_.clear();
@@ -56,7 +55,7 @@ class TestConsumer: public EtwTraceConsumerBase<TestConsumer> {
     events_.push_back(*event);
     EVENT_TRACE& back = events_.back();
 
-    if (NULL != event->MofData && 0 != event->MofLength) {
+    if (event->MofData != NULL && event->MofLength != 0) {
       back.MofData = new char[event->MofLength];
       memcpy(back.MofData, event->MofData, event->MofLength);
     }
@@ -112,14 +111,12 @@ TEST_F(EtwTraceConsumerBaseTest, Initialize) {
 
 TEST_F(EtwTraceConsumerBaseTest, OpenRealtimeSucceedsWhenNoSession) {
   TestConsumer consumer_;
-
   ASSERT_HRESULT_SUCCEEDED(
       consumer_.OpenRealtimeSession(session_name_.c_str()));
 }
 
 TEST_F(EtwTraceConsumerBaseTest, ConsumerImmediateFailureWhenNoSession) {
   TestConsumer consumer_;
-
   ASSERT_HRESULT_SUCCEEDED(
       consumer_.OpenRealtimeSession(session_name_.c_str()));
   ASSERT_HRESULT_FAILED(consumer_.Consume());
@@ -131,22 +128,18 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
  public:
   virtual void SetUp() {
     EtwTraceConsumerBaseTest::SetUp();
-
     ASSERT_HRESULT_SUCCEEDED(
         consumer_.OpenRealtimeSession(session_name_.c_str()));
   }
 
   virtual void TearDown() {
     consumer_.Close();
-
     EtwTraceConsumerBaseTest::TearDown();
   }
 
   DWORD ConsumerThread() {
     ::SetEvent(consumer_ready_.Get());
-
-    HRESULT hr = consumer_.Consume();
-    return hr;
+    return consumer_.Consume();
   }
 
   static DWORD WINAPI ConsumerThreadMainProc(void* arg) {
@@ -157,9 +150,9 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
   HRESULT StartConsumerThread() {
     consumer_ready_.Set(::CreateEvent(NULL, TRUE, FALSE, NULL));
     EXPECT_TRUE(consumer_ready_ != NULL);
-    consumer_thread_.Set(::CreateThread(NULL, 0, ConsumerThreadMainProc,
-        this, 0, NULL));
-    if (NULL == consumer_thread_.Get())
+    consumer_thread_.Set(::CreateThread(NULL, 0, ConsumerThreadMainProc, this,
+                                        0, NULL));
+    if (consumer_thread_.Get() == NULL)
       return HRESULT_FROM_WIN32(::GetLastError());
 
     HRESULT hr = S_OK;
@@ -173,13 +166,12 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
       case WAIT_OBJECT_0 + 1: {
           // The thread finished. This may race with the event, so check
           // explicitly for the event here, before concluding there's trouble.
-          if (WAIT_OBJECT_0 == ::WaitForSingleObject(consumer_ready_, 0))
+          if (::WaitForSingleObject(consumer_ready_, 0) == WAIT_OBJECT_0)
             return S_OK;
           DWORD exit_code = 0;
           if (::GetExitCodeThread(consumer_thread_, &exit_code))
             return exit_code;
-          else
-            return HRESULT_FROM_WIN32(::GetLastError());
+          return HRESULT_FROM_WIN32(::GetLastError());
           break;
         }
       default:
@@ -192,7 +184,7 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
 
   // Waits for consumer_ thread to exit, and returns its exit code.
   HRESULT JoinConsumerThread() {
-    if (WAIT_OBJECT_0 != ::WaitForSingleObject(consumer_thread_, INFINITE))
+    if (::WaitForSingleObject(consumer_thread_, INFINITE) != WAIT_OBJECT_0)
       return HRESULT_FROM_WIN32(::GetLastError());
 
     DWORD exit_code = 0;
@@ -211,10 +203,8 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
 
 TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
   EtwTraceController controller;
-
-  HRESULT hr = controller.StartRealtimeSession(session_name_.c_str(),
-                                               100 * 1024);
-  if (hr == E_ACCESSDENIED) {
+  if (controller.StartRealtimeSession(session_name_.c_str(), 100 * 1024) ==
+      E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
@@ -224,7 +214,6 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
 
   // Wait around for the consumer_ thread a bit.
   ASSERT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(consumer_thread_, 50));
-
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(NULL));
 
   // The consumer_ returns success on session stop.
@@ -234,16 +223,16 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
 namespace {
 
 // {57E47923-A549-476f-86CA-503D57F59E62}
-DEFINE_GUID(kTestEventType,
-  0x57e47923, 0xa549, 0x476f, 0x86, 0xca, 0x50, 0x3d, 0x57, 0xf5, 0x9e, 0x62);
+DEFINE_GUID(
+    kTestEventType,
+    0x57e47923, 0xa549, 0x476f, 0x86, 0xca, 0x50, 0x3d, 0x57, 0xf5, 0x9e, 0x62);
 
 }  // namespace
 
 TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
   EtwTraceController controller;
-  HRESULT hr = controller.StartRealtimeSession(session_name_.c_str(),
-                                               100 * 1024);
-  if (hr == E_ACCESSDENIED) {
+  if (controller.StartRealtimeSession(session_name_.c_str(), 100 * 1024) ==
+      E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
@@ -256,12 +245,10 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
 
   // Start the consumer_.
   ASSERT_HRESULT_SUCCEEDED(StartConsumerThread());
-
   ASSERT_EQ(0, TestConsumer::events_.size());
 
   EtwMofEvent<1> event(kTestEventType, 1, TRACE_LEVEL_ERROR);
   EXPECT_EQ(ERROR_SUCCESS, provider.Log(&event.header));
-
   EXPECT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(TestConsumer::sank_event_,
                                                  INFINITE));
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(NULL));
@@ -306,8 +293,8 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
       return hr;
 
     // Enable our provider.
-    EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(test_provider_,
-        TRACE_LEVEL_VERBOSE, 0xFFFFFFFF));
+    EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(
+        test_provider_, TRACE_LEVEL_VERBOSE, 0xFFFFFFFF));
 
     EtwTraceProvider provider(test_provider_);
     // Then register our provider, means we get a session handle immediately.
@@ -374,7 +361,7 @@ TEST_F(EtwTraceConsumerDataTest, RoundTrip) {
     return;
   }
   ASSERT_HRESULT_SUCCEEDED(hr) << "RoundTripEvent failed";
-  ASSERT_TRUE(NULL != trace);
+  ASSERT_TRUE(trace != NULL);
   ASSERT_EQ(sizeof(kData), trace->MofLength);
   ASSERT_STREQ(kData, reinterpret_cast<const char*>(trace->MofData));
 }
