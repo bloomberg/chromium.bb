@@ -169,8 +169,20 @@ unsigned TextAutosizer::getCachedHash(const RenderObject* renderer, bool putInCa
     return combinedHashValue;
 }
 
+bool TextAutosizer::isApplicable() const
+{
+    return m_document->settings()
+        && m_document->settings()->textAutosizingEnabled()
+        && m_document->page()
+        && m_document->page()->mainFrame()
+        && m_document->page()->mainFrame()->loader().stateMachine()->committedFirstRealDocumentLoad();
+}
+
 void TextAutosizer::recalculateMultipliers()
 {
+    if (!isApplicable())
+        return;
+
     RenderObject* renderer = m_document->renderer();
     while (renderer) {
         if (renderer->style() && renderer->style()->textAutosizingMultiplier() != 1)
@@ -182,19 +194,12 @@ void TextAutosizer::recalculateMultipliers()
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
     TRACE_EVENT0("webkit", "TextAutosizer: check if needed");
-    if (!m_document->settings() || layoutRoot->view()->document().printing() || !m_document->page())
-        return false;
 
-    bool textAutosizingEnabled = m_document->settings()->textAutosizingEnabled();
-    if (!textAutosizingEnabled)
+    if (!isApplicable() || layoutRoot->view()->document().printing())
         return false;
 
     LocalFrame* mainFrame = m_document->page()->mainFrame();
     TextAutosizingWindowInfo windowInfo;
-
-    if (!mainFrame->loader().stateMachine()->committedFirstRealDocumentLoad())
-        return false;
-
 
     // Window area, in logical (density-independent) pixels.
     windowInfo.windowSize = m_document->settings()->textAutosizingWindowSizeOverride();

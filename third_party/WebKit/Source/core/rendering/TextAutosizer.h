@@ -83,6 +83,7 @@ private:
 
     explicit TextAutosizer(Document*);
 
+    bool isApplicable() const;
     float clusterMultiplier(WritingMode, const TextAutosizingWindowInfo&, float textWidth) const;
 
     void processClusterInternal(TextAutosizingClusterInfo&, RenderBlock* container, RenderObject* subtreeRoot, const TextAutosizingWindowInfo&, float multiplier);

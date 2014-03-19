@@ -4392,6 +4392,14 @@ void Document::finishedParsing()
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
 
+    if (frame() && frame()->isMainFrame()) {
+        // Reset the text autosizing multipliers on main frame when DOM is loaded.
+        // This is to allow for a fresh text autosizing pass when the page layout
+        // changes significantly in the end.
+        if (TextAutosizer* textAutosizer = this->textAutosizer())
+            textAutosizer->recalculateMultipliers();
+    }
+
     // The loader's finishedParsing() method may invoke script that causes this object to
     // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
     // Keep it alive until we are done.
