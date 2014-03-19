@@ -9,7 +9,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "ui/accessibility/ax_export.h"
-#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace ui {

@@ -5,8 +5,6 @@
 #ifndef MEDIA_FILTERS_DECODER_SELECTOR_H_
 #define MEDIA_FILTERS_DECODER_SELECTOR_H_
 
-#include "media/filters/decoder_selector.h"
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"

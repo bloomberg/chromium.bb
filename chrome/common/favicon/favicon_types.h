@@ -6,7 +6,6 @@
 #define CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
 
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
