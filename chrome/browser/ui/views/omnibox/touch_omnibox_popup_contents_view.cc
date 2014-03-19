@@ -31,25 +31,25 @@ TouchOmniboxResultView::TouchOmniboxResultView(
 TouchOmniboxResultView::~TouchOmniboxResultView() {
 }
 
-void TouchOmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
-  const AutocompleteMatch& match = display_match();
+void TouchOmniboxResultView::PaintMatch(
+    const AutocompleteMatch& match,
+    gfx::RenderText* contents,
+    gfx::RenderText* description,
+    gfx::Canvas* canvas,
+    int x) const {
   int y = text_bounds().y();
 
   if (!match.description.empty()) {
     // We use our base class's GetTextHeight below because we need the height
     // of a single line of text.
-    scoped_ptr<gfx::RenderText> render_text(
-        CreateRenderText(match.description));
-    ApplyClassifications(render_text.get(), match.description_class, true);
-    DrawRenderText(canvas, render_text.get(), false, x, y, -1);
+    DrawRenderText(match, description, false, canvas, x, y, -1);
     y += OmniboxResultView::GetTextHeight();
   } else {
     // When we have only one line of content (no description), we center the
     // single line vertically on our two-lines-tall results box.
     y += OmniboxResultView::GetTextHeight() / 2;
   }
-
-  DrawRenderText(canvas, RenderMatchContents(), true, x, y, -1);
+  DrawRenderText(match, contents, true, canvas, x, y, -1);
 }
 
 int TouchOmniboxResultView::GetTextHeight() const {

@@ -76,16 +76,24 @@ class OmniboxResultView : public views::View,
   int GetMatchContentsWidth() const;
 
  protected:
-  virtual void PaintMatch(gfx::Canvas* canvas, int x);
+  // Paints the given |match| using the RenderText instances |contents| and
+  // |description| at offset |x| in the bounds of this view.
+  virtual void PaintMatch(const AutocompleteMatch& match,
+                          gfx::RenderText* contents,
+                          gfx::RenderText* description,
+                          gfx::Canvas* canvas,
+                          int x) const;
 
   // Draws given |render_text| on |canvas| at given location (|x|, |y|).
-  // |contents| determines any formatting difference between contents and
-  // description parts of the omnibox result (see AutocompleteMatch). If
-  // |max_width| is a non-negative number, the text will be elided to fit
-  // within |max_width|. Returns the x position to the right of the string.
-  int DrawRenderText(gfx::Canvas* canvas,
+  // |contents| indicates whether the |render_text| is for the match contents
+  // (rather than the separator or the description).  Additional properties from
+  // |match| are used to render Infinite suggestions correctly.  If |max_width|
+  // is a non-negative number, the text will be elided to fit within
+  // |max_width|.  Returns the x position to the right of the string.
+  int DrawRenderText(const AutocompleteMatch& match,
                      gfx::RenderText* render_text,
                      bool contents,
+                     gfx::Canvas* canvas,
                      int x,
                      int y,
                      int max_width) const;
@@ -94,15 +102,12 @@ class OmniboxResultView : public views::View,
   scoped_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
-  // Applies styles specified by |classifications| and |force_dim| in the range
-  // from |range_start| to |range_end| in the |render_text|.
-  void ApplyClassifications(
-      gfx::RenderText* render_text,
+  // Creates a RenderText with default rendering for the given |text|. The
+  // |classifications| and |force_dim| are used to style the text.
+  scoped_ptr<gfx::RenderText> CreateClassifiedRenderText(
+      const base::string16& text,
       const ACMatchClassifications& classifications,
       bool force_dim) const;
-
-  // Renders match contents at a suitable location in the bounds of this view.
-  gfx::RenderText* RenderMatchContents();
 
   const gfx::Rect& text_bounds() const { return text_bounds_; }
 
@@ -110,12 +115,6 @@ class OmniboxResultView : public views::View,
   void set_item_padding(int value) { item_padding_ = value; }
   void set_minimum_text_vertical_padding(int value) {
     minimum_text_vertical_padding_ = value;
-  }
-
-  // Returns the match to be rendered for this row.
-  const AutocompleteMatch& display_match() const {
-    return render_associated_keyword_match_ ?
-        *match_.associated_keyword.get() : match_;
   }
 
  private:
@@ -138,6 +137,18 @@ class OmniboxResultView : public views::View,
   gfx::ImageSkia GetIcon() const;
   const gfx::ImageSkia* GetKeywordIcon() const;
 
+  // Whether to render only the keyword match.  Returns true if |match_| has an
+  // associated keyword match that has been animated so close to the start that
+  // the keyword match will hide even the icon of the regular match.
+  bool ShowOnlyKeywordMatch() const;
+
+  // Resets all RenderTexts for contents and description of the |match_| and its
+  // associated keyword match.
+  void ResetRenderTexts() const;
+
+  // Initializes |contents_rendertext_| if it is NULL.
+  void InitContentsRenderTextIfNecessary() const;
+
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -146,14 +157,14 @@ class OmniboxResultView : public views::View,
   // gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
-  // Returns the offset at which the suggestion should be displayed within the
-  // text bounds. The directionality of UI and match contents is used to
-  // determine the offset relative to the correct edge.
-  int GetDisplayOffset(bool is_ui_rtl, bool is_match_contents_rtl) const;
+  // Returns the offset at which the contents of the |match| should be displayed
+  // within the text bounds. The directionality of UI and match contents is used
+  // to determine the offset relative to the correct edge.
+  int GetDisplayOffset(const AutocompleteMatch& match,
+                       bool is_ui_rtl,
+                       bool is_match_contents_rtl) const;
 
   static int default_icon_size_;
-
-  static int ellipsis_width_;
 
   // Default values cached here, may be overridden using the setters above.
   int edge_item_padding_;
@@ -175,10 +186,6 @@ class OmniboxResultView : public views::View,
 
   AutocompleteMatch match_;
 
-  // Whether the associated keyword match should be rendered instead of the
-  // original match.
-  bool render_associated_keyword_match_;
-
   gfx::Rect text_bounds_;
   gfx::Rect icon_bounds_;
 
@@ -187,7 +194,15 @@ class OmniboxResultView : public views::View,
 
   scoped_ptr<gfx::SlideAnimation> animation_;
 
-  scoped_ptr<gfx::RenderText> match_contents_render_text_;
+  // We preserve these RenderTexts so that we won't recreate them on every call
+  // to GetMatchContentsWidth() or OnPaint().
+  mutable scoped_ptr<gfx::RenderText> contents_rendertext_;
+  mutable scoped_ptr<gfx::RenderText> description_rendertext_;
+  mutable scoped_ptr<gfx::RenderText> separator_rendertext_;
+  mutable scoped_ptr<gfx::RenderText> keyword_contents_rendertext_;
+  mutable scoped_ptr<gfx::RenderText> keyword_description_rendertext_;
+
+  mutable int separator_width_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };

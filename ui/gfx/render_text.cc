@@ -1212,7 +1212,8 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   // the stale |display_offset_|. Applying |delta_offset| at the end of this
   // function will set |cursor_bounds_| and |display_offset_| to correct values.
   cached_bounds_and_offset_valid_ = true;
-  cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+  if (cursor_enabled())
+    cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
 
   // Update |display_offset_| to ensure the current cursor is visible.
   const int display_width = display_rect_.width();

@@ -31,7 +31,11 @@ class TouchOmniboxResultView : public OmniboxResultView {
   virtual ~TouchOmniboxResultView();
 
   // OmniboxResultView:
-  virtual void PaintMatch(gfx::Canvas* canvas, int x) OVERRIDE;
+  virtual void PaintMatch(const AutocompleteMatch& match,
+                          gfx::RenderText* contents,
+                          gfx::RenderText* description,
+                          gfx::Canvas* canvas,
+                          int x) const OVERRIDE;
   virtual int GetTextHeight() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TouchOmniboxResultView);

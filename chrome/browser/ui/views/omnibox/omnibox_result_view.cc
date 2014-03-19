@@ -113,8 +113,6 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
             AutocompleteMatch::TypeToIcon(
                 AutocompleteMatchType::URL_WHAT_YOU_TYPED))->width();
   }
-  if (ellipsis_width_ == 0)
-    ellipsis_width_ = CreateRenderText(gfx::kEllipsisUTF16)->GetContentWidth();
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_->SetImage(GetKeywordIcon());
@@ -167,22 +165,18 @@ SkColor OmniboxResultView::GetColor(
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
-  match_contents_render_text_.reset();
+  ResetRenderTexts();
   animation_->Reset();
 
   AutocompleteMatch* associated_keyword_match = match_.associated_keyword.get();
   if (associated_keyword_match) {
     keyword_icon_->SetImage(GetKeywordIcon());
-
     if (!keyword_icon_->parent())
       AddChildView(keyword_icon_.get());
   } else if (keyword_icon_->parent()) {
     RemoveChildView(keyword_icon_.get());
   }
 
-  render_associated_keyword_match_ =
-      associated_keyword_match && keyword_icon_->x() <= icon_bounds_.right();
-  RenderMatchContents();
   Layout();
 }
 
@@ -195,7 +189,10 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 
 void OmniboxResultView::Invalidate() {
   keyword_icon_->SetImage(GetKeywordIcon());
-  match_contents_render_text_.reset();
+  // While the text in the RenderTexts may not have changed, the styling
+  // (color/bold) may need to change. So we reset them to cause them to be
+  // recomputed in OnPaint().
+  ResetRenderTexts();
   SchedulePaint();
 }
 
@@ -218,47 +215,47 @@ int OmniboxResultView::GetTextHeight() const {
   return font_height_;
 }
 
-void OmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
-  const AutocompleteMatch& match = display_match();
+void OmniboxResultView::PaintMatch(
+    const AutocompleteMatch& match,
+    gfx::RenderText* contents,
+    gfx::RenderText* description,
+    gfx::Canvas* canvas,
+    int x) const {
   int y = text_bounds_.y();
+
+  if (!separator_rendertext_) {
+    const base::string16& separator =
+        l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+    separator_rendertext_.reset(CreateRenderText(separator).release());
+    separator_rendertext_->SetColor(GetColor(GetState(), DIMMED_TEXT));
+    separator_width_ = separator_rendertext_->GetContentWidth();
+  }
+
   int contents_max_width, description_max_width;
-
-  gfx::RenderText* contents_render_text = RenderMatchContents();
-
-  const base::string16& separator =
-      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
-  scoped_ptr<gfx::RenderText> separator_render_text(
-      CreateRenderText(separator));
-  separator_render_text->SetColor(GetColor(GetState(), DIMMED_TEXT));
-
-  scoped_ptr<gfx::RenderText> description_render_text(
-      CreateRenderText(match.description));
-  ApplyClassifications(description_render_text.get(), match.description_class,
-                       true);
-
   ComputeMatchMaxWidths(
-      contents_render_text->GetContentWidth(),
-      separator_render_text->GetContentWidth(),
-      description_render_text->GetContentWidth(),
+      contents->GetContentWidth(),
+      separator_width_,
+      description ? description->GetContentWidth() : 0,
       mirroring_context_->remaining_width(x),
       !AutocompleteMatch::IsSearchType(match.type),
       &contents_max_width,
       &description_max_width);
 
-  x = DrawRenderText(canvas, contents_render_text, true, x, y,
-                     contents_max_width);
+  x = DrawRenderText(match, contents, true, canvas, x, y, contents_max_width);
 
   if (description_max_width != 0) {
-      x = DrawRenderText(canvas, separator_render_text.get(), false, x, y, -1);
-      DrawRenderText(canvas, description_render_text.get(), false, x, y,
-                     description_max_width);
+    x = DrawRenderText(match, separator_rendertext_.get(), false, canvas, x, y,
+                       separator_width_);
+    DrawRenderText(match, description, false, canvas, x, y,
+                   description_max_width);
   }
 }
 
 int OmniboxResultView::DrawRenderText(
-    gfx::Canvas* canvas,
+    const AutocompleteMatch& match,
     gfx::RenderText* render_text,
     bool contents,
+    gfx::Canvas* canvas,
     int x,
     int y,
     int max_width) const {
@@ -270,8 +267,6 @@ int OmniboxResultView::DrawRenderText(
   const int content_width = render_text->GetContentWidth();
   int right_x = x + std::min(remaining_width, content_width);
 
-  const AutocompleteMatch& match = display_match();
-
   // Infinite suggestions should appear with the leading ellipses vertically
   // stacked.
   if (contents &&
@@ -281,7 +276,8 @@ int OmniboxResultView::DrawRenderText(
     const bool is_ui_rtl = base::i18n::IsRTL();
     const bool is_match_contents_rtl =
         (render_text->GetTextDirection() == base::i18n::RIGHT_TO_LEFT);
-    const int offset = GetDisplayOffset(is_ui_rtl, is_match_contents_rtl);
+    const int offset =
+        GetDisplayOffset(match, is_ui_rtl, is_match_contents_rtl);
 
     scoped_ptr<gfx::RenderText> prefix_render_text(
         CreateRenderText(base::UTF8ToUTF16(
@@ -340,17 +336,18 @@ int OmniboxResultView::DrawRenderText(
 scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
     const base::string16& text) const {
   scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  render_text->SetCursorEnabled(false);
+  render_text->SetElideBehavior(gfx::ELIDE_AT_END);
   render_text->SetFontList(font_list_);
   render_text->SetText(text);
-  render_text->SetElideBehavior(gfx::ELIDE_AT_END);
-  render_text->SetCursorEnabled(false);
   return render_text.Pass();
 }
 
-void OmniboxResultView::ApplyClassifications(
-    gfx::RenderText* render_text,
+scoped_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
+    const base::string16& text,
     const ACMatchClassifications& classifications,
     bool force_dim) const {
+  scoped_ptr<gfx::RenderText> render_text(CreateRenderText(text));
   const size_t text_length = render_text->text().length();
   for (size_t i = 0; i < classifications.size(); ++i) {
     const size_t text_start = classifications[i].offset;
@@ -387,29 +384,20 @@ void OmniboxResultView::ApplyClassifications(
     }
     render_text->ApplyColor(GetColor(GetState(), color_kind), current_range);
   }
-}
-
-gfx::RenderText* OmniboxResultView::RenderMatchContents() {
-  if (!match_contents_render_text_) {
-    const AutocompleteMatch& match = display_match();
-    match_contents_render_text_.reset(
-        CreateRenderText(match.contents).release());
-    ApplyClassifications(match_contents_render_text_.get(),
-                         match.contents_class, false);
-  }
-  return match_contents_render_text_.get();
+  return render_text.Pass();
 }
 
 int OmniboxResultView::GetMatchContentsWidth() const {
-  return match_contents_render_text_->GetContentWidth();
+  InitContentsRenderTextIfNecessary();
+  return contents_rendertext_ ? contents_rendertext_->GetContentWidth() : 0;
 }
 
 // TODO(skanuj): This is probably identical across all OmniboxResultView rows in
 // the omnibox dropdown. Consider sharing the result.
 int OmniboxResultView::GetDisplayOffset(
+    const AutocompleteMatch& match,
     bool is_ui_rtl,
     bool is_match_contents_rtl) const {
-  const AutocompleteMatch& match = display_match();
   if (match.type != AutocompleteMatchType::SEARCH_SUGGEST_INFINITE)
     return 0;
 
@@ -523,9 +511,6 @@ void OmniboxResultView::CommonInitColors(const ui::NativeTheme* theme,
 // static
 int OmniboxResultView::default_icon_size_ = 0;
 
-// static
-int OmniboxResultView::ellipsis_width_ = 0;
-
 gfx::ImageSkia OmniboxResultView::GetIcon() const {
   const gfx::Image image = model_->GetIconIfExtensionMatch(model_index_);
   if (!image.IsEmpty())
@@ -560,6 +545,27 @@ const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   // to ensure that |keyword_icon_| is resized each time its image is reset.
   return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
+}
+
+bool OmniboxResultView::ShowOnlyKeywordMatch() const {
+  return match_.associated_keyword &&
+      (keyword_icon_->x() <= icon_bounds_.right());
+}
+
+void OmniboxResultView::ResetRenderTexts() const {
+  contents_rendertext_.reset();
+  description_rendertext_.reset();
+  separator_rendertext_.reset();
+  keyword_contents_rendertext_.reset();
+  keyword_description_rendertext_.reset();
+}
+
+void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
+  if (!contents_rendertext_) {
+    contents_rendertext_.reset(
+        CreateClassifiedRenderText(
+            match_.contents, match_.contents_class, false).release());
+  }
 }
 
 void OmniboxResultView::Layout() {
@@ -601,16 +607,43 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
   if (state != NORMAL)
     canvas->DrawColor(GetColor(state, BACKGROUND));
 
-  if (!render_associated_keyword_match_) {
-    // Paint the icon.
+  // NOTE: While animating the keyword match, both matches may be visible.
+
+  if (!ShowOnlyKeywordMatch()) {
     canvas->DrawImageInt(GetIcon(), GetMirroredXForRect(icon_bounds_),
                          icon_bounds_.y());
+    int x = GetMirroredXForRect(text_bounds_);
+    mirroring_context_->Initialize(x, text_bounds_.width());
+    InitContentsRenderTextIfNecessary();
+    if (!description_rendertext_ && !match_.description.empty()) {
+      description_rendertext_.reset(
+          CreateClassifiedRenderText(
+              match_.description, match_.description_class, true).release());
+    }
+    PaintMatch(match_, contents_rendertext_.get(),
+               description_rendertext_.get(), canvas, x);
   }
-  const gfx::Rect& text_bounds = render_associated_keyword_match_ ?
-      keyword_text_bounds_ : text_bounds_;
-  int x = GetMirroredXForRect(text_bounds);
-  mirroring_context_->Initialize(x, text_bounds.width());
-  PaintMatch(canvas, x);
+
+  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
+  if (keyword_match) {
+    int x = GetMirroredXForRect(keyword_text_bounds_);
+    mirroring_context_->Initialize(x, keyword_text_bounds_.width());
+    if (!keyword_contents_rendertext_) {
+      keyword_contents_rendertext_.reset(
+          CreateClassifiedRenderText(keyword_match->contents,
+                                     keyword_match->contents_class,
+                                     false).release());
+    }
+    if (!keyword_description_rendertext_ &&
+        !keyword_match->description.empty()) {
+      keyword_description_rendertext_.reset(
+          CreateClassifiedRenderText(keyword_match->description,
+                                     keyword_match->description_class,
+                                     true).release());
+    }
+    PaintMatch(*keyword_match, keyword_contents_rendertext_.get(),
+               keyword_description_rendertext_.get(), canvas, x);
+  }
 }
 
 void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
