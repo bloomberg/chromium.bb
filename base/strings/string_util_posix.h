@@ -11,7 +11,6 @@
 #include <wchar.h>
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 
 namespace base {
 
