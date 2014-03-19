@@ -42,6 +42,7 @@ libgtk-x11-2.0.so.0
 libm.so.6
 libm.so.6(GLIBC_2.0)
 libm.so.6(GLIBC_2.1)
+libmojo_system.so
 libnspr4.so
 libnss3.so
 libnssutil3.so
