@@ -1323,12 +1323,15 @@
                 'gcc_version%': 46,
               }],
             ],
+            'binutils_version%': 222,
           }, {
             'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+            'binutils_version%': '<!(python <(DEPTH)/build/compiler_version.py assembler)',
           }],
         ],
       }, {
         'gcc_version%': 0,
+        'binutils_version%': 0,
       }],
       ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(windows_sdk_default_path))"=="True"', {
         'windows_sdk_path%': '<(windows_sdk_default_path)',
@@ -1367,20 +1370,7 @@
             # can use breakpad for these builds.
             'release_unwind_tables%': 0,
           }],
-          ['OS=="android"', {
-            'conditions': [
-              ['target_arch=="x64"', {
-                'binutils_version%': 223,
-              }, {
-                'binutils_version%': 222,
-              }],
-            ],
-          }, {
-            'binutils_version%': '<!(python <(DEPTH)/build/compiler_version.py assembler)',
-          }],
         ],
-      }, {
-        'binutils_version%': 0,
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
       ['OS=="ios"', {
         'disable_nacl%': 1,
