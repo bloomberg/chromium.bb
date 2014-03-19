@@ -17,12 +17,12 @@
 #include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
 #include "base/x11/edid_parser_x11.h"
-#include "base/x11/x11_error_tracker.h"
 #include "ui/display/chromeos/native_display_observer.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/display_util.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
+#include "ui/gfx/x/x11_error_tracker.h"
 
 namespace ui {
 
@@ -465,7 +465,7 @@ bool NativeDisplayDelegateX11::SetHDCPState(const DisplaySnapshot& output,
       NOTREACHED() << "Invalid HDCP state: " << state;
       return false;
   }
-  base::X11ErrorTracker err_tracker;
+  gfx::X11ErrorTracker err_tracker;
   unsigned char* data = reinterpret_cast<unsigned char*>(&value);
   RROutput output_id = static_cast<const DisplaySnapshotX11&>(output).output();
   XRRChangeOutputProperty(

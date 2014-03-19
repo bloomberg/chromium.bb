@@ -1,21 +1,21 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_X11_X11_ERROR_TRACKER_H_
-#define BASE_X11_X11_ERROR_TRACKER_H_
+#ifndef UI_GFX_X_X11_ERROR_TRACKER_H_
+#define UI_GFX_X_X11_ERROR_TRACKER_H_
 
 #include <X11/Xlib.h>
 
-#include "base/base_export.h"
 #include "base/basictypes.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace base {
+namespace gfx {
 
 // X11ErrorTracker catches X11 errors in a non-fatal way. It does so by
 // temporarily changing the X11 error handler. The old error handler is
 // restored when the tracker is destroyed.
-class BASE_EXPORT X11ErrorTracker {
+class GFX_EXPORT X11ErrorTracker {
  public:
   X11ErrorTracker();
   ~X11ErrorTracker();
@@ -26,13 +26,11 @@ class BASE_EXPORT X11ErrorTracker {
   bool FoundNewError();
 
  private:
-#if !defined(TOOLKIT_GTK)
   XErrorHandler old_handler_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(X11ErrorTracker);
 };
 
-}  // namespace base
+}  // namespace gfx
 
-#endif  // BASE_X11_X11_ERROR_TRACKER_H_
+#endif  // UI_GFX_X_X11_ERROR_TRACKER_H_

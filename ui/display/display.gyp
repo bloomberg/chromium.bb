@@ -12,6 +12,7 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
@@ -57,6 +58,7 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         'display',
       ],
