@@ -281,6 +281,7 @@ struct PPB_NaCl_Private_1_0 {
   /* Report an error that occured while attempting to load a nexe. */
   void (*ReportLoadError)(PP_Instance instance,
                           PP_NaClError error,
+                          const char* error_message,
                           PP_Bool is_installed);
   /* Performs internal cleanup when an instance is destroyed. */
   void (*InstanceDestroyed)(PP_Instance instance);

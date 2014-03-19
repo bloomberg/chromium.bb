@@ -1261,15 +1261,13 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
                  error_info.message().c_str()));
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
+                                   error_info.message().c_str(),
                                    PP_FromBool(is_installed_));
 
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
   set_nexe_error_reported(true);
-  // Report an error in lastError and on the JavaScript console.
-  nacl::string message = nacl::string("NaCl module load failed: ") +
-      error_info.message();
-  set_last_error_string(message);
+  // Report an error on the JavaScript console.
   AddToConsole(nacl::string("NaCl module load failed: ") +
                error_info.console_message());
 }

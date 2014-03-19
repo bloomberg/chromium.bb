@@ -274,6 +274,7 @@ interface PPB_NaCl_Private {
   /* Report an error that occured while attempting to load a nexe. */
   void ReportLoadError([in] PP_Instance instance,
                        [in] PP_NaClError error,
+                       [in] str_t error_message,
                        [in] PP_Bool is_installed);
 
   /* Performs internal cleanup when an instance is destroyed. */

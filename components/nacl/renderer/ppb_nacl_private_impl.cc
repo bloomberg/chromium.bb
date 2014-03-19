@@ -511,6 +511,7 @@ void SetReadOnlyProperty(PP_Instance instance,
 
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
+                     const char* error_message,
                      PP_Bool is_installed) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
@@ -537,6 +538,14 @@ void ReportLoadError(PP_Instance instance,
                          "NaCl.LoadStatus.Plugin.InstalledApp" :
                          "NaCl.LoadStatus.Plugin.NotInstalledApp";
   HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
+
+  std::string error_string = std::string("NaCl module load failed: ") +
+      std::string(error_message);
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  plugin_instance->SetEmbedProperty(
+      ppapi::StringVar::StringToPPVar("lastError"),
+      ppapi::StringVar::StringToPPVar(error_string));
 }
 
 void InstanceDestroyed(PP_Instance instance) {
