@@ -53,7 +53,7 @@ namespace WebCore {
 enum RepaintStatus {
     NeedsNormalRepaint = 0,
     NeedsFullRepaint = 1 << 0,
-    NeedsFullRepaintForPositionedMovementLayout = 1 << 1
+    NeedsFullRepaintForPositionedMovementLayout = NeedsFullRepaint | 1 << 1
 };
 
 class RenderGeometryMap;
@@ -86,7 +86,7 @@ public:
     void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
 
 private:
-    bool shouldRepaintAfterLayout() const;
+    bool shouldRepaintLayer() const;
 
     void clearRepaintRects();
 
