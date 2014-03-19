@@ -263,6 +263,8 @@ class NET_EXPORT WebSocketChannel {
   // Drop this channel.
   // If there are pending opening handshake notifications, notify them
   // before dropping.
+  //
+  // Always returns CHANNEL_DELETED.
   ChannelState DoDropChannel(bool was_clean,
                              uint16 code,
                              const std::string& reason);

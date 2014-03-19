@@ -395,13 +395,16 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // errata 3227 to RFC6455. If the renderer is sending us an invalid code or
     // reason it must be malfunctioning in some way, and based on that we
     // interpret this as an internal error.
-    AllowUnused(SendClose(kWebSocketErrorInternalServerError, ""));
-    // |this| may have been deleted.
+    if (SendClose(kWebSocketErrorInternalServerError, "") != CHANNEL_DELETED)
+      state_ = SEND_CLOSED;
     return;
   }
-  AllowUnused(SendClose(
-      code, StreamingUtf8Validator::Validate(reason) ? reason : std::string()));
-  // |this| may have been deleted.
+  if (SendClose(
+          code,
+          StreamingUtf8Validator::Validate(reason) ? reason : std::string()) ==
+      CHANNEL_DELETED)
+    return;
+  state_ = SEND_CLOSED;
 }
 
 void WebSocketChannel::SendAddChannelRequestForTesting(
@@ -520,6 +523,8 @@ ChannelState WebSocketChannel::WriteFrames() {
     if (result != ERR_IO_PENDING) {
       if (OnWriteDone(true, result) == CHANNEL_DELETED)
         return CHANNEL_DELETED;
+      // OnWriteDone() returns CHANNEL_DELETED on error. Here |state_| is
+      // guaranteed to be the same as before OnWriteDone() call.
     }
   } while (result == OK && data_being_sent_);
   return CHANNEL_ALIVE;
@@ -717,9 +722,10 @@ ChannelState WebSocketChannel::HandleFrameByState(
       switch (state_) {
         case CONNECTED:
           state_ = RECV_CLOSED;
-          if (SendClose(code, reason) ==  // Sets state_ to CLOSE_WAIT
-              CHANNEL_DELETED)
+          if (SendClose(code, reason) == CHANNEL_DELETED)
             return CHANNEL_DELETED;
+          state_ = CLOSE_WAIT;
+
           if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
             return CHANNEL_DELETED;
           received_close_code_ = code;
@@ -821,12 +827,14 @@ ChannelState WebSocketChannel::SendIOBuffer(
     size_t size) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
+
   scoped_ptr<WebSocketFrame> frame(new WebSocketFrame(op_code));
   WebSocketFrameHeader& header = frame->header;
   header.final = fin;
   header.masked = true;
   header.payload_length = size;
   frame->data = buffer;
+
   if (data_being_sent_) {
     // Either the link to the WebSocket server is saturated, or several messages
     // are being sent in a batch.
@@ -837,6 +845,7 @@ ChannelState WebSocketChannel::SendIOBuffer(
     data_to_send_next_->AddFrame(frame.Pass());
     return CHANNEL_ALIVE;
   }
+
   data_being_sent_.reset(new SendBuffer);
   data_being_sent_->AddFrame(frame.Pass());
   return WriteFrames();
@@ -850,8 +859,7 @@ ChannelState WebSocketChannel::FailChannel(const std::string& message,
   DCHECK_NE(CLOSED, state_);
   // TODO(ricea): Logging.
   if (state_ == CONNECTED) {
-    if (SendClose(code, reason) ==  // Sets state_ to SEND_CLOSED
-        CHANNEL_DELETED)
+    if (SendClose(code, reason) == CHANNEL_DELETED)
       return CHANNEL_DELETED;
   }
   // Careful study of RFC6455 section 7.1.7 and 7.1.1 indicates the browser
@@ -893,9 +901,6 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
   if (SendIOBuffer(true, WebSocketFrameHeader::kOpCodeClose, body, size) ==
       CHANNEL_DELETED)
     return CHANNEL_DELETED;
-  // SendIOBuffer() checks |state_|, so it is best not to change it until after
-  // SendIOBuffer() returns.
-  state_ = (state_ == CONNECTED) ? SEND_CLOSED : CLOSE_WAIT;
   return CHANNEL_ALIVE;
 }
 
@@ -958,7 +963,10 @@ ChannelState WebSocketChannel::DoDropChannel(bool was_clean,
   if (CHANNEL_DELETED ==
       notification_sender_->SendImmediately(event_interface_.get()))
     return CHANNEL_DELETED;
-  return event_interface_->OnDropChannel(was_clean, code, reason);
+  ChannelState result =
+      event_interface_->OnDropChannel(was_clean, code, reason);
+  DCHECK_EQ(CHANNEL_DELETED, result);
+  return result;
 }
 
 void WebSocketChannel::CloseTimeout() {
