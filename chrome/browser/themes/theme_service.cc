@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -336,13 +337,16 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   if (!ignore_infobars && number_of_infobars_ != 0)
     return;
 
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
+
   std::string current_theme = GetThemeID();
   std::vector<std::string> remove_list;
   scoped_ptr<const extensions::ExtensionSet> extensions(
-      service->GenerateInstalledExtensionsSet());
+      extensions::ExtensionRegistry::Get(profile_)
+          ->GenerateInstalledExtensionsSet());
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {

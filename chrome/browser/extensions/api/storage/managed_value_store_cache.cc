@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/value_store/value_store_change.h"
 #include "extensions/common/api/storage.h"
@@ -78,7 +78,7 @@ class ManagedValueStoreCache::ExtensionTracker
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  // Handler for NOTIFICATION_EXTENSIONS_READY.
+  // Handler for the signal from ExtensionSystem::ready().
   void OnExtensionsReady();
 
   // Starts a schema load for all extensions that use managed storage.
@@ -123,7 +123,7 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Some extensions are installed on the first run before the ExtensionService
+  // Some extensions are installed on the first run before the ExtensionSystem
   // becomes ready. Wait until all of them are ready before registering the
   // schemas of managed extensions, so that the policy loaders are reloaded at
   // most once.
@@ -155,9 +155,8 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
 
 void ManagedValueStoreCache::ExtensionTracker::OnExtensionsReady() {
   // Load schemas for all installed extensions.
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  LoadSchemas(service->GenerateInstalledExtensionsSet());
+  LoadSchemas(
+      ExtensionRegistry::Get(profile_)->GenerateInstalledExtensionsSet());
 }
 
 void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
@@ -226,11 +225,11 @@ void ManagedValueStoreCache::ExtensionTracker::Register(
   schema_registry_->RegisterComponents(policy::POLICY_DOMAIN_EXTENSIONS,
                                        *components);
 
-  // The first SetReady() call is performed after receiving
-  // NOTIFICATION_EXTENSIONS_READY, even if there are no managed extensions.
-  // It will trigger a loading of the initial policy for any managed
-  // extensions, and eventually the PolicyService will become ready for
-  // POLICY_DOMAIN_EXTENSIONS, and OnPolicyServiceInitialized() will be invoked.
+  // The first SetReady() call is performed after the ExtensionSystem is ready,
+  // even if there are no managed extensions. It will trigger a loading of the
+  // initial policy for any managed extensions, and eventually the PolicyService
+  // will become ready for POLICY_DOMAIN_EXTENSIONS, and
+  // OnPolicyServiceInitialized() will be invoked.
   // Subsequent calls to SetReady() are ignored.
   schema_registry_->SetReady(policy::POLICY_DOMAIN_EXTENSIONS);
 }

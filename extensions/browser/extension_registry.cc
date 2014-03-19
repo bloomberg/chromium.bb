@@ -18,6 +18,16 @@ ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
   return ExtensionRegistryFactory::GetForBrowserContext(context);
 }
 
+scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet()
+    const {
+  scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet);
+  installed_extensions->InsertAll(enabled_extensions_);
+  installed_extensions->InsertAll(disabled_extensions_);
+  installed_extensions->InsertAll(terminated_extensions_);
+  installed_extensions->InsertAll(blacklisted_extensions_);
+  return installed_extensions.Pass();
+}
+
 void ExtensionRegistry::AddObserver(ExtensionRegistryObserver* observer) {
   observers_.AddObserver(observer);
 }

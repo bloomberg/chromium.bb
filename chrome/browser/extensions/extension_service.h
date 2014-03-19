@@ -168,10 +168,6 @@ class ExtensionService
 
   const extensions::ExtensionSet* delayed_installs() const;
 
-  // Returns a set of all installed, disabled, blacklisted, and terminated
-  // extensions.
-  scoped_ptr<extensions::ExtensionSet> GenerateInstalledExtensionsSet() const;
-
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager*
       pending_extension_manager() OVERRIDE;

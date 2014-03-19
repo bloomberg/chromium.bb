@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -64,10 +65,9 @@ void LoadApp(content::BrowserContext* context,
 AppStateMap GetAppStates(Profile* profile) {
   AppStateMap app_state_map;
 
-  ExtensionService* extension_service = profile->GetExtensionService();
-
   scoped_ptr<const extensions::ExtensionSet> extensions(
-      extension_service->GenerateInstalledExtensionsSet());
+      extensions::ExtensionRegistry::Get(profile)
+          ->GenerateInstalledExtensionsSet());
   for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if (extensions::sync_helper::IsSyncableApp(it->get())) {
@@ -77,7 +77,9 @@ AppStateMap GetAppStates(Profile* profile) {
   }
 
   const extensions::PendingExtensionManager* pending_extension_manager =
-      extension_service->pending_extension_manager();
+      extensions::ExtensionSystem::Get(profile)
+          ->extension_service()
+          ->pending_extension_manager();
 
   std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);

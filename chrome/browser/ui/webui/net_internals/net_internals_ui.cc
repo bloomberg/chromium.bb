@@ -57,6 +57,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
@@ -865,7 +866,8 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(
     ExtensionService* extension_service = extension_system->extension_service();
     if (extension_service) {
       scoped_ptr<const extensions::ExtensionSet> extensions(
-          extension_service->GenerateInstalledExtensionsSet());
+          extensions::ExtensionRegistry::Get(profile)
+              ->GenerateInstalledExtensionsSet());
       for (extensions::ExtensionSet::const_iterator it = extensions->begin();
            it != extensions->end(); ++it) {
         base::DictionaryValue* extension_info = new base::DictionaryValue();

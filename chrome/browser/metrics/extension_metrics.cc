@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 
 // From third_party/smhasher/src/City.h; that file can't be included here due
@@ -77,9 +77,8 @@ HashedExtensionMetrics::GetInstalledExtensions() {
   // profiles.
   Profile* profile = GetMetricsProfile();
   if (profile) {
-    ExtensionService* service = profile->GetExtensionService();
-    if (service)
-      return service->GenerateInstalledExtensionsSet();
+    return extensions::ExtensionRegistry::Get(profile)
+        ->GenerateInstalledExtensionsSet();
   }
 #endif  // defined(ENABLE_EXTENSIONS)
   return scoped_ptr<extensions::ExtensionSet>();

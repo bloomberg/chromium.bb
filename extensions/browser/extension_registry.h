@@ -57,6 +57,10 @@ class ExtensionRegistry : public KeyedService {
     return blacklisted_extensions_;
   }
 
+  // Returns a set of all installed, disabled, blacklisted, and terminated
+  // extensions.
+  scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet() const;
+
   // The usual observer interface.
   void AddObserver(ExtensionRegistryObserver* observer);
   void RemoveObserver(ExtensionRegistryObserver* observer);

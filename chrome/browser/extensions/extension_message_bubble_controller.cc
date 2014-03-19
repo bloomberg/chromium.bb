@@ -8,14 +8,12 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,8 +34,7 @@ ExtensionMessageBubbleController::Delegate::~Delegate() {
 
 ExtensionMessageBubbleController::ExtensionMessageBubbleController(
     Delegate* delegate, Profile* profile)
-    : service_(extensions::ExtensionSystem::Get(profile)->extension_service()),
-      profile_(profile),
+    : profile_(profile),
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
       initialized_(false) {
@@ -52,10 +49,12 @@ ExtensionMessageBubbleController::GetExtensionList() {
   if (list->empty())
     return std::vector<base::string16>();
 
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   std::vector<base::string16> return_value;
   for (ExtensionIdList::const_iterator it = list->begin();
        it != list->end(); ++it) {
-    const Extension* extension = service_->GetInstalledExtension(*it);
+    const Extension* extension =
+        registry->GetExtensionById(*it, ExtensionRegistry::EVERYTHING);
     if (extension) {
       return_value.push_back(base::UTF8ToUTF16(extension->name()));
     } else {
@@ -132,12 +131,9 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 }
 
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
-  if (!service_)
-    return &extension_list_;  // Can occur during testing.
-
   if (!initialized_) {
     scoped_ptr<const ExtensionSet> extension_set(
-        service_->GenerateInstalledExtensionsSet());
+        ExtensionRegistry::Get(profile_)->GenerateInstalledExtensionsSet());
     for (ExtensionSet::const_iterator it = extension_set->begin();
          it != extension_set->end(); ++it) {
       std::string id = (*it)->id();

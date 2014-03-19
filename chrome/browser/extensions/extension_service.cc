@@ -446,16 +446,6 @@ const ExtensionSet* ExtensionService::delayed_installs() const {
   return &delayed_installs_;
 }
 
-scoped_ptr<ExtensionSet>
-    ExtensionService::GenerateInstalledExtensionsSet() const {
-  scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet());
-  installed_extensions->InsertAll(registry_->enabled_extensions());
-  installed_extensions->InsertAll(registry_->disabled_extensions());
-  installed_extensions->InsertAll(registry_->terminated_extensions());
-  installed_extensions->InsertAll(registry_->blacklisted_extensions());
-  return installed_extensions.Pass();
-}
-
 extensions::PendingExtensionManager*
     ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
@@ -585,7 +575,8 @@ void ExtensionService::Init() {
 }
 
 void ExtensionService::LoadGreylistFromPrefs() {
-  scoped_ptr<ExtensionSet> all_extensions = GenerateInstalledExtensionsSet();
+  scoped_ptr<ExtensionSet> all_extensions =
+      registry_->GenerateInstalledExtensionsSet();
 
   for (ExtensionSet::const_iterator it = all_extensions->begin();
        it != all_extensions->end(); ++it) {
@@ -606,7 +597,7 @@ void ExtensionService::MaybeBootstrapVerifier() {
     do_bootstrap = true;
   } else {
     scoped_ptr<extensions::ExtensionSet> extensions =
-        GenerateInstalledExtensionsSet();
+        registry_->GenerateInstalledExtensionsSet();
     for (extensions::ExtensionSet::const_iterator i = extensions->begin();
          i != extensions->end();
          ++i) {
@@ -625,7 +616,8 @@ void ExtensionService::MaybeBootstrapVerifier() {
 
 void ExtensionService::VerifyAllExtensions(bool bootstrap) {
   ExtensionIdSet to_add;
-  scoped_ptr<ExtensionSet> all_extensions = GenerateInstalledExtensionsSet();
+  scoped_ptr<ExtensionSet> all_extensions =
+      registry_->GenerateInstalledExtensionsSet();
 
   for (ExtensionSet::const_iterator i = all_extensions->begin();
        i != all_extensions->end(); ++i) {
@@ -2701,7 +2693,7 @@ void ExtensionService::MaybeFinishDelayedInstallations() {
 
 void ExtensionService::OnBlacklistUpdated() {
   blacklist_->GetBlacklistedIDs(
-      GenerateInstalledExtensionsSet()->GetIDs(),
+      registry_->GenerateInstalledExtensionsSet()->GetIDs(),
       base::Bind(&ExtensionService::ManageBlacklist, AsWeakPtr()));
 }
 

@@ -11,7 +11,6 @@
 #include "extensions/common/extension.h"
 
 class Browser;
-class ExtensionService;
 class Profile;
 
 namespace extensions {
@@ -83,9 +82,6 @@ class ExtensionMessageBubbleController {
 
   // Get the data this class needs.
   ExtensionIdList* GetOrCreateExtensionList();
-
-  // Our extension service. Weak, not owned by us.
-  ExtensionService* service_;
 
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;

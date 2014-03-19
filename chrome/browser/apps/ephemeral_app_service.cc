@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -123,11 +124,9 @@ void EphemeralAppService::Init() {
 }
 
 void EphemeralAppService::InitEphemeralAppCount() {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(service);
   scoped_ptr<ExtensionSet> extensions =
-      service->GenerateInstalledExtensionsSet();
+      extensions::ExtensionRegistry::Get(profile_)
+          ->GenerateInstalledExtensionsSet();
 
   ephemeral_app_count_ = 0;
   for (ExtensionSet::const_iterator it = extensions->begin();
@@ -148,13 +147,10 @@ void EphemeralAppService::TriggerGarbageCollect(const base::TimeDelta& delay) {
 }
 
 void EphemeralAppService::GarbageCollectApps() {
-  ExtensionSystem* system = ExtensionSystem::Get(profile_);
-  DCHECK(system);
-  ExtensionService* service = system->extension_service();
-  DCHECK(service);
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   scoped_ptr<ExtensionSet> extensions =
-      service->GenerateInstalledExtensionsSet();
+      extensions::ExtensionRegistry::Get(profile_)
+          ->GenerateInstalledExtensionsSet();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
 
   int app_count = 0;
   LaunchTimeAppMap app_launch_times;
@@ -184,6 +180,9 @@ void EphemeralAppService::GarbageCollectApps() {
     app_launch_times.insert(std::make_pair(last_launch_time, extension->id()));
   }
 
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
   // Execute the replacement policies and remove apps marked for deletion.
   if (!app_launch_times.empty()) {
     GetAppsToRemove(app_count, app_launch_times, &remove_app_ids);
