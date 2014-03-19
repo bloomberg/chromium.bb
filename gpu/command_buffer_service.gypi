@@ -19,7 +19,6 @@
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/re2/re2.gyp:re2',
     '../third_party/smhasher/smhasher.gyp:cityhash',
-    '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
