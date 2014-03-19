@@ -367,7 +367,7 @@ void TaskGraphRunner::RunUntilIdle() {
 }
 
 void TaskGraphRunner::RunTaskWithLockAcquired() {
-  TRACE_EVENT0("cc", "TaskGraphRunner::RunTask");
+  TRACE_EVENT0("toplevel", "TaskGraphRunner::RunTask");
 
   lock_.AssertAcquired();
   DCHECK(!ready_to_run_namespaces_.empty());
