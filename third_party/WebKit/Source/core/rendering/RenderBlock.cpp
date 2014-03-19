@@ -4027,9 +4027,9 @@ static inline bool isPunctuationForFirstLetter(UChar c)
         || charCategory == Punctuation_Other;
 }
 
-static inline bool shouldSkipForFirstLetter(UChar c)
+static inline bool isSpaceForFirstLetter(UChar c)
 {
-    return isSpaceOrNewline(c) || c == noBreakSpace || isPunctuationForFirstLetter(c);
+    return isSpaceOrNewline(c) || c == noBreakSpace;
 }
 
 static inline RenderObject* findFirstLetterBlock(RenderBlock* start)
@@ -4108,31 +4108,34 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
 static inline unsigned firstLetterLength(const String& text)
 {
     unsigned length = 0;
+    unsigned textLength = text.length();
 
-    // Account for leading spaces and punctuation.
-    while (length < text.length() && shouldSkipForFirstLetter((text)[length]))
+    // Account for leading spaces first.
+    while (length < textLength && isSpaceForFirstLetter(text[length]))
         length++;
 
-    // Bail if we didn't find a letter
-    if (text.length() && length == text.length())
+    // Now account for leading punctuation.
+    while (length < textLength && isPunctuationForFirstLetter(text[length]))
+        length++;
+
+    // Bail if we didn't find a letter before the end of the text or before a space.
+    if (isSpaceForFirstLetter(text[length]) || (textLength && length == textLength))
         return 0;
 
-    // Account for first letter.
+    // Account the next character for first letter.
     length++;
 
-    // Keep looking for whitespace and allowed punctuation, but avoid
-    // accumulating just whitespace into the :first-letter.
-    for (unsigned scanLength = length; scanLength < text.length(); ++scanLength) {
-        UChar c = (text)[scanLength];
+    // Keep looking allowed punctuation for the :first-letter.
+    for (unsigned scanLength = length; scanLength < textLength; ++scanLength) {
+        UChar c = text[scanLength];
 
-        if (!shouldSkipForFirstLetter(c))
+        if (!isPunctuationForFirstLetter(c))
             break;
 
-        if (isPunctuationForFirstLetter(c))
-            length = scanLength + 1;
+        length = scanLength + 1;
     }
 
-    // FIXME: If text.length() is 0, length may still be 1!
+    // FIXME: If textLength is 0, length may still be 1!
     return length;
 }
 
