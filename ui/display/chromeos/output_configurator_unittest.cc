@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -45,7 +46,7 @@ std::string DisplayModeToString(const DisplayMode& mode) {
 }
 
 std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
-  return base::StringPrintf("id=%ld", output.display_id());
+  return base::StringPrintf("id=%" PRId64, output.display_id());
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::SetBackgroundColor()
@@ -58,7 +59,7 @@ std::string GetBackgroundAction(uint32 color_argb) {
 // call.
 std::string GetAddOutputModeAction(const DisplaySnapshot& output,
                                    const DisplayMode* mode) {
-  return base::StringPrintf("add_mode(output=%lu,mode=%s)",
+  return base::StringPrintf("add_mode(output=%" PRId64 ",mode=%s)",
                             output.display_id(),
                             DisplayModeToString(*mode).c_str());
 }
@@ -104,7 +105,7 @@ std::string GetCTMAction(
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                                   HDCPState state) {
   return base::StringPrintf(
-      "set_hdcp(id=%lu,state=%d)", output.display_id(), state);
+      "set_hdcp(id=%" PRId64 ",state=%d)", output.display_id(), state);
 }
 
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
