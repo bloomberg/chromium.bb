@@ -474,7 +474,7 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
            "foo.txt",
            "foo.xhtml",
            "foo.y",
-           os.path.join("Source", "WebCore", "inspector", "front-end", "inspector.js"),
+           os.path.join("Source", "WebCore", "inspector", "front-end", "Main.js"),
            os.path.join("Tools", "Scripts", "check-webkit-style"),
         ]
 
