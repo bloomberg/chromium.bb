@@ -60,7 +60,7 @@ goto :END
 
 
 :GIT_CHECK
-goto :GIT_190_CHECK
+goto :GIT_1852_CHECK
 
 
 :GIT_190_CHECK
