@@ -199,14 +199,14 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
-    RefPtrWillBeRawPtr<CSSValue> cssValue = imp->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
+    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toNative(info.Holder());
+    RefPtrWillBeRawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (cssValue) {
         v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
         return;
     }
 
-    String result = imp->getPropertyValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
+    String result = impl->getPropertyValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (result.isNull())
         result = ""; // convert null to empty string.
 
@@ -215,14 +215,14 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
 
 void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
+    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toNative(info.Holder());
     CSSPropertyInfo* propInfo = cssPropertyInfo(name);
     if (!propInfo)
         return;
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, propertyValue, value);
     ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(static_cast<CSSPropertyID>(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
-    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
+    impl->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
 
     if (exceptionState.throwIfNeeded())
         return;

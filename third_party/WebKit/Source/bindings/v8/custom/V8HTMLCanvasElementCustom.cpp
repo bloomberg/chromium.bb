@@ -52,7 +52,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     v8::Isolate* isolate = info.GetIsolate();
-    HTMLCanvasElement* imp = V8HTMLCanvasElement::toNative(holder);
+    HTMLCanvasElement* impl = V8HTMLCanvasElement::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, contextIdResource, info[0]);
     String contextId = contextIdResource;
     RefPtr<CanvasContextAttributes> attributes;
@@ -93,17 +93,17 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
         }
         attributes = canvas2DAttributes;
     }
-    CanvasRenderingContext* result = imp->getContext(contextId, attributes.get());
+    CanvasRenderingContext* result = impl->getContext(contextId, attributes.get());
     if (!result) {
         v8SetReturnValueNull(info);
         return;
     }
     if (result->is2d()) {
         v8::Handle<v8::Value> v8Result = toV8(toCanvasRenderingContext2D(result), info.Holder(), info.GetIsolate());
-        if (InspectorInstrumentation::canvasAgentEnabled(&imp->document())) {
+        if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
             ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
             ScriptObject context(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
-            ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&imp->document(), context);
+            ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&impl->document(), context);
             if (!wrapped.hasNoValue()) {
                 v8SetReturnValue(info, wrapped.v8Value());
                 return;
@@ -114,10 +114,10 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     }
     if (result->is3d()) {
         v8::Handle<v8::Value> v8Result = toV8(toWebGLRenderingContext(result), info.Holder(), info.GetIsolate());
-        if (InspectorInstrumentation::canvasAgentEnabled(&imp->document())) {
+        if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
             ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
             ScriptObject glContext(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
-            ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&imp->document(), glContext);
+            ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&impl->document(), glContext);
             if (!wrapped.hasNoValue()) {
                 v8SetReturnValue(info, wrapped.v8Value());
                 return;

@@ -74,8 +74,8 @@ template <typename T> void V8_USE(T) { }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
-    String result = imp->anonymousIndexedGetter(index);
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    String result = impl->anonymousIndexedGetter(index);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
@@ -90,9 +90,9 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
-    bool result = imp->anonymousIndexedSetter(index, propertyValue);
+    bool result = impl->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -107,8 +107,8 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
-    DeleteResult result = imp->anonymousIndexedDeleter(index);
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    DeleteResult result = impl->anonymousIndexedDeleter(index);
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
@@ -127,9 +127,9 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String result = imp->anonymousNamedGetter(propertyName);
+    String result = impl->anonymousNamedGetter(propertyName);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
@@ -149,10 +149,10 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
-    bool result = imp->anonymousNamedSetter(propertyName, propertyValue);
+    bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -167,11 +167,11 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperationsAnonymous", info.Holder(), info.GetIsolate());
-    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
+    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -188,9 +188,9 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    DeleteResult result = imp->anonymousNamedDeleter(propertyName);
+    DeleteResult result = impl->anonymousNamedDeleter(propertyName);
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
@@ -204,10 +204,10 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    TestSpecialOperationsAnonymous* impl = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperationsAnonymous", info.Holder(), info.GetIsolate());
-    imp->namedPropertyEnumerator(names, exceptionState);
+    impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

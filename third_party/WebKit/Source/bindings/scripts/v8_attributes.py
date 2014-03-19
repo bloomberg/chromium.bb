@@ -183,7 +183,7 @@ def generate_getter(interface, attribute, contents):
     def v8_set_return_value_statement(for_main_world=False):
         if contents['is_keep_alive_for_gc']:
             return 'v8SetReturnValue(info, wrapper)'
-        return idl_type.v8_set_return_value(cpp_value, extended_attributes=extended_attributes, script_wrappable='imp', release=release, for_main_world=for_main_world)
+        return idl_type.v8_set_return_value(cpp_value, extended_attributes=extended_attributes, script_wrappable='impl', release=release, for_main_world=for_main_world)
 
     contents.update({
         'cpp_value': cpp_value,
@@ -200,7 +200,7 @@ def getter_expression(interface, attribute, contents):
     arguments.extend(v8_utilities.call_with_arguments(attribute))
     if ('ImplementedBy' in attribute.extended_attributes and
         not attribute.is_static):
-        arguments.append('*imp')
+        arguments.append('*impl')
     if attribute.idl_type.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
@@ -296,7 +296,7 @@ def setter_expression(interface, attribute, contents):
 
     if ('ImplementedBy' in extended_attributes and
         not attribute.is_static):
-        arguments.append('*imp')
+        arguments.append('*impl')
     idl_type = attribute.idl_type
     if idl_type.base_type == 'EventHandler':
         getter_name = scoped_name(interface, attribute, cpp_name(attribute))

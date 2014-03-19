@@ -113,7 +113,7 @@ def scoped_name(interface, definition, base_name):
         return '%s::%s' % (implemented_by, base_name)
     if definition.is_static:
         return '%s::%s' % (cpp_name(interface), base_name)
-    return 'imp->%s' % base_name
+    return 'impl->%s' % base_name
 
 
 def v8_class_name(interface):

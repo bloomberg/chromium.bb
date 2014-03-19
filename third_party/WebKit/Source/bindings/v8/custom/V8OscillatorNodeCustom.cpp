@@ -36,13 +36,13 @@ void V8OscillatorNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, con
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "type", "OscillatorNode", info.Holder(), info.GetIsolate());
     v8::Handle<v8::Object> holder = info.Holder();
-    OscillatorNode* imp = V8OscillatorNode::toNative(holder);
+    OscillatorNode* impl = V8OscillatorNode::toNative(holder);
 
     if (value->IsNumber()) {
         uint32_t type = toUInt32(value, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (!imp->setType(type)) {
+        if (!impl->setType(type)) {
             exceptionState.throwTypeError("Illegal OscillatorNode type");
             exceptionState.throwIfNeeded();
         }
@@ -52,7 +52,7 @@ void V8OscillatorNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, con
     if (value->IsString()) {
         String type = toCoreString(value.As<v8::String>());
         if (type == "sine" || type == "square" || type == "sawtooth" || type == "triangle") {
-            imp->setType(type);
+            impl->setType(type);
             return;
         }
     }

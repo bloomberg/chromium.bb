@@ -46,8 +46,8 @@ namespace WebCore {
 template <class C>
 static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    HTMLPlugInElement* impl = C::toNative(info.Holder());
+    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 
@@ -61,8 +61,8 @@ static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCa
 template <class C>
 static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    HTMLPlugInElement* impl = C::toNative(info.Holder());
+    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 
@@ -105,30 +105,30 @@ void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::String> name, 
 
 void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLAppletElement::toNative(info.Holder());
-    UseCounter::count(imp->document(), UseCounter::HTMLAppletElementLegacyCall);
+    HTMLPlugInElement* impl = V8HTMLAppletElement::toNative(info.Holder());
+    UseCounter::count(impl->document(), UseCounter::HTMLAppletElementLegacyCall);
     npObjectInvokeDefaultHandler(info);
 }
 
 void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLEmbedElement::toNative(info.Holder());
-    UseCounter::count(imp->document(), UseCounter::HTMLEmbedElementLegacyCall);
+    HTMLPlugInElement* impl = V8HTMLEmbedElement::toNative(info.Holder());
+    UseCounter::count(impl->document(), UseCounter::HTMLEmbedElementLegacyCall);
     npObjectInvokeDefaultHandler(info);
 }
 
 void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLObjectElement::toNative(info.Holder());
-    UseCounter::count(imp->document(), UseCounter::HTMLObjectElementLegacyCall);
+    HTMLPlugInElement* impl = V8HTMLObjectElement::toNative(info.Holder());
+    UseCounter::count(impl->document(), UseCounter::HTMLObjectElementLegacyCall);
     npObjectInvokeDefaultHandler(info);
 }
 
 template <class C>
 void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    HTMLPlugInElement* impl = C::toNative(info.Holder());
+    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 
@@ -142,8 +142,8 @@ void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Va
 template <class C>
 void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    HTMLPlugInElement* impl = C::toNative(info.Holder());
+    RefPtr<SharedPersistent<v8::Object> > wrapper = impl->pluginWrapper();
     if (!wrapper)
         return;
 

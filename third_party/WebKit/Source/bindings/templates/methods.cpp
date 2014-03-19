@@ -17,7 +17,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% endif %}
     {% if not method.is_static %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
@@ -26,13 +26,13 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if interface_name == 'EventTarget' %}
     {{event_target_check_security_for_frame() | indent }}
     {% elif method.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->{{method.name}}(exceptionState), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -60,7 +60,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {######################################}
 {% macro event_target_check_security_for_frame() %}
 {# FIXME: use the existing shouldAllowAccessToFrame check if possible. #}
-if (DOMWindow* window = imp->toDOMWindow()) {
+if (DOMWindow* window = impl->toDOMWindow()) {
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -82,8 +82,8 @@ if (DOMWindow* window = imp->toDOMWindow()) {
 RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, {{listener_lookup_type}});
 if (listener) {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-    imp->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
-    if (!imp->toNode())
+    impl->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
+    if (!impl->toNode())
         {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
 }
 {% endmacro %}
@@ -184,7 +184,7 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {% if method.is_implemented_by and not method.is_static %}
-ASSERT(imp);
+ASSERT(impl);
 {% endif %}
 {% if method.is_call_with_script_state %}
 ScriptState* currentState = ScriptState::current();
@@ -332,8 +332,8 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         v8SetReturnValue(info, privateTemplate->GetFunction());
         return;
     }
-    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());

@@ -77,12 +77,12 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     if (argumentCount < 1)
         return;
 
-    DOMWindow* imp = V8Window::toNative(info.Holder());
-    if (!imp->frame() || !imp->document()) {
+    DOMWindow* impl = V8Window::toNative(info.Holder());
+    if (!impl->frame() || !impl->document()) {
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
     }
-    v8::Handle<v8::Context> context = toV8Context(info.GetIsolate(), imp->frame(), DOMWrapperWorld::current(info.GetIsolate()));
+    v8::Handle<v8::Context> context = toV8Context(info.GetIsolate(), impl->frame(), DOMWrapperWorld::current(info.GetIsolate()));
     if (context.IsEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
@@ -109,7 +109,7 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
             return;
     }
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState))
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState))
         return;
 
     OwnPtr<ScheduledAction> action;
@@ -125,23 +125,23 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         }
 
         // params is passed to action, and released in action's destructor
-        ASSERT(imp->frame());
+        ASSERT(impl->frame());
         action = adoptPtr(new ScheduledAction(context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
-        if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
+        if (impl->document() && !impl->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(info, 0);
             return;
         }
-        ASSERT(imp->frame());
+        ASSERT(impl->frame());
         action = adoptPtr(new ScheduledAction(context, functionString, KURL(), info.GetIsolate()));
     }
 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
     int timerId;
     if (singleShot)
-        timerId = DOMWindowTimers::setTimeout(*imp, action.release(), timeout);
+        timerId = DOMWindowTimers::setTimeout(*impl, action.release(), timeout);
     else
-        timerId = DOMWindowTimers::setInterval(*imp, action.release(), timeout);
+        timerId = DOMWindowTimers::setInterval(*impl, action.release(), timeout);
 
     // Try to do the idle notification before the timeout expires to get better
     // use of any idle time. Aim for the middle of the interval for simplicity.
@@ -192,9 +192,9 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 
 void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    DOMWindow* imp = V8Window::toNative(info.Holder());
+    DOMWindow* impl = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "frame", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->frameElement(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->frameElement(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -202,17 +202,17 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 
     // The wrapper for an <iframe> should get its prototype from the context of the frame it's in, rather than its own frame.
     // So, use its containing document as the creation context when wrapping.
-    v8::Handle<v8::Value> creationContext = toV8(&imp->frameElement()->document(), v8::Handle<v8::Object>(), info.GetIsolate());
+    v8::Handle<v8::Value> creationContext = toV8(&impl->frameElement()->document(), v8::Handle<v8::Object>(), info.GetIsolate());
     RELEASE_ASSERT(!creationContext.IsEmpty());
-    v8::Handle<v8::Value> wrapper = toV8(imp->frameElement(), v8::Handle<v8::Object>::Cast(creationContext), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(impl->frameElement(), v8::Handle<v8::Object>::Cast(creationContext), info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    DOMWindow* imp = V8Window::toNative(info.Holder());
+    DOMWindow* impl = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -221,10 +221,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     // Have a special handling of null value to behave
     // like Firefox. See bug http://b/1224887 & http://b/791706.
     if (value->IsNull()) {
-        // imp->frame() cannot be null,
+        // impl->frame() cannot be null,
         // otherwise, SameOrigin check would have failed.
-        ASSERT(imp->frame());
-        imp->frame()->loader().setOpener(0);
+        ASSERT(impl->frame());
+        impl->frame()->loader().setOpener(0);
     }
 
     // Delete the accessor from this object.

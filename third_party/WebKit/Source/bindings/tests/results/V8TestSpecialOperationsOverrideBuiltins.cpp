@@ -74,9 +74,9 @@ template <typename T> void V8_USE(T) { }
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsOverrideBuiltins* imp = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
+    TestSpecialOperationsOverrideBuiltins* impl = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String result = imp->anonymousNamedGetter(propertyName);
+    String result = impl->anonymousNamedGetter(propertyName);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
@@ -91,10 +91,10 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsOverrideBuiltins* imp = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
+    TestSpecialOperationsOverrideBuiltins* impl = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
-    bool result = imp->anonymousNamedSetter(propertyName, propertyValue);
+    bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -109,11 +109,11 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestSpecialOperationsOverrideBuiltins* imp = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
+    TestSpecialOperationsOverrideBuiltins* impl = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperationsOverrideBuiltins", info.Holder(), info.GetIsolate());
-    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
+    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -130,10 +130,10 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestSpecialOperationsOverrideBuiltins* imp = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
+    TestSpecialOperationsOverrideBuiltins* impl = V8TestSpecialOperationsOverrideBuiltins::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperationsOverrideBuiltins", info.Holder(), info.GetIsolate());
-    imp->namedPropertyEnumerator(names, exceptionState);
+    impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());

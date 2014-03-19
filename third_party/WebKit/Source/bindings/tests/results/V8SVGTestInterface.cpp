@@ -76,8 +76,8 @@ template <typename T> void V8_USE(T) { }
 
 static void typeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    SVGTestInterface* imp = V8SVGTestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
+    SVGTestInterface* impl = V8SVGTestInterface::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
 
 static void typeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -89,10 +89,10 @@ static void typeAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 
 static void typeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    SVGTestInterface* imp = V8SVGTestInterface::toNative(info.Holder());
+    SVGTestInterface* impl = V8SVGTestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(SVGNames::typeAttr, cppValue);
+    impl->setAttribute(SVGNames::typeAttr, cppValue);
 }
 
 static void typeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

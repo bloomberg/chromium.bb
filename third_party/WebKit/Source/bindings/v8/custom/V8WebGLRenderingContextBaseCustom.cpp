@@ -352,14 +352,14 @@ void V8WebGLRenderingContextBase::getBufferParameterMethodCustom(const v8::Funct
 void V8WebGLRenderingContextBase::getExtensionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "getExtension", "WebGLRenderingContextBase", info.Holder(), info.GetIsolate());
-    WebGLRenderingContextBase* imp = V8WebGLRenderingContextBase::toNative(info.Holder());
+    WebGLRenderingContextBase* impl = V8WebGLRenderingContextBase::toNative(info.Holder());
     if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
-    RefPtr<WebGLExtension> extension(imp->getExtension(name));
+    RefPtr<WebGLExtension> extension(impl->getExtension(name));
     v8SetReturnValue(info, toV8Object(extension.get(), info.Holder(), info.GetIsolate()));
 }
 
@@ -457,13 +457,13 @@ void V8WebGLRenderingContextBase::getShaderParameterMethodCustom(const v8::Funct
 
 void V8WebGLRenderingContextBase::getSupportedExtensionsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    WebGLRenderingContextBase* imp = V8WebGLRenderingContextBase::toNative(info.Holder());
-    if (imp->isContextLost()) {
+    WebGLRenderingContextBase* impl = V8WebGLRenderingContextBase::toNative(info.Holder());
+    if (impl->isContextLost()) {
         v8SetReturnValueNull(info);
         return;
     }
 
-    Vector<String> value = imp->getSupportedExtensions();
+    Vector<String> value = impl->getSupportedExtensions();
     v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), value.size());
     for (size_t ii = 0; ii < value.size(); ++ii)
         array->Set(v8::Integer::New(info.GetIsolate(), ii), v8String(info.GetIsolate(), value[ii]));

@@ -35,13 +35,13 @@ namespace WebCore {
 void V8PannerNode::panningModelAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "panningModel", "PannerNode", info.Holder(), info.GetIsolate());
-    PannerNode* imp = V8PannerNode::toNative(info.Holder());
+    PannerNode* impl = V8PannerNode::toNative(info.Holder());
 
     if (value->IsNumber()) {
         uint32_t model = toUInt32(value, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (!imp->setPanningModel(model)) {
+        if (!impl->setPanningModel(model)) {
             exceptionState.throwTypeError("Illegal panningModel");
             exceptionState.throwIfNeeded();
         }
@@ -51,7 +51,7 @@ void V8PannerNode::panningModelAttributeSetterCustom(v8::Local<v8::Value> value,
     if (value->IsString()) {
         String model = toCoreString(value.As<v8::String>());
         if (model == "equalpower" || model == "HRTF") {
-            imp->setPanningModel(model);
+            impl->setPanningModel(model);
             return;
         }
     }
@@ -63,13 +63,13 @@ void V8PannerNode::panningModelAttributeSetterCustom(v8::Local<v8::Value> value,
 void V8PannerNode::distanceModelAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "distanceModel", "PannerNode", info.Holder(), info.GetIsolate());
-    PannerNode* imp = V8PannerNode::toNative(info.Holder());
+    PannerNode* impl = V8PannerNode::toNative(info.Holder());
 
     if (value->IsNumber()) {
         uint32_t model = toUInt32(value, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (!imp->setDistanceModel(model)) {
+        if (!impl->setDistanceModel(model)) {
             exceptionState.throwTypeError("Illegal distanceModel");
             exceptionState.throwIfNeeded();
         }
@@ -79,7 +79,7 @@ void V8PannerNode::distanceModelAttributeSetterCustom(v8::Local<v8::Value> value
     if (value->IsString()) {
         String model = toCoreString(value.As<v8::String>());
         if (model == "linear" || model == "inverse" || model == "exponential") {
-            imp->setDistanceModel(model);
+            impl->setDistanceModel(model);
             return;
         }
     }

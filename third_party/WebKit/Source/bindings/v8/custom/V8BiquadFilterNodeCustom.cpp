@@ -35,13 +35,13 @@ namespace WebCore {
 void V8BiquadFilterNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "type", "BiquadFilterNode", info.Holder(), info.GetIsolate());
-    BiquadFilterNode* imp = V8BiquadFilterNode::toNative(info.Holder());
+    BiquadFilterNode* impl = V8BiquadFilterNode::toNative(info.Holder());
 
     if (value->IsNumber()) {
         uint32_t type = toUInt32(value, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (!imp->setType(type)) {
+        if (!impl->setType(type)) {
             exceptionState.throwTypeError("Illegal BiquadFilterNode type");
             exceptionState.throwIfNeeded();
         }
@@ -51,7 +51,7 @@ void V8BiquadFilterNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, c
     if (value->IsString()) {
         String type = toCoreString(value.As<v8::String>());
         if (type == "lowpass" || type == "highpass" || type == "bandpass" || type == "lowshelf" || type == "highshelf" || type == "peaking" || type == "notch" || type == "allpass") {
-            imp->setType(type);
+            impl->setType(type);
             return;
         }
     }

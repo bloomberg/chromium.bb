@@ -75,8 +75,8 @@ template <typename T> void V8_USE(T) { }
 
 static void hrefAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestNode* imp = V8TestNode::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->href(), info.GetIsolate());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
 
 static void hrefAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -88,9 +88,9 @@ static void hrefAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 
 static void hrefAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestNode* imp = V8TestNode::toNative(info.Holder());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setHref(cppValue);
+    impl->setHref(cppValue);
 }
 
 static void hrefAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -102,8 +102,8 @@ static void hrefAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Val
 
 static void hrefThrowsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestNode* imp = V8TestNode::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->hrefThrows(), info.GetIsolate());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
 
 static void hrefThrowsAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -116,9 +116,9 @@ static void hrefThrowsAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 static void hrefThrowsAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", info.Holder(), info.GetIsolate());
-    TestNode* imp = V8TestNode::toNative(info.Holder());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setHrefThrows(cppValue, exceptionState);
+    impl->setHrefThrows(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -131,8 +131,8 @@ static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void hrefCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestNode* imp = V8TestNode::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->hrefCallWith(), info.GetIsolate());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
 
 static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -144,9 +144,9 @@ static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void hrefCallWithAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestNode* imp = V8TestNode::toNative(info.Holder());
+    TestNode* impl = V8TestNode::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    impl->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

@@ -52,8 +52,8 @@ void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, value, info[2]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
-    imp->setParameter(namespaceURI, localName, value);
+    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    impl->setParameter(namespaceURI, localName, value);
 }
 
 void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -64,8 +64,8 @@ void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
-    String result = imp->getParameter(namespaceURI, localName);
+    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    String result = impl->getParameter(namespaceURI, localName);
     if (result.isNull())
         return;
 
@@ -80,8 +80,8 @@ void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
-    imp->removeParameter(namespaceURI, localName);
+    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    impl->removeParameter(namespaceURI, localName);
 }
 
 } // namespace WebCore

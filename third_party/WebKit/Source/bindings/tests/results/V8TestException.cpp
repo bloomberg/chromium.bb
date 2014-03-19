@@ -74,8 +74,8 @@ template <typename T> void V8_USE(T) { }
 
 static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestException* imp = V8TestException::toNative(info.Holder());
-    v8SetReturnValueUnsigned(info, imp->readonlyUnsignedShortAttribute());
+    TestException* impl = V8TestException::toNative(info.Holder());
+    v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
 
 static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -87,8 +87,8 @@ static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::
 
 static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestException* imp = V8TestException::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->readonlyStringAttribute(), info.GetIsolate());
+    TestException* impl = V8TestException::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
 static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -100,8 +100,8 @@ static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestException* imp = V8TestException::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->toString(), info.GetIsolate());
+    TestException* impl = V8TestException::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

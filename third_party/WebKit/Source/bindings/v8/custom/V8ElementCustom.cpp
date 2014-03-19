@@ -43,33 +43,33 @@ namespace WebCore {
 void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "scrollLeft", "Element", info.Holder(), info.GetIsolate());
-    Element* imp = V8Element::toNative(info.Holder());
+    Element* impl = V8Element::toNative(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
         V8TRYCATCH_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate()));
-        imp->setScrollLeft(scrollOptionsHorizontal, exceptionState);
+        impl->setScrollLeft(scrollOptionsHorizontal, exceptionState);
         exceptionState.throwIfNeeded();
         return;
     }
 
     V8TRYCATCH_EXCEPTION_VOID(int, position, toInt32(value, exceptionState), exceptionState);
-    imp->setScrollLeft(position);
+    impl->setScrollLeft(position);
 }
 
 void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "scrollTop", "Element", info.Holder(), info.GetIsolate());
-    Element* imp = V8Element::toNative(info.Holder());
+    Element* impl = V8Element::toNative(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
         V8TRYCATCH_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate()));
-        imp->setScrollTop(scrollOptionsVertical, exceptionState);
+        impl->setScrollTop(scrollOptionsVertical, exceptionState);
         exceptionState.throwIfNeeded();
         return;
     }
 
     V8TRYCATCH_EXCEPTION_VOID(int, position, toInt32(value, exceptionState), exceptionState);
-    imp->setScrollTop(position);
+    impl->setScrollTop(position);
 }
 
 } // namespace WebCore

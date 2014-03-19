@@ -549,7 +549,7 @@ def property_getter(getter, cpp_arguments):
     is_raises_exception = 'RaisesException' in extended_attributes
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
-    cpp_method_name = 'imp->%s' % cpp_name(getter)
+    cpp_method_name = 'impl->%s' % cpp_name(getter)
 
     if is_raises_exception:
         cpp_arguments.append('exceptionState')
@@ -575,7 +575,7 @@ def property_getter(getter, cpp_arguments):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(getter),
         'union_arguments': union_arguments,
-        'v8_set_return_value': idl_type.v8_set_return_value('result', extended_attributes=extended_attributes, script_wrappable='imp', release=idl_type.release),
+        'v8_set_return_value': idl_type.v8_set_return_value('result', extended_attributes=extended_attributes, script_wrappable='impl', release=idl_type.release),
     }
 
 

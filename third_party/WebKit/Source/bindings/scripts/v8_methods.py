@@ -183,7 +183,7 @@ def cpp_value(interface, method, number_of_arguments):
     cpp_arguments = v8_utilities.call_with_arguments(method)
     if ('ImplementedBy' in method.extended_attributes and
         not method.is_static):
-        cpp_arguments.append('*imp')
+        cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
     this_union_arguments = method.idl_type.union_arguments
     if this_union_arguments:
@@ -210,7 +210,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         cpp_value = 'result'  # use local variable for value
         release = idl_type.release
 
-    script_wrappable = 'imp' if inherits_interface(interface_name, 'Node') else ''
+    script_wrappable = 'impl' if inherits_interface(interface_name, 'Node') else ''
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 

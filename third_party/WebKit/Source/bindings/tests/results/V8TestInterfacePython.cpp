@@ -84,8 +84,8 @@ template <typename T> void V8_USE(T) { }
 
 static void testInterfacePythonAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(imp->testInterfacePythonAttribute()), imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfacePythonAttribute()), impl);
 }
 
 static void testInterfacePythonAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -103,9 +103,9 @@ static void testInterfacePythonAttributeAttributeSetter(v8::Local<v8::Value> jsV
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    imp->setTestInterfacePythonAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfacePythonAttribute(WTF::getPtr(cppValue));
 }
 
 static void testInterfacePythonAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -142,8 +142,8 @@ static void staticStringAttributeAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void perWorldBindingsStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->perWorldBindingsStringAttribute(), info.GetIsolate());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->perWorldBindingsStringAttribute(), info.GetIsolate());
 }
 
 static void perWorldBindingsStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -155,9 +155,9 @@ static void perWorldBindingsStringAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void perWorldBindingsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setPerWorldBindingsStringAttribute(cppValue);
+    impl->setPerWorldBindingsStringAttribute(cppValue);
 }
 
 static void perWorldBindingsStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -169,8 +169,8 @@ static void perWorldBindingsStringAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void perWorldBindingsStringAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->perWorldBindingsStringAttribute(), info.GetIsolate());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->perWorldBindingsStringAttribute(), info.GetIsolate());
 }
 
 static void perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -182,9 +182,9 @@ static void perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld(v
 
 static void perWorldBindingsStringAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setPerWorldBindingsStringAttribute(cppValue);
+    impl->setPerWorldBindingsStringAttribute(cppValue);
 }
 
 static void perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -233,9 +233,9 @@ static void implementsStaticStringAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueString(info, TestImplements::implementsReadonlyStringAttribute(*imp), info.GetIsolate());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueString(info, TestImplements::implementsReadonlyStringAttribute(*impl), info.GetIsolate());
 }
 
 static void implementsReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -247,9 +247,9 @@ static void implementsReadonlyStringAttributeAttributeGetterCallback(v8::Local<v
 
 static void implementsStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueString(info, TestImplements::implementsStringAttribute(*imp), info.GetIsolate());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueString(info, TestImplements::implementsStringAttribute(*impl), info.GetIsolate());
 }
 
 static void implementsStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -261,10 +261,10 @@ static void implementsStringAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    TestImplements::setImplementsStringAttribute(*imp, cppValue);
+    TestImplements::setImplementsStringAttribute(*impl, cppValue);
 }
 
 static void implementsStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -276,9 +276,9 @@ static void implementsStringAttributeAttributeSetterCallback(v8::Local<v8::Strin
 
 static void implementsNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsNodeAttribute(*imp)), imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsNodeAttribute(*impl)), impl);
 }
 
 static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -296,10 +296,10 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsNodeAttribute(*imp, WTF::getPtr(cppValue));
+    TestImplements::setImplementsNodeAttribute(*impl, WTF::getPtr(cppValue));
 }
 
 static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -311,10 +311,10 @@ static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>
 
 static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(*imp);
-    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(*impl);
+    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -326,10 +326,10 @@ static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(*imp), jsValue, V8TestInterfacePython::eventListenerCacheIndex, info.GetIsolate());
-    TestImplements::setImplementsEventHandlerAttribute(*imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(*impl), jsValue, V8TestInterfacePython::eventListenerCacheIndex, info.GetIsolate());
+    TestImplements::setImplementsEventHandlerAttribute(*impl, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -341,9 +341,9 @@ static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsRuntimeEnabledNodeAttribute(*imp)), imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsRuntimeEnabledNodeAttribute(*impl)), impl);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -361,10 +361,10 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsRuntimeEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
+    TestImplements::setImplementsRuntimeEnabledNodeAttribute(*impl, WTF::getPtr(cppValue));
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -376,9 +376,9 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Loc
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsPerContextEnabledNodeAttribute(*imp)), imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsPerContextEnabledNodeAttribute(*impl)), impl);
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -396,10 +396,10 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsPerContextEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
+    TestImplements::setImplementsPerContextEnabledNodeAttribute(*impl, WTF::getPtr(cppValue));
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -436,9 +436,9 @@ static void implements2StaticStringAttributeAttributeSetterCallback(v8::Local<v8
 
 static void implements2StringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueString(info, TestImplements2Implementation::implements2StringAttribute(*imp), info.GetIsolate());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueString(info, TestImplements2Implementation::implements2StringAttribute(*impl), info.GetIsolate());
 }
 
 static void implements2StringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -450,10 +450,10 @@ static void implements2StringAttributeAttributeGetterCallback(v8::Local<v8::Stri
 
 static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    TestImplements2Implementation::setImplements2StringAttribute(*imp, cppValue);
+    TestImplements2Implementation::setImplements2StringAttribute(*impl, cppValue);
 }
 
 static void implements2StringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -466,9 +466,9 @@ static void implements2StringAttributeAttributeSetterCallback(v8::Local<v8::Stri
 #if ENABLE(PARTIAL_CONDITION)
 static void partialLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueInt(info, TestPartialInterfacePython::partialLongAttribute(*imp));
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueInt(info, TestPartialInterfacePython::partialLongAttribute(*impl));
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -485,10 +485,10 @@ static void partialLongAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    TestPartialInterfacePython::setPartialLongAttribute(*imp, cppValue);
+    TestPartialInterfacePython::setPartialLongAttribute(*impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -538,10 +538,10 @@ static void partialStaticLongAttributeAttributeSetterCallback(v8::Local<v8::Stri
 #if ENABLE(PARTIAL_CONDITION)
 static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueInt(info, TestPartialInterfacePython::partialCallWithExecutionContextLongAttribute(scriptContext, *imp));
+    v8SetReturnValueInt(info, TestPartialInterfacePython::partialCallWithExecutionContextLongAttribute(scriptContext, *impl));
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -558,11 +558,11 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(
 static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterfacePython::setPartialCallWithExecutionContextLongAttribute(scriptContext, *imp, cppValue);
+    TestPartialInterfacePython::setPartialCallWithExecutionContextLongAttribute(scriptContext, *impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -577,9 +577,9 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(
 
 static void partial2LongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    v8SetReturnValueInt(info, TestPartialInterfacePythonImplementation::partial2LongAttribute(*imp));
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    v8SetReturnValueInt(info, TestPartialInterfacePythonImplementation::partial2LongAttribute(*impl));
 }
 
 static void partial2LongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -592,10 +592,10 @@ static void partial2LongAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    TestPartialInterfacePythonImplementation::setPartial2LongAttribute(*imp, cppValue);
+    TestPartialInterfacePythonImplementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
 static void partial2LongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -657,13 +657,13 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+    impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
 static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -675,8 +675,8 @@ static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    imp->voidMethod();
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    impl->voidMethod();
 }
 
 static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -688,8 +688,8 @@ static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    imp->voidMethod();
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    impl->voidMethod();
 }
 
 static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -701,9 +701,9 @@ static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<
 
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    TestImplements::implementsVoidMethod(*imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    TestImplements::implementsVoidMethod(*impl);
 }
 
 static void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -721,7 +721,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
         exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
@@ -729,9 +729,9 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
-    ASSERT(imp);
+    ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, *imp, strArg, testInterfaceEmptyArg, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, *impl, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -765,9 +765,9 @@ static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackI
 
 static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    TestImplements2Implementation::implements2VoidMethod(*imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    TestImplements2Implementation::implements2VoidMethod(*impl);
 }
 
 static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -780,9 +780,9 @@ static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 #if ENABLE(PARTIAL_CONDITION)
 static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    TestPartialInterfacePython::partialVoidMethod(*imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    TestPartialInterfacePython::partialVoidMethod(*impl);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -820,10 +820,10 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    ASSERT(imp);
-    TestPartialInterfacePython::partialVoidMethodLongArg(*imp, longArg);
+    ASSERT(impl);
+    TestPartialInterfacePython::partialVoidMethodLongArg(*impl, longArg);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -840,10 +840,10 @@ static void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInf
 static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterfacePython", info.Holder(), info.GetIsolate());
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterfacePython::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *imp, exceptionState);
+    TestPartialInterfacePython::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *impl, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 }
@@ -860,9 +860,9 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallba
 
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
-    TestPartialInterfacePythonImplementation::partial2VoidMethod(*imp);
+    TestInterfacePythonImplementation* impl = V8TestInterfacePython::toNative(info.Holder());
+    ASSERT(impl);
+    TestPartialInterfacePythonImplementation::partial2VoidMethod(*impl);
 }
 
 static void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -12,7 +12,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.idl_type == 'DOMString' and is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
-    {# imp #}
+    {# impl #}
     {# FIXME: use a local variable for holder more often and simplify below #}
     {% if attribute.is_unforgeable or
           interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
@@ -24,11 +24,11 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     if (holder.IsEmpty())
         return;
     {% endif %}{# Window #}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     {% elif attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
-    if (!imp->{{attribute.cached_attribute_validation_method}}()) {
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    if (!impl->{{attribute.cached_attribute_validation_method}}()) {
         v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
@@ -36,13 +36,13 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         }
     }
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_implemented_by and not attribute.is_static %}
-    ASSERT(imp);
+    ASSERT(impl);
     {% endif %}
     {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
-    if (!imp->document())
+    if (!impl->document())
         return;
     {% endif %}
     {# Local variables #}
@@ -224,20 +224,20 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
         return;
     }
     {% endif %}
-    {# imp #}
+    {# impl #}
     {% if attribute.put_forwards %}
-    {{cpp_class}}* proxyImp = {{v8_class}}::toNative(info.Holder());
-    RefPtr<{{attribute.idl_type}}> imp = WTF::getPtr(proxyImp->{{attribute.name}}());
-    if (!imp)
+    {{cpp_class}}* proxyImpl = {{v8_class}}::toNative(info.Holder());
+    RefPtr<{{attribute.idl_type}}> impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
+    if (!impl)
         return;
     {% elif not attribute.is_static %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_implemented_by and not attribute.is_static %}
-    ASSERT(imp);
+    ASSERT(impl);
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
-    if (!imp->document())
+    if (!impl->document())
         return;
     {% endif %}
     {# Convert JS value to C++ value #}

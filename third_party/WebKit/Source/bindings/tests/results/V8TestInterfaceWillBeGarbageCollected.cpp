@@ -75,8 +75,8 @@ template <typename T> void V8_USE(T) { }
 
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(imp->attr1()), imp);
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
 static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -88,9 +88,9 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 
 static void attr1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
     V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    imp->setAttr1(WTF::getPtr(cppValue));
+    impl->setAttr1(WTF::getPtr(cppValue));
 }
 
 static void attr1AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -106,9 +106,9 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("func", "TestInterfaceWillBeGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
     V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    imp->func(arg);
+    impl->func(arg);
 }
 
 static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -74,8 +74,8 @@ template <typename T> void V8_USE(T) { }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsNotEnumerable* imp = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
-    String result = imp->anonymousIndexedGetter(index);
+    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    String result = impl->anonymousIndexedGetter(index);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
@@ -95,9 +95,9 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsNotEnumerable* imp = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String result = imp->anonymousNamedGetter(propertyName);
+    String result = impl->anonymousNamedGetter(propertyName);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());

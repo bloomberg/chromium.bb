@@ -85,10 +85,10 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {% if is_check_security %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -111,14 +111,14 @@ static void {{cpp_class}}ReplaceableAttributeSetterCallback(v8::Local<v8::String
 {% if is_check_security and interface_name != 'Window' %}
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class}}* imp =  {{v8_class}}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
+    {{cpp_class}}* impl = {{v8_class}}::toNative(host);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
 }
 
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class}}* imp =  {{v8_class}}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
+    {{cpp_class}}* impl = {{v8_class}}::toNative(host);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
 }
 
 {% endif %}
@@ -131,14 +131,14 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% set getter = indexed_property_getter %}
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index', 'exceptionState']
            if getter.is_raises_exception else ['index'] %}
-    {{getter.cpp_type}} result = imp->{{getter_name}}({{getter_arguments|join(', ')}});
+    {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments|join(', ')}});
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -177,7 +177,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
@@ -194,7 +194,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
     {% set setter_arguments = ['index', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else ['index', 'propertyValue'] %}
-    bool result = imp->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = impl->{{setter_name}}({{setter_arguments|join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -233,14 +233,14 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
     {% set deleter_arguments = ['index', 'exceptionState']
            if deleter.is_raises_exception else ['index'] %}
-    DeleteResult result = imp->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments|join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -286,7 +286,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
         return;
 
     {% endif %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if getter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(name);
@@ -342,7 +342,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     {% endif %}
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
@@ -355,7 +355,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
            ['propertyName', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else
            ['propertyName', 'propertyValue'] %}
-    bool result = imp->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = impl->{{setter_name}}({{setter_arguments|join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -396,11 +396,11 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    bool result = imp->namedPropertyQuery(propertyName, exceptionState);
+    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
@@ -437,7 +437,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if deleter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(name);
@@ -446,7 +446,7 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
     {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
     {% set deleter_arguments = ['propertyName', 'exceptionState']
            if deleter.is_raises_exception else ['propertyName'] %}
-    DeleteResult result = imp->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments|join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -484,10 +484,10 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
       not named_property_getter.is_custom_property_enumerator %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    imp->namedPropertyEnumerator(names, exceptionState);
+    impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
@@ -528,10 +528,10 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
     v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
-    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
