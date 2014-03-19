@@ -393,18 +393,11 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 // ShelfLayoutManager, Gesture functions:
 
 void ShelfLayoutManager::OnGestureEdgeSwipe(const ui::GestureEvent& gesture) {
-  // Edge swipe should exit fullscreen, show the tray, and disable auto-hide.
-
-  if (workspace_controller_->GetWindowState() ==
-      WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
-    accelerators::ToggleFullscreen();
-  }
-
-  ShelfVisibilityState visibility = CalculateShelfVisibility();
-  if (visibility == SHELF_AUTO_HIDE &&
-      CalculateAutoHideState(visibility) == SHELF_AUTO_HIDE_HIDDEN) {
-    SetState(SHELF_VISIBLE);
-    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  if (visibility_state() == SHELF_AUTO_HIDE) {
+    gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
+    gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+    UpdateVisibilityState();
+    gesture_drag_status_ = GESTURE_DRAG_NONE;
   }
 }
 

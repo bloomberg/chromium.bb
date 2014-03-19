@@ -46,6 +46,8 @@ class ASH_EXPORT ImmersiveFullscreenController
       public views::WidgetObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
+  static const int kMouseRevealBoundsHeight;
+
   // The enum is used for an enumerated histogram. New items should be only
   // added to the end.
   enum WindowType {

@@ -1783,7 +1783,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
-// Immersive fullscreen is ChromeOS only.
+// Immersive fullscreen is Ash only.  However, Windows Ash does not support
+// multiple displays.
 #if defined(OS_CHROMEOS)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924

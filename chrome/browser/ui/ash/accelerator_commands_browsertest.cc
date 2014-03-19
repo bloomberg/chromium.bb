@@ -96,12 +96,7 @@ class AcceleratorCommandsFullscreenBrowserTest
       public InProcessBrowserTest {
  public:
   AcceleratorCommandsFullscreenBrowserTest()
-#if defined(OS_CHROMEOS)
-      : put_window_in_immersive_(true),
-#else
-      : put_window_in_immersive_(false),
-#endif
-        initial_show_state_(GetParam()) {
+      : initial_show_state_(GetParam()) {
   }
   virtual ~AcceleratorCommandsFullscreenBrowserTest() {
   }
@@ -122,12 +117,7 @@ class AcceleratorCommandsFullscreenBrowserTest
       return window_state->IsNormalStateType();
   }
 
-  bool put_window_in_immersive() const {
-    return put_window_in_immersive_;
-  }
-
  private:
-  bool put_window_in_immersive_;
   ui::WindowShowState initial_show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorCommandsFullscreenBrowserTest);
@@ -154,7 +144,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
+  EXPECT_TRUE(IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -181,7 +171,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
+  EXPECT_TRUE(IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -200,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
+  EXPECT_TRUE(IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -220,7 +210,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
+  EXPECT_TRUE(IsInImmersiveFullscreen(window_state));
 
   // TODO(pkotwicz|oshima): Make toggling fullscreen restore the window to its
   // show state prior to entering fullscreen.
@@ -240,12 +230,7 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
       public extensions::PlatformAppBrowserTest {
  public:
   AcceleratorCommandsPlatformAppFullscreenBrowserTest()
-#if defined(OS_CHROMEOS)
-      : put_window_in_immersive_(true),
-#else
-      : put_window_in_immersive_(false),
-#endif
-        initial_show_state_(GetParam()) {
+      : initial_show_state_(GetParam()) {
   }
   virtual ~AcceleratorCommandsPlatformAppFullscreenBrowserTest() {
   }
@@ -266,12 +251,7 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
       return ui::BaseWindow::IsRestored(*app_window->GetBaseWindow());
   }
 
-  bool put_window_in_immersive() const {
-    return put_window_in_immersive_;
-  }
-
  private:
-  bool put_window_in_immersive_;
   ui::WindowShowState initial_show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorCommandsPlatformAppFullscreenBrowserTest);
@@ -305,8 +285,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     EXPECT_TRUE(native_app_window->IsFullscreen());
     ash::wm::WindowState* window_state =
         ash::wm::GetWindowState(native_app_window->GetNativeWindow());
-    EXPECT_EQ(put_window_in_immersive(),
-              IsInImmersiveFullscreen(window_state));
+    EXPECT_TRUE(IsInImmersiveFullscreen(window_state));
 
     ash::accelerators::ToggleFullscreen();
     EXPECT_TRUE(IsInitialShowState(app_window));
