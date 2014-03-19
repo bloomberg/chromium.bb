@@ -73,7 +73,10 @@ cr.define('serviceworker', function() {
             var handler = commandHandler(COMMANDS[i]);
             var links = container.querySelectorAll('button.' + COMMANDS[i]);
             for (var j = 0; j < links.length; ++j) {
-                links[j].addEventListener('click', handler, false);
+                if (!links[j].hasClickEvent) {
+                    links[j].addEventListener('click', handler, false);
+                    links[j].hasClickEvent = true;
+                }
             }
         }
     }
