@@ -74,8 +74,10 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  SigninManagerFactory::GetInstance()->GetForProfile(profile)
-      ->RemoveObserver(this);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+  if (signin_manager)
+    signin_manager->RemoveObserver(this);
   ResetCurrentRegistration();
   SetIsVisible(false);
 }
@@ -146,8 +148,10 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
   CheckUserLoggedIn();
 
-  SigninManagerFactory::GetInstance()->GetForProfile(profile)
-      ->AddObserver(this);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+  if (signin_manager)
+    signin_manager->AddObserver(this);
 }
 
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
