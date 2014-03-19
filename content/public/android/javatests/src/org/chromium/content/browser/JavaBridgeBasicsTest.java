@@ -8,12 +8,14 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_shell_apk.ContentShellActivity;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.ref.WeakReference;
 
 /**
  * Part of the test suite for the Java Bridge. Tests a number of features including ...
@@ -82,6 +84,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         super.setUp();
         mTestController = new TestController();
         setUpContentView(mTestController, "testController");
+    }
+
+    @Override
+    protected ContentShellActivity launchContentShellWithUrl(String url) {
+        // Expose a global function "gc()" into pages.
+        return launchContentShellWithUrlAndCommandLineArgs(
+                url, new String[]{ "--js-flags=--expose-gc" });
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
@@ -402,6 +411,51 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         assertEquals(1, mTestController.waitForIntValue());
         executeJavaScript("innerObject.method()");
         assertEquals(2, mTestController.waitForIntValue());
+    }
+
+    // Verify that Java objects returned from bridge object methods are dereferenced
+    // on the Java side once they have been fully dereferenced on the JS side.
+    // Failing this test would mean that methods returning objects effectively create a memory
+    // leak.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testReturnedObjectIsGarbageCollected() throws Throwable {
+        // Make sure V8 exposes "gc" property on the global object (enabled with --expose-gc flag)
+        assertEquals("function", executeJavaScriptAndGetStringResult("typeof gc"));
+        class InnerObject {
+        }
+        class TestObject {
+            public InnerObject getInnerObject() {
+                InnerObject inner = new InnerObject();
+                weakRefForInner = new WeakReference<InnerObject>(inner);
+                return inner;
+            }
+            // A weak reference is used to check InnerObject instance reachability.
+            WeakReference<InnerObject> weakRefForInner;
+        }
+        TestObject object = new TestObject();
+        injectObjectAndReload(object, "testObject");
+        // Initially, store a reference to the inner object in JS to make sure it's not
+        // garbage-collected prematurely.
+        assertEquals("object", executeJavaScriptAndGetStringResult(
+                        "(function() { " +
+                        "globalInner = testObject.getInnerObject(); return typeof globalInner; " +
+                        "})()"));
+        assertTrue(object.weakRefForInner.get() != null);
+        // Check that returned Java object is being held by the Java bridge, thus it's not
+        // collected.  Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
+        // and ART actually run the collector.
+        Runtime.getRuntime().gc();
+        assertTrue(object.weakRefForInner.get() != null);
+        // Now dereference the inner object in JS and run GC to collect the interface object.
+        assertEquals("true", executeJavaScriptAndGetStringResult(
+                        "(function() { " +
+                        "delete globalInner; gc(); return (typeof globalInner == 'undefined'); " +
+                        "})()"));
+        // Force GC on the Java side again. The bridge had to release the inner object, so it must
+        // be collected this time.
+        Runtime.getRuntime().gc();
+        assertEquals(null, object.weakRefForInner.get());
     }
 
     @SmallTest
