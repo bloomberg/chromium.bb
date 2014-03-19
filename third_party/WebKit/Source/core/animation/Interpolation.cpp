@@ -6,6 +6,7 @@
 #include "core/animation/Interpolation.h"
 
 #include "core/css/resolver/AnimatedStyleBuilder.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 namespace WebCore {
 

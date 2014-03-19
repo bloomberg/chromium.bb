@@ -116,14 +116,14 @@ public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, CompositeOperation);
         double offset() const { return m_offset; }
         TimingFunction* easing() const { return m_easing.get(); }
-        const CompositableValue* value() const { return m_value.get(); }
+        const AnimatableValue* value() const { return m_value.get(); }
         PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
     private:
         // Used by cloneWithOffset().
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<CompositableValue>);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>);
         double m_offset;
         RefPtr<TimingFunction> m_easing;
-        RefPtr<CompositableValue> m_value;
+        RefPtr<AnimatableValue> m_value;
     };
 
     class PropertySpecificKeyframeGroup {

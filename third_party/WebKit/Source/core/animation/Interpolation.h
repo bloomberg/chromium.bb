@@ -5,6 +5,7 @@
 #ifndef Interpolation_h
 #define Interpolation_h
 
+#include "CSSPropertyNames.h"
 #include "core/animation/InterpolableValue.h"
 #include "wtf/RefCounted.h"
 

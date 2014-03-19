@@ -48,21 +48,8 @@ public:
         CompositeReplace,
         CompositeAdd,
     };
-    // Encapsulates the value which results from applying a set of composition operations onto an
-    // underlying value. It is used to represent the output of the effect phase of the Web
-    // Animations model.
-    class CompositableValue : public RefCounted<CompositableValue> {
-    public:
-        virtual ~CompositableValue() { }
-        virtual bool dependsOnUnderlyingValue() const = 0;
-        virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
-
-        virtual bool isAnimatableValue() const { return false; }
-    };
 
     virtual ~AnimationEffect() { }
-    typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
-    typedef Vector<std::pair<CSSPropertyID, RefPtr<CompositableValue> > > CompositableValueList;
     virtual PassOwnPtr<Vector<RefPtr<Interpolation> > > sample(int iteration, double fraction) const = 0;
 
     virtual bool affects(CSSPropertyID) { return false; };

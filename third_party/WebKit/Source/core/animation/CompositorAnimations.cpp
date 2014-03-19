@@ -405,13 +405,12 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
             }
         }
 
-        ASSERT(!keyframes[i]->value()->dependsOnUnderlyingValue());
-        RefPtr<AnimatableValue> value = keyframes[i]->value()->compositeOnto(0);
+        const AnimatableValue* value = keyframes[i]->value();
 
         switch (curve.type()) {
         case blink::WebAnimationCurve::AnimationCurveTypeFilter: {
             OwnPtr<blink::WebFilterOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createFilterOperations());
-            bool converted = toWebFilterOperations(toAnimatableFilterOperations(value.get())->operations(), ops.get());
+            bool converted = toWebFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
             ASSERT_UNUSED(converted, converted);
 
             blink::WebFilterKeyframe filterKeyframe(keyframes[i]->offset(), ops.release());
@@ -420,14 +419,14 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
             break;
         }
         case blink::WebAnimationCurve::AnimationCurveTypeFloat: {
-            blink::WebFloatKeyframe floatKeyframe(keyframes[i]->offset(), toAnimatableDouble(value.get())->toDouble());
+            blink::WebFloatKeyframe floatKeyframe(keyframes[i]->offset(), toAnimatableDouble(value)->toDouble());
             blink::WebFloatAnimationCurve* floatCurve = static_cast<blink::WebFloatAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*floatCurve, floatKeyframe, keyframeTimingFunction);
             break;
         }
         case blink::WebAnimationCurve::AnimationCurveTypeTransform: {
             OwnPtr<blink::WebTransformOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createTransformOperations());
-            toWebTransformOperations(toAnimatableTransform(value.get())->transformOperations(), ops.get());
+            toWebTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
             blink::WebTransformKeyframe transformKeyframe(keyframes[i]->offset(), ops.release());
             blink::WebTransformAnimationCurve* transformCurve = static_cast<blink::WebTransformAnimationCurve*>(&curve);

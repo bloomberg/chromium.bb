@@ -34,62 +34,6 @@
 #include "core/animation/TimedItem.h"
 #include "wtf/text/StringHash.h"
 
-namespace {
-
-using namespace WebCore;
-
-class AddCompositableValue FINAL : public AnimationEffect::CompositableValue {
-public:
-    static PassRefPtr<AddCompositableValue> create(const AnimatableValue* value)
-    {
-        return adoptRef(new AddCompositableValue(value));
-    }
-    virtual bool dependsOnUnderlyingValue() const OVERRIDE
-    {
-        return true;
-    }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
-    {
-        return AnimatableValue::add(underlyingValue, m_value.get());
-    }
-private:
-    AddCompositableValue(const AnimatableValue* value)
-        : m_value(const_cast<AnimatableValue*>(value))
-    {
-    }
-    RefPtr<AnimatableValue> m_value;
-};
-
-class BlendedCompositableValue FINAL : public AnimationEffect::CompositableValue {
-public:
-    static PassRefPtr<BlendedCompositableValue> create(const AnimationEffect::CompositableValue* before, const AnimationEffect::CompositableValue* after, double fraction)
-    {
-        return adoptRef(new BlendedCompositableValue(before, after, fraction));
-    }
-    virtual bool dependsOnUnderlyingValue() const OVERRIDE
-    {
-        return m_dependsOnUnderlyingValue;
-    }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
-    {
-        return AnimatableValue::interpolate(m_before->compositeOnto(underlyingValue).get(), m_after->compositeOnto(underlyingValue).get(), m_fraction);
-    }
-private:
-    BlendedCompositableValue(const AnimationEffect::CompositableValue* before, const AnimationEffect::CompositableValue* after, double fraction)
-        : m_before(const_cast<AnimationEffect::CompositableValue*>(before))
-        , m_after(const_cast<AnimationEffect::CompositableValue*>(after))
-        , m_fraction(fraction)
-        , m_dependsOnUnderlyingValue(before->dependsOnUnderlyingValue() || after->dependsOnUnderlyingValue())
-    { }
-    RefPtr<AnimationEffect::CompositableValue> m_before;
-    RefPtr<AnimationEffect::CompositableValue> m_after;
-    double m_fraction;
-    bool m_dependsOnUnderlyingValue;
-};
-
-} // namespace
-
-
 namespace WebCore {
 
 Keyframe::Keyframe()
@@ -281,22 +225,20 @@ void KeyframeEffectModel::ensureInterpolationEffect() const
 
     for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
         const PropertySpecificKeyframeVector& keyframes = iter->value->keyframes();
-        ASSERT(keyframes[0]->value()->isAnimatableValue());
         const AnimatableValue* start;
-        const AnimatableValue* end = toAnimatableValue(keyframes[0]->value());
+        const AnimatableValue* end = keyframes[0]->value();
         for (size_t i = 0; i < keyframes.size() - 1; i++) {
-            ASSERT(keyframes[i + 1]->value()->isAnimatableValue());
             start = end;
-            end = toAnimatableValue(keyframes[i + 1]->value());
+            end = keyframes[i + 1]->value();
             double applyFrom = i ? keyframes[i]->offset() : (-std::numeric_limits<double>::infinity());
-            double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i+1]->offset();
+            double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i + 1]->offset();
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
             m_interpolationEffect->addInterpolation(
                 LegacyStyleInterpolation::create(
                     AnimatableValue::takeConstRef(start),
                     AnimatableValue::takeConstRef(end), iter->key),
-                keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i+1]->offset(), applyFrom, applyTo);
+                keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
         }
     }
 }
@@ -304,13 +246,12 @@ void KeyframeEffectModel::ensureInterpolationEffect() const
 KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
     , m_easing(easing)
-    , m_value(composite == AnimationEffect::CompositeReplace ?
-        AnimatableValue::takeConstRef(value) :
-        static_cast<PassRefPtr<CompositableValue> >(AddCompositableValue::create(value)))
 {
+    ASSERT(composite == AnimationEffect::CompositeReplace);
+    m_value = AnimatableValue::takeConstRef(value);
 }
 
-KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<CompositableValue> value)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value)
     : m_offset(offset)
     , m_easing(easing)
     , m_value(value)
@@ -320,7 +261,7 @@ KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double o
 
 PassOwnPtr<KeyframeEffectModel::PropertySpecificKeyframe> KeyframeEffectModel::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    return adoptPtr(new PropertySpecificKeyframe(offset, m_easing, PassRefPtr<CompositableValue>(m_value)));
+    return adoptPtr(new PropertySpecificKeyframe(offset, m_easing, m_value));
 }
 
 

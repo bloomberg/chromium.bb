@@ -51,7 +51,7 @@ class StyleResolver;
 class StyleRuleKeyframes;
 
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
-// This includes updates to animations/transitions as well as the CompositableValueMaps to be applied.
+// This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate FINAL {
 public:
     void startAnimation(AtomicString& animationName, const HashSet<RefPtr<InertAnimation> >& animations)
