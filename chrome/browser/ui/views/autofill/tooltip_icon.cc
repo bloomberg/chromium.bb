@@ -8,6 +8,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "grit/theme_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -55,7 +56,6 @@ TooltipIcon::TooltipIcon(const base::string16& tooltip)
       bubble_(NULL),
       observer_(this) {
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
-  SetFocusable(true);
 }
 
 TooltipIcon::~TooltipIcon() {
@@ -86,18 +86,8 @@ void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
-  SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
-                      GetPreferredInsets(this)));
-}
-
-void TooltipIcon::OnFocus() {
-  ShowBubble();
-}
-
-void TooltipIcon::OnBlur() {
-  if (!mouse_inside_)
-    HideBubble();
+void TooltipIcon::GetAccessibleState(ui::AXViewState* state) {
+  state->name = tooltip_;
 }
 
 void TooltipIcon::MouseMovedOutOfHost() {
@@ -107,8 +97,7 @@ void TooltipIcon::MouseMovedOutOfHost() {
   }
 
   mouse_inside_ = false;
-  if (!HasFocus())
-    HideBubble();
+  HideBubble();
 }
 
 void TooltipIcon::ChangeImageTo(int idr) {
@@ -125,7 +114,7 @@ void TooltipIcon::ShowBubble() {
   bubble_ = new TooltipBubble(this, tooltip_);
   // When shown due to a gesture event, close on deactivate (i.e. don't use
   // "focusless").
-  bubble_->set_use_focusless(mouse_inside_ || HasFocus());
+  bubble_->set_use_focusless(mouse_inside_);
 
   bubble_->Show();
   observer_.Add(bubble_->GetWidget());
