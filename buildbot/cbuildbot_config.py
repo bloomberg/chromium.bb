@@ -2057,7 +2057,6 @@ _arm_release.add_config('nyan-release',
 
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
-  hw_tests=[],
 )
 
 _arm_release.add_config('nyan_big-release',
