@@ -288,6 +288,9 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
+  if (!StartDevicePoll())
+    return false;
+
   SetDecoderState(kInitialized);
 
   child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
@@ -709,7 +712,6 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kDecoding);
-  DCHECK(!device_poll_thread_.IsRunning());
   // Initial decode.  We haven't been able to get output stream format info yet.
   // Get it, and start decoding.
 
@@ -754,10 +756,6 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
   } else {
     *endpos = size;
   }
-
-  // StartDevicePoll will raise the error if there is one.
-  if (!StartDevicePoll())
-    return false;
 
   decoder_state_ = kDecoding;
   ScheduleDecodeBufferTaskIfNeeded();
@@ -885,8 +883,6 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DVLOG(3) << "ServiceDeviceTask()";
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
-  DCHECK_NE(decoder_state_, kInitialized);
-  DCHECK_NE(decoder_state_, kAfterReset);
   TRACE_EVENT0("Video Decoder", "V4L2VDA::ServiceDeviceTask");
 
   if (decoder_state_ == kResetting) {
@@ -1353,6 +1349,9 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
     return;
   }
 
+  if (!StartDevicePoll())
+    return;
+
   // We might have received a resolution change event while we were waiting
   // for the reset to finish. The codec will not post another event if the
   // resolution after reset remains the same as the one to which were just
@@ -1407,8 +1406,9 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
 
 bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
   DVLOG(3) << "StartDevicePoll()";
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK(!device_poll_thread_.IsRunning());
+  if (decoder_thread_.IsRunning())
+    DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
@@ -1495,7 +1495,8 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 
 void V4L2VideoDecodeAccelerator::StartResolutionChangeIfNeeded() {
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
-  DCHECK_EQ(decoder_state_, kDecoding);
+  DCHECK_NE(decoder_state_, kUninitialized);
+  DCHECK_NE(decoder_state_, kResetting);
 
   if (!resolution_change_pending_)
     return;
