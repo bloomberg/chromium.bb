@@ -27,6 +27,17 @@ base::FilePath GetSigninProfileDir() {
   return user_data_dir.AppendASCII(chrome::kInitialProfile);
 }
 
+bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
+  // Do not add profile dir prefix for legacy profile dir and test
+  // user profile. The reason of not adding prefix for test user profile
+  // is to keep the promise that TestingProfile::kTestUserProfileDir and
+  // chrome::kTestUserProfileDir are always in sync. Otherwise,
+  // TestingProfile::kTestUserProfileDir needs to be dynamically calculated
+  // based on whether multi profile is enabled or not.
+  return user_id_hash != chrome::kLegacyProfileDir &&
+      user_id_hash != chrome::kTestUserProfileDir;
+}
+
 }  // anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,31 +64,18 @@ Profile* ProfileHelper::GetProfileByUserIdHash(
 // static
 base::FilePath ProfileHelper::GetProfilePathByUserIdHash(
     const std::string& user_id_hash) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // Fails for KioskTest.InstallAndLaunchApp test - crbug.com/238985
-  // Will probably fail for Guest session / restart after a crash -
-  // crbug.com/238998
-  // TODO(nkostylev): Remove this check once these bugs are fixed.
-  if (command_line.HasSwitch(::switches::kMultiProfiles))
-    DCHECK(!user_id_hash.empty());
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath profile_path = profile_manager->user_data_dir();
-  return profile_path.Append(
-      base::FilePath(chrome::kProfileDirPrefix + user_id_hash));
+
+  return profile_path.Append(GetUserProfileDir(user_id_hash));
 }
 
 // static
 base::FilePath ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch() {
-  base::FilePath profile_dir;
-  std::string login_profile_value = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(chromeos::switches::kLoginProfile);
-  if (login_profile_value == chrome::kLegacyProfileDir ||
-      login_profile_value == chrome::kTestUserProfileDir) {
-    profile_dir = base::FilePath(login_profile_value);
-  } else {
-    profile_dir = ProfileHelper::GetUserProfileDir(login_profile_value);
-  }
-  return profile_dir;
+  const std::string login_profile_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kLoginProfile);
+  return ProfileHelper::GetUserProfileDir(login_profile_value);
 }
 
 // static
@@ -92,8 +90,13 @@ std::string ProfileHelper::GetUserIdHashFromProfile(Profile* profile) {
   if (!profile)
     return std::string();
 
-  // Check that profile directory starts with the correct prefix.
   std::string profile_dir = profile->GetPath().BaseName().value();
+
+  // Don't strip prefix if the dir is not supposed to be prefixed.
+  if (!ShouldAddProfileDirPrefix(profile_dir))
+    return profile_dir;
+
+  // Check that profile directory starts with the correct prefix.
   std::string prefix(chrome::kProfileDirPrefix);
   if (profile_dir.find(prefix) != 0) {
     // This happens when creating a TestingProfile in browser tests.
@@ -108,7 +111,9 @@ std::string ProfileHelper::GetUserIdHashFromProfile(Profile* profile) {
 base::FilePath ProfileHelper::GetUserProfileDir(
     const std::string& user_id_hash) {
   DCHECK(!user_id_hash.empty());
-  return base::FilePath(chrome::kProfileDirPrefix + user_id_hash);
+  return ShouldAddProfileDirPrefix(user_id_hash)
+             ? base::FilePath(chrome::kProfileDirPrefix + user_id_hash)
+             : base::FilePath(user_id_hash);
 }
 
 // static

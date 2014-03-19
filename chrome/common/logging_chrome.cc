@@ -209,7 +209,8 @@ base::FilePath GetSessionLogFile(const CommandLine& command_line) {
     base::FilePath profile_dir;
     std::string login_profile_value =
         command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
-    if (login_profile_value == chrome::kLegacyProfileDir) {
+    if (login_profile_value == chrome::kLegacyProfileDir ||
+        login_profile_value == chrome::kTestUserProfileDir) {
       profile_dir = base::FilePath(login_profile_value);
     } else {
       // We could not use g_browser_process > profile_helper() here.

@@ -26,6 +26,7 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #endif
 
@@ -182,8 +183,13 @@ class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest,
                                       public testing::WithParamInterface<bool> {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam())
+    if (GetParam()) {
       command_line->AppendSwitch(::switches::kMultiProfiles);
+      // Use a user hash other than the default chrome::kTestUserProfileDir
+      // so that the prefix case is tested.
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                      "test-user-hash");
+    }
   }
 };
 
@@ -197,11 +203,10 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kMultiProfiles)) {
-    profile_path = profile_path.Append(base::FilePath(
-        std::string(chrome::kProfileDirPrefix) + chrome::kTestUserProfileDir));
+    profile_path = profile_path.AppendASCII(
+        std::string(chrome::kProfileDirPrefix) + "test-user-hash");
   } else {
-    profile_path = profile_path.Append(
-        base::FilePath(chrome::kTestUserProfileDir));
+    profile_path = profile_path.AppendASCII(chrome::kTestUserProfileDir);
   }
   EXPECT_EQ(profile_path.value(), last_used_profile->GetPath().value());
 }

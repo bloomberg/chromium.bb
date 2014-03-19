@@ -13,28 +13,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 
-#if defined (OS_CHROMEOS)
-#include "base/command_line.h"
-#include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/common/chrome_switches.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-// TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
-// default on CrOS. http://crbug.com/351655
-class PrefsTabHelperBrowserTest : public InProcessBrowserTest,
-                                  public testing::WithParamInterface<bool> {
-#else
 class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
-#endif
  protected:
-#if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam())
-      command_line->AppendSwitch(switches::kMultiProfiles);
-  }
-#endif
-
   virtual base::FilePath GetPreferencesFilePath() {
     base::FilePath test_data_directory;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
@@ -48,15 +28,8 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    std::string profile_dir(TestingProfile::kTestUserProfileDir);
-#if defined (OS_CHROMEOS)
-    // On ChromeOS if multi-profiles are enabled, the profile directory has a
-    // special prefix.
-    if (profiles::IsMultipleProfilesEnabled())
-      profile_dir.insert(0, chrome::kProfileDirPrefix);
-#endif
     base::FilePath default_profile =
-        user_data_directory.AppendASCII(profile_dir);
+        user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
     if (!base::CreateDirectory(default_profile)) {
       LOG(ERROR) << "Can't create " << default_profile.MaybeAsASCII();
       return false;
@@ -86,11 +59,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
 
 // Tests that a sampling of web prefs are registered and ones with values in the
 // test user preferences file take on those values.
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(PrefsTabHelperBrowserTest, WebPrefs) {
-#else
 IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
-#endif
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   EXPECT_TRUE(prefs->FindPreference(
@@ -108,8 +77,4 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
   EXPECT_EQ("DejaVu Sans", prefs->GetString(prefs::kWebKitSansSerifFontFamily));
 };
 
-#if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(PrefsTabHelperBrowserTestInstantiation,
-                        PrefsTabHelperBrowserTest,
-                        testing::Bool());
-#endif
+
