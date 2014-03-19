@@ -35,6 +35,9 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebVector.h"
 
+// FIXME: Delete this once the chromium side has picked up the API change.
+#define WEBCRYPTO_HMAC_KEY_HAS_LENGTH 1
+
 namespace blink {
 
 enum WebCryptoKeyAlgorithmParamsType {
@@ -77,14 +80,20 @@ private:
 
 class WebCryptoHmacKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
 public:
-    explicit WebCryptoHmacKeyAlgorithmParams(const WebCryptoAlgorithm& hash)
+    WebCryptoHmacKeyAlgorithmParams(const WebCryptoAlgorithm& hash, unsigned lengthBits)
         : m_hash(hash)
+        , m_lengthBits(lengthBits)
     {
     }
 
     const WebCryptoAlgorithm& hash() const
     {
         return m_hash;
+    }
+
+    unsigned lengthBits() const
+    {
+        return m_lengthBits;
     }
 
     virtual WebCryptoKeyAlgorithmParamsType type() const
@@ -94,6 +103,7 @@ public:
 
 private:
     WebCryptoAlgorithm m_hash;
+    unsigned m_lengthBits;
 };
 
 class WebCryptoRsaKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {

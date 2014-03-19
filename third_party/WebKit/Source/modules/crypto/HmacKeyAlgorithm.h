@@ -40,6 +40,7 @@ public:
     static PassRefPtrWillBeRawPtr<HmacKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
 
     KeyAlgorithm* hash();
+    unsigned length();
 
     virtual void trace(Visitor*) OVERRIDE;
 

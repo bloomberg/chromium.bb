@@ -94,6 +94,7 @@ function runSuccessTestCase(testCase)
         shouldBe("tmpKey.extractable", "false")
         shouldBe("tmpKey.algorithm.name", "'HMAC'")
         shouldBe("tmpKey.algorithm.hash.name", "'" + testCase.algorithm + "'")
+        shouldEvaluateTo("tmpKey.algorithm.length", keyData.length * 8);
         shouldBe("tmpKey.usages.join(',')", "'sign,verify'")
 
         // (2) Sign.

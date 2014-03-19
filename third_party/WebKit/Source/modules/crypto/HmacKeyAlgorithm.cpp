@@ -48,6 +48,11 @@ KeyAlgorithm* HmacKeyAlgorithm::hash()
     return m_hash.get();
 }
 
+unsigned HmacKeyAlgorithm::length()
+{
+    return m_algorithm.hmacParams()->lengthBits();
+}
+
 void HmacKeyAlgorithm::trace(Visitor* visitor)
 {
     KeyAlgorithm::trace(visitor);

@@ -32,4 +32,5 @@
     NoInterfaceObject
 ] interface HmacKeyAlgorithm : KeyAlgorithm {
   readonly attribute KeyAlgorithm hash;
+  readonly attribute unsigned long length;
 };
