@@ -16,15 +16,15 @@
 // Helper methods for transforming and drawing avatar icons.
 namespace {
 
-// Given a width, determine the height that preserves the aspect ratio.
-int GetAvatarHeightByRatio(int width) {
+// Determine what the scaled height of the avatar icon should be for a
+// specified width, to preserve the aspect ratio.
+int GetScaledAvatarHeightForWidth(int width, const gfx::ImageSkia& avatar) {
 
-  // Multiply the desired width by the aspect ratio to determine the
-  // desired height. Add 0.5 before int truncating to ensure proper rounding.
-  int ideal_height_for_width =
-      (width * profiles::kAvatarIconHeight / profiles::kAvatarIconWidth) +
-      0.5f;
-  return ideal_height_for_width;
+  // Multiply the width by the inverted aspect ratio (height over
+  // width), and then add 0.5 to ensure the int truncation rounds nicely.
+  int scaled_height = width *
+      ((float) avatar.height() / (float) avatar.width()) + 0.5f;
+  return scaled_height;
 }
 
 // A CanvasImageSource that draws a sized and positioned avatar with an
@@ -44,7 +44,7 @@ class AvatarImageSource : public gfx::CanvasImageSource {
 
   AvatarImageSource(gfx::ImageSkia avatar,
                     const gfx::Size& canvas_size,
-                    int size,
+                    int width,
                     AvatarPosition position,
                     AvatarBorder border);
   virtual ~AvatarImageSource();
@@ -55,7 +55,8 @@ class AvatarImageSource : public gfx::CanvasImageSource {
  private:
   gfx::ImageSkia avatar_;
   const gfx::Size canvas_size_;
-  const int size_;
+  const int width_;
+  const int height_;
   const AvatarPosition position_;
   const AvatarBorder border_;
 
@@ -64,19 +65,19 @@ class AvatarImageSource : public gfx::CanvasImageSource {
 
 AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
                                      const gfx::Size& canvas_size,
-                                     int size,
+                                     int width,
                                      AvatarPosition position,
                                      AvatarBorder border)
     : gfx::CanvasImageSource(canvas_size, false),
       canvas_size_(canvas_size),
-      size_(size - profiles::kAvatarIconPadding),
+      width_(width - profiles::kAvatarIconPadding),
+      height_(GetScaledAvatarHeightForWidth(width, avatar) -
+          profiles::kAvatarIconPadding),
       position_(position),
       border_(border) {
-  // Resize the avatar to the desired square size, avoiding stretches.
-  int resized_avatar_height = GetAvatarHeightByRatio(size_);
   avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
       avatar, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(size_, resized_avatar_height));
+      gfx::Size(width_, height_));
 }
 
 AvatarImageSource::~AvatarImageSource() {
@@ -84,23 +85,24 @@ AvatarImageSource::~AvatarImageSource() {
 
 void AvatarImageSource::Draw(gfx::Canvas* canvas) {
   // Center the avatar horizontally.
-  int x = (canvas_size_.width() - size_) / 2;
+  int x = (canvas_size_.width() - width_) / 2;
   int y;
-  float extra_height = 0.0f;
 
   if (position_ == POSITION_CENTER) {
     // Draw the avatar centered on the canvas.
-    y = (canvas_size_.height() - size_) / 2;
-
-    // The avatar may be shorter than it is wide, rather than perfectly square
-    // If so, center it further down than otherwise.
-    extra_height = (size_ - GetAvatarHeightByRatio(size_)) / 2.0f;
+    y = (canvas_size_.height() - height_) / 2;
   } else {
     // Draw the avatar on the bottom center of the canvas, leaving 1px below.
-    y = canvas_size_.height() - size_ - 1;
+    y = canvas_size_.height() - height_ - 1;
   }
 
-  canvas->DrawImageInt(avatar_, x, y + extra_height);
+  canvas->DrawImageInt(avatar_, x, y);
+
+  // The border should be square.
+  int border_size = std::max(width_, height_);
+  // Reset the x and y for the square border.
+  x = (canvas_size_.width() - border_size) / 2;
+  y = (canvas_size_.height() - border_size) / 2;
 
   if (border_ == BORDER_NORMAL) {
     // Draw a gray border on the inside of the avatar.
@@ -112,8 +114,8 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
     SkPath path;
     path.addRect(SkFloatToScalar(x + 0.5f),  // left
                  SkFloatToScalar(y + 0.5f),  // top
-                 SkFloatToScalar(x + size_ - 0.5f),   // right
-                 SkFloatToScalar(y + size_ - 0.5f));  // bottom
+                 SkFloatToScalar(x + border_size - 0.5f),   // right
+                 SkFloatToScalar(y + border_size - 0.5f));  // bottom
 
     SkPaint paint;
     paint.setColor(border_color);
@@ -136,13 +138,13 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
     // Left and top shadows. To support higher scale factors than 1, position
     // the orthogonal dimension of each line on the half-pixel to separate the
     // pixel. For a vertical line, this means adding 0.5 to the x-value.
-    path.moveTo(SkFloatToScalar(x + 0.5f), SkIntToScalar(y + size_));
+    path.moveTo(SkFloatToScalar(x + 0.5f), SkIntToScalar(y + height_));
 
     // Draw up to the top-left. Stop with the y-value at a half-pixel.
-    path.rLineTo(SkIntToScalar(0), SkFloatToScalar(-size_ + 0.5f));
+    path.rLineTo(SkIntToScalar(0), SkFloatToScalar(-height_ + 0.5f));
 
     // Draw right to the top-right, stopping within the last pixel.
-    path.rLineTo(SkFloatToScalar(size_ - 0.5f), SkIntToScalar(0));
+    path.rLineTo(SkFloatToScalar(width_ - 0.5f), SkIntToScalar(0));
 
     paint.setColor(shadow_color);
     canvas->DrawPath(path, paint);
@@ -151,13 +153,13 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
 
     // Bottom and right highlights. Note that the shadows own the shared corner
     // pixels, so reduce the sizes accordingly.
-    path.moveTo(SkIntToScalar(x + 1), SkFloatToScalar(y + size_ - 0.5f));
+    path.moveTo(SkIntToScalar(x + 1), SkFloatToScalar(y + height_ - 0.5f));
 
     // Draw right to the bottom-right.
-    path.rLineTo(SkFloatToScalar(size_ - 1.5f), SkIntToScalar(0));
+    path.rLineTo(SkFloatToScalar(width_ - 1.5f), SkIntToScalar(0));
 
     // Draw up to the top-right.
-    path.rLineTo(SkIntToScalar(0), SkFloatToScalar(-size_ + 1.5f));
+    path.rLineTo(SkIntToScalar(0), SkFloatToScalar(-height_ + 1.5f));
 
     paint.setColor(highlight_color);
     canvas->DrawPath(path, paint);
