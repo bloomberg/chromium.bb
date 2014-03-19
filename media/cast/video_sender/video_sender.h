@@ -25,9 +25,7 @@ namespace media {
 class VideoFrame;
 
 namespace cast {
-
 class LocalRtcpVideoSenderFeedback;
-class LocalRtpVideoSenderStatistics;
 class LocalVideoEncoderCallback;
 class VideoEncoder;
 
@@ -61,6 +59,11 @@ class VideoSender : public base::NonThreadSafe,
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);
+
+  // Store rtp stats computed at the Cast transport sender.
+  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
+                       base::TimeTicks time_sent,
+                       uint32 rtp_timestamp);
 
  protected:
   // Protected for testability.
@@ -116,9 +119,8 @@ class VideoSender : public base::NonThreadSafe,
   // Subscribes to raw events.
   // Processes raw audio events to be sent over to the cast receiver via RTCP.
   SenderRtcpEventSubscriber event_subscriber_;
-
+  RtpSenderStatistics rtp_stats_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
-  scoped_ptr<LocalRtpVideoSenderStatistics> rtp_video_sender_statistics_;
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;
   uint8 max_unacked_frames_;

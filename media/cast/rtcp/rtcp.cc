@@ -158,7 +158,6 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            RtcpSenderFeedback* sender_feedback,
            transport::CastTransportSender* const transport_sender,
            transport::PacedPacketSender* paced_packet_sender,
-           RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics, RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval, uint32 local_ssrc,
            uint32 remote_ssrc, const std::string& c_name)
@@ -169,7 +168,6 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
       c_name_(c_name),
-      rtp_sender_statistics_(rtp_sender_statistics),
       rtp_receiver_statistics_(rtp_receiver_statistics),
       receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
@@ -287,7 +285,8 @@ void Rtcp::SendRtcpFromRtpReceiver(
 }
 
 void Rtcp::SendRtcpFromRtpSender(
-    const transport::RtcpSenderLogMessage& sender_log_message) {
+    const transport::RtcpSenderLogMessage& sender_log_message,
+    transport::RtcpSenderInfo sender_info) {
   DCHECK(transport_sender_);
   uint32 packet_type_flags = transport::kRtcpSr;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -296,12 +295,6 @@ void Rtcp::SendRtcpFromRtpSender(
     packet_type_flags |= transport::kRtcpSenderLog;
   }
 
-  transport::RtcpSenderInfo sender_info;
-  if (rtp_sender_statistics_) {
-    rtp_sender_statistics_->GetStatistics(now, &sender_info);
-  } else {
-    memset(&sender_info, 0, sizeof(sender_info));
-  }
   SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
 
   transport::RtcpDlrrReportBlock dlrr;

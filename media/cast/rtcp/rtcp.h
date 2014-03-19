@@ -44,14 +44,6 @@ class RtcpSenderFeedback {
   virtual ~RtcpSenderFeedback() {}
 };
 
-class RtpSenderStatistics {
- public:
-  virtual void GetStatistics(const base::TimeTicks& now,
-                             transport::RtcpSenderInfo* sender_info) = 0;
-
-  virtual ~RtpSenderStatistics() {}
-};
-
 class RtpReceiverStatistics {
  public:
   virtual void GetStatistics(uint8* fraction_lost,
@@ -71,7 +63,6 @@ class Rtcp {
        RtcpSenderFeedback* sender_feedback,
        transport::CastTransportSender* const transport_sender,  // Send-side.
        transport::PacedPacketSender* paced_packet_sender,       // Receive side.
-       RtpSenderStatistics* rtp_sender_statistics,
        RtpReceiverStatistics* rtp_receiver_statistics,
        RtcpMode rtcp_mode,
        const base::TimeDelta& rtcp_interval,
@@ -93,7 +84,8 @@ class Rtcp {
   // not fit in the packet the |sender_log_message| will contain the remaining
   // unsent messages.
   void SendRtcpFromRtpSender(
-      const transport::RtcpSenderLogMessage& sender_log_message);
+      const transport::RtcpSenderLogMessage& sender_log_message,
+      transport::RtcpSenderInfo sender_info);
 
   // |cast_message| and |event_subscriber| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
@@ -169,7 +161,6 @@ class Rtcp {
   const std::string c_name_;
 
   // Not owned by this class.
-  RtpSenderStatistics* const rtp_sender_statistics_;
   RtpReceiverStatistics* const rtp_receiver_statistics_;
 
   scoped_ptr<LocalRtcpRttFeedback> rtt_feedback_;

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "media/cast/transport/cast_transport_config.h"
 
 namespace media {
 namespace cast {
@@ -171,6 +172,55 @@ inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {
   // Timestamp is in 90 KHz for video.
   return static_cast<uint32>(recorded_delta.InMilliseconds() * 90);
 }
+
+class RtpSenderStatistics {
+ public:
+  explicit RtpSenderStatistics(int frequency)
+      : frequency_(frequency),
+        rtp_timestamp_(0) {
+    memset(&sender_info_, 0, sizeof(sender_info_));
+  }
+
+  ~RtpSenderStatistics() {}
+
+  void UpdateInfo(const base::TimeTicks& now) {
+    // Update RTP timestamp and return last stored statistics.
+    uint32 ntp_seconds = 0;
+    uint32 ntp_fraction = 0;
+    uint32 rtp_timestamp = 0;
+    if (rtp_timestamp_ > 0) {
+      base::TimeDelta time_since_last_send = now - time_sent_;
+      rtp_timestamp = rtp_timestamp_ + time_since_last_send.InMilliseconds() *
+                                           (frequency_ / 1000);
+      // Update NTP time to current time.
+      ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
+    }
+    // Populate sender info.
+    sender_info_.rtp_timestamp = rtp_timestamp;
+    sender_info_.ntp_seconds = ntp_seconds;
+    sender_info_.ntp_fraction = ntp_fraction;
+  }
+
+  transport::RtcpSenderInfo sender_info() const {
+    return sender_info_;
+  }
+
+  void Store(transport::RtcpSenderInfo sender_info,
+             base::TimeTicks time_sent,
+             uint32 rtp_timestamp) {
+    sender_info_ = sender_info;
+    time_sent_ = time_sent;
+    rtp_timestamp_ = rtp_timestamp;
+}
+
+ private:
+  int frequency_;
+  transport::RtcpSenderInfo sender_info_;
+  base::TimeTicks time_sent_;
+  uint32 rtp_timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpSenderStatistics);
+};
 
 }  // namespace cast
 }  // namespace media

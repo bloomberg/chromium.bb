@@ -35,78 +35,18 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtcpAudioSenderFeedback);
 };
 
-class LocalRtpSenderStatistics : public RtpSenderStatistics {
- public:
-  LocalRtpSenderStatistics(
-      transport::CastTransportSender* const transport_sender,
-      int frequency)
-      : transport_sender_(transport_sender),
-        frequency_(0),
-        sender_info_(),
-        rtp_timestamp_(0),
-        weak_factory_(this) {
-    transport_sender_->SubscribeAudioRtpStatsCallback(
-        base::Bind(&LocalRtpSenderStatistics::StoreStatistics,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  virtual void GetStatistics(const base::TimeTicks& now,
-                             transport::RtcpSenderInfo* sender_info) OVERRIDE {
-    // Update and return last stored statistics.
-    uint32 ntp_seconds = 0;
-    uint32 ntp_fraction = 0;
-    uint32 rtp_timestamp = 0;
-    if (rtp_timestamp_ > 0) {
-      base::TimeDelta time_since_last_send = now - time_sent_;
-      rtp_timestamp = rtp_timestamp_ + time_since_last_send.InMilliseconds() *
-                                           (frequency_ / 1000);
-      // Update NTP time to current time.
-      ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
-    }
-    // Populate sender info.
-    sender_info->rtp_timestamp = rtp_timestamp;
-    sender_info->ntp_seconds = sender_info_.ntp_seconds;
-    sender_info->ntp_fraction = sender_info_.ntp_fraction;
-    sender_info->send_packet_count = sender_info_.send_packet_count;
-    sender_info->send_octet_count = sender_info_.send_octet_count;
-  }
-
-  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
-                       base::TimeTicks time_sent,
-                       uint32 rtp_timestamp) {
-    sender_info_ = sender_info;
-    time_sent_ = time_sent;
-    rtp_timestamp_ = rtp_timestamp;
-  }
-
- private:
-  transport::CastTransportSender* const transport_sender_;
-  int frequency_;
-  transport::RtcpSenderInfo sender_info_;
-  base::TimeTicks time_sent_;
-  uint32 rtp_timestamp_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<LocalRtpSenderStatistics> weak_factory_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpSenderStatistics);
-};
-
 // TODO(mikhal): Reduce heap allocation when not needed.
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          transport::CastTransportSender* const transport_sender)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
+      rtp_stats_(audio_config.frequency),
       rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
-      rtp_audio_sender_statistics_(
-          new LocalRtpSenderStatistics(transport_sender_,
-                                       audio_config.frequency)),
       rtcp_(cast_environment,
             rtcp_feedback_.get(),
             transport_sender_,
             NULL,  // paced sender.
-            rtp_audio_sender_statistics_.get(),
             NULL,
             audio_config.rtcp_mode,
             base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
@@ -125,6 +65,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                                     weak_factory_.GetWeakPtr())));
     cast_initialization_cb_ = audio_encoder_->InitializationResult();
   }
+  transport_sender_->SubscribeAudioRtpStatsCallback(
+      base::Bind(&AudioSender::StoreStatistics, weak_factory_.GetWeakPtr()));
 }
 
 AudioSender::~AudioSender() {}
@@ -196,12 +138,20 @@ void AudioSender::ScheduleNextRtcpReport() {
       time_to_next);
 }
 
+void AudioSender::StoreStatistics(
+    const transport::RtcpSenderInfo& sender_info,
+    base::TimeTicks time_sent,
+    uint32 rtp_timestamp) {
+  rtp_stats_.Store(sender_info, time_sent, rtp_timestamp);
+}
+
 void AudioSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // We don't send audio logging messages since all captured audio frames will
   // be sent.
   transport::RtcpSenderLogMessage empty_msg;
-  rtcp_.SendRtcpFromRtpSender(empty_msg);
+  rtp_stats_.UpdateInfo(cast_environment_->Clock()->NowTicks());
+  rtcp_.SendRtcpFromRtpSender(empty_msg, rtp_stats_.sender_info());
   ScheduleNextRtcpReport();
 }
 

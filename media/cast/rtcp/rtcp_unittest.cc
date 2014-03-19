@@ -117,7 +117,6 @@ class RtcpPeer : public Rtcp {
            RtcpSenderFeedback* sender_feedback,
            transport::CastTransportSender* const transport_sender,
            transport::PacedPacketSender* paced_packet_sender,
-           RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
            RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval,
@@ -128,7 +127,6 @@ class RtcpPeer : public Rtcp {
              sender_feedback,
              transport_sender,
              paced_packet_sender,
-             rtp_sender_statistics,
              rtp_receiver_statistics,
              rtcp_mode,
              rtcp_interval,
@@ -156,7 +154,8 @@ class RtcpTest : public ::testing::Test {
             task_runner_,
             logging_config_)),
         sender_to_receiver_(testing_clock_),
-        receiver_to_sender_(cast_environment_, testing_clock_) {
+        receiver_to_sender_(cast_environment_, testing_clock_),
+        rtp_sender_stats_(kVideoFrequency) {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     net::IPEndPoint dummy_endpoint;
@@ -198,6 +197,7 @@ class RtcpTest : public ::testing::Test {
   scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
   LocalRtcpTransport receiver_to_sender_;
   MockRtcpSenderFeedback mock_sender_feedback_;
+  RtpSenderStatistics rtp_sender_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpTest);
 };
@@ -209,7 +209,6 @@ TEST_F(RtcpTest, TimeToSend) {
             &mock_sender_feedback_,
             transport_sender_.get(),
             &receiver_to_sender_,
-            NULL,
             NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
@@ -232,7 +231,6 @@ TEST_F(RtcpTest, BasicSenderReport) {
             transport_sender_.get(),
             NULL,
             NULL,
-            NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
             kSenderSsrc,
@@ -240,7 +238,7 @@ TEST_F(RtcpTest, BasicSenderReport) {
             kCName);
   sender_to_receiver_.set_rtcp_receiver(&rtcp);
   transport::RtcpSenderLogMessage empty_sender_log;
-  rtcp.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp.SendRtcpFromRtpSender(empty_sender_log, rtp_sender_stats_.sender_info());
 }
 
 TEST_F(RtcpTest, BasicReceiverReport) {
@@ -248,7 +246,6 @@ TEST_F(RtcpTest, BasicReceiverReport) {
             &mock_sender_feedback_,
             NULL,
             &receiver_to_sender_,
-            NULL,
             NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
@@ -267,7 +264,6 @@ TEST_F(RtcpTest, BasicCast) {
             &mock_sender_feedback_,
             NULL,
             &receiver_to_sender_,
-            NULL,
             NULL,
             kRtcpReducedSize,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
@@ -295,7 +291,6 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                      NULL,
                      &receiver_to_sender_,
                      NULL,
-                     NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kReceiverSsrc,
@@ -306,7 +301,6 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
   Rtcp rtcp_sender(cast_environment_,
                    &mock_sender_feedback_,
                    transport_sender_.get(),
-                   NULL,
                    NULL,
                    NULL,
                    kRtcpReducedSize,
@@ -326,7 +320,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
   EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
 
   transport::RtcpSenderLogMessage empty_sender_log;
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
   rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
   EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
@@ -335,7 +330,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
   EXPECT_NEAR(2 * kAddedDelay, avg_rtt.InMilliseconds(), 2);
   EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 2);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 2);
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
 
@@ -352,7 +348,6 @@ TEST_F(RtcpTest, Rtt) {
                      NULL,
                      &receiver_to_sender_,
                      NULL,
-                     NULL,
                      kRtcpCompound,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kReceiverSsrc,
@@ -363,7 +358,6 @@ TEST_F(RtcpTest, Rtt) {
   Rtcp rtcp_sender(cast_environment_,
                    &mock_sender_feedback_,
                    transport_sender_.get(),
-                   NULL,
                    NULL,
                    NULL,
                    kRtcpCompound,
@@ -383,7 +377,8 @@ TEST_F(RtcpTest, Rtt) {
   EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
 
   transport::RtcpSenderLogMessage empty_sender_log;
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
   rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
 
@@ -398,7 +393,8 @@ TEST_F(RtcpTest, Rtt) {
   EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 2);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 2);
 
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
   EXPECT_NEAR(2 * kAddedDelay, rtt.InMilliseconds(), 2);
@@ -416,7 +412,8 @@ TEST_F(RtcpTest, Rtt) {
   EXPECT_NEAR(kAddedDelay + kAddedShortDelay, min_rtt.InMilliseconds(), 2);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 2);
 
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
   EXPECT_NEAR(2 * kAddedShortDelay, rtt.InMilliseconds(), 1);
@@ -446,7 +443,6 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                      NULL,
                      &receiver_to_sender_,
                      NULL,
-                     NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kSenderSsrc,
@@ -457,7 +453,6 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
   Rtcp rtcp_sender(cast_environment_,
                    &mock_sender_feedback_,
                    transport_sender_.get(),
-                   NULL,
                    NULL,
                    NULL,
                    kRtcpReducedSize,
@@ -471,7 +466,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
 
   rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
   transport::RtcpSenderLogMessage empty_sender_log;
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
 
   base::TimeDelta rtt;
@@ -490,7 +486,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
   receiver_to_sender_.set_drop_packets(true);
 
   rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
-  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log);
+  rtcp_sender.SendRtcpFromRtpSender(empty_sender_log,
+                                    rtp_sender_stats_.sender_info());
   RunTasks(33);
 
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt));
@@ -549,7 +546,6 @@ TEST_F(RtcpTest, WrapAround) {
                      transport_sender_.get(),
                      NULL,
                      NULL,
-                     NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kReceiverSsrc,
@@ -577,7 +573,6 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
                      &mock_sender_feedback_,
                      transport_sender_.get(),
                      &receiver_to_sender_,
-                     NULL,
                      NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),

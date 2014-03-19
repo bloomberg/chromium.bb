@@ -22,7 +22,6 @@ namespace cast {
 
 class AudioEncoder;
 class LocalRtcpAudioSenderFeedback;
-class LocalRtpSenderStatistics;
 
 // This class is not thread safe.
 // It's only called from the main cast thread.
@@ -63,6 +62,10 @@ class AudioSender : public base::NonThreadSafe,
   void ResendPacketsOnTransportThread(
       const transport::MissingFramesAndPacketsMap& missing_packets);
 
+  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
+                       base::TimeTicks time_sent,
+                       uint32 rtp_timestamp);
+
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
@@ -71,7 +74,7 @@ class AudioSender : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
   scoped_ptr<AudioEncoder> audio_encoder_;
-  scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
+  RtpSenderStatistics rtp_stats_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
   bool timers_initialized_;

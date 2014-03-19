@@ -114,7 +114,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
       new LocalRtpReceiverStatistics(rtp_receiver_.get()));
   base::TimeDelta rtcp_interval_delta =
       base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval);
-  rtcp_.reset(new Rtcp(cast_environment, NULL, NULL, packet_sender, NULL,
+  rtcp_.reset(new Rtcp(cast_environment, NULL, NULL, packet_sender,
                        rtp_audio_receiver_statistics_.get(),
                        audio_config.rtcp_mode, rtcp_interval_delta,
                        audio_config.feedback_ssrc, audio_config.incoming_ssrc,

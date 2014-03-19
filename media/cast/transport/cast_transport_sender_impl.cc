@@ -151,7 +151,7 @@ void CastTransportSenderImpl::SubscribeAudioRtpStatsCallback(
 
 void CastTransportSenderImpl::SubscribeVideoRtpStatsCallback(
     const CastTransportRtpStatistics& callback) {
-  DCHECK(video_sender_) << "Audio sender uninitialized";
+  DCHECK(video_sender_) << "Video sender uninitialized";
   video_sender_->SubscribeVideoRtpStatsCallback(callback);
 }
 
