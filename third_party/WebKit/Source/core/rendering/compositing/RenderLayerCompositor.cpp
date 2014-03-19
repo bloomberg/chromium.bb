@@ -648,12 +648,12 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
-static IntPoint computeOffsetFromAbsolute(RenderLayer* layer)
+static LayoutPoint computeOffsetFromAbsolute(RenderLayer* layer)
 {
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
     layer->renderer()->mapLocalToContainer(0, transformState, ApplyContainerFlip);
     transformState.flatten();
-    return roundedIntPoint(transformState.lastPlanarPoint());
+    return LayoutPoint(transformState.lastPlanarPoint());
 }
 
 bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate)
@@ -668,9 +668,9 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
         ASSERT(!layer->hasCompositedLayerMapping());
         ASSERT(squashingState.hasMostRecentMapping);
 
-        IntPoint offsetFromAbsoluteForSquashedLayer = computeOffsetFromAbsolute(layer);
+        LayoutPoint offsetFromAbsoluteForSquashedLayer = computeOffsetFromAbsolute(layer);
 
-        IntSize offsetFromSquashingCLM(offsetFromAbsoluteForSquashedLayer.x() - squashingState.offsetFromAbsoluteForSquashingCLM.x(),
+        LayoutSize offsetFromSquashingCLM(offsetFromAbsoluteForSquashedLayer.x() - squashingState.offsetFromAbsoluteForSquashingCLM.x(),
             offsetFromAbsoluteForSquashedLayer.y() - squashingState.offsetFromAbsoluteForSquashingCLM.y());
 
         bool changedSquashingLayer =
@@ -1138,7 +1138,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         overlapMap->geometryMap().popMappingsToAncestor(ancestorLayer);
 }
 
-void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMappingPtr newCompositedLayerMapping, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM, RenderLayer* newClippingAncestorForMostRecentMapping)
+void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMappingPtr newCompositedLayerMapping, bool hasNewCompositedLayerMapping, LayoutPoint newOffsetFromAbsoluteForSquashingCLM, RenderLayer* newClippingAncestorForMostRecentMapping)
 {
     // The most recent backing is done accumulating any more squashing layers.
     if (hasMostRecentMapping)
@@ -1205,7 +1205,7 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         // At this point, if the layer is to be "separately" composited, then its backing becomes the most recent in paint-order.
         if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
             ASSERT(!requiresSquashing(layer->compositingReasons()));
-            IntPoint offsetFromAbsoluteForSquashingCLM = computeOffsetFromAbsolute(layer);
+            LayoutPoint offsetFromAbsoluteForSquashingCLM = computeOffsetFromAbsolute(layer);
             squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), offsetFromAbsoluteForSquashingCLM, clippingAncestor);
         }
     }

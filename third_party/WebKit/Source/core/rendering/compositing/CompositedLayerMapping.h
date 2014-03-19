@@ -49,10 +49,11 @@ struct GraphicsLayerPaintInfo {
     // an intermediate offset for a squashed RenderLayer, described with respect to the CompositedLayerMapping's
     // owning layer that would eventually have the m_squashingLayer. Once the shared GraphicsLayer's bounds are
     // known, then we can trivially convert this offset to m_squashingLayer's space.
-    IntSize offsetFromSquashingCLM;
+    LayoutSize offsetFromSquashingCLM;
 
     // Offset describing where this squashed RenderLayer paints into the shared GraphicsLayer backing.
     IntSize offsetFromRenderer;
+    LayoutSize subpixelAccumulation;
 
     GraphicsLayerPaintingPhase paintingPhase;
 
@@ -167,7 +168,7 @@ public:
     bool hasUnpositionedOverflowControlsLayers() const;
 
     // Returns true if the assignment actually changed the assigned squashing layer.
-    bool updateSquashingLayerAssignment(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
+    bool updateSquashingLayerAssignment(RenderLayer*, LayoutSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
     void removeRenderLayerFromSquashingGraphicsLayer(const RenderLayer*);
 
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
