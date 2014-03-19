@@ -21,6 +21,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 from telemetry.util import statistics
 from telemetry.value import merge_values
+from telemetry.value import scalar
 
 class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
@@ -65,7 +66,8 @@ class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
         group_by_name_suffix=True)
     combined_score = [x for x in combined if x.name == 'Score'][0]
     total = statistics.GeometricMean(combined_score.values)
-    results.AddSummary('Score', 'score', total, 'Total')
+    results.AddSummaryValue(
+        scalar.ScalarValue(None, 'Total.Score', 'score', total))
 
 
 class PeaceKeeperBenchmark(test.Test):

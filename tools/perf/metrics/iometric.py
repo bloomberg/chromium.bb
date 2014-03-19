@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from metrics import Metric
+from telemetry.value import scalar
 
 class IOMetric(Metric):
   """IO-related metrics, obtained via telemetry.core.Browser."""
@@ -34,28 +35,28 @@ class IOMetric(Metric):
         process_type_io: Type of process (eg Browser or Renderer).
         process_type_trace: String to be added to the trace name in the results.
       """
-      if 'ReadOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('read_operations_' + process_type_trace, 'count',
-                           io_stats[process_type_io]
-                           ['ReadOperationCount'],
-                           data_type='unimportant')
-      if 'WriteOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('write_operations_' + process_type_trace, 'count',
-                           io_stats[process_type_io]
-                           ['WriteOperationCount'],
-                           data_type='unimportant')
-      if 'ReadTransferCount' in io_stats[process_type_io]:
-        results.AddSummary('read_bytes_' + process_type_trace, 'kb',
-                           io_stats[process_type_io]
-                           ['ReadTransferCount'] / 1024,
-                           data_type='unimportant')
-      if 'WriteTransferCount' in io_stats[process_type_io]:
-        results.AddSummary('write_bytes_' + process_type_trace, 'kb',
-                           io_stats[process_type_io]
-                           ['WriteTransferCount'] / 1024,
-                           data_type='unimportant')
+
+      def AddSummaryForOperation(operation_name, trace_name_prefix, units):
+        """Adds summary results for an operation in a process.
+
+        Args:
+          operation_name: The name of the operation, e.g. 'ReadOperationCount'
+          trace_name_prefix: The prefix for the trace name.
+        """
+        if operation_name in io_stats[process_type_io]:
+          value = io_stats[process_type_io][operation_name]
+          if units == 'kb':
+            value = value / 1024
+          results.AddSummaryValue(
+              scalar.ScalarValue(None, trace_name_prefix + process_type_trace,
+                                 units, value, important=False))
+
+      AddSummaryForOperation('ReadOperationCount', 'read_operations_', 'count')
+      AddSummaryForOperation('WriteOperationCount', 'write_operations_',
+                             'count')
+      AddSummaryForOperation('ReadTransferCount', 'read_bytes_', 'kb')
+      AddSummaryForOperation('WriteTransferCount', 'write_bytes_', 'kb')
 
     AddSummariesForProcessType('Browser', 'browser')
     AddSummariesForProcessType('Renderer', 'renderer')
     AddSummariesForProcessType('Gpu', 'gpu')
-

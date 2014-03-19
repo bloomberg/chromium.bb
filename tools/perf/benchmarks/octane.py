@@ -18,6 +18,7 @@ from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 from telemetry.util import statistics
+from telemetry.value import scalar
 
 _GB = 1024 * 1024 * 1024
 
@@ -70,7 +71,8 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
         # Collect all test scores to compute geometric mean.
         all_scores.append(score)
     total = statistics.GeometricMean(all_scores)
-    results.AddSummary('Score', 'score', total, chart_name='Total')
+    results.AddSummaryValue(
+        scalar.ScalarValue(None, 'Total.Score', 'score', total))
 
 
 class Octane(test.Test):
@@ -87,4 +89,3 @@ class Octane(test.Test):
           }
         ]
       }, os.path.abspath(__file__))
-

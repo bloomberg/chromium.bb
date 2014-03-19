@@ -16,6 +16,7 @@ from metrics import histogram_util
 from metrics import power
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.value import histogram
 
 # TODO: Revisit this test once multitab support is finalized.
 
@@ -86,5 +87,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     diff_histogram = histogram_util.SubtractHistogram(last_histogram,
         first_histogram)
 
-    results.AddSummary(display_name, '', diff_histogram,
-        data_type='unimportant-histogram')
+    results.AddSummaryValue(
+        histogram.HistogramValue(None, display_name, '',
+                                 raw_value_json=diff_histogram,
+                                 important=False))

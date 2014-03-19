@@ -7,6 +7,7 @@ import time
 
 from metrics import v8_object_stats
 from telemetry.page import page_measurement
+from telemetry.value import scalar
 
 # V8 statistics counter names. These can be retrieved using
 # v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable.
@@ -128,15 +129,19 @@ class Endure(page_measurement.PageMeasurement):
   def DidRunTest(self, browser, results):
     """Adds summary results (single number for one test run)."""
     # Report test run length.
-    results.AddSummary('total_iterations', 'iterations',
-                       self._iterations_elapsed, data_type='unimportant')
-    results.AddSummary('total_time', 'seconds', time.time() - self._start_time,
-                       data_type='unimportant')
+    results.AddSummaryValue(scalar.ScalarValue(None, 'total_iterations',
+                                               'iterations',
+                                               self._iterations_elapsed,
+                                               important=False))
+    results.AddSummaryValue(scalar.ScalarValue(None, 'total_time', 'seconds',
+                                               time.time() - self._start_time,
+                                               important=False))
 
     # Add summary stats which could be monitored for anomalies.
     for trace_name in self._y_values:
       units = self._y_values[trace_name]['units']
       chart_name = self._y_values[trace_name]['chart_name']
       values = self._y_values[trace_name]['values']
-      results.AddSummary(trace_name + '_max', units, max(values),
-                         chart_name=chart_name)
+      value_name = '%s.%s_max' % (chart_name, trace_name)
+      results.AddSummaryValue(
+          scalar.ScalarValue(None, value_name, units, max(values)))
