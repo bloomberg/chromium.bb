@@ -440,9 +440,10 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
       }
       chrome::VersionInfo version_info;
       base::Version local_version(version_info.Version());
+
       browser_data->SetBoolean(kCompatibleVersion,
-          !remote_version.IsValid() || // Allow debug of unparseable versions.
-          (remote_version.CompareTo(local_version) <= 0));
+          (!remote_version.IsValid()) || (!local_version.IsValid()) ||
+          remote_version.components()[0] <= local_version.components()[0]);
 
       base::ListValue* page_list = new base::ListValue();
       remote_browsers_[browser_id] = browser;
