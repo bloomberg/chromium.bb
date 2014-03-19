@@ -43,6 +43,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/WebSocketHandshakeRequestInfo.h"
 #include "public/platform/WebSocketHandshakeResponseInfo.h"
 #include "public/platform/WebString.h"
@@ -136,8 +137,7 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
     }
-    String origin = executionContext()->securityOrigin()->toString();
-    m_handle->connect(url, webProtocols, origin, this);
+    m_handle->connect(url, webProtocols, *executionContext()->securityOrigin(), this);
     flowControlIfNecessary();
     if (m_identifier)
         InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);
