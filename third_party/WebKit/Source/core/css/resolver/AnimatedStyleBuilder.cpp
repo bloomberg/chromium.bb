@@ -174,7 +174,7 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage:
             if (layerValue->isImage()) {
-                fillLayer->setImage(state.styleImage(property, toAnimatableImage(layerValue)->toCSSValue()));
+                fillLayer->setImage(toAnimatableImage(layerValue)->toStyleImage());
             } else {
                 ASSERT(toAnimatableUnknown(layerValue)->toCSSValueID() == CSSValueNone);
                 fillLayer->setImage(nullptr);
@@ -297,7 +297,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderImageSlices(animatableValueToLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderImageSource:
-        style->setBorderImageSource(state.styleImage(property, toAnimatableImage(value)->toCSSValue()));
+        style->setBorderImageSource(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyBorderImageWidth:
         style->setBorderImageWidth(animatableValueToBorderImageLengthBox(value, state));
@@ -393,7 +393,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
             style->setLineHeight(Length(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0), Percent));
         return;
     case CSSPropertyListStyleImage:
-        style->setListStyleImage(state.styleImage(property, toAnimatableImage(value)->toCSSValue()));
+        style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyLetterSpacing:
         style->setLetterSpacing(clampTo<float>(toAnimatableDouble(value)->toDouble()));
@@ -536,7 +536,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMaskBoxImageSlicesFill(toAnimatableLengthBoxAndBool(value)->flag());
         return;
     case CSSPropertyWebkitMaskBoxImageSource:
-        style->setMaskBoxImageSource(state.styleImage(property, toAnimatableImage(value)->toCSSValue()));
+        style->setMaskBoxImageSource(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyWebkitMaskBoxImageWidth:
         style->setMaskBoxImageWidth(animatableValueToBorderImageLengthBox(value, state));

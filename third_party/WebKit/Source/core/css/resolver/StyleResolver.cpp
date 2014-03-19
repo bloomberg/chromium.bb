@@ -629,13 +629,6 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
         features.addAttributeInASelector(contentAttrValues[i]);
 }
 
-// Start loading resources referenced by this style.
-void StyleResolver::loadPendingResources(StyleResolverState& state)
-{
-    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    document().styleEngine()->fontSelector()->loadPendingFonts();
-}
-
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior)
 {
@@ -790,7 +783,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     // go ahead and update it a second time.
     updateFont(state);
 
-    loadPendingResources(state);
+    // Start loading resources referenced by this style.
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     didAccess();
 
@@ -814,7 +809,6 @@ PassRefPtrWillBeRawPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectM
             keyframes[i]->setPropertyValue(id, CSSAnimatableValueFactory::create(id, *state.style()).get());
         }
     }
-
     return KeyframeEffectModel::create(keyframes);
 }
 
@@ -962,7 +956,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
 
-    loadPendingResources(state);
+    // Start loading resources referenced by this style.
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     didAccess();
 
@@ -1090,9 +1086,6 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     RenderStyle* style = state.style();
     if (style->hasAutoZIndex() && (style->opacity() < 1.0f || style->hasTransform()))
         style->setZIndex(0);
-
-    // Start loading resources used by animations.
-    loadPendingResources(state);
 }
 
 template <StyleResolver::StyleApplicationPass pass>
@@ -1336,7 +1329,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    loadPendingResources(state);
+    // Start loading resources referenced by this style.
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);

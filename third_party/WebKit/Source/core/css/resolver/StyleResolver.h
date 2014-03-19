@@ -242,8 +242,6 @@ private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
-    void loadPendingResources(StyleResolverState&);
-
     void appendCSSStyleSheet(CSSStyleSheet*);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);

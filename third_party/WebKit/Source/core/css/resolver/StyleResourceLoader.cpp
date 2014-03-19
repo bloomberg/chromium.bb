@@ -46,7 +46,7 @@ StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
 {
 }
 
-void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, const ElementStyleResources& elementStyleResources)
 {
     if (!renderStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
         return;
@@ -68,8 +68,6 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, Elem
             ReferenceFilterBuilder::setDocumentResourceReference(referenceFilter, adoptPtr(new DocumentResourceReference(resource)));
         }
     }
-
-    elementStyleResources.clearPendingSVGDocuments();
 }
 
 static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
@@ -114,7 +112,7 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options));
 }
 
-void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleResources& elementStyleResources)
+void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementStyleResources& elementStyleResources)
 {
     if (elementStyleResources.pendingImageProperties().isEmpty())
         return;
@@ -198,8 +196,6 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleReso
             ASSERT_NOT_REACHED();
         }
     }
-
-    elementStyleResources.clearPendingImageProperties();
 }
 
 void StyleResourceLoader::loadPendingResources(RenderStyle* renderStyle, ElementStyleResources& elementStyleResources)

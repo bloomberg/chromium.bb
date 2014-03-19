@@ -40,24 +40,48 @@ namespace WebCore {
 // FIXME: Once cross-fade works on generated image types, remove this method.
 bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
-    if (!m_value->isImageValue())
+    RefPtrWillBeRawPtr<CSSValue> fromValue = toCSSValue();
+    if (fromValue->isImageGeneratorValue())
         return true;
-    if (!toAnimatableImage(value)->toCSSValue()->isImageValue())
+    if (!fromValue->isImageValue() && !m_image->isImageResource())
+        return true;
+    const AnimatableImage* image = toAnimatableImage(value);
+    RefPtrWillBeRawPtr<CSSValue> toValue = image->toCSSValue();
+    if (toValue->isImageGeneratorValue())
+        return true;
+    if (!toValue->isImageValue() && !image->m_image->isImageResource())
         return true;
     return false;
 }
 
 PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
+    if (fraction <= 0 || fraction >= 1)
         return defaultInterpolateTo(this, value, fraction);
-
-    CSSValue* fromValue = toCSSValue();
-    CSSValue* toValue = toAnimatableImage(value)->toCSSValue();
-
+    RefPtrWillBeRawPtr<CSSValue> fromValue = toCSSValue();
+    // FIXME: Once cross-fade works on generated image types, remove this check.
+    if (fromValue->isImageGeneratorValue())
+        return defaultInterpolateTo(this, value, fraction);
+    if (!fromValue->isImageValue() && !fromValue->isImageGeneratorValue()) {
+        if (!m_image->isImageResource())
+            return defaultInterpolateTo(this, value, fraction);
+        ImageResource* resource = static_cast<ImageResource*>(m_image->data());
+        fromValue = CSSImageValue::create(resource->url(), m_image.get());
+    }
+    const AnimatableImage* image = toAnimatableImage(value);
+    RefPtrWillBeRawPtr<CSSValue> toValue = image->toCSSValue();
+    // FIXME: Once cross-fade works on generated image types, remove this check.
+    if (toValue->isImageGeneratorValue())
+        return defaultInterpolateTo(this, value, fraction);
+    if (!toValue->isImageValue() && !toValue->isImageGeneratorValue()) {
+        if (!image->m_image->isImageResource())
+            return defaultInterpolateTo(this, value, fraction);
+        ImageResource* resource = static_cast<ImageResource*>(image->m_image->data());
+        toValue = CSSImageValue::create(resource->url(), image->m_image.get());
+    }
     RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
     crossfadeValue->setPercentage(CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::CSS_NUMBER));
-    return create(crossfadeValue);
+    return create(StyleGeneratedImage::create(crossfadeValue.get()).get());
 }
 
 PassRefPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* value) const
@@ -68,7 +92,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* valu
 
 bool AnimatableImage::equalTo(const AnimatableValue* value) const
 {
-    return m_value->equals(*toAnimatableImage(value)->m_value.get());
+    return StyleImage::imagesEquivalent(m_image.get(), toAnimatableImage(value)->m_image.get());
 }
 
 }
