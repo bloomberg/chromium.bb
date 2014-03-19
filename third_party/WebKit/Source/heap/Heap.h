@@ -1233,7 +1233,7 @@ public:
 
     static void markNoTracing(Visitor* visitor, const void* t)
     {
-        visitor->mark(t);
+        visitor->mark(t, reinterpret_cast<TraceCallback>(0));
     }
 
     template<typename T, typename Traits>

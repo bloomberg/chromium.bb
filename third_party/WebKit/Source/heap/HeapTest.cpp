@@ -1443,19 +1443,19 @@ TEST(HeapTest, BasicFunctionality)
         persistents[i] = 0;
     }
 
-    uint8_t* address = Heap::reallocate<uint8_t>(0, 100);
+    uint8_t* address = reinterpret_cast<uint8_t*>(Heap::reallocate<DynamicallySizedObject>(0, 100));
     for (int i = 0; i < 100; i++)
         address[i] = i;
-    address = Heap::reallocate<uint8_t>(address, 100000);
+    address = reinterpret_cast<uint8_t*>(Heap::reallocate<DynamicallySizedObject>(address, 100000));
     for (int i = 0; i < 100; i++)
         EXPECT_EQ(address[i], i);
-    address = Heap::reallocate<uint8_t>(address, 50);
+    address = reinterpret_cast<uint8_t*>(Heap::reallocate<DynamicallySizedObject>(address, 50));
     for (int i = 0; i < 50; i++)
         EXPECT_EQ(address[i], i);
     // This should be equivalent to free(address).
-    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<uint8_t>(address, 0)), 0ul);
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<DynamicallySizedObject>(address, 0)), 0ul);
     // This should be equivalent to malloc(0).
-    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<uint8_t>(0, 0)), 0ul);
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<DynamicallySizedObject>(0, 0)), 0ul);
 }
 
 TEST(HeapTest, SimpleAllocation)

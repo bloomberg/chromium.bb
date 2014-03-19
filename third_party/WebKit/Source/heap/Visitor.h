@@ -483,43 +483,6 @@ class HeapVectorBacking;
 template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
 class HeapHashTableBacking;
 
-inline void doNothingTrace(Visitor*, void*) { }
-
-// Non-class types like char don't have an trace method, so we provide a more
-// specialized template instantiation here that will be selected in preference
-// to the default. Most of them do nothing, since the type in question cannot
-// point to other heap allocated objects.
-#define ITERATE_DO_NOTHING_TYPES(f)                                  \
-    f(uint8_t)                                                       \
-    f(void)
-
-#define DECLARE_DO_NOTHING_TRAIT(type)                               \
-    template<>                                                       \
-    class TraceTrait<type> {                                         \
-    public:                                                          \
-        static void checkGCInfo(Visitor*, const void*) { }       \
-        static void mark(Visitor* visitor, const type* p) {          \
-            visitor->mark(p, reinterpret_cast<TraceCallback>(0));    \
-        }                                                            \
-    };                                                               \
-    template<>                                                       \
-    struct FinalizerTrait<type> {                                    \
-        static void finalize(void*) { }                              \
-        static const bool nonTrivialFinalizer = false;               \
-    };                                                               \
-    template<>                                                       \
-    struct HEAP_EXPORT GCInfoTrait<type> {                           \
-        static const GCInfo* get()                                   \
-        {                                                            \
-            return &info;                                            \
-        }                                                            \
-        static const GCInfo info;                                    \
-    };
-
-ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
-
-#undef DECLARE_DO_NOTHING_TRAIT
-
 template<typename T>
 class DefaultTraceTrait<T, false> {
 public:
