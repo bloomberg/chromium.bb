@@ -387,9 +387,8 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedSharedBufferHandle) ==
 
 inline MojoResult CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
-    uint64_t* num_bytes,
+    uint64_t num_bytes,
     ScopedSharedBufferHandle* shared_buffer) {
-  assert(num_bytes);
   assert(shared_buffer);
   SharedBufferHandle handle;
   MojoResult rv = MojoCreateSharedBuffer(options, num_bytes,
@@ -438,27 +437,25 @@ inline MojoResult UnmapBuffer(void* pointer) {
 // handle.
 class SharedBuffer {
  public:
-  explicit SharedBuffer(uint64_t minimum_num_bytes);
-  SharedBuffer(uint64_t minimum_num_bytes,
+  explicit SharedBuffer(uint64_t num_bytes);
+  SharedBuffer(uint64_t num_bytes,
                const MojoCreateSharedBufferOptions& options);
   ~SharedBuffer();
 
-  uint64_t num_bytes;
   ScopedSharedBufferHandle handle;
 };
 
-inline SharedBuffer::SharedBuffer(uint64_t minimum_num_bytes)
-    : num_bytes(minimum_num_bytes) {
+inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
   MojoResult result MOJO_ALLOW_UNUSED =
-      CreateSharedBuffer(NULL, &num_bytes, &handle);
+      CreateSharedBuffer(NULL, num_bytes, &handle);
   assert(result == MOJO_RESULT_OK);
 }
 
-inline SharedBuffer::SharedBuffer(uint64_t minimum_num_bytes,
-                                  const MojoCreateSharedBufferOptions& options)
-    : num_bytes(minimum_num_bytes) {
+inline SharedBuffer::SharedBuffer(
+    uint64_t num_bytes,
+    const MojoCreateSharedBufferOptions& options) {
   MojoResult result MOJO_ALLOW_UNUSED =
-      CreateSharedBuffer(&options, &num_bytes, &handle);
+      CreateSharedBuffer(&options, num_bytes, &handle);
   assert(result == MOJO_RESULT_OK);
 }
 

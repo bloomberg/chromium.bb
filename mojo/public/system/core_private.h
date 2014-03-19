@@ -68,7 +68,7 @@ class MOJO_SYSTEM_EXPORT Core {
                                  uint32_t num_elements_read) = 0;
   virtual MojoResult CreateSharedBuffer(
       const MojoCreateSharedBufferOptions* options,
-      uint64_t* num_bytes,
+      uint64_t num_bytes,
       MojoHandle* shared_buffer_handle) = 0;
   virtual MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,

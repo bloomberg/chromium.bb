@@ -505,7 +505,7 @@ MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
 
 MojoResult CoreImpl::CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
-    uint64_t* num_bytes,
+    uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
   // TODO(vtl)
   NOTIMPLEMENTED();

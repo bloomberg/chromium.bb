@@ -122,7 +122,7 @@ MojoResult MojoEndReadData(MojoHandle data_pipe_consumer_handle,
 
 MojoResult MojoCreateSharedBuffer(
     const struct MojoCreateSharedBufferOptions* options,
-    uint64_t* num_bytes,
+    uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
   assert(g_core);
   return g_core->CreateSharedBuffer(options, num_bytes, shared_buffer_handle);

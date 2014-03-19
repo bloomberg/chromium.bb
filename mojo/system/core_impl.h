@@ -85,7 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
                                  uint32_t num_bytes_read) OVERRIDE;
   virtual MojoResult CreateSharedBuffer(
       const MojoCreateSharedBufferOptions* options,
-      uint64_t* num_bytes,
+      uint64_t num_bytes,
       MojoHandle* shared_buffer_handle) OVERRIDE;
   virtual MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,

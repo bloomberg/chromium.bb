@@ -787,7 +787,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
 // TODO(vtl): More.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
     const struct MojoCreateSharedBufferOptions* options,  // Optional.
-    uint64_t* num_bytes,  // In/out.
+    uint64_t num_bytes,  // In.
     MojoHandle* shared_buffer_handle);  // Out.
 
 // Duplicates the handle |buffer_handle| to a buffer. This creates another
