@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_error_controller.h"
 
 class Profile;
 

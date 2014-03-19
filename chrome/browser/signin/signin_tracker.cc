@@ -6,10 +6,10 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/profile_management_switches.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 #if !defined(OS_CHROMEOS)

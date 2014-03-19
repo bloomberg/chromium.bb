@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define COMPONENTS_SIGNIN_CORE_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#define CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -141,4 +141,4 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenService);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_

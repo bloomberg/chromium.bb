@@ -27,7 +27,8 @@ FakeProfileOAuth2TokenServiceWrapper::FakeProfileOAuth2TokenServiceWrapper(
   if (auto_issue_tokens)
     service_.set_auto_post_fetch_response_on_message_loop(true);
   service_.Initialize(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      reinterpret_cast<Profile*>(profile));
 }
 
 FakeProfileOAuth2TokenServiceWrapper::~FakeProfileOAuth2TokenServiceWrapper() {

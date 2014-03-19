@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "components/signin/core/signin_error_controller.h"
 
 namespace base {
 class DictionaryValue;

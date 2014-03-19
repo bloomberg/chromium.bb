@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "components/signin/core/signin_error_controller.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_error_controller.h"
+#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
-    : client_(NULL) {}
+    : client_(NULL), profile_(NULL) {}
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
   DCHECK(!signin_error_controller_.get()) <<
@@ -20,16 +22,20 @@ ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
       "ProfileOAuth2TokenService::Shutdown";
 }
 
-void ProfileOAuth2TokenService::Initialize(SigninClient* client) {
+void ProfileOAuth2TokenService::Initialize(SigninClient* client,
+                                           Profile* profile) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
+  DCHECK(profile);
+  DCHECK(!profile_);
+  profile_ = profile;
 
   signin_error_controller_.reset(new SigninErrorController());
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
-  DCHECK(client_) << "Shutdown() called without matching call to Initialize()";
+  DCHECK(profile_) << "Shutdown() called without matching call to Initialize()";
   signin_error_controller_.reset();
 }
 

@@ -1,11 +1,11 @@
 include_rules = [
-  "+components/keyed_service/core",
   "+components/os_crypt",
   "+components/webdata/common",
-  "+google_apis/gaia",
+  "+google_apis/gaia/gaia_urls.h",
   "+grit",  # For generated headers
   "+net",
   "+sql",
+  "+ui",
   # Signin is a layered component; subdirectories must explicitly introduce
   # the ability to use the content layer as appropriate.
   "-components/signin/content",

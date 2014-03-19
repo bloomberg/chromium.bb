@@ -7,10 +7,10 @@
 #include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_notifier_ash.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
 
 SigninErrorNotifierFactory::SigninErrorNotifierFactory()
     : BrowserContextKeyedServiceFactory(

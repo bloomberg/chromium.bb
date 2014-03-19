@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_ERROR_CONTROLLER_H_
-#define COMPONENTS_SIGNIN_CORE_SIGNIN_ERROR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_CONTROLLER_H_
+#define CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_CONTROLLER_H_
 
 #include <set>
 #include "base/basictypes.h"
@@ -76,4 +76,4 @@ class SigninErrorController {
   DISALLOW_COPY_AND_ASSIGN(SigninErrorController);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_ERROR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_CONTROLLER_H_

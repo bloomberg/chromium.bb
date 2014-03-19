@@ -9,9 +9,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
 
 namespace browser_sync {
 

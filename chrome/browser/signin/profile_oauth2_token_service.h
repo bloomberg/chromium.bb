@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#define CHROME_BROWSER_SIGNIN_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -18,6 +18,7 @@ class URLRequestContextGetter;
 }
 
 class GoogleServiceAuthError;
+class Profile;
 class SigninClient;
 
 // ProfileOAuth2TokenService is a class that retrieves
@@ -38,8 +39,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
   virtual ~ProfileOAuth2TokenService();
 
-  // Initializes this token service with the SigninClient.
-  virtual void Initialize(SigninClient* client);
+  // Initializes this token service with the SigninClient and profile.
+  // TODO(blundell): Eliminate this class knowing about Profile.
+  // crbug.com/334217
+  virtual void Initialize(SigninClient* client, Profile* profile);
 
   virtual void Shutdown();
 
@@ -95,10 +98,13 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // The client with which this instance was initialized, or NULL.
   SigninClient* client_;
 
+  // The profile with which this instance was initialized, or NULL.
+  Profile* profile_;
+
   // Used to expose auth errors to the UI.
   scoped_ptr<SigninErrorController> signin_error_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // CHROME_BROWSER_SIGNIN_PROFILE_OAUTH2_TOKEN_SERVICE_H_

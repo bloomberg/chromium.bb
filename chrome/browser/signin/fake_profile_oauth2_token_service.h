@@ -14,7 +14,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #else
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #endif
 
 // Helper class to simplify writing unittests that depend on an instance of
