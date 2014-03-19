@@ -420,6 +420,13 @@ public class ContentViewCore
     private SmartClipDataListener mSmartClipDataListener = null;
 
     /**
+     * PID used to indicate an invalid render process.
+     */
+    // Keep in sync with the value returned from ContentViewCoreImpl::GetCurrentRendererProcessId()
+    // if there is no render process.
+    public static final int INVALID_RENDER_PROCESS_PID = 0;
+
+    /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
      *
@@ -1371,12 +1378,20 @@ public class ContentViewCore
     public void onShow() {
         assert mNativeContentViewCore != 0;
         if (!mInForeground) {
-            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.getBindingManager().setInForeground(pid, true);
+            ChildProcessLauncher.getBindingManager().setInForeground(getCurrentRenderProcessId(),
+                    true);
         }
         mInForeground = true;
         nativeOnShow(mNativeContentViewCore);
         setAccessibilityState(mAccessibilityManager.isEnabled());
+    }
+
+    /**
+     * @return The ID of the renderer process that backs this tab or
+     *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
+     */
+    public int getCurrentRenderProcessId() {
+        return nativeGetCurrentRenderProcessId(mNativeContentViewCore);
     }
 
     /**
@@ -1385,8 +1400,8 @@ public class ContentViewCore
     public void onHide() {
         assert mNativeContentViewCore != 0;
         if (mInForeground) {
-            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.getBindingManager().setInForeground(pid, false);
+            ChildProcessLauncher.getBindingManager().setInForeground(getCurrentRenderProcessId(),
+                    false);
         }
         mInForeground = false;
         hidePopupDialog();

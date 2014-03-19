@@ -132,6 +132,18 @@ public class Tab implements NavigationClient {
     private FeedbackReporter mFeedbackReporter;
 
     /**
+     * If this tab was opened from another tab, store the id of the tab that
+     * caused it to be opened so that we can activate it when this tab gets
+     * closed.
+     */
+    private int mParentId = INVALID_TAB_ID;
+
+    /**
+     * Whether the tab should be grouped with its parent tab.
+     */
+    private boolean mGroupedWithParent = true;
+
+    /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
      */
@@ -278,10 +290,23 @@ public class Tab implements NavigationClient {
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
+        this(INVALID_TAB_ID, id, incognito, context, window);
+    }
+
+    /**
+     * Creates an instance of a {@link Tab}.
+     * @param id        The id this tab should be identified with.
+     * @param parentId  The id id of the tab that caused this tab to be opened.
+     * @param incognito Whether or not this tab is incognito.
+     * @param context   An instance of a {@link Context}.
+     * @param window    An instance of a {@link WindowAndroid}.
+     */
+    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window) {
         // We need a valid Activity Context to build the ContentView with.
         assert context == null || context instanceof Activity;
 
         mId = generateValidId(id);
+        mParentId = parentId;
         mIncognito = incognito;
         // TODO(dtrainor): Only store application context here.
         mContext = context;
@@ -850,6 +875,30 @@ public class Tab implements NavigationClient {
     @CalledByNative
     public boolean restoreIfNeeded() {
         return false;
+    }
+
+    /**
+     * @return The id of the tab that caused this tab to be opened.
+     */
+    public int getParentId() {
+        return mParentId;
+    }
+
+    /**
+     * @return Whether the tab should be grouped with its parent tab (true by default).
+     */
+    public boolean isGroupedWithParent() {
+        return mGroupedWithParent;
+    }
+
+    /**
+     * Sets whether the tab should be grouped with its parent tab.
+     *
+     * @param groupedWithParent The new value.
+     * @see #isGroupedWithParent
+     */
+    public void setGroupedWithParent(boolean groupedWithParent) {
+        mGroupedWithParent = groupedWithParent;
     }
 
     private void destroyNativePageInternal(NativePage nativePage) {
