@@ -2390,17 +2390,6 @@ bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
                        extension->location() == Manifest::COMPONENT);
 }
 
-bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
-  const Extension* extension =
-      registry_->enabled_extensions().GetExtensionOrAppByURL(*url);
-  if (extension && extension->is_platform_app()) {
-    *url = GURL(chrome::kExtensionInvalidRequestURL);
-    return true;
-  }
-
-  return false;
-}
-
 bool ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
          const Version* version,

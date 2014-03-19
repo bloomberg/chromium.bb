@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -41,7 +40,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -485,9 +486,12 @@ void Navigate(NavigateParams* params) {
   if (!AdjustNavigateParamsForURL(params))
     return;
 
-  ExtensionService* service = params->initiating_profile->GetExtensionService();
-  if (service)
-    service->ShouldBlockUrlInBrowserTab(&params->url);
+  const extensions::Extension* extension =
+    extensions::ExtensionRegistry::Get(params->initiating_profile)->
+        enabled_extensions().GetExtensionOrAppByURL(params->url);
+  // Platform apps cannot navigate. Block the request.
+  if (extension && extension->is_platform_app())
+    params->url = GURL(chrome::kExtensionInvalidRequestURL);
 
   // The browser window may want to adjust the disposition.
   if (params->disposition == NEW_POPUP &&

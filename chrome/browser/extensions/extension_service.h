@@ -314,10 +314,6 @@ class ExtensionService
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const GURL& url);
 
-  // Returns true if a normal browser window should avoid showing |url| in a
-  // tab. In this case, |url| is also rewritten to an error URL.
-  bool ShouldBlockUrlInBrowserTab(GURL* url);
-
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
