@@ -27,9 +27,13 @@ TEST(ChannelMixerTest, ConstructAllPossibleLayouts) {
          output_layout < CHANNEL_LAYOUT_STEREO_DOWNMIX;
          output_layout = static_cast<ChannelLayout>(output_layout + 1)) {
       // DISCRETE can't be tested here based on the current approach.
+      // CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC is not mixable.
       if (input_layout == CHANNEL_LAYOUT_DISCRETE ||
-          output_layout == CHANNEL_LAYOUT_DISCRETE)
+          input_layout == CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC ||
+          output_layout == CHANNEL_LAYOUT_DISCRETE ||
+          output_layout == CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
         continue;
+      }
 
       SCOPED_TRACE(base::StringPrintf(
           "Input Layout: %d, Output Layout: %d", input_layout, output_layout));

@@ -50,6 +50,7 @@ class MEDIA_EXPORT AudioParameters {
     NO_EFFECTS = 0x0,
     ECHO_CANCELLER = 0x1,
     DUCKING = 0x2,  // Enables ducking if the OS supports it.
+    KEYBOARD_MIC = 0x4,
   };
 
   AudioParameters();

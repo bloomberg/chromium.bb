@@ -26,6 +26,7 @@ static void ValidateLayout(ChannelLayout layout) {
   CHECK_LE(layout, CHANNEL_LAYOUT_MAX);
   CHECK_NE(layout, CHANNEL_LAYOUT_UNSUPPORTED);
   CHECK_NE(layout, CHANNEL_LAYOUT_DISCRETE);
+  CHECK_NE(layout, CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC);
 
   // Verify there's at least one channel.  Should always be true here by virtue
   // of not being one of the invalid layouts, but lets double check to be sure.

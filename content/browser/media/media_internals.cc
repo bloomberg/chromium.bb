@@ -34,6 +34,7 @@ std::string EffectsToString(int effects) {
   } flags[] = {
     { media::AudioParameters::ECHO_CANCELLER, "ECHO_CANCELLER" },
     { media::AudioParameters::DUCKING, "DUCKING" },
+    { media::AudioParameters::KEYBOARD_MIC, "KEYBOARD_MIC" },
   };
 
   std::string ret;

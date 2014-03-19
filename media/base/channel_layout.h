@@ -99,8 +99,14 @@ enum ChannelLayout {
   // Channels are not explicitly mapped to speakers.
   CHANNEL_LAYOUT_DISCRETE = 29,
 
+  // Front L, Front R, Front C. Front C contains the keyboard mic audio. This
+  // layout is only intended for input for WebRTC. The Front C channel
+  // is stripped away in the WebRTC audio input pipeline and never seen outside
+  // of that.
+  CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC = 30,
+
   // Max value, must always equal the largest entry ever logged.
-  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_DISCRETE
+  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC
 };
 
 enum Channels {
