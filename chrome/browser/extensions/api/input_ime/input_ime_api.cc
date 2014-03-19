@@ -777,7 +777,7 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
@@ -815,7 +815,7 @@ void InputImeAPI::Observe(int type,
             profile_, extension->id(), *component);
       }
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<const UnloadedExtensionInfo>(details)->extension;
     const std::vector<InputComponentInfo>* input_components =

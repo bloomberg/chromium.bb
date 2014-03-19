@@ -127,7 +127,7 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   // Invoked by Observe for NOTIFICATION_EXTENSION_LOADED.
   void OnExtensionLoaded(const extensions::Extension* extension);
 
-  // Invoked by Observe for NOTIFICATION_EXTENSION_UNLOADED.
+  // Invoked by Observe for NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
   void OnExtensionUnloaded(const extensions::Extension* extension);
 
   // Invoked by Observe for NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED.

@@ -112,7 +112,7 @@ void StartPageHandler::Observe(int type,
         OnHotwordEnabledChanged();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       extensions::UnloadedExtensionInfo* info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       if (info->extension->id() == extension_misc::kHotwordExtensionId)
@@ -213,7 +213,7 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
                    base::Unretained(this)));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::Source<Profile>(profile));
     hotword_monitor_.reset(new HotwordBackgroundActivityMonitor(this));
   }

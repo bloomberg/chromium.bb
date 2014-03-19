@@ -456,13 +456,15 @@ enum NotificationType {
   // Profile.
   NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
 
+  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
+  //
   // Sent when an extension is unloaded. This happens when an extension is
   // uninstalled or disabled. The details are an UnloadedExtensionInfo, and
   // the source is a Profile.
   //
   // Note that when this notification is sent, ExtensionService has already
   // removed the extension from its internal state.
-  NOTIFICATION_EXTENSION_UNLOADED,
+  NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
 
   // Sent when an Extension object is removed from ExtensionService. This
   // can happen when an extension is uninstalled, upgraded, or blacklisted,

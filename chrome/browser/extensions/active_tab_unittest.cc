@@ -293,7 +293,7 @@ TEST_F(ActiveTabTest, Uninstalling) {
   UnloadedExtensionInfo details(extension.get(),
                                 UnloadedExtensionInfo::REASON_DISABLE);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(Profile::FromBrowserContext(
           web_contents()->GetBrowserContext())),
       content::Details<UnloadedExtensionInfo>(&details));

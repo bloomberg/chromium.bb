@@ -144,7 +144,7 @@ class BrowserActionButton : public content::NotificationObserver,
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
         content::Source<ExtensionAction>(browser_action()));
     registrar_.Add(
-        this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(
             toolbar->browser()->profile()->GetOriginalProfile()));
     registrar_.Add(
@@ -177,7 +177,7 @@ class BrowserActionButton : public content::NotificationObserver,
      case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
       UpdateState();
       break;
-     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
      case chrome::NOTIFICATION_WINDOW_CLOSED:
       DisconnectBrowserActionPopupAccelerator();
       break;

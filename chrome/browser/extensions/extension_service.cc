@@ -656,7 +656,7 @@ void ExtensionService::FinishVerifyAllExtensions(bool bootstrap, bool success) {
         UnloadedExtensionInfo details(&extension,
                                       UnloadedExtensionInfo::REASON_DISABLE);
         content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_EXTENSION_UNLOADED,
+            chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
             content::Source<Profile>(profile_),
             content::Details<UnloadedExtensionInfo>(&details));
       }
@@ -1197,7 +1197,7 @@ void ExtensionService::NotifyExtensionUnloaded(
 
   UnloadedExtensionInfo details(extension, reason);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 

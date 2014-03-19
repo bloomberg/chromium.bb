@@ -1517,7 +1517,7 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
       notifier_(manager, this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   extensions::EventRouter* router = extensions::ExtensionSystem::Get(profile_)->
       event_router();
@@ -1894,7 +1894,7 @@ void ExtensionDownloadsEventRouter::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       extensions::UnloadedExtensionInfo* unloaded =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       std::set<const extensions::Extension*>::iterator iter =

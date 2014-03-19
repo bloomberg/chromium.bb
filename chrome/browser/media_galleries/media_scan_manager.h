@@ -93,7 +93,7 @@ class MediaScanManager : public content::NotificationObserver {
   // Set of extensions (on all profiles) that have an in-progress scan.
   ScanObserverMap observers_;
 
-  // Used to listen for NOTIFICATION_EXTENSION_UNLOADED events.
+  // Used to listen for NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED events.
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<MediaScanManager> weak_factory_;

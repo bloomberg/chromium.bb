@@ -660,7 +660,7 @@ class ExtensionServiceTest
             FeatureSwitch::prompt_for_external_extensions(), false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                    content::NotificationService::AllSources());
@@ -680,7 +680,7 @@ class ExtensionServiceTest
         break;
       }
 
-      case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
         const Extension* e =
             content::Details<extensions::UnloadedExtensionInfo>(
                 details)->extension;

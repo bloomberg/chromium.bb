@@ -29,7 +29,7 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
@@ -177,7 +177,7 @@ void ExtensionKeybindingRegistry::Observe(
         AddExtensionKeybinding(extension, std::string());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       if (ExtensionMatchesFilter(extension))

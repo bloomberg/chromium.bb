@@ -48,7 +48,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(browser->profile()));
 
   height_ = std::max(0, height);
@@ -98,7 +98,7 @@ void ExtensionInfoBarDelegate::Observe(
         content::Details<extensions::ExtensionHost>(details).ptr())
       infobar()->RemoveSelf();
   } else {
-    DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
+    DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
     if (extension_ == content::Details<extensions::UnloadedExtensionInfo>(
         details)->extension)
       infobar()->RemoveSelf();

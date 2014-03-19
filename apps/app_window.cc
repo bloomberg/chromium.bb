@@ -297,7 +297,7 @@ void AppWindow::Init(const GURL& url,
   extensions::ExtensionsBrowserClient* client =
       extensions::ExtensionsBrowserClient::Get();
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<content::BrowserContext>(
                      client->GetOriginalContext(browser_context_)));
   // Close when the browser process is exiting.
@@ -910,7 +910,7 @@ void AppWindow::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(details)
               ->extension;

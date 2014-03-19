@@ -358,7 +358,7 @@ void ManagedUserService::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const extensions::UnloadedExtensionInfo* extension_info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       if (!extensions::ManagedModeInfo::GetContentPackSiteList(
@@ -577,7 +577,7 @@ void ManagedUserService::Init() {
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   pref_change_registrar_.Init(profile_->GetPrefs());

@@ -67,7 +67,7 @@ ExtensionActionManager::ExtensionActionManager(Profile* profile)
     : profile_(profile) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
 }
 
@@ -85,7 +85,7 @@ void ExtensionActionManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       page_actions_.erase(extension->id());
@@ -116,7 +116,7 @@ ExtensionAction* GetOrCreateOrNull(
 
   // Only create action info for enabled extensions.
   // This avoids bugs where actions are recreated just after being removed
-  // in response to NOTIFICATION_EXTENSION_UNLOADED in
+  // in response to NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED in
   // ExtensionActionManager::Observe()
   ExtensionService* service =
       ExtensionSystem::Get(profile)->extension_service();

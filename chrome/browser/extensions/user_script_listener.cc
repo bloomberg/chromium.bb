@@ -72,7 +72,7 @@ UserScriptListener::UserScriptListener()
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
                  content::NotificationService::AllSources());
@@ -223,7 +223,7 @@ void UserScriptListener::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* unloaded_extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;

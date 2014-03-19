@@ -274,7 +274,7 @@ void ThemeService::Observe(int type,
         SetTheme(extension);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
     {
       Details<const UnloadedExtensionInfo> unloaded_details(details);
       if (unloaded_details->reason != UnloadedExtensionInfo::REASON_UPDATE &&
@@ -421,7 +421,7 @@ void ThemeService::ClearAllThemeData() {
   // There should be no more infobars. This may not be the case because of
   // http://crbug.com/62154
   // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
-  // be called as a result of NOTIFICATION_EXTENSION_UNLOADED.
+  // be called as a result of NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ThemeService::RemoveUnusedThemes,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -510,7 +510,7 @@ void ThemeService::OnExtensionServiceReady() {
                  chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,

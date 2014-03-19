@@ -222,7 +222,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<BrowserContext>(original_context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<BrowserContext>(context));
@@ -645,7 +645,7 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();

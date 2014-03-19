@@ -109,7 +109,7 @@ TabCaptureRegistry::TabCaptureRegistry(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_FULLSCREEN_CHANGED,
@@ -152,7 +152,7 @@ void TabCaptureRegistry::Observe(int type,
                                  const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       // Cleanup all the requested media streams for this extension.
       const std::string& extension_id =
           content::Details<extensions::UnloadedExtensionInfo>(details)->

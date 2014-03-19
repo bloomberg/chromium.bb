@@ -182,7 +182,7 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   UnloadedExtensionInfo details(extension.get(),
                                 UnloadedExtensionInfo::REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::NotificationService::AllSources(),
       content::Details<UnloadedExtensionInfo>(&details));
 

@@ -36,7 +36,7 @@ AppLoadService::AppLoadService(Profile* profile)
       this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
       content::NotificationService::AllSources());
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::NotificationService::AllSources());
 }
 
@@ -109,7 +109,7 @@ void AppLoadService::Observe(int type,
       post_reload_actions_.erase(it);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const extensions::UnloadedExtensionInfo* unload_info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       if (!unload_info->extension->is_platform_app())

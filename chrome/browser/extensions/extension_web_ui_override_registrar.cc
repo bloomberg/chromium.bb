@@ -20,7 +20,7 @@ ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -37,7 +37,7 @@ void ExtensionWebUIOverrideRegistrar::Observe(
     ExtensionWebUI::RegisterChromeURLOverrides(
         profile_, URLOverrides::GetChromeURLOverrides(extension));
 
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
     ExtensionWebUI::UnregisterChromeURLOverrides(

@@ -149,7 +149,7 @@ IconImage::IconImage(
   source_ = new Source(this, resource_size);
   image_skia_ = gfx::ImageSkia(source_, resource_size);
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
 }
 
@@ -227,7 +227,7 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
 void IconImage::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
 
   const Extension* extension =
       content::Details<extensions::UnloadedExtensionInfo>(details)->extension;

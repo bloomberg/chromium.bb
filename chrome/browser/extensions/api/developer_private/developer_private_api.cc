@@ -176,7 +176,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
     chrome::NOTIFICATION_EXTENSION_INSTALLED,
     chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
     chrome::NOTIFICATION_EXTENSION_LOADED,
-    chrome::NOTIFICATION_EXTENSION_UNLOADED,
+    chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
     chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
     chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED
   };
@@ -230,7 +230,7 @@ void DeveloperPrivateEventRouter::Observe(
       event_data.event_type = developer::EVENT_TYPE_LOADED;
       extension = content::Details<const Extension>(details).ptr();
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       event_data.event_type = developer::EVENT_TYPE_UNLOADED;
       extension =
           content::Details<const UnloadedExtensionInfo>(details)->extension;

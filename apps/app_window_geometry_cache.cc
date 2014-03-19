@@ -37,7 +37,7 @@ AppWindowGeometryCache::AppWindowGeometryCache(
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
 }
 
@@ -204,7 +204,7 @@ void AppWindowGeometryCache::Observe(
       LoadGeometryFromStorage(extension_id);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       std::string extension_id =
           content::Details<const extensions::UnloadedExtensionInfo>(details)
               .ptr()

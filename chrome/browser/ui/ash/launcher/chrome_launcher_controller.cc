@@ -379,12 +379,14 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
         ash::Shell::GetInstance()->shelf_item_delegate_manager();
   }
 
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_EXTENSION_LOADED,
-                              content::Source<Profile>(profile_));
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                              content::Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      content::Source<Profile>(profile_));
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -1166,7 +1168,7 @@ void ChromeLauncherController::Observe(
       UpdateAppLaunchersFromPref();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const content::Details<UnloadedExtensionInfo>& unload_info(details);
       const Extension* extension = unload_info->extension;
       const std::string& id = extension->id();

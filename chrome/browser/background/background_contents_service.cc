@@ -173,7 +173,7 @@ void NotificationImageReady(
 
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
-  // the same origin when NOTIFICATION_EXTENSION_UNLOADED.
+  // the same origin when NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
   // TODO(mukai, dewittj): remove this and switch to message center
   // notifications.
   DesktopNotificationService::AddIconNotification(
@@ -339,7 +339,7 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 
   // Listen for extensions to be unloaded so we can shutdown associated
   // BackgroundContents.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
 
   // Make sure the extension-crash balloons are removed when the extension is
@@ -456,7 +456,7 @@ void BackgroundContentsService::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       switch (content::Details<UnloadedExtensionInfo>(details)->reason) {
         case UnloadedExtensionInfo::REASON_DISABLE:    // Fall through.
         case UnloadedExtensionInfo::REASON_TERMINATE:  // Fall through.

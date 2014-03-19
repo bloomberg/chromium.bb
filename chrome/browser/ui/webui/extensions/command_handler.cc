@@ -47,7 +47,7 @@ void CommandHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 void CommandHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   web_ui()->RegisterMessageCallback("extensionCommandsRequestExtensionsData",
@@ -69,7 +69,7 @@ void CommandHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
-         type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
+         type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
   UpdateCommandDataOnPage();
 }
 

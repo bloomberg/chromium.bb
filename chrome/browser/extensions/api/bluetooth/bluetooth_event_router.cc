@@ -52,7 +52,7 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<content::BrowserContext>(browser_context_));
 }
 
@@ -409,7 +409,7 @@ void ExtensionBluetoothEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       extensions::UnloadedExtensionInfo* info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       CleanUpForExtension(info->extension->id());

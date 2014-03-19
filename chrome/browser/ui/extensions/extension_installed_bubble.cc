@@ -56,7 +56,7 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(Delegate* delegate,
   // can inspect for the purpose of previewing of pointing to them.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
       content::Source<Browser>(browser));
@@ -98,7 +98,7 @@ void ExtensionInstalledBubble::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           Details<extensions::UnloadedExtensionInfo>(details)->extension;
       if (extension == extension_) {

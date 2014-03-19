@@ -36,7 +36,8 @@ ExtensionNotificationObserver::ExtensionNotificationObserver(
     : extension_ids_(extension_ids) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED, source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED, source);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED, source);
+  registrar_.Add(
+      this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, source);
 }
 
 ExtensionNotificationObserver::~ExtensionNotificationObserver() {}
@@ -109,7 +110,7 @@ void ExtensionNotificationObserver::Observe(
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       UnloadedExtensionInfo* reason =
           content::Details<UnloadedExtensionInfo>(details).ptr();
       if (extension_ids_.count(reason->extension->id())) {

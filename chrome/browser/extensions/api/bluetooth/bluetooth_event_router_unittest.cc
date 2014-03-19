@@ -176,7 +176,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, UnloadExtension) {
       content::NotificationService::current();
   UnloadedExtensionInfo details(
       extension, UnloadedExtensionInfo::REASON_DISABLE);
-  notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::Source<Profile>(test_profile_.get()),
                    content::Details<UnloadedExtensionInfo>(&details));
 

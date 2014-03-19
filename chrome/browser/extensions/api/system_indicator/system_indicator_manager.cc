@@ -123,7 +123,7 @@ ExtensionIndicatorIcon::ExtensionIndicatorIcon(const Extension* extension,
 SystemIndicatorManager::SystemIndicatorManager(Profile* profile,
                                                StatusTray* status_tray)
     : profile_(profile), status_tray_(status_tray) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
@@ -144,7 +144,7 @@ void SystemIndicatorManager::Observe(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       RemoveIndicator(
           content::Details<UnloadedExtensionInfo>(details)->extension->id());
       break;

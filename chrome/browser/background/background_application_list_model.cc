@@ -179,7 +179,7 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSIONS_READY,
@@ -353,7 +353,7 @@ void BackgroundApplicationListModel::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED:
       OnExtensionLoaded(content::Details<Extension>(details).ptr());
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       OnExtensionUnloaded(
           content::Details<UnloadedExtensionInfo>(details)->extension);
       break;

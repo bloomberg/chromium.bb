@@ -233,7 +233,7 @@ void PerformanceMonitor::RegisterForNotifications() {
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
       content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
@@ -566,7 +566,7 @@ void PerformanceMonitor::Observe(int type,
                         content::Details<Extension>(details).ptr());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const UnloadedExtensionInfo* info =
           content::Details<UnloadedExtensionInfo>(details).ptr();
 

@@ -73,12 +73,12 @@ void DidHandleOriginForExtensionUnloadedEvent(
     int type,
     const GURL& origin,
     SyncStatusCode code) {
-  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type ||
+  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED == type ||
          chrome::NOTIFICATION_EXTENSION_UNINSTALLED == type);
   if (code != SYNC_STATUS_OK &&
       code != SYNC_STATUS_UNKNOWN_ORIGIN) {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
         util::Log(logging::LOG_WARNING,
                   FROM_HERE,
                   "Disabling origin for UNLOADED(DISABLE) failed: %s",
@@ -443,7 +443,7 @@ void SyncFileSystemService::Initialize(
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -619,7 +619,7 @@ void SyncFileSystemService::Observe(
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
       HandleExtensionInstalled(details);
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       HandleExtensionUnloaded(type, details);
       break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:

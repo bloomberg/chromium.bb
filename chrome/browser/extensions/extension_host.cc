@@ -147,7 +147,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(browser_context_));
 
   // Set up Chrome-level pref observers.
@@ -226,7 +226,7 @@ void ExtensionHost::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       // The extension object will be deleted after this notification has been
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are

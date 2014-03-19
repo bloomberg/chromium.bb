@@ -31,7 +31,7 @@ PluginManager::PluginManager(content::BrowserContext* context)
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -90,7 +90,7 @@ void PluginManager::Observe(int type,
     if (plugins_or_nacl_changed)
       PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
 

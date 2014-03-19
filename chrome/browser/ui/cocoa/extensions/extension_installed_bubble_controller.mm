@@ -62,7 +62,7 @@ class ExtensionLoadedNotificationObserver
           : controller_(controller) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
   }
 
@@ -81,7 +81,7 @@ class ExtensionLoadedNotificationObserver
                                       withObject:controller_
                                    waitUntilDone:NO];
       }
-    } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
       const Extension* extension =
           content::Details<const UnloadedExtensionInfo>(details)->extension;
       if (extension == [controller_ extension]) {

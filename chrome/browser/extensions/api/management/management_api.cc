@@ -652,7 +652,7 @@ ManagementEventRouter::ManagementEventRouter(Profile* profile)
     chrome::NOTIFICATION_EXTENSION_INSTALLED,
     chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
     chrome::NOTIFICATION_EXTENSION_LOADED,
-    chrome::NOTIFICATION_EXTENSION_UNLOADED
+    chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED
   };
 
   CHECK(registrar_.IsEmpty());
@@ -689,7 +689,7 @@ void ManagementEventRouter::Observe(
       event_name = management::OnEnabled::kEventName;
       extension = content::Details<const Extension>(details).ptr();
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       event_name = management::OnDisabled::kEventName;
       extension =
           content::Details<const UnloadedExtensionInfo>(details)->extension;

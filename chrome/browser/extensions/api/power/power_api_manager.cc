@@ -56,7 +56,7 @@ void PowerApiManager::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       RemoveRequest(content::Details<extensions::UnloadedExtensionInfo>(
           details)->extension->id());
       UpdatePowerSaveBlocker();
@@ -72,7 +72,7 @@ void PowerApiManager::Observe(int type,
 PowerApiManager::PowerApiManager()
     : create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
       current_level_(api::power::LEVEL_SYSTEM) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                   content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());

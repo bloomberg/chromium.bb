@@ -44,7 +44,7 @@ SpellcheckAPI::SpellcheckAPI(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
 }
 
@@ -81,7 +81,7 @@ void SpellcheckAPI::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       SpellcheckDictionaryInfo* spellcheck_info =

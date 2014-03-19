@@ -32,7 +32,7 @@ LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<content::BrowserContext>(browser_context));
 }
 
@@ -162,7 +162,7 @@ void LazyBackgroundTaskQueue::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       // Notify consumers that the page failed to load.
       content::BrowserContext* browser_context =
           content::Source<content::BrowserContext>(source).ptr();

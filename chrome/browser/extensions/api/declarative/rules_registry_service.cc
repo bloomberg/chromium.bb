@@ -46,7 +46,7 @@ RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
       profile_(Profile::FromBrowserContext(context)) {
   if (profile_) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(this,
                    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -211,7 +211,7 @@ void RulesRegistryService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded,

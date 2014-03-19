@@ -134,7 +134,7 @@ class GalleryWatchStateTracker
   Profile* profile_;
 
   // Used to listen for NOTIFICATION_EXTENSION_LOADED and
-  // NOTIFICATION_EXTENSION_UNLOADED events.
+  // NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED events.
   content::NotificationRegistrar registrar_;
 
   // A map of watched gallery details, per extension.

@@ -776,7 +776,7 @@ TEST_F(ShortcutsProviderTest, Extension) {
   extensions::UnloadedExtensionInfo details(
       extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(&profile_),
       content::Details<extensions::UnloadedExtensionInfo>(&details));
 

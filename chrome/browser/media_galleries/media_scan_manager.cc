@@ -372,7 +372,7 @@ void MediaScanManager::StartScan(Profile* profile,
   if (scanning_extensions->empty()) {
     registrar_.Add(
         this,
-        chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
   }
 
@@ -411,7 +411,7 @@ void MediaScanManager::CancelScan(Profile* profile,
   if (scans_for_profile->second.scanning_extensions.empty()) {
     registrar_.Remove(
         this,
-        chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
   }
 
@@ -437,7 +437,7 @@ void MediaScanManager::Observe(
     const content::NotificationDetails& details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       extensions::Extension* extension = const_cast<extensions::Extension*>(
           content::Details<extensions::UnloadedExtensionInfo>(

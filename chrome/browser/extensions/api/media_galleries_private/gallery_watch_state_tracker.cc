@@ -79,7 +79,7 @@ GalleryWatchStateTracker::GalleryWatchStateTracker(Profile* profile)
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
@@ -215,7 +215,7 @@ void GalleryWatchStateTracker::Observe(
                      extension->id()));
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Extension* extension = const_cast<Extension*>(
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension);

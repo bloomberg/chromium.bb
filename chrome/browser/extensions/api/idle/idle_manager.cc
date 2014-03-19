@@ -134,7 +134,7 @@ IdleManager::~IdleManager() {
 }
 
 void IdleManager::Init() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   event_delegate_->RegisterObserver(this);
 }
@@ -149,7 +149,7 @@ void IdleManager::Observe(int type,
                           const content::NotificationDetails& details) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
     monitors_.erase(extension->id());

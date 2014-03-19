@@ -655,7 +655,7 @@ void ExtensionReadyNotificationObserver::Observe(
 
 ExtensionUnloadNotificationObserver::ExtensionUnloadNotificationObserver()
     : did_receive_unload_notification_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
 }
 
@@ -665,7 +665,7 @@ ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
 void ExtensionUnloadNotificationObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     did_receive_unload_notification_ = true;
   } else {
     NOTREACHED();

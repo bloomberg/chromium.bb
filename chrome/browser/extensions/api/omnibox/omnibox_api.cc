@@ -182,7 +182,7 @@ OmniboxAPI::OmniboxAPI(content::BrowserContext* context)
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   if (url_service_) {
     template_url_sub_ = url_service_->RegisterOnLoadedCallback(
@@ -240,7 +240,7 @@ void OmniboxAPI::Observe(int type,
         }
       }
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
     if (!OmniboxInfo::GetKeyword(extension).empty()) {

@@ -51,7 +51,7 @@ ExtensionToolbarModel::ExtensionToolbarModel(
       weak_ptr_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
@@ -189,7 +189,7 @@ void ExtensionToolbarModel::Observe(
   }
 
   const Extension* extension = NULL;
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     extension = content::Details<extensions::UnloadedExtensionInfo>(
         details)->extension;
   } else if (type ==
@@ -211,7 +211,7 @@ void ExtensionToolbarModel::Observe(
             extension_prefs_, extension->id())) {
       AddExtension(extension);
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     RemoveExtension(extension);
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED) {
     UninstalledExtension(extension);

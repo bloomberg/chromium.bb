@@ -83,7 +83,7 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            chrome::NOTIFICATION_EXTENSION_LOADED,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                           chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
                            chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,

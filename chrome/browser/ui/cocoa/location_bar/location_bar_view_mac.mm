@@ -148,7 +148,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  profile_source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED, profile_source);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED, profile_source);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 profile_source);
 
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -644,7 +645,7 @@ void LocationBarViewMac::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       Update(NULL);
       break;
 

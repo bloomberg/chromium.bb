@@ -75,7 +75,7 @@ LogPrivateAPI::LogPrivateAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
       logging_net_internals_(false) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -168,7 +168,7 @@ void LogPrivateAPI::StopNetInternalLogging() {
 void LogPrivateAPI::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<const UnloadedExtensionInfo>(details)->extension;
     StopNetInternalsWatch(extension->id());
