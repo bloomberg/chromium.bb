@@ -3162,6 +3162,8 @@ base::string16 AutofillDialogControllerImpl::GetValueFromSection(
 bool AutofillDialogControllerImpl::CanAcceptCountry(
     DialogSection section,
     const std::string& country_code) {
+  DCHECK_EQ(2U, country_code.size());
+
   if (section == SECTION_CC_BILLING)
     return LowerCaseEqualsASCII(country_code, "us");
 
