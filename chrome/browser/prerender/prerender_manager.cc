@@ -63,6 +63,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -1737,6 +1738,7 @@ void PrerenderManager::RecordCookieEvent(int process_id,
                                          int frame_id,
                                          const GURL& url,
                                          const GURL& frame_url,
+                                         bool is_for_blocking_resource,
                                          PrerenderContents::CookieEvent event,
                                          const net::CookieList* cookie_list) {
   RenderFrameHost* rfh = RenderFrameHost::FromID(process_id, frame_id);
@@ -1745,6 +1747,12 @@ void PrerenderManager::RecordCookieEvent(int process_id,
     return;
 
   bool is_main_frame = (rfh == web_contents->GetMainFrame());
+
+  bool is_third_party_cookie =
+    (!frame_url.is_empty() &&
+     !net::registry_controlled_domains::SameDomainOrHost(
+         url, frame_url,
+         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
   PrerenderContents* prerender_contents =
       PrerenderContents::FromWebContents(web_contents);
@@ -1766,6 +1774,8 @@ void PrerenderManager::RecordCookieEvent(int process_id,
 
   prerender_contents->RecordCookieEvent(event,
                                         is_main_frame && url == frame_url,
+                                        is_third_party_cookie,
+                                        is_for_blocking_resource,
                                         earliest_create_date);
 }
 
@@ -1773,6 +1783,12 @@ void PrerenderManager::RecordCookieStatus(Origin origin,
                                           uint8 experiment_id,
                                           int cookie_status) const {
   histograms_->RecordCookieStatus(origin, experiment_id, cookie_status);
+}
+
+void PrerenderManager::RecordCookieSendType(Origin origin,
+                                            uint8 experiment_id,
+                                            int cookie_send_type) const {
+  histograms_->RecordCookieSendType(origin, experiment_id, cookie_send_type);
 }
 
 void PrerenderManager::OnHistoryServiceDidQueryURL(

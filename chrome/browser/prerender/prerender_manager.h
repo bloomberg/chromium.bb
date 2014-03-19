@@ -276,6 +276,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                           uint8 experiment_id,
                           int cookie_status) const;
 
+  // Record a cookie send type histogram (see prerender_histograms.h).
+  void RecordCookieSendType(Origin origin,
+                            uint8 experiment_id,
+                            int cookie_send_type) const;
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -339,6 +344,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                 int frame_id,
                                 const GURL& url,
                                 const GURL& frame_url,
+                                bool is_for_blocking_resource,
                                 PrerenderContents::CookieEvent event,
                                 const net::CookieList* cookie_list);
 

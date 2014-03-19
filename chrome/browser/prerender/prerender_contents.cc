@@ -64,6 +64,19 @@ enum InternalCookieEvent {
   INTERNAL_COOKIE_EVENT_MAX
 };
 
+// Indicates whether existing cookies were sent, and if they were third party
+// cookies, and whether they were for blocking resources.
+// Each value may be inclusive of previous values. We only care about the
+// value with the highest index that has ever occurred in the course of a
+// prerender.
+enum CookieSendType {
+  COOKIE_SEND_TYPE_NONE = 0,
+  COOKIE_SEND_TYPE_FIRST_PARTY = 1,
+  COOKIE_SEND_TYPE_THIRD_PARTY = 2,
+  COOKIE_SEND_TYPE_THIRD_PARTY_BLOCKING_RESOURCE = 3,
+  COOKIE_SEND_TYPE_MAX
+};
+
 void ResumeThrottles(
     std::vector<base::WeakPtr<PrerenderResourceThrottle> > throttles) {
   for (size_t i = 0; i < throttles.size(); i++) {
@@ -77,6 +90,9 @@ void ResumeThrottles(
 // static
 const int PrerenderContents::kNumCookieStatuses =
     (1 << INTERNAL_COOKIE_EVENT_MAX);
+
+// static
+const int PrerenderContents::kNumCookieSendTypes = COOKIE_SEND_TYPE_MAX;
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -220,6 +236,7 @@ PrerenderContents::PrerenderContents(
       creator_child_id_(-1),
       main_frame_id_(0),
       cookie_status_(0),
+      cookie_send_type_(COOKIE_SEND_TYPE_NONE),
       network_bytes_(0) {
   DCHECK(prerender_manager != NULL);
 }
@@ -385,12 +402,11 @@ PrerenderContents::~PrerenderContents() {
   // Since a lot of prerenders terminate before any meaningful cookie action
   // would have happened, only record the cookie status for prerenders who
   // were used, cancelled, or timed out.
-  if (prerendering_has_started_ &&
-      (final_status() == FINAL_STATUS_USED ||
-       final_status() == FINAL_STATUS_TIMED_OUT ||
-       final_status() == FINAL_STATUS_CANCELLED)) {
+  if (prerendering_has_started_ && final_status() == FINAL_STATUS_USED) {
     prerender_manager_->RecordCookieStatus(origin(), experiment_id(),
                                            cookie_status_);
+    prerender_manager_->RecordCookieSendType(origin(), experiment_id(),
+                                             cookie_send_type_);
   }
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
@@ -797,6 +813,8 @@ void PrerenderContents::OnCancelPrerenderForPrinting() {
 
 void PrerenderContents::RecordCookieEvent(CookieEvent event,
                                           bool is_main_frame_http_request,
+                                          bool is_third_party_cookie,
+                                          bool is_for_blocking_resource,
                                           base::Time earliest_create_date) {
   // We don't care about sent cookies that were created after this prerender
   // started.
@@ -834,6 +852,24 @@ void PrerenderContents::RecordCookieEvent(CookieEvent event,
 
   DCHECK_GE(cookie_status_, 0);
   DCHECK_LT(cookie_status_, kNumCookieStatuses);
+
+  CookieSendType send_type = COOKIE_SEND_TYPE_NONE;
+  if (event == COOKIE_EVENT_SEND) {
+    if (!is_third_party_cookie) {
+      send_type = COOKIE_SEND_TYPE_FIRST_PARTY;
+    } else {
+      if (is_for_blocking_resource) {
+        send_type = COOKIE_SEND_TYPE_THIRD_PARTY_BLOCKING_RESOURCE;
+      } else {
+        send_type = COOKIE_SEND_TYPE_THIRD_PARTY;
+      }
+    }
+  }
+  DCHECK_GE(send_type, 0);
+  DCHECK_LT(send_type, COOKIE_SEND_TYPE_MAX);
+
+  if (cookie_send_type_ < send_type)
+    cookie_send_type_ = send_type;
 }
 
  void PrerenderContents::AddResourceThrottle(

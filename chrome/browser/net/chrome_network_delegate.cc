@@ -657,6 +657,19 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
 
   int render_process_id = -1;
   int render_frame_id = -1;
+
+  // |is_for_blocking_resource| indicates whether the cookies read were for a
+  // blocking resource (eg script, css). It is only temporarily added for
+  // diagnostic purposes, per bug 353678. Will be removed again once data
+  // collection is finished.
+  bool is_for_blocking_resource = false;
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
+  if (info && ((!info->IsAsync()) ||
+               info->GetResourceType() == ResourceType::STYLESHEET ||
+               info->GetResourceType() == ResourceType::SCRIPT)) {
+    is_for_blocking_resource = true;
+  }
+
   if (content::ResourceRequestInfo::GetRenderFrameForRequest(
           &request, &render_process_id, &render_frame_id)) {
     BrowserThread::PostTask(
@@ -664,7 +677,7 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
         base::Bind(&TabSpecificContentSettings::CookiesRead,
                    render_process_id, render_frame_id,
                    request.url(), request.first_party_for_cookies(),
-                   cookie_list, !allow));
+                   cookie_list, !allow, is_for_blocking_resource));
   }
 
   return allow;

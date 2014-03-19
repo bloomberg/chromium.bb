@@ -292,10 +292,13 @@ class PrerenderContents : public content::NotificationObserver,
   // In the event of cookies being sent, |earliest_create_date| contains
   // the time that the earliest of the cookies sent was created.
   void RecordCookieEvent(CookieEvent event,
-                         bool main_frame_http_request,
+                         bool is_main_frame_http_request,
+                         bool is_third_party_cookie,
+                         bool is_for_blocking_resource,
                          base::Time earliest_create_date);
 
   static const int kNumCookieStatuses;
+  static const int kNumCookieSendTypes;
 
   // Called when a PrerenderResourceThrottle defers a request. If the prerender
   // is used it'll be resumed on the IO thread, otherwise they will get
@@ -459,6 +462,11 @@ class PrerenderContents : public content::NotificationObserver,
   // Indicates what internal cookie events (see prerender_contents.cc) have
   // occurred, using 1 bit for each possible InternalCookieEvent.
   int cookie_status_;
+
+  // Indicates whether existing cookies were sent for this prerender, and
+  // whether they were third-party cookies, and whether they were for blocking
+  // resources. See the enum CookieSendType in prerender_contents.cc
+  int cookie_send_type_;
 
   // Resources that are throttled, pending a prerender use. Can only access a
   // throttle on the IO thread.

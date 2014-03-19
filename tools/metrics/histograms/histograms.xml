@@ -17035,6 +17035,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.CookieSendType" enum="PrerenderCookieSendType">
+  <summary>
+    Enumeration of what types of cookies were sent for a prerender.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.CookieStatus" enum="PrerenderCookieStatus">
   <summary>Enumeration of what cookie actions a prerender caused.</summary>
 </histogram>
@@ -34470,6 +34476,13 @@ other types of suffix sets.
   <int value="2" label="VERSION_LATEST"/>
 </enum>
 
+<enum name="PrerenderCookieSendType" type="int">
+  <int value="0" label="no cookies sent"/>
+  <int value="1" label="first party cookies sent"/>
+  <int value="2" label="third party cookies sent"/>
+  <int value="3" label="third party cookies sent for blocking resource"/>
+</enum>
+
 <enum name="PrerenderCookieStatus" type="int">
   <int value="0" label="no action"/>
   <int value="1" label="[main frame send]"/>
@@ -39777,6 +39790,7 @@ other types of suffix sets.
   <group name="websame"
       label="Link triggered prerender, rel=prerender, same domain."/>
   <group name="webnext" label="Link triggered prerender, rel=next."/>
+  <affected-histogram name="Prerender.CookieSendType"/>
   <affected-histogram name="Prerender.CookieStatus"/>
   <affected-histogram name="Prerender.Event"/>
   <affected-histogram name="Prerender.FinalStatus"/>

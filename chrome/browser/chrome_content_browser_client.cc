@@ -1701,7 +1701,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookiesRead, render_process_id,
-                 render_frame_id, url, first_party, cookie_list, !allow));
+                 render_frame_id, url, first_party, cookie_list, !allow, true));
   return allow;
 }
 
