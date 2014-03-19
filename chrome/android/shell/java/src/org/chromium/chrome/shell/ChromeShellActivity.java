@@ -149,8 +149,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             ChromeShellTab tab = getActiveTab();
-            if (tab != null && tab.getContentView().canGoBack()) {
-                tab.getContentView().goBack();
+            if (tab != null && tab.canGoBack()) {
+                tab.goBack();
                 return true;
             }
         }
