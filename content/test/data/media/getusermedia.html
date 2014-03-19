@@ -21,7 +21,7 @@
   }
 
   // Creates a MediaStream and renders it locally. When the video is detected to
-  // be rolling, the stream should be stopped.
+  // be rolling, the title is changed and the stream should be stopped.
   function getUserMediaAndStop(constraints) {
     console.log('Calling getUserMediaAndStop.');
     navigator.webkitGetUserMedia(
@@ -40,83 +40,6 @@
         function(error) { sendValueToTest(error.name); });
   }
 
-  function renderClonedMediastreamAndStop(constraints, waitTimeInSeconds) {
-    console.log('Calling renderClonedMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
-          var s = stream.clone();
-          assertEquals(stream.getVideoTracks().length, 1);
-          assertEquals(s.getVideoTracks().length, 1);
-          assertNotEquals(stream.getVideoTracks()[0].id,
-                          s.getVideoTracks()[0].id);
-          displayAndDetectVideo(
-            s,
-            function() {
-              reportTestSuccess();
-            });
-        },
-        failedCallback);
-  }
-
-  function renderDuplicatedMediastreamAndStop(constraints, waitTimeInSeconds) {
-    console.log('Calling renderDuplicateMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
-          s = new webkitMediaStream(stream);
-          assertEquals(stream.getVideoTracks().length, 1);
-          assertEquals(s.getVideoTracks().length, 1);
-          assertEquals(stream.getVideoTracks()[0].id,
-                       s.getVideoTracks()[0].id);
-          displayAndDetectVideo(
-            s,
-            function() {
-              reportTestSuccess();
-            });
-        },
-        failedCallback);
-  }
-
-  function renderSameTrackMediastreamAndStop(constraints, waitTimeInSeconds) {
-    console.log('Calling renderSameTrackMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
-          s = new webkitMediaStream();
-          s.addTrack(stream.getVideoTracks()[0]);
-          assertEquals(s.getVideoTracks().length, 1);
-          assertEquals(s.getVideoTracks().length, 1);
-          assertEquals(stream.getVideoTracks()[0].id, s.getVideoTracks()[0].id);
-          displayAndDetectVideo(
-            s,
-            function() {
-              reportTestSuccess();
-            });
-        },
-        failedCallback);
-  }
-
-  function renderClonedTrackMediastreamAndStop(constraints, waitTimeInSeconds) {
-    console.log('Calling renderClonedTrackMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
-          s = new webkitMediaStream();
-          s.addTrack(stream.getVideoTracks()[0].clone());
-          assertEquals(s.getVideoTracks().length, 1);
-          assertEquals(s.getVideoTracks().length, 1);
-          assertNotEquals(stream.getVideoTracks()[0].id,
-                          s.getVideoTracks()[0].id)
-          displayAndDetectVideo(
-            s,
-            function() {
-              reportTestSuccess();
-            });
-        },
-        failedCallback);
-  }
-
   // Creates a MediaStream and renders it locally. When the video is detected to
   // be rolling we return ok-stream-running through the automation controller.
   function getUserMediaAndGetStreamUp(constraints, waitTimeInSeconds) {
@@ -127,7 +50,7 @@
           displayAndDetectVideo(
             stream,
             function() {
-              reportTestSuccess();
+              sendValueToTest('ok-stream-running');
             });
         },
         failedCallback);

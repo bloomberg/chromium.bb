@@ -132,10 +132,3 @@ function assertEquals(expected, actual) {
     failTest("expected '" + expected + "', got '" + actual + "'.");
   }
 }
-
-function assertNotEquals(expected, actual) {
-  if (actual === expected) {
-    failTest("expected '" + expected + "', got '" + actual + "'.");
-  }
-}
-
