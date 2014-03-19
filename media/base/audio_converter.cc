@@ -41,16 +41,6 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
 
     // Pare off data as early as we can for efficiency.
     downmix_early_ = input_params.channels() > output_params.channels();
-    if (downmix_early_) {
-      DVLOG(1) << "Remixing channel layout prior to resampling.";
-      // |unmixed_audio_| will be allocated on the fly.
-    } else {
-      // Instead, if we're not downmixing early we need a temporary AudioBus
-      // which matches the input channel count but uses the output frame size
-      // since we'll mix into the AudioBus from the output stream.
-      unmixed_audio_ = AudioBus::Create(
-          input_params.channels(), output_params.frames_per_buffer());
-    }
   }
 
   // Only resample if necessary since it's expensive.
@@ -133,6 +123,10 @@ void AudioConverter::ConvertWithDelay(const base::TimeDelta& initial_delay,
   // resampling we can save a lot of processing time.  Vice versa, we don't want
   // to increase the channel count prior to resampling for the same reason.
   bool needs_mixing = channel_mixer_ && !downmix_early_;
+
+  if (needs_mixing)
+    CreateUnmixedAudioIfNecessary(dest->frames());
+
   AudioBus* temp_dest = needs_mixing ? unmixed_audio_.get() : dest;
   DCHECK(temp_dest);
 
@@ -168,13 +162,11 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
         AudioBus::Create(input_channel_count_, dest->frames());
   }
 
-  if (needs_downmix &&
-      (!unmixed_audio_ || unmixed_audio_->frames() != dest->frames())) {
-    // If we're downmixing early we need a temporary AudioBus which matches
-    // the the input channel count and input frame size since we're passing
-    // |unmixed_audio_| directly to the |source_callback_|.
-    unmixed_audio_ = AudioBus::Create(input_channel_count_, dest->frames());
-  }
+  // If we're downmixing early we need a temporary AudioBus which matches
+  // the the input channel count and input frame size since we're passing
+  // |unmixed_audio_| directly to the |source_callback_|.
+  if (needs_downmix)
+    CreateUnmixedAudioIfNecessary(dest->frames());
 
   AudioBus* temp_dest = needs_downmix ? unmixed_audio_.get() : dest;
 
@@ -241,6 +233,11 @@ void AudioConverter::ProvideInput(int resampler_frame_delay, AudioBus* dest) {
     audio_fifo_->Consume(dest, dest->frames());
   else
     SourceCallback(0, dest);
+}
+
+void AudioConverter::CreateUnmixedAudioIfNecessary(int frames) {
+  if (!unmixed_audio_ || unmixed_audio_->frames() != frames)
+    unmixed_audio_ = AudioBus::Create(input_channel_count_, frames);
 }
 
 }  // namespace media

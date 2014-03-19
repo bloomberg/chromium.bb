@@ -73,9 +73,8 @@ class MEDIA_EXPORT AudioConverter {
                  bool disable_fifo);
   ~AudioConverter();
 
-  // Converts audio from all inputs into the |dest|.  |dest| must be sized for
-  // data matching the output AudioParameters provided during construction.  If
-  // an |initial_delay| is specified, it will be propagated to each input.
+  // Converts audio from all inputs into the |dest|. If an |initial_delay| is
+  // specified, it will be propagated to each input.
   void Convert(AudioBus* dest);
   void ConvertWithDelay(const base::TimeDelta& initial_delay, AudioBus* dest);
 
@@ -95,6 +94,9 @@ class MEDIA_EXPORT AudioConverter {
   // Provides input to the AudioPullFifo.  Called by the fifo when more data is
   // necessary.
   void SourceCallback(int fifo_frame_delay, AudioBus* audio_bus);
+
+  // (Re)creates the temporary |unmixed_audio_| buffer if necessary.
+  void CreateUnmixedAudioIfNecessary(int frames);
 
   // Set of inputs for Convert().
   typedef std::list<InputCallback*> InputCallbackSet;

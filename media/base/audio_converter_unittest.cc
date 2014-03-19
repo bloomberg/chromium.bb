@@ -227,6 +227,13 @@ TEST(AudioConverterTest, AudioDelay) {
             callback.last_audio_delay_milliseconds());
 }
 
+TEST_P(AudioConverterTest, ArbitraryOutputRequestSize) {
+  // Resize output bus to be half of |output_parameters_|'s frames_per_buffer().
+  audio_bus_ = AudioBus::Create(output_parameters_.channels(),
+                                output_parameters_.frames_per_buffer() / 2);
+  RunTest(1);
+}
+
 TEST_P(AudioConverterTest, NoInputs) {
   FillAudioData(1.0f);
   EXPECT_TRUE(RenderAndValidateAudioData(0.0f));
