@@ -646,9 +646,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)dismissTutorial:(id)sender {
   // If the user manually dismissed the tutorial, never show it again by setting
-  // the number of times shown to the maximum.
+  // the number of times shown to the maximum plus 1, so that later we could
+  // distinguish between the dismiss case and the case when the tutorial is
+  // indeed shown for the maximum number of times.
   browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax);
+      prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
   [self initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
 }
 
@@ -668,6 +670,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                          anchoredAt:point])) {
     browser_ = browser;
     viewMode_ = PROFILE_CHOOSER_VIEW;
+    tutorialShowing_ = false;
     observer_.reset(new ActiveProfileObserverBridge(self, browser_));
 
     avatarMenu_.reset(new AvatarMenu(
@@ -781,6 +784,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                              yOffset)];
     [contentView addSubview:tutorialView];
     yOffset = NSMaxY([tutorialView frame]) + kVerticalSpacing;
+  } else {
+    tutorialShowing_ = false;
   }
 
   SetWindowSize([self window], NSMakeSize(kFixedMenuWidth, yOffset));
@@ -793,11 +798,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   Profile* profile = browser_->profile();
   const int showCount = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarTutorialShown);
-  if (showCount >= kProfileAvatarTutorialShowMax)
+  // Do not show the tutorial if user has dismissed it.
+  if (showCount > kProfileAvatarTutorialShowMax)
     return nil;
 
-  profile->GetPrefs()->SetInteger(
+  if (!tutorialShowing_) {
+    if (showCount == kProfileAvatarTutorialShowMax)
+      return nil;
+    profile->GetPrefs()->SetInteger(
       prefs::kProfileAvatarTutorialShown, showCount + 1);
+    tutorialShowing_ = true;
+  }
 
   CGFloat availableWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
   base::scoped_nsobject<NSView> container([[NSView alloc]

@@ -119,8 +119,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ShowView(BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
-  // Creates a tutorial card for the profile |avatar_item|.
-  views::View* CreateTutorialView(const AvatarMenu::Item& current_avatar_item);
+  // Creates a tutorial card for the profile |avatar_item|. |tutorial_shown|
+  // indicates if the tutorial card is already shown in the last active view.
+  views::View* CreateTutorialView(
+      const AvatarMenu::Item& current_avatar_item, bool tutorial_shown);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
@@ -174,6 +176,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Active view mode.
   BubbleViewMode view_mode_;
+
+  // Whether the tutorial is currently shown.
+  bool tutorial_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

@@ -45,6 +45,9 @@ class WebContents;
   // Active view mode.
   BubbleViewMode viewMode_;
 
+  // Whether the tutorial card is showing in the last active view.
+  BOOL tutorialShowing_;
+
   // List of the full, un-elided accounts for the active profile. The keys are
   // generated used to tag the UI buttons, and the values are the original
   // emails displayed by the buttons.
