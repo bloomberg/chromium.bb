@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 from metrics import power
-from metrics import smoothness
+from measurements import smoothness_controller
 from telemetry.page import page_measurement
 
 
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('RunSmoothness')
-    self._smoothness_metric = None
     self._power_metric = None
+    self._smoothness_controller = None
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -20,16 +20,16 @@ class Smoothness(page_measurement.PageMeasurement):
   def WillRunActions(self, page, tab):
     self._power_metric = power.PowerMetric()
     self._power_metric.Start(page, tab)
-    self._smoothness_metric = smoothness.SmoothnessMetric()
-    self._smoothness_metric.Start(page, tab)
+    self._smoothness_controller = smoothness_controller.SmoothnessController()
+    self._smoothness_controller.Start(page, tab)
 
   def DidRunAction(self, page, tab, action):
-    self._smoothness_metric.AddActionToIncludeInMetric(action)
+    self._smoothness_controller.AddActionToIncludeInMetric(action)
 
   def DidRunActions(self, page, tab):
     self._power_metric.Stop(page, tab)
-    self._smoothness_metric.Stop(page, tab)
+    self._smoothness_controller.Stop(tab)
 
   def MeasurePage(self, page, tab, results):
     self._power_metric.AddResults(tab, results)
-    self._smoothness_metric.AddResults(tab, results)
+    self._smoothness_controller.AddResults(tab, results)
