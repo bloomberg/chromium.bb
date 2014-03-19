@@ -146,7 +146,7 @@ OmniboxView* GetOmniboxView(content::WebContents* contents) {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   return NULL;
 #else
-  if (contents)
+  if (!contents)
     return NULL;
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   return browser ? browser->window()->GetLocationBar()->GetOmniboxView() : NULL;
