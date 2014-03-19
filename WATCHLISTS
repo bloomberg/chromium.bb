@@ -74,6 +74,8 @@
         '|content/browser/renderer_host/compositor_resize_lock_aura' \
         '|content/browser/renderer_host/render_widget_host_view_aura' \
         '|content/browser/renderer_host/render_widget_host_view_browsertest' \
+        '|content/browser/renderer_host/delegated' \
+        '|content/browser/renderer_host/software' \
         '|content/common/gpu/client/' \
         '|webkit/common/gpu/'
     },
