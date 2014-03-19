@@ -59,16 +59,6 @@ std::string OutputStateToString(OutputState state) {
   return "INVALID";
 }
 
-// Returns a string representation of DisplayMode.
-// TODO(dnicoara) Move this to DisplayMode.
-std::string DisplayModeToString(const DisplayMode* mode) {
-  return base::StringPrintf("[%dx%d %srate=%f]",
-                            mode->size().width(),
-                            mode->size().height(),
-                            mode->is_interlaced() ? "interlaced " : "",
-                            mode->refresh_rate());
-}
-
 // Returns the number of outputs in |outputs| that should be turned on, per
 // |state|.  If |output_power| is non-NULL, it is updated to contain the
 // on/off state of each corresponding entry in |outputs|.
@@ -741,7 +731,7 @@ bool OutputConfigurator::EnterState(OutputState output_state,
                     << ", num_on_outputs=" << num_on_outputs
                     << ", current size:" << size.width() << "x" << size.height()
                     << ", i=" << i << ", output=" << output->display->ToString()
-                    << ", display_mode=" << DisplayModeToString(mode_info);
+                    << ", display_mode=" << mode_info->ToString();
           }
           size = mode_info->size();
         }

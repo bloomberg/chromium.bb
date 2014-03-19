@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_CHROMEOS_DISPLAY_MODE_H_
 #define UI_DISPLAY_CHROMEOS_DISPLAY_MODE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -21,6 +23,8 @@ class DISPLAY_EXPORT DisplayMode {
   const gfx::Size& size() const { return size_; }
   bool is_interlaced() const { return is_interlaced_; }
   float refresh_rate() const { return refresh_rate_; }
+
+  virtual std::string ToString() const;
 
  private:
   gfx::Size size_;

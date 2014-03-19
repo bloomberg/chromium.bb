@@ -37,14 +37,6 @@ const char kForceDPMS[] = "dpms";
 // actions were requested.
 const char kNoActions[] = "";
 
-std::string DisplayModeToString(const DisplayMode& mode) {
-  return base::StringPrintf("%dx%d@%f%s",
-                            mode.size().width(),
-                            mode.size().height(),
-                            mode.refresh_rate(),
-                            mode.is_interlaced() ? " interlaced" : "");
-}
-
 std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
   return base::StringPrintf("id=%" PRId64, output.display_id());
 }
@@ -61,7 +53,7 @@ std::string GetAddOutputModeAction(const DisplaySnapshot& output,
                                    const DisplayMode* mode) {
   return base::StringPrintf("add_mode(output=%" PRId64 ",mode=%s)",
                             output.display_id(),
-                            DisplayModeToString(*mode).c_str());
+                            mode->ToString().c_str());
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::Configure()
@@ -73,7 +65,7 @@ std::string GetCrtcAction(const DisplaySnapshot& output,
                             DisplaySnapshotToString(output).c_str(),
                             origin.x(),
                             origin.y(),
-                            mode ? DisplayModeToString(*mode).c_str() : "NULL");
+                            mode ? mode->ToString().c_str() : "NULL");
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::CreateFramebuffer()

@@ -4,6 +4,8 @@
 
 #include "ui/display/chromeos/display_mode.h"
 
+#include "base/strings/stringprintf.h"
+
 namespace ui {
 
 DisplayMode::DisplayMode(const gfx::Size& size,
@@ -14,5 +16,13 @@ DisplayMode::DisplayMode(const gfx::Size& size,
       refresh_rate_(refresh_rate) {}
 
 DisplayMode::~DisplayMode() {}
+
+std::string DisplayMode::ToString() const {
+  return base::StringPrintf("[%dx%d %srate=%f]",
+                            size_.width(),
+                            size_.height(),
+                            is_interlaced_ ? "interlaced " : "",
+                            refresh_rate_);
+}
 
 }  // namespace ui
