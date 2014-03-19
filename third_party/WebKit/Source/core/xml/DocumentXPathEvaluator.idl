@@ -19,10 +19,10 @@
 
 partial interface Document {
     // DOM Level 3 XPath (XPathEvaluator interface)
-    [RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,
+    [MeasureAs=DocumentXPathCreateExpression, RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,
                                                        [Default=Undefined] optional XPathNSResolver resolver);
-    XPathNSResolver    createNSResolver(Node nodeResolver);
-    [Custom, RaisesException] XPathResult evaluate([Default=Undefined] optional DOMString expression,
+    [MeasureAs=DocumentXPathCreateNSResolver] XPathNSResolver    createNSResolver(Node nodeResolver);
+    [Custom, MeasureAs=DocumentXPathEvaluate, RaisesException] XPathResult evaluate([Default=Undefined] optional DOMString expression,
                                                    [Default=Undefined] optional Node contextNode,
                                                    [Default=Undefined] optional XPathNSResolver resolver,
                                                    [Default=Undefined] optional unsigned short type,
