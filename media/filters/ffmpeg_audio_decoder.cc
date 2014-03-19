@@ -60,7 +60,7 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
   AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
   SampleFormat sample_format = AVSampleFormatToSampleFormat(format);
   int channels = DetermineChannels(frame);
-  if ((channels <= 0) || (channels >= limits::kMaxChannels)) {
+  if (channels <= 0 || channels >= limits::kMaxChannels) {
     DLOG(ERROR) << "Requested number of channels (" << channels
                 << ") exceeds limit.";
     return AVERROR(EINVAL);
@@ -69,6 +69,11 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
   int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
   if (frame->nb_samples <= 0)
     return AVERROR(EINVAL);
+
+  if (s->channels != channels) {
+    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on channel count.";
+    return AVERROR(EINVAL);
+  }
 
   // Determine how big the buffer should be and allocate it. FFmpeg may adjust
   // how big each channel data is in order to meet the alignment policy, so
