@@ -31,6 +31,7 @@ class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class IndexedDBTransaction;
+struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBDatabase
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
@@ -126,7 +127,7 @@ class CONTENT_EXPORT IndexedDBDatabase
            scoped_refptr<IndexedDBCallbacks> callbacks);
   void Put(int64 transaction_id,
            int64 object_store_id,
-           std::string* value,
+           IndexedDBValue* value,
            scoped_ptr<IndexedDBKey> key,
            PutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,

@@ -25,6 +25,7 @@ class IndexedDBCursor;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
 struct IndexedDBDatabaseMetadata;
+struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
@@ -70,29 +71,29 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::string* value);
+                         IndexedDBValue* value);
 
   // IndexedDBCursor::Continue / Advance
   virtual void OnSuccess(const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::string* value);
+                         IndexedDBValue* value);
 
   // IndexedDBCursor::PrefetchContinue
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<std::string>& values);
+      const std::vector<IndexedDBValue>& values);
 
   // IndexedDBDatabase::Get (with key injection)
-  virtual void OnSuccess(std::string* data,
+  virtual void OnSuccess(IndexedDBValue* value,
                          const IndexedDBKey& key,
                          const IndexedDBKeyPath& key_path);
 
   // IndexedDBDatabase::Get
-  virtual void OnSuccess(std::string* value);
+  virtual void OnSuccess(IndexedDBValue* value);
 
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
-  virtual void OnSuccess(const IndexedDBKey& value);
+  virtual void OnSuccess(const IndexedDBKey& key);
 
   // IndexedDBDatabase::Count
   virtual void OnSuccess(int64 value);

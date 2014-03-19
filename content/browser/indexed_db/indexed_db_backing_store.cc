@@ -13,6 +13,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
@@ -1170,7 +1171,7 @@ leveldb::Status IndexedDBBackingStore::GetRecord(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKey& key,
-    std::string* record) {
+    IndexedDBValue* record) {
   IDB_TRACE("IndexedDBBackingStore::GetRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -1202,7 +1203,7 @@ leveldb::Status IndexedDBBackingStore::GetRecord(
     return InternalInconsistencyStatus();
   }
 
-  *record = slice.as_string();
+  record->bits = slice.as_string();
   return s;
 }
 
@@ -1243,7 +1244,7 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKey& key,
-    const std::string& value,
+    const IndexedDBValue& value,
     RecordIdentifier* record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -1257,14 +1258,14 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
   if (!s.ok())
     return s;
   DCHECK_GE(version, 0);
-  const std::string object_storedata_key =
+  const std::string object_store_data_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key);
 
   std::string v;
   EncodeVarInt(version, &v);
-  v.append(value);
+  v.append(value.bits);
 
-  leveldb_transaction->Put(object_storedata_key, &v);
+  leveldb_transaction->Put(object_store_data_key, &v);
 
   const std::string exists_entry_key =
       ExistsEntryKey::Encode(database_id, object_store_id, key);
@@ -2061,7 +2062,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* value() OVERRIDE {
+  virtual IndexedDBValue* value() OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -2118,7 +2119,7 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new ObjectStoreCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* value() OVERRIDE { return &current_value_; }
+  virtual IndexedDBValue* value() OVERRIDE { return &current_value_; }
   virtual bool LoadCurrentRow() OVERRIDE;
 
  protected:
@@ -2137,13 +2138,13 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
       : IndexedDBBackingStore::Cursor(other),
         current_value_(other->current_value_) {}
 
-  std::string current_value_;
+  IndexedDBValue current_value_;
 };
 
 bool ObjectStoreCursorImpl::LoadCurrentRow() {
-  StringPiece slice(iterator_->Key());
+  StringPiece key_slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
-  if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
+  if (!ObjectStoreDataKey::Decode(&key_slice, &object_store_data_key)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2151,8 +2152,8 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   current_key_ = object_store_data_key.user_key();
 
   int64 version;
-  slice = StringPiece(iterator_->Value());
-  if (!DecodeVarInt(&slice, &version)) {
+  StringPiece value_slice = StringPiece(iterator_->Value());
+  if (!DecodeVarInt(&value_slice, &version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2162,7 +2163,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   EncodeIDBKey(*current_key_, &encoded_key);
   record_identifier_.Reset(encoded_key, version);
 
-  current_value_ = slice.as_string();
+  current_value_.bits = value_slice.as_string();
   return true;
 }
 
@@ -2176,7 +2177,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new IndexKeyCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* value() OVERRIDE {
+  virtual IndexedDBValue* value() OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -2283,7 +2284,7 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new IndexCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* value() OVERRIDE { return &current_value_; }
+  virtual IndexedDBValue* value() OVERRIDE { return &current_value_; }
   virtual const IndexedDBKey& primary_key() const OVERRIDE {
     return *primary_key_;
   }
@@ -2318,7 +2319,7 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
         primary_leveldb_key_(other->primary_leveldb_key_) {}
 
   scoped_ptr<IndexedDBKey> primary_key_;
-  std::string current_value_;
+  IndexedDBValue current_value_;
   std::string primary_leveldb_key_;
 };
 
@@ -2377,7 +2378,7 @@ bool IndexCursorImpl::LoadCurrentRow() {
     return false;
   }
 
-  current_value_ = slice.as_string();
+  current_value_.bits = slice.as_string();
   return true;
 }
 

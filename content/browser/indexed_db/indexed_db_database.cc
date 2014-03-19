@@ -20,6 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -561,7 +562,7 @@ void IndexedDBDatabase::GetOperation(
   leveldb::Status s;
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
     // Object Store Retrieval Operation
-    std::string value;
+    IndexedDBValue value;
     s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                   id(),
                                   object_store_id,
@@ -614,7 +615,7 @@ void IndexedDBDatabase::GetOperation(
   }
 
   // Index Referenced Value Retrieval Operation
-  std::string value;
+  IndexedDBValue value;
   s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                 id(),
                                 object_store_id,
@@ -680,7 +681,7 @@ static leveldb::Status UpdateKeyGenerator(IndexedDBBackingStore* backing_store,
 struct IndexedDBDatabase::PutOperationParams {
   PutOperationParams() {}
   int64 object_store_id;
-  std::string value;
+  IndexedDBValue value;
   scoped_ptr<IndexedDBKey> key;
   IndexedDBDatabase::PutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
@@ -692,7 +693,7 @@ struct IndexedDBDatabase::PutOperationParams {
 
 void IndexedDBDatabase::Put(int64 transaction_id,
                             int64 object_store_id,
-                            std::string* value,
+                            IndexedDBValue* value,
                             scoped_ptr<IndexedDBKey> key,
                             PutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -1036,7 +1037,7 @@ void IndexedDBDatabase::OpenCursorOperation(
   }
 
   if (!backing_store_cursor) {
-    params->callbacks->OnSuccess(static_cast<std::string*>(NULL));
+    params->callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
   }
 

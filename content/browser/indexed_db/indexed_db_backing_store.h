@@ -28,6 +28,7 @@ namespace content {
 
 class LevelDBComparator;
 class LevelDBDatabase;
+struct IndexedDBValue;
 
 class LevelDBFactory {
  public:
@@ -126,13 +127,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKey& key,
-      std::string* record) WARN_UNUSED_RESULT;
+      IndexedDBValue* record) WARN_UNUSED_RESULT;
   virtual leveldb::Status PutRecord(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKey& key,
-      const std::string& value,
+      const IndexedDBValue& value,
       RecordIdentifier* record) WARN_UNUSED_RESULT;
   virtual leveldb::Status ClearObjectStore(
       IndexedDBBackingStore::Transaction* transaction,
@@ -235,7 +236,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     virtual Cursor* Clone() = 0;
     virtual const IndexedDBKey& primary_key() const;
-    virtual std::string* value() = 0;
+    virtual IndexedDBValue* value() = 0;
     virtual const RecordIdentifier& record_identifier() const;
     virtual bool LoadCurrentRow() = 0;
 

@@ -8,11 +8,12 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 namespace content {
 
-class IndexedDBBlobInfo {
+class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
   typedef webkit_blob::ShareableFileReference::FinalReleaseCallback
       ReleaseCallback;

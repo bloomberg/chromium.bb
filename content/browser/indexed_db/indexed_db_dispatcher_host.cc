@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -564,11 +565,12 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   // TODO(alecflett): Avoid a copy here.
-  std::string value_copy(params.value);
+  IndexedDBValue value;
+  value.bits = params.value;
   connection->database()->Put(
       host_transaction_id,
       params.object_store_id,
-      &value_copy,
+      &value,
       make_scoped_ptr(new IndexedDBKey(params.key)),
       static_cast<IndexedDBDatabase::PutMode>(params.put_mode),
       callbacks,

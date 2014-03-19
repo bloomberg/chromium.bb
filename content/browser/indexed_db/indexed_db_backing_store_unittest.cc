@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
@@ -25,12 +26,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
     backing_store_ = IndexedDBBackingStore::OpenInMemory(origin);
 
     // useful keys and values during tests
-    m_value1 = "value1";
-    m_value2 = "value2";
-    m_value3 = "value3";
+    m_value1 = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
+    m_value2 = IndexedDBValue("value2", std::vector<IndexedDBBlobInfo>());
+
     m_key1 = IndexedDBKey(99, blink::WebIDBKeyTypeNumber);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
-    m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
   }
 
  protected:
@@ -39,10 +39,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
   // Sample keys and values that are consistent.
   IndexedDBKey m_key1;
   IndexedDBKey m_key2;
-  IndexedDBKey m_key3;
-  std::string m_value1;
-  std::string m_value2;
-  std::string m_value3;
+  IndexedDBValue m_value1;
+  IndexedDBValue m_value2;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
@@ -62,12 +60,12 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
-    std::string result_value;
+    IndexedDBValue result_value;
     leveldb::Status s =
         backing_store_->GetRecord(&transaction2, 1, 1, m_key1, &result_value);
     transaction2.Commit();
     EXPECT_TRUE(s.ok());
-    EXPECT_EQ(m_value1, result_value);
+    EXPECT_EQ(m_value1.bits, result_value.bits);
   }
 }
 
@@ -119,14 +117,14 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
-    std::string result_value;
+    IndexedDBValue result_value;
     leveldb::Status s = backing_store_->GetRecord(&transaction2,
                                                   high_database_id,
                                                   high_object_store_id,
                                                   m_key1,
                                                   &result_value);
     EXPECT_TRUE(s.ok());
-    EXPECT_EQ(m_value1, result_value);
+    EXPECT_EQ(m_value1.bits, result_value.bits);
 
     scoped_ptr<IndexedDBKey> new_primary_key;
     s = backing_store_->GetPrimaryKeyViaIndex(&transaction2,
@@ -159,7 +157,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   const int64 index_id = kMinimumIndexId;
   const int64 invalid_low_index_id = 19;  // index_ids must be > kMinimumIndexId
 
-  std::string result_value;
+  IndexedDBValue result_value;
 
   IndexedDBBackingStore::Transaction transaction1(backing_store_);
   transaction1.Begin();

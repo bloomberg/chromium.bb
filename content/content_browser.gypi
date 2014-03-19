@@ -692,6 +692,8 @@
     'browser/indexed_db/indexed_db_transaction.h',
     'browser/indexed_db/indexed_db_transaction_coordinator.cc',
     'browser/indexed_db/indexed_db_transaction_coordinator.h',
+    'browser/indexed_db/indexed_db_value.h',
+    'browser/indexed_db/indexed_db_value.cc',
     'browser/indexed_db/leveldb/leveldb_comparator.h',
     'browser/indexed_db/leveldb/leveldb_database.cc',
     'browser/indexed_db/leveldb/leveldb_database.h',

@@ -10,6 +10,7 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 
 namespace content {
 
@@ -61,7 +62,7 @@ void IndexedDBCursor::CursorAdvanceOperation(
   IDB_TRACE("IndexedDBCursor::CursorAdvanceOperation");
   if (!cursor_ || !cursor_->Advance(count)) {
     cursor_.reset();
-    callbacks->OnSuccess(static_cast<std::string*>(NULL));
+    callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
   }
 
@@ -78,7 +79,7 @@ void IndexedDBCursor::CursorIterationOperation(
       !cursor_->Continue(
            key.get(), primary_key.get(), IndexedDBBackingStore::Cursor::SEEK)) {
     cursor_.reset();
-    callbacks->OnSuccess(static_cast<std::string*>(NULL));
+    callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
   }
 
@@ -106,7 +107,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
 
   std::vector<IndexedDBKey> found_keys;
   std::vector<IndexedDBKey> found_primary_keys;
-  std::vector<std::string> found_values;
+  std::vector<IndexedDBValue> found_values;
 
   saved_cursor_.reset();
   const size_t max_size_estimate = 10 * 1024 * 1024;
@@ -129,12 +130,12 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
 
     switch (cursor_type_) {
       case indexed_db::CURSOR_KEY_ONLY:
-        found_values.push_back(std::string());
+        found_values.push_back(IndexedDBValue());
         break;
       case indexed_db::CURSOR_KEY_AND_VALUE: {
-        std::string value;
+        IndexedDBValue value;
         value.swap(*cursor_->value());
-        size_estimate += value.size();
+        size_estimate += value.SizeEstimate();
         found_values.push_back(value);
         break;
       }
@@ -149,7 +150,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   }
 
   if (!found_keys.size()) {
-    callbacks->OnSuccess(static_cast<std::string*>(NULL));
+    callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
   }
 

@@ -11,6 +11,7 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -171,7 +172,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
 void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                    const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
-                                   std::string* value) {
+                                   IndexedDBValue* value) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -188,7 +189,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
   params.key = key;
   params.primary_key = primary_key;
   if (value && !value->empty())
-    std::swap(params.value, *value);
+    std::swap(params.value, value->bits);
   // TODO(alecflett): Avoid a copy here: the whole params object is
   // being copied into the message.
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
@@ -198,7 +199,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
 
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
-                                   std::string* value) {
+                                   IndexedDBValue* value) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_NE(kNoCursor, ipc_cursor_id_);
@@ -220,7 +221,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   params.key = key;
   params.primary_key = primary_key;
   if (value && !value->empty())
-    std::swap(params.value, *value);
+    std::swap(params.value, value->bits);
   // TODO(alecflett): Avoid a copy here: the whole params object is
   // being copied into the message.
   dispatcher_host_->Send(
@@ -231,7 +232,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
 void IndexedDBCallbacks::OnSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    const std::vector<std::string>& values) {
+    const std::vector<IndexedDBValue>& values) {
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values.size());
 
@@ -257,13 +258,15 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   params.ipc_cursor_id = ipc_cursor_id_;
   params.keys = msgKeys;
   params.primary_keys = msgPrimaryKeys;
-  params.values = values;
+  std::vector<IndexedDBValue>::const_iterator iter;
+  for (iter = values.begin(); iter != values.end(); ++iter)
+    params.values.push_back(iter->bits);
   dispatcher_host_->Send(
       new IndexedDBMsg_CallbacksSuccessCursorPrefetch(params));
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(std::string* value,
+void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value,
                                    const IndexedDBKey& key,
                                    const IndexedDBKeyPath& key_path) {
   DCHECK(dispatcher_host_.get());
@@ -276,7 +279,7 @@ void IndexedDBCallbacks::OnSuccess(std::string* value,
 
   std::string value_copy;
   if (value && !value->empty())
-    std::swap(value_copy, *value);
+    std::swap(value_copy, value->bits);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
       ipc_thread_id_,
@@ -288,7 +291,7 @@ void IndexedDBCallbacks::OnSuccess(std::string* value,
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(std::string* value) {
+void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK(kNoCursor == ipc_cursor_id_ || value == NULL);
@@ -299,7 +302,7 @@ void IndexedDBCallbacks::OnSuccess(std::string* value) {
 
   std::string value_copy;
   if (value && !value->empty())
-    std::swap(value_copy, *value);
+    std::swap(value_copy, value->bits);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValue(
       ipc_thread_id_,
