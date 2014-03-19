@@ -27,6 +27,7 @@ from chromite.scripts import cros_best_revision
 
 
 class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
+  """Base class for tests using cros_best_revision.ChromeCommitter."""
 
   def setUp(self):
     """Common set up method for all tests."""
@@ -40,6 +41,7 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
 
 # pylint: disable=W0212
 class ChromeGSTest(BaseChromeCommitterTest):
+  """Test cros_best_revision.ChromeCommitter version filtering."""
 
   def testGetLatestCanaryVersions(self):
     """Test that we correctly filter out non-canary and older versions."""
@@ -58,6 +60,7 @@ class ChromeGSTest(BaseChromeCommitterTest):
 
 class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
                             BaseChromeCommitterTest):
+  """Test cros_best_revision.Committer."""
 
   canaries = ['a-release', 'b-release', 'c-release']
   versions = ['4.0.0', '3.0.0']

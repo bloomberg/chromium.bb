@@ -23,6 +23,7 @@ from chromite.scripts import cros_mark_as_stable
 
 # pylint: disable=W0212,R0904
 class NonClassTests(cros_test_lib.MoxTestCase):
+  """Test the flow for pushing a change."""
   def setUp(self):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self._branch = 'test_branch'
@@ -82,6 +83,7 @@ class NonClassTests(cros_test_lib.MoxTestCase):
 
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests for cros_mark_as_stable.CleanStalePackages."""
 
   def setUp(self):
     self.PatchObject(osutils, 'FindMissingBinaries', return_value=[])
@@ -105,6 +107,7 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
 
 
 class GitBranchTest(cros_test_lib.MoxTestCase):
+  """Tests for cros_mark_as_stable.GitBranch."""
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.

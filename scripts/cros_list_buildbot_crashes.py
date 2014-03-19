@@ -29,6 +29,7 @@ def ConvertGoogleStorageURLToHttpURL(url):
 
 
 class CrashTriager(object):
+  """Helper class to manage crash triaging."""
 
   CRASH_PATTERN = re.compile(r'/([^/.]*)\.(\d+)[^/]*\.dmp\.txt$')
   STACK_TRACE_PATTERN = re.compile(r'Thread 0 ((?:[^\n]+\n)*)')

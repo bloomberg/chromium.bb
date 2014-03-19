@@ -72,6 +72,7 @@ TEST_PACKAGE_OLDCONTENTS = {
 }
 
 class ItemizeChangesFromRsyncOutput(unittest.TestCase):
+  """Test autotest_quickmerge.ItemizeChangesFromRsyncOutput."""
 
   def testItemizeChangesFromRsyncOutput(self):
     """Test that rsync output parser returns correct FileMutations."""
@@ -99,6 +100,7 @@ class ItemizeChangesFromRsyncOutput(unittest.TestCase):
 
 
 class PackageNameParsingTest(unittest.TestCase):
+  """Test autotest_quickmerge.GetStalePackageNames."""
 
   def testGetStalePackageNames(self):
     autotest_sysroot = '/an/arbitrary/path/'
@@ -113,6 +115,7 @@ class PackageNameParsingTest(unittest.TestCase):
 
 
 class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Test autotest_quickmerge.RsyncQuickmerge."""
 
   def testRsyncQuickmergeCommand(self):
     """Test that RsyncQuickMerge makes correct call to SudoRunCommand"""
@@ -137,6 +140,8 @@ class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
 
 
 class PortageManipulationsTest(mox.MoxTestBase):
+  """Test usage of autotest_quickmerge.portage."""
+
   def testUpdatePackageContents(self):
     """Test that UpdatePackageContents makes the correct calls to portage."""
     autotest_quickmerge.portage = self.mox.CreateMockAnything('portage')
@@ -184,6 +189,7 @@ class PortageAPITest(unittest.TestCase):
   """Ensures that required portage API exists."""
   def runTest(self):
     try:
+      # pylint: disable=F0401
       import portage
     except ImportError:
       self.skipTest('Portage not available in test environment. Re-run test '

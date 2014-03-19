@@ -442,6 +442,8 @@ def SymbolFinder(tempdir, paths):
     Yield every viable sym file.
   """
   for p in paths:
+    # Pylint is confused about members of ParseResult.
+    # pylint: disable=E1101
     o = urlparse.urlparse(p)
     if o.scheme:
       # Support globs of filenames.

@@ -16,7 +16,6 @@ upload_prebuilts -p /b/cbuild/build -s -u gs://chromeos-prebuilt
 
 Example of uploading x86-dogfood binhosts to Google Storage:
 upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
-
 """
 
 import datetime
@@ -351,6 +350,7 @@ class PrebuiltUploader(object):
       return False
     pym_path = os.path.abspath(os.path.join(self._build_path, _PYM_PATH))
     sys.path.insert(0, pym_path)
+    # pylint: disable=F0401
     import portage.versions
     cat, pkgname = portage.versions.catpkgsplit(pkg['CPV'])[0:2]
     cp = '%s/%s' % (cat, pkgname)

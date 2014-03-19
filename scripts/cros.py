@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""This implements the metacommand cros.
+
+This script is normally invoked via depot_tools/cros which discovers
+where chromite is located and invokes this script.
+
+In turn, this script looks for a subcommand based on how it was invoked. For
+example: cros lint.
+
+See cros/command/cros_XXX.py for actual command implementations.
+"""
+
 import sys
 
 from chromite.cros import commands

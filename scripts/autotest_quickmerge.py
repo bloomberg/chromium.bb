@@ -25,6 +25,7 @@ from chromite.lib import osutils
 
 
 if cros_build_lib.IsInsideChroot():
+  # pylint: disable=F0401
   # Only import portage after we've checked that we're inside the chroot.
   import portage
 
@@ -231,8 +232,8 @@ def UpdatePackageContents(change_report, package_cp, portage_root=None):
   considered owned by that package.
 
   Args:
-    changereport: ItemizedChangeReport object for the changes to be
-                  made to the package.
+    change_report: ItemizedChangeReport object for the changes to be
+                   made to the package.
     package_cp: A string similar to 'chromeos-base/autotest-tests' giving
                 the package category and name of the package to be altered.
     portage_root: Portage root path, corresponding to the board that
@@ -271,10 +272,13 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   Command will take form `rsync -a [options] --exclude=**.pyc
                          --exclude=**.pyo
-                         [optional --include-from argument]
+                         [optional --include-from include_pattern_file]
                          --exclude=* [source_path] [sysroot_autotest_path]`
 
   Args:
+    source_path: Directory to rsync from.
+    sysroot_autotest_path: Directory to rsync too.
+    include_pattern_file: Optional pattern of files to include in rsync.
     pretend: True to use the '-n' option to rsync, to perform dry run.
     overwrite: True to omit '-u' option, overwrite all files in sysroot,
                not just older files.

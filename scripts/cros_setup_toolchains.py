@@ -25,6 +25,7 @@ if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
   # Outside may not have portage, in which case the above may not happen.
   # We'll check in main() if the operation needs portage.
+  # pylint: disable=F0401
   import portage
 
 
@@ -110,9 +111,9 @@ class Crossdev(object):
     """Calls crossdev to initialize a cross target.
 
     Args:
-      targets - the list of targets to initialize using crossdev
-      usepkg - copies the commandline opts
-      config_only - Just update
+      targets: The list of targets to initialize using crossdev.
+      usepkg: Copies the commandline opts.
+      config_only: Just update.
     """
     configured_targets = cls._CACHE.setdefault('configured_targets', [])
 
@@ -906,8 +907,9 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
   Tarballs (one per target) will be created in $PWD.
 
   Args:
-    targets_wanted: The targets to package up
-    root: The root path to pull all packages/files from
+    targets_wanted: The targets to package up.
+    output_dir: The directory to put the packages in.
+    root: The root path to pull all packages/files from.
   """
   osutils.SafeMakedirs(output_dir)
   ldpaths = lddtree.LoadLdpaths(root)

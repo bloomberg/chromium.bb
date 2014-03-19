@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for cros_generate_sysroot."""
+
 import os
 import sys
 
@@ -25,6 +27,8 @@ Dir = cros_test_lib.Directory
 
 
 class CrosGenMock(partial_mock.PartialMock):
+  """Helper class to Mock out cros_generate_sysroot.GenerateSysroot."""
+
   TARGET = 'chromite.scripts.cros_generate_sysroot.GenerateSysroot'
   ATTRS = ('_InstallToolchain', '_InstallKernelHeaders',
            '_InstallBuildDependencies')
@@ -53,6 +57,7 @@ TAR_NAME = 'test.tar.xz'
 
 
 class OverallTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for cros_generate_sysroot."""
 
   def setUp(self):
     self.cg_mock = self.StartPatcher(CrosGenMock())

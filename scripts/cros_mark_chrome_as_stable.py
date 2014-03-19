@@ -123,6 +123,7 @@ def _GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
 
   Args:
+    base_url: Base URL for the SVN repository.
     branch: If set, gets the latest release for branch, otherwise latest
       release.
 

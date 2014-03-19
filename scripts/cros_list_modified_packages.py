@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Calculate what workon packages have changed since the last build.
+"""Calculate what workon packages have changed since the last build.
 
 A workon package is treated as changed if any of the below are true:
   1) The package is not installed.
@@ -148,7 +147,7 @@ def ListWorkonPackagesInfo(board, host):
     A list of unique packages being worked on.
   """
   # Import portage late so that this script can be imported outside the chroot.
-  # pylint: disable=W0404
+  # pylint: disable=F0401
   import portage.const
   packages = ListWorkonPackages(board, host)
   if not packages:

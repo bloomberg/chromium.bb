@@ -9,7 +9,7 @@ import filecmp
 import fnmatch
 import os
 import parallel_emerge
-import portage
+import portage # pylint: disable=F0401
 import re
 import shutil
 import tempfile

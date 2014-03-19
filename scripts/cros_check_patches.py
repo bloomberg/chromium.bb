@@ -3,6 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Command to list patches applies to a repository."""
+
+# pylint: disable=F0401
+# portage is only available inside the chroot.
+import functools
 import json
 import os
 import parallel_emerge
@@ -11,7 +16,6 @@ import re
 import shutil
 import sys
 import tempfile
-import functools
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils

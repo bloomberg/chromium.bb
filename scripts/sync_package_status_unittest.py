@@ -20,6 +20,7 @@ from chromite.scripts import sync_package_status as sps
 
 
 class SyncerTest(cros_test_lib.MoxOutputTestCase):
+  """Tests for sync_package_status.Syncer."""
 
   col_amd64 = utable.UpgradeTable.GetColumnName(utable.UpgradeTable.COL_STATE,
                                                 'amd64')

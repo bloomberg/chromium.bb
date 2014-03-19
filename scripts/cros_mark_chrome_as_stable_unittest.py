@@ -39,11 +39,13 @@ def _TouchAndWrite(path, data=None):
 
 
 class _StubCommandResult(object):
+  """Helper for mocking RunCommand results."""
   def __init__(self, msg):
     self.output = msg
 
 
 class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
+  """Tests for cros_mark_chrome_as_stable."""
 
   def setUp(self):
     """Setup vars and create mock dir."""

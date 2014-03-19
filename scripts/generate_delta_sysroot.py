@@ -3,7 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
+"""Script to generate a sysroot tarball.
+
 Script that generates a tarball containing changes that are needed to create a
 complete sysroot from extracted prebuilt packages.
 """

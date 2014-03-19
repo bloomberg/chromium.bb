@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Command to extract the dependancy tree for a given package."""
+
+# pylint: disable=F0401
+# portage is only available inside the chroot.
 import json
 import portage
 from parallel_emerge import DepGraphGenerator
@@ -10,8 +14,9 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
-  """
-  Turn something like this (the parallel_emerge DepsTree format):
+  """Simplify dependency json.
+
+Turn something like this (the parallel_emerge DepsTree format):
 {
   "app-admin/eselect-1.2.9": {
     "action": "merge",
