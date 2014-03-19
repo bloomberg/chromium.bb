@@ -53,11 +53,12 @@ public:
 
     static void remove(RenderObject*);
 
-    bool shouldPaintAtLowQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
+    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
 
 private:
     ImageQualityController();
 
+    bool shouldPaintAtLowQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
     void removeLayer(RenderObject*, LayerSizeMap* innerMap, const void* layer);
     void set(RenderObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
     void objectDestroyed(RenderObject*);

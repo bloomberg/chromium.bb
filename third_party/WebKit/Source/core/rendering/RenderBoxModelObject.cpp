@@ -100,9 +100,9 @@ bool RenderBoxModelObject::hasAcceleratedCompositing() const
     return view()->compositor()->hasAcceleratedCompositing();
 }
 
-bool RenderBoxModelObject::shouldPaintAtLowQuality(GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
+InterpolationQuality RenderBoxModelObject::chooseInterpolationQuality(GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
 {
-    return ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(context, this, image, layer, size);
+    return ImageQualityController::imageQualityController()->chooseInterpolationQuality(context, this, image, layer, size);
 }
 
 RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
@@ -702,11 +702,14 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer->composite() : op;
             RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : this;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
-            bool useLowQualityScaling = shouldPaintAtLowQuality(context, image.get(), bgLayer, geometry.tileSize());
+            InterpolationQuality interpolationQuality = chooseInterpolationQuality(context, image.get(), bgLayer, geometry.tileSize());
             if (bgLayer->maskSourceType() == MaskLuminance)
                 context->setColorFilter(ColorFilterLuminanceToAlpha);
+            InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
+            context->setImageInterpolationQuality(interpolationQuality);
             context->drawTiledImage(image.get(), geometry.destRect(), geometry.relativePhase(), geometry.tileSize(),
-                compositeOp, useLowQualityScaling, bgLayer->blendMode(), geometry.spaceSize());
+                compositeOp, bgLayer->blendMode(), geometry.spaceSize());
+            context->setImageInterpolationQuality(previousInterpolationQuality);
         }
     }
 

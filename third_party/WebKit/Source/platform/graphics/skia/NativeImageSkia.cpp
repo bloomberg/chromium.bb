@@ -144,17 +144,36 @@ static ResamplingMode limitResamplingMode(GraphicsContext* context, ResamplingMo
     case InterpolationNone:
         return NoResampling;
     case InterpolationMedium:
-        // For now we treat InterpolationMedium and InterpolationLow the same.
-    case InterpolationLow:
         if (resampling == AwesomeResampling)
+            return LinearWithMipmapsResampling;
+        break;
+    case InterpolationLow:
+        if (resampling == AwesomeResampling || resampling == LinearWithMipmapsResampling)
             return LinearResampling;
         break;
     case InterpolationHigh:
-    case InterpolationDefault:
         break;
     }
 
     return resampling;
+}
+
+static SkPaint::FilterLevel convertToSkiaFilterLevel(bool useBicubicFilter, ResamplingMode resampling)
+{
+    if (useBicubicFilter)
+        return SkPaint::kHigh_FilterLevel;
+
+    switch (resampling) {
+    case LinearWithMipmapsResampling:
+        return SkPaint::kMedium_FilterLevel;
+    case LinearResampling:
+        return SkPaint::kLow_FilterLevel;
+    // AwesomeResampling if useBicubicFilter is false means that we do
+    // a manual high quality resampling before drawing to Skia.
+    case AwesomeResampling:
+    default:
+        return SkPaint::kNone_FilterLevel;
+    }
 }
 
 // This function is used to scale an image and extract a scaled fragment.
@@ -353,7 +372,6 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
         resampling = LinearResampling;
     }
     resampling = limitResamplingMode(context, resampling);
-    paint.setFilterBitmap(resampling == LinearResampling);
 
     bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
     // FIXME: Bicubic filtering in Skia is only applied to defer-decoded images
@@ -361,8 +379,7 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     // turn this on for all cases, including non-defer-decoded images.
     bool useBicubicFilter = resampling == AwesomeResampling && isLazyDecoded;
 
-    if (useBicubicFilter)
-        paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
+    paint.setFilterLevel(convertToSkiaFilterLevel(useBicubicFilter, resampling));
 
     if (resampling == AwesomeResampling && !useBicubicFilter) {
         // Resample the image and then draw the result to canvas with bilinear
@@ -496,10 +513,8 @@ void NativeImageSkia::drawPattern(
     paint.setShader(shader.get());
     paint.setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
     paint.setColorFilter(context->colorFilter());
+    paint.setFilterLevel(convertToSkiaFilterLevel(useBicubicFilter, resampling));
 
-    paint.setFilterBitmap(resampling == LinearResampling);
-    if (useBicubicFilter)
-        paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
     if (isLazyDecoded)
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
 

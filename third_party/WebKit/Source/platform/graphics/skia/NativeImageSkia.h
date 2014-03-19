@@ -62,6 +62,9 @@ enum ResamplingMode {
     // quality resampling doesn't get us very much except a slowdown.
     LinearResampling,
 
+    // LinearResampling for upscaling. Mipmapping for downscaling.
+    LinearWithMipmapsResampling,
+
     // High quality resampling.
     AwesomeResampling,
 };

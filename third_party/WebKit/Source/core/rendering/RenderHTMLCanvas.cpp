@@ -73,8 +73,13 @@ void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& pa
         paintInfo.context->clip(pixelSnappedIntRect(contentRect));
     }
 
-    bool useLowQualityScale = style()->imageRendering() == ImageRenderingOptimizeContrast;
-    toHTMLCanvasElement(node())->paint(context, paintRect, useLowQualityScale);
+    // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
+    // See bug for more details: crbug.com/353716.
+    InterpolationQuality interpolationQuality = style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
+    InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
+    context->setImageInterpolationQuality(interpolationQuality);
+    toHTMLCanvasElement(node())->paint(context, paintRect);
+    context->setImageInterpolationQuality(previousInterpolationQuality);
 
     if (clip)
         context->restore();

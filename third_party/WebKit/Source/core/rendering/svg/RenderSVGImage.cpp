@@ -168,11 +168,14 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     SVGImageElement* imageElement = toSVGImageElement(element());
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
-    bool useLowQualityScaling = false;
+    InterpolationQuality interpolationQuality = InterpolationDefault;
     if (style()->svgStyle()->bufferedRendering() != BR_STATIC)
-        useLowQualityScaling = ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
+        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
 
-    paintInfo.context->drawImage(image.get(), destRect, srcRect, CompositeSourceOver, DoNotRespectImageOrientation, useLowQualityScaling);
+    InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
+    paintInfo.context->setImageInterpolationQuality(interpolationQuality);
+    paintInfo.context->drawImage(image.get(), destRect, srcRect, CompositeSourceOver);
+    paintInfo.context->setImageInterpolationQuality(previousInterpolationQuality);
 }
 
 void RenderSVGImage::invalidateBufferedForeground()

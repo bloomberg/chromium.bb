@@ -43,11 +43,15 @@ enum StrokeStyle {
 };
 
 enum InterpolationQuality {
-    InterpolationDefault,
     InterpolationNone,
     InterpolationLow,
     InterpolationMedium,
-    InterpolationHigh
+    InterpolationHigh,
+#if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
+    InterpolationDefault = InterpolationLow,
+#else
+    InterpolationDefault = InterpolationHigh,
+#endif
 };
 
 enum CompositeOperator {

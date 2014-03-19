@@ -33,9 +33,10 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "wtf/Forward.h"
 
-#define DefaultInterpolationQuality InterpolationMedium
+#define CanvasDefaultInterpolationQuality InterpolationLow
 
 namespace WebCore {
 
@@ -100,7 +101,7 @@ public:
     void didDraw(const FloatRect&);
     void notifyObserversCanvasChanged(const FloatRect&);
 
-    void paint(GraphicsContext*, const LayoutRect&, bool useLowQualityScale = false);
+    void paint(GraphicsContext*, const LayoutRect&);
 
     GraphicsContext* drawingContext() const;
     GraphicsContext* existingDrawingContext() const;

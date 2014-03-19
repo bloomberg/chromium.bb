@@ -60,6 +60,21 @@ void ImageQualityController::remove(RenderObject* renderer)
     }
 }
 
+InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, RenderObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
+{
+    if (InterpolationDefault == InterpolationLow)
+        return InterpolationLow;
+
+    if (shouldPaintAtLowQuality(context, object, image, layer, layoutSize))
+        return InterpolationLow;
+
+    // For images that are potentially animated we paint them at medium quality.
+    if (image && image->maybeAnimated())
+        return InterpolationMedium;
+
+    return InterpolationDefault;
+}
+
 ImageQualityController::~ImageQualityController()
 {
     // This will catch users of ImageQualityController that forget to call cleanUp.
@@ -135,10 +150,6 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
         return false;
 
     if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
-        return true;
-
-    // For images that are potentially animated we paint them at low quality.
-    if (image->maybeAnimated())
         return true;
 
     // Look ourselves up in the hashtables.

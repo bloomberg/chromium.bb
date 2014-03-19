@@ -15,11 +15,7 @@ GraphicsContextState::GraphicsContextState()
     , m_xferMode(nullptr)
     , m_compositeOperator(CompositeSourceOver)
     , m_blendMode(blink::WebBlendModeNormal)
-#if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
-    , m_interpolationQuality(InterpolationLow)
-#else
-    , m_interpolationQuality(InterpolationHigh)
-#endif
+    , m_interpolationQuality(InterpolationDefault)
     , m_saveCount(0)
     , m_shouldAntialias(true)
     , m_shouldSmoothFonts(true)

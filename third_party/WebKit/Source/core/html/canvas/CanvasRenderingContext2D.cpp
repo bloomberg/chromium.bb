@@ -2197,7 +2197,7 @@ void CanvasRenderingContext2D::setImageSmoothingEnabled(bool enabled)
     modifiableState().m_imageSmoothingEnabled = enabled;
     GraphicsContext* c = drawingContext();
     if (c)
-        c->setImageInterpolationQuality(enabled ? DefaultInterpolationQuality : InterpolationNone);
+        c->setImageInterpolationQuality(enabled ? CanvasDefaultInterpolationQuality : InterpolationNone);
 }
 
 PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttributes() const
