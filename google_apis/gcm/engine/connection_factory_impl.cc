@@ -388,16 +388,13 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
     status = error;
   }
 
-  // We either have new proxy info or there was an error in falling back.
-  // In both cases we want to post OnProxyResolveDone (in the error case
-  // we might still want to fall back a direct connection).
-  if (status != net::ERR_IO_PENDING) {
+  // If there is new proxy info, post OnProxyResolveDone to retry it. Otherwise,
+  // if there was an error falling back, fail synchronously.
+  if (status == net::OK) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                    weak_ptr_factory_.GetWeakPtr(), status));
-    // Since we potentially have another try to go (trying the direct connect)
-    // set the return code code to ERR_IO_PENDING.
     status = net::ERR_IO_PENDING;
   }
   return status;
