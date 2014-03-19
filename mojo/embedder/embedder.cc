@@ -23,7 +23,8 @@ struct ChannelInfo {
 static void CreateChannelOnIOThread(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<system::MessagePipe> message_pipe,
-    DidCreateChannelOnIOThreadCallback callback) {
+    DidCreateChannelCallback callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
   CHECK(platform_handle.is_valid());
 
   scoped_ptr<ChannelInfo> channel_info(new ChannelInfo);
@@ -42,17 +43,24 @@ static void CreateChannelOnIOThread(
       system::Channel::kBootstrapEndpointId);
 
   // Hand the channel back to the embedder.
-  callback.Run(channel_info.release());
+  if (callback_thread_task_runner) {
+    callback_thread_task_runner->PostTask(FROM_HERE,
+                                          base::Bind(callback,
+                                                     channel_info.release()));
+  } else {
+    callback.Run(channel_info.release());
+  }
 }
 
 void Init() {
   Core::Init(new system::CoreImpl());
 }
 
-MojoHandle CreateChannel(
+ScopedMessagePipeHandle CreateChannel(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    DidCreateChannelOnIOThreadCallback callback) {
+    DidCreateChannelCallback callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
   DCHECK(platform_handle.is_valid());
 
   std::pair<scoped_refptr<system::MessagePipeDispatcher>,
@@ -61,16 +69,18 @@ MojoHandle CreateChannel(
 
   system::CoreImpl* core_impl = static_cast<system::CoreImpl*>(Core::Get());
   DCHECK(core_impl);
-  MojoHandle rv = core_impl->AddDispatcher(remote_message_pipe.first);
+  ScopedMessagePipeHandle rv(
+      MessagePipeHandle(core_impl->AddDispatcher(remote_message_pipe.first)));
   // TODO(vtl): Do we properly handle the failure case here?
-  if (rv != MOJO_HANDLE_INVALID) {
+  if (rv.is_valid()) {
     io_thread_task_runner->PostTask(FROM_HERE,
                                     base::Bind(&CreateChannelOnIOThread,
                                                base::Passed(&platform_handle),
                                                remote_message_pipe.second,
-                                               callback));
+                                               callback,
+                                               callback_thread_task_runner));
   }
-  return rv;
+  return rv.Pass();
 }
 
 void DestroyChannelOnIOThread(ChannelInfo* channel_info) {

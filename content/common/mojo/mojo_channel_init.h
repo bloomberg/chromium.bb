@@ -38,21 +38,11 @@ class CONTENT_EXPORT MojoChannelInit {
   bool is_handle_valid() const { return bootstrap_message_pipe_.is_valid(); }
 
  private:
-  // Invoked on the IO thread once the channel has been established.
-  static void OnCreatedChannelOnIOThread(
-      base::WeakPtr<MojoChannelInit> host,
-      scoped_refptr<base::TaskRunner> main_thread,
-      scoped_refptr<base::TaskRunner> io_thread,
-      mojo::embedder::ChannelInfo* channel);
-
   // Invoked on the main thread once the channel has been established.
-  static void OnCreatedChannelOnMainThread(
+  static void OnCreatedChannel(
       base::WeakPtr<MojoChannelInit> host,
       scoped_refptr<base::TaskRunner> io_thread,
       mojo::embedder::ChannelInfo* channel);
-
-  // Thread where this object lives.
-  scoped_refptr<base::TaskRunner> main_thread_;
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
@@ -60,7 +50,7 @@ class CONTENT_EXPORT MojoChannelInit {
   mojo::embedder::ChannelInfo* channel_info_;
 
   // The handle from channel creation.
-  mojo::ScopedHandle bootstrap_message_pipe_;
+  mojo::ScopedMessagePipeHandle bootstrap_message_pipe_;
 
   base::WeakPtrFactory<MojoChannelInit> weak_factory_;
 

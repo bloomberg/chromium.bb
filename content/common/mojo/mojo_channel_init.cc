@@ -33,8 +33,7 @@ void InitMojo() {
 }  // namespace
 
 MojoChannelInit::MojoChannelInit()
-    : main_thread_(base::MessageLoop::current()->message_loop_proxy()),
-      channel_info_(NULL),
+    : channel_info_(NULL),
       weak_factory_(this) {
 }
 
@@ -53,32 +52,17 @@ void MojoChannelInit::Init(
   DCHECK(!io_thread_task_runner_.get());  // Should only init once.
   io_thread_task_runner_ = io_thread_task_runner;
   InitMojo();
-  bootstrap_message_pipe_.reset(
-      mojo::Handle(
-          mojo::embedder::CreateChannel(
-              mojo::embedder::ScopedPlatformHandle(
-                  mojo::embedder::PlatformHandle(file)),
-              io_thread_task_runner,
-              base::Bind(&MojoChannelInit::OnCreatedChannelOnIOThread,
-                         weak_factory_.GetWeakPtr(),
-                         main_thread_,
-                         io_thread_task_runner))));
+  bootstrap_message_pipe_ = mojo::embedder::CreateChannel(
+      mojo::embedder::ScopedPlatformHandle(
+          mojo::embedder::PlatformHandle(file)),
+      io_thread_task_runner,
+      base::Bind(&MojoChannelInit::OnCreatedChannel, weak_factory_.GetWeakPtr(),
+                 io_thread_task_runner),
+      base::MessageLoop::current()->message_loop_proxy()).Pass();
 }
 
 // static
-void MojoChannelInit::OnCreatedChannelOnIOThread(
-    base::WeakPtr<MojoChannelInit> host,
-    scoped_refptr<base::TaskRunner> main_thread,
-    scoped_refptr<base::TaskRunner> io_thread,
-    mojo::embedder::ChannelInfo* channel) {
-  main_thread->PostTask(
-      FROM_HERE,
-      base::Bind(&MojoChannelInit::OnCreatedChannelOnMainThread, host,
-                 io_thread, channel));
-}
-
-// static
-void MojoChannelInit::OnCreatedChannelOnMainThread(
+void MojoChannelInit::OnCreatedChannel(
     base::WeakPtr<MojoChannelInit> host,
     scoped_refptr<base::TaskRunner> io_thread,
     mojo::embedder::ChannelInfo* channel) {

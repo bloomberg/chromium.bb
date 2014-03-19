@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -26,8 +26,13 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 // |io_thread_task_runner| should be a |TaskRunner| for the thread on which the
 // "channel" will run (read data and demultiplex).
 //
-// Returns |MOJO_HANDLE_INVALID| on error. Note that this will happen only if,
-// e.g., the handle table is full (operation of the channel begins
+// On completion, it will run |callback| with a pointer to a |ChannelInfo|
+// (which is meant to be opaque to the embedder). If
+// |callback_thread_task_runner| is non-null, it the callback will be posted to
+// that task runner. Otherwise, it will be run on the I/O thread directly.
+//
+// Returns an invalid |MOJO_HANDLE_INVALID| on error. Note that this will happen
+// only if, e.g., the handle table is full (operation of the channel begins
 // asynchronously and if, e.g., the other end of the "pipe" is closed, this will
 // report an error to the returned handle in the usual way).
 //
@@ -41,11 +46,12 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 //
 // TODO(vtl): Figure out channel teardown.
 struct ChannelInfo;
-typedef base::Callback<void(ChannelInfo*)> DidCreateChannelOnIOThreadCallback;
-MOJO_SYSTEM_IMPL_EXPORT MojoHandle CreateChannel(
+typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle CreateChannel(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    DidCreateChannelOnIOThreadCallback callback);
+    DidCreateChannelCallback callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);

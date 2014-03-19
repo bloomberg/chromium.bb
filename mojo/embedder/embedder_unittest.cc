@@ -40,7 +40,7 @@ class ScopedTestChannel {
     bootstrap_message_pipe_ = CreateChannel(
         platform_handle.Pass(), io_thread_task_runner_,
         base::Bind(&ScopedTestChannel::DidCreateChannel,
-                   base::Unretained(this)));
+                   base::Unretained(this)), NULL).release().value();
     CHECK_NE(bootstrap_message_pipe_, MOJO_HANDLE_INVALID);
   }
 
@@ -82,6 +82,8 @@ class ScopedTestChannel {
 
   // Valid from creation until whenever it gets closed (by the "owner" of this
   // object).
+  // Note: We don't want use the C++ wrappers here, since we want to test the
+  // API at the lowest level.
   MojoHandle bootstrap_message_pipe_;
 
   // Set after channel creation has been completed (i.e., the callback to
