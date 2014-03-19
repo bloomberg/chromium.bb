@@ -206,7 +206,7 @@ weston_view_animation_run(struct weston_view *view,
 	weston_matrix_init(&animation->transform.matrix);
 	wl_list_insert(&view->geometry.transformation_list,
 		       &animation->transform.link);
-	weston_spring_init(&animation->spring, 200.0, 0.0, 1.0);
+	weston_spring_init(&animation->spring, 200.0, start, stop);
 	animation->spring.friction = 700;
 	animation->animation.frame_counter = 0;
 	animation->animation.frame = weston_view_animation_frame;
@@ -290,17 +290,17 @@ weston_fade_run(struct weston_view *view,
 {
 	struct weston_view_animation *fade;
 
-	fade = weston_view_animation_run(view, 0, end,
+	fade = weston_view_animation_run(view, start, end,
 					 fade_frame, reset_alpha,
 					 done, data, NULL);
 
 	if (fade == NULL)
 		return NULL;
 
-	weston_spring_init(&fade->spring, k, start, end);
+	fade->spring.k = 1000.0;
 
-	fade->spring.friction = 1400;
-	fade->spring.previous = -(end - start) * 0.03;
+	fade->spring.friction = 4000;
+	fade->spring.previous = start - (end - start) * 0.1;
 
 	view->alpha = start;
 
