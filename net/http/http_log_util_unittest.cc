@@ -25,9 +25,11 @@ TEST(HttpLogUtilTest, ElideHeaderValueForNetLog) {
       net::NetLog::LOG_STRIP_PRIVATE_DATA, "Set-Cookie2", "name=value"));
   EXPECT_EQ("[10 bytes were stripped]", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA, "Authorization", "Basic 1234"));
+#if !defined(SPDY_PROXY_AUTH_ORIGIN)
   EXPECT_EQ("[10 bytes were stripped]", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA,
       "Proxy-Authorization", "Basic 1234"));
+#endif
 
   // Unknown headers should pass through.
   EXPECT_EQ("value", ElideHeaderValueForNetLog(
@@ -40,28 +42,33 @@ TEST(HttpLogUtilTest, ElideHeaderValueForNetLog) {
   EXPECT_EQ("Digest realm=test", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA,
       "WWW-Authenticate", "Digest realm=test"));
+#if !defined(SPDY_PROXY_AUTH_ORIGIN)
   EXPECT_EQ("Basic realm=test", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA,
       "Proxy-Authenticate", "Basic realm=test"));
   EXPECT_EQ("Digest realm=test", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA,
       "Proxy-Authenticate", "Digest realm=test"));
+#endif
 
   // Multi-round mechanisms partially elided.
   EXPECT_EQ("NTLM [4 bytes were stripped]", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA, "WWW-Authenticate", "NTLM 1234"));
+#if !defined(SPDY_PROXY_AUTH_ORIGIN)
   EXPECT_EQ("NTLM [4 bytes were stripped]", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA, "Proxy-Authenticate", "NTLM 1234"));
+#endif
 
   // Leave whitespace intact.
   EXPECT_EQ("NTLM  [4 bytes were stripped] ", ElideHeaderValueForNetLog(
       net::NetLog::LOG_STRIP_PRIVATE_DATA, "WWW-Authenticate", "NTLM  1234 "));
 
+  // Extra elisions for SPDY_PROXY_AUTH_ORIGIN.
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   EXPECT_EQ("[elided]", ElideHeaderValueForNetLog(
-      net::NetLog::LOG_ALL_BUT_BYTES, "Proxy-Authorization", "Basic 1234"));
-#else
-  EXPECT_EQ("Basic 1234", ElideHeaderValueForNetLog(
+      net::NetLog::LOG_ALL_BUT_BYTES,
+      "Proxy-Authenticate", "Basic realm=test"));
+  EXPECT_EQ("[elided]", ElideHeaderValueForNetLog(
       net::NetLog::LOG_ALL_BUT_BYTES, "Proxy-Authorization", "Basic 1234"));
 #endif
 }
