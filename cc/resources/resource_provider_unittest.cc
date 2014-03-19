@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -1003,10 +1004,15 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     EXPECT_EQ(0u, returned_to_child[1].sync_point);
     EXPECT_EQ(0u, returned_to_child[2].sync_point);
     EXPECT_EQ(0u, returned_to_child[3].sync_point);
-    EXPECT_EQ(id1, returned_to_child[0].id);
-    EXPECT_EQ(id2, returned_to_child[1].id);
-    EXPECT_EQ(id3, returned_to_child[2].id);
-    EXPECT_EQ(id4, returned_to_child[3].id);
+    std::set<ResourceProvider::ResourceId> expected_ids;
+    expected_ids.insert(id1);
+    expected_ids.insert(id2);
+    expected_ids.insert(id3);
+    expected_ids.insert(id4);
+    std::set<ResourceProvider::ResourceId> returned_ids;
+    for(unsigned i = 0; i < 4; i++)
+      returned_ids.insert(returned_to_child[i].id);
+    EXPECT_EQ(expected_ids, returned_ids);
     EXPECT_FALSE(returned_to_child[0].lost);
     EXPECT_FALSE(returned_to_child[1].lost);
     EXPECT_FALSE(returned_to_child[2].lost);
@@ -1078,10 +1084,15 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   EXPECT_EQ(0u, returned_to_child[1].sync_point);
   EXPECT_EQ(0u, returned_to_child[2].sync_point);
   EXPECT_EQ(0u, returned_to_child[3].sync_point);
-  EXPECT_EQ(id1, returned_to_child[0].id);
-  EXPECT_EQ(id2, returned_to_child[1].id);
-  EXPECT_EQ(id3, returned_to_child[2].id);
-  EXPECT_EQ(id4, returned_to_child[3].id);
+  std::set<ResourceProvider::ResourceId> expected_ids;
+  expected_ids.insert(id1);
+  expected_ids.insert(id2);
+  expected_ids.insert(id3);
+  expected_ids.insert(id4);
+  std::set<ResourceProvider::ResourceId> returned_ids;
+  for(unsigned i = 0; i < 4; i++)
+    returned_ids.insert(returned_to_child[i].id);
+  EXPECT_EQ(expected_ids, returned_ids);
   EXPECT_FALSE(returned_to_child[0].lost);
   EXPECT_FALSE(returned_to_child[1].lost);
   EXPECT_FALSE(returned_to_child[2].lost);
