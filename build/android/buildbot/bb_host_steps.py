@@ -132,6 +132,8 @@ def main(argv):
     return sys.exit('Unused args %s' % args)
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
+  setattr(options, 'extra_src',
+          options.factory_properties.get('extra_src', ''))
 
   if options.steps:
     bb_utils.RunSteps(options.steps.split(','), GetHostStepCmds(), options)
