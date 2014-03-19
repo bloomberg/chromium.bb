@@ -19,6 +19,8 @@
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/managed_mode/supervised_user_pref_mapping_service.h"
@@ -66,6 +68,11 @@ const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
 const char kSwitchFromManagedProfileKeyPrefix[] =
     "X-ManagedUser-Events-SwitchProfile";
 const char kEventTimestamp[] = "timestamp";
+
+// Key for the notification setting of the custodian. This is a shared setting
+// so we can include the setting in the access request data that is used to
+// trigger notifications.
+const char kNotificationSetting[] = "custodian-notification-setting";
 
 ManagedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new ManagedModeURLFilter),
@@ -466,6 +473,19 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
   dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
 
   dict->SetString(kManagedUserName, profile_->GetProfileName());
+
+  // Copy the notification setting of the custodian.
+  std::string managed_user_id =
+      profile_->GetPrefs()->GetString(prefs::kManagedUserId);
+  const base::Value* value =
+      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile_)
+          ->GetValue(managed_user_id, kNotificationSetting);
+  bool notifications_enabled = false;
+  if (value) {
+    bool success = value->GetAsBoolean(&notifications_enabled);
+    DCHECK(success);
+  }
+  dict->SetBoolean(kNotificationSetting, notifications_enabled);
 
   GetSettingsService()->UploadItem(key, dict.PassAs<base::Value>());
 }
