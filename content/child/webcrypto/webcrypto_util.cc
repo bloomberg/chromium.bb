@@ -377,15 +377,24 @@ unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
 }
 
 bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
-                              unsigned keylen_bytes,
+                              unsigned int keylen_bytes,
                               blink::WebCryptoKeyAlgorithm* key_algorithm) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac: {
       blink::WebCryptoAlgorithm hash = GetInnerHashAlgorithm(algorithm);
       if (hash.isNull())
         return false;
+#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
+      if (keylen_bytes > UINT_MAX / 8)
+        return false;
+#endif
       *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
-          algorithm.id(), new blink::WebCryptoHmacKeyAlgorithmParams(hash));
+          algorithm.id(),
+#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
+          new blink::WebCryptoHmacKeyAlgorithmParams(hash, keylen_bytes * 8));
+#else
+          new blink::WebCryptoHmacKeyAlgorithmParams(hash));
+#endif
       return true;
     }
     case blink::WebCryptoAlgorithmIdAesKw:
