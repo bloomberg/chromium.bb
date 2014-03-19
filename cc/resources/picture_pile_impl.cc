@@ -156,6 +156,13 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
       content_rect, 1.f / contents_scale);
 
+  // Make sure pictures don't overlap by keeping track of previous right/bottom.
+  int min_content_left = -1;
+  int min_content_top = -1;
+  int last_row_index = -1;
+  int last_col_index = -1;
+  gfx::Rect last_content_rect;
+
   // Coalesce rasters of the same picture into different rects:
   //  - Compute the clip of each of the pile chunks,
   //  - Subtract it from the canvas rect to get difference region
@@ -195,16 +202,43 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
                                     << "Contents scale: " << contents_scale;
     content_clip.Intersect(canvas_rect);
 
-    PictureRegionMap::iterator it = results->find(picture);
-    if (it == results->end()) {
-      Region& region = (*results)[picture];
-      region = content_rect;
-      region.Subtract(content_clip);
-      continue;
+    // Make sure iterator goes top->bottom.
+    DCHECK_GE(tile_iter.index_y(), last_row_index);
+    if (tile_iter.index_y() > last_row_index) {
+      // First tile in a new row.
+      min_content_left = content_clip.x();
+      min_content_top = last_content_rect.bottom();
+    } else {
+      // Make sure iterator goes left->right.
+      DCHECK_GT(tile_iter.index_x(), last_col_index);
+      min_content_left = last_content_rect.right();
+      min_content_top = last_content_rect.y();
     }
 
-    Region& region = it->second;
-    region.Subtract(content_clip);
+    last_col_index = tile_iter.index_x();
+    last_row_index = tile_iter.index_y();
+
+    // Only inset if the content_clip is less than then previous min.
+    int inset_left = std::max(0, min_content_left - content_clip.x());
+    int inset_top = std::max(0, min_content_top - content_clip.y());
+    content_clip.Inset(inset_left, inset_top, 0, 0);
+
+    PictureRegionMap::iterator it = results->find(picture);
+    Region* clip_region;
+    if (it == results->end()) {
+      // The clip for a set of coalesced pictures starts out clipping the entire
+      // canvas.  Each picture added to the set must subtract its own bounds
+      // from the clip region, poking a hole so that the picture is unclipped.
+      clip_region = &(*results)[picture];
+      *clip_region = canvas_rect;
+    } else {
+      clip_region = &it->second;
+    }
+
+    DCHECK(clip_region->Contains(content_clip))
+        << "Content clips should not overlap.";
+    clip_region->Subtract(content_clip);
+    last_content_rect = content_clip;
   }
 }
 
@@ -246,6 +280,8 @@ void PicturePileImpl::RasterCommon(
 #ifndef NDEBUG
     Region positive_clip = content_rect;
     positive_clip.Subtract(negated_clip_region);
+    // Make sure we never rasterize the same region twice.
+    DCHECK(!total_clip.Intersects(positive_clip));
     total_clip.Union(positive_clip);
 #endif  // NDEBUG
 

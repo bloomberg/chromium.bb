@@ -743,5 +743,70 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   }
 }
 
+class OverlapTest : public ::testing::TestWithParam<float> {
+ public:
+  static float MinContentsScale() { return 1.f / 4.f; }
+};
+
+TEST_P(OverlapTest, NoOverlap) {
+  gfx::Size tile_size(10, 10);
+  gfx::Size layer_bounds(30, 30);
+  gfx::Size bigger_than_layer_bounds(300, 300);
+  float contents_scale = GetParam();
+  // Pick an opaque color to not have to deal with premultiplication off-by-one.
+  SkColor test_color = SkColorSetARGB(255, 45, 56, 67);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  pile->set_background_color(SK_ColorTRANSPARENT);
+  pile->set_contents_opaque(false);
+  pile->SetMinContentsScale(MinContentsScale());
+  pile->set_clear_canvas_with_debug_color(true);
+  SkPaint color_paint;
+  color_paint.setColor(test_color);
+  // Additive paint, so that if two paints overlap, the color will change.
+  color_paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+  // Paint outside the layer to make sure that blending works.
+  pile->add_draw_rect_with_paint(gfx::RectF(bigger_than_layer_bounds),
+                                 color_paint);
+  pile->RerecordPile();
+
+  gfx::Size content_bounds(
+      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   content_bounds.width(),
+                   content_bounds.height());
+  bitmap.allocPixels();
+  SkCanvas canvas(bitmap);
+
+  FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
+  pile->RasterToBitmap(&canvas,
+                       gfx::Rect(content_bounds),
+                       contents_scale,
+                       &rendering_stats_instrumentation);
+
+  for (int y = 0; y < bitmap.height(); y++) {
+    for (int x = 0; x < bitmap.width(); x++) {
+      SkColor color = bitmap.getColor(x, y);
+      EXPECT_EQ(SkColorGetR(test_color), SkColorGetR(color)) << "x: " << x
+                                                             << ", y: " << y;
+      EXPECT_EQ(SkColorGetG(test_color), SkColorGetG(color)) << "x: " << x
+                                                             << ", y: " << y;
+      EXPECT_EQ(SkColorGetB(test_color), SkColorGetB(color)) << "x: " << x
+                                                             << ", y: " << y;
+      EXPECT_EQ(SkColorGetA(test_color), SkColorGetA(color)) << "x: " << x
+                                                             << ", y: " << y;
+      if (test_color != color)
+        break;
+    }
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(PicturePileImpl,
+                        OverlapTest,
+                        ::testing::Values(1.f, 0.873f, 1.f / 4.f, 4.f));
+
 }  // namespace
 }  // namespace cc
