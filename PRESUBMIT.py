@@ -1302,10 +1302,11 @@ def GetDefaultTryConfigs(bots=None):
           'ui_unittests',
       ],
       'ios_rel_device': ['compile'],
-      'linux_asan': ['defaulttests'],
+      'linux_asan': ['compile'],
+      'mac_asan': ['compile'],
       #TODO(stip): Change the name of this builder to reflect that it's release.
       'linux_gtk': standard_tests,
-      'linux_chromeos_asan': ['defaulttests'],
+      'linux_chromeos_asan': ['compile'],
       'linux_chromium_chromeos_clang_dbg': ['defaulttests'],
       'linux_chromium_chromeos_rel': ['defaulttests'],
       'linux_chromium_compile_dbg': ['defaulttests'],

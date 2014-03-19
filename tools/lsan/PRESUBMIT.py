@@ -35,6 +35,7 @@ def CheckChangeOnCommit(input_api, output_api):
 def GetPreferredTryMasters(project, change):
   return {
     'tryserver.chromium': {
-      'linux_asan': set(['defaulttests']),
+      'linux_asan': set(['compile']),
+      'mac_asan': set(['compile']),
     }
   }
