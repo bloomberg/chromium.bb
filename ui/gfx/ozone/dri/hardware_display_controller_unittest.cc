@@ -14,6 +14,8 @@ namespace {
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
+const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
+
 // Mock file descriptor ID.
 const int kFd = 3;
 
@@ -89,6 +91,15 @@ class MockDriWrapper : public gfx::DriWrapper {
                                     uint32_t property_id,
                                     uint64_t value) OVERRIDE { return true; }
 
+  virtual bool SetCursor(uint32_t crtc_id,
+                         uint32_t handle,
+                         uint32_t width,
+                         uint32_t height) OVERRIDE { return true; }
+
+  virtual bool MoveCursor(uint32_t crtc_id, int x, int y) OVERRIDE {
+    return true;
+  }
+
   int get_get_crtc_call_count() const {
     return get_crtc_call_count_;
   }
@@ -149,8 +160,8 @@ class MockDriSkBitmap : public gfx::DriSkBitmap {
 
 class MockDriSurface : public gfx::DriSurface {
  public:
-  MockDriSurface(gfx::HardwareDisplayController* controller)
-      : DriSurface(controller) {}
+  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+      : DriSurface(dri, size) {}
   virtual ~MockDriSurface() {}
 
  private:
@@ -206,7 +217,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
@@ -222,7 +233,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
@@ -236,7 +247,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
@@ -253,7 +264,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
@@ -270,7 +281,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
@@ -285,7 +296,7 @@ TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::DriSurface> surface(
-      new MockDriSurface(controller_.get()));
+      new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));

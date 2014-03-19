@@ -18,6 +18,7 @@
 namespace gfx {
 
 class DriSurface;
+class Point;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -144,6 +145,14 @@ class GFX_EXPORT HardwareDisplayController {
   void OnPageFlipEvent(unsigned int frame,
                        unsigned int seconds,
                        unsigned int useconds);
+
+  // Set the hardware cursor to show the contents of |surface|.
+  bool SetCursor(const DriSurface& surface);
+
+  bool UnsetCursor();
+
+  // Moves the hardware cursor to |location|.
+  bool MoveCursor(const gfx::Point& location);
 
   State get_state() const { return state_; };
 

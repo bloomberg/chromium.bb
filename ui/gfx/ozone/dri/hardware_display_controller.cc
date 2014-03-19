@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/ozone/dri/dri_skbitmap.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
@@ -42,6 +43,12 @@ void HardwareDisplayController::SetControllerInfo(
 }
 
 HardwareDisplayController::~HardwareDisplayController() {
+  if (state_ == UNASSOCIATED)
+    return;
+
+  // Reset the cursor.
+  UnsetCursor();
+
   if (saved_crtc_) {
     if (!drm_->SetCrtc(saved_crtc_, &connector_id_))
       DLOG(ERROR) << "Failed to restore CRTC state: " << strerror(errno);
@@ -124,6 +131,24 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
       useconds;
 
   surface_->SwapBuffers();
+}
+
+bool HardwareDisplayController::SetCursor(const DriSurface& surface) {
+  CHECK(state_ != UNASSOCIATED);
+  return drm_->SetCursor(crtc_id_,
+                         surface.GetHandle(),
+                         surface.size().width(),
+                         surface.size().height());
+}
+
+bool HardwareDisplayController::UnsetCursor() {
+  CHECK(state_ != UNASSOCIATED);
+  return drm_->SetCursor(crtc_id_, 0, 0, 0);
+}
+
+bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
+  CHECK(state_ != UNASSOCIATED);
+  return drm_->MoveCursor(crtc_id_, location.x(), location.y());
 }
 
 }  // namespace gfx

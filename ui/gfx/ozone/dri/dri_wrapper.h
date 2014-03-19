@@ -70,6 +70,17 @@ class GFX_EXPORT DriWrapper {
                                     uint32_t property_id,
                                     uint64_t value);
 
+  // Set the cursor to be displayed in CRTC |crtc_id|. (width, height) is the
+  // cursor size pointed by |handle|.
+  virtual bool SetCursor(uint32_t crtc_id,
+                         uint32_t handle,
+                         uint32_t width,
+                         uint32_t height);
+
+
+  // Move the cursor on CRTC |crtc_id| to (x, y);
+  virtual bool MoveCursor(uint32_t crtc_id, int x, int y);
+
   int get_fd() const { return fd_; }
 
  protected:

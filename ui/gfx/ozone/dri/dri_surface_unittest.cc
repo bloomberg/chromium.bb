@@ -92,8 +92,8 @@ class MockDriSkBitmap : public gfx::DriSkBitmap {
 
 class MockDriSurface : public gfx::DriSurface {
  public:
-  MockDriSurface(gfx::HardwareDisplayController* controller)
-      : DriSurface(controller),
+  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+      : DriSurface(dri, size),
         initialize_expectation_(true) {}
   virtual ~MockDriSurface() {}
 
@@ -135,7 +135,9 @@ void DriSurfaceTest::SetUp() {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
-  surface_.reset(new MockDriSurface(controller_.get()));
+  surface_.reset(new MockDriSurface(drm_.get(),
+                                    gfx::Size(kDefaultMode.hdisplay,
+                                              kDefaultMode.vdisplay)));
 }
 
 void DriSurfaceTest::TearDown() {

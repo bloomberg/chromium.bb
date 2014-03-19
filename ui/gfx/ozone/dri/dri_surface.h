@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/skia_util.h"
 
@@ -16,7 +17,7 @@ class SkCanvas;
 namespace gfx {
 
 class DriSkBitmap;
-class HardwareDisplayController;
+class DriWrapper;
 
 // DriSurface is used to represent a surface that can be scanned out
 // to a monitor. It will store the internal state associated with the drawing
@@ -36,7 +37,7 @@ class HardwareDisplayController;
 // HardwareDisplayController controller;
 // // Initialize controller
 //
-// DriSurface* surface = new DriSurface(controller);
+// DriSurface* surface = new DriSurface(dri_wrapper, size);
 // surface.Initialize();
 // controller.BindSurfaceToController(surface);
 //
@@ -119,7 +120,7 @@ class HardwareDisplayController;
 // At this point we're back to step 1 and can start a new draw iteration.
 class GFX_EXPORT DriSurface {
  public:
-  DriSurface(HardwareDisplayController* controller);
+  DriSurface(DriWrapper* dri, const gfx::Size& size);
 
   virtual ~DriSurface();
 
@@ -132,11 +133,16 @@ class GFX_EXPORT DriSurface {
   // Returns the ID of the current backbuffer.
   uint32_t GetFramebufferId() const;
 
+  // Returns the handle for the current backbuffer.
+  uint32_t GetHandle() const;
+
   // Synchronizes and swaps the back buffer with the front buffer.
   void SwapBuffers();
 
   // Get a Skia canvas for a backbuffer.
   SkCanvas* GetDrawableForWidget();
+
+  const gfx::Size& size() const { return size_; }
 
  private:
   friend class HardwareDisplayController;
@@ -144,9 +150,9 @@ class GFX_EXPORT DriSurface {
   // Used to create the backing buffers.
   virtual DriSkBitmap* CreateBuffer();
 
-  // Stores DRM information for this output device (connector, encoder, last
-  // CRTC state).
-  HardwareDisplayController* controller_;
+  // Stores the connection to the graphics card. Pointer not owned by this
+  // class.
+  DriWrapper* dri_;
 
   // The actual buffers used for painting.
   scoped_ptr<DriSkBitmap> bitmaps_[2];
@@ -159,6 +165,9 @@ class GFX_EXPORT DriSurface {
 
   // Keeps track of which bitmap is |buffers_| is the frontbuffer.
   int front_buffer_;
+
+  // Surface size.
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(DriSurface);
 };

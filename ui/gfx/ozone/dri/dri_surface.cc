@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/ozone/dri/dri_skbitmap.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
+#include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/skia_util.h"
 
 namespace gfx {
@@ -41,10 +41,11 @@ class CustomSkBitmapDevice : public SkBitmapDevice {
 // DriSurface implementation
 
 DriSurface::DriSurface(
-    HardwareDisplayController* controller)
-    : controller_(controller),
+    DriWrapper* dri, const gfx::Size& size)
+    : dri_(dri),
       bitmaps_(),
-      front_buffer_(0) {
+      front_buffer_(0),
+      size_(size) {
 }
 
 DriSurface::~DriSurface() {
@@ -56,8 +57,8 @@ bool DriSurface::Initialize() {
     // TODO(dnicoara) Should select the configuration based on what the
     // underlying system supports.
     bitmaps_[i]->setConfig(SkBitmap::kARGB_8888_Config,
-                           controller_->get_mode().hdisplay,
-                           controller_->get_mode().vdisplay);
+                           size_.width(),
+                           size_.height());
 
     if (!bitmaps_[i]->Initialize()) {
       return false;
@@ -74,6 +75,11 @@ bool DriSurface::Initialize() {
 uint32_t DriSurface::GetFramebufferId() const {
   CHECK(bitmaps_[0].get() && bitmaps_[1].get());
   return bitmaps_[front_buffer_ ^ 1]->get_framebuffer();
+}
+
+uint32_t DriSurface::GetHandle() const {
+  CHECK(bitmaps_[0].get() && bitmaps_[1].get());
+  return bitmaps_[front_buffer_ ^ 1]->get_handle();
 }
 
 // This call is made after the hardware just started displaying our back buffer.
@@ -107,7 +113,7 @@ SkCanvas* DriSurface::GetDrawableForWidget() {
 }
 
 DriSkBitmap* DriSurface::CreateBuffer() {
-  return new DriSkBitmap(controller_->get_fd());
+  return new DriSkBitmap(dri_->get_fd());
 }
 
 }  // namespace gfx

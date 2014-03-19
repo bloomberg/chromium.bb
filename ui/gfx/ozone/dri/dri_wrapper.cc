@@ -84,10 +84,23 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
 }
 
 bool DriWrapper::ConnectorSetProperty(uint32_t connector_id,
-                                           uint32_t property_id,
-                                           uint64_t value) {
+                                      uint32_t property_id,
+                                      uint64_t value) {
   CHECK(fd_ >= 0);
   return !drmModeConnectorSetProperty(fd_, connector_id, property_id, value);
+}
+
+bool DriWrapper::SetCursor(uint32_t crtc_id,
+                           uint32_t handle,
+                           uint32_t width,
+                           uint32_t height) {
+  CHECK(fd_ >= 0);
+  return !drmModeSetCursor(fd_, crtc_id, handle, width, height);
+}
+
+bool DriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
+  CHECK(fd_ >= 0);
+  return !drmModeMoveCursor(fd_, crtc_id, x, y);
 }
 
 }  // namespace gfx

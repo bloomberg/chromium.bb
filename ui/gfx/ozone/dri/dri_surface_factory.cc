@@ -27,6 +27,9 @@ const char kDPMSProperty[] = "DPMS";
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
+// TODO(dnicoara) Read the cursor plane size from the hardware.
+const gfx::Size kCursorSize(64, 64);
+
 // DRM callback on page flip events. This callback is triggered after the
 // page flip has happened and the backbuffer is now the new frontbuffer
 // The old frontbuffer is no longer used by the hardware and can be used for
@@ -96,6 +99,21 @@ uint32_t GetCrtc(int fd, drmModeRes* resources, drmModeConnector* connector) {
   return 0;
 }
 
+void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
+  SkRect damage;
+  image.getBounds(&damage);
+
+  // Clear to transparent in case |image| is smaller than the canvas.
+  SkCanvas* canvas = cursor->GetDrawableForWidget();
+  canvas->clear(SK_ColorTRANSPARENT);
+
+  SkRect clip;
+  clip.set(
+      0, 0, canvas->getDeviceSize().width(), canvas->getDeviceSize().height());
+  canvas->clipRect(clip, SkRegion::kReplace_Op);
+  canvas->drawBitmapRectToRect(image, &damage, damage);
+}
+
 }  // namespace
 
 DriSurfaceFactory::DriSurfaceFactory()
@@ -119,6 +137,13 @@ DriSurfaceFactory::InitializeHardware() {
   if (drm_->get_fd() < 0) {
     LOG(ERROR) << "Cannot open graphics card '"
                << kDefaultGraphicsCardPath << "': " << strerror(errno);
+    state_ = FAILED;
+    return state_;
+  }
+
+  cursor_surface_.reset(CreateSurface(kCursorSize));
+  if (!cursor_surface_->Initialize()) {
+    LOG(ERROR) << "Failed to initialize cursor surface";
     state_ = FAILED;
     return state_;
   }
@@ -169,7 +194,9 @@ gfx::AcceleratedWidget DriSurfaceFactory::RealizeAcceleratedWidget(
   }
 
   // Create a surface suitable for the current controller.
-  scoped_ptr<DriSurface> surface(CreateSurface(controller_.get()));
+  scoped_ptr<DriSurface> surface(CreateSurface(
+      Size(controller_->get_mode().hdisplay,
+           controller_->get_mode().vdisplay)));
 
   if (!surface->Initialize()) {
     LOG(ERROR) << "Failed to initialize surface";
@@ -248,35 +275,33 @@ void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
                                           const gfx::Point& location) {
   if (state_ != INITIALIZED)
     return;
-  // TODO(dnicoara): Land DRI cursor.
-  // controller_->MoveCursor(location.x(), location.y());
-  // controller_->SetCursor(*cursor_.get());
-  NOTIMPLEMENTED();
+
+  UpdateCursorImage(cursor_surface_.get(), image);
+  controller_->MoveCursor(location);
+  controller_->SetCursor(*cursor_surface_.get());
+  cursor_surface_->SwapBuffers();
 }
 
 void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
                                            const gfx::Point& location) {
   if (state_ != INITIALIZED)
     return;
-  // TODO(dnicoara): Land DRI cursor.
-  // controller_->MoveCursor(location.x(), location.y());
-  NOTIMPLEMENTED();
+
+  controller_->MoveCursor(location);
 }
 
 void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
   if (state_ != INITIALIZED)
     return;
-  // TODO(dnicoara): Land DRI cursor.
-  // controller_->UnsetCursor();
-  NOTIMPLEMENTED();
+
+  controller_->UnsetCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 
-DriSurface* DriSurfaceFactory::CreateSurface(
-    HardwareDisplayController* controller) {
-  return new DriSurface(controller);
+DriSurface* DriSurfaceFactory::CreateSurface(const gfx::Size& size) {
+  return new DriSurface(drm_.get(), size);
 }
 
 DriWrapper* DriSurfaceFactory::CreateWrapper() {

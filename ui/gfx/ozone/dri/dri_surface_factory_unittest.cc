@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/ozone/dri/dri_skbitmap.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_surface_factory.h"
@@ -83,6 +86,15 @@ class MockDriWrapper : public gfx::DriWrapper {
                                     uint32_t property_id,
                                     uint64_t value) OVERRIDE { return true; }
 
+  virtual bool SetCursor(uint32_t crtc_id,
+                         uint32_t handle,
+                         uint32_t width,
+                         uint32_t height) OVERRIDE { return true; }
+
+  virtual bool MoveCursor(uint32_t crtc_id, int x, int y) OVERRIDE {
+    return true;
+  }
+
   void set_add_framebuffer_expectation(bool state) {
     add_framebuffer_expectation_ = state;
   }
@@ -115,14 +127,21 @@ class MockDriSkBitmap : public gfx::DriSkBitmap {
 
 class MockDriSurface : public gfx::DriSurface {
  public:
-  MockDriSurface(gfx::HardwareDisplayController* controller)
-      : DriSurface(controller) {}
+  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+      : DriSurface(dri, size) {}
   virtual ~MockDriSurface() {}
+
+  const std::vector<MockDriSkBitmap*>& bitmaps() const { return bitmaps_; }
 
  private:
   virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
-    return new MockDriSkBitmap();
+     MockDriSkBitmap* bitmap = new MockDriSkBitmap();
+     bitmaps_.push_back(bitmap);
+
+     return bitmap;
   }
+
+  std::vector<MockDriSkBitmap*> bitmaps_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
@@ -153,10 +172,13 @@ class MockDriSurfaceFactory
     return mock_drm_;
   }
 
+  const std::vector<MockDriSurface*>& get_surfaces() const { return surfaces_; }
+
  private:
-  virtual gfx::DriSurface* CreateSurface(
-      gfx::HardwareDisplayController* controller) OVERRIDE {
-    return new MockDriSurface(controller);
+  virtual gfx::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
+    MockDriSurface* surface = new MockDriSurface(mock_drm_, size);
+    surfaces_.push_back(surface);
+    return surface;
   }
 
   virtual gfx::DriWrapper* CreateWrapper() OVERRIDE {
@@ -190,6 +212,7 @@ class MockDriSurfaceFactory
   MockDriWrapper* mock_drm_;
   bool drm_wrapper_expectation_;
   bool initialize_controller_expectation_;
+  std::vector<MockDriSurface*> surfaces_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurfaceFactory);
 };
@@ -289,4 +312,39 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulSchedulePageFlip) {
   EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
 
   EXPECT_TRUE(factory_->SchedulePageFlip(w));
+}
+
+TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
+  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
+            factory_->InitializeHardware());
+
+  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
+  EXPECT_EQ(kDefaultWidgetHandle, w);
+  EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+
+  SkBitmap image;
+  SkImageInfo info = SkImageInfo::Make(
+      6, 4, kPMColor_SkColorType, kPremul_SkAlphaType);
+  image.allocPixels(info);
+  image.eraseColor(SK_ColorWHITE);
+
+  factory_->SetHardwareCursor(w, image, gfx::Point(4, 2));
+  const std::vector<MockDriSurface*>& surfaces = factory_->get_surfaces();
+
+  // The first surface is the cursor surface since it is allocated early in the
+  // initialization process.
+  const std::vector<MockDriSkBitmap*>& bitmaps = surfaces[0]->bitmaps();
+
+  // The surface should have been initialized to a double-buffered surface.
+  EXPECT_EQ(2u, bitmaps.size());
+  // Check that the frontbuffer is displaying the right image as set above.
+  for (int i = 0; i < bitmaps[1]->height(); ++i) {
+    for (int j = 0; j < bitmaps[1]->width(); ++j) {
+      if (j < info.width() && i < info.height())
+        EXPECT_EQ(SK_ColorWHITE, bitmaps[1]->getColor(j, i));
+      else
+        EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+                  bitmaps[1]->getColor(j, i));
+    }
+  }
 }
