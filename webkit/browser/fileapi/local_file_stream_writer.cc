@@ -17,14 +17,19 @@ namespace {
 const int kOpenFlagsForWrite = base::PLATFORM_FILE_OPEN |
                                base::PLATFORM_FILE_WRITE |
                                base::PLATFORM_FILE_ASYNC;
+const int kCreateFlagsForWrite = base::PLATFORM_FILE_CREATE |
+                                 base::PLATFORM_FILE_WRITE |
+                                 base::PLATFORM_FILE_ASYNC;
 
 }  // namespace
 
 FileStreamWriter* FileStreamWriter::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
-    int64 initial_offset) {
-  return new LocalFileStreamWriter(task_runner, file_path, initial_offset);
+    int64 initial_offset,
+    OpenOrCreate open_or_create) {
+  return new LocalFileStreamWriter(
+      task_runner, file_path, initial_offset, open_or_create);
 }
 
 LocalFileStreamWriter::~LocalFileStreamWriter() {
@@ -81,8 +86,10 @@ int LocalFileStreamWriter::Flush(const net::CompletionCallback& callback) {
 
 LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
                                              const base::FilePath& file_path,
-                                             int64 initial_offset)
+                                             int64 initial_offset,
+                                             OpenOrCreate open_or_create)
     : file_path_(file_path),
+      open_or_create_(open_or_create),
       initial_offset_(initial_offset),
       task_runner_(task_runner),
       has_pending_operation_(false),
@@ -96,8 +103,18 @@ int LocalFileStreamWriter::InitiateOpen(
 
   stream_impl_.reset(new net::FileStream(NULL, task_runner_));
 
+  int open_flags = 0;
+  switch (open_or_create_) {
+  case OPEN_EXISTING_FILE:
+    open_flags = kOpenFlagsForWrite;
+    break;
+  case CREATE_NEW_FILE:
+    open_flags = kCreateFlagsForWrite;
+    break;
+  }
+
   return stream_impl_->Open(file_path_,
-                            kOpenFlagsForWrite,
+                            open_flags,
                             base::Bind(&LocalFileStreamWriter::DidOpen,
                                        weak_factory_.GetWeakPtr(),
                                        error_callback,
