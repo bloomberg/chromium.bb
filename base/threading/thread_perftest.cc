@@ -157,7 +157,7 @@ class EventPerfTest : public ThreadPerfTest {
   virtual void Reset() OVERRIDE { events_.clear(); }
 
   void WaitAndSignalOnThread(size_t event) {
-    int next_event = (event + 1) % events_.size();
+    size_t next_event = (event + 1) % events_.size();
     int my_hops = 0;
     do {
       events_[event]->Wait();
