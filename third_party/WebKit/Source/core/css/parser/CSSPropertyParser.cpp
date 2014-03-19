@@ -4150,7 +4150,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(C
     ASSERT(args);
 
     // circle(radius)
-    // circle(radius at <position>
+    // circle(radius at <position>)
     // circle(at <position>)
     // where position defines centerX and centerY using a CSS <position> data type.
     RefPtrWillBeRawPtr<CSSBasicShapeCircle> shape = CSSBasicShapeCircle::create();
@@ -4171,10 +4171,9 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(C
             return nullptr;
         }
 
-        if (argument->id == CSSValueAt) {
+        if (argument->id == CSSValueAt && args->next()) {
             RefPtrWillBeRawPtr<CSSValue> centerX;
             RefPtrWillBeRawPtr<CSSValue> centerY;
-            args->next(); // set list to start of position center
             parseFillPosition(args, centerX, centerY);
             if (centerX && centerY && !args->current()) {
                 ASSERT(centerX->isPrimitiveValue());
@@ -4247,9 +4246,9 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(
     ASSERT(args);
 
     // ellipse(radiusX)
-    // ellipse(radiusX at <position>
+    // ellipse(radiusX at <position>)
     // ellipse(radiusX radiusY)
-    // ellipse(radiusX radiusY at <position>
+    // ellipse(radiusX radiusY at <position>)
     // ellipse(at <position>)
     // where position defines centerX and centerY using a CSS <position> data type.
     RefPtrWillBeRawPtr<CSSBasicShapeEllipse> shape = CSSBasicShapeEllipse::create();
@@ -4273,11 +4272,10 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(
             return nullptr;
         }
 
-        if (argument->id != CSSValueAt)
+        if (argument->id != CSSValueAt || !args->next()) // expecting ellipse(.. at <position>)
             return nullptr;
         RefPtrWillBeRawPtr<CSSValue> centerX;
         RefPtrWillBeRawPtr<CSSValue> centerY;
-        args->next(); // set list to start of position center
         parseFillPosition(args, centerX, centerY);
         if (!centerX || !centerY || args->current())
             return nullptr;

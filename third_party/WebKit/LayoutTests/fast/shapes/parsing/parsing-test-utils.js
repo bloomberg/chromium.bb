@@ -146,6 +146,8 @@ var invalidShapeValues = [
     "circle(at center center 10px)",
 
     "circle(at 10px 10px closest-side)",
+    "circle(10px at)",
+    "circle(at)",
 
     "ellipse(10px, 20px)", // FIXME: Remove this test once we do not support the deprecated CSS Shapes syntax anymore.
     "ellipse(10px, 20px, 30px)", // FIXME: Remove this test once we do not support the deprecated CSS Shapes syntax anymore.
@@ -159,6 +161,8 @@ var invalidShapeValues = [
     "ellipse(at 10px 10px 10px)",
     "ellipse(at 10px 10px at center)",
     "ellipse(at center center 10px)",
+    "ellipse(10px 20px at)",
+    "ellipse(at)",
 
     "polygon()",
     "polygon(evenodd 10px 20px, 30px 40px, 40px 50px)",
