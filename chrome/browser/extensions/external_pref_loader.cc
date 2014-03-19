@@ -126,8 +126,8 @@ void ExternalPrefLoader::LoadOnFileThread() {
     if (!prefs->empty())
       LOG(WARNING) << "You are using an old-style extension deployment method "
                       "(external_extensions.json), which will soon be "
-                      "deprecated. (see http://code.google.com/chrome/"
-                      "extensions/external_extensions.html )";
+                      "deprecated. (see http://developer.chrome.com/"
+                      "extensions/external_extensions.html)";
 
     ReadStandaloneExtensionPrefFiles(prefs.get());
   }
@@ -251,4 +251,4 @@ const base::FilePath ExternalTestingLoader::GetBaseCrxFilePath() {
   return fake_base_path_;
 }
 
-}  // extensions
+}  // namespace extensions
