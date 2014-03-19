@@ -80,11 +80,7 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   // Reinitialization (i.e. upon a config change)
   decryptor_->DeinitializeDecoder(Decryptor::kAudio);
-  state_ = kPendingDecoderInit;
-  decryptor_->InitializeAudioDecoder(
-      config,
-      BindToCurrentLoop(base::Bind(
-          &DecryptingAudioDecoder::FinishInitialization, weak_this_)));
+  InitializeDecoder();
 }
 
 void DecryptingAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -226,6 +222,11 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 
   decryptor_ = decryptor;
 
+  InitializeDecoder();
+}
+
+void DecryptingAudioDecoder::InitializeDecoder() {
+  // Force to use S16 due to limitations of the CDM. See b/13548512
   config_.Initialize(config_.codec(),
                      kSampleFormatS16,
                      config_.channel_layout(),

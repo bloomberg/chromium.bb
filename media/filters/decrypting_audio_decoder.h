@@ -73,6 +73,9 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Callback for DecryptorHost::RequestDecryptor().
   void SetDecryptor(Decryptor* decryptor);
 
+  // Initializes the audio decoder on the |decryptor_| with |config_|.
+  void InitializeDecoder();
+
   // Callback for Decryptor::InitializeAudioDecoder() during initialization.
   void FinishInitialization(bool success);
 
