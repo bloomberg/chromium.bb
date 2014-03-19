@@ -135,6 +135,9 @@ class PipeMap {
   ChannelToFDMap map_;
 
   friend struct DefaultSingletonTraits<PipeMap>;
+#if defined(OS_ANDROID)
+  friend void ::IPC::Channel::NotifyProcessForkedForTesting();
+#endif
 };
 
 //------------------------------------------------------------------------------
@@ -159,6 +162,15 @@ bool SocketWriteErrorIsRecoverable() {
 }
 
 }  // namespace
+
+#if defined(OS_ANDROID)
+// When we fork for simple tests on Android, we can't 'exec', so we need to
+// reset these entries manually to get the expected testing behavior.
+void Channel::NotifyProcessForkedForTesting() {
+  PipeMap::GetInstance()->map_.clear();
+}
+#endif
+
 //------------------------------------------------------------------------------
 
 #if defined(OS_LINUX)
@@ -227,7 +239,7 @@ bool Channel::ChannelImpl::CreatePipe(
   // 1) It's a channel wrapping a pipe that is given to us.
   // 2) It's for a named channel, so we create it.
   // 3) It's for a client that we implement ourself. This is used
-  //    in unittesting.
+  //    in single-process unittesting.
   // 4) It's the initial IPC channel:
   //   4a) Client side: Pull the pipe out of the GlobalDescriptors set.
   //   4b) Server side: create the pipe.

@@ -41,7 +41,11 @@ class BASE_EXPORT GlobalDescriptors {
 
   // Often we want a canonical descriptor for a given Key. In this case, we add
   // the following constant to the key value:
+#if !defined(OS_ANDROID)
   static const int kBaseDescriptor = 3;  // 0, 1, 2 are already taken.
+#else
+  static const int kBaseDescriptor = 4;  // 3 used by __android_log_write().
+#endif
 
   // Return the singleton instance of GlobalDescriptors.
   static GlobalDescriptors* GetInstance();

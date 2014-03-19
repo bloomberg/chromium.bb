@@ -39,6 +39,7 @@ void LogPerfResult(const char* test_name, double value, const char* units) {
 
   fprintf(perf_log_file, "%s\t%g\t%s\n", test_name, value, units);
   printf("%s\t%g\t%s\n", test_name, value, units);
+  fflush(stdout);
 }
 
 }  // namespace base

@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_multiprocess_test.h"
 
 #if defined(OS_POSIX)
@@ -14,6 +15,12 @@
 namespace internal {
 
 void MultiProcessTestIPCSetUp() {
+#if defined(OS_ANDROID)
+  // On Android we can't 'exec'. So for simple multi-process tests
+  // we need to reset some global data after forking to get the same
+  // behavior in simple multi-process tests.
+  IPC::Channel::NotifyProcessForkedForTesting();
+#endif
 #if defined(OS_POSIX)
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);

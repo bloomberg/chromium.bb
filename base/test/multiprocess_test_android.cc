@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/posix/global_descriptors.h"
 #include "base/test/multiprocess_test.h"
 
 #include <unistd.h>
@@ -42,10 +43,10 @@ ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
        it != fds_to_remap->end(); ++it) {
     fds_to_keep_open.insert(it->first);
   }
-  // Keep stdin, stdout and stderr open since this is not meant to spawn a
-  // daemon.
-  const int kFdForAndroidLogging = 3;  // FD used by __android_log_write().
-  for (int fd = kFdForAndroidLogging + 1; fd < getdtablesize(); ++fd) {
+  // Keep standard FDs (stdin, stdout, stderr, etc.) open since this
+  // is not meant to spawn a daemon.
+  int base = GlobalDescriptors::kBaseDescriptor;
+  for (int fd = base; fd < getdtablesize(); ++fd) {
     if (fds_to_keep_open.find(fd) == fds_to_keep_open.end()) {
       close(fd);
     }

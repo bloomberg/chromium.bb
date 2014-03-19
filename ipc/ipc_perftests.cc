@@ -230,12 +230,13 @@ TEST_F(IPCChannelPerfTest, Performance) {
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 
-  const size_t kMsgSizeBase = 12;
-  const int kMsgSizeMaxExp = 5;
-  int msg_count = 100000;
-  size_t msg_size = kMsgSizeBase;
-  for (int i = 1; i <= kMsgSizeMaxExp; i++) {
-    listener.SetTestParams(msg_count, msg_size);
+  // Test several sizes. We use 12^N for message size, and limit the message
+  // count to keep the test duration reasonable.
+  const size_t kMsgSize[5] = {12, 144, 1728, 20736, 248832};
+  const size_t kMessageCount[5] = {50000, 50000, 50000, 12000, 1000};
+
+  for (size_t i = 0; i < 5; i++) {
+    listener.SetTestParams(kMessageCount[i], kMsgSize[i]);
 
     // This initial message will kick-start the ping-pong of messages.
     IPC::Message* message =
@@ -247,8 +248,6 @@ TEST_F(IPCChannelPerfTest, Performance) {
 
     // Run message loop.
     base::MessageLoop::current()->Run();
-
-    msg_size *= kMsgSizeBase;
   }
 
   // Send quit message.

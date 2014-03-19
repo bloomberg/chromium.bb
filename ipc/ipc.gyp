@@ -195,6 +195,18 @@
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)ipc_tests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
+          'target_name': 'ipc_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'ipc_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'ipc_perftests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)ipc_perftests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
         }],
     }],
   ],

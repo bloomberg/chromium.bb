@@ -204,6 +204,14 @@ class IPC_EXPORT Channel : public Sender {
   static void SetGlobalPid(int pid);
 #endif
 
+#if defined(OS_ANDROID)
+  // Most tests are single process and work the same on all platforms. However
+  // in some cases we want to test multi-process, and Android differs in that it
+  // can't 'exec' after forking. This callback resets any data in the forked
+  // process such that it acts similar to if it was exec'd, for tests.
+  static void NotifyProcessForkedForTesting();
+#endif
+
  protected:
   // Used in Chrome by the TestSink to provide a dummy channel implementation
   // for testing. TestSink overrides the "interesting" functions in Channel so
