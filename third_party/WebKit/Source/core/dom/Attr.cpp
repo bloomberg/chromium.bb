@@ -28,6 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -102,7 +103,7 @@ void Attr::setValue(const AtomicString& value)
     invalidateNodeListCachesInAncestors(&m_name, m_element);
 }
 
-void Attr::setValue(const AtomicString& value, ExceptionState&)
+void Attr::setValueInternal(const AtomicString& value)
 {
     if (m_element)
         m_element->willModifyAttribute(qualifiedName(), this->value(), value);
@@ -113,11 +114,23 @@ void Attr::setValue(const AtomicString& value, ExceptionState&)
         m_element->didModifyAttribute(qualifiedName(), value);
 }
 
+const AtomicString& Attr::valueForBindings() const
+{
+    UseCounter::count(document(), UseCounter::AttrGetValue);
+    return value();
+}
+
+void Attr::setValueForBindings(const AtomicString& value)
+{
+    UseCounter::count(document(), UseCounter::AttrSetValue);
+    setValueInternal(value);
+}
+
 void Attr::setNodeValue(const String& v)
 {
     // Attr uses AtomicString type for its value to save memory as there
     // is duplication among Elements' attributes values.
-    setValue(AtomicString(v), IGNORE_EXCEPTION);
+    setValueInternal(AtomicString(v));
 }
 
 PassRefPtr<Node> Attr::cloneNode(bool /*deep*/)

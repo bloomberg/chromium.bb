@@ -49,8 +49,10 @@ public:
     Element* ownerElement() const { return m_element; }
 
     const AtomicString& value() const;
-    void setValue(const AtomicString&, ExceptionState&);
     void setValue(const AtomicString&);
+
+    const AtomicString& valueForBindings() const;
+    void setValueForBindings(const AtomicString&);
 
     const QualifiedName& qualifiedName() const { return m_name; }
 
@@ -66,6 +68,8 @@ private:
     Attr(Document&, const QualifiedName&, const AtomicString& value);
 
     void createTextChild();
+
+    void setValueInternal(const AtomicString&);
 
     virtual String nodeName() const OVERRIDE { return name(); }
     virtual NodeType nodeType() const OVERRIDE { return ATTRIBUTE_NODE; }
