@@ -119,10 +119,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
              NULL);
   UpdateProviderPolicy(policy);
 
-  EXPECT_TRUE(recommended_store_->GetValue(prefs::kPromptForDownload, &value));
-  EXPECT_TRUE(value);
-  EXPECT_TRUE(value->GetAsBoolean(&prompt_for_download));
-  EXPECT_FALSE(prompt_for_download);
+  EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));
 
   EXPECT_TRUE(
       recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
@@ -130,5 +127,20 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   EXPECT_TRUE(value->GetAsString(&download_directory));
   EXPECT_EQ(GetExpectedDownloadDirectory() + kRelativeToDriveRoot,
             download_directory);
+
+  policy.Set(policy::key::kDownloadDirectory,
+             policy::POLICY_LEVEL_RECOMMENDED,
+             policy::POLICY_SCOPE_USER,
+             new base::StringValue(kUserIDHash),
+             NULL);
+  UpdateProviderPolicy(policy);
+
+  EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));
+
+  EXPECT_TRUE(
+      recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->GetAsString(&download_directory));
+  EXPECT_EQ(kUserIDHash, download_directory);
 }
 #endif

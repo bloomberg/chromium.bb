@@ -86,18 +86,25 @@ class PrefMapping {
  public:
   PrefMapping(const std::string& pref,
               bool is_local_state,
+              bool check_for_mandatory,
+              bool check_for_recommended,
               const std::string& indicator_test_setup_js,
               const std::string& indicator_selector)
       : pref_(pref),
         is_local_state_(is_local_state),
+        check_for_mandatory_(check_for_mandatory),
+        check_for_recommended_(check_for_recommended),
         indicator_test_setup_js_(indicator_test_setup_js),
-        indicator_selector_(indicator_selector) {
-  }
+        indicator_selector_(indicator_selector) {}
   ~PrefMapping() {}
 
   const std::string& pref() const { return pref_; }
 
   bool is_local_state() const { return is_local_state_; }
+
+  bool check_for_mandatory() const { return check_for_mandatory_; }
+
+  bool check_for_recommended() const { return check_for_recommended_; }
 
   const std::string& indicator_test_setup_js() const {
     return indicator_test_setup_js_;
@@ -115,10 +122,12 @@ class PrefMapping {
   }
 
  private:
-  std::string pref_;
-  bool is_local_state_;
-  std::string indicator_test_setup_js_;
-  std::string indicator_selector_;
+  const std::string pref_;
+  const bool is_local_state_;
+  const bool check_for_mandatory_;
+  const bool check_for_recommended_;
+  const std::string indicator_test_setup_js_;
+  const std::string indicator_selector_;
   ScopedVector<IndicatorTestCase> indicator_test_cases_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefMapping);
@@ -286,13 +295,23 @@ class PolicyTestCases {
         }
         bool is_local_state = false;
         pref_mapping_dict->GetBoolean("local_state", &is_local_state);
+        bool check_for_mandatory = true;
+        pref_mapping_dict->GetBoolean("check_for_mandatory",
+                                      &check_for_mandatory);
+        bool check_for_recommended = true;
+        pref_mapping_dict->GetBoolean("check_for_recommended",
+                                      &check_for_recommended);
         std::string indicator_test_setup_js;
         pref_mapping_dict->GetString("indicator_test_setup_js",
                                      &indicator_test_setup_js);
         std::string indicator_selector;
         pref_mapping_dict->GetString("indicator_selector", &indicator_selector);
-        PrefMapping* pref_mapping = new PrefMapping(
-            pref, is_local_state, indicator_test_setup_js, indicator_selector);
+        PrefMapping* pref_mapping = new PrefMapping(pref,
+                                                    is_local_state,
+                                                    check_for_mandatory,
+                                                    check_for_recommended,
+                                                    indicator_test_setup_js,
+                                                    indicator_selector);
         const base::ListValue* indicator_tests = NULL;
         if (pref_mapping_dict->GetList("indicator_tests", &indicator_tests)) {
           for (size_t i = 0; i < indicator_tests->GetSize(); ++i) {
@@ -520,6 +539,11 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
       if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
         continue;
 
+      // Skip preferences that should not be checked when the policy is set to
+      // a mandatory value.
+      if (!(*pref_mapping)->check_for_mandatory())
+        continue;
+
       PrefService* prefs = (*pref_mapping)->is_local_state() ?
           local_state : user_prefs;
       // The preference must have been registered.
@@ -630,17 +654,24 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
         ClearProviderPolicy();
         VerifyControlledSettingIndicators(
             browser(), indicator_selector, std::string(), std::string(), false);
-        // Check that the appropriate controlled setting indicator is shown when
-        // a value is enforced by policy.
-        SetProviderPolicy((*indicator_test_case)->policy(),
-                          POLICY_LEVEL_MANDATORY);
-        VerifyControlledSettingIndicators(browser(), indicator_selector,
-                                          (*indicator_test_case)->value(),
-                                          "policy",
-                                          (*indicator_test_case)->readonly());
 
-        if (!policy_test_case->can_be_recommended())
+        if ((*pref_mapping)->check_for_mandatory()) {
+          // Check that the appropriate controlled setting indicator is shown
+          // when a value is enforced by policy.
+          SetProviderPolicy((*indicator_test_case)->policy(),
+                            POLICY_LEVEL_MANDATORY);
+
+          VerifyControlledSettingIndicators(browser(),
+                                            indicator_selector,
+                                            (*indicator_test_case)->value(),
+                                            "policy",
+                                            (*indicator_test_case)->readonly());
+        }
+
+        if (!policy_test_case->can_be_recommended() ||
+            !(*pref_mapping)->check_for_recommended()) {
           continue;
+        }
 
         PrefService* prefs = (*pref_mapping)->is_local_state() ?
             local_state : user_prefs;

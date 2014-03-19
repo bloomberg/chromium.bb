@@ -10,7 +10,10 @@
     "pref_mappings": [
       { "pref": "The affected preference's name.",
         "local_state": "Whether |pref| is registered in local state's PrefService instead of the profile's PrefService. Defaults to |false| if not specified.",
-        "note": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI.",
+        "check_for_mandatory": "Should the preference be tested when a mandatory value is set for the policy? Defaults to |true| if not specified.",
+        "check_for_recommended": "Should the preference be tested when a recommended value is set for the policy? Defaults to |true| if not specified.",
+        "note": "When |can_be_recommended| is |false|, the policy is never set to a recommended value so |check_for_recommended| has no effect.",
+        "note 1": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI.",
         "indicator_test_setup_js": "Any JavaScript that should be executed before testing the indicators. This should be specified only if an explicit user action must be simulated (e.g. clicking a button).",
         "indicator_selector": "A CSS selector that locates all controlled setting indicators for |pref|. This is appended to the selector 'span.controlled-setting-indicator' and if not specified, defaults to '[pref=(the value of |pref|)', e.g. '[pref=homepage]'.",
         "note 2": "Any number of test cases may be specified in the following array.",
@@ -423,6 +426,7 @@
         ]
       },
       { "pref": "download.prompt_for_download",
+        "check_for_recommended" : false,
         "indicator_tests": [
           { "policy": { "DownloadDirectory": "${user_home}/test-downloads" } }
         ]

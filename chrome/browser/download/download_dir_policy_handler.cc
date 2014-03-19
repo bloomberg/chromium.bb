@@ -84,6 +84,8 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
         position,
         base::FilePath::StringType(kDriveNamePolicyVariableName).length(),
         google_drive_root);
+  } else {
+    expanded_value = string_value;
   }
 #else
   expanded_value = policy::path_parser::ExpandPathVariables(string_value);
@@ -97,7 +99,10 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
                   base::Value::CreateStringValue(expanded_value));
 
-  // TODO(kaliamoorthi): Do not set this pref when the policy is recommended.
-  prefs->SetValue(prefs::kPromptForDownload,
-                  base::Value::CreateBooleanValue(false));
+  // If the policy is mandatory, prompt for download should be disabled.
+  // Otherwise, it would enable a user to bypass the mandatory policy.
+  if (policies.Get(policy_name())->level == policy::POLICY_LEVEL_MANDATORY) {
+    prefs->SetValue(prefs::kPromptForDownload,
+                    base::Value::CreateBooleanValue(false));
+  }
 }
