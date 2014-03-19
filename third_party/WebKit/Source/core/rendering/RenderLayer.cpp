@@ -1062,8 +1062,7 @@ FloatPoint RenderLayer::perspectiveOrigin() const
     const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
     RenderStyle* style = renderer()->style();
 
-    return FloatPoint(floatValueForLength(style->perspectiveOriginX(), borderBox.width()),
-                      floatValueForLength(style->perspectiveOriginY(), borderBox.height()));
+    return FloatPoint(floatValueForLength(style->perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style->perspectiveOriginY(), borderBox.height().toFloat()));
 }
 
 static inline bool isFixedPositionedContainer(RenderLayer* layer)

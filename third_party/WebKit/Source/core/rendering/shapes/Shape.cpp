@@ -116,8 +116,8 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     ASSERT(basicShape);
 
     bool horizontalWritingMode = isHorizontalWritingMode(writingMode);
-    float boxWidth = horizontalWritingMode ? logicalBoxSize.width() : logicalBoxSize.height();
-    float boxHeight = horizontalWritingMode ? logicalBoxSize.height() : logicalBoxSize.width();
+    float boxWidth = horizontalWritingMode ? logicalBoxSize.width().toFloat() : logicalBoxSize.height().toFloat();
+    float boxHeight = horizontalWritingMode ? logicalBoxSize.height().toFloat() : logicalBoxSize.width().toFloat();
     OwnPtr<Shape> shape;
 
     switch (basicShape->type()) {
@@ -133,7 +133,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
             floatValueForLength(rectangle->cornerRadiusX(), boxWidth),
             floatValueForLength(rectangle->cornerRadiusY(), boxHeight));
         ensureRadiiDoNotOverlap(bounds, cornerRadii);
-        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height(), writingMode);
+        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createRectangleShape(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
         break;
@@ -148,7 +148,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         // off of the diagonal of the box and ensures that if the box is
         // square, the radius is equal to half the diagonal.
         float radius = floatValueForLength(circle->radius(), sqrtf((boxWidth * boxWidth + boxHeight * boxHeight) / 2));
-        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height(), writingMode);
+        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createCircleShape(logicalCenter, radius);
         break;
@@ -158,7 +158,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
         FloatPoint center = floatPointForCenterCoordinate(circle->centerX(), circle->centerY(), FloatSize(boxWidth, boxHeight));
         float radius = circle->floatValueForRadiusInBox(FloatSize(boxWidth, boxHeight));
-        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height(), writingMode);
+        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createCircleShape(logicalCenter, radius);
         break;
@@ -170,7 +170,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         float centerY = floatValueForLength(ellipse->centerY(), boxHeight);
         float radiusX = floatValueForLength(ellipse->radiusX(), boxWidth);
         float radiusY = floatValueForLength(ellipse->radiusY(), boxHeight);
-        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height(), writingMode);
+        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height().toFloat(), writingMode);
         FloatSize logicalRadii = physicalSizeToLogical(FloatSize(radiusX, radiusY), writingMode);
 
         shape = createEllipseShape(logicalCenter, logicalRadii);
@@ -182,7 +182,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         FloatPoint center = floatPointForCenterCoordinate(ellipse->centerX(), ellipse->centerY(), FloatSize(boxWidth, boxHeight));
         float radiusX = ellipse->floatValueForRadiusInBox(ellipse->radiusX(), center.x(), boxWidth);
         float radiusY = ellipse->floatValueForRadiusInBox(ellipse->radiusY(), center.y(), boxHeight);
-        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height(), writingMode);
+        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createEllipseShape(logicalCenter, FloatSize(radiusX, radiusY));
         break;
@@ -198,7 +198,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
             FloatPoint vertex(
                 floatValueForLength(values.at(i), boxWidth),
                 floatValueForLength(values.at(i + 1), boxHeight));
-            (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height(), writingMode);
+            (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height().toFloat(), writingMode);
         }
         shape = createPolygonShape(vertices.release(), polygon->windRule());
         break;
@@ -219,7 +219,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
             floatValueForLength(rectangle->cornerRadiusX(), boxWidth),
             floatValueForLength(rectangle->cornerRadiusY(), boxHeight));
         ensureRadiiDoNotOverlap(bounds, cornerRadii);
-        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height(), writingMode);
+        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createRectangleShape(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
         break;
@@ -232,7 +232,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         float right = floatValueForLength(inset.right(), boxWidth);
         float bottom = floatValueForLength(inset.bottom(), boxHeight);
         FloatRect rect(left, top, std::max<float>(boxWidth - left - right, 0), std::max<float>(boxHeight - top - bottom, 0));
-        FloatRect logicalRect = physicalRectToLogical(rect, logicalBoxSize.height(), writingMode);
+        FloatRect logicalRect = physicalRectToLogical(rect, logicalBoxSize.height().toFloat(), writingMode);
 
         FloatSize boxSize(boxWidth, boxHeight);
         FloatSize topLeftRadius = physicalSizeToLogical(floatSizeForLengthSize(inset.topLeftRadius(), boxSize), writingMode);

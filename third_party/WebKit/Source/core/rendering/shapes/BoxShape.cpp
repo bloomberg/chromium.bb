@@ -76,8 +76,8 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     if (marginBounds.isEmpty() || !lineOverlapsShapeMarginBounds(logicalTop, logicalHeight))
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
     const FloatRect& rect = marginBounds.rect();
 
     if (!marginBounds.isRounded()) {
@@ -118,8 +118,8 @@ void BoxShape::getIncludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     if (paddingBounds.isEmpty())
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
     const FloatRect& rect = paddingBounds.rect();
 
     if (y1 < rect.y() || y2 > rect.maxY())

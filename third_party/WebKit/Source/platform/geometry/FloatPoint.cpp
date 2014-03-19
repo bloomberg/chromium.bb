@@ -46,7 +46,9 @@ FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y())
 {
 }
 
-FloatPoint::FloatPoint(const LayoutPoint& p) : m_x(p.x()), m_y(p.y())
+FloatPoint::FloatPoint(const LayoutPoint& p)
+    : m_x(p.x().toFloat())
+    , m_y(p.y().toFloat())
 {
 }
 

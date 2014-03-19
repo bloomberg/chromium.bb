@@ -368,8 +368,8 @@ void PolygonShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logica
     if (polygon.isEmpty())
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
 
     FloatShapeIntervals y1XIntervals, y2XIntervals;
     computeXIntersections(polygon, y1, true, y1XIntervals);
@@ -396,8 +396,8 @@ void PolygonShape::getIncludedIntervals(LayoutUnit logicalTop, LayoutUnit logica
     if (polygon.isEmpty())
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
 
     FloatShapeIntervals y1XIntervals, y2XIntervals;
     computeXIntersections(polygon, y1, true, y1XIntervals);
@@ -444,7 +444,7 @@ static inline bool aboveOrToTheLeft(const FloatRect& r1, const FloatRect& r2)
 
 bool PolygonShape::firstIncludedIntervalLogicalTop(LayoutUnit minLogicalIntervalTop, const FloatSize& minLogicalIntervalSize, LayoutUnit& result) const
 {
-    float minIntervalTop = minLogicalIntervalTop;
+    float minIntervalTop = minLogicalIntervalTop.toFloat();
     float minIntervalHeight = minLogicalIntervalSize.height();
     float minIntervalWidth = minLogicalIntervalSize.width();
 

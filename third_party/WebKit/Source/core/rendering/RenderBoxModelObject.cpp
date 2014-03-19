@@ -2031,7 +2031,7 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
     const LayoutRect& outerRect = outerBorder.rect();
     const LayoutRect& innerRect = innerBorder.rect();
 
-    FloatPoint centerPoint(innerRect.location().x() + static_cast<float>(innerRect.width()) / 2, innerRect.location().y() + static_cast<float>(innerRect.height()) / 2);
+    FloatPoint centerPoint(innerRect.location().x().toFloat() + innerRect.width().toFloat() / 2, innerRect.location().y().toFloat() + innerRect.height().toFloat() / 2);
 
     // For each side, create a quad that encompasses all parts of that side that may draw,
     // including areas inside the innerBorder.

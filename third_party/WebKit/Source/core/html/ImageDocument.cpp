@@ -227,8 +227,8 @@ float ImageDocument::scale() const
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
-    float widthScale = (float)windowSize.width() / imageSize.width();
-    float heightScale = (float)windowSize.height() / imageSize.height();
+    float widthScale = windowSize.width().toFloat() / imageSize.width().toFloat();
+    float heightScale = windowSize.height().toFloat() / imageSize.height().toFloat();
 
     return min(widthScale, heightScale);
 }

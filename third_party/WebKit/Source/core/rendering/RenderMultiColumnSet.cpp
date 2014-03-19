@@ -292,7 +292,7 @@ unsigned RenderMultiColumnSet::columnCount() const
     if (!logicalHeightInColumns)
         return 1;
 
-    unsigned count = ceil(static_cast<float>(logicalHeightInColumns) / computedColumnHeight());
+    unsigned count = ceil(logicalHeightInColumns.toFloat() / computedColumnHeight().toFloat());
     ASSERT(count >= 1);
     return count;
 }
@@ -331,7 +331,7 @@ unsigned RenderMultiColumnSet::columnIndexAtOffset(LayoutUnit offset, ColumnInde
     }
 
     // Just divide by the column height to determine the correct column.
-    return static_cast<float>(offset - flowThreadLogicalTop) / computedColumnHeight();
+    return (offset - flowThreadLogicalTop).toFloat() / computedColumnHeight().toFloat();
 }
 
 LayoutRect RenderMultiColumnSet::flowThreadPortionRectAt(unsigned index) const

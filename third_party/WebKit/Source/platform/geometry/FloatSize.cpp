@@ -37,7 +37,9 @@ using namespace std;
 
 namespace WebCore {
 
-FloatSize::FloatSize(const LayoutSize& size) : m_width(size.width()), m_height(size.height())
+FloatSize::FloatSize(const LayoutSize& size)
+    : m_width(size.width().toFloat())
+    , m_height(size.height().toFloat())
 {
 }
 

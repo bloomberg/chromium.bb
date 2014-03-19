@@ -662,8 +662,8 @@ void distanceDataForNode(FocusType type, const FocusCandidate& current, FocusCan
         return;
     }
 
-    float x = (entryPoint.x() - exitPoint.x()) * (entryPoint.x() - exitPoint.x());
-    float y = (entryPoint.y() - exitPoint.y()) * (entryPoint.y() - exitPoint.y());
+    float x = ((entryPoint.x() - exitPoint.x()) * (entryPoint.x() - exitPoint.x())).toFloat();
+    float y = ((entryPoint.y() - exitPoint.y()) * (entryPoint.y() - exitPoint.y())).toFloat();
 
     float euclidianDistance = sqrt(x + y);
 

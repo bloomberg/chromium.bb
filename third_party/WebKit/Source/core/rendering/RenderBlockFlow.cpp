@@ -251,7 +251,7 @@ bool RenderBlockFlow::shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight,
         }
     } else if (layoutOverflowLogicalBottom > boundedMultiply(pageLogicalHeight, desiredColumnCount)) {
         // Now that we know the intrinsic height of the columns, we have to rebalance them.
-        columnHeight = max<LayoutUnit>(colInfo->minimumColumnHeight(), ceilf((float)layoutOverflowLogicalBottom / desiredColumnCount));
+        columnHeight = max<LayoutUnit>(colInfo->minimumColumnHeight(), ceilf(layoutOverflowLogicalBottom.toFloat() / desiredColumnCount));
     }
 
     if (columnHeight && columnHeight != pageLogicalHeight) {
@@ -386,7 +386,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
             return false;
         }
 
-        setColumnCountAndHeight(ceilf((float)layoutOverflowLogicalBottom / pageLogicalHeight), pageLogicalHeight);
+        setColumnCountAndHeight(ceilf(layoutOverflowLogicalBottom.toFloat() / pageLogicalHeight.toFloat()), pageLogicalHeight.toFloat());
     }
 
     if (shouldBreakAtLineToAvoidWidow()) {
