@@ -1882,7 +1882,6 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
         (AutofillType(type).group() == ADDRESS_HOME ||
          AutofillType(type).group() == ADDRESS_BILLING)) {
       DCHECK(text.empty());
-      // TODO(estade): string translation or remove this (sweet) hack.
       text = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_DIALOG_VALIDATION_WAITING_FOR_RULES);
       sure = false;
@@ -2695,7 +2694,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       was_ui_latency_logged_(false),
       card_generated_animation_(2000, 60, this),
       weak_ptr_factory_(this) {
-  // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
 
