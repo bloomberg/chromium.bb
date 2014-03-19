@@ -727,7 +727,14 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const RenderLayerCompositor::SquashingState& squashingState, const RenderLayer* clippingAncestor)
 {
     ASSERT(clippingAncestor);
-    return clippingAncestor == squashingState.clippingAncestorForMostRecentMapping;
+    if (clippingAncestor != squashingState.clippingAncestorForMostRecentMapping)
+        return false;
+
+    ASSERT(squashingState.hasMostRecentMapping);
+    if (layer->scrollsWithRespectTo(&squashingState.mostRecentMapping->owningLayer()))
+        return false;
+
+    return true;
 }
 
 RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::computeCompositedLayerUpdate(RenderLayer* layer)
@@ -946,15 +953,6 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         overlapCompositingReason = overlapMap->overlapsLayers(absBounds) ? CompositingReasonOverlap : CompositingReasonNone;
 
     reasonsToComposite |= overlapCompositingReason;
-
-    // If the layer is squashable, but would scroll differently than the
-    // most recent backing that it would squash onto, then don't squash it.
-    // Note that this happens before we know all possible compositing reasons
-    // for this layer, but it's OK because we're just forcing the layer conservatively
-    // to be separately composited rather than squashed, anyway.
-    if (currentRecursionData.m_mostRecentCompositedLayer && requiresSquashing(reasonsToComposite)
-        && layer->scrollsWithRespectTo(currentRecursionData.m_mostRecentCompositedLayer))
-        reasonsToComposite |= CompositingReasonOverlapsWithoutSquashingTarget;
 
     // The children of this layer don't need to composite, unless there is
     // a compositing layer among them, so start by inheriting the compositing
@@ -1179,7 +1177,7 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         clippingAncestor = layer;
 
     if (layerSquashingEnabled() && requiresSquashing(layer->compositingReasons()) && !canSquashIntoCurrentSquashingOwner(layer, squashingState, clippingAncestor))
-        layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonOverlapsWithoutSquashingTarget);
+        layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonNoSquashingTargetFound);
 
     CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 

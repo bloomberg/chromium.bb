@@ -34,7 +34,7 @@ const uint64_t CompositingReasonWillChange                             = UINT64_
 const uint64_t CompositingReasonAssumedOverlap                         = UINT64_C(1) << 16;
 const uint64_t CompositingReasonOverlap                                = UINT64_C(1) << 17;
 const uint64_t CompositingReasonNegativeZIndexChildren                 = UINT64_C(1) << 18;
-const uint64_t CompositingReasonOverlapsWithoutSquashingTarget         = UINT64_C(1) << 19;
+const uint64_t CompositingReasonNoSquashingTargetFound                 = UINT64_C(1) << 19;
 
 // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
 const uint64_t CompositingReasonTransformWithCompositedDescendants     = UINT64_C(1) << 20;
@@ -93,7 +93,7 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     | CompositingReasonOverlap
     | CompositingReasonAssumedOverlap
     | CompositingReasonNegativeZIndexChildren
-    | CompositingReasonOverlapsWithoutSquashingTarget
+    | CompositingReasonNoSquashingTargetFound
     | CompositingReasonTransformWithCompositedDescendants
     | CompositingReasonOpacityWithCompositedDescendants
     | CompositingReasonMaskWithCompositedDescendants
@@ -175,9 +175,9 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonNegativeZIndexChildren,
         "negativeZIndexChildren",
         "Parent with composited negative z-index content" },
-    { CompositingReasonOverlapsWithoutSquashingTarget,
-        "overlapsWithoutSquashingTarget",
-        "Cannot be squashed with content immediately behind it" },
+    {  CompositingReasonNoSquashingTargetFound,
+        "noSquashingTargetFound",
+        "Cannot be squashed due to no compatible squashing owner found" },
     { CompositingReasonTransformWithCompositedDescendants,
         "transformWithCompositedDescendants",
         "Has a transform that needs to be known by compositor because of composited descendants" },

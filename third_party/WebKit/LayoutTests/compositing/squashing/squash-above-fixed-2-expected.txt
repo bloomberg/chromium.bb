@@ -8,7 +8,7 @@ CASE 1, original layer tree:
       (bounds 785.00 4050.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 2
+      (children 1
         (GraphicsLayer
           (bounds 400.00 200.00)
           (contentsOpaque 1)
@@ -16,19 +16,21 @@ CASE 1, original layer tree:
           (backgroundColor #0000FF)
           (children 1
             (GraphicsLayer
-              (bounds 50.00 50.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
+              (children 2
+                (GraphicsLayer
+                  (bounds 50.00 50.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FF0000)
+                )
+                (GraphicsLayer
+                  (position 100.00 50.00)
+                  (bounds 200.00 4000.00)
+                  (drawsContent 1)
+                )
+              )
             )
           )
-        )
-        (GraphicsLayer
-          (position 100.00 50.00)
-          (bounds 200.00 4000.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #00FFFF)
         )
       )
     )
@@ -42,7 +44,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       (bounds 785.00 4050.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 2
+      (children 1
         (GraphicsLayer
           (position 0.00 80.00)
           (bounds 400.00 200.00)
@@ -51,19 +53,21 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
           (backgroundColor #0000FF)
           (children 1
             (GraphicsLayer
-              (bounds 50.00 50.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
+              (children 2
+                (GraphicsLayer
+                  (bounds 50.00 50.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FF0000)
+                )
+                (GraphicsLayer
+                  (position 100.00 -30.00)
+                  (bounds 200.00 4000.00)
+                  (drawsContent 1)
+                )
+              )
             )
           )
-        )
-        (GraphicsLayer
-          (position 100.00 50.00)
-          (bounds 200.00 4000.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #00FFFF)
         )
       )
     )
