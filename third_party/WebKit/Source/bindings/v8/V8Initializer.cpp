@@ -85,6 +85,13 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
+    ASSERT(isMainThread());
+    // It's possible that messageHandlerInMainThread() is invoked while we're initializing a window.
+    // In that half-baked situation, we don't have a valid context nor a valid world,
+    // so just return immediately.
+    if (DOMWrapperWorld::windowIsBeingInitialized())
+        return;
+
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // If called during context initialization, there will be no entered window.
     DOMWindow* enteredWindow = enteredDOMWindow(isolate);
