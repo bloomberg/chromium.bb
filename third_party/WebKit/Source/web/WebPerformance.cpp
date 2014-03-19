@@ -168,20 +168,15 @@ double WebPerformance::loadEventEnd() const
     return millisecondsToSeconds(m_private->timing()->loadEventEnd());
 }
 
-WebPerformance::WebPerformance(const PassRefPtr<Performance>& performance)
+WebPerformance::WebPerformance(const PassRefPtrWillBeRawPtr<Performance>& performance)
     : m_private(performance)
 {
 }
 
-WebPerformance& WebPerformance::operator=(const PassRefPtr<Performance>& performance)
+WebPerformance& WebPerformance::operator=(const PassRefPtrWillBeRawPtr<Performance>& performance)
 {
     m_private = performance;
     return *this;
-}
-
-WebPerformance::operator PassRefPtr<Performance>() const
-{
-    return m_private.get();
 }
 
 } // namespace blink

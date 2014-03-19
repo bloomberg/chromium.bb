@@ -363,7 +363,7 @@ enum PageshowEventPersistence {
         mutable RefPtrWillBePersistent<Storage> m_localStorage;
         mutable RefPtr<ApplicationCache> m_applicationCache;
 
-        mutable RefPtr<Performance> m_performance;
+        mutable RefPtrWillBePersistent<Performance> m_performance;
 
         mutable RefPtr<DOMWindowCSS> m_css;
 
