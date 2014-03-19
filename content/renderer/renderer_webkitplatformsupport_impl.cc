@@ -783,26 +783,10 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
                              data_size,
                              thread_safe_sender_);
 }
-// DEPRECATED
-bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    blink::WebAudioBus* destination_bus, const char* audio_file_data,
-    size_t data_size, double sample_rate) {
-  return DecodeAudioFileData(destination_bus,
-                             audio_file_data,
-                             data_size,
-                             thread_safe_sender_);
-}
 #else
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
     blink::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size) {
-  return DecodeAudioFileData(
-      destination_bus, audio_file_data, data_size);
-}
-// DEPRECATED
-bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    blink::WebAudioBus* destination_bus, const char* audio_file_data,
-    size_t data_size, double sample_rate) {
   return DecodeAudioFileData(
       destination_bus, audio_file_data, data_size);
 }

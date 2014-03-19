@@ -119,10 +119,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual bool loadAudioResource(
       blink::WebAudioBus* destination_bus, const char* audio_file_data,
       size_t data_size);
-  // DEPRECATED
-  virtual bool loadAudioResource(
-      blink::WebAudioBus* destination_bus, const char* audio_file_data,
-      size_t data_size, double sample_rate);
 
   virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
       const blink::WebString& key_system);
