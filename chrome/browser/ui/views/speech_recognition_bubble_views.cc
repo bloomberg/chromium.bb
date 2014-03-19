@@ -114,6 +114,9 @@ SpeechRecognitionBubbleView::SpeechRecognitionBubbleView(
   // Prevent default behavior of bubble closure on escape key and handle
   // it in the AcceleratorPressed() to avoid an unexpected behavior.
   set_close_on_esc(false);
+
+  // Update the bubble's bounds when the window's bounds changes.
+  set_move_with_anchor(true);
 }
 
 void SpeechRecognitionBubbleView::OnWidgetActivationChanged(
