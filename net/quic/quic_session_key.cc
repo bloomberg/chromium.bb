@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_session_key.h"
 
+using std::string;
+
 namespace net {
 
 QuicSessionKey::QuicSessionKey() {}
@@ -13,7 +15,7 @@ QuicSessionKey::QuicSessionKey(const HostPortPair& host_port_pair,
     : host_port_pair_(host_port_pair),
       is_https_(is_https) {}
 
-QuicSessionKey::QuicSessionKey(const std::string& host,
+QuicSessionKey::QuicSessionKey(const string& host,
                                uint16 port,
                                bool is_https)
     : host_port_pair_(host, port),
@@ -21,7 +23,7 @@ QuicSessionKey::QuicSessionKey(const std::string& host,
 
 QuicSessionKey::~QuicSessionKey() {}
 
-bool QuicSessionKey::operator<(const QuicSessionKey &other) const {
+bool QuicSessionKey::operator<(const QuicSessionKey& other) const {
   if (!host_port_pair_.Equals(other.host_port_pair_)) {
     return host_port_pair_ < other.host_port_pair_;
   }
@@ -31,10 +33,10 @@ bool QuicSessionKey::operator<(const QuicSessionKey &other) const {
 bool QuicSessionKey::operator==(const QuicSessionKey& other) const {
   return is_https_ == other.is_https_ &&
       host_port_pair_.Equals(other.host_port_pair_);
-};
+}
 
-std::string QuicSessionKey::ToString() const {
-    return (is_https_ ? "https://" : "http://") + host_port_pair_.ToString();
+string QuicSessionKey::ToString() const {
+  return (is_https_ ? "https://" : "http://") + host_port_pair_.ToString();
 }
 
 }  // namespace net

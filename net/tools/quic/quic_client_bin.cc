@@ -4,7 +4,7 @@
 
 // A binary wrapper for QuicClient.  Connects to --hostname via --address
 // on --port and requests URLs specified on the command line.
-// --secure to check the certificates using proof verifier .
+// Pass --secure to check the certificates using proof verifier.
 //
 // For example:
 //  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com

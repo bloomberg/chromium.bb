@@ -21,8 +21,8 @@ class NET_EXPORT_PRIVATE QuicSessionKey {
   ~QuicSessionKey();
 
   // Needed to be an element of std::set.
-  bool operator<(const QuicSessionKey &other) const;
-  bool operator==(const QuicSessionKey &other) const;
+  bool operator<(const QuicSessionKey& other) const;
+  bool operator==(const QuicSessionKey& other) const;
 
   // ToString() will convert the QuicSessionKey to "scheme:hostname:port".
   // "scheme" would either be "http" or "https" based on |is_https|.
