@@ -94,50 +94,65 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
+
   // Clobbers and rebuilds the specific content setting type exceptions
   // OTR table.
   void UpdateOTRExceptionsViewFromModel(ContentSettingsType type);
+
   // Clobbers and rebuilds all the exceptions tables in the page (both normal
   // and OTR tables).
   void UpdateAllExceptionsViewsFromModel();
+
   // As above, but only OTR tables.
   void UpdateAllOTRExceptionsViewsFromModel();
+
   // Clobbers and rebuilds just the geolocation exception table.
   void UpdateGeolocationExceptionsView();
+
   // Clobbers and rebuilds just the desktop notification exception table.
   void UpdateNotificationExceptionsView();
+
   // Clobbers and rebuilds just the Media device exception table.
   void UpdateMediaExceptionsView();
+
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
+
   // Clobbers and rebuilds just the zoom levels exception table.
   void UpdateZoomLevelsExceptionsView();
+
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);
+
   // As above, but acts on the OTR table for the content setting type.
   void UpdateExceptionsViewFromOTRHostContentSettingsMap(
       ContentSettingsType type);
+
   // Updates the radio buttons for enabling / disabling handlers.
   void UpdateHandlersEnabledRadios();
+
   // Removes one geolocation exception. |args| contains the parameters passed to
-  // RemoveException(). |arg_index| points to the first parameter n |args| that
-  // appears after the specified exception type to be removed by
   // RemoveException().
-  void RemoveGeolocationException(const base::ListValue* args,
-                                  size_t arg_index);
-  // Removes one notification exception.
-  void RemoveNotificationException(const base::ListValue* args,
-                                   size_t arg_index);
-  // Removes one media camera and microphone exception.
-  void RemoveMediaException(const base::ListValue* args, size_t arg_index);
-  // Removes one exception of |type| from the host content settings map.
+  void RemoveGeolocationException(const base::ListValue* args);
+
+  // Removes one notification exception. |args| contains the parameters passed
+  // to RemoveException().
+  void RemoveNotificationException(const base::ListValue* args);
+
+  // Removes one media camera and microphone exception. |args| contains the
+  // parameters passed to RemoveException().
+  void RemoveMediaException(const base::ListValue* args);
+
+  // Removes one exception of |type| from the host content settings map. |args|
+  // contains the parameters passed to RemoveException().
   void RemoveExceptionFromHostContentSettingsMap(
       const base::ListValue* args,
-      size_t arg_index,
       ContentSettingsType type);
-  // Removes one zoom level exception.
-  void RemoveZoomLevelException(const base::ListValue* args, size_t arg_index);
+
+  // Removes one zoom level exception. |args| contains the parameters passed to
+  // RemoveException().
+  void RemoveZoomLevelException(const base::ListValue* args);
 
   // Callbacks used by the page ------------------------------------------------
 

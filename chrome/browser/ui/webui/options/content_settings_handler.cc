@@ -1157,13 +1157,13 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 }
 
 void ContentSettingsHandler::RemoveNotificationException(
-    const base::ListValue* args, size_t arg_index) {
+    const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string origin;
   std::string setting;
-  bool rv = args->GetString(arg_index++, &origin);
+  bool rv = args->GetString(1, &origin);
   DCHECK(rv);
-  rv = args->GetString(arg_index++, &setting);
+  rv = args->GetString(2, &setting);
   DCHECK(rv);
   ContentSetting content_setting = ContentSettingFromString(setting);
 
@@ -1173,14 +1173,13 @@ void ContentSettingsHandler::RemoveNotificationException(
       ClearSetting(ContentSettingsPattern::FromString(origin));
 }
 
-void ContentSettingsHandler::RemoveMediaException(
-    const base::ListValue* args, size_t arg_index) {
+void ContentSettingsHandler::RemoveMediaException(const base::ListValue* args) {
   std::string mode;
-  bool rv = args->GetString(arg_index++, &mode);
+  bool rv = args->GetString(1, &mode);
   DCHECK(rv);
 
   std::string pattern;
-  rv = args->GetString(arg_index++, &pattern);
+  rv = args->GetString(2, &pattern);
   DCHECK(rv);
 
   HostContentSettingsMap* settings_map =
@@ -1201,18 +1200,18 @@ void ContentSettingsHandler::RemoveMediaException(
 }
 
 void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
-    const base::ListValue* args, size_t arg_index,
+    const base::ListValue* args,
     ContentSettingsType type) {
   std::string mode;
-  bool rv = args->GetString(arg_index++, &mode);
+  bool rv = args->GetString(1, &mode);
   DCHECK(rv);
 
   std::string pattern;
-  rv = args->GetString(arg_index++, &pattern);
+  rv = args->GetString(2, &pattern);
   DCHECK(rv);
 
   std::string secondary_pattern;
-  rv = args->GetString(arg_index++, &secondary_pattern);
+  rv = args->GetString(3, &secondary_pattern);
   DCHECK(rv);
 
   HostContentSettingsMap* settings_map =
@@ -1231,13 +1230,13 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
 }
 
 void ContentSettingsHandler::RemoveZoomLevelException(
-    const base::ListValue* args, size_t arg_index) {
+    const base::ListValue* args) {
   std::string mode;
-  bool rv = args->GetString(arg_index++, &mode);
+  bool rv = args->GetString(1, &mode);
   DCHECK(rv);
 
   std::string pattern;
-  rv = args->GetString(arg_index++, &pattern);
+  rv = args->GetString(2, &pattern);
   DCHECK(rv);
 
   content::HostZoomMap* host_zoom_map =
@@ -1379,42 +1378,40 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
 }
 
 void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
-  size_t arg_i = 0;
   std::string type_string;
-  CHECK(args->GetString(arg_i++, &type_string));
+  CHECK(args->GetString(0, &type_string));
 
   // Zoom levels are no actual content type so we need to handle them
   // separately. They would not be recognized by
   // ContentSettingsTypeFromGroupName.
   if (type_string == kZoomContentType) {
-    RemoveZoomLevelException(args, arg_i);
+    RemoveZoomLevelException(args);
     return;
   }
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   switch (type) {
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      RemoveNotificationException(args, arg_i);
+      RemoveNotificationException(args);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      RemoveMediaException(args, arg_i);
+      RemoveMediaException(args);
       break;
     default:
-      RemoveExceptionFromHostContentSettingsMap(args, arg_i, type);
+      RemoveExceptionFromHostContentSettingsMap(args, type);
       break;
   }
 }
 
 void ContentSettingsHandler::SetException(const base::ListValue* args) {
-  size_t arg_i = 0;
   std::string type_string;
-  CHECK(args->GetString(arg_i++, &type_string));
+  CHECK(args->GetString(0, &type_string));
   std::string mode;
-  CHECK(args->GetString(arg_i++, &mode));
+  CHECK(args->GetString(1, &mode));
   std::string pattern;
-  CHECK(args->GetString(arg_i++, &pattern));
+  CHECK(args->GetString(2, &pattern));
   std::string setting;
-  CHECK(args->GetString(arg_i++, &setting));
+  CHECK(args->GetString(3, &setting));
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
@@ -1442,13 +1439,12 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
     const base::ListValue* args) {
-  size_t arg_i = 0;
   std::string type_string;
-  CHECK(args->GetString(arg_i++, &type_string));
+  CHECK(args->GetString(0, &type_string));
   std::string mode_string;
-  CHECK(args->GetString(arg_i++, &mode_string));
+  CHECK(args->GetString(1, &mode_string));
   std::string pattern_string;
-  CHECK(args->GetString(arg_i++, &pattern_string));
+  CHECK(args->GetString(2, &pattern_string));
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString(pattern_string);
