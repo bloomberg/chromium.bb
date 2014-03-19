@@ -49,6 +49,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
   virtual void SetCursorNative(gfx::NativeCursor cursor) OVERRIDE;
   virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
   virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;

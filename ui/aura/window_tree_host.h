@@ -163,6 +163,9 @@ class AURA_EXPORT WindowTreeHost {
   // Called when the device scale factor of the root window has chagned.
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
 
+  // Stop listening events in preparation for shutdown.
+  virtual void PrepareForShutdown() = 0;
+
  protected:
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 

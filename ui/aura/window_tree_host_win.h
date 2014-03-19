@@ -39,6 +39,7 @@ class WindowTreeHostWin : public WindowTreeHost,
   virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
 
   // ui::EventSource:
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;

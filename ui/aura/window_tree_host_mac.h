@@ -49,6 +49,7 @@ class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
   virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
 
  private:
   base::scoped_nsobject<NSWindow> window_;

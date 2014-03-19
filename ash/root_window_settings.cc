@@ -18,8 +18,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(RootWindowSettings,
 
 RootWindowSettings::RootWindowSettings()
     : display_id(gfx::Display::kInvalidDisplayID),
-      controller(NULL),
-      shutdown(false) {
+      controller(NULL) {
 }
 
 RootWindowSettings* InitRootWindowSettings(aura::Window* root) {

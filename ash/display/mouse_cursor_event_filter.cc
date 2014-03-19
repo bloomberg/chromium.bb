@@ -8,7 +8,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/shared_display_edge_indicator.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -76,16 +75,8 @@ void MouseCursorEventFilter::HideSharedEdgeIndicator() {
 }
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  RootWindowController* rwc = GetRootWindowController(target->GetRootWindow());
-  // The root window controller is removed during the shutting down
-  // RootWindow, so don't process events futher.
-  if (!rwc) {
-    event->StopPropagation();
-    return;
-  }
-
   if (event->type() == ui::ET_MOUSE_PRESSED) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
     scale_when_drag_started_ = ui::GetDeviceScaleFactor(target->layer());
   } else if (event->type() == ui::ET_MOUSE_RELEASED) {
     scale_when_drag_started_ = 1.0f;
@@ -105,6 +96,7 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   gfx::Point point_in_screen(event->location());
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   wm::ConvertPointToScreen(target, &point_in_screen);
   if (WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen))
     event->StopPropagation();

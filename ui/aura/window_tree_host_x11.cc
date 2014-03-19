@@ -699,6 +699,10 @@ void WindowTreeHostX11::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
+void WindowTreeHostX11::PrepareForShutdown() {
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
+}
+
 void WindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
     return;

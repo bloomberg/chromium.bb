@@ -225,6 +225,10 @@ void WindowTreeHostWin::OnDeviceScaleFactorChanged(
   NOTIMPLEMENTED();
 }
 
+void WindowTreeHostWin::PrepareForShutdown() {
+  NOTIMPLEMENTED();
+}
+
 ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
   return dispatcher();
 }
