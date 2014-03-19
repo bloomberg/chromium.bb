@@ -85,7 +85,12 @@ OriginChipDecoration::~OriginChipDecoration() {
 }
 
 void OriginChipDecoration::Update() {
-  SetVisible(ShouldShow());
+  if (!ShouldShow()) {
+    SetVisible(false);
+    return;
+  } else {
+    SetVisible(true);
+  }
 
   const content::WebContents* web_contents =
       owner_->browser()->tab_strip_model()->GetActiveWebContents();
