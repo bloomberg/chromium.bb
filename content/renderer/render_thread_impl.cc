@@ -556,6 +556,7 @@ void RenderThreadImpl::Shutdown() {
     compositor_output_surface_filter_ = NULL;
   }
 
+  media_thread_.reset();
   compositor_thread_.reset();
   input_handler_manager_.reset();
   if (input_event_filter_.get()) {
