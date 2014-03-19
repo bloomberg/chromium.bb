@@ -149,21 +149,21 @@ std::string TraceEvent::GetKnownArgAsString(const std::string& name) const {
 }
 
 double TraceEvent::GetKnownArgAsDouble(const std::string& name) const {
-  double arg_double;
+  double arg_double = 0;
   bool result = GetArgAsNumber(name, &arg_double);
   DCHECK(result);
   return arg_double;
 }
 
 int TraceEvent::GetKnownArgAsInt(const std::string& name) const {
-  double arg_double;
+  double arg_double = 0;
   bool result = GetArgAsNumber(name, &arg_double);
   DCHECK(result);
   return static_cast<int>(arg_double);
 }
 
 bool TraceEvent::GetKnownArgAsBool(const std::string& name) const {
-  double arg_double;
+  double arg_double = 0;
   bool result = GetArgAsNumber(name, &arg_double);
   DCHECK(result);
   return (arg_double != 0.0);
@@ -281,10 +281,8 @@ bool Query::Evaluate(const TraceEvent& event) const {
       return !left().Evaluate(event);
     default:
       NOTREACHED();
+      return false;
   }
-
-  NOTREACHED();
-  return false;
 }
 
 bool Query::CompareAsDouble(const TraceEvent& event, bool* result) const {
@@ -314,7 +312,6 @@ bool Query::CompareAsDouble(const TraceEvent& event, bool* result) const {
       NOTREACHED();
       return false;
   }
-  return true;
 }
 
 bool Query::CompareAsString(const TraceEvent& event, bool* result) const {
@@ -354,7 +351,6 @@ bool Query::CompareAsString(const TraceEvent& event, bool* result) const {
       NOTREACHED();
       return false;
   }
-  return true;
 }
 
 bool Query::EvaluateArithmeticOperator(const TraceEvent& event,
@@ -903,17 +899,11 @@ bool FindLastOf(const TraceEventVector& events,
                 size_t position,
                 size_t* return_index) {
   DCHECK(return_index);
-  if (events.empty())
-    return false;
-  position = (position < events.size()) ? position : events.size() - 1;
-  for (;;) {
-    if (query.Evaluate(*events[position])) {
-      *return_index = position;
+  for (size_t i = std::min(position + 1, events.size()); i != 0; --i) {
+    if (query.Evaluate(*events[i - 1])) {
+      *return_index = i - 1;
       return true;
     }
-    if (position == 0)
-      return false;
-    --position;
   }
   return false;
 }
