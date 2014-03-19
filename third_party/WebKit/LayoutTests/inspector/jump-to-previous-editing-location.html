@@ -244,7 +244,7 @@ function test()
                     panel.showUISourceCode(uiSourceCode, jumps[i]);
                     dumpSelection(panel.visibleView.textEditor, "jump to line " + jumps[i]);
                 }
-                panel.highlightPosition(40, 10);
+                panel.showUISourceCode(uiSourceCode, 40, 10);
                 dumpSelection(panel.visibleView.textEditor, "highlight line 40");
                 for (var i = 0; i < jumps.length + 1; ++i) {
                     rollback();
