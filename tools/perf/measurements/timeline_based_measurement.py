@@ -4,9 +4,9 @@
 
 from metrics import timeline as timeline_module
 from metrics import timeline_interaction_record as tir_module
-from metrics import smoothness
 from telemetry.page import page_measurement
 from telemetry.core.timeline import model as model_module
+
 
 
 # TimelineBasedMeasurement considers all instrumentation as producing a single
@@ -24,21 +24,6 @@ ALL_OVERHEAD_LEVELS = [
 ]
 
 
-class _ResultsWrapper(object):
-  def __init__(self, results, interaction_record):
-    self._results = results
-    self._interaction_record = interaction_record
-
-  def Add(self, trace_name, units, value, chart_name=None, data_type='default'):
-    trace_name = self._interaction_record.GetResultNameFor(trace_name)
-    self._results.Add(trace_name, units, value, chart_name, data_type)
-
-  def AddSummary(self, trace_name, units, value, chart_name=None,
-                  data_type='default'):
-    trace_name = self._interaction_record.GetResultNameFor(trace_name)
-    self._results.AddSummary(trace_name, units, value, chart_name, data_type)
-
-
 class _TimelineBasedMetrics(object):
   def __init__(self, model, renderer_thread):
     self._model = model
@@ -46,14 +31,14 @@ class _TimelineBasedMetrics(object):
 
   def FindTimelineInteractionRecords(self):
     # TODO(nduca): Add support for page-load interaction record.
-    return [tir_module.TimelineInteractionRecord.FromEvent(event) for
+    return [tir_module.TimelineInteractionRecord(event) for
             event in self._renderer_thread.IterAllAsyncSlices()
             if tir_module.IsTimelineInteractionRecord(event.name)]
 
   def CreateMetricsForTimelineInteractionRecord(self, interaction):
     res = []
     if interaction.is_smooth:
-      res.append(smoothness.SmoothnessMetric())
+      pass # TODO(nduca): res.append smoothness metric instance.
     return res
 
   def AddResults(self, results):
@@ -62,10 +47,9 @@ class _TimelineBasedMetrics(object):
       raise Exception('Expected at least one Interaction on the page')
     for interaction in interactions:
       metrics = self.CreateMetricsForTimelineInteractionRecord(interaction)
-      wrapped_results = _ResultsWrapper(results, interaction)
       for m in metrics:
         m.AddResults(self._model, self._renderer_thread,
-                     interaction, wrapped_results)
+                     interaction, results)
 
 
 class TimelineBasedMeasurement(page_measurement.PageMeasurement):
@@ -113,7 +97,6 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
       categories = ''
     else:
       categories = '*,disabled-by-default-cc.debug'
-    categories = ','.join([categories] + page.GetSyntheticDelayCategories())
     tab.browser.StartTracing(categories)
 
   def MeasurePage(self, page, tab, results):

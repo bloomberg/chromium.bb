@@ -57,13 +57,15 @@ class TimelineBasedMetricsTests(unittest.TestCase):
     class FakeSmoothMetric(timeline_based_metric.TimelineBasedMetric):
       def AddResults(self, model, renderer_thread,
                      interaction_record, results):
-        results.Add('FakeSmoothMetric', 'ms', 1)
+        results.Add(
+            interaction_record.GetResultNameFor('FakeSmoothMetric'), 'ms', 1)
 
     class FakeLoadingMetric(timeline_based_metric.TimelineBasedMetric):
       def AddResults(self, model, renderer_thread,
                      interaction_record, results):
         assert interaction_record.logical_name == 'LogicalName2'
-        results.Add('FakeLoadingMetric', 'ms', 2)
+        results.Add(
+            interaction_record.GetResultNameFor('FakeLoadingMetric'), 'ms', 2)
 
     class TimelineBasedMetricsWithFakeMetricHandler(
         tbm_module._TimelineBasedMetrics): # pylint: disable=W0212
@@ -88,9 +90,9 @@ class TimelineBasedMetricsTests(unittest.TestCase):
     metric.AddResults(results)
     results.DidMeasurePage()
 
-    v = results.FindAllPageSpecificValuesNamed('LogicalName1-FakeSmoothMetric')
+    v = results.FindAllPageSpecificValuesNamed('LogicalName1/FakeSmoothMetric')
     self.assertEquals(len(v), 1)
-    v = results.FindAllPageSpecificValuesNamed('LogicalName2-FakeLoadingMetric')
+    v = results.FindAllPageSpecificValuesNamed('LogicalName2/FakeLoadingMetric')
     self.assertEquals(len(v), 1)
 
 
@@ -109,8 +111,3 @@ class TimelineBasedMeasurementTest(
     results = self.RunMeasurement(measurement, ps,
                                   options=self._options)
     self.assertEquals(0, len(results.failures))
-    v = results.FindAllPageSpecificValuesNamed('CenterAnimation-jank')
-    self.assertEquals(len(v), 2)
-    v = results.FindAllPageSpecificValuesNamed('DrawerAnimation-jank')
-    self.assertEquals(len(v), 2)
-

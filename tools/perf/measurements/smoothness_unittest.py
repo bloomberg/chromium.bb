@@ -3,30 +3,8 @@
 # found in the LICENSE file.
 from measurements import smoothness
 from telemetry.core import wpr_modes
-from telemetry.page import page
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
-
-class FakePlatform(object):
-  def IsRawDisplayFrameRateSupported(self):
-    return False
-
-
-class FakeBrowser(object):
-  def __init__(self):
-    self.platform = FakePlatform()
-    self.category_filter = None
-
-  def StartTracing(self, category_filter, _):
-    self.category_filter = category_filter
-
-
-class FakeTab(object):
-  def __init__(self):
-    self.browser = FakeBrowser()
-
-  def ExecuteJavaScript(self, js):
-    pass
 
 class SmoothnessUnitTest(
       page_measurement_unittest_base.PageMeasurementUnitTestBase):
@@ -36,31 +14,8 @@ class SmoothnessUnitTest(
      that all metrics were added to the results. The test is purely functional,
      i.e. it only checks if the metrics are present and non-zero.
   """
-  def testSyntheticDelayConfiguration(self):
-    attributes = {
-      'synthetic_delays': {
-        'cc.BeginMainFrame': { 'target_duration': 0.012 },
-        'cc.DrawAndSwap': { 'target_duration': 0.012, 'mode': 'alternating' },
-        'gpu.SwapBuffers': { 'target_duration': 0.012 }
-      }
-    }
-    test_page = page.Page('http://dummy', None, attributes=attributes)
 
-    tab = FakeTab()
-    measurement = smoothness.Smoothness()
-    measurement.WillRunActions(test_page, tab)
-
-    expected_category_filter = [
-        'DELAY(cc.BeginMainFrame;0.012000;static)',
-        'DELAY(cc.DrawAndSwap;0.012000;alternating)',
-        'DELAY(gpu.SwapBuffers;0.012000;static)',
-        'benchmark',
-        'webkit.console'
-    ]
-    self.assertEquals(expected_category_filter,
-                      sorted(tab.browser.category_filter.split(',')))
   def setUp(self):
-
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
