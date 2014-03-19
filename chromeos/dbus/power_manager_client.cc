@@ -14,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -675,12 +677,12 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   // PowerManagerClient overrides:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kEnableStubInteractive)) {
-      const int kStatusUpdateMs = 1000;
+    ParseCommandLineSwitch();
+    if (power_cycle_delay_ != base::TimeDelta()) {
       update_timer_.Start(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kStatusUpdateMs), this,
-          &PowerManagerClientStubImpl::UpdateStatus);
+                          power_cycle_delay_,
+                          this,
+                          &PowerManagerClientStubImpl::UpdateStatus);
     }
   }
 
@@ -830,6 +832,30 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
                       BrightnessChanged(brightness_level, user_initiated));
   }
 
+  void ParseCommandLineSwitch() {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (!command_line || !command_line->HasSwitch(switches::kPowerStub))
+      return;
+    std::string option_str =
+        command_line->GetSwitchValueASCII(switches::kPowerStub);
+    base::StringPairs string_pairs;
+    base::SplitStringIntoKeyValuePairs(option_str, '=', ',', &string_pairs);
+    for (base::StringPairs::iterator iter = string_pairs.begin();
+         iter != string_pairs.end(); ++iter) {
+      ParseOption((*iter).first, (*iter).second);
+    }
+  }
+
+  void ParseOption(const std::string& arg0, const std::string& arg1) {
+    if (arg0 == "cycle" || arg0 == "interactive") {
+      int seconds = 1;
+      if (!arg1.empty())
+        base::StringToInt(arg1, &seconds);
+      power_cycle_delay_ = base::TimeDelta::FromSeconds(seconds);
+    }
+  }
+
+  base::TimeDelta power_cycle_delay_;  // Time over which to cycle power state
   bool discharging_;
   int battery_percentage_;
   double brightness_;
