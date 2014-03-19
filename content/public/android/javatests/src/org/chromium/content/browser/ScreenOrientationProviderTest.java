@@ -4,10 +4,10 @@
 
 package org.chromium.content.browser;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -97,6 +97,11 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         mObserver = new MockOrientationObserver();
         ScreenOrientationListener.getInstance().addObserver(
                 mObserver, getInstrumentation().getTargetContext());
+
+        // Make sure mObserver is updated before we start the tests.
+        OrientationChangeObserverCriteria criteria =
+                new OrientationChangeObserverCriteria(mObserver);
+        CriteriaHelper.pollForCriteria(criteria);
     }
 
     @Override
@@ -143,15 +148,22 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.PORTRAIT_SECONDARY));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"ScreenOrientation"})
-     * http://crbug.com/353500
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"ScreenOrientation"})
     public void testLandscape() throws Exception {
+        int initialOrientation = mObserver.mOrientation;
+
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // If we were in LANDSCAPE_SECONDARY (90 degrees), old SDK will not
+            // be able to catch this change correctly. However, we still want to
+            // wait to not break the rest of the test.
+            boolean result = checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY);
+            if (initialOrientation != -90)
+                assertTrue(result);
+        } else {
+            assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
+        }
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
                 ScreenOrientationValues.LANDSCAPE_SECONDARY);
@@ -159,7 +171,14 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.LANDSCAPE_SECONDARY));
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_SECONDARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // Exactly the opposite situation as above.
+            boolean result = checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY);
+            if (initialOrientation == -90)
+                assertTrue(result);
+        } else {
+            assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
+        }
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
                 ScreenOrientationValues.LANDSCAPE_SECONDARY);
