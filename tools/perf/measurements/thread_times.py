@@ -7,7 +7,7 @@ from telemetry.page import page_measurement
 
 class ThreadTimes(page_measurement.PageMeasurement):
   def __init__(self):
-    super(ThreadTimes, self).__init__('RunSmoothness')
+    super(ThreadTimes, self).__init__('smoothness')
     self._metric = None
 
   @classmethod

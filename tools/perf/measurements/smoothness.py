@@ -9,7 +9,7 @@ from telemetry.page import page_measurement
 
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
-    super(Smoothness, self).__init__('RunSmoothness')
+    super(Smoothness, self).__init__('smoothness')
     self._power_metric = None
     self._smoothness_controller = None
 

@@ -6,7 +6,7 @@ from telemetry.page import page_measurement
 
 class NoOp(page_measurement.PageMeasurement):
   def __init__(self):
-    super(NoOp, self).__init__('RunNoOp')
+    super(NoOp, self).__init__('no_op')
 
   def WillRunAction(self, page, tab, action):
     pass

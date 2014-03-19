@@ -103,7 +103,7 @@ class TimelineBasedMeasurementTest(
   def testTimelineBasedForSmoke(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir(
         'interaction_enabled_page.html')
-    setattr(ps.pages[0], 'RunSmoothness', {'action': 'wait',
+    setattr(ps.pages[0], 'smoothness', {'action': 'wait',
                                         'javascript': 'window.animationDone'})
     measurement = tbm_module.TimelineBasedMeasurement()
     results = self.RunMeasurement(measurement, ps,

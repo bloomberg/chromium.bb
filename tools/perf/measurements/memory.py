@@ -8,7 +8,7 @@ from telemetry.page import page_measurement
 
 class Memory(page_measurement.PageMeasurement):
   def __init__(self):
-    super(Memory, self).__init__('RunStressMemory')
+    super(Memory, self).__init__('stress_memory')
     self._memory_metric = None
     self._power_metric = power.PowerMetric()
 
