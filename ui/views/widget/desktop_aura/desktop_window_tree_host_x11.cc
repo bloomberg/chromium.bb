@@ -22,6 +22,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/x/device_data_manager.h"
@@ -1122,6 +1123,31 @@ void DesktopWindowTreeHostX11::OnCaptureReleased() {
 }
 
 void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
+  // In Windows, the native events sent to chrome are separated into client
+  // and non-client versions of events, which we record on our LocatedEvent
+  // structures. On X11, we emulate the concept of non-client. Before we pass
+  // this event to the cross platform event handling framework, we need to
+  // make sure it is appropriately marked as non-client if it's in the non
+  // client area, or otherwise, we can get into a state where the a window is
+  // set as the |mouse_pressed_handler_| in window_event_dispatcher.cc
+  // despite the mouse button being released.
+  //
+  // We can't do this later in the dispatch process because we share that
+  // with ash, and ash gets confused about event IS_NON_CLIENT-ness on
+  // events, since ash doesn't expect this bit to be set, because it's never
+  // been set before. (This works on ash on Windows because none of the mouse
+  // events on the ash desktop are clicking in what Windows considers to be a
+  // non client area.) Likewise, we won't want to do the following in any
+  // WindowTreeHost that hosts ash.
+  if (content_window_ && content_window_->delegate()) {
+    int flags = event->flags();
+    int hit_test_code =
+        content_window_->delegate()->GetNonClientComponent(event->location());
+    if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
+      flags |= ui::EF_IS_NON_CLIENT;
+    event->set_flags(flags);
+  }
+
   if (!g_current_capture || g_current_capture == this) {
     SendEventToProcessor(event);
   } else {
