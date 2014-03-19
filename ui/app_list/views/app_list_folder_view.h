@@ -84,6 +84,9 @@ class AppListFolderView : public views::View,
   // Hides the view immediately without animation.
   void HideViewImmediately();
 
+  // Returns true if the associated folder item is an OEM folder.
+  bool IsOEMFolder() const;
+
   // views::View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;

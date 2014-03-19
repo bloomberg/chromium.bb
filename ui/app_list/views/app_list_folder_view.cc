@@ -273,10 +273,13 @@ void AppListFolderView::DispatchEndDragEventForReparent(
       EndDragFromReparentItemInRootLevel(events_forwarded_to_drag_drop_host);
 }
 
-
 void AppListFolderView::HideViewImmediately() {
   SetVisible(false);
   hide_for_reparent_ = false;
+}
+
+bool AppListFolderView::IsOEMFolder() const {
+  return folder_item_->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM;
 }
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,

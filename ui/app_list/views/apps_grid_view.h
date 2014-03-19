@@ -440,6 +440,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   gfx::Rect GetTargetIconRectInFolder(AppListItemView* drag_item_view,
       AppListItemView* folder_item_view);
 
+  // Returns true if the grid view is under an OEM folder.
+  bool IsUnderOEMFolder();
+
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.
   AppsGridViewDelegate* delegate_;
