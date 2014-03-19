@@ -18,8 +18,6 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
-#include "google_apis/gcm/engine/registration_request.h"
-#include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
@@ -370,11 +368,14 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
   unregistration_request->Start();
 }
 
-void GCMClientImpl::OnUnregisterCompleted(const std::string& app_id,
-                                          bool status) {
+void GCMClientImpl::OnUnregisterCompleted(
+    const std::string& app_id,
+    UnregistrationRequest::Status status) {
   DVLOG(1) << "Unregister completed for app: " << app_id
            << " with " << (status ? "success." : "failure.");
-  delegate_->OnUnregisterFinished(app_id, status);
+  delegate_->OnUnregisterFinished(
+      app_id,
+      status == UnregistrationRequest::SUCCESS ? SUCCESS : SERVER_ERROR);
 
   PendingUnregistrations::iterator iter = pending_unregistrations_.find(app_id);
   if (iter == pending_unregistrations_.end())

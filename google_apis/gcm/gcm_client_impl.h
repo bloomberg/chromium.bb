@@ -17,6 +17,7 @@
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
+#include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/net_log.h"
@@ -35,7 +36,6 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
-class UnregistrationRequest;
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
 // with MCS) and other pieces of GCM infrastructure like Registration and
@@ -156,7 +156,8 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
                            const std::string& registration_id);
 
   // Completes the unregistration request.
-  void OnUnregisterCompleted(const std::string& app_id, bool status);
+  void OnUnregisterCompleted(const std::string& app_id,
+                             UnregistrationRequest::Status status);
 
   // Completes the GCM store destroy request.
   void OnGCMStoreDestroyed(bool success);

@@ -127,6 +127,24 @@ void GcmRegisterFunction::CompleteFunctionWithResult(
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
 
+GcmUnregisterFunction::GcmUnregisterFunction() {}
+
+GcmUnregisterFunction::~GcmUnregisterFunction() {}
+
+bool GcmUnregisterFunction::DoWork() {
+  GCMProfileService()->Unregister(
+      GetExtension()->id(),
+      base::Bind(&GcmUnregisterFunction::CompleteFunctionWithResult, this));
+
+  return true;
+}
+
+void GcmUnregisterFunction::CompleteFunctionWithResult(
+    gcm::GCMClient::Result result) {
+  SetError(GcmResultToError(result));
+  SendResponse(gcm::GCMClient::SUCCESS == result);
+}
+
 GcmSendFunction::GcmSendFunction() {}
 
 GcmSendFunction::~GcmSendFunction() {}

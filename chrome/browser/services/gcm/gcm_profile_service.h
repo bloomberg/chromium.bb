@@ -49,6 +49,7 @@ class GCMProfileService : public KeyedService,
                               GCMClient::Result result)> RegisterCallback;
   typedef base::Callback<void(const std::string& message_id,
                               GCMClient::Result result)> SendCallback;
+  typedef base::Callback<void(GCMClient::Result result)> UnregisterCallback;
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       RequestGCMStatisticsCallback;
 
@@ -101,6 +102,12 @@ class GCMProfileService : public KeyedService,
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
                         RegisterCallback callback);
+
+  // Unregisters an app from using GCM.
+  // |app_id|: application ID.
+  // |callback|: to be called once the asynchronous operation is done.
+  virtual void Unregister(const std::string& app_id,
+                          UnregisterCallback callback);
 
   // Sends a message to a given receiver.
   // |app_id|: application ID.
@@ -177,13 +184,19 @@ class GCMProfileService : public KeyedService,
   void ResetGCMClient();
 
   // Ensures that the app is ready for GCM functions and events.
-  void EnsureAppReady(const std::string& app_id);
+  GCMClient::Result EnsureAppReady(const std::string& app_id);
 
-  // Unregisters an app from using the GCM after it has been uninstalled.
-  void Unregister(const std::string& app_id);
+  // Unregistration callback for applications that are uninstalled.
+  void UnregisterCompletedOnAppUninstall(const std::string& app_id,
+                                         GCMClient::Result result);
+
+  // Should be called when an app with |app_id| is trying to un/register.
+  // Checks whether another un/registration is in progress.
+  bool IsAsyncOperationPending(const std::string& app_id) const;
 
   void DoRegister(const std::string& app_id,
                   const std::vector<std::string>& sender_ids);
+  void DoUnregister(const std::string& app_id);
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
               const GCMClient::OutgoingMessage& message);
@@ -192,6 +205,7 @@ class GCMProfileService : public KeyedService,
   void RegisterFinished(const std::string& app_id,
                         const std::string& registration_id,
                         GCMClient::Result result);
+  void UnregisterFinished(const std::string& app_id, GCMClient::Result result);
   void SendFinished(const std::string& app_id,
                     const std::string& message_id,
                     GCMClient::Result result);
@@ -241,6 +255,9 @@ class GCMProfileService : public KeyedService,
 
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;
+
+  // Callback map (from app_id to callback) for Unregister.
+  std::map<std::string, UnregisterCallback> unregister_callbacks_;
 
   // Callback map (from <app_id, message_id> to callback) for Send.
   std::map<std::pair<std::string, std::string>, SendCallback> send_callbacks_;

@@ -44,6 +44,19 @@
         ]
       },
       {
+        "name": "unregister",
+        "type": "function",
+        "description": "Unregisters the application from GCM.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "A function called after the unregistration completes. Unregistration was successful if $(ref:runtime.lastError) is not set.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "send",
         "type": "function",
         "description": "Sends a message according to its contents.",

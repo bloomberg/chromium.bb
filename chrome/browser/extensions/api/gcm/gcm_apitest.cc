@@ -142,6 +142,16 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
                   sender_ids.end());
 }
 
+IN_PROC_BROWSER_TEST_F(GcmApiTest, Unregister) {
+  if (ShouldSkipTest())
+    return;
+
+  service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
+  service()->AddExpectedUnregisterResponse(gcm::GCMClient::SERVER_ERROR);
+
+  ASSERT_TRUE(RunExtensionTest("gcm/functions/unregister"));
+}
+
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {
   if (ShouldSkipTest())
     return;

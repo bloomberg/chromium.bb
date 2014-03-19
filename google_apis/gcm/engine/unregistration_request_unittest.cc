@@ -57,7 +57,7 @@ class UnregistrationRequestTest : public testing::Test {
   UnregistrationRequestTest();
   virtual ~UnregistrationRequestTest();
 
-  void UnregistrationCallback(bool success);
+  void UnregistrationCallback(UnregistrationRequest::Status status);
 
   void CreateRequest();
   void SetResponseStatusAndString(net::HttpStatusCode status_code,
@@ -66,7 +66,7 @@ class UnregistrationRequestTest : public testing::Test {
 
  protected:
   bool callback_called_;
-  bool unregistration_successful_;
+  UnregistrationRequest::Status status_;
   scoped_ptr<UnregistrationRequest> request_;
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
@@ -75,15 +75,16 @@ class UnregistrationRequestTest : public testing::Test {
 
 UnregistrationRequestTest::UnregistrationRequestTest()
     : callback_called_(false),
-      unregistration_successful_(false),
+      status_(UnregistrationRequest::UNREGISTRATION_STATUS_COUNT),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
           message_loop_.message_loop_proxy())) {}
 
 UnregistrationRequestTest::~UnregistrationRequestTest() {}
 
-void UnregistrationRequestTest::UnregistrationCallback(bool success) {
+void UnregistrationRequestTest::UnregistrationCallback(
+    UnregistrationRequest::Status status) {
   callback_called_ = true;
-  unregistration_successful_ = success;
+  status_ = status;
 }
 
 void UnregistrationRequestTest::CreateRequest() {
@@ -107,7 +108,7 @@ void UnregistrationRequestTest::SetResponseStatusAndString(
 }
 
 void UnregistrationRequestTest::CompleteFetch() {
-  unregistration_successful_ = false;
+  status_ = UnregistrationRequest::UNREGISTRATION_STATUS_COUNT;
   callback_called_ = false;
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -168,7 +169,7 @@ TEST_F(UnregistrationRequestTest, SuccessfulUnregistration) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, ResponseHttpStatusNotOK) {
@@ -179,7 +180,7 @@ TEST_F(UnregistrationRequestTest, ResponseHttpStatusNotOK) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_FALSE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::HTTP_NOT_OK, status_);
 }
 
 TEST_F(UnregistrationRequestTest, ResponseEmpty) {
@@ -190,13 +191,12 @@ TEST_F(UnregistrationRequestTest, ResponseEmpty) {
   CompleteFetch();
 
   EXPECT_FALSE(callback_called_);
-  EXPECT_FALSE(unregistration_successful_);
 
   SetResponseStatusAndString(net::HTTP_OK, kDeletedAppId);
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, InvalidParametersError) {
@@ -207,7 +207,7 @@ TEST_F(UnregistrationRequestTest, InvalidParametersError) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_FALSE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, UnkwnownError) {
@@ -218,7 +218,7 @@ TEST_F(UnregistrationRequestTest, UnkwnownError) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_FALSE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::UNKNOWN_ERROR, status_);
 }
 
 TEST_F(UnregistrationRequestTest, ServiceUnavailable) {
@@ -234,7 +234,7 @@ TEST_F(UnregistrationRequestTest, ServiceUnavailable) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, InternalServerError) {
@@ -250,7 +250,7 @@ TEST_F(UnregistrationRequestTest, InternalServerError) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, IncorrectAppId) {
@@ -266,7 +266,7 @@ TEST_F(UnregistrationRequestTest, IncorrectAppId) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(UnregistrationRequestTest, ResponseParsingFailed) {
@@ -282,7 +282,7 @@ TEST_F(UnregistrationRequestTest, ResponseParsingFailed) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(unregistration_successful_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 }  // namespace gcm

@@ -55,6 +55,22 @@ class GcmRegisterFunction : public GcmApiFunction {
                                   gcm::GCMClient::Result result);
 };
 
+class GcmUnregisterFunction : public GcmApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcm.unregister", GCM_UNREGISTER);
+
+  GcmUnregisterFunction();
+
+ protected:
+  virtual ~GcmUnregisterFunction();
+
+  // Register function implementation.
+  virtual bool DoWork() OVERRIDE FINAL;
+
+ private:
+  void CompleteFunctionWithResult(gcm::GCMClient::Result result);
+};
+
 class GcmSendFunction : public GcmApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcm.send", GCM_SEND);

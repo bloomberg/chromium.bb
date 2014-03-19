@@ -48,6 +48,12 @@ void FakeGCMProfileService::RegisterFinished(
   callback.Run(base::UintToString(sender_ids.size()), GCMClient::SUCCESS);
 }
 
+void FakeGCMProfileService::Unregister(const std::string& app_id,
+                                       UnregisterCallback callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, GetNextExpectedUnregisterResponse()));
+}
+
 void FakeGCMProfileService::Send(const std::string& app_id,
                                  const std::string& receiver_id,
                                  const GCMClient::OutgoingMessage& message,
@@ -73,6 +79,19 @@ void FakeGCMProfileService::SendFinished(
   }
 
   callback.Run(message.id, GCMClient::SUCCESS);
+}
+
+void FakeGCMProfileService::AddExpectedUnregisterResponse(
+    GCMClient::Result result) {
+  unregister_responses_.push_back(result);
+}
+
+GCMClient::Result FakeGCMProfileService::GetNextExpectedUnregisterResponse() {
+  if (unregister_responses_.empty())
+    return GCMClient::SUCCESS;
+  GCMClient::Result response = *unregister_responses_.begin();
+  unregister_responses_.erase(unregister_responses_.begin());
+  return response;
 }
 
 }  // namespace gcm

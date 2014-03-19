@@ -245,7 +245,7 @@ class GCMProfileService::IOWorker
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
   virtual void OnUnregisterFinished(const std::string& app_id,
-                                    bool success) OVERRIDE;
+                                    GCMClient::Result result) OVERRIDE;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
                               GCMClient::Result result) OVERRIDE;
@@ -351,8 +351,14 @@ void GCMProfileService::IOWorker::OnRegisterFinished(
 
 void GCMProfileService::IOWorker::OnUnregisterFinished(
     const std::string& app_id,
-    bool success) {
-  // Nothing to do here.
+    GCMClient::Result result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &GCMProfileService::UnregisterFinished, service_, app_id, result));
 }
 
 void GCMProfileService::IOWorker::OnSendFinished(
@@ -630,24 +636,19 @@ void GCMProfileService::Register(const std::string& app_id,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !sender_ids.empty() && !callback.is_null());
 
-  // Ensure that check-in has been done.
-  EnsureLoaded();
-
-  // If the profile was not signed in, bail out.
-  if (username_.empty()) {
-    callback.Run(std::string(), GCMClient::NOT_SIGNED_IN);
+  GCMClient::Result result = EnsureAppReady(app_id);
+  if (result != GCMClient::SUCCESS) {
+    callback.Run(std::string(), result);
     return;
   }
 
-  // If previous register operation is still in progress, bail out.
-  if (register_callbacks_.find(app_id) != register_callbacks_.end()) {
+  // If previous un/register operation is still in progress, bail out.
+  if (IsAsyncOperationPending(app_id)) {
     callback.Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
 
   register_callbacks_[app_id] = callback;
-
-  EnsureAppReady(app_id);
 
   // Delay the register operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
@@ -708,6 +709,69 @@ void GCMProfileService::DoRegister(const std::string& app_id,
                  normalized_sender_ids));
 }
 
+void GCMProfileService::Unregister(const std::string& app_id,
+                                   UnregisterCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!app_id.empty() && !callback.is_null());
+
+  GCMClient::Result result = EnsureAppReady(app_id);
+  if (result != GCMClient::SUCCESS) {
+    callback.Run(result);
+    return;
+  }
+
+  // If previous un/register operation is still in progress, bail out.
+  if (IsAsyncOperationPending(app_id)) {
+    callback.Run(GCMClient::ASYNC_OPERATION_PENDING);
+    return;
+  }
+
+  unregister_callbacks_[app_id] = callback;
+
+  // Delay the unregister operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
+    delayed_task_controller_->AddTask(
+        app_id,
+        base::Bind(&GCMProfileService::DoUnregister,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id));
+    return;
+  }
+
+  DoUnregister(app_id);
+}
+
+void GCMProfileService::DoUnregister(const std::string& app_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Unregister might be triggered in response to a message that is missing
+  // recipient and in that case there will not be an entry in the map.
+  RegistrationInfoMap::iterator registration_info_iter =
+      registration_info_map_.find(app_id);
+  if (registration_info_iter != registration_info_map_.end()) {
+    registration_info_map_.erase(registration_info_iter);
+
+    // Update the persisted IDs of registered apps.
+    WriteRegisteredAppIDs();
+
+    // Remove the persisted registration info.
+    DeleteRegistrationInfo(app_id);
+
+    // No need to track the app any more.
+    delayed_task_controller_->RemoveApp(app_id);
+  }
+
+  // Ask the server to unregister it. There could be a small chance that the
+  // unregister request fails. If this occurs, it does not bring any harm since
+  // we simply reject the messages/events received from the server.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::IOWorker::Unregister,
+                 io_worker_,
+                 app_id));
+}
+
 void GCMProfileService::Send(const std::string& app_id,
                              const std::string& receiver_id,
                              const GCMClient::OutgoingMessage& message,
@@ -715,12 +779,9 @@ void GCMProfileService::Send(const std::string& app_id,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !receiver_id.empty() && !callback.is_null());
 
-  // Ensure that check-in has been done.
-  EnsureLoaded();
-
-  // If the profile was not signed in, bail out.
-  if (username_.empty()) {
-    callback.Run(std::string(), GCMClient::NOT_SIGNED_IN);
+  GCMClient::Result result = EnsureAppReady(app_id);
+  if (result != GCMClient::SUCCESS) {
+    callback.Run(std::string(), result);
     return;
   }
 
@@ -730,9 +791,8 @@ void GCMProfileService::Send(const std::string& app_id,
     callback.Run(message.id, GCMClient::INVALID_PARAMETER);
     return;
   }
-  send_callbacks_[key] = callback;
 
-  EnsureAppReady(app_id);
+  send_callbacks_[key] = callback;
 
   // Delay the send operation until all GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
@@ -815,7 +875,11 @@ void GCMProfileService::Observe(int type,
       if (!username_.empty()) {
         extensions::Extension* extension =
             content::Details<extensions::Extension>(details).ptr();
-        Unregister(extension->id());
+        Unregister(extension->id(),
+                   base::Bind(
+                       &GCMProfileService::UnregisterCompletedOnAppUninstall,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       extension->id()));
       }
       break;
     default:
@@ -831,6 +895,12 @@ void GCMProfileService::GoogleSigninSucceeded(const std::string& username,
 
 void GCMProfileService::GoogleSignedOut(const std::string& username) {
   CheckOut();
+}
+
+void GCMProfileService::UnregisterCompletedOnAppUninstall(
+    const std::string& app_id,
+    GCMClient::Result result) {
+  // Nothing to do here.
 }
 
 void GCMProfileService::EnsureLoaded() {
@@ -917,46 +987,25 @@ void GCMProfileService::ResetGCMClient() {
       base::Bind(&GCMProfileService::IOWorker::Reset, io_worker_));
 }
 
-void GCMProfileService::EnsureAppReady(const std::string& app_id) {
-  if (delayed_task_controller_->IsAppTracked(app_id))
-    return;
+GCMClient::Result GCMProfileService::EnsureAppReady(const std::string& app_id) {
+  // Ensure that check-in has been done.
+  EnsureLoaded();
 
-  ReadRegistrationInfo(app_id);
+  // If the profile was not signed in, bail out.
+  if (username_.empty())
+    return GCMClient::NOT_SIGNED_IN;
+
+  // Ensure that app registration information was read.
+  if (!delayed_task_controller_->IsAppTracked(app_id))
+    ReadRegistrationInfo(app_id);
+
+  return GCMClient::SUCCESS;
 }
 
-void GCMProfileService::Unregister(const std::string& app_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // This is unlikely to happen because the app will not be uninstalled before
-  // the asynchronous extension function completes.
-  DCHECK(register_callbacks_.find(app_id) == register_callbacks_.end());
-
-  // Remove the cached registration info. If not found, there is no need to
-  // ask the server to unregister it.
-  RegistrationInfoMap::iterator registration_info_iter =
-      registration_info_map_.find(app_id);
-  if (registration_info_iter == registration_info_map_.end())
-    return;
-  registration_info_map_.erase(registration_info_iter);
-
-  // Update the persisted IDs of registered apps.
-  WriteRegisteredAppIDs();
-
-  // Remove the persisted registration info.
-  DeleteRegistrationInfo(app_id);
-
-  // No need to track the app any more.
-  delayed_task_controller_->RemoveApp(app_id);
-
-  // Ask the server to unregister it. There could be a small chance that the
-  // unregister request fails. If this occurs, it does not bring any harm since
-  // we simply reject the messages/events received from the server.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::Unregister,
-                 io_worker_,
-                 app_id));
+bool GCMProfileService::IsAsyncOperationPending(
+    const std::string& app_id) const {
+  return register_callbacks_.find(app_id) != register_callbacks_.end() ||
+         unregister_callbacks_.find(app_id) != unregister_callbacks_.end();
 }
 
 void GCMProfileService::RegisterFinished(const std::string& app_id,
@@ -988,6 +1037,20 @@ void GCMProfileService::RegisterFinished(const std::string& app_id,
   RegisterCallback callback = callback_iter->second;
   register_callbacks_.erase(callback_iter);
   callback.Run(registration_id, result);
+}
+
+void GCMProfileService::UnregisterFinished(const std::string& app_id,
+                                           GCMClient::Result result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  std::map<std::string, UnregisterCallback>::iterator callback_iter =
+      unregister_callbacks_.find(app_id);
+  if (callback_iter == unregister_callbacks_.end())
+    return;
+
+  UnregisterCallback callback = callback_iter->second;
+  unregister_callbacks_.erase(callback_iter);
+  callback.Run(result);
 }
 
 void GCMProfileService::SendFinished(const std::string& app_id,

@@ -424,6 +424,18 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
     waiter_->SignalCompleted();
   }
 
+  void Unregister(const std::string& app_id) {
+    GetGCMProfileService()->Unregister(
+        app_id,
+        base::Bind(&GCMProfileServiceTestConsumer::UnregisterCompleted,
+                   base::Unretained(this)));
+  }
+
+  void UnregisterCompleted(GCMClient::Result result) {
+    unregistration_result_ = result;
+    waiter_->SignalCompleted();
+  }
+
   GCMProfileService* GetGCMProfileService() const {
     return GCMProfileServiceFactory::GetForProfile(profile());
   }
@@ -459,12 +471,18 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
 
   const std::string& registration_id() const { return registration_id_; }
   GCMClient::Result registration_result() const { return registration_result_; }
+  GCMClient::Result unregistration_result() const {
+    return unregistration_result_;
+  }
   const std::string& send_message_id() const { return send_message_id_; }
   GCMClient::Result send_result() const { return send_result_; }
 
   void clear_registration_result() {
     registration_id_.clear();
     registration_result_ = GCMClient::UNKNOWN_ERROR;
+  }
+  void clear_unregistration_result() {
+    unregistration_result_ = GCMClient::UNKNOWN_ERROR;
   }
   void clear_send_result() {
     send_message_id_.clear();
@@ -489,6 +507,8 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
   std::string registration_id_;
   GCMClient::Result registration_result_;
   bool has_persisted_registration_info_;
+
+  GCMClient::Result unregistration_result_;
 
   std::string send_message_id_;
   GCMClient::Result send_result_;
@@ -810,27 +830,6 @@ TEST_F(GCMProfileServiceSingleProfileTest, Register) {
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
 }
 
-TEST_F(GCMProfileServiceSingleProfileTest, DoubleRegister) {
-  std::vector<std::string> sender_ids;
-  sender_ids.push_back("sender1");
-  consumer()->Register(kTestingAppId, sender_ids);
-  std::string expected_registration_id =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
-
-  // Calling regsiter 2nd time without waiting 1st one to finish will fail
-  // immediately.
-  sender_ids.push_back("sender2");
-  consumer()->Register(kTestingAppId, sender_ids);
-  EXPECT_TRUE(consumer()->registration_id().empty());
-  EXPECT_EQ(GCMClient::ASYNC_OPERATION_PENDING,
-            consumer()->registration_result());
-
-  // The 1st register is still doing fine.
-  WaitUntilCompleted();
-  EXPECT_EQ(expected_registration_id, consumer()->registration_id());
-  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
-}
-
 TEST_F(GCMProfileServiceSingleProfileTest, RegisterError) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1@error");
@@ -996,7 +995,7 @@ TEST_F(GCMProfileServiceSingleProfileTest, RegisterAfterSignOut) {
   EXPECT_EQ(GCMClient::NOT_SIGNED_IN, consumer()->registration_result());
 }
 
-TEST_F(GCMProfileServiceSingleProfileTest, Unregister) {
+TEST_F(GCMProfileServiceSingleProfileTest, UnregisterImplicitly) {
   scoped_refptr<Extension> extension(consumer()->CreateExtension());
 
   std::vector<std::string> sender_ids;
@@ -1023,6 +1022,104 @@ TEST_F(GCMProfileServiceSingleProfileTest, Unregister) {
   // The persisted registration info should be removed.
   EXPECT_FALSE(consumer()->HasPersistedRegistrationInfo(extension->id()));
 }
+
+TEST_F(GCMProfileServiceSingleProfileTest, UnregisterExplicitly) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  consumer()->Register(kTestingAppId, sender_ids);
+
+  WaitUntilCompleted();
+  EXPECT_FALSE(consumer()->registration_id().empty());
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
+
+  // The registration info should be cached.
+  EXPECT_TRUE(consumer()->ExistsCachedRegistrationInfo());
+
+  // The registration info should be persisted.
+  EXPECT_TRUE(consumer()->HasPersistedRegistrationInfo(kTestingAppId));
+
+  consumer()->Unregister(kTestingAppId);
+
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->unregistration_result());
+
+  // The cached registration info should be removed.
+  EXPECT_FALSE(consumer()->ExistsCachedRegistrationInfo());
+
+  // The persisted registration info should be removed.
+  EXPECT_FALSE(consumer()->HasPersistedRegistrationInfo(kTestingAppId));
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest,
+       UnregisterWhenAsyncOperationPending) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  // First start registration without waiting for it to complete.
+  consumer()->Register(kTestingAppId, sender_ids);
+
+  // Test that unregistration fails with async operation pending when there is a
+  // registration already in progress.
+  consumer()->Unregister(kTestingAppId);
+  EXPECT_EQ(GCMClient::ASYNC_OPERATION_PENDING,
+            consumer()->unregistration_result());
+
+  // Complete the registration.
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
+
+  // Start unregistration without waiting for it to complete. This time no async
+  // operation is pending.
+  consumer()->Unregister(kTestingAppId);
+
+  // Test that unregistration fails with async operation pending when there is
+  // an unregistration already in progress.
+  consumer()->Unregister(kTestingAppId);
+  EXPECT_EQ(GCMClient::ASYNC_OPERATION_PENDING,
+            consumer()->unregistration_result());
+  consumer()->clear_unregistration_result();
+
+  // Complete unregistration.
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->unregistration_result());
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest, RegisterWhenAsyncOperationPending) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  // First start registration without waiting for it to complete.
+  consumer()->Register(kTestingAppId, sender_ids);
+
+  // Test that registration fails with async operation pending when there is a
+  // registration already in progress.
+  consumer()->Register(kTestingAppId, sender_ids);
+  EXPECT_EQ(GCMClient::ASYNC_OPERATION_PENDING,
+            consumer()->registration_result());
+  consumer()->clear_registration_result();
+
+  // Complete the registration.
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
+
+  // Start unregistration without waiting for it to complete. This time no async
+  // operation is pending.
+  consumer()->Unregister(kTestingAppId);
+
+  // Test that registration fails with async operation pending when there is an
+  // unregistration already in progress.
+  consumer()->Register(kTestingAppId, sender_ids);
+  EXPECT_EQ(GCMClient::ASYNC_OPERATION_PENDING,
+            consumer()->registration_result());
+
+  // Complete the first unregistration expecting success.
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->unregistration_result());
+
+  // Test that it is ok to register again after unregistration.
+  consumer()->Register(kTestingAppId, sender_ids);
+  WaitUntilCompleted();
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
+}
+
 
 TEST_F(GCMProfileServiceSingleProfileTest, Send) {
   GCMClient::OutgoingMessage message;

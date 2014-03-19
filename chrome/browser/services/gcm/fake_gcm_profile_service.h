@@ -27,6 +27,8 @@ class FakeGCMProfileService : public GCMProfileService {
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
                         RegisterCallback callback) OVERRIDE;
+  virtual void Unregister(const std::string& app_id,
+                          UnregisterCallback callback) OVERRIDE;
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
@@ -40,6 +42,9 @@ class FakeGCMProfileService : public GCMProfileService {
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
                     SendCallback callback);
+
+  void AddExpectedUnregisterResponse(GCMClient::Result result);
+  GCMClient::Result GetNextExpectedUnregisterResponse();
 
   const GCMClient::OutgoingMessage& last_sent_message() const {
     return last_sent_message_;
@@ -67,6 +72,7 @@ class FakeGCMProfileService : public GCMProfileService {
   bool collect_;
   std::string last_registered_app_id_;
   std::vector<std::string> last_registered_sender_ids_;
+  std::vector<GCMClient::Result> unregister_responses_;
   GCMClient::OutgoingMessage last_sent_message_;
   std::string last_receiver_id_;
 

@@ -132,7 +132,7 @@ class GCMClientImplTest : public testing::Test,
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
   virtual void OnUnregisterFinished(const std::string& app_id,
-                                    bool success) OVERRIDE;
+                                    GCMClient::Result result) OVERRIDE;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
                               GCMClient::Result result) OVERRIDE {}
@@ -331,10 +331,10 @@ void GCMClientImplTest::OnRegisterFinished(const std::string& app_id,
 }
 
 void GCMClientImplTest::OnUnregisterFinished(const std::string& app_id,
-                                             bool success) {
+                                             GCMClient::Result result) {
   last_event_ = UNREGISTRATION_COMPLETED;
   last_app_id_ = app_id;
-  last_result_ = success ? GCMClient::SUCCESS : GCMClient::UNKNOWN_ERROR;
+  last_result_ = result;
 }
 
 void GCMClientImplTest::OnMessagesDeleted(const std::string& app_id) {

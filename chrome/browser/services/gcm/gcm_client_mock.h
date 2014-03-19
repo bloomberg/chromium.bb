@@ -77,6 +77,7 @@ class GCMClientMock : public GCMClient {
   void CheckinFinished();
   void RegisterFinished(const std::string& app_id,
                         const std::string& registrion_id);
+  void UnregisterFinished(const std::string& app_id);
   void SendFinished(const std::string& app_id, const OutgoingMessage& message);
   void MessageReceived(const std::string& app_id,
                        const IncomingMessage& message);

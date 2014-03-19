@@ -26,8 +26,30 @@ namespace gcm {
 // TODO(fgorski): Consider sharing code with RegistrationRequest if possible.
 class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
  public:
+  // Outcome of the response parsing. Note that these enums are consumed by a
+  // histogram, so ordering should not be modified.
+  enum Status {
+    SUCCESS,                  // Unregistration completed successfully.
+    URL_FETCHING_FAILED,      // URL fetching failed.
+    NO_RESPONSE_BODY,         // No response body.
+    RESPONSE_PARSING_FAILED,  // Failed to parse a meaningful output from
+                              // response
+                              // body.
+    INCORRECT_APP_ID,         // App ID returned by the fetcher does not match
+                              // request.
+    INVALID_PARAMETERS,       // Request parameters were invalid.
+    SERVICE_UNAVAILABLE,      // Unregistration service unavailable.
+    INTERNAL_SERVER_ERROR,    // Internal server error happened during request.
+    HTTP_NOT_OK,              // HTTP response code was not OK.
+    UNKNOWN_ERROR,            // Unknown error.
+    // NOTE: Always keep this entry at the end. Add new status types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    UNREGISTRATION_STATUS_COUNT,
+  };
+
   // Callback completing the unregistration request.
-  typedef base::Callback<void(bool success)> UnregistrationCallback;
+  typedef base::Callback<void(Status success)> UnregistrationCallback;
 
   // Details of the of the Unregistration Request. All parameters are mandatory.
   struct GCM_EXPORT RequestInfo {

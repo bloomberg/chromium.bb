@@ -80,6 +80,13 @@ void GCMClientMock::Register(const std::string& app_id,
 }
 
 void GCMClientMock::Unregister(const std::string& app_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMClientMock::UnregisterFinished,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 app_id));
 }
 
 void GCMClientMock::Send(const std::string& app_id,
@@ -162,6 +169,10 @@ void GCMClientMock::RegisterFinished(const std::string& app_id,
                                      const std::string& registrion_id) {
   delegate_->OnRegisterFinished(
       app_id, registrion_id, registrion_id.empty() ? SERVER_ERROR : SUCCESS);
+}
+
+void GCMClientMock::UnregisterFinished(const std::string& app_id) {
+  delegate_->OnUnregisterFinished(app_id, GCMClient::SUCCESS);
 }
 
 void GCMClientMock::SendFinished(const std::string& app_id,

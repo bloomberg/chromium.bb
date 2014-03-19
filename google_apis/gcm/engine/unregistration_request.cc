@@ -42,26 +42,6 @@ const char kDeletedPrefix[] = "deleted=";
 const char kErrorPrefix[] = "Error=";
 const char kInvalidParameters[] = "INVALID_PARAMETERS";
 
-// Outcome of the response parsing. Note that these enums are consumed by a
-// histogram, so ordering should not be modified.
-enum UnregistrationRequestStatus {
-  SUCCESS,                  // Unregistration completed successfully.
-  URL_FETCHING_FAILED,      // URL fetching failed.
-  NO_RESPONSE_BODY,         // No response body.
-  RESPONSE_PARSING_FAILED,  // Failed to parse a meaningful output from response
-                            // body.
-  INCORRECT_APP_ID,         // App ID returned by the fetcher does not match
-                            // request.
-  INVALID_PARAMETERS,       // Request parameters were invalid.
-  SERVICE_UNAVAILABLE,      // Unregistration service unavailable.
-  INTERNAL_SERVER_ERROR,    // Internal server error happened during request.
-  HTTP_NOT_OK,              // HTTP response code was not OK.
-  UNKNOWN_ERROR,            // Unknown error.
-  // NOTE: Always keep this entry at the end. Add new status types only
-  // immediately above this line. Make sure to update the corresponding
-  // histogram enum accordingly.
-  UNREGISTRATION_STATUS_COUNT,
-};
 
 void BuildFormEncoding(const std::string& key,
                        const std::string& value,
@@ -71,11 +51,12 @@ void BuildFormEncoding(const std::string& key,
   out->append(key + "=" + net::EscapeUrlEncodedData(value, true));
 }
 
-UnregistrationRequestStatus ParseFetcherResponse(const net::URLFetcher* source,
-                                                 std::string request_app_id) {
+UnregistrationRequest::Status ParseFetcherResponse(
+    const net::URLFetcher* source,
+    std::string request_app_id) {
   if (!source->GetStatus().is_success()) {
     DVLOG(1) << "Fetcher failed";
-    return URL_FETCHING_FAILED;
+    return UnregistrationRequest::URL_FETCHING_FAILED;
   }
 
   net::HttpStatusCode response_status = static_cast<net::HttpStatusCode>(
@@ -83,16 +64,16 @@ UnregistrationRequestStatus ParseFetcherResponse(const net::URLFetcher* source,
   if (response_status != net::HTTP_OK) {
     DVLOG(1) << "HTTP Status code is not OK, but: " << response_status;
     if (response_status == net::HTTP_SERVICE_UNAVAILABLE)
-      return SERVICE_UNAVAILABLE;
+      return UnregistrationRequest::SERVICE_UNAVAILABLE;
     else if (response_status == net::HTTP_INTERNAL_SERVER_ERROR)
-      return INTERNAL_SERVER_ERROR;
-    return HTTP_NOT_OK;
+      return UnregistrationRequest::INTERNAL_SERVER_ERROR;
+    return UnregistrationRequest::HTTP_NOT_OK;
   }
 
   std::string response;
   if (!source->GetResponseAsString(&response)) {
     DVLOG(1) << "Failed to get response body.";
-    return NO_RESPONSE_BODY;
+    return UnregistrationRequest::NO_RESPONSE_BODY;
   }
 
   DVLOG(1) << "Parsing unregistration response.";
@@ -100,21 +81,21 @@ UnregistrationRequestStatus ParseFetcherResponse(const net::URLFetcher* source,
     std::string app_id = response.substr(
         response.find(kDeletedPrefix) + arraysize(kDeletedPrefix) - 1);
     if (app_id == request_app_id)
-      return SUCCESS;
-    return INCORRECT_APP_ID;
+      return UnregistrationRequest::SUCCESS;
+    return UnregistrationRequest::INCORRECT_APP_ID;
   }
 
   if (response.find(kErrorPrefix) != std::string::npos) {
     std::string error = response.substr(
         response.find(kErrorPrefix) + arraysize(kErrorPrefix) - 1);
     if (error == kInvalidParameters)
-      return INVALID_PARAMETERS;
-    return UNKNOWN_ERROR;
+      return UnregistrationRequest::INVALID_PARAMETERS;
+    return UnregistrationRequest::UNKNOWN_ERROR;
   }
 
   DVLOG(1) << "Not able to parse a meaningful output from response body."
            << response;
-  return RESPONSE_PARSING_FAILED;
+  return UnregistrationRequest::RESPONSE_PARSING_FAILED;
 }
 
 }  // namespace
@@ -202,7 +183,7 @@ void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
 }
 
 void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  UnregistrationRequestStatus status =
+  UnregistrationRequest::Status status =
       ParseFetcherResponse(source, request_info_.app_id);
 
   DVLOG(1) << "UnregistrationRequestStauts: " << status;
@@ -219,7 +200,7 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   } else {
     // status == SUCCESS || HTTP_NOT_OK || NO_RESPONSE_BODY ||
     // INVALID_PARAMETERS || UNKNOWN_ERROR
-    callback_.Run(status == SUCCESS);
+    callback_.Run(status);
   }
 }
 
