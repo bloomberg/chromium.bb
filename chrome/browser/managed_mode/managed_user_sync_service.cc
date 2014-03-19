@@ -76,10 +76,10 @@ SyncData CreateLocalSyncData(const std::string& id,
   return SyncData::CreateLocalData(id, name, specifics);
 }
 
-SyncData CreateSyncDataFromDictionaryEntry(
-    const base::DictionaryValue::Iterator& it) {
+SyncData CreateSyncDataFromDictionaryEntry(const std::string& id,
+                                           const base::Value& value) {
   const base::DictionaryValue* dict = NULL;
-  bool success = it.value().GetAsDictionary(&dict);
+  bool success = value.GetAsDictionary(&dict);
   DCHECK(success);
   bool acknowledged = false;
   dict->GetBoolean(ManagedUserSyncService::kAcknowledged, &acknowledged);
@@ -94,13 +94,17 @@ SyncData CreateSyncDataFromDictionaryEntry(
   dict->GetString(ManagedUserSyncService::kChromeOsAvatar, &chromeos_avatar);
   std::string signature;
   dict->GetString(ManagedUserSyncService::kPasswordSignatureKey, &signature);
-
   std::string encryption;
   dict->GetString(ManagedUserSyncService::kPasswordEncryptionKey, &encryption);
 
-  return CreateLocalSyncData(it.key(), name, acknowledged, master_key,
-                             chrome_avatar, chromeos_avatar,
-                             signature, encryption);
+  return CreateLocalSyncData(id,
+                             name,
+                             acknowledged,
+                             master_key,
+                             chrome_avatar,
+                             chromeos_avatar,
+                             signature,
+                             encryption);
 }
 
 }  // namespace
@@ -198,21 +202,19 @@ void ManagedUserSyncService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void ManagedUserSyncService::AddManagedUser(const std::string& id,
-                                            const std::string& name,
-                                            const std::string& master_key,
-                                            const std::string& signature_key,
-                                            const std::string& encryption_key,
-                                            int avatar_index) {
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  base::DictionaryValue* dict = update.Get();
-  base::DictionaryValue* value = new base::DictionaryValue;
-  value->SetString(kName, name);
-  value->SetString(kMasterKey, master_key);
-  value->SetString(kPasswordSignatureKey, signature_key);
-  value->SetString(kPasswordEncryptionKey, encryption_key);
-  // TODO(akuegel): Get rid of the avatar stuff here when Chrome OS switches to
-  // the avatar index that is stored as a shared setting.
+scoped_ptr<base::DictionaryValue> ManagedUserSyncService::CreateDictionary(
+    const std::string& name,
+    const std::string& master_key,
+    const std::string& signature_key,
+    const std::string& encryption_key,
+    int avatar_index) {
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  result->SetString(kName, name);
+  result->SetString(kMasterKey, master_key);
+  result->SetString(kPasswordSignatureKey, signature_key);
+  result->SetString(kPasswordEncryptionKey, encryption_key);
+  // TODO(akuegel): Get rid of the avatar stuff here when Chrome OS switches
+  // to the avatar index that is stored as a shared setting.
   std::string chrome_avatar;
   std::string chromeos_avatar;
 #if defined(OS_CHROMEOS)
@@ -220,23 +222,68 @@ void ManagedUserSyncService::AddManagedUser(const std::string& id,
 #else
   chrome_avatar = BuildAvatarString(avatar_index);
 #endif
-  value->SetString(kChromeAvatar, chrome_avatar);
-  value->SetString(kChromeOsAvatar, chromeos_avatar);
-  DCHECK(!dict->HasKey(id));
-  dict->SetWithoutPathExpansion(id, value);
+  result->SetString(kChromeAvatar, chrome_avatar);
+  result->SetString(kChromeOsAvatar, chromeos_avatar);
+  return result.Pass();
+}
+
+void ManagedUserSyncService::AddManagedUser(const std::string& id,
+                                            const std::string& name,
+                                            const std::string& master_key,
+                                            const std::string& signature_key,
+                                            const std::string& encryption_key,
+                                            int avatar_index) {
+  UpdateManagedUserImpl(id,
+                        name,
+                        master_key,
+                        signature_key,
+                        encryption_key,
+                        avatar_index,
+                        true /* add */);
+}
+
+void ManagedUserSyncService::UpdateManagedUser(
+    const std::string& id,
+    const std::string& name,
+    const std::string& master_key,
+    const std::string& signature_key,
+    const std::string& encryption_key,
+    int avatar_index) {
+  UpdateManagedUserImpl(id,
+                        name,
+                        master_key,
+                        signature_key,
+                        encryption_key,
+                        avatar_index,
+                        false /* update */);
+}
+
+void ManagedUserSyncService::UpdateManagedUserImpl(
+    const std::string& id,
+    const std::string& name,
+    const std::string& master_key,
+    const std::string& signature_key,
+    const std::string& encryption_key,
+    int avatar_index,
+    bool add_user) {
+  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  base::DictionaryValue* dict = update.Get();
+  scoped_ptr<base::DictionaryValue> value = CreateDictionary(
+      name, master_key, signature_key, encryption_key, avatar_index);
+
+  DCHECK_EQ(add_user, !dict->HasKey(id));
+  base::DictionaryValue* entry = value.get();
+  dict->SetWithoutPathExpansion(id, value.release());
 
   if (!sync_processor_)
     return;
 
   // If we're already syncing, create a new change and upload it.
   SyncChangeList change_list;
-  change_list.push_back(SyncChange(
-      FROM_HERE,
-      SyncChange::ACTION_ADD,
-
-      CreateLocalSyncData(id, name, false, master_key,
-                          chrome_avatar, chromeos_avatar,
-                          signature_key, encryption_key)));
+  change_list.push_back(
+      SyncChange(FROM_HERE,
+                 add_user ? SyncChange::ACTION_ADD : SyncChange::ACTION_UPDATE,
+                 CreateSyncDataFromDictionaryEntry(id, *entry)));
   SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   DCHECK(!error.IsSet()) << error.ToString();
@@ -391,8 +438,10 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     if (seen_ids.find(it.key()) != seen_ids.end())
       continue;
 
-    change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
-                                     CreateSyncDataFromDictionaryEntry(it)));
+    change_list.push_back(
+        SyncChange(FROM_HERE,
+                   SyncChange::ACTION_ADD,
+                   CreateSyncDataFromDictionaryEntry(it.key(), it.value())));
   }
   result.set_error(sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
 
@@ -420,7 +469,7 @@ SyncDataList ManagedUserSyncService::GetAllSyncData(
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
   base::DictionaryValue* dict = update.Get();
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance())
-    data.push_back(CreateSyncDataFromDictionaryEntry(it));
+    data.push_back(CreateSyncDataFromDictionaryEntry(it.key(), it.value()));
 
   return data;
 }

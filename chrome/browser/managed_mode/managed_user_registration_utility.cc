@@ -15,6 +15,7 @@
 #include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_update.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -92,6 +93,10 @@ class ManagedUserRegistrationUtilityImpl
   // callback or reporting an error.
   void CancelPendingRegistration();
 
+  // ManagedUserSharedSettingsUpdate acknowledgment callback for password data
+  // in shared settings.
+  void OnPasswordChangeAcknowledged(bool success);
+
   PrefService* prefs_;
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
 
@@ -104,6 +109,7 @@ class ManagedUserRegistrationUtilityImpl
   std::string pending_managed_user_id_;
   std::string pending_managed_user_token_;
   bool pending_managed_user_acknowledged_;
+  bool pending_password_acknowledged_;
   bool is_existing_managed_user_;
   bool avatar_updated_;
   RegistrationCallback callback_;
@@ -203,6 +209,7 @@ ManagedUserRegistrationUtilityImpl::ManagedUserRegistrationUtilityImpl(
       managed_user_sync_service_(service),
       managed_user_shared_settings_service_(shared_settings_service),
       pending_managed_user_acknowledged_(false),
+      pending_password_acknowledged_(true),
       is_existing_managed_user_(false),
       avatar_updated_(false),
       weak_ptr_factory_(this) {
@@ -233,13 +240,36 @@ void ManagedUserRegistrationUtilityImpl::Register(
                                                info.password_encryption_key,
                                                info.avatar_index);
   } else {
+    const base::DictionaryValue* value = NULL;
+    bool success =
+        dict->GetDictionaryWithoutPathExpansion(managed_user_id, &value);
+    DCHECK(success);
+    std::string key;
+    bool need_keys = !info.password_signature_key.empty() ||
+                     !info.password_encryption_key.empty();
+    bool keys_need_update =
+        need_keys &&
+        value->GetString(ManagedUserSyncService::kPasswordSignatureKey, &key) &&
+        !key.empty() &&
+        value->GetString(ManagedUserSyncService::kPasswordEncryptionKey,
+                         &key) &&
+        !key.empty();
+    if (keys_need_update) {
+      managed_user_sync_service_->UpdateManagedUser(
+          pending_managed_user_id_,
+          base::UTF16ToUTF8(info.name),
+          info.master_key,
+          info.password_signature_key,
+          info.password_encryption_key,
+          info.avatar_index);
+    } else {
+      // The user already exists and does not need to be updated.
+      OnManagedUserAcknowledged(managed_user_id);
+    }
     avatar_updated_ =
         managed_user_sync_service_->UpdateManagedUserAvatarIfNeeded(
             managed_user_id,
             info.avatar_index);
-
-    // User already exists, don't wait for acknowledgment.
-    OnManagedUserAcknowledged(managed_user_id);
   }
 #if defined(OS_CHROMEOS)
   const char* kAvatarKey = managed_users::kChromeOSAvatarIndex;
@@ -249,6 +279,18 @@ void ManagedUserRegistrationUtilityImpl::Register(
   managed_user_shared_settings_service_->SetValue(
       pending_managed_user_id_, kAvatarKey,
       base::FundamentalValue(info.avatar_index));
+  if (!info.password_data.empty()) {
+    pending_password_acknowledged_ = false;
+
+    ManagedUserSharedSettingsUpdate update(
+        managed_user_shared_settings_service_,
+        pending_managed_user_id_,
+        managed_users::kChromeOSPasswordData,
+        scoped_ptr<base::Value>(info.password_data.DeepCopy()),
+        base::Bind(
+            &ManagedUserRegistrationUtilityImpl::OnPasswordChangeAcknowledged,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 
   browser_sync::DeviceInfo::GetClientName(
       base::Bind(&ManagedUserRegistrationUtilityImpl::FetchToken,
@@ -266,6 +308,14 @@ void ManagedUserRegistrationUtilityImpl::OnManagedUserAcknowledged(
   DCHECK_EQ(pending_managed_user_id_, managed_user_id);
   DCHECK(!pending_managed_user_acknowledged_);
   pending_managed_user_acknowledged_ = true;
+  CompleteRegistrationIfReady();
+}
+
+void ManagedUserRegistrationUtilityImpl::OnPasswordChangeAcknowledged(
+    bool success) {
+  DCHECK(!pending_password_acknowledged_);
+  DCHECK(success);
+  pending_password_acknowledged_ = true;
   CompleteRegistrationIfReady();
 }
 
@@ -299,11 +349,14 @@ void ManagedUserRegistrationUtilityImpl::OnReceivedToken(
 }
 
 void ManagedUserRegistrationUtilityImpl::CompleteRegistrationIfReady() {
-  bool require_acknowledgment =
-      !pending_managed_user_acknowledged_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoManagedUserAcknowledgmentCheck);
-  if (require_acknowledgment || pending_managed_user_token_.empty())
+  bool skip_check = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoManagedUserAcknowledgmentCheck);
+
+  if (!pending_managed_user_acknowledged_ && !skip_check)
+    return;
+  if (!pending_password_acknowledged_ && !skip_check)
+    return;
+  if (pending_managed_user_token_.empty())
     return;
 
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);

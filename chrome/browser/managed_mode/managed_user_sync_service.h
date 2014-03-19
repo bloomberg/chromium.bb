@@ -73,6 +73,13 @@ class ManagedUserSyncService : public KeyedService,
                       const std::string& password_signature_key,
                       const std::string& password_encryption_key,
                       int avatar_index);
+  void UpdateManagedUser(const std::string& id,
+                         const std::string& name,
+                         const std::string& master_key,
+                         const std::string& signature_key,
+                         const std::string& encryption_key,
+                         int avatar_index);
+
   void DeleteManagedUser(const std::string& id);
 
   // Updates the managed user avatar only if the managed user has
@@ -120,6 +127,21 @@ class ManagedUserSyncService : public KeyedService,
   explicit ManagedUserSyncService(PrefService* prefs);
 
   void OnLastSignedInUsernameChange();
+
+  scoped_ptr<base::DictionaryValue> CreateDictionary(
+      const std::string& name,
+      const std::string& master_key,
+      const std::string& signature_key,
+      const std::string& encryption_key,
+      int avatar_index);
+
+  void UpdateManagedUserImpl(const std::string& id,
+                             const std::string& name,
+                             const std::string& master_key,
+                             const std::string& signature_key,
+                             const std::string& encryption_key,
+                             int avatar_index,
+                             bool add_user);
 
   void NotifyManagedUserAcknowledged(const std::string& managed_user_id);
   void NotifyManagedUsersSyncingStopped();
