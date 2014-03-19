@@ -1506,6 +1506,9 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
       drag_and_drop_host_->EndDrag(true);
     }
   } else {
+    if (IsFolderItem(drag_view_->item()))
+      return;
+
     // The event happened outside our app menu and we might need to dispatch.
     if (forward_events_to_drag_and_drop_host_) {
       // Dispatch since we have already started.
