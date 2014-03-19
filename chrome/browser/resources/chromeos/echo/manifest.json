@@ -28,5 +28,11 @@
   "background": {
     "scripts": ["main.js"],
     "persistent": false
+  },
+  "externally_connectable": {
+    "ids": ["*"],
+    "matches": [
+      "*://www.google.com/*/chrome/devices/goodies.html*"
+    ]
   }
 }
