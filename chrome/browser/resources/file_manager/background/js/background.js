@@ -913,7 +913,11 @@ Background.prototype.onContextMenuClicked_ = function(info) {
  */
 Background.prototype.initContextMenu_ = function() {
   try {
-    chrome.contextMenus.remove('new-window');
+    // According to the spec [1], the callback is optional. But no callbacki
+    // causes an error for some reason, so we call it with null-callback to
+    // prevent the error. http://crbug.com/353877
+    // - [1] https://developer.chrome.com/extensions/contextMenus#method-remove
+    chrome.contextMenus.remove('new-window', function() {});
   } catch (ignore) {
     // There is no way to detect if the context menu is already added, therefore
     // try to recreate it every time.
