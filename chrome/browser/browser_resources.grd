@@ -102,9 +102,6 @@
       <include name="IDR_ABOUT_VERSION_CSS" file="resources\about_version.css" type="BINDATA" />
 
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
-      <if expr="enable_enhanced_bookmarks">
-        <include name="IDR_ENHANCED_BOOKMARKS_MANIFEST" file="resources\enhanced_bookmark_manager\manifest.json" type="BINDATA" />
-      </if>
       <if expr="is_posix and not is_macosx and not is_ios">
         <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />

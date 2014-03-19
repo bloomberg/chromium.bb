@@ -526,7 +526,6 @@
       'spdy_proxy_auth_value%' : '',
       'data_reduction_proxy_probe_url%' : '',
       'enable_mdns%' : 0,
-      'enable_enhanced_bookmarks%': 0,
       'enable_hangout_services_extension%': 0,
 
        # Enable the Syzygy optimization step.
@@ -1018,7 +1017,6 @@
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
-    'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
     'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
@@ -1842,9 +1840,6 @@
       ['enable_mdns==1', {
         'grit_defines': ['-D', 'enable_mdns'],
       }],
-      ['enable_enhanced_bookmarks==1', {
-        'grit_defines': ['-D', 'enable_enhanced_bookmarks'],
-      }],
       ['enable_hangout_services_extension==1', {
         'grit_defines': ['-D', 'enable_hangout_services_extension'],
       }],
@@ -2533,9 +2528,6 @@
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],
-      }],
-      ['enable_enhanced_bookmarks==1', {
-        'defines': ['ENABLE_ENHANCED_BOOKMARKS=1'],
       }],
       ['enable_hangout_services_extension==1', {
         'defines': ['ENABLE_HANGOUT_SERVICES_EXTENSION=1'],

@@ -294,11 +294,6 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
 #if defined(OS_CHROMEOS)
     is_override = (is_override && page != keyboard::kKeyboardWebUIHost);
 #endif
-#if defined(ENABLE_ENHANCED_BOOKMARKS)
-    is_override = (is_override &&
-                   !(extension->location() == Manifest::COMPONENT &&
-                     page ==  chrome::kChromeUIEnhancedBookmarksHost));
-#endif
 
     if (is_override || !iter.value().GetAsString(&val)) {
       *error = base::ASCIIToUTF16(errors::kInvalidChromeURLOverrides);

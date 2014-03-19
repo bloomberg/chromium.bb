@@ -129,7 +129,6 @@ class ComponentLoader {
   void AddHangoutServicesExtension();
   void AddHotwordHelperExtension();
   void AddImageLoaderExtension();
-  void AddBookmarksExtensions();
   void AddNetworkSpeechSynthesisExtension();
 
   void AddWithName(int manifest_resource_id,

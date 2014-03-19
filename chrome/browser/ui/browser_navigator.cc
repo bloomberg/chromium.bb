@@ -732,9 +732,6 @@ bool IsURLAllowedInIncognito(const GURL& url,
        url.host() == chrome::kChromeUISettingsFrameHost ||
        url.host() == chrome::kChromeUIExtensionsHost ||
        url.host() == chrome::kChromeUIBookmarksHost ||
-#if defined(ENABLE_ENHANCED_BOOKMARKS)
-       url.host() == chrome::kChromeUIEnhancedBookmarksHost ||
-#endif
 #if !defined(OS_CHROMEOS)
        url.host() == chrome::kChromeUIChromeSigninHost ||
 #endif
