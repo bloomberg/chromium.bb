@@ -294,21 +294,21 @@ TEST(Aes128Gcm12DecrypterTest, Decrypt) {
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
-      EXPECT_EQ(test_info.key_len, key.size() * 8);
-      EXPECT_EQ(test_info.iv_len, iv.size() * 8);
-      EXPECT_EQ(test_info.pt_len, ct.size() * 8);
-      EXPECT_EQ(test_info.aad_len, aad.size() * 8);
-      EXPECT_EQ(test_info.tag_len, tag.size() * 8);
+      EXPECT_EQ(test_info.key_len, key.length() * 8);
+      EXPECT_EQ(test_info.iv_len, iv.length() * 8);
+      EXPECT_EQ(test_info.pt_len, ct.length() * 8);
+      EXPECT_EQ(test_info.aad_len, aad.length() * 8);
+      EXPECT_EQ(test_info.tag_len, tag.length() * 8);
       if (has_pt) {
-        EXPECT_EQ(test_info.pt_len, pt.size() * 8);
+        EXPECT_EQ(test_info.pt_len, pt.length() * 8);
       }
 
       // The test vectors have 16 byte authenticators but this code only uses
       // the first 12.
       ASSERT_LE(static_cast<size_t>(Aes128Gcm12Decrypter::kAuthTagSize),
-                tag.size());
-      string ciphertext =
-          ct + tag.substr(0, Aes128Gcm12Decrypter::kAuthTagSize);
+                tag.length());
+      tag.resize(Aes128Gcm12Decrypter::kAuthTagSize);
+      string ciphertext = ct + tag;
 
       Aes128Gcm12Decrypter decrypter;
       ASSERT_TRUE(decrypter.SetKey(key));
@@ -317,16 +317,16 @@ TEST(Aes128Gcm12DecrypterTest, Decrypt) {
           &decrypter, iv,
           // This deliberately tests that the decrypter can handle an AAD that
           // is set to NULL, as opposed to a zero-length, non-NULL pointer.
-          aad.size() ? aad : StringPiece(), ciphertext));
+          aad.length() ? aad : StringPiece(), ciphertext));
       if (!decrypted.get()) {
         EXPECT_FALSE(has_pt);
         continue;
       }
       EXPECT_TRUE(has_pt);
 
-      ASSERT_EQ(pt.size(), decrypted->length());
+      ASSERT_EQ(pt.length(), decrypted->length());
       test::CompareCharArraysWithHexError("plaintext", decrypted->data(),
-                                          pt.size(), pt.data(), pt.size());
+                                          pt.length(), pt.data(), pt.length());
     }
   }
 }

@@ -92,6 +92,9 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
   }
 
   for (size_t i = 0; test_vectors[i].key != NULL; i++) {
+    // If not present then decryption is expected to fail.
+    bool has_pt = test_vectors[i].pt;
+
     // Decode the test vector.
     string key;
     string iv;
@@ -102,7 +105,7 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
     ASSERT_TRUE(DecodeHexString(test_vectors[i].iv, &iv));
     ASSERT_TRUE(DecodeHexString(test_vectors[i].aad, &aad));
     ASSERT_TRUE(DecodeHexString(test_vectors[i].ct, &ct));
-    if (test_vectors[i].pt) {
+    if (has_pt) {
       ASSERT_TRUE(DecodeHexString(test_vectors[i].pt, &pt));
     }
 
@@ -114,10 +117,10 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
         // is set to NULL, as opposed to a zero-length, non-NULL pointer.
         StringPiece(aad.length() ? aad.data() : NULL, aad.length()), ct));
     if (!decrypted.get()) {
-      EXPECT_FALSE(test_vectors[i].pt);
+      EXPECT_FALSE(has_pt);
       continue;
     }
-    EXPECT_TRUE(test_vectors[i].pt);
+    EXPECT_TRUE(has_pt);
 
     ASSERT_EQ(pt.length(), decrypted->length());
     test::CompareCharArraysWithHexError("plaintext", decrypted->data(),
