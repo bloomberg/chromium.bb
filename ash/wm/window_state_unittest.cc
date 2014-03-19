@@ -14,6 +14,40 @@
 
 namespace ash {
 namespace wm {
+namespace {
+
+class AlwaysMaximizeTestState : public WindowState::State {
+ public:
+  explicit AlwaysMaximizeTestState(WindowStateType initial_state_type)
+      : state_type_(initial_state_type) {}
+  virtual ~AlwaysMaximizeTestState() {}
+
+  // WindowState::State overrides:
+  virtual void OnWMEvent(WindowState* window_state,
+                         const WMEvent* event) OVERRIDE {
+    // We don't do anything here.
+  }
+  virtual WindowStateType GetType() const OVERRIDE {
+    return state_type_;
+  }
+  virtual void AttachState(
+      WindowState* window_state,
+      WindowState::State* previous_state) OVERRIDE {
+    // We always maximize.
+    if (state_type_ != WINDOW_STATE_TYPE_MAXIMIZED) {
+      window_state->Maximize();
+      state_type_ = WINDOW_STATE_TYPE_MAXIMIZED;
+    }
+  }
+  virtual void DetachState(WindowState* window_state) OVERRIDE {}
+
+ private:
+  WindowStateType state_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(AlwaysMaximizeTestState);
+};
+
+}  // namespace
 
 typedef test::AshTestBase WindowStateTest;
 
@@ -31,8 +65,8 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   gfx::Rect expected = gfx::Rect(
       kPrimaryDisplayWorkAreaBounds.x(),
@@ -41,7 +75,7 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
       kPrimaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_right);
   expected.set_x(kPrimaryDisplayWorkAreaBounds.right() - expected.width());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
@@ -80,9 +114,9 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
 
   // It should be possible to snap a window with a minimum size.
   delegate.set_minimum_size(gfx::Size(kWorkAreaBounds.width() - 1, 0));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = GetWindowState(window.get());
   EXPECT_TRUE(window_state->CanSnap());
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_right);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x() + 1,
                                  kWorkAreaBounds.y(),
@@ -107,8 +141,8 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
@@ -128,7 +162,7 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
 TEST_F(WindowStateTest, RestoreBounds) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = GetWindowState(window.get());
 
   EXPECT_TRUE(window_state->IsNormalStateType());
 
@@ -136,9 +170,9 @@ TEST_F(WindowStateTest, RestoreBounds) {
   gfx::Rect restore_bounds = window->GetBoundsInScreen();
   restore_bounds.set_width(restore_bounds.width() + 1);
   window_state->SetRestoreBoundsInScreen(restore_bounds);
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_right);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_EQ(restore_bounds.ToString(),
@@ -168,14 +202,14 @@ TEST_F(WindowStateTest, RestoreBounds) {
 // at the snapped bounds and not at the auto-managed (centered) bounds.
 TEST_F(WindowStateTest, AutoManaged) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = GetWindowState(window.get());
   window_state->set_window_position_managed(true);
   window->Hide();
   window->SetBounds(gfx::Rect(100, 100, 100, 100));
   window->Show();
 
   window_state->Maximize();
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_right);
 
   const gfx::Rect kWorkAreaBounds =
@@ -191,6 +225,34 @@ TEST_F(WindowStateTest, AutoManaged) {
   // The window should still be auto managed despite being right maximized.
   EXPECT_TRUE(window_state->window_position_managed());
 }
+
+// Test that the replacement of a State object works as expected.
+TEST_F(WindowStateTest, SimpleStateSwap) {
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  window_state->SetStateObject(
+      scoped_ptr<WindowState::State> (new AlwaysMaximizeTestState(
+          window_state->GetStateType())));
+  EXPECT_TRUE(window_state->IsMaximized());
+}
+
+// Test that the replacement of a state object, following a restore with the
+// original one restores the window to its original state.
+TEST_F(WindowStateTest, StateSwapRestore) {
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  scoped_ptr<WindowState::State> old(window_state->SetStateObject(
+      scoped_ptr<WindowState::State> (new AlwaysMaximizeTestState(
+          window_state->GetStateType()))).Pass());
+  EXPECT_TRUE(window_state->IsMaximized());
+  window_state->SetStateObject(old.Pass());
+  EXPECT_FALSE(window_state->IsMaximized());
+}
+
+// TODO(skuhne): Add more unit test to verify the correctness for the restore
+// operation.
 
 }  // namespace wm
 }  // namespace ash

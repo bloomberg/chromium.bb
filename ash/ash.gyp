@@ -549,6 +549,8 @@
         'wm/lock_state_observer.h',
         'wm/maximize_mode/maximize_mode_window_manager.cc',
         'wm/maximize_mode/maximize_mode_window_manager.h',
+        'wm/maximize_mode/maximize_mode_window_state.cc',
+        'wm/maximize_mode/maximize_mode_window_state.h',        
         'wm/maximize_mode/workspace_backdrop_delegate.cc',
         'wm/maximize_mode/workspace_backdrop_delegate.h',
         'wm/mru_window_tracker.cc',
