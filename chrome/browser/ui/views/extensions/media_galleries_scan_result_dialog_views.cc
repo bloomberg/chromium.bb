@@ -122,7 +122,7 @@ void MediaGalleriesScanResultDialogViews::InitChildViews() {
       views::kRelatedControlVerticalSpacing,
       0));
 
-  // Add attached galleries checkboxes.
+  // Add galleries checkboxes.
   gallery_view_map_.clear();
   OrderedScanResults scan_results = controller_->GetGalleryList();
   for (OrderedScanResults::const_iterator it = scan_results.begin();
@@ -208,7 +208,7 @@ views::View* MediaGalleriesScanResultDialogViews::GetContentsView() {
 base::string16 MediaGalleriesScanResultDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
-      IDS_MEDIA_GALLERIES_DIALOG_CONFIRM :
+      IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONFIRM :
       IDS_MEDIA_GALLERIES_DIALOG_CANCEL);
 }
 

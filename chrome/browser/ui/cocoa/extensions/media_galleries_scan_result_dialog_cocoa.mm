@@ -118,7 +118,7 @@ MediaGalleriesScanResultDialogCocoa::MediaGalleriesScanResultDialogCocoa(
   [alert_ setInformativeText:
       base::SysUTF16ToNSString(controller_->GetSubtext())];
   [alert_ addButtonWithTitle:
-      l10n_util::GetNSString(IDS_MEDIA_GALLERIES_DIALOG_CONFIRM)
+      l10n_util::GetNSString(IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONFIRM)
                keyEquivalent:kKeyEquivalentReturn
                       target:cocoa_controller_
                       action:@selector(onAcceptButton:)];

@@ -14315,6 +14315,9 @@ Do you accept?
         <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the media galleries configuration dialog.">
           Apply
         </message>
+        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the media galleries scan result dialog. The results of the dialog are added as new galleries.">
+          Add
+        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In sentence case: Button for adding a new gallery by choosing a folder."
@@ -14327,6 +14330,9 @@ Do you accept?
         <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In sentence case: The text for the accept button on the media galleries configuration dialog."
                  meaning="In sentence case: The text for the accept button on the media galleries configuration dialog.">
           Apply
+        </message>
+        <message name="IDS_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONFIRM" desc="In sentence case: The text for the accept button on the media galleries scan result dialog. The results of the dialog are added as new galleries.">
+          Add
         </message>
       </if>
       <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE" desc="The title of the folder selection dialog for adding a new media gallery.">
