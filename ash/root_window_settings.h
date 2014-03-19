@@ -29,6 +29,9 @@ struct RootWindowSettings {
   // RootWindowController for the root window. This may be NULL
   // for the root window used for mirroring.
   RootWindowController* controller;
+
+  // True if the root window has already been shutdown.
+  bool shutdown;
 };
 
 // Initializes and returns RootWindowSettings for |root|.

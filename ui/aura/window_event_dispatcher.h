@@ -65,9 +65,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
 
-  // Stop listening events in preparation for shutdown.
-  void PrepareForShutdown();
-
   // Repost event for re-processing. Used when exiting context menus.
   // We only support the ET_MOUSE_PRESSED and ET_GESTURE_TAP_DOWN event
   // types (although the latter is currently a no-op).

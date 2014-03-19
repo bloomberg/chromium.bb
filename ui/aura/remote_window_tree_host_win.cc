@@ -485,9 +485,6 @@ void RemoteWindowTreeHostWin::OnDeviceScaleFactorChanged(
   NOTIMPLEMENTED();
 }
 
-void RemoteWindowTreeHostWin::PrepareForShutdown() {
-}
-
 ui::EventProcessor* RemoteWindowTreeHostWin::GetEventProcessor() {
   return dispatcher();
 }
