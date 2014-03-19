@@ -867,8 +867,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
 
   PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale);
 
-  const Region& recorded = pile_->recorded_region();
-  DCHECK(!recorded.IsEmpty());
+  DCHECK(pile_->HasRecordings());
 
   if (twin_layer_ &&
       twin_layer_->ShouldUseGpuRasterization() == ShouldUseGpuRasterization())
@@ -1180,7 +1179,7 @@ void PictureLayerImpl::ResetRasterScale() {
 bool PictureLayerImpl::CanHaveTilings() const {
   if (!DrawsContent())
     return false;
-  if (pile_->recorded_region().IsEmpty())
+  if (!pile_->HasRecordings())
     return false;
   return true;
 }
@@ -1223,11 +1222,6 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
-
-  Region unrecorded_region(gfx::Rect(pile_->size()));
-  unrecorded_region.Subtract(pile_->recorded_region());
-  if (!unrecorded_region.IsEmpty())
-    state->Set("unrecorded_region", unrecorded_region.AsValue().release());
 
   scoped_ptr<base::ListValue> coverage_tiles(new base::ListValue);
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),

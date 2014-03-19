@@ -38,7 +38,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
     memory_limit_policy_ = memory_limit_policy;
     max_tiles_ = max_tiles;
-    picture_pile_ = FakePicturePileImpl::CreatePile();
+    picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
 
     SetTreePriority(tree_priority);
   }

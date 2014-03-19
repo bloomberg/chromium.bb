@@ -18,8 +18,15 @@ namespace {
 class TestPicturePile : public PicturePile {
  public:
   using PicturePile::buffer_pixels;
+  using PicturePile::CanRasterSlowTileCheck;
+  using PicturePile::Clear;
 
   PictureMap& picture_map() { return picture_map_; }
+  const gfx::Rect& recorded_viewport() const { return recorded_viewport_; }
+
+  bool CanRasterLayerRect(const gfx::Rect& layer_rect) {
+    return CanRaster(1.f, layer_rect);
+  }
 
   typedef PicturePile::PictureInfo PictureInfo;
   typedef PicturePile::PictureMapKey PictureMapKey;
@@ -227,6 +234,90 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
       EXPECT_TRUE(picture_info.GetPicture()) << "i " << i << " j " << j;
     }
   }
+}
+
+TEST_F(PicturePileTest, ClearingInvalidatesRecordedRect) {
+  UpdateWholeLayer();
+
+  gfx::Rect rect(0, 0, 5, 5);
+  EXPECT_TRUE(pile_->CanRasterLayerRect(rect));
+  EXPECT_TRUE(pile_->CanRasterSlowTileCheck(rect));
+
+  pile_->Clear();
+
+  // Make sure both the cache-aware check (using recorded region) and the normal
+  // check are both false after clearing.
+  EXPECT_FALSE(pile_->CanRasterLayerRect(rect));
+  EXPECT_FALSE(pile_->CanRasterSlowTileCheck(rect));
+}
+
+TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
+  // This test makes sure that if part of the page is frequently invalidated
+  // and doesn't get re-recorded, then CanRaster is not true for any
+  // tiles touching it, but is true for adjacent tiles, even if it
+  // overlaps on borders (edge case).
+  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 4.f));
+  pile_->Resize(layer_size);
+
+  gfx::Rect tile01_borders = pile_->tiling().TileBoundsWithBorder(0, 1);
+  gfx::Rect tile02_borders = pile_->tiling().TileBoundsWithBorder(0, 2);
+  gfx::Rect tile01_noborders = pile_->tiling().TileBounds(0, 1);
+  gfx::Rect tile02_noborders = pile_->tiling().TileBounds(0, 2);
+
+  // Sanity check these two tiles are overlapping with borders, since this is
+  // what the test is trying to repro.
+  EXPECT_TRUE(tile01_borders.Intersects(tile02_borders));
+  EXPECT_FALSE(tile01_noborders.Intersects(tile02_noborders));
+  UpdateWholeLayer();
+  EXPECT_TRUE(pile_->CanRasterLayerRect(tile01_noborders));
+  EXPECT_TRUE(pile_->CanRasterSlowTileCheck(tile01_noborders));
+  EXPECT_TRUE(pile_->CanRasterLayerRect(tile02_noborders));
+  EXPECT_TRUE(pile_->CanRasterSlowTileCheck(tile02_noborders));
+  // Sanity check that an initial paint goes down the fast path of having
+  // a valid recorded viewport.
+  EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+
+  // Update the whole layer until the invalidation frequency is high.
+  for (int frame = 0; frame < 33; ++frame) {
+    UpdateWholeLayer();
+  }
+
+  // Update once more with a small viewport.
+  gfx::Rect viewport(0, 0, layer_size.width(), 1);
+  Update(layer_rect(), viewport);
+
+  // Sanity check some pictures exist and others don't.
+  EXPECT_TRUE(pile_->picture_map()
+                  .find(TestPicturePile::PictureMapKey(0, 1))
+                  ->second.GetPicture());
+  EXPECT_FALSE(pile_->picture_map()
+                   .find(TestPicturePile::PictureMapKey(0, 2))
+                   ->second.GetPicture());
+
+  EXPECT_TRUE(pile_->CanRasterLayerRect(tile01_noborders));
+  EXPECT_TRUE(pile_->CanRasterSlowTileCheck(tile01_noborders));
+  EXPECT_FALSE(pile_->CanRasterLayerRect(tile02_noborders));
+  EXPECT_FALSE(pile_->CanRasterSlowTileCheck(tile02_noborders));
+}
+
+TEST_F(PicturePileTest, NoInvalidationValidViewport) {
+  // This test validates that the recorded_viewport cache of full tiles
+  // is still valid for some use cases.  If it's not, it's a performance
+  // issue because CanRaster checks will go down the slow path.
+  UpdateWholeLayer();
+  EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+
+  // No invalidation, same viewport.
+  Update(gfx::Rect(), layer_rect());
+  EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+
+  // Partial invalidation, same viewport.
+  Update(gfx::Rect(gfx::Rect(0, 0, 1, 1)), layer_rect());
+  EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+
+  // No invalidation, changing viewport.
+  Update(gfx::Rect(), gfx::Rect(5, 5, 5, 5));
+  EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 }
 
 }  // namespace

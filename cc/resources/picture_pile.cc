@@ -164,6 +164,8 @@ bool PicturePile::Update(
       -kPixelDistanceToRecord,
       -kPixelDistanceToRecord,
       -kPixelDistanceToRecord);
+  recorded_viewport_ = interest_rect;
+  recorded_viewport_.Intersect(gfx::Rect(size()));
 
   bool invalidated = false;
   for (Region::Iterator i(invalidation); i.has_rect(); i.next()) {
@@ -201,17 +203,20 @@ bool PicturePile::Update(
     if (info.NeedsRecording(frame_number, distance_to_visible)) {
       gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
       invalid_tiles.push_back(tile);
+    } else if (!info.GetPicture() && recorded_viewport_.Intersects(rect)) {
+      // Recorded viewport is just an optimization for a fully recorded
+      // interest rect.  In this case, a tile in that rect has declined
+      // to be recorded (probably due to frequent invalidations).
+      // TODO(enne): Shrink the recorded_viewport_ rather than clearing.
+      recorded_viewport_ = gfx::Rect();
     }
   }
 
   std::vector<gfx::Rect> record_rects;
   ClusterTiles(invalid_tiles, &record_rects);
 
-  if (record_rects.empty()) {
-    if (invalidated)
-      UpdateRecordedRegion();
+  if (record_rects.empty())
     return invalidated;
-  }
 
   for (std::vector<gfx::Rect>::iterator it = record_rects.begin();
        it != record_rects.end();
@@ -247,6 +252,8 @@ bool PicturePile::Update(
       stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
     }
 
+    bool found_tile_for_recorded_picture = false;
+
     bool include_borders = true;
     for (TilingData::Iterator it(&tiling_, record_rect, include_borders); it;
          ++it) {
@@ -255,11 +262,14 @@ bool PicturePile::Update(
       if (record_rect.Contains(tile)) {
         PictureInfo& info = picture_map_[key];
         info.SetPicture(picture);
+        found_tile_for_recorded_picture = true;
       }
     }
+    DCHECK(found_tile_for_recorded_picture);
   }
 
-  UpdateRecordedRegion();
+  has_any_recordings_ = true;
+  DCHECK(CanRasterSlowTileCheck(recorded_viewport_));
   return true;
 }
 

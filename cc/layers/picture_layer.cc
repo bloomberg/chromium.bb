@@ -43,7 +43,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // Using layer_impl because either bounds() or paint_properties().bounds
     // may disagree and either one could have been pushed to layer_impl.
     pile_->Resize(gfx::Size());
-    pile_->UpdateRecordedRegion();
   } else if (update_source_frame_number_ ==
              layer_tree_host()->source_frame_number()) {
     // If update called, then pile size must match bounds pushed to impl layer.
