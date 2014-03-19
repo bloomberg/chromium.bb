@@ -62,6 +62,7 @@ static const LanguageRegion g_supported_spellchecker_languages[] = {
   {"sr", "sr"},
   {"sv", "sv-SE"},
   {"ta", "ta-IN"},
+  {"tg", "tg-TG"},
   {"tr", "tr-TR"},
   {"uk", "uk-UA"},
   {"vi", "vi-VN"},
@@ -103,6 +104,7 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
   static LanguageVersion special_version_string[] = {
     {"tr-TR", "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
                         // crash.
+    {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
   };
 
   // Generate the bdict file name using default version string or special
