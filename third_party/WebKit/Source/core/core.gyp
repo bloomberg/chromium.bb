@@ -338,7 +338,9 @@
         ['OS=="win"', {
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4065, 4267 ],
+          # 4702 is disabled because of issues in Bison-generated
+          # XPathGrammar.cpp and CSSGrammar.cpp.
+          'msvs_disabled_warnings': [ 4065, 4267, 4702 ],
         }],
         ['OS in ("linux", "android") and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
           'cflags': [

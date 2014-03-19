@@ -353,30 +353,8 @@ int RenderBox::pixelSnappedOffsetHeight() const
 
 bool RenderBox::canDetermineWidthWithoutLayout() const
 {
-    // FIXME: This optimization is incorrect as written.
-    // We need to be able to opt-in to this behavior only when
-    // it's guarentted correct.
-    // Until then disabling this optimization to be safe.
+    // FIXME: Remove function and callers.
     return false;
-
-    // FIXME: There are likely many subclasses of RenderBlockFlow which
-    // cannot determine their layout just from style!
-    // Perhaps we should create a "PlainRenderBlockFlow"
-    // and move this optimization there?
-    if (!isRenderBlockFlow()
-        // Flexbox items can be expanded beyond their width.
-        || isFlexItemIncludingDeprecated()
-        // Table Layout controls cell size and can expand beyond width.
-        || isTableCell())
-        return false;
-
-    RenderStyle* style = this->style();
-    return style->width().isFixed()
-        && style->minWidth().isFixed()
-        && (style->maxWidth().isUndefined() || style->maxWidth().isFixed())
-        && style->paddingLeft().isFixed()
-        && style->paddingRight().isFixed()
-        && style->boxSizing() == CONTENT_BOX;
 }
 
 LayoutUnit RenderBox::fixedOffsetWidth() const

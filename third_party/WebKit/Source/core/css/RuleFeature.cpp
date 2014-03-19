@@ -105,8 +105,6 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
     default:
         return false;
     }
-    ASSERT_NOT_REACHED();
-    return false;
 }
 
 // This method is somewhat conservative in what it accepts.
