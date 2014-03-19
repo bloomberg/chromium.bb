@@ -79,6 +79,7 @@ public:
     TextDirection directionalityIfhasDirAutoAttribute(bool& isAuto) const;
 
     virtual bool isHTMLUnknownElement() const { return false; }
+    virtual bool isPluginElement() const { return false; }
 
     virtual bool isLabelable() const { return false; }
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content

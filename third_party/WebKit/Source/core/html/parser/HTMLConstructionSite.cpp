@@ -38,6 +38,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -274,7 +275,7 @@ void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
 void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> prpChild, bool selfClosing)
 {
     ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) || !prpChild.get()->isElementNode() || !toScriptLoaderIfPossible(toElement(prpChild.get())));
-    ASSERT(pluginContentIsAllowed(m_parserContentPolicy) || !prpChild->isPluginElement());
+    ASSERT(pluginContentIsAllowed(m_parserContentPolicy) || !isHTMLPlugInElement(prpChild));
 
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
     task.parent = parent;

@@ -98,7 +98,6 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
     virtual void finishParsingChildren() OVERRIDE FINAL;
-    virtual bool isPluginElement() const OVERRIDE FINAL;
 
     // Element functions:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
@@ -111,6 +110,7 @@ private:
 
     // HTMLElement function:
     virtual bool hasCustomFocusLogic() const OVERRIDE;
+    virtual bool isPluginElement() const OVERRIDE FINAL;
 
     // Return any existing RenderWidget without triggering relayout, or 0 if it
     // doesn't yet exist.
@@ -138,7 +138,17 @@ private:
     DisplayState m_displayState;
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(HTMLPlugInElement, isPluginElement());
+inline bool isHTMLPlugInElement(const Element& element)
+{
+    return element.isHTMLElement() && toHTMLElement(element).isPluginElement();
+}
+
+inline bool isHTMLPlugInElement(const HTMLElement& element)
+{
+    return element.isPluginElement();
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLPlugInElement);
 
 } // namespace WebCore
 

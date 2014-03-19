@@ -28,6 +28,7 @@
 #include "HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/plugins/PluginView.h"
@@ -109,7 +110,7 @@ bool RenderEmbeddedObject::showsUnavailablePluginIndicator() const
 void RenderEmbeddedObject::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     Element* element = toElement(node());
-    if (!element || !element->isPluginElement())
+    if (!isHTMLPlugInElement(element))
         return;
 
     RenderPart::paintContents(paintInfo, paintOffset);

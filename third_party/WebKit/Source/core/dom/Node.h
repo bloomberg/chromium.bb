@@ -245,7 +245,6 @@ public:
     virtual bool isAttributeNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
-    virtual bool isPluginElement() const { return false; }
 
     // StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
     // class names (ex. class="foo bar") and other non-basic styling features. They and also control

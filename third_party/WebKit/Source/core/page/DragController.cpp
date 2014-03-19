@@ -554,7 +554,7 @@ bool DragController::canProcessDrag(DragData* dragData)
     if (dragData->containsFiles() && asFileInput(result.innerNonSharedNode()))
         return true;
 
-    if (result.innerNonSharedNode()->isPluginElement()) {
+    if (isHTMLPlugInElement(*result.innerNonSharedNode())) {
         HTMLPlugInElement* plugin = toHTMLPlugInElement(result.innerNonSharedNode());
         if (!plugin->canProcessDrag() && !result.innerNonSharedNode()->rendererIsEditable())
             return false;

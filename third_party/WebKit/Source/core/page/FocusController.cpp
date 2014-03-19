@@ -47,6 +47,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -382,7 +383,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
         return false;
 
     Element* element = toElement(node);
-    if (element->isFrameOwnerElement() && (!element->isPluginElement() || !element->isKeyboardFocusable())) {
+    if (element->isFrameOwnerElement() && (!isHTMLPlugInElement(*element) || !element->isKeyboardFocusable())) {
         // We focus frames rather than frame owners.
         // FIXME: We should not focus frames that have no scrollbars, as focusing them isn't useful to the user.
         HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(element);
