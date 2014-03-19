@@ -24,10 +24,10 @@ bool IsPinchToZoomEnabled() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8;
 #elif defined(OS_CHROMEOS)
   return true;
-#endif
-
+#else
   return command_line.HasSwitch(switches::kEnableViewport) ||
       command_line.HasSwitch(switches::kEnablePinch);
+#endif
 }
 
 } // namespace content

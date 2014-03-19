@@ -45,20 +45,6 @@ bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
       NOTREACHED();
       return false;
   }
-
-  switch (buffer) {
-    case BufferStandard:
-      break;
-    case BufferSelection:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      break;
-#endif
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  return true;
 }
 
 WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(

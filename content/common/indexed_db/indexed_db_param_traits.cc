@@ -105,8 +105,6 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       NOTREACHED();
       return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
@@ -143,8 +141,10 @@ void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
       return;
     case WebIDBKeyPathTypeNull:
       return;
+    default:
+      NOTREACHED();
+      return;
   }
-  NOTREACHED();
 }
 
 bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
@@ -172,9 +172,10 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
     case WebIDBKeyPathTypeNull:
       *r = IndexedDBKeyPath();
       return true;
+    default:
+      NOTREACHED();
+      return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {

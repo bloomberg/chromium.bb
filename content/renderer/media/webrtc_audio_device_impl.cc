@@ -462,12 +462,7 @@ WebRtcAudioDeviceImpl::GetDefaultCapturer() const {
   base::AutoLock auto_lock(lock_);
   // Use the last |capturer| which is from the latest getUserMedia call as
   // the default capture device.
-  for (CapturerList::const_reverse_iterator iter = capturers_.rbegin();
-       iter != capturers_.rend(); ++iter) {
-    return *iter;
-  }
-
-  return NULL;
+  return capturers_.empty() ? NULL : capturers_.back();
 }
 
 void WebRtcAudioDeviceImpl::AddPlayoutSink(

@@ -358,11 +358,9 @@ TEST_F(PageStateSerializationTest, BadMessagesTest2) {
 }
 
 TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
-  // Comment out this return statement to enable this code.  Use this code to
-  // generate data, based on the current serialization format, for the
-  // BackwardsCompat_vXX tests.
-  return;
-
+  // Change to #if 1 to enable this code.  Use this code to generate data, based
+  // on the current serialization format, for the BackwardsCompat_vXX tests.
+#if 0
   ExplodedPageState state;
   PopulatePageStateForBackwardsCompatTest(&state);
 
@@ -388,6 +386,7 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   }
 
   fclose(fp);
+#endif
 }
 
 #if !defined(OS_ANDROID)

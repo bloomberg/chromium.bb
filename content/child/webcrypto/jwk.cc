@@ -702,7 +702,8 @@ Status ImportKeyJwk(const CryptoData& key_data,
                      extractable,
                      usage_mask,
                      key);
-  } else if (jwk_kty_value == "RSA") {
+  }
+  if (jwk_kty_value == "RSA") {
     // An RSA public key must have an "n" (modulus) and an "e" (exponent) entry
     // in the JWK, while an RSA private key must have those, plus at least a "d"
     // (private exponent) entry.
@@ -731,11 +732,9 @@ Status ImportKeyJwk(const CryptoData& key_data,
                                         CryptoData(jwk_e_value),
                                         key);
 
-  } else {
-    return Status::ErrorJwkUnrecognizedKty();
   }
 
-  return Status::Success();
+  return Status::ErrorJwkUnrecognizedKty();
 }
 
 Status ExportKeyJwk(const blink::WebCryptoKey& key,

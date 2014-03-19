@@ -139,8 +139,6 @@ int IndexedDBKey::Compare(const IndexedDBKey& other) const {
       NOTREACHED();
       return 0;
   }
-  NOTREACHED();
-  return 0;
 }
 
 bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {

@@ -194,29 +194,18 @@ bool IsThreadedCompositingEnabled() {
 
   // Command line switches take precedence over blacklist.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
-      command_line.HasSwitch(switches::kDisableThreadedCompositing)) {
+      command_line.HasSwitch(switches::kDisableThreadedCompositing))
     return false;
-  } else if (command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
+  if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
     return true;
-  }
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
   // We always want threaded compositing on Aura and Mac (the fallback is a
   // threaded software compositor).
   return true;
-#endif
-
-  if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
-    return false;
-
-#if defined(OS_WIN)
-  // Windows Vista+ has been shipping with TCM enabled at 100% since M24 and
-  // The blacklist check above takes care of returning false before this hits
-  // on unsupported Win versions.
-  return true;
-#endif
-
+#else
   return false;
+#endif
 }
 
 bool IsForceCompositingModeEnabled() {
@@ -229,7 +218,7 @@ bool IsForceCompositingModeEnabled() {
   // Command line switches take precedence over blacklisting.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
     return false;
-  else if (command_line.HasSwitch(switches::kForceCompositingMode))
+  if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
 
   if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
@@ -240,9 +229,9 @@ bool IsForceCompositingModeEnabled() {
   // Mac OSX 10.8+ since M28. The blacklist check above takes care of returning
   // false before this hits on unsupported Win/Mac versions.
   return true;
-#endif
-
+#else
   return false;
+#endif
 }
 
 bool IsDelegatedRendererEnabled() {

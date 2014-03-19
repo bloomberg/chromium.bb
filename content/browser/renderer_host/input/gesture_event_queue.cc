@@ -96,9 +96,6 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
       }
       return true;
   }
-
-  NOTREACHED();
-  return false;
 }
 
 // NOTE: The filters are applied successively. This simplifies the change.
@@ -150,8 +147,6 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
     default:
       return true;
   }
-  NOTREACHED();
-  return false;
 }
 
 bool GestureEventQueue::ShouldForwardForCoalescing(

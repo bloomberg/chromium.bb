@@ -83,9 +83,6 @@ const char* pointState(WebTouchPoint::State state)
     default:
         return "Unknown";
     }
-
-    BLINK_ASSERT_NOT_REACHED();
-    return 0;
 }
 
 void printTouchList(WebTestDelegate* delegate, const WebTouchPoint* points, int length)

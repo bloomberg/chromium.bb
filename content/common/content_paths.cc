@@ -40,8 +40,6 @@ bool PathProvider(int key, base::FilePath* result) {
     default:
       return false;
   }
-
-  return false;
 }
 
 // This cannot be done as a static initializer sadly since Visual Studio will

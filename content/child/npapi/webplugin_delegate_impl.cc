@@ -287,7 +287,6 @@ bool WebPluginDelegateImpl::IsUserGesture(const WebInputEvent& event) {
     default:
       return false;
   }
-  return false;
 }
 
 WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(

@@ -229,8 +229,6 @@ DOMStorageDatabase::SchemaVersion DOMStorageDatabase::DetectSchemaVersion() {
     default:
       return INVALID;
   }
-  NOTREACHED();
-  return INVALID;
 }
 
 bool DOMStorageDatabase::CreateTableV2() {

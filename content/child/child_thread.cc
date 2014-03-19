@@ -487,10 +487,9 @@ void ChildThread::OnDumpHandles() {
               switches::kAuditAllHandles)));
   handle_enum->EnumerateHandles();
   Send(new ChildProcessHostMsg_DumpHandlesDone);
-  return;
-#endif
-
+#else
   NOTIMPLEMENTED();
+#endif
 }
 
 #if defined(USE_TCMALLOC)
@@ -522,7 +521,6 @@ void ChildThread::ShutdownThread() {
   g_child_thread->message_loop()->PostTask(
       FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
 }
-
 #endif
 
 void ChildThread::OnProcessFinalRelease() {

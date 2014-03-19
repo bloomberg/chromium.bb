@@ -1299,10 +1299,9 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
 void RenderProcessHostImpl::DumpHandles() {
 #if defined(OS_WIN)
   Send(new ChildProcessMsg_DumpHandles());
-  return;
-#endif
-
+#else
   NOTIMPLEMENTED();
+#endif
 }
 
 // This is a platform specific function for mapping a transport DIB given its id

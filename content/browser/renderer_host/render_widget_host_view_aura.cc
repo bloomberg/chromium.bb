@@ -707,10 +707,9 @@ bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
   // whiteout. Because this causes the content to be drawn at wrong sizes while
   // resizing we compensate by blocking the UI thread in Compositor::Draw() by
   // issuing a FinishAllRendering() if we are resizing.
-#if defined (OS_WIN)
+#if defined(OS_WIN)
   return false;
-#endif
-
+#else
   if (resize_lock_)
     return false;
 
@@ -732,6 +731,7 @@ bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
     return false;
 
   return true;
+#endif
 }
 
 scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(

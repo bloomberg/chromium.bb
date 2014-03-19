@@ -62,8 +62,6 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
       NOTREACHED();
       return IndexedDBKey();
   }
-  NOTREACHED();
-  return IndexedDBKey();
 }
 
 WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
@@ -93,8 +91,6 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
       NOTREACHED();
       return WebIDBKey::createInvalid();
   }
-  NOTREACHED();
-  return WebIDBKey::createInvalid();
 }
 
 IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
@@ -115,9 +111,10 @@ IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
       return IndexedDBKeyPath(CopyArray(key_path.array()));
     case blink::WebIDBKeyPathTypeNull:
       return IndexedDBKeyPath();
+    default:
+      NOTREACHED();
+      return IndexedDBKeyPath();
   }
-  NOTREACHED();
-  return IndexedDBKeyPath();
 }
 
 blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
@@ -129,9 +126,10 @@ blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
       return blink::WebIDBKeyPath::create(CopyArray(key_path.array()));
     case blink::WebIDBKeyPathTypeNull:
       return blink::WebIDBKeyPath::createNull();
+    default:
+      NOTREACHED();
+      return blink::WebIDBKeyPath::createNull();
   }
-  NOTREACHED();
-  return blink::WebIDBKeyPath::createNull();
 }
 
 }  // namespace content

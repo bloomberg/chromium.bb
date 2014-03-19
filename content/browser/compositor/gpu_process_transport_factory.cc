@@ -174,10 +174,10 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 #elif defined(USE_X11)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceX11(
       compositor));
-#endif
-
+#else
   NOTREACHED();
   return scoped_ptr<cc::SoftwareOutputDevice>();
+#endif
 }
 
 scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
