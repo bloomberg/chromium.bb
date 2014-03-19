@@ -934,14 +934,15 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     }
     Cancel(exit_type);
 
-#if !defined(OS_WIN)
+#if defined(OS_CHROMEOS)
     // We're going to exit the menu and want to repost the event so that is
     // is handled normally after the context menu has exited. We call
     // RepostEvent after Cancel so that mouse capture has been released so
     // that finding the event target is unaffected by the current capture.
     RepostEvent(source, event);
 #endif
-
+    // Do not repost events for Linux Aura because this behavior is more
+    // consistent with the behavior of other Linux apps.
     return;
   }
 
