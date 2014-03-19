@@ -7,8 +7,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
@@ -26,7 +28,17 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
 }
 
 int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
-  return initial_state_type_.size();
+  return window_state_map_.size();
+}
+
+void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
+  // At this time ForgetWindow() should already have been called. If not,
+  // someone else must have replaced the "window manager's state object".
+  DCHECK(!window->HasObserver(this));
+
+  WindowToState::iterator it = window_state_map_.find(window);
+  DCHECK(it != window_state_map_.end());
+  window_state_map_.erase(it);
 }
 
 void MaximizeModeWindowManager::OnOverviewModeStarted() {
@@ -55,7 +67,7 @@ void MaximizeModeWindowManager::OnWindowAdded(
     aura::Window* window) {
   // A window can get removed and then re-added by a drag and drop operation.
   if (IsContainerWindow(window->parent()) &&
-      initial_state_type_.find(window) == initial_state_type_.end())
+      window_state_map_.find(window) == window_state_map_.end())
     MaximizeAndTrackWindow(window);
 }
 
@@ -66,11 +78,10 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   if (!IsContainerWindow(window))
     return;
   // Reposition all non maximizeable windows.
-  for (WindowToStateType::iterator it = initial_state_type_.begin();
-       it != initial_state_type_.end();
+  for (WindowToState::iterator it = window_state_map_.begin();
+       it != window_state_map_.end();
        ++it) {
-    if (!CanMaximize(it->first))
-      CenterWindow(it->first);
+    it->second->UpdateWindowPosition(wm::GetWindowState(it->first), false);
   }
 }
 
@@ -89,8 +100,13 @@ void MaximizeModeWindowManager::OnDisplayRemoved(const gfx::Display& display) {
 
 MaximizeModeWindowManager::MaximizeModeWindowManager()
       : backdrops_hidden_(false) {
-  // TODO(skuhne): Turn off the overview mode and full screen modes before
-  // entering the MaximzieMode.
+  // The overview mode needs to be ended before the maximize mode is started. To
+  // guarantee the proper order, it will be turned off from here.
+  WindowSelectorController* controller =
+      Shell::GetInstance()->window_selector_controller();
+  if (controller && controller->IsSelecting())
+    controller->OnSelectionCanceled();
+
   MaximizeAllWindows();
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
@@ -110,8 +126,8 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
 }
 
 void MaximizeModeWindowManager::RestoreAllWindows() {
-  while (initial_state_type_.size())
-    RestoreAndForgetWindow(initial_state_type_.begin()->first);
+  while (window_state_map_.size())
+    ForgetWindow(window_state_map_.begin()->first);
 }
 
 void MaximizeModeWindowManager::MaximizeAndTrackWindow(
@@ -119,96 +135,32 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(
   if (!ShouldHandleWindow(window))
     return;
 
-  DCHECK(initial_state_type_.find(window) == initial_state_type_.end());
+  DCHECK(window_state_map_.find(window) == window_state_map_.end());
   window->AddObserver(this);
-  // Remember the state at the creation.
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  wm::WindowStateType state = window_state->GetStateType();
-  initial_state_type_[window] = state;
-  // If it is not maximized yet we may need to maximize it now.
-  if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
-    if (!CanMaximize(window)) {
-      // This window type should not be able to have a restore state set (since
-      // it cannot maximize).
-      DCHECK(!window_state->HasRestoreBounds());
-      // Store the coordinates as restore coordinates.
-      gfx::Rect initial_rect = window->bounds();
-      if (window->parent())
-        window_state->SetRestoreBoundsInParent(initial_rect);
-      else
-        window_state->SetRestoreBoundsInScreen(initial_rect);
-      CenterWindow(window);
-    } else {
-      // Minimized windows can remain as they are.
-      if (state != wm::WINDOW_STATE_TYPE_MINIMIZED)
-        wm::GetWindowState(window)->Maximize();
-    }
-  }
-  window_state->set_can_be_dragged(false);
+
+  // We create and remember a maximize mode state which will attach itself to
+  // the provided state object.
+  window_state_map_[window] = new MaximizeModeWindowState(window, this);
 }
 
-void MaximizeModeWindowManager::RestoreAndForgetWindow(
-    aura::Window* window) {
-  wm::WindowStateType state = ForgetWindow(window);
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  window_state->set_can_be_dragged(true);
-  // Restore window if it can be restored.
-  if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
-    if (!CanMaximize(window)) {
-      if (window_state->HasRestoreBounds()) {
-        // TODO(skuhne): If the system shuts down in maximized mode, the proper
-        // restore coordinates should get saved.
-        gfx::Rect initial_bounds =
-            window->parent() ? window_state->GetRestoreBoundsInParent() :
-                               window_state->GetRestoreBoundsInScreen();
-        window_state->ClearRestoreBounds();
-        // TODO(skuhne): The screen might have changed and we should make sure
-        // that the bounds are in a visible area.
-        window->SetBounds(initial_bounds);
-      }
-    } else {
-      // If the window neither was minimized or maximized and it is currently
-      // not minimized, we restore it.
-      if (state != wm::WINDOW_STATE_TYPE_MINIMIZED &&
-          !wm::GetWindowState(window)->IsMinimized()) {
-        wm::GetWindowState(window)->Restore();
-      }
-    }
-  }
-}
+void MaximizeModeWindowManager::ForgetWindow(aura::Window* window) {
+  WindowToState::iterator it = window_state_map_.find(window);
 
-wm::WindowStateType MaximizeModeWindowManager::ForgetWindow(
-    aura::Window* window) {
-  WindowToStateType::iterator it = initial_state_type_.find(window);
-  DCHECK(it != initial_state_type_.end());
+  // The following DCHECK could fail if our window state object was destroyed
+  // earlier by someone else. However - at this point there is no other client
+  // which replaces the state object and therefore this should not happen.
+  DCHECK(it != window_state_map_.end());
   window->RemoveObserver(this);
-  wm::WindowStateType state = it->second;
-  initial_state_type_.erase(it);
-  return state;
+
+  // By telling the state object to revert, it will switch back the old
+  // State object and destroy itself, calling WindowStateDerstroyed().
+  it->second->LeaveMaximizeMode(wm::GetWindowState(it->first));
+  DCHECK(window_state_map_.find(window) == window_state_map_.end());
 }
 
 bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
   DCHECK(window);
   return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
-}
-
-bool MaximizeModeWindowManager::CanMaximize(aura::Window* window) {
-  DCHECK(window);
-  return wm::GetWindowState(window)->CanMaximize();
-}
-
-void MaximizeModeWindowManager::CenterWindow(aura::Window* window) {
-  gfx::Size window_size = window->bounds().size();
-  gfx::Rect work_area = gfx::Screen::GetScreenFor(window)->
-      GetDisplayNearestWindow(window).work_area();
-
-  gfx::Rect window_bounds(
-      work_area.x() + (work_area.width() - window_size.width()) / 2,
-      work_area.y() + (work_area.height() - window_size.height()) / 2,
-      window_size.width(),
-      window_size.height());
-
-  window->SetBounds(window_bounds);
 }
 
 void MaximizeModeWindowManager::AddWindowCreationObservers() {
