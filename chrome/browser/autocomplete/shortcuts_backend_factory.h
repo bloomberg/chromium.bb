@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_FACTORY_H_
-#define CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_FACTORY_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -11,19 +11,16 @@
 
 class Profile;
 
-namespace history {
 class ShortcutsBackend;
-}  // namespace history
 
 // Singleton that owns all instances of ShortcutsBackend and associates them
 // with Profiles.
 class ShortcutsBackendFactory
     : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<history::ShortcutsBackend> GetForProfile(
-      Profile* profile);
+  static scoped_refptr<ShortcutsBackend> GetForProfile(Profile* profile);
 
-  static scoped_refptr<history::ShortcutsBackend> GetForProfileIfExists(
+  static scoped_refptr<ShortcutsBackend> GetForProfileIfExists(
       Profile* profile);
 
   static ShortcutsBackendFactory* GetInstance();
@@ -49,4 +46,4 @@ class ShortcutsBackendFactory
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_FACTORY_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_

@@ -32,8 +32,6 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/shortcuts_backend.h"
-#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"

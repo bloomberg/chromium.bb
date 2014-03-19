@@ -9,9 +9,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/shortcuts_database.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 
@@ -30,28 +32,26 @@ struct ShortcutsDatabaseTestInfo {
   std::string destination_url;
   std::string contents;
   std::string contents_class;
-  std::string stripped_contents_class;  // |contents_class| with matches removed
   std::string description;
   std::string description_class;
-  std::string stripped_description_class;
   content::PageTransition transition;
-  AutocompleteMatch::Type type;
+  AutocompleteMatchType::Type type;
   std::string keyword;
   int days_from_now;
   int number_of_hits;
 } shortcut_test_db[] = {
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", "goog", "www.google.com",
-    "http://www.google.com/", "Google", "0,1,4,0", "0,1,4,0", "Google",
-    "0,3,4,1", "0,1", content::PAGE_TRANSITION_GENERATED,
-    AutocompleteMatchType::SEARCH_HISTORY, "google.com", 1, 100, },
+    "http://www.google.com/", "Google", "0,1,4,0", "Google", "0,1",
+    content::PAGE_TRANSITION_GENERATED, AutocompleteMatchType::SEARCH_HISTORY,
+    "google.com", 1, 100, },
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880E0", "slash", "slashdot.org",
-    "http://slashdot.org/", "slashdot.org", "0,3,5,1", "0,1",
-    "Slashdot - News for nerds, stuff that matters", "0,2,5,0", "0,0",
+    "http://slashdot.org/", "slashdot.org", "0,1",
+    "Slashdot - News for nerds, stuff that matters", "0,0",
     content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 0,
     100},
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880E1", "news", "slashdot.org",
-    "http://slashdot.org/", "slashdot.org", "0,1", "0,1",
-    "Slashdot - News for nerds, stuff that matters", "0,0,11,2,15,0", "0,0",
+    "http://slashdot.org/", "slashdot.org", "0,1",
+    "Slashdot - News for nerds, stuff that matters", "0,0",
     content::PAGE_TRANSITION_LINK, AutocompleteMatchType::HISTORY_TITLE, "", 0,
     5},
 };
@@ -85,7 +85,7 @@ class ShortcutsDatabaseTest : public testing::Test {
   void ClearDB();
   size_t CountRecords() const;
 
-  ShortcutsBackend::Shortcut ShortcutFromTestInfo(
+  ShortcutsDatabase::Shortcut ShortcutFromTestInfo(
       const ShortcutsDatabaseTestInfo& info);
 
   void AddAll();
@@ -119,16 +119,14 @@ size_t ShortcutsDatabaseTest::CountRecords() const {
   return static_cast<size_t>(s.ColumnInt(0));
 }
 
-ShortcutsBackend::Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
+ShortcutsDatabase::Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
     const ShortcutsDatabaseTestInfo& info) {
-  return ShortcutsBackend::Shortcut(
+  return ShortcutsDatabase::Shortcut(
       info.guid, ASCIIToUTF16(info.text),
-      ShortcutsBackend::Shortcut::MatchCore(
+      ShortcutsDatabase::Shortcut::MatchCore(
           ASCIIToUTF16(info.fill_into_edit), GURL(info.destination_url),
-          ASCIIToUTF16(info.contents),
-          AutocompleteMatch::ClassificationsFromString(info.contents_class),
-          ASCIIToUTF16(info.description),
-          AutocompleteMatch::ClassificationsFromString(info.description_class),
+          ASCIIToUTF16(info.contents), info.contents_class,
+          ASCIIToUTF16(info.description), info.description_class,
           info.transition, info.type, ASCIIToUTF16(info.keyword)),
       base::Time::Now() - base::TimeDelta::FromDays(info.days_from_now),
       info.number_of_hits);
@@ -157,7 +155,7 @@ TEST_F(ShortcutsDatabaseTest, AddShortcut) {
 
 TEST_F(ShortcutsDatabaseTest, UpdateShortcut) {
   AddAll();
-  ShortcutsBackend::Shortcut shortcut(
+  ShortcutsDatabase::Shortcut shortcut(
       ShortcutFromTestInfo(shortcut_test_db[1]));
   shortcut.match_core.contents = ASCIIToUTF16("gro.todhsals");
   EXPECT_TRUE(db_->UpdateShortcut(shortcut));
@@ -174,7 +172,7 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithIds) {
   std::vector<std::string> shortcut_ids;
   shortcut_ids.push_back(shortcut_test_db[0].guid);
   shortcut_ids.push_back(shortcut_test_db[2].guid);
-  EXPECT_TRUE(db_->DeleteShortcutsWithIds(shortcut_ids));
+  EXPECT_TRUE(db_->DeleteShortcutsWithIDs(shortcut_ids));
   EXPECT_EQ(arraysize(shortcut_test_db) - 2, CountRecords());
 
   ShortcutsDatabase::GuidToShortcutMap shortcuts;
@@ -191,10 +189,10 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithIds) {
   EXPECT_TRUE(it == shortcuts.end());
 }
 
-TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithUrl) {
+TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithURL) {
   AddAll();
 
-  EXPECT_TRUE(db_->DeleteShortcutsWithUrl("http://slashdot.org/"));
+  EXPECT_TRUE(db_->DeleteShortcutsWithURL("http://slashdot.org/"));
   EXPECT_EQ(arraysize(shortcut_test_db) - 2, CountRecords());
 
   ShortcutsDatabase::GuidToShortcutMap shortcuts;
@@ -211,41 +209,6 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithUrl) {
   EXPECT_TRUE(it == shortcuts.end());
 }
 
-TEST_F(ShortcutsDatabaseTest, LoadShortcuts) {
-  AddAll();
-  ShortcutsDatabase::GuidToShortcutMap shortcuts;
-  db_->LoadShortcuts(&shortcuts);
-
-  for (size_t i = 0; i < arraysize(shortcut_test_db); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Comparing shortcut #%" PRIuS, i));
-    ShortcutsDatabase::GuidToShortcutMap::const_iterator it(
-        shortcuts.find(shortcut_test_db[i].guid));
-    ASSERT_TRUE(it != shortcuts.end());
-    const ShortcutsBackend::Shortcut& shortcut = it->second;
-    EXPECT_EQ(ASCIIToUTF16(shortcut_test_db[i].text), shortcut.text);
-    EXPECT_EQ(ASCIIToUTF16(shortcut_test_db[i].fill_into_edit),
-              shortcut.match_core.fill_into_edit);
-    EXPECT_EQ(shortcut_test_db[i].destination_url,
-              shortcut.match_core.destination_url.spec());
-    EXPECT_EQ(ASCIIToUTF16(shortcut_test_db[i].contents),
-              shortcut.match_core.contents);
-    EXPECT_EQ(shortcut_test_db[i].stripped_contents_class,
-              AutocompleteMatch::ClassificationsToString(
-                  shortcut.match_core.contents_class));
-    EXPECT_EQ(ASCIIToUTF16(shortcut_test_db[i].description),
-              shortcut.match_core.description);
-    EXPECT_EQ(shortcut_test_db[i].stripped_description_class,
-              AutocompleteMatch::ClassificationsToString(
-                  shortcut.match_core.description_class));
-    EXPECT_EQ(shortcut_test_db[i].transition, shortcut.match_core.transition);
-    EXPECT_EQ(shortcut_test_db[i].type, shortcut.match_core.type);
-    EXPECT_EQ(ASCIIToUTF16(shortcut_test_db[i].keyword),
-              shortcut.match_core.keyword);
-    EXPECT_EQ(shortcut_test_db[i].number_of_hits, shortcut.number_of_hits);
-    // We don't bother trying to check the |days_from_now| field, since dealing
-    // with times in unittests is annoying.
-  }
-}
 
 TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
   AddAll();
@@ -293,7 +256,7 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateV1ToV2) {
     EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
               static_cast<content::PageTransition>(statement.ColumnInt(2)));
     EXPECT_EQ(AutocompleteMatchType::HISTORY_TITLE,
-              static_cast<AutocompleteMatch::Type>(statement.ColumnInt(3)));
+              static_cast<AutocompleteMatchType::Type>(statement.ColumnInt(3)));
     EXPECT_TRUE(statement.ColumnString(4).empty());
   }
   EXPECT_TRUE(statement.Succeeded());

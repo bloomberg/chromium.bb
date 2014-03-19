@@ -5,19 +5,23 @@
 #include "chrome/browser/history/shortcuts_database.h"
 
 #include <string>
-#include <vector>
 
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/common/autocomplete_match_type.h"
+#include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+
+
+// Helpers --------------------------------------------------------------------
 
 namespace {
 
 void BindShortcutToStatement(
-    const history::ShortcutsBackend::Shortcut& shortcut,
+    const history::ShortcutsDatabase::Shortcut& shortcut,
     sql::Statement* s) {
   DCHECK(base::IsValidGUID(shortcut.id));
   s->BindString(0, shortcut.id);
@@ -25,11 +29,9 @@ void BindShortcutToStatement(
   s->BindString16(2, shortcut.match_core.fill_into_edit);
   s->BindString(3, shortcut.match_core.destination_url.spec());
   s->BindString16(4, shortcut.match_core.contents);
-  s->BindString(5, AutocompleteMatch::ClassificationsToString(
-      shortcut.match_core.contents_class));
+  s->BindString(5, shortcut.match_core.contents_class);
   s->BindString16(6, shortcut.match_core.description);
-  s->BindString(7, AutocompleteMatch::ClassificationsToString(
-      shortcut.match_core.description_class));
+  s->BindString(7, shortcut.match_core.description_class);
   s->BindInt(8, shortcut.match_core.transition);
   s->BindInt(9, shortcut.match_core.type);
   s->BindString16(10, shortcut.match_core.keyword);
@@ -49,7 +51,62 @@ bool DeleteShortcut(const char* field_name,
 
 }  // namespace
 
+
 namespace history {
+
+// ShortcutsDatabase::Shortcut::MatchCore -------------------------------------
+
+ShortcutsDatabase::Shortcut::MatchCore::MatchCore(
+    const base::string16& fill_into_edit,
+    const GURL& destination_url,
+    const base::string16& contents,
+    const std::string& contents_class,
+    const base::string16& description,
+    const std::string& description_class,
+    int transition,
+    int type,
+    const base::string16& keyword)
+    : fill_into_edit(fill_into_edit),
+      destination_url(destination_url),
+      contents(contents),
+      contents_class(contents_class),
+      description(description),
+      description_class(description_class),
+      transition(transition),
+      type(type),
+      keyword(keyword) {
+}
+
+ShortcutsDatabase::Shortcut::MatchCore::~MatchCore() {
+}
+
+// ShortcutsDatabase::Shortcut ------------------------------------------------
+
+ShortcutsDatabase::Shortcut::Shortcut(
+    const std::string& id,
+    const base::string16& text,
+    const MatchCore& match_core,
+    const base::Time& last_access_time,
+    int number_of_hits)
+    : id(id),
+      text(text),
+      match_core(match_core),
+      last_access_time(last_access_time),
+      number_of_hits(number_of_hits) {
+}
+
+ShortcutsDatabase::Shortcut::Shortcut()
+    : match_core(base::string16(), GURL(), base::string16(), std::string(),
+                 base::string16(), std::string(), 0, 0, base::string16()),
+      last_access_time(base::Time::Now()),
+      number_of_hits(0) {
+}
+
+ShortcutsDatabase::Shortcut::~Shortcut() {
+}
+
+
+// ShortcutsDatabase ----------------------------------------------------------
 
 ShortcutsDatabase::ShortcutsDatabase(const base::FilePath& database_path)
     : database_path_(database_path) {
@@ -72,8 +129,7 @@ bool ShortcutsDatabase::Init() {
   return db_.Open(database_path_) && EnsureTable();
 }
 
-bool ShortcutsDatabase::AddShortcut(
-    const ShortcutsBackend::Shortcut& shortcut) {
+bool ShortcutsDatabase::AddShortcut(const Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO omni_box_shortcuts (id, text, fill_into_edit, url, "
@@ -84,8 +140,7 @@ bool ShortcutsDatabase::AddShortcut(
   return s.Run();
 }
 
-bool ShortcutsDatabase::UpdateShortcut(
-    const ShortcutsBackend::Shortcut& shortcut) {
+bool ShortcutsDatabase::UpdateShortcut(const Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE omni_box_shortcuts SET id=?, text=?, fill_into_edit=?, url=?, "
@@ -97,11 +152,11 @@ bool ShortcutsDatabase::UpdateShortcut(
   return s.Run();
 }
 
-bool ShortcutsDatabase::DeleteShortcutsWithIds(
-    const std::vector<std::string>& shortcut_ids) {
+bool ShortcutsDatabase::DeleteShortcutsWithIDs(
+    const ShortcutIDs& shortcut_ids) {
   bool success = true;
   db_.BeginTransaction();
-  for (std::vector<std::string>::const_iterator it(shortcut_ids.begin());
+  for (ShortcutIDs::const_iterator it(shortcut_ids.begin());
        it != shortcut_ids.end(); ++it) {
     success &= DeleteShortcut("id", *it, db_);
   }
@@ -109,7 +164,7 @@ bool ShortcutsDatabase::DeleteShortcutsWithIds(
   return success;
 }
 
-bool ShortcutsDatabase::DeleteShortcutsWithUrl(
+bool ShortcutsDatabase::DeleteShortcutsWithURL(
     const std::string& shortcut_url_spec) {
   return DeleteShortcut("url", shortcut_url_spec, db_);
 }
@@ -134,22 +189,18 @@ void ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
   while (s.Step()) {
     shortcuts->insert(std::make_pair(
         s.ColumnString(0),
-        ShortcutsBackend::Shortcut(
+        Shortcut(
             s.ColumnString(0),            // id
             s.ColumnString16(1),          // text
-            ShortcutsBackend::Shortcut::MatchCore(
+            Shortcut::MatchCore(
                 s.ColumnString16(2),      // fill_into_edit
                 GURL(s.ColumnString(3)),  // destination_url
                 s.ColumnString16(4),      // contents
-                AutocompleteMatch::ClassificationsFromString(s.ColumnString(5)),
-                                          // contents_class
+                s.ColumnString(5),        // contents_class
                 s.ColumnString16(6),      // description
-                AutocompleteMatch::ClassificationsFromString(s.ColumnString(7)),
-                                          // description_class
-                static_cast<content::PageTransition>(s.ColumnInt(8)),
-                                          // transition
-                static_cast<AutocompleteMatch::Type>(s.ColumnInt(9)),
-                                          // type
+                s.ColumnString(7),        // description_class
+                s.ColumnInt(8),           // transition
+                s.ColumnInt(9),           // type
                 s.ColumnString16(10)),    // keyword
             base::Time::FromInternalValue(s.ColumnInt64(11)),
                                           // last_access_time

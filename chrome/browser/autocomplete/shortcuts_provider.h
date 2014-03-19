@@ -11,14 +11,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/shortcuts_backend.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
-#include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
-
-namespace history {
 class ShortcutsProviderTest;
-}
 
 // Provider of recently autocompleted links. Provides autocomplete suggestions
 // from previously selected suggestions. The more often a user selects a
@@ -26,7 +23,7 @@ class ShortcutsProviderTest;
 // ranking for future uses of that search term.
 class ShortcutsProvider
     : public AutocompleteProvider,
-      public history::ShortcutsBackend::ShortcutsBackendObserver {
+      public ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsProvider(AutocompleteProviderListener* listener, Profile* profile);
 
@@ -39,7 +36,7 @@ class ShortcutsProvider
 
  private:
   friend class ClassifyTest;
-  friend class history::ShortcutsProviderTest;
+  friend class ShortcutsProviderTest;
 
   typedef std::multimap<base::char16, base::string16> WordMap;
 
@@ -58,7 +55,7 @@ class ShortcutsProvider
   // to decide what can be inlined. If |prevent_inline_autocomplete|, no
   // matches with inline completions will be allowed to be the default match.
   AutocompleteMatch ShortcutToACMatch(
-      const history::ShortcutsBackend::Shortcut& shortcut,
+      const history::ShortcutsDatabase::Shortcut& shortcut,
       int relevance,
       const base::string16& term_string,
       const base::string16& fixed_up_term_string,
@@ -98,14 +95,13 @@ class ShortcutsProvider
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
-  history::ShortcutsBackend::ShortcutMap::const_iterator FindFirstMatch(
+  ShortcutsBackend::ShortcutMap::const_iterator FindFirstMatch(
       const base::string16& keyword,
-      history::ShortcutsBackend* backend);
+      ShortcutsBackend* backend);
 
-  int CalculateScore(
-      const base::string16& terms,
-      const history::ShortcutsBackend::Shortcut& shortcut,
-      int max_relevance);
+  int CalculateScore(const base::string16& terms,
+                     const history::ShortcutsDatabase::Shortcut& shortcut,
+                     int max_relevance);
 
   std::string languages_;
   bool initialized_;

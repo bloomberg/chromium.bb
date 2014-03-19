@@ -23,11 +23,11 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_provider.h"
+#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_fixer_upper.h"
@@ -76,7 +76,7 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
           AutocompleteProvider::TYPE_SHORTCUTS),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       initialized_(false) {
-  scoped_refptr<history::ShortcutsBackend> backend =
+  scoped_refptr<ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfile(profile_);
   if (backend.get()) {
     backend->AddObserver(this);
@@ -115,13 +115,14 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
 void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   // Copy the URL since deleting from |matches_| will invalidate |match|.
   GURL url(match.destination_url);
+  DCHECK(url.is_valid());
 
   // When a user deletes a match, he probably means for the URL to disappear out
   // of history entirely. So nuke all shortcuts that map to this URL.
-  scoped_refptr<history::ShortcutsBackend> backend =
+  scoped_refptr<ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
   if (backend) // Can be NULL in Incognito.
-    backend->DeleteShortcutsWithUrl(url);
+    backend->DeleteShortcutsWithURL(url);
 
   matches_.erase(std::remove_if(matches_.begin(), matches_.end(),
                                 DestinationURLEqualsURL(url)),
@@ -129,16 +130,15 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   // NOTE: |match| is now dead!
 
   // Delete the match from the history DB. This will eventually result in a
-  // second call to DeleteShortcutsWithURLs(), which is harmless.
+  // second call to DeleteShortcutsWithURL(), which is harmless.
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-
-  DCHECK(history_service && url.is_valid());
+  DCHECK(history_service);
   history_service->DeleteURL(url);
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
-  scoped_refptr<history::ShortcutsBackend> backend =
+  scoped_refptr<ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
   if (backend.get())
     backend->RemoveObserver(this);
@@ -149,7 +149,7 @@ void ShortcutsProvider::OnShortcutsLoaded() {
 }
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
-  scoped_refptr<history::ShortcutsBackend> backend =
+  scoped_refptr<ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
   if (!backend.get())
     return;
@@ -168,7 +168,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
       input.current_page_classification(), &max_relevance))
     max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
 
-  for (history::ShortcutsBackend::ShortcutMap::const_iterator it =
+  for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());
        it != backend->shortcuts_map().end() &&
            StartsWith(it->first, term_string, true); ++it) {
@@ -217,17 +217,29 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 }
 
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
-    const history::ShortcutsBackend::Shortcut& shortcut,
+    const history::ShortcutsDatabase::Shortcut& shortcut,
     int relevance,
     const base::string16& term_string,
     const base::string16& fixed_up_term_string,
     const bool prevent_inline_autocomplete) {
   DCHECK(!term_string.empty());
-  AutocompleteMatch match(shortcut.match_core.ToMatch());
+  AutocompleteMatch match;
   match.provider = this;
   match.relevance = relevance;
   match.deletable = true;
+  match.fill_into_edit = shortcut.match_core.fill_into_edit;
+  match.destination_url = shortcut.match_core.destination_url;
   DCHECK(match.destination_url.is_valid());
+  match.contents = shortcut.match_core.contents;
+  match.contents_class = AutocompleteMatch::ClassificationsFromString(
+      shortcut.match_core.contents_class);
+  match.description = shortcut.match_core.description;
+  match.description_class = AutocompleteMatch::ClassificationsFromString(
+      shortcut.match_core.description_class);
+  match.transition =
+      static_cast<content::PageTransition>(shortcut.match_core.transition);
+  match.type = static_cast<AutocompleteMatch::Type>(shortcut.match_core.type);
+  match.keyword = shortcut.match_core.keyword;
   match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
   match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
   match.RecordAdditionalInfo("original input text",
@@ -389,11 +401,11 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   return AutocompleteMatch::MergeClassifications(original_class, match_class);
 }
 
-history::ShortcutsBackend::ShortcutMap::const_iterator
+ShortcutsBackend::ShortcutMap::const_iterator
     ShortcutsProvider::FindFirstMatch(const base::string16& keyword,
-                                      history::ShortcutsBackend* backend) {
+                                      ShortcutsBackend* backend) {
   DCHECK(backend);
-  history::ShortcutsBackend::ShortcutMap::const_iterator it =
+  ShortcutsBackend::ShortcutMap::const_iterator it =
       backend->shortcuts_map().lower_bound(keyword);
   // Lower bound not necessarily matches the keyword, check for item pointed by
   // the lower bound iterator to at least start with keyword.
@@ -404,7 +416,7 @@ history::ShortcutsBackend::ShortcutMap::const_iterator
 
 int ShortcutsProvider::CalculateScore(
     const base::string16& terms,
-    const history::ShortcutsBackend::Shortcut& shortcut,
+    const history::ShortcutsDatabase::Shortcut& shortcut,
     int max_relevance) {
   DCHECK(!terms.empty());
   DCHECK_LE(terms.length(), shortcut.text.length());

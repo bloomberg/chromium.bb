@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_H_
-#define CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_H_
 
 #include <map>
 #include <string>
@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/history/shortcuts_database.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,63 +27,16 @@
 class Profile;
 
 namespace history {
-
 class ShortcutsDatabase;
+};  // namespace history
 
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
 class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
                          public content::NotificationObserver {
  public:
-  // The following struct encapsulates one previously selected omnibox shortcut.
-  struct Shortcut {
-    // The pieces of an AutocompleteMatch that we preserve in a shortcut.
-    struct MatchCore {
-      explicit MatchCore(const AutocompleteMatch& match);
-      MatchCore(const base::string16& fill_into_edit,
-                const GURL& destination_url,
-                const base::string16& contents,
-                const ACMatchClassifications& contents_class,
-                const base::string16& description,
-                const ACMatchClassifications& description_class,
-                content::PageTransition transition,
-                AutocompleteMatch::Type type,
-                const base::string16& keyword);
-      ~MatchCore();
-
-      AutocompleteMatch ToMatch() const;
-
-      base::string16 fill_into_edit;
-      GURL destination_url;
-      base::string16 contents;
-      // For both contents_class and description_class, we strip MATCH
-      // classifications; the ShortcutsProvider will re-mark MATCH regions based
-      // on the user's current typing.
-      ACMatchClassifications contents_class;
-      base::string16 description;
-      ACMatchClassifications description_class;
-      content::PageTransition transition;
-      AutocompleteMatch::Type type;
-      base::string16 keyword;
-    };
-
-    Shortcut(const std::string& id,
-             const base::string16& text,
-             const MatchCore& match_core,
-             const base::Time& last_access_time,
-             int number_of_hits);
-    // Required for STL, we don't use this directly.
-    Shortcut();
-    ~Shortcut();
-
-    std::string id;  // Unique guid for the shortcut.
-    base::string16 text;   // The user's original input string.
-    MatchCore match_core;
-    base::Time last_access_time;  // Last time shortcut was selected.
-    int number_of_hits;           // How many times shortcut was selected.
-  };
-
-  typedef std::multimap<base::string16, const Shortcut> ShortcutMap;
+  typedef std::multimap<base::string16,
+                        const history::ShortcutsDatabase::Shortcut> ShortcutMap;
 
   // |profile| is necessary for profile notifications only and can be NULL in
   // unit-tests. For unit testing, set |suppress_db| to true to prevent creation
@@ -112,7 +66,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   const ShortcutMap& shortcuts_map() const { return shortcuts_map_; }
 
   // Deletes the Shortcuts with the url.
-  bool DeleteShortcutsWithUrl(const GURL& shortcut_url);
+  bool DeleteShortcutsWithURL(const GURL& shortcut_url);
 
   void AddObserver(ShortcutsBackendObserver* obs);
   void RemoveObserver(ShortcutsBackendObserver* obs);
@@ -125,8 +79,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
  private:
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
   friend class ShortcutsProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, AddAndUpdateShortcut);
-  FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, DeleteShortcuts);
+  friend class ShortcutsBackendTest;
 
   enum CurrentState {
     NOT_INITIALIZED,  // Backend created but not initialized.
@@ -138,6 +91,9 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   typedef std::map<std::string, ShortcutMap::iterator> GuidMap;
 
   virtual ~ShortcutsBackend();
+
+  static history::ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
+      const AutocompleteMatch& match);
 
   // RefcountedBrowserContextKeyedService:
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -155,24 +111,25 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   void InitCompleted();
 
   // Adds the Shortcut to the database.
-  bool AddShortcut(const Shortcut& shortcut);
+  bool AddShortcut(const history::ShortcutsDatabase::Shortcut& shortcut);
 
   // Updates timing and selection count for the Shortcut.
-  bool UpdateShortcut(const Shortcut& shortcut);
+  bool UpdateShortcut(const history::ShortcutsDatabase::Shortcut& shortcut);
 
-  // Deletes the Shortcuts with the id.
-  bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
+  // Deletes the Shortcuts with these IDs.
+  bool DeleteShortcutsWithIDs(
+      const history::ShortcutsDatabase::ShortcutIDs& shortcut_ids);
 
   // Deletes all shortcuts whose URLs begin with |url|.  If |exact_match| is
   // true, only shortcuts from exactly |url| are deleted.
-  bool DeleteShortcutsWithUrl(const GURL& url, bool exact_match);
+  bool DeleteShortcutsWithURL(const GURL& url, bool exact_match);
 
   // Deletes all of the shortcuts.
   bool DeleteAllShortcuts();
 
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;
-  scoped_refptr<ShortcutsDatabase> db_;
+  scoped_refptr<history::ShortcutsDatabase> db_;
 
   // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage
   // between InitInternal() and InitComplete() to avoid doing a potentially huge
@@ -192,6 +149,4 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   DISALLOW_COPY_AND_ASSIGN(ShortcutsBackend);
 };
 
-}  // namespace history
-
-#endif  // CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_H_

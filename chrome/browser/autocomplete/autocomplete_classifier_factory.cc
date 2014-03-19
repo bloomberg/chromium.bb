@@ -5,7 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/history/shortcuts_backend_factory.h"
+#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

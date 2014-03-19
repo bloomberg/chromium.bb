@@ -56,7 +56,6 @@ class FileSystemContext;
 }
 
 namespace history {
-class ShortcutsBackend;
 class TopSites;
 }
 

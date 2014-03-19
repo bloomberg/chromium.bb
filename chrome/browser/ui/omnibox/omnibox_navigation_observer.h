@@ -15,9 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace history {
 class ShortcutsBackend;
-}
 
 namespace net {
 class URLFetcher;
@@ -97,8 +95,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   const base::string16 text_;
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
-  scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;  // May be NULL
-                                                                // in incognito.
+  scoped_refptr<ShortcutsBackend> shortcuts_backend_;  // NULL in incognito.
   scoped_ptr<net::URLFetcher> fetcher_;
   LoadState load_state_;
   FetchState fetch_state_;

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/shortcuts_backend.h"
+#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/shortcuts_backend.h"
-#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,10 +67,10 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   // Tell the shortcuts backend to remove the shortcut it added for the original
   // search and instead add one reflecting this navigation.
-  scoped_refptr<history::ShortcutsBackend> shortcuts_backend(
+  scoped_refptr<ShortcutsBackend> shortcuts_backend(
       ShortcutsBackendFactory::GetForProfile(profile_));
   if (shortcuts_backend) {  // May be NULL in incognito.
-    shortcuts_backend->DeleteShortcutsWithUrl(search_url_);
+    shortcuts_backend->DeleteShortcutsWithURL(search_url_);
     shortcuts_backend->AddOrUpdateShortcut(text_, match_);
   }
 

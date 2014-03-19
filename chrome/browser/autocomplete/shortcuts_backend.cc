@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/autocomplete/shortcuts_backend.h"
 
 #include <map>
 #include <string>
@@ -33,15 +33,14 @@ namespace {
 
 // Takes Match classification vector and removes all matched positions,
 // compacting repetitions if necessary.
-ACMatchClassifications StripMatchMarkers(
-    const ACMatchClassifications& matches) {
+std::string StripMatchMarkers(const ACMatchClassifications& matches) {
   ACMatchClassifications unmatched;
   for (ACMatchClassifications::const_iterator i(matches.begin());
        i != matches.end(); ++i) {
     AutocompleteMatch::AddLastClassificationIfNecessary(
         &unmatched, i->offset, i->style & ~ACMatchClassification::MATCH);
   }
-  return unmatched;
+  return AutocompleteMatch::ClassificationsToString(unmatched);
 }
 
 // Normally shortcuts have the same match type as the original match they were
@@ -68,86 +67,6 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 
 }  // namespace
 
-namespace history {
-
-// ShortcutsBackend::Shortcut::MatchCore --------------------------------------
-
-ShortcutsBackend::Shortcut::MatchCore::MatchCore(
-    const AutocompleteMatch& match)
-    : fill_into_edit(match.fill_into_edit),
-      destination_url(match.destination_url),
-      contents(match.contents),
-      contents_class(StripMatchMarkers(match.contents_class)),
-      description(match.description),
-      description_class(StripMatchMarkers(match.description_class)),
-      transition(match.transition),
-      type(GetTypeForShortcut(match.type)),
-      keyword(match.keyword) {
-}
-
-ShortcutsBackend::Shortcut::MatchCore::MatchCore(
-    const base::string16& fill_into_edit,
-    const GURL& destination_url,
-    const base::string16& contents,
-    const ACMatchClassifications& contents_class,
-    const base::string16& description,
-    const ACMatchClassifications& description_class,
-    content::PageTransition transition,
-    AutocompleteMatch::Type type,
-    const base::string16& keyword)
-    : fill_into_edit(fill_into_edit),
-      destination_url(destination_url),
-      contents(contents),
-      contents_class(StripMatchMarkers(contents_class)),
-      description(description),
-      description_class(StripMatchMarkers(description_class)),
-      transition(transition),
-      type(GetTypeForShortcut(type)),
-      keyword(keyword) {
-}
-
-ShortcutsBackend::Shortcut::MatchCore::~MatchCore() {
-}
-
-AutocompleteMatch ShortcutsBackend::Shortcut::MatchCore::ToMatch() const {
-  AutocompleteMatch match;
-  match.fill_into_edit = fill_into_edit;
-  match.destination_url = destination_url;
-  match.contents = contents;
-  match.contents_class = contents_class;
-  match.description = description;
-  match.description_class = description_class;
-  match.transition = transition;
-  match.type = type;
-  match.keyword = keyword;
-  return match;
-}
-
-
-// ShortcutsBackend::Shortcut -------------------------------------------------
-
-ShortcutsBackend::Shortcut::Shortcut(
-    const std::string& id,
-    const base::string16& text,
-    const MatchCore& match_core,
-    const base::Time& last_access_time,
-    int number_of_hits)
-    : id(id),
-      text(text),
-      match_core(match_core),
-      last_access_time(last_access_time),
-      number_of_hits(number_of_hits) {
-}
-
-ShortcutsBackend::Shortcut::Shortcut()
-    : match_core(AutocompleteMatch()),
-      last_access_time(base::Time::Now()),
-      number_of_hits(0) {
-}
-
-ShortcutsBackend::Shortcut::~Shortcut() {
-}
-
 
 // ShortcutsBackend -----------------------------------------------------------
 
@@ -155,7 +74,7 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     : current_state_(NOT_INITIALIZED),
       no_db_access_(suppress_db) {
   if (!suppress_db) {
-    db_ = new ShortcutsDatabase(
+    db_ = new history::ShortcutsDatabase(
         profile->GetPath().Append(chrome::kShortcutsDatabaseName));
   }
   // |profile| can be NULL in tests.
@@ -181,8 +100,8 @@ bool ShortcutsBackend::Init() {
       base::Bind(&ShortcutsBackend::InitInternal, this));
 }
 
-bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
-  return initialized() && DeleteShortcutsWithUrl(shortcut_url, true);
+bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& shortcut_url) {
+  return initialized() && DeleteShortcutsWithURL(shortcut_url, true);
 }
 
 void ShortcutsBackend::AddObserver(ShortcutsBackendObserver* obs) {
@@ -202,16 +121,27 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
        it != shortcuts_map_.end() &&
            StartsWith(it->first, text_lowercase, true); ++it) {
     if (match.destination_url == it->second.match_core.destination_url) {
-      UpdateShortcut(Shortcut(it->second.id, text, Shortcut::MatchCore(match),
-                              now, it->second.number_of_hits + 1));
+      UpdateShortcut(history::ShortcutsDatabase::Shortcut(
+          it->second.id, text, MatchToMatchCore(match), now,
+          it->second.number_of_hits + 1));
       return;
     }
   }
-  AddShortcut(Shortcut(base::GenerateGUID(), text, Shortcut::MatchCore(match),
-                       now, 1));
+  AddShortcut(history::ShortcutsDatabase::Shortcut(
+      base::GenerateGUID(), text, MatchToMatchCore(match), now, 1));
 }
 
 ShortcutsBackend::~ShortcutsBackend() {
+}
+
+// static
+history::ShortcutsDatabase::Shortcut::MatchCore
+    ShortcutsBackend::MatchToMatchCore(const AutocompleteMatch& match) {
+  return history::ShortcutsDatabase::Shortcut::MatchCore(
+      match.fill_into_edit, match.destination_url, match.contents,
+      StripMatchMarkers(match.contents_class), match.description,
+      StripMatchMarkers(match.description_class), match.transition,
+      GetTypeForShortcut(match.type), match.keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
@@ -229,7 +159,7 @@ void ShortcutsBackend::Observe(int type,
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     // When an extension is unloaded, we want to remove any Shortcuts associated
     // with it.
-    DeleteShortcutsWithUrl(content::Details<extensions::UnloadedExtensionInfo>(
+    DeleteShortcutsWithURL(content::Details<extensions::UnloadedExtensionInfo>(
         details)->extension->url(), false);
     return;
   }
@@ -239,27 +169,27 @@ void ShortcutsBackend::Observe(int type,
       content::Details<const history::URLsDeletedDetails>(details).ptr();
   if (deleted_details->all_history)
     DeleteAllShortcuts();
-  const URLRows& rows(deleted_details->rows);
-  std::vector<std::string> shortcut_ids;
+  const history::URLRows& rows(deleted_details->rows);
+  history::ShortcutsDatabase::ShortcutIDs shortcut_ids;
 
   for (GuidMap::const_iterator it(guid_map_.begin()); it != guid_map_.end();
         ++it) {
     if (std::find_if(
-        rows.begin(), rows.end(), URLRow::URLRowHasURL(
+        rows.begin(), rows.end(), history::URLRow::URLRowHasURL(
             it->second->second.match_core.destination_url)) != rows.end())
       shortcut_ids.push_back(it->first);
   }
-  DeleteShortcutsWithIds(shortcut_ids);
+  DeleteShortcutsWithIDs(shortcut_ids);
 }
 
 void ShortcutsBackend::InitInternal() {
   DCHECK(current_state_ == INITIALIZING);
   db_->Init();
-  ShortcutsDatabase::GuidToShortcutMap shortcuts;
+  history::ShortcutsDatabase::GuidToShortcutMap shortcuts;
   db_->LoadShortcuts(&shortcuts);
   temp_shortcuts_map_.reset(new ShortcutMap);
   temp_guid_map_.reset(new GuidMap);
-  for (ShortcutsDatabase::GuidToShortcutMap::const_iterator it(
+  for (history::ShortcutsDatabase::GuidToShortcutMap::const_iterator it(
        shortcuts.begin()); it != shortcuts.end(); ++it) {
     (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
         std::make_pair(base::i18n::ToLower(it->second.text), it->second));
@@ -278,7 +208,8 @@ void ShortcutsBackend::InitCompleted() {
                     OnShortcutsLoaded());
 }
 
-bool ShortcutsBackend::AddShortcut(const Shortcut& shortcut) {
+bool ShortcutsBackend::AddShortcut(
+    const history::ShortcutsDatabase::Shortcut& shortcut) {
   if (!initialized())
     return false;
   DCHECK(guid_map_.find(shortcut.id) == guid_map_.end());
@@ -286,12 +217,16 @@ bool ShortcutsBackend::AddShortcut(const Shortcut& shortcut) {
       std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
   FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
                     OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
-                 db_.get(), shortcut));
+  return no_db_access_ ||
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(base::IgnoreResult(
+                         &history::ShortcutsDatabase::AddShortcut),
+                     db_.get(), shortcut));
 }
 
-bool ShortcutsBackend::UpdateShortcut(const Shortcut& shortcut) {
+bool ShortcutsBackend::UpdateShortcut(
+    const history::ShortcutsDatabase::Shortcut& shortcut) {
   if (!initialized())
     return false;
   GuidMap::iterator it(guid_map_.find(shortcut.id));
@@ -301,13 +236,16 @@ bool ShortcutsBackend::UpdateShortcut(const Shortcut& shortcut) {
       std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
   FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
                     OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::UpdateShortcut),
-                 db_.get(), shortcut));
+  return no_db_access_ ||
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(base::IgnoreResult(
+                         &history::ShortcutsDatabase::UpdateShortcut),
+                     db_.get(), shortcut));
 }
 
-bool ShortcutsBackend::DeleteShortcutsWithIds(
-    const std::vector<std::string>& shortcut_ids) {
+bool ShortcutsBackend::DeleteShortcutsWithIDs(
+    const history::ShortcutsDatabase::ShortcutIDs& shortcut_ids) {
   if (!initialized())
     return false;
   for (size_t i = 0; i < shortcut_ids.size(); ++i) {
@@ -319,15 +257,18 @@ bool ShortcutsBackend::DeleteShortcutsWithIds(
   }
   FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
                     OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithIds),
-                 db_.get(), shortcut_ids));
+  return no_db_access_ ||
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(base::IgnoreResult(
+                         &history::ShortcutsDatabase::DeleteShortcutsWithIDs),
+                     db_.get(), shortcut_ids));
 }
 
-bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
+bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& url,
                                               bool exact_match) {
   const std::string& url_spec = url.spec();
-  std::vector<std::string> shortcut_ids;
+  history::ShortcutsDatabase::ShortcutIDs shortcut_ids;
   for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ) {
     if (exact_match ?
         (it->second->second.match_core.destination_url == url) :
@@ -345,9 +286,9 @@ bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
   return no_db_access_ ||
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
-          base::Bind(
-              base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithUrl),
-              db_.get(), url_spec));
+          base::Bind(base::IgnoreResult(
+                         &history::ShortcutsDatabase::DeleteShortcutsWithURL),
+                     db_.get(), url_spec));
 }
 
 bool ShortcutsBackend::DeleteAllShortcuts() {
@@ -357,9 +298,10 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
   guid_map_.clear();
   FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
                     OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
-                 db_.get()));
+  return no_db_access_ ||
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(base::IgnoreResult(
+                         &history::ShortcutsDatabase::DeleteAllShortcuts),
+                     db_.get()));
 }
-
-}  // namespace history
