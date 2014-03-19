@@ -47,18 +47,27 @@ class CastSession : public base::RefCounted<CastSession> {
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
   typedef base::Callback<void(scoped_ptr<base::BinaryValue>)> EventLogsCallback;
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   CastSession();
 
   // Start encoding of audio and video using the provided configuration.
   //
   // When Cast sender is started and ready to be used
-  // media::cast::FrameInput will be given through the callback. The
-  // callback will be made on the main thread.
+  // media::cast::FrameInput will be given through |callback|.
+  // If it encounters an error, |error_callback| will be invoked with the
+  // error message. Both |callback| and |error_callback| will be made on
+  // the main thread.
+  // |StartUDP()| must be called before these methods.
   void StartAudio(const media::cast::AudioSenderConfig& config,
-                  const AudioFrameInputAvailableCallback& callback);
+                  const AudioFrameInputAvailableCallback& callback,
+                  const ErrorCallback& error_callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
-                  const VideoFrameInputAvailableCallback& callback);
+                  const VideoFrameInputAvailableCallback& callback,
+                  const ErrorCallback& error_callback);
+
+  // This will create the Cast transport and connect to |remote_endpoint|.
+  // Must be called before initialization of audio or video.
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
 

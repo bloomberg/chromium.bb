@@ -24,7 +24,8 @@ CastSession::~CastSession() {
 }
 
 void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
-                             const AudioFrameInputAvailableCallback& callback) {
+                             const AudioFrameInputAvailableCallback& callback,
+                             const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get()
              ->GetMessageLoop()
              ->message_loop_proxy()
@@ -35,11 +36,13 @@ void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
       base::Bind(&CastSessionDelegate::StartAudio,
                  base::Unretained(delegate_.get()),
                  config,
-                 media::BindToCurrentLoop(callback)));
+                 media::BindToCurrentLoop(callback),
+                 media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
-                             const VideoFrameInputAvailableCallback& callback) {
+                             const VideoFrameInputAvailableCallback& callback,
+                             const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get()
              ->GetMessageLoop()
              ->message_loop_proxy()
@@ -50,7 +53,8 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
       base::Bind(&CastSessionDelegate::StartVideo,
                  base::Unretained(delegate_.get()),
                  config,
-                 media::BindToCurrentLoop(callback)));
+                 media::BindToCurrentLoop(callback),
+                 media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& local_endpoint,

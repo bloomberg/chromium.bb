@@ -53,6 +53,11 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, BadLogging) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, DestinationNotSet) {
+  ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "destination_not_set.html"))
+      << message_;
+}
+
 namespace {
 
 // An in-process Cast receiver that examines the audio/video frames being

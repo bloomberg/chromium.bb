@@ -62,8 +62,14 @@ CastSessionDelegate::~CastSessionDelegate() {
 
 void CastSessionDelegate::StartAudio(
     const AudioSenderConfig& config,
-    const AudioFrameInputAvailableCallback& callback) {
+    const AudioFrameInputAvailableCallback& callback,
+    const ErrorCallback& error_callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (!cast_transport_ || !cast_sender_) {
+    error_callback.Run("Destination not set.");
+    return;
+  }
 
   audio_frame_input_available_callback_ = callback;
   media::cast::transport::CastTransportAudioConfig transport_config;
@@ -81,8 +87,15 @@ void CastSessionDelegate::StartAudio(
 
 void CastSessionDelegate::StartVideo(
     const VideoSenderConfig& config,
-    const VideoFrameInputAvailableCallback& callback) {
+    const VideoFrameInputAvailableCallback& callback,
+    const ErrorCallback& error_callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (!cast_transport_ || !cast_sender_) {
+    error_callback.Run("Destination not set.");
+    return;
+  }
+
   video_frame_input_available_callback_ = callback;
 
   media::cast::transport::CastTransportVideoConfig transport_config;
@@ -103,6 +116,10 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
                                    const net::IPEndPoint& remote_endpoint) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
+  // Logging: enable raw events and stats collection.
+  media::cast::CastLoggingConfig logging_config =
+      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled();
+
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // There's no need to decode so no thread assigned for decoding.
@@ -114,11 +131,8 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
       NULL,
       base::MessageLoopProxy::current(),
-      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled());
+      logging_config);
 
-  // Logging: enable raw events and stats collection.
-  media::cast::CastLoggingConfig logging_config =
-      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled();
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(

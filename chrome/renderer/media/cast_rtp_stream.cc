@@ -382,7 +382,9 @@ void CastRtpStream::Start(const CastRtpParams& params,
         params.payload.clock_rate));
     cast_session_->StartAudio(
         config,
-        base::Bind(&CastAudioSink::AddToTrack, audio_sink_->AsWeakPtr()));
+        base::Bind(&CastAudioSink::AddToTrack, audio_sink_->AsWeakPtr()),
+        base::Bind(&CastRtpStream::DidEncounterError,
+                   weak_factory_.GetWeakPtr()));
     start_callback.Run();
   } else {
     VideoSenderConfig config;
@@ -398,7 +400,9 @@ void CastRtpStream::Start(const CastRtpParams& params,
                                             weak_factory_.GetWeakPtr()))));
     cast_session_->StartVideo(
         config,
-        base::Bind(&CastVideoSink::AddToTrack, video_sink_->AsWeakPtr()));
+        base::Bind(&CastVideoSink::AddToTrack, video_sink_->AsWeakPtr()),
+        base::Bind(&CastRtpStream::DidEncounterError,
+                   weak_factory_.GetWeakPtr()));
     start_callback.Run();
   }
 }
