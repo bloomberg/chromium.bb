@@ -674,9 +674,11 @@ TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
   ASSERT_TRUE(str == BasicStringPiece<TypeParam>(str.c_str()));
   ASSERT_TRUE(TestFixture::as_string("hello") ==
               BasicStringPiece<TypeParam>(str.c_str(), 5));
-  ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(str.c_str(), 0U));
+  ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(str.c_str(),
+      static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(NULL));
-  ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(NULL, 0U));
+  ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(NULL,
+      static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>());
   ASSERT_TRUE(str == BasicStringPiece<TypeParam>(str.begin(), str.end()));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(str.begin(), str.begin()));

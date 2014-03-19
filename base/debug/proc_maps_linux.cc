@@ -6,7 +6,7 @@
 
 #include <fcntl.h>
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <inttypes.h>
 #endif
 
@@ -14,9 +14,10 @@
 #include "base/files/scoped_file.h"
 #include "base/strings/string_split.h"
 
-#if defined(OS_ANDROID)
-// Bionic's inttypes.h defines PRI/SCNxPTR as an unsigned long int, which
-// is incompatible with Bionic's stdint.h defining uintptr_t as a unsigned int:
+#if defined(OS_ANDROID) && !defined(__LP64__)
+// In 32-bit mode, Bionic's inttypes.h defines PRI/SCNxPTR as an
+// unsigned long int, which is incompatible with Bionic's stdint.h
+// defining uintptr_t as an unsigned int:
 // https://code.google.com/p/android/issues/detail?id=57218
 #undef SCNxPTR
 #define SCNxPTR "x"

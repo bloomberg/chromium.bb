@@ -11,6 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 
+#ifdef __LP64__
+#define FMT_ADDR  "0x%016lx"
+#else
+#define FMT_ADDR  "0x%08x"
+#endif
+
 namespace {
 
 struct StackCrawlState {
@@ -104,12 +110,12 @@ void StackTrace::OutputToStream(std::ostream* os) const {
       ++iter;
     }
 
-    *os << base::StringPrintf("#%02d 0x%08x ", i, address);
+    *os << base::StringPrintf("#%02zd " FMT_ADDR " ", i, address);
 
     if (iter != regions.end()) {
       uintptr_t rel_pc = address - iter->start + iter->offset;
       const char* path = iter->path.c_str();
-      *os << base::StringPrintf("%s+0x%08x", path, rel_pc);
+      *os << base::StringPrintf("%s+" FMT_ADDR, path, rel_pc);
     } else {
       *os << "<unknown>";
     }
