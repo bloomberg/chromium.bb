@@ -19,7 +19,8 @@ namespace errors = manifest_errors;
 RequirementsInfo::RequirementsInfo(const Manifest* manifest)
     : webgl(false),
       css3d(false),
-      npapi(false) {
+      npapi(false),
+      window_shape(false) {
   // Before parsing requirements from the manifest, automatically default the
   // NPAPI plugin requirement based on whether it includes NPAPI plugins.
   const base::ListValue* list_value = NULL;
@@ -126,6 +127,23 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
                 errors::kInvalidRequirement, iter.key());
             return false;
           }
+        }
+      }
+    } else if (iter.key() == "window") {
+      for (base::DictionaryValue::Iterator feature_iter(*requirement_value);
+           !feature_iter.IsAtEnd(); feature_iter.Advance()) {
+        bool feature_required = false;
+        if (!feature_iter.value().GetAsBoolean(&feature_required)) {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, iter.key());
+          return false;
+        }
+        if (feature_iter.key() == "shape") {
+          requirements->window_shape = feature_required;
+        } else {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, iter.key());
+          return false;
         }
       }
     } else {

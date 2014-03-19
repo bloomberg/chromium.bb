@@ -49,6 +49,13 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
 #endif  // defined(OS_WIN)
   }
 
+  if (requirements.window_shape) {
+#if !defined(USE_AURA)
+    errors_.push_back(
+        l10n_util::GetStringUTF8(IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED));
+#endif  // !defined(USE_AURA)
+  }
+
   if (requirements.webgl) {
     ++pending_requirement_checks_;
     webgl_checker_ = new GPUFeatureChecker(

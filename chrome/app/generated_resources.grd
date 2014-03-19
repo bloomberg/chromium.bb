@@ -4657,6 +4657,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
         NPAPI plugins are not supported.
       </message>
+      <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
+        Shaped windows are not supported.
+      </message>
       <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED" desc="Error message when a user tries to install an extension that is blocked by administrator policy.">
         <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blocked by the administrator.
       </message>

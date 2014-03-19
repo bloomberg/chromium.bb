@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
   ASSERT_TRUE(extension.get());
 
   std::vector<std::string> expected_errors;
-  // npapi plugins are dissalowd on CROMEOS.
+  // NPAPI plugins are disallowed on ChromeOS.
 #if defined(OS_CHROMEOS)
   expected_errors.push_back(l10n_util::GetStringUTF8(
       IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
@@ -101,11 +101,28 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
+IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest,
+                       CheckWindowShapeExtension) {
+  scoped_refptr<const Extension> extension(
+      LoadExtensionFromDirName("require_window_shape"));
+  ASSERT_TRUE(extension.get());
+
+  std::vector<std::string> expected_errors;
+#if !defined(USE_AURA)
+  expected_errors.push_back(l10n_util::GetStringUTF8(
+      IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED));
+#endif  // !defined(USE_AURA)
+
+  checker_.Check(extension, base::Bind(
+      &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
+      base::Unretained(this), expected_errors));
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+}
+
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowCSS3D) {
   scoped_refptr<const Extension> extension(
       LoadExtensionFromDirName("require_3d"));
   ASSERT_TRUE(extension.get());
-
 
   // Blacklist css3d
   std::vector<std::string> blacklisted_features;
