@@ -36,6 +36,11 @@
         'use_alsa%': 0,
         'use_pulseaudio%': 0,
       }],
+      ['sysroot!=""', {
+        'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+      }, {
+        'pkg-config': 'pkg-config'
+      }],
     ],
   },
   'includes': [
@@ -637,15 +642,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'variables': {
-            'conditions': [
-              ['sysroot!=""', {
-                'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
-              }, {
-                'pkg-config': 'pkg-config'
-              }],
-            ],
-          },
           'conditions': [
             ['use_x11==1', {
               'dependencies': [
@@ -699,7 +695,7 @@
         }],
         ['use_pulseaudio==1', {
           'cflags': [
-            '<!@(pkg-config --cflags libpulse)',
+            '<!@(<(pkg-config) --cflags libpulse)',
           ],
           'defines': [
             'USE_PULSEAUDIO',
@@ -761,10 +757,10 @@
             }, {  # else: linux_link_pulseaudio==0
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other libpulse)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other libpulse)',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l libpulse)',
+                  '<!@(<(pkg-config) --libs-only-l libpulse)',
                 ],
               },
             }],
