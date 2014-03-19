@@ -1418,7 +1418,7 @@ void Window::UpdateLayerName(const std::string& name) {
 #if !defined(NDEBUG)
   DCHECK(layer());
 
-  std::string layer_name(name);
+  std::string layer_name(name_);
   if (layer_name.empty())
     layer_name = "Unnamed Window";
 

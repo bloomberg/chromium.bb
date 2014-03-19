@@ -130,7 +130,6 @@
         'core/transient_window_stacking_client_unittest.cc',
         'core/visibility_controller_unittest.cc',
         'core/window_animations_unittest.cc',
-        'core/window_util_unittest.cc',
       ],
     },
   ],

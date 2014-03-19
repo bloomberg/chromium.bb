@@ -1882,12 +1882,6 @@ TEST_F(WindowTest, AcquireLayer) {
   EXPECT_FALSE(window1_test_api.OwnsLayer());
   EXPECT_TRUE(window1_layer.get() == window1->layer());
 
-  // The acquired layer's owner should be set NULL and re-acquring
-  // should return NULL.
-  EXPECT_FALSE(window1_layer->owner());
-  scoped_ptr<ui::Layer> window1_layer_reacquired(window1->AcquireLayer());
-  EXPECT_FALSE(window1_layer_reacquired.get());
-
   // Upon destruction, window1's layer should still be valid, and in the layer
   // hierarchy, but window2's should be gone, and no longer in the hierarchy.
   window1.reset();
