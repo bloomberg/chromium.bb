@@ -25,9 +25,17 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
                                           public AppListItemListObserver,
                                           public AppListItemObserver {
  public:
+  // The folder type affects folder behavior.
+  enum FolderType {
+    // Default folder type.
+    FOLDER_TYPE_NORMAL,
+    // Items can not be moved to/from OEM folders in the UI.
+    FOLDER_TYPE_OEM
+  };
+
   static const char kItemType[];
 
-  explicit AppListFolderItem(const std::string& id);
+  AppListFolderItem(const std::string& id, FolderType folder_type);
   virtual ~AppListFolderItem();
 
   // Updates the folder's icon.
@@ -47,6 +55,8 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
 
   AppListItemList* item_list() { return item_list_.get(); }
   const AppListItemList* item_list() const { return item_list_.get(); }
+
+  FolderType folder_type() const { return folder_type_; }
 
   // AppListItem
   virtual void Activate(int event_flags) OVERRIDE;
@@ -83,7 +93,12 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
 
   void UpdateTopItems();
 
+  // The type of folder; may affect behavior of folder views.
+  const FolderType folder_type_;
+
+  // List of items in the folder.
   scoped_ptr<AppListItemList> item_list_;
+
   // Top items for generating folder icon.
   std::vector<AppListItem*> top_items_;
 

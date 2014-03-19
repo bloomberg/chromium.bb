@@ -713,6 +713,14 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
           Manifest::INTERNAL,
           Extension::WAS_INSTALLED_BY_DEFAULT);
     }
+
+    {
+      base::DictionaryValue dictionary;
+      dictionary.SetString(manifest_keys::kName, "was_installed_by_oem");
+      dictionary.SetString(manifest_keys::kVersion, "0.1");
+      oem_extension_ = prefs_.AddExtensionWithManifestAndFlags(
+          dictionary, Manifest::INTERNAL, Extension::WAS_INSTALLED_BY_OEM);
+    }
   }
 
   virtual void Verify() OVERRIDE {
@@ -723,12 +731,14 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->IsFromWebStore(bookmark_extension_->id()));
 
     EXPECT_TRUE(prefs()->WasInstalledByDefault(default_extension_->id()));
+    EXPECT_TRUE(prefs()->WasInstalledByOem(oem_extension_->id()));
   }
 
  private:
   scoped_refptr<Extension> webstore_extension_;
   scoped_refptr<Extension> bookmark_extension_;
   scoped_refptr<Extension> default_extension_;
+  scoped_refptr<Extension> oem_extension_;
 };
 TEST_F(ExtensionPrefsFlags, ExtensionPrefsFlags) {}
 

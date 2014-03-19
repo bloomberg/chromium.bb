@@ -247,7 +247,8 @@ class AppListModelFolderTest : public AppListModelTest {
 };
 
 TEST_F(AppListModelFolderTest, FolderItem) {
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;
   model_.AddItem(folder);
@@ -315,7 +316,8 @@ TEST_F(AppListModelFolderTest, MergeItems) {
 }
 
 TEST_F(AppListModelFolderTest, AddItemToFolder) {
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
   model_.AddItem(folder);
   AppListItem* item0 = new AppListItem("Item 0");
   model_.AddItemToFolder(item0, folder->id());
@@ -328,7 +330,8 @@ TEST_F(AppListModelFolderTest, AddItemToFolder) {
 }
 
 TEST_F(AppListModelFolderTest, MoveItemToFolder) {
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
   model_.AddItem(folder);
   AppListItem* item0 = new AppListItem("Item 0");
   AppListItem* item1 = new AppListItem("Item 1");
@@ -359,8 +362,8 @@ TEST_F(AppListModelFolderTest, MoveItemToFolder) {
 TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
   model_.AddItem(new AppListItem("Item 0"));
   model_.AddItem(new AppListItem("Item 1"));
-  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
-      model_.AddItem(new AppListFolderItem("folder1")));
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
   model_.AddItem(new AppListItem("Item 2"));
   model_.AddItem(new AppListItem("Item 3"));
   ASSERT_EQ(5u, model_.top_level_item_list()->item_count());
@@ -387,8 +390,10 @@ TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
 }
 
 TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
-  AppListFolderItem* folder0 = new AppListFolderItem("folder0");
-  AppListFolderItem* folder1 = new AppListFolderItem("folder1");
+  AppListFolderItem* folder0 =
+      new AppListFolderItem("folder0", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder1 =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
   model_.AddItem(folder0);
   model_.AddItem(folder1);
   EXPECT_EQ("folder0,folder1", GetModelContents());
@@ -425,7 +430,8 @@ TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
 }
 
 TEST_F(AppListModelFolderTest, FindItemInFolder) {
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
   EXPECT_TRUE(folder);
   model_.AddItem(folder);
   std::string folder_id = folder->id();
@@ -434,6 +440,30 @@ TEST_F(AppListModelFolderTest, FindItemInFolder) {
   AppListItem* found_item = model_.FindItem(item0->id());
   ASSERT_EQ(item0, found_item);
   EXPECT_EQ(folder_id, found_item->folder_id());
+}
+
+TEST_F(AppListModelFolderTest, OemFolder) {
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_OEM);
+  model_.AddItem(folder);
+  std::string folder_id = folder->id();
+
+  // Should not be able to move to an OEM folder with MergeItems.
+  AppListItem* item0 = new AppListItem("Item 0");
+  model_.AddItem(item0);
+  syncer::StringOrdinal item0_pos = item0->position();
+  std::string new_folder = model_.MergeItems(folder_id, item0->id());
+  EXPECT_EQ("", new_folder);
+  EXPECT_EQ("", item0->folder_id());
+  EXPECT_TRUE(item0->position().Equals(item0_pos));
+
+  // Should not be able to move from an OEM folder with MoveItemToFolderAt.
+  AppListItem* item1 = new AppListItem("Item 1");
+  model_.AddItemToFolder(item1, folder_id);
+  syncer::StringOrdinal item1_pos = item1->position();
+  bool move_res = model_.MoveItemToFolderAt(item1, "", syncer::StringOrdinal());
+  EXPECT_FALSE(move_res);
+  EXPECT_TRUE(item1->position().Equals(item1_pos));
 }
 
 }  // namespace app_list

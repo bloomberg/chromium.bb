@@ -164,6 +164,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // |IS_EPHEMERAL| identifies ephemeral apps (experimental), which are not
     // permanently installed.
     IS_EPHEMERAL = 1 << 9,
+
+    // |WAS_INSTALLED_BY_OEM| installed by an OEM (e.g on Chrome OS) and should
+    // be placed in a special OEM folder in the App Launcher. Note: OEM apps are
+    // also installed by Default (i.e. WAS_INSTALLED_BY_DEFAULT is also true).
+    WAS_INSTALLED_BY_OEM = 1 << 10,
   };
 
   static scoped_refptr<Extension> Create(const base::FilePath& path,
@@ -322,6 +327,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
   bool was_installed_by_default() const {
     return (creation_flags_ & WAS_INSTALLED_BY_DEFAULT) != 0;
+  }
+  bool was_installed_by_oem() const {
+    return (creation_flags_ & WAS_INSTALLED_BY_OEM) != 0;
   }
   bool is_ephemeral() const { return (creation_flags_ & IS_EPHEMERAL) != 0; }
 

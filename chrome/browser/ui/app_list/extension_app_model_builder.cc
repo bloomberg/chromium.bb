@@ -149,6 +149,8 @@ void ExtensionAppModelBuilder::OnExtensionLoaded(const Extension* extension) {
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
   if (existing_item) {
     existing_item->Reload();
+    if (service_)
+      service_->UpdateItem(existing_item);
     return;
   }
 

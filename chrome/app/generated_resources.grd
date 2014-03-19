@@ -14385,6 +14385,9 @@ Do you accept?
         <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New incognito window
         </message>
+        <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
+          OEM folder
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
@@ -14419,6 +14422,9 @@ Do you accept?
         </message>
         <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New Incognito Window
+        </message>
+        <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
+          OEM Folder
         </message>
       </if>
       <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_LINK" desc="App launcher sign-in learn more URL.">

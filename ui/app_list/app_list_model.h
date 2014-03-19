@@ -66,10 +66,12 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // to the end of the target folder. Otherwise a new folder is created in the
   // same position as the target item with the target item as the first item in
   // the new folder and the source item as the second item. Returns the id of
-  // the target folder. The source item may already be in a folder.
-  // See also the comment for RemoveItemFromFolder.
-  const std::string& MergeItems(const std::string& target_item_id,
-                                const std::string& source_item_id);
+  // the target folder, or an empty string if the merge failed. The source item
+  // may already be in a folder. See also the comment for RemoveItemFromFolder.
+  // NOTE: This should only be called by the View code (not the sync code); it
+  // enforces folder restrictions (e.g. the target can not be an OEM folder).
+  const std::string MergeItems(const std::string& target_item_id,
+                               const std::string& source_item_id);
 
   // Move |item| to the folder matching |folder_id| or to the top level if
   // |folder_id| is empty. |item|->position will determine where the item
@@ -80,8 +82,10 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // |folder_id| is empty. The item will be inserted before |position| or at
   // the end of the list if |position| is invalid. Note: |position| is copied
   // in case it refers to the containing folder which may get deleted. See also
-  // the comment for RemoveItemFromFolder.
-  void MoveItemToFolderAt(AppListItem* item,
+  // the comment for RemoveItemFromFolder. Returns true if the item was moved.
+  // NOTE: This should only be called by the View code (not the sync code); it
+  // enforces folder restrictions (e.g. the source folder can not be type OEM).
+  bool MoveItemToFolderAt(AppListItem* item,
                           const std::string& folder_id,
                           syncer::StringOrdinal position);
 

@@ -63,13 +63,19 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
   // updates the existing sync item instead.
-  void AddItem(scoped_ptr<AppListItem> item);
+  void AddItem(scoped_ptr<AppListItem> app_item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);
 
+  // Called when properties of an item may have changed, e.g. default/oem state.
+  void UpdateItem(AppListItem* app_item);
+
   // Returns the existing sync item matching |id| or NULL.
   const SyncItem* GetSyncItem(const std::string& id) const;
+
+  // Sets the name of the folder for OEM apps.
+  void SetOemFolderName(const std::string& name);
 
   Profile* profile() { return profile_; }
   AppListModel* model() { return model_.get(); }
@@ -166,6 +172,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // Deletes a SyncItem matching |specifics|.
   void DeleteSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
+  // Creates the OEM folder and sets its name if necessary. Returns the OEM
+  // folder id.
+  std::string FindOrCreateOemFolder();
+
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   content::NotificationRegistrar registrar_;
@@ -176,6 +186,7 @@ class AppListSyncableService : public syncer::SyncableService,
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
   syncer::SyncableService::StartSyncFlare flare_;
+  std::string oem_folder_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableService);
 };

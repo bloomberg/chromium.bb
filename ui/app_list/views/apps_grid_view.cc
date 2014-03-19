@@ -1596,11 +1596,13 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
 
   // Make change to data model.
   item_list_->RemoveObserver(this);
-
   std::string folder_item_id =
       model_->MergeItems(target_view_item_id, source_item_id);
   item_list_->AddObserver(this);
-
+  if (folder_item_id.empty()) {
+    LOG(ERROR) << "Unable to merge into item id: " << target_view_item_id;
+    return;
+  }
   if (folder_item_id != target_view_item_id) {
     // New folder was created, change the view model to replace the old target
     // view with the new folder item view.
@@ -1675,8 +1677,13 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
   AppListItem* target_item = target_view->item();
 
   // Move item to the target folder.
-  const std::string& target_id_after_merge =
+  std::string target_id_after_merge =
       model_->MergeItems(target_item->id(), reparent_item->id());
+  if (target_id_after_merge.empty()) {
+    LOG(ERROR) << "Unable to reparent to item id: " << target_item->id();
+    item_list_->AddObserver(this);
+    return;
+  }
 
   if (target_id_after_merge != target_item->id()) {
     // New folder was created, change the view model to replace the old target

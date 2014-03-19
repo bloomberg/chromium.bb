@@ -76,8 +76,10 @@ class FolderImageSource : public gfx::CanvasImageSource {
 
 }  // namespace
 
-AppListFolderItem::AppListFolderItem(const std::string& id)
+AppListFolderItem::AppListFolderItem(const std::string& id,
+                                     FolderType folder_type)
     : AppListItem(id),
+      folder_type_(folder_type),
       item_list_(new AppListItemList) {
   item_list_->AddObserver(this);
 }

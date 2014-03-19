@@ -165,9 +165,13 @@ const char kPrefFromWebStore[] = "from_webstore";
 // mock App created from a bookmark.
 const char kPrefFromBookmark[] = "from_bookmark";
 
-// A preference that indicates whether the extension was installed as
-// default apps.
+// A preference that indicates whether the extension was installed as a
+// default app.
 const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
+
+// A preference that indicates whether the extension was installed as an
+// OEM app.
+const char kPrefWasInstalledByOem[] = "was_installed_by_oem";
 
 // Key for Geometry Cache preference.
 const char kPrefGeometryCache[] = "geometry_cache";
@@ -1473,6 +1477,8 @@ int ExtensionPrefs::GetCreationFlags(const std::string& extension_id) const {
       creation_flags |= Extension::FROM_WEBSTORE;
     if (WasInstalledByDefault(extension_id))
       creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+    if (WasInstalledByOem(extension_id))
+      creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
   }
   return creation_flags;
 }
@@ -1493,6 +1499,14 @@ bool ExtensionPrefs::WasInstalledByDefault(
   bool result = false;
   if (dictionary &&
       dictionary->GetBoolean(kPrefWasInstalledByDefault, &result))
+    return result;
+  return false;
+}
+
+bool ExtensionPrefs::WasInstalledByOem(const std::string& extension_id) const {
+  const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  bool result = false;
+  if (dictionary && dictionary->GetBoolean(kPrefWasInstalledByOem, &result))
     return result;
   return false;
 }
@@ -1836,6 +1850,9 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(
       kPrefWasInstalledByDefault,
       new base::FundamentalValue(extension->was_installed_by_default()));
+  extension_dict->Set(
+      kPrefWasInstalledByOem,
+      new base::FundamentalValue(extension->was_installed_by_oem()));
   extension_dict->Set(kPrefInstallTime,
                       new base::StringValue(
                           base::Int64ToString(install_time.ToInternalValue())));

@@ -748,6 +748,9 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   if (extension && extension->was_installed_by_default())
     creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
 
+  if (extension && extension->was_installed_by_oem())
+    creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
+
   if (extension && extension->is_ephemeral())
     creation_flags |= Extension::IS_EPHEMERAL;
 

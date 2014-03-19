@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "grit/generated_resources.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_merge_result.h"
@@ -25,12 +26,15 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using syncer::SyncChange;
 
 namespace app_list {
 
 namespace {
+
+const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 
 bool SyncAppListEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -96,6 +100,13 @@ syncer::SyncData GetSyncDataFromSyncItem(
 bool AppIsDefault(ExtensionService* service, const std::string& id) {
   return service && extensions::ExtensionPrefs::Get(service->profile())
                         ->WasInstalledByDefault(id);
+}
+
+bool AppIsOem(ExtensionService* service, const std::string& id) {
+  if (!service)
+    return false;
+  const extensions::Extension* extension = service->GetExtensionById(id, true);
+  return extension && extension->was_installed_by_oem();
 }
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {
@@ -181,6 +192,9 @@ AppListSyncableService::AppListSyncableService(
     return;
   }
 
+  oem_folder_name_ =
+      l10n_util::GetStringUTF8(IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME);
+
   // Note: model_observer_ is constructed after the initial sync changes are
   // received in MergeDataAndStartSyncing(). Changes to the model before that
   // will be synced after the initial sync occurs.
@@ -243,6 +257,13 @@ AppListSyncableService::GetSyncItem(const std::string& id) const {
   return NULL;
 }
 
+void AppListSyncableService::SetOemFolderName(const std::string& name) {
+  oem_folder_name_ = name;
+  AppListFolderItem* oem_folder = model_->FindFolderItem(kOemFolderId);
+  if (oem_folder)
+    model_->SetItemName(oem_folder, oem_folder_name_);
+}
+
 void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
   SyncItem* sync_item = FindOrAddSyncItem(app_item.get());
   if (!sync_item)
@@ -250,6 +271,10 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
 
   DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
   std::string folder_id = sync_item->parent_id;
+  if (folder_id.empty()) {
+    if (AppIsOem(extension_system_->extension_service(), app_item->id()))
+      folder_id = FindOrCreateOemFolder();
+  }
   model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
 
@@ -352,6 +377,16 @@ void AppListSyncableService::RemoveItem(const std::string& id) {
   RemoveSyncItem(id);
   model_->DeleteItem(id);
   PruneEmptySyncFolders();
+}
+
+void AppListSyncableService::UpdateItem(AppListItem* app_item) {
+  // Check to see if the item needs to be moved to/from the OEM folder.
+  bool is_oem =
+      AppIsOem(extension_system_->extension_service(), app_item->id());
+  if (!is_oem && app_item->folder_id() == kOemFolderId)
+    model_->MoveItemToFolder(app_item, "");
+  else if (is_oem && app_item->folder_id() != kOemFolderId)
+    model_->MoveItemToFolder(app_item, kOemFolderId);
 }
 
 void AppListSyncableService::RemoveSyncItem(const std::string& id) {
@@ -645,6 +680,7 @@ void AppListSyncableService::UpdateAppItemFromSyncItem(
     model_->SetItemPosition(app_item, sync_item->item_ordinal);
   // Only update the item name if it is a Folder or the name is empty.
   if (sync_item->item_name != app_item->name() &&
+      sync_item->item_id != kOemFolderId &&
       (app_item->GetItemType() == AppListFolderItem::kItemType ||
        app_item->name().empty())) {
     model_->SetItemName(app_item, sync_item->item_name);
@@ -718,6 +754,18 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   // children have been deleted.
   if (item_type == sync_pb::AppListSpecifics::TYPE_APP)
     model_->DeleteItem(item_id);
+}
+
+std::string AppListSyncableService::FindOrCreateOemFolder() {
+  AppListFolderItem* oem_folder = model_->FindFolderItem(kOemFolderId);
+  if (!oem_folder) {
+    scoped_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
+        kOemFolderId, AppListFolderItem::FOLDER_TYPE_OEM));
+    oem_folder = static_cast<AppListFolderItem*>(
+        model_->AddItem(new_folder.PassAs<app_list::AppListItem>()));
+  }
+  model_->SetItemName(oem_folder, oem_folder_name_);
+  return oem_folder->id();
 }
 
 std::string AppListSyncableService::SyncItem::ToString() const {

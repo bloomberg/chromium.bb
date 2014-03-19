@@ -437,28 +437,27 @@ void ExternalProviderImpl::CreateExternalProviders(
         chrome::DIR_MANAGED_USERS_DEFAULT_APPS :
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
     provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExternalPrefLoader(external_apps_path_id,
-                                       ExternalPrefLoader::NONE),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                bundled_extension_creation_flags)));
+        linked_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
+            service,
+            new ExternalPrefLoader(external_apps_path_id,
+                                   ExternalPrefLoader::NONE),
+            profile,
+            Manifest::EXTERNAL_PREF,
+            Manifest::EXTERNAL_PREF_DOWNLOAD,
+            bundled_extension_creation_flags)));
 
     // OEM default apps.
+    int oem_extension_creation_flags =
+        bundled_extension_creation_flags | Extension::WAS_INSTALLED_BY_OEM;
     chromeos::ServicesCustomizationDocument* customization =
         chromeos::ServicesCustomizationDocument::GetInstance();
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                customization->CreateExternalLoader(profile),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                bundled_extension_creation_flags)));
+    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
+        new ExternalProviderImpl(service,
+                                 customization->CreateExternalLoader(profile),
+                                 profile,
+                                 Manifest::EXTERNAL_PREF,
+                                 Manifest::EXTERNAL_PREF_DOWNLOAD,
+                                 oem_extension_creation_flags)));
   }
 
   policy::AppPackUpdater* app_pack_updater = connector->GetAppPackUpdater();
