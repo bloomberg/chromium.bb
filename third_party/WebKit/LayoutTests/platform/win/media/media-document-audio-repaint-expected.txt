@@ -1,4 +1,4 @@
-layer at (0,0) size 800x10349
+layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
@@ -38,48 +38,3 @@ layer at (8,44) size 384x334
           RenderFlexibleBox {DIV} at (0,0) size 38.53x8 [border: (1px solid #E6E6E659)]
             RenderBlock {DIV} at (1,-8) size 50.53x24
               RenderBlock {DIV} at (19.53,0) size 24x24
-layer at (8,10013) size 176x336
-  RenderBlock (positioned) {PRE} at (8,10013) size 176x336
-    RenderText {#text} at (0,0) size 176x336
-      text run at (0,0) width 112: "(repaint rects"
-      text run at (112,0) width 0: " "
-      text run at (0,16) width 168: "  (rect 97 180 32 24)"
-      text run at (168,16) width 0: " "
-      text run at (0,32) width 176: "  (rect 214 180 54 24)"
-      text run at (176,32) width 0: " "
-      text run at (0,48) width 176: "  (rect 214 180 54 24)"
-      text run at (176,48) width 0: " "
-      text run at (0,64) width 168: "  (rect 197 187 17 9)"
-      text run at (168,64) width 0: " "
-      text run at (0,80) width 176: "  (rect 97 180 117 24)"
-      text run at (176,80) width 0: " "
-      text run at (0,96) width 176: "  (rect 214 180 54 24)"
-      text run at (176,96) width 0: " "
-      text run at (0,112) width 168: "  (rect 201 187 13 9)"
-      text run at (168,112) width 0: " "
-      text run at (0,128) width 168: "  (rect 55 177 17 24)"
-      text run at (168,128) width 0: " "
-      text run at (0,144) width 168: "  (rect 55 177 52 16)"
-      text run at (168,144) width 0: " "
-      text run at (0,160) width 176: "  (rect 216 177 25 30)"
-      text run at (176,160) width 0: " "
-      text run at (0,176) width 176: "  (rect 304 177 35 30)"
-      text run at (176,176) width 0: " "
-      text run at (0,192) width 176: "  (rect 250 177 35 30)"
-      text run at (176,192) width 0: " "
-      text run at (0,208) width 168: "  (rect 55 177 52 16)"
-      text run at (168,208) width 0: " "
-      text run at (0,224) width 176: "  (rect 285 180 58 24)"
-      text run at (176,224) width 0: " "
-      text run at (0,240) width 168: "  (rect 99 180 32 24)"
-      text run at (168,240) width 0: " "
-      text run at (0,256) width 168: "  (rect 99 180 32 24)"
-      text run at (168,256) width 0: " "
-      text run at (0,272) width 168: "  (rect 97 180 32 24)"
-      text run at (168,272) width 0: " "
-      text run at (0,288) width 176: "  (rect 97 180 117 24)"
-      text run at (176,288) width 0: " "
-      text run at (0,304) width 168: "  (rect 50 211 300 1)"
-      text run at (168,304) width 0: " "
-      text run at (0,320) width 8: ")"
-      text run at (8,320) width 0: " "
