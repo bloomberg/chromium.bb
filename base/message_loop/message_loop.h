@@ -38,7 +38,7 @@
 #include "base/message_loop/message_pump_x11.h"
 #elif defined(USE_OZONE) && !defined(OS_NACL)
 #include "base/message_loop/message_pump_ozone.h"
-#else
+#elif !defined(OS_ANDROID_HOST)
 #define USE_GTK_MESSAGE_PUMP
 #include "base/message_loop/message_pump_gtk.h"
 #if defined(TOOLKIT_GTK)
@@ -57,6 +57,8 @@ class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
 class MessagePumpForUI;
+#elif defined(OS_ANDROID_HOST)
+typedef MessagePumpLibevent MessagePumpForUI;
 #endif
 class WaitableEvent;
 

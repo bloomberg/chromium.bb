@@ -240,6 +240,7 @@ _BANNED_CPP_FUNCTIONS = (
 _VALID_OS_MACROS = (
     # Please keep sorted.
     'OS_ANDROID',
+    'OS_ANDROID_HOST',
     'OS_BSD',
     'OS_CAT',       # For testing.
     'OS_CHROMEOS',
