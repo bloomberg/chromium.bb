@@ -150,7 +150,6 @@ stage_install_common() {
   # ffmpeg libs
   install -m 644 -s "${BUILDDIR}/libffmpegsumo.so" "${STAGEDIR}/${INSTALLDIR}/"
 
-  install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
   install -m 644 -s "${BUILDDIR}/lib/libmojo_system.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
 
   # Widevine CDM.
@@ -175,6 +174,7 @@ stage_install_common() {
 
   # peerconnection shared library
   if [ -f "${BUILDDIR}/lib/libpeerconnection.so" ]; then
+    install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
     install -m 644 -s "${BUILDDIR}/lib/libpeerconnection.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
 
