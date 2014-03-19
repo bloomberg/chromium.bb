@@ -137,13 +137,12 @@ private:
     float m_r0;
     float m_r1;
     float m_aspectRatio; // For elliptical gradient, width / height.
-    mutable Vector<ColorStop, 2> m_stops;
+    Vector<ColorStop, 2> m_stops;
     bool m_radial;
-    mutable bool m_stopsSorted;
+    bool m_stopsSorted;
     bool m_drawInPMColorSpace;
     GradientSpreadMethod m_spreadMethod;
     AffineTransform m_gradientSpaceTransformation;
-
 
     RefPtr<SkShader> m_gradient;
 };
