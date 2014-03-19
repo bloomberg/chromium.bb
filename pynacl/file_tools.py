@@ -100,8 +100,17 @@ def MakeDirectoryIfAbsent(path):
   Args:
     path: Directory to create.
   """
-  if not os.path.exists(path):
-    os.mkdir(path)
+  if not os.path.isdir(path):
+    os.makedirs(path)
+
+
+def MakeParentDirectoryIfAbsent(path):
+  """Creates a directory for the parent if it doesn't already exist.
+
+  Args:
+    path: Path of child where parent directory should be created for.
+  """
+  MakeDirectoryIfAbsent(os.path.dirname(path))
 
 
 def RemoveDirectoryIfPresent(path):
@@ -110,7 +119,6 @@ def RemoveDirectoryIfPresent(path):
   Args:
     path: Directory to remove.
   """
-
   # On Windows, attempts to remove read-only files get Error 5. This
   # error handler fixes the permissions and retries the removal.
   def onerror_readonly(func, path, exc_info):
@@ -150,6 +158,48 @@ def CopyTree(src, dst):
       if os.path.isfile(dstfile):
         os.remove(dstfile)
       shutil.copy2(os.path.join(root, f), dstfile)
+
+
+def MoveAndMergeDirTree(src_dir, dest_dir):
+  """Moves everything from a source directory to a destination directory.
+
+  This is different from shutil's move implementation in that it only operates
+  on directories, and if the destination directory exists, it will move the
+  contents into the directory and merge any existing directories.
+
+  Args:
+    src_dir: Source directory which files should be moved from.
+    dest_dir: Destination directory where files should be moved and merged to.
+  """
+  if not os.path.isdir(src_dir):
+    raise OSError('MoveAndMergeDirTree can only operate on directories.')
+
+  if not os.path.exists(dest_dir):
+    # Simply move the directory over if destination doesn't exist.
+    MakeParentDirectoryIfAbsent(dest_dir)
+    os.rename(src_dir, dest_dir)
+  else:
+    # Merge each item if destination directory exists.
+    for dir_item in os.listdir(src_dir):
+      source_item = os.path.join(src_dir, dir_item)
+      destination_item = os.path.join(dest_dir, dir_item)
+      if os.path.exists(destination_item):
+        if os.path.isdir(destination_item) and os.path.isdir(source_item):
+          # Merge the sub-directories together if they are both directories.
+          MoveDirTree(source_item, destination_item)
+        elif os.path.isfile(destination_item) and os.path.isfile(source_item):
+          # Overwrite the file if they are both files.
+          os.unlink(destination_item)
+          os.rename(source_item, destination_item)
+        else:
+          raise OSError('Cannot move directory tree, mismatching types.'
+                        ' Source - %s. Destination - %s' %
+                        (source_item, destination_item))
+      else:
+        os.rename(source_item, destination_item)
+
+    # Remove the directory once all the contents have been moved
+    os.rmdir(src_dir)
 
 
 def Retry(op, *args):

@@ -2045,6 +2045,7 @@ def MakeBaseTrustedEnv(platform=None):
 
   base_env.Append(BUILD_SCONSCRIPTS = [
       # KEEP THIS SORTED PLEASE
+      'build/package_version/build.scons',
       'pynacl/build.scons',
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',

@@ -36,6 +36,7 @@ def LegalizeName(name):
   """
   return re.sub(r'[^A-Za-z0-9_/.]', '_', name)
 
+
 def HttpDownload(url, target):
   """Default download route."""
   http_download.HttpDownload(url, os.path.abspath(target),
@@ -85,7 +86,7 @@ class GSDStorage(object):
     self._call = call
     self._download = download
 
-  def PutFile(self, path, key):
+  def PutFile(self, path, key, clobber=True):
     """Write a file to global storage.
 
     Args:
@@ -99,10 +100,13 @@ class GSDStorage(object):
     if self._write_bucket is None:
       raise GSDStorageError('no bucket when storing %s to %s' % (path, key))
     obj = self._write_bucket + '/' + key
+    arguments = ['cp', '-a', 'public-read']
+    if not clobber:
+      arguments.append('-n')
+
     # Using file://c:/foo/bar form of path as gsutil does not like drive
     # letters without it.
-    cmd = self._gsutil + [
-        'cp', '-a', 'public-read',
+    cmd = self._gsutil + arguments + [
         'file://' + os.path.abspath(path).replace(os.sep, '/'),
         GS_PATTERN % obj]
     logging.info('Running: %s' % str(cmd))
@@ -111,7 +115,7 @@ class GSDStorage(object):
         path, key, cmd))
     return GS_HTTPS_PATTERN % obj
 
-  def PutData(self, data, key):
+  def PutData(self, data, key, clobber=True):
     """Write data to global storage.
 
     Args:
@@ -126,7 +130,7 @@ class GSDStorage(object):
     try:
       os.close(handle)
       file_tools.WriteFile(data, path)
-      return self.PutFile(path, key)
+      return self.PutFile(path, key, clobber=clobber)
     finally:
       os.remove(path)
 

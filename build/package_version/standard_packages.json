@@ -1,0 +1,106 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file describes all the package targets and also the packages that exist
+# for each package target.
+{
+  # This section describes the list of package targets. The host platforms and
+  # architectures should match standard ones found under pynacl.platform.
+  "package_targets": {
+    # The first level of package targets is the host platform.
+    "win": {
+      # The second level of package targets is the host architecture.
+      "x86-32": [
+        # The third level is a list of all the platform targets which include
+        # both the host platform, arch and target platform, arch by convention
+        "win_x86_nacl_arm",
+        "win_x86_nacl_x86",
+        "win_x86_pnacl"
+      ],
+      "x86-64": [
+        "win_x86_nacl_arm",
+        "win_x86_nacl_x86",
+        "win_x86_pnacl"
+      ]
+    },
+    "mac": {
+      "x86-32": [
+        "mac_x86_nacl_arm",
+        "mac_x86_nacl_x86",
+        "mac_x86_pnacl"
+      ],
+      "x86-64": [
+        "mac_x86_nacl_arm",
+        "mac_x86_nacl_x86",
+        "mac_x86_pnacl"
+      ]
+    },
+    "linux": {
+      "x86-32": [
+        "linux_x86_linux_arm",
+        "linux_x86_nacl_x86",
+        "linux_x86_nacl_arm",
+        "linux_x86_pnacl"
+      ],
+      "x86-64": [
+        "linux_x86_linux_arm"
+        "linux_x86_nacl_x86",
+        "linux_x86_nacl_arm",
+        "linux_x86_pnacl"
+      ],
+      "arm": [
+        "linux_arm_pnacl"
+      ]
+    }
+  },
+
+  # The shared field is a list of packages that will be shared among package
+  # targets if they are specified with the same name. Shared does not mean that
+  # all platform targets will automatically all contain these packages.
+  "shared": [
+    "pnacl_translator"
+  ],
+
+  # For each package target, there should exists a list of packages.
+  "packages": {
+    "win_x86_nacl_arm": [
+      "nacl_arm_newlib"
+    ],
+    "win_x86_nacl_x86": [
+      "nacl_x86_glibc",
+      "nacl_x86_newlib"
+    ],
+    "win_x86_pnacl": [
+      "pnacl_newlib",
+      "pnacl_translator"
+    ],
+
+    "mac_x86_nacl_arm": [
+      "nacl_arm_newlib"
+    ],
+    "mac_x86_nacl_x86": [
+      "nacl_x86_glibc",
+      "nacl_x86_newlib"
+    ],
+    "mac_x86_pnacl": [
+      "pnacl_newlib",
+      "pnacl_translator"
+    ],
+
+    "linux_x86_nacl_arm": [
+      "nacl_arm_newlib"
+    ],
+    "linux_x86_nacl_x86": [
+      "nacl_x86_glibc",
+      "nacl_x86_newlib"
+    ],
+    "linux_x86_pnacl": [
+      "pnacl_newlib",
+      "pnacl_translator"
+    ],
+
+    "linux_arm_pnacl": [
+      "pnacl_translator"
+    ]
+}

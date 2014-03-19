@@ -16,12 +16,13 @@ class FakeStorage(object):
     self._store = {}
     self._write_count = 0
 
-  def PutData(self, data, key):
-    self._store[key] = data
-    self._write_count += 1
+  def PutData(self, data, key, clobber=True):
+    if clobber or key not in self._store:
+      self._store[key] = data
+      self._write_count += 1
 
-  def PutFile(self, path, key):
-    self.PutData(file_tools.ReadFile(path), key)
+  def PutFile(self, path, key, clobber=True):
+    self.PutData(file_tools.ReadFile(path), key, clobber=clobber)
     # Use form: fake://<key> for make-believe URLs.
     return 'fake://' + key
 
