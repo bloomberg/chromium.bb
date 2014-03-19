@@ -2,28 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from metrics import smoothness
+from measurements import smoothness_controller
 from telemetry.page import page_measurement
 
 
 class Repaint(page_measurement.PageMeasurement):
   def __init__(self):
     super(Repaint, self).__init__('repaint', False)
-    self._smoothness_metric = None
+    self._smoothness_controller = None
 
   def WillRunActions(self, page, tab):
     tab.WaitForDocumentReadyStateToBeComplete()
-    self._smoothness_metric = smoothness.SmoothnessMetric()
-    self._smoothness_metric.Start(page, tab)
+    self._smoothness_controller = smoothness_controller.SmoothnessController()
+    self._smoothness_controller.Start(page, tab)
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
 
   def DidRunAction(self, page, tab, action):
-    self._smoothness_metric.AddActionToIncludeInMetric(action)
+    self._smoothness_controller.AddActionToIncludeInMetric(action)
 
   def DidRunActions(self, page, tab):
-    self._smoothness_metric.Stop(page, tab)
+    self._smoothness_controller.Stop(tab)
 
   def MeasurePage(self, page, tab, results):
-    self._smoothness_metric.AddResults(tab, results)
+    self._smoothness_controller.AddResults(tab, results)

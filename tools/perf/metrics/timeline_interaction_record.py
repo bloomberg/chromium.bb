@@ -46,13 +46,19 @@ class TimelineInteractionRecord(object):
   time-range.
 
   """
-  def __init__(self, event):
-    self.start = event.start
-    self.end = event.end
+  def __init__(self, logical_name, start, end):
+    assert logical_name
+    self.logical_name = logical_name
+    self.start = start
+    self.end = end
+    self.is_smooth = False
+    self.is_loading_resources = False
 
+  @staticmethod
+  def FromEvent(event):
     m = re.match('Interaction\.(.+)\/(.+)', event.name)
     if m:
-      self.logical_name = m.group(1)
+      logical_name = m.group(1)
       if m.group(1) != '':
         flags = m.group(2).split(',')
       else:
@@ -60,15 +66,17 @@ class TimelineInteractionRecord(object):
     else:
       m = re.match('Interaction\.(.+)', event.name)
       assert m
-      self.logical_name = m.group(1)
+      logical_name = m.group(1)
       flags = []
 
+    record = TimelineInteractionRecord(logical_name, event.start, event.end)
     for f in flags:
       if not f in ('is_smooth', 'is_loading_resources'):
         raise Exception(
           'Unrecognized flag in timeline Interaction record: %s' % f)
-    self.is_smooth = 'is_smooth' in flags
-    self.is_loading_resources = 'is_loading_resources' in flags
+    record.is_smooth = 'is_smooth' in flags
+    record.is_loading_resources = 'is_loading_resources' in flags
+    return record
 
   def GetResultNameFor(self, result_name):
-    return "%s/%s" % (self.logical_name, result_name)
+    return "%s-%s" % (self.logical_name, result_name)
