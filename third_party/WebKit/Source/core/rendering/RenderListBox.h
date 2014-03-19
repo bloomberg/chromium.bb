@@ -138,7 +138,6 @@ private:
     void destroyScrollbar();
 
     LayoutUnit itemHeight() const;
-    void valueChanged(unsigned listIndex);
     int numVisibleItems() const;
     int numItems() const;
     LayoutUnit listHeight() const;

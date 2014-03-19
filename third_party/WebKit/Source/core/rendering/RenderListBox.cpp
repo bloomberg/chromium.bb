@@ -631,13 +631,6 @@ bool RenderListBox::scroll(ScrollDirection direction, ScrollGranularity granular
     return ScrollableArea::scroll(direction, granularity, multiplier);
 }
 
-void RenderListBox::valueChanged(unsigned listIndex)
-{
-    HTMLSelectElement* element = selectElement();
-    element->setSelectedIndex(element->listToOptionIndex(listIndex));
-    element->dispatchFormControlChangeEvent();
-}
-
 int RenderListBox::scrollSize(ScrollbarOrientation orientation) const
 {
     return orientation == VerticalScrollbar ? (numItems() - numVisibleItems()) : 0;
