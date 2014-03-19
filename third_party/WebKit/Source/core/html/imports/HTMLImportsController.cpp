@@ -148,7 +148,7 @@ bool HTMLImportsController::hasLoader() const
 
 bool HTMLImportsController::isDone() const
 {
-    return !m_master->parsing();
+    return !m_master->parsing() && m_master->haveStylesheetsLoaded();
 }
 
 void HTMLImportsController::stateDidChange()

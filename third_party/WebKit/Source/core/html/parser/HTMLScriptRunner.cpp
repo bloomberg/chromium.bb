@@ -125,8 +125,12 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     if (pendingScript.resource() && pendingScript.watchingForLoad())
         stopWatchingForLoad(pendingScript);
 
-    if (!isExecutingScript())
+    if (!isExecutingScript()) {
         Microtask::performCheckpoint();
+        m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
+        if (m_hasScriptsWaitingForResources)
+            return;
+    }
 
     // Clear the pending script before possible rentrancy from executeScript()
     RefPtr<Element> element = pendingScript.releaseElementAndClear();
