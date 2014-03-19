@@ -566,5 +566,23 @@
         }
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_js_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_js_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'mojo_js_unittests.isolate',
+          ],
+          'sources': [
+            'mojo_js_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

@@ -62,4 +62,24 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_apps_js_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_apps_js_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'mojo_apps_js_unittests.isolate',
+          ],
+          'sources': [
+            'mojo_apps_js_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

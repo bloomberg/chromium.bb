@@ -34,7 +34,7 @@
               # Look for run-path dependent libraries in the loader's directory.
               'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
             },
-          }, 
+          },
         }],
       ],
     },
@@ -76,7 +76,7 @@
               # Look for run-path dependent libraries in the loader's directory.
               'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
             },
-          }, 
+          },
         }],
       ],
     },
@@ -111,7 +111,7 @@
               # Look for run-path dependent libraries in the loader's directory.
               'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
             },
-          }, 
+          },
         }],
       ],
     },
