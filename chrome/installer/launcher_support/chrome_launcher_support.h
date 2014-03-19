@@ -36,6 +36,10 @@ base::FilePath GetChromePathForInstallationLevel(InstallationLevel level);
 // it can be found via Omaha client state.
 base::FilePath GetAppHostPathForInstallationLevel(InstallationLevel level);
 
+// Returns the path to an installed SxS chrome.exe at the specified level, if
+// it can be found via Omaha client state.
+base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level);
+
 // Returns the path to an installed chrome.exe, or an empty path. Prefers a
 // system-level installation to a user-level installation. Uses Omaha client
 // state to identify a Chrome installation location.
@@ -47,6 +51,12 @@ base::FilePath GetAnyChromePath();
 // state to identify a App Host installation location.
 // The file path returned (if any) is guaranteed to exist.
 base::FilePath GetAnyAppHostPath();
+
+// Returns the path to an installed SxS chrome.exe, or an empty path. Prefers a
+// user-level installation to a system-level installation. Uses Omaha client
+// state to identify a Chrome Canary installation location.
+// The file path returned (if any) is guaranteed to exist.
+base::FilePath GetAnyChromeSxSPath();
 
 // Uninstalls the legacy app launcher by launching setup.exe with the uninstall
 // arguments from the App Launcher ClientState registry key. The uninstall will

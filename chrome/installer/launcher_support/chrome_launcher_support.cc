@@ -38,6 +38,9 @@ const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 // Copied from google_chrome_distribution.cc.
 const wchar_t kBrowserAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
+// Copied frome google_chrome_sxs_distribution.cc.
+const wchar_t kSxSBrowserAppGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
+
 // Copied from util_constants.cc.
 const wchar_t kChromeAppHostExe[] = L"app_host.exe";
 const char kChromeAppLauncher[] = "app-launcher";
@@ -170,6 +173,11 @@ base::FilePath GetAppHostPathForInstallationLevel(InstallationLevel level) {
       GetSetupExeFromRegistry(level, kAppHostAppId), kChromeAppHostExe);
 }
 
+base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level) {
+  return FindExeRelativeToSetupExe(
+      GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
+}
+
 base::FilePath GetAnyChromePath() {
   base::FilePath chrome_path;
   if (chrome_path.empty())
@@ -188,6 +196,14 @@ base::FilePath GetAnyAppHostPath() {
   if (app_host_path.empty())
     app_host_path = GetAppHostPathForInstallationLevel(USER_LEVEL_INSTALLATION);
   return app_host_path;
+}
+
+base::FilePath GetAnyChromeSxSPath() {
+  base::FilePath path =
+      GetChromeSxSPathForInstallationLevel(USER_LEVEL_INSTALLATION);
+  if (path.empty())
+    path = GetChromeSxSPathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION);
+  return path;
 }
 
 bool IsAppHostPresent() {
