@@ -53,10 +53,10 @@ const char* NavigatorDoNotTrack::supplementName()
 
 NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator)
 {
-    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorDoNotTrack(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }

@@ -82,10 +82,10 @@ const char* NavigatorGamepad::supplementName()
 
 NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
 {
-    NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGamepad();
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -114,6 +114,12 @@ GamepadList* NavigatorGamepad::gamepads()
         m_gamepads = GamepadList::create();
     sampleGamepads<Gamepad>(m_gamepads.get());
     return m_gamepads.get();
+}
+
+void NavigatorGamepad::trace(Visitor* visitor)
+{
+    visitor->trace(m_gamepads);
+    visitor->trace(m_webkitGamepads);
 }
 
 } // namespace WebCore

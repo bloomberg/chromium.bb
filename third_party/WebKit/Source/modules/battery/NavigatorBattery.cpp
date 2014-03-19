@@ -37,12 +37,17 @@ const char* NavigatorBattery::supplementName()
 
 NavigatorBattery& NavigatorBattery::from(Navigator& navigator)
 {
-    NavigatorBattery* supplement = static_cast<NavigatorBattery*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorBattery* supplement = static_cast<NavigatorBattery*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorBattery();
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
+}
+
+void NavigatorBattery::trace(Visitor* visitor)
+{
+    visitor->trace(m_batteryManager);
 }
 
 } // namespace WebCore

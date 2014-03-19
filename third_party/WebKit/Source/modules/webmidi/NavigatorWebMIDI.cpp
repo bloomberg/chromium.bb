@@ -55,10 +55,10 @@ const char* NavigatorWebMIDI::supplementName()
 
 NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
 {
-    NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorWebMIDI(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }

@@ -7,6 +7,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "core/frame/Navigator.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -14,14 +15,17 @@ namespace WebCore {
 class Navigator;
 class ServiceWorkerContainer;
 
-class NavigatorServiceWorker FINAL : public Supplement<Navigator>, DOMWindowProperty {
+class NavigatorServiceWorker FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorServiceWorker>, public WillBeHeapSupplement<Navigator>, DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 public:
     virtual ~NavigatorServiceWorker();
     static NavigatorServiceWorker& from(Navigator&);
-    static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator& navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
+    static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
     static const char* supplementName();
 
     static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&);
+
+    void trace(Visitor*) { }
 
 private:
     explicit NavigatorServiceWorker(Navigator&);

@@ -8,17 +8,18 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/battery/BatteryStatus.h"
 
 namespace WebCore {
 
 class Navigator;
 
-class BatteryManager FINAL : public ContextLifecycleObserver, public RefCounted<BatteryManager>, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(BatteryManager);
+class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<BatteryManager>);
 public:
     virtual ~BatteryManager();
-    static PassRefPtr<BatteryManager> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<BatteryManager> create(ExecutionContext*);
 
     // EventTarget implementation.
     virtual const WTF::AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::BatteryManager; }
@@ -35,6 +36,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
     void didChangeBatteryStatus(PassRefPtr<Event>, PassOwnPtr<BatteryStatus>);
+
+    void trace(Visitor*) { }
 
 private:
     explicit BatteryManager(ExecutionContext*);

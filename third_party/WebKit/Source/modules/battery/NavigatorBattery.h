@@ -6,6 +6,7 @@
 #define NavigatorBattery_h
 
 #include "core/frame/Navigator.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -13,7 +14,8 @@ namespace WebCore {
 class BatteryManager;
 class Navigator;
 
-class NavigatorBattery : public Supplement<Navigator> {
+class NavigatorBattery FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorBattery>, public WillBeHeapSupplement<Navigator> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
 public:
     virtual ~NavigatorBattery();
 
@@ -22,11 +24,13 @@ public:
     static BatteryManager* battery(Navigator&);
     BatteryManager* batteryManager(Navigator&);
 
+    void trace(Visitor*);
+
 private:
     NavigatorBattery();
     static const char* supplementName();
 
-    RefPtr<BatteryManager> m_batteryManager;
+    RefPtrWillBeMember<BatteryManager> m_batteryManager;
 };
 
 } // namespace WebCore

@@ -24,9 +24,14 @@ NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
     NavigatorServiceWorker* supplement = toNavigatorServiceWorker(navigator);
     if (!supplement) {
         supplement = new NavigatorServiceWorker(navigator);
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
+}
+
+NavigatorServiceWorker* NavigatorServiceWorker::toNavigatorServiceWorker(Navigator& navigator)
+{
+    return static_cast<NavigatorServiceWorker*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
 }
 
 const char* NavigatorServiceWorker::supplementName()

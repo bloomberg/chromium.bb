@@ -17,7 +17,9 @@
     Boston, MA 02110-1301, USA.
 */
 
-interface Navigator {
+[
+    WillBeGarbageCollected,
+] interface Navigator {
     readonly attribute DOMString language;
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;

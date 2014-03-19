@@ -32,6 +32,7 @@
 #define NavigatorWebMIDI_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "platform/Supplementable.h"
 
@@ -40,13 +41,16 @@ namespace WebCore {
 class MIDIAccessPromise;
 class Navigator;
 
-class NavigatorWebMIDI FINAL : public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorWebMIDI FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorWebMIDI>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorWebMIDI);
 public:
     virtual ~NavigatorWebMIDI();
     static NavigatorWebMIDI& from(Navigator&);
 
     static PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(Navigator&, const Dictionary&);
     PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
+
+    void trace(Visitor*) { }
 
 private:
     NavigatorWebMIDI(LocalFrame*);

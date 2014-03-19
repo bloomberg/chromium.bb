@@ -36,7 +36,8 @@ class GamepadList;
 class Navigator;
 class WebKitGamepadList;
 
-class NavigatorGamepad FINAL : public Supplement<Navigator> {
+class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     virtual ~NavigatorGamepad();
     static NavigatorGamepad& from(Navigator&);
@@ -47,12 +48,14 @@ public:
     WebKitGamepadList* webkitGamepads();
     GamepadList* gamepads();
 
+    virtual void trace(Visitor*);
+
 private:
     NavigatorGamepad();
     static const char* supplementName();
 
-    RefPtrWillBePersistent<GamepadList> m_gamepads;
-    RefPtrWillBePersistent<WebKitGamepadList> m_webkitGamepads;
+    RefPtrWillBeMember<GamepadList> m_gamepads;
+    RefPtrWillBeMember<WebKitGamepadList> m_webkitGamepads;
 };
 
 } // namespace WebCore

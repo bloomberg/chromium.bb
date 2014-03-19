@@ -12,9 +12,9 @@
 
 namespace WebCore {
 
-PassRefPtr<BatteryManager> BatteryManager::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<BatteryManager> BatteryManager::create(ExecutionContext* context)
 {
-    return adoptRef(new BatteryManager(context));
+    return adoptRefWillBeRefCountedGarbageCollected(new BatteryManager(context));
 }
 
 BatteryManager::~BatteryManager()

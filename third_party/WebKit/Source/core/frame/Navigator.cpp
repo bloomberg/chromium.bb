@@ -129,4 +129,13 @@ void Navigator::getStorageUpdates()
     // FIXME: Remove this method or rename to yieldForStorageUpdates.
 }
 
+void Navigator::trace(Visitor* visitor)
+{
+    visitor->trace(m_plugins);
+    visitor->trace(m_mimeTypes);
+#if ENABLE(OILPAN)
+    HeapSupplementable<Navigator>::trace(visitor);
+#endif
+}
+
 } // namespace WebCore

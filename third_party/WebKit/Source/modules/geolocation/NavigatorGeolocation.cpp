@@ -46,10 +46,10 @@ const char* NavigatorGeolocation::supplementName()
 
 NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator)
 {
-    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGeolocation(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -64,6 +64,11 @@ Geolocation* NavigatorGeolocation::geolocation() const
     if (!m_geolocation && frame())
         m_geolocation = Geolocation::create(frame()->document());
     return m_geolocation.get();
+}
+
+void NavigatorGeolocation::trace(Visitor* visitor)
+{
+    visitor->trace(m_geolocation);
 }
 
 } // namespace WebCore
