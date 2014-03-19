@@ -162,7 +162,7 @@ void StylePropertySet::trace(Visitor* visitor)
 }
 
 #if ENABLE(OILPAN)
-void StylePropertySet::finalize()
+void StylePropertySet::finalizeGarbageCollectedObject()
 {
     if (m_isMutable)
         toMutableStylePropertySet(this)->~MutableStylePropertySet();

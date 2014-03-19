@@ -82,7 +82,7 @@ public:
 
     void trace(Visitor*);
     void traceAfterDispatch(Visitor*) { };
-    void finalize();
+    void finalizeGarbageCollectedObject();
 
 protected:
     StyleRuleBase(Type type) : m_type(type) { }

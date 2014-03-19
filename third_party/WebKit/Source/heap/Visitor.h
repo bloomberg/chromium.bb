@@ -95,7 +95,7 @@ struct FinalizerTraitImpl;
 
 template<typename T>
 struct FinalizerTraitImpl<T, true> {
-    static void finalize(void* obj) { static_cast<T*>(obj)->finalize(); };
+    static void finalize(void* obj) { static_cast<T*>(obj)->finalizeGarbageCollectedObject(); };
 };
 
 template<typename T>

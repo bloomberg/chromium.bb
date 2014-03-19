@@ -917,12 +917,14 @@ class GarbageCollectedFinalized : public GarbageCollected<T> {
     WTF_MAKE_NONCOPYABLE(GarbageCollectedFinalized);
 
 protected:
-    // Finalize is called when the object is freed from the heap. By
-    // default finalization means calling the destructor on the
-    // object. Finalize can be overridden to support calling the
-    // destructor of a subclass. This is useful for objects without
-    // vtables that require explicit dispatching.
-    void finalize()
+    // finalizeGarbageCollectedObject is called when the object is
+    // freed from the heap. By default finalization means calling the
+    // destructor on the object. finalizeGarbageCollectedObject can be
+    // overridden to support calling the destructor of a
+    // subclass. This is useful for objects without vtables that
+    // require explicit dispatching. The name is intentionally a bit
+    // long to make name conflicts less likely.
+    void finalizeGarbageCollectedObject()
     {
         static_cast<T*>(this)->~T();
     }

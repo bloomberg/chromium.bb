@@ -529,7 +529,7 @@ public:
         return new Bar();
     }
 
-    void finalize()
+    void finalizeGarbageCollectedObject()
     {
         EXPECT_TRUE(m_magic == magic);
         m_magic = 0;

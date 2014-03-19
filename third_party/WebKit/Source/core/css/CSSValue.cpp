@@ -397,7 +397,7 @@ void CSSValue::destroy()
     ASSERT_NOT_REACHED();
 }
 
-void CSSValue::finalize()
+void CSSValue::finalizeGarbageCollectedObject()
 {
     if (m_isTextClone) {
         ASSERT(isCSSOMSafe());

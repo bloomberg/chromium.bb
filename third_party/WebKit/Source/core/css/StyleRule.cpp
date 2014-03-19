@@ -91,7 +91,7 @@ void StyleRuleBase::trace(Visitor* visitor)
     ASSERT_NOT_REACHED();
 }
 
-void StyleRuleBase::finalize()
+void StyleRuleBase::finalizeGarbageCollectedObject()
 {
     switch (type()) {
     case Style:

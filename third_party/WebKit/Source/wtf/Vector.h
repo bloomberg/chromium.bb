@@ -607,6 +607,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             Base::destruct();
         }
 
+        void finalizeGarbageCollectedObject()
+        {
+            finalize();
+        }
+
         void clearUnusedSlots(T* from, T* to)
         {
             VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T> >::value || VectorTraits<T>::isWeak), T>::clear(from, to);

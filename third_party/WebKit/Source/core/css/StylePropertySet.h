@@ -49,7 +49,7 @@ public:
     // When oilpan is enabled override the finalize method to dispatch to the subclasses'
     // destructor. This can be removed once the MutableStylePropertySet's OwnPtr is moved
     // to the heap.
-    void finalize();
+    void finalizeGarbageCollectedObject();
 #else
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.

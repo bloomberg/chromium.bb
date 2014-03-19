@@ -120,7 +120,7 @@ public:
 
     bool equals(const CSSValue&) const;
 
-    void finalize();
+    void finalizeGarbageCollectedObject();
     void traceAfterDispatch(Visitor*) { }
     void trace(Visitor*);
 
