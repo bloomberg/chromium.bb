@@ -163,10 +163,10 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     public void testConfigurationListenerFlipPortrait() throws Exception {
         setUpForConfigurationListener();
 
-        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals(0, mObserver.mOrientation);
 
-        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
         assertEquals(0, mObserver.mOrientation);
     }
 
@@ -230,12 +230,12 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         if (!setUpForDisplayListener())
             return;
 
+        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(0, mObserver.mOrientation);
+
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
         assertTrue(mObserver.mOrientation == 180 ||
                    (ALLOW_0_FOR_180 && mObserver.mOrientation == 0));
-
-        lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        assertEquals(0, mObserver.mOrientation);
     }
 
     @SmallTest
