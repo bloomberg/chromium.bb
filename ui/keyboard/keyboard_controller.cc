@@ -348,8 +348,8 @@ void KeyboardController::OnWindowHierarchyChanged(
     OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
 }
 
-void KeyboardController::SetOverrideContentUrl(const GURL& url) {
-  proxy_->SetOverrideContentUrl(url);
+void KeyboardController::Reload() {
+  proxy_->ReloadKeyboardIfNeeded();
 }
 
 void KeyboardController::OnTextInputStateChanged(

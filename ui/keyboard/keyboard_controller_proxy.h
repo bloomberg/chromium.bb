@@ -38,9 +38,6 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // with the proxy.
   virtual aura::Window* GetKeyboardWindow();
 
-  // Sets the override content url.
-  void SetOverrideContentUrl(const GURL& url);
-
   // Whether the keyboard window is resizing from its web contents.
   bool resizing_from_contents() const { return resizing_from_contents_; }
 
@@ -116,7 +113,6 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   const GURL& GetVirtualKeyboardUrl();
 
   const GURL default_url_;
-  GURL override_url_;
 
   scoped_ptr<content::WebContents> keyboard_contents_;
 

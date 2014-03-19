@@ -16,6 +16,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace {
 
@@ -118,20 +119,8 @@ KeyboardControllerProxy::~KeyboardControllerProxy() {
 }
 
 const GURL& KeyboardControllerProxy::GetVirtualKeyboardUrl() {
-  return override_url_.is_valid() ? override_url_ : default_url_;
-}
-
-void KeyboardControllerProxy::SetOverrideContentUrl(const GURL& url) {
-  if (override_url_ == url)
-    return;
-
-  override_url_ = url;
-  // Restores the keyboard window size to default.
-  aura::Window* container = GetKeyboardWindow()->parent();
-  if (container) {
-    container->layout_manager()->OnWindowResized();
-    LoadContents(GetVirtualKeyboardUrl());
-  }
+  const GURL& override_url = GetOverrideContentUrl();
+  return override_url.is_valid() ? override_url : default_url_;
 }
 
 void KeyboardControllerProxy::LoadContents(const GURL& url) {

@@ -18,6 +18,8 @@ namespace aura {
 class WindowEventDispatcher;
 }
 
+class GURL;
+
 namespace keyboard {
 
 // Enumeration of swipe directions.
@@ -90,6 +92,13 @@ KEYBOARD_EXPORT const void MarkKeyboardLoadFinished();
 // resources in the returned array.
 KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(
     size_t* size);
+
+// Sets the override content url.
+// This is used by for input view for extension IMEs.
+KEYBOARD_EXPORT void SetOverrideContentUrl(const GURL& url);
+
+// Gets the override content url.
+KEYBOARD_EXPORT const GURL& GetOverrideContentUrl();
 
 // Logs the keyboard control event as a UMA stat.
 void LogKeyboardControlEvent(KeyboardControlEvent event);

@@ -59,9 +59,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return container_.get() != NULL;
   }
 
-  // Sets the override content url. This is used by for input view for extension
-  // IMEs.
-  void SetOverrideContentUrl(const GURL& url);
+  // Reloads the content of the keyboard.
+  void Reload();
 
   // Hides virtual keyboard and notifies observer bounds change.
   // This function should be called with a delay to avoid layout flicker

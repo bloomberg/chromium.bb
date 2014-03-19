@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -37,6 +38,8 @@ base::LazyInstance<base::Time> g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
 bool g_accessibility_keyboard_enabled = false;
+
+base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -294,6 +297,16 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   static const size_t kKeyboardResourcesSize = arraysize(kKeyboardResources);
   *size = kKeyboardResourcesSize;
   return kKeyboardResources;
+}
+
+void SetOverrideContentUrl(const GURL& url) {
+  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+  g_override_content_url.Get() = url;
+}
+
+const GURL& GetOverrideContentUrl() {
+  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+  return g_override_content_url.Get();
 }
 
 void LogKeyboardControlEvent(KeyboardControlEvent event) {
