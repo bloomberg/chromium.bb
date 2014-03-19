@@ -17,13 +17,16 @@ namespace tray {
 class BrightnessView;
 }
 
-class TrayBrightness : public SystemTrayItem,
-                       public chromeos::PowerManagerClient::Observer {
+class ASH_EXPORT TrayBrightness
+    : public SystemTrayItem,
+      public chromeos::PowerManagerClient::Observer {
  public:
   explicit TrayBrightness(SystemTray* system_tray);
   virtual ~TrayBrightness();
 
  private:
+  friend class TrayBrightnessTest;
+
   // Sends a request to get the current screen brightness so |current_percent_|
   // can be initialized.
   void GetInitialBrightness();
@@ -52,11 +55,6 @@ class TrayBrightness : public SystemTrayItem,
   base::WeakPtrFactory<TrayBrightness> weak_ptr_factory_;
 
   tray::BrightnessView* brightness_view_;
-
-  // Was |brightness_view_| created for CreateDefaultView() rather than
-  // CreateDetailedView()?  Used to avoid resetting |brightness_view_|
-  // inappropriately in DestroyDefaultView() or DestroyDetailedView().
-  bool is_default_view_;
 
   // Brightness level in the range [0.0, 100.0] that we've heard about most
   // recently.

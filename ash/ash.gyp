@@ -933,6 +933,7 @@
         'shell_unittest.cc',
         'sticky_keys/sticky_keys_overlay_unittest.cc',
         'sticky_keys/sticky_keys_unittest.cc',
+        'system/chromeos/brightness/tray_brightness_unittest.cc',
         'system/chromeos/managed/tray_locally_managed_user_unittest.cc',
         'system/chromeos/network/network_state_notifier_unittest.cc',
         'system/chromeos/power/power_event_observer_unittest.cc',
