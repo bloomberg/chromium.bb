@@ -49,26 +49,46 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     /**
      * Factory used to set up a mock ActivityWindowAndroid for testing.
      */
-    public interface WindowAndroidFactoryForTest {
+    public interface ActivityWindowAndroidFactory {
         /**
          * @return ActivityWindowAndroid for the given activity.
          */
         public ActivityWindowAndroid getActivityWindowAndroid(Activity activity);
     }
 
-    private static WindowAndroidFactoryForTest sWindowAndroidFactory =
-            new WindowAndroidFactoryForTest() {
+    private static ActivityWindowAndroidFactory sWindowAndroidFactory =
+            new ActivityWindowAndroidFactory() {
                 @Override
                 public ActivityWindowAndroid getActivityWindowAndroid(Activity activity) {
                     return new ActivityWindowAndroid(activity);
                 }
             };
+
     private WindowAndroid mWindow;
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
     private SyncController mSyncController;
     private PrintingController mPrintingController;
 
+    /**
+     * Factory used to set up a mock AppMenuHandler for testing.
+     */
+    public interface AppMenuHandlerFactory {
+        /**
+         * @return AppMenuHandler for the given activity and menu resource id.
+         */
+        public AppMenuHandler getAppMenuHandler(Activity activity,
+                AppMenuPropertiesDelegate delegate, int menuResourceId);
+    }
+
+    private static AppMenuHandlerFactory sAppMenuHandlerFactory =
+            new AppMenuHandlerFactory() {
+                @Override
+                public AppMenuHandler getAppMenuHandler(Activity activity,
+                        AppMenuPropertiesDelegate delegate, int menuResourceId) {
+                    return new AppMenuHandler(activity, delegate, menuResourceId);
+                }
+            };
     private AppMenuHandler mAppMenuHandler;
 
     @Override
@@ -117,7 +137,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
             mTabManager.setStartupUrl(startupUrl);
         }
         ChromeShellToolbar mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
-        mAppMenuHandler = new AppMenuHandler(this, this, R.menu.main_menu);
+        mAppMenuHandler = sAppMenuHandlerFactory.getAppMenuHandler(this, this, R.menu.main_menu);
         mToolbar.setMenuHandler(mAppMenuHandler);
 
         mDevToolsServer = new DevToolsServer("chrome_shell");
@@ -322,6 +342,11 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         menu.setGroupVisible(R.id.MAIN_MENU, true);
     }
 
+    @VisibleForTesting
+    public AppMenuHandler getAppMenuHandler() {
+        return mAppMenuHandler;
+    }
+
     @Override
     public boolean shouldShowIconRow() {
         return true;
@@ -342,7 +367,12 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     }
 
     @VisibleForTesting
-    public static void setActivityWindowAndroidFactory(WindowAndroidFactoryForTest factory) {
+    public static void setActivityWindowAndroidFactory(ActivityWindowAndroidFactory factory) {
         sWindowAndroidFactory = factory;
+    }
+
+    @VisibleForTesting
+    public static void setAppMenuHandlerFactory(AppMenuHandlerFactory factory) {
+        sAppMenuHandlerFactory = factory;
     }
 }

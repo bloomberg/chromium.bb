@@ -12,7 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellActivity.WindowAndroidFactoryForTest;
+import org.chromium.chrome.shell.ChromeShellActivity.ActivityWindowAndroidFactory;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.Criteria;
@@ -69,7 +69,7 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        ChromeShellActivity.setActivityWindowAndroidFactory(new WindowAndroidFactoryForTest() {
+        ChromeShellActivity.setActivityWindowAndroidFactory(new ActivityWindowAndroidFactory() {
             @Override
             public ActivityWindowAndroid getActivityWindowAndroid(Activity activity) {
                 mActivityWindowAndroidForTest = new ActivityWindowAndroidForTest(activity);

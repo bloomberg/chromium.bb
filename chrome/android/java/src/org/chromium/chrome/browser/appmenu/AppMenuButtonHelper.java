@@ -114,9 +114,9 @@ public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTo
         // If user starts to drag on this menu button, ACTION_DOWN and all the subsequent touch
         // events are received here. We need to forward this event to the app menu to handle
         // dragging correctly.
-        AppMenu menu = mMenuHandler.getAppMenu();
-        if (menu != null && !isTouchEventConsumed) {
-            isTouchEventConsumed |= menu.handleDragging(event);
+        AppMenuDragHelper dragHelper = mMenuHandler.getAppMenuDragHelper();
+        if (dragHelper != null && !isTouchEventConsumed) {
+            isTouchEventConsumed |= dragHelper.handleDragging(event);
         }
         return isTouchEventConsumed;
     }

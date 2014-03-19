@@ -73,7 +73,6 @@ Still reading?
     <ignore path="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"/>
     <ignore path="chrome/android/java/src/org/chromium/chrome/browser/BookmarkUtils.java"/>
     <ignore path="chrome/android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/appmenu/AppMenu.java"/>
     <ignore path="chrome/android/java/src/org/chromium/chrome/browser/infobar/AnimationHelper.java"/>
     <ignore path="chrome/android/java/src/org/chromium/chrome/browser/signin/SigninManager.java"/>
     <ignore path="chrome/test/chromedriver/test/webview_shell/java/src/org/chromium/chromedriver_webview_shell/Main.java"/>

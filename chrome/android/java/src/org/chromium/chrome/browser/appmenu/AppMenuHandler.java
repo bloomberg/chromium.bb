@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.appmenu;
 import android.app.Activity;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -20,6 +21,7 @@ import java.util.ArrayList;
  */
 public class AppMenuHandler {
     private AppMenu mAppMenu;
+    private AppMenuDragHelper mAppMenuDragHelper;
     private Menu mMenu;
     private final ArrayList<AppMenuObserver> mObservers;
     private final int mMenuResourceId;
@@ -69,14 +71,20 @@ public class AppMenuHandler {
 
         if (mAppMenu == null) {
             mAppMenu = new AppMenu(mActivity, mMenu, mDelegate.getItemRowHeight(), this);
+            mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu);
         }
 
         ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity,
                 mDelegate.getMenuThemeResourceId());
         boolean showIcons = mDelegate.shouldShowIconRow();
-        mAppMenu.show(wrapper, anchorView, showIcons, isByHardwareButton, startDragging);
+        mAppMenu.show(wrapper, anchorView, showIcons, isByHardwareButton);
+        mAppMenuDragHelper.onShow(isByHardwareButton, startDragging);
         UmaBridge.menuShow();
         return true;
+    }
+
+    void appMenudismiss() {
+        mAppMenuDragHelper.onDismiss();
     }
 
     /**
@@ -91,6 +99,10 @@ public class AppMenuHandler {
      */
     AppMenu getAppMenu() {
         return mAppMenu;
+    }
+
+    AppMenuDragHelper getAppMenuDragHelper() {
+        return mAppMenuDragHelper;
     }
 
     /**
@@ -124,34 +136,17 @@ public class AppMenuHandler {
         mObservers.remove(observer);
     }
 
+    void onOptionsItemSelected(MenuItem item) {
+        mActivity.onOptionsItemSelected(item);
+    }
+
     /**
      * Called by AppMenu to report that the App Menu visibility has changed.
-     * @param newState Whether the App Menu is showing.
-     * @param focusedPosition The current focused position.
+     * @param isVisible Whether the App Menu is showing.
      */
-    void onMenuVisibilityChanged(boolean newState, int focusedPosition) {
+    void onMenuVisibilityChanged(boolean isVisible) {
         for (int i = 0; i < mObservers.size(); ++i) {
-            mObservers.get(i).onMenuVisibilityChanged(newState, focusedPosition);
-        }
-    }
-
-    /**
-     * Called by AppMenu to report that the keyboard focus has changed.
-     * @param focusedPosition The new focused position.
-     */
-    void onKeyboardFocusChanged(int focusedPosition) {
-        for (int i = 0; i < mObservers.size(); ++i) {
-            mObservers.get(i).onKeyboardFocusChanged(focusedPosition);
-        }
-    }
-
-    /**
-     * Called by AppMenu to report that the keyboard has activated an item.
-     * @param focusedPosition The activated item.
-     */
-    void onKeyboardActivatedItem(int focusedPosition) {
-        for (int i = 0; i < mObservers.size(); ++i) {
-            mObservers.get(i).onKeyboardActivatedItem(focusedPosition);
+            mObservers.get(i).onMenuVisibilityChanged(isVisible);
         }
     }
 
@@ -159,6 +154,6 @@ public class AppMenuHandler {
      * TODO(kkimlabs) remove this call.
      */
     public void hardwareMenuButtonUp() {
-        if (mAppMenu != null) mAppMenu.hardwareMenuButtonUp();
+        if (mAppMenuDragHelper != null) mAppMenuDragHelper.hardwareMenuButtonUp();
     }
 }

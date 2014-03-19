@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+<!-- Copyright 2011 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
@@ -21,7 +21,7 @@
         android:paddingStart="9dp"
         android:paddingEnd="9dp" />
     <view
-        class="org.chromium.chrome.browser.appmenu.AppMenu$MenuItemIcon"
+        class="org.chromium.chrome.browser.appmenu.AppMenuItemIcon"
         android:id="@+id/menu_item_icon"
         android:layout_weight="0"
         android:layout_width="wrap_content"
