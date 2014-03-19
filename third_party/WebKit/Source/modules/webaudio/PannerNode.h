@@ -116,6 +116,7 @@ public:
     double coneOuterGain() const { return m_coneEffect.outerGain(); }
     void setConeOuterGain(double angle) { m_coneEffect.setOuterGain(angle); }
 
+    // It must be called on audio thread, currently called only process() in AudioBufferSourceNode.
     double dopplerRate();
 
     virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
@@ -145,6 +146,7 @@ private:
 
     OwnPtr<Panner> m_panner;
     unsigned m_panningModel;
+    unsigned m_distanceModel;
 
     // Current source location information
     FloatPoint3D m_position;
@@ -176,8 +178,8 @@ private:
     // AudioContext's connection count
     unsigned m_connectionCount;
 
-    // Synchronize process() and setPanningModel() which can change the panner.
-    mutable Mutex m_pannerLock;
+    // Synchronize process() with setting of the panning model, distance model and caching of the source location/orientation info.
+    mutable Mutex m_processLock;
 };
 
 } // namespace WebCore
