@@ -26,7 +26,6 @@ bool PathProvider(int key, base::FilePath* result) {
 
       *result = cur;
       return true;
-      break;
     }
     case DIR_MEDIA_LIBS: {
 #if defined(OS_MACOSX)
