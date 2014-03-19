@@ -713,15 +713,6 @@ bool URLRequestJob::ReadRawDataHelper(IOBuffer* buf, int buf_size,
   bool rv = ReadRawData(buf, buf_size, bytes_read);
 
   if (!request_->status().is_io_pending()) {
-    // If |filter_| is NULL, and logging all bytes is enabled, log the raw
-    // bytes read.
-    if (!filter_.get() && request() && request()->net_log().IsLoggingBytes() &&
-        *bytes_read > 0) {
-      request()->net_log().AddByteTransferEvent(
-          NetLog::TYPE_URL_REQUEST_JOB_BYTES_READ,
-          *bytes_read, raw_read_buffer_->data());
-    }
-
     // If the read completes synchronously, either success or failure,
     // invoke the OnRawReadComplete callback so we can account for the
     // completed read.
@@ -738,6 +729,14 @@ void URLRequestJob::FollowRedirect(const GURL& location, int http_status_code) {
 
 void URLRequestJob::OnRawReadComplete(int bytes_read) {
   DCHECK(raw_read_buffer_.get());
+  // If |filter_| is non-NULL, bytes will be logged after it is applied instead.
+  if (!filter_.get() && request() && request()->net_log().IsLoggingBytes() &&
+      bytes_read > 0) {
+    request()->net_log().AddByteTransferEvent(
+        NetLog::TYPE_URL_REQUEST_JOB_BYTES_READ,
+        bytes_read, raw_read_buffer_->data());
+  }
+
   if (bytes_read > 0) {
     RecordBytesRead(bytes_read);
   }
