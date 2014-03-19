@@ -357,6 +357,6 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
 
   // Inform tests it's OK to click buttons now.
   if (selection.totalCount > 0) {
-    chrome.test.sendMessage('selection-change-complete');
+    util.testSendMessage('selection-change-complete');
   }
 };

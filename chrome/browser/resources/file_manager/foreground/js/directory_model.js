@@ -658,7 +658,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 
           // For tests that open the dialog to empty directories, everything is
           // loaded at this point.
-          chrome.test.sendMessage('directory-change-complete');
+          util.testSendMessage('directory-change-complete');
 
           var event = new Event('directory-changed');
           event.previousDirEntry = previousDirEntry;

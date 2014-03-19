@@ -1242,6 +1242,18 @@ util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
 };
 
 /**
+ * Runs chrome.test.sendMessage in test environment. Does nothing if running
+ * in production environment.
+ *
+ * @param {string} message Test message to send.
+ */
+util.testSendMessage = function(message) {
+  var test = chrome.test || window.top.chrome.test;
+  if (test)
+    test.sendMessage(message);
+};
+
+/**
  * Error type of VolumeManager.
  * @enum {string}
  * @const

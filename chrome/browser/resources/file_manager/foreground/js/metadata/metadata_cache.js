@@ -977,8 +977,7 @@ ContentProvider.prototype.onInitialized_ = function(regexp) {
   // Automated tests need to wait for this, otherwise we crash in
   // browser_test cleanup because the worker process still has
   // URL requests in-flight.
-  var test = chrome.test || window.top.chrome.test;
-  test.sendMessage('worker-initialized');
+  util.testSendMessage('worker-initialized');
   this.initialized_ = true;
 };
 

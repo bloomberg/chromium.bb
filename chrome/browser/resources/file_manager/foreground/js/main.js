@@ -22,7 +22,7 @@ var pageLoaded = false;
 function init() {
   // Initializes UI and starts the File Manager dialog.
   fileManager.initializeUI(document.body, function() {
-    chrome.test.sendMessage('ready');
+    util.testSendMessage('ready');
     metrics.recordInterval('Load.Total');
   });
 }
