@@ -1,0 +1,12 @@
+This test checks that shifting an abspos container will properly repaint its descendants.
+The images below should be correctly repainted.
+  
+(repaint rects
+  (rect 0 0 1500 236)
+  (rect -250 0 1500 236)
+  (rect -250 0 250 236)
+  (rect 450 0 250 236)
+  (rect 454 0 250 236)
+  (rect 1154 0 250 236)
+)
+

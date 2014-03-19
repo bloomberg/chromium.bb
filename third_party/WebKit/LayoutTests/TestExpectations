@@ -111,10 +111,6 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailu
 crbug.com/318434 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
 crbug.com/346134 [ Linux ] virtual/gpu/compositedscrolling/overflow/invisible-descendants-should-not-affect-opt-in.html [ Pass Failure ]
 
-crbug.com/352050 [ Mac ] fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
-crbug.com/352050 virtual/softwarecompositing/repaint/repaint-into-ancestor-after-layout.html [ NeedsRebaseline ]
-crbug.com/352050 compositing/repaint/repaint-into-ancestor-after-layout.html [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
