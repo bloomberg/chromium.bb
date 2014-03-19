@@ -904,26 +904,28 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
                                   uint16* code,
                                   std::string* reason,
                                   std::string* message) {
-  bool parsed_ok = true;
   reason->clear();
   if (size < kWebSocketCloseCodeLength) {
-    *code = kWebSocketErrorNoStatusReceived;
-    if (size != 0) {
-      DVLOG(1) << "Close frame with payload size " << size << " received "
-               << "(the first byte is " << std::hex
-               << static_cast<int>(buffer->data()[0]) << ")";
-      parsed_ok = false;
-      *code = kWebSocketErrorProtocolError;
-      *message =
-          "Received a broken close frame containing an invalid size body.";
+    if (size == 0U) {
+      *code = kWebSocketErrorNoStatusReceived;
+      return true;
     }
-    return parsed_ok;
+
+    DVLOG(1) << "Close frame with payload size " << size << " received "
+             << "(the first byte is " << std::hex
+             << static_cast<int>(buffer->data()[0]) << ")";
+    *code = kWebSocketErrorProtocolError;
+    *message =
+        "Received a broken close frame containing an invalid size body.";
+    return false;
   }
+
   const char* data = buffer->data();
   uint16 unchecked_code = 0;
   base::ReadBigEndian(data, &unchecked_code);
   COMPILE_ASSERT(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
                  they_should_both_be_two_bytes);
+
   switch (unchecked_code) {
     case kWebSocketErrorNoStatusReceived:
     case kWebSocketErrorAbnormalClosure:
@@ -931,25 +933,23 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
       *code = kWebSocketErrorProtocolError;
       *message =
           "Received a broken close frame containing a reserved status code.";
-      parsed_ok = false;
-      break;
+      return false;
 
     default:
       *code = unchecked_code;
       break;
   }
-  if (parsed_ok) {
-    std::string text(data + kWebSocketCloseCodeLength, data + size);
-    if (StreamingUtf8Validator::Validate(text)) {
-      reason->swap(text);
-    } else {
-      *code = kWebSocketErrorProtocolError;
-      *reason = "Invalid UTF-8 in Close frame";
-      *message = "Received a broken close frame containing invalid UTF-8.";
-      parsed_ok = false;
-    }
+
+  std::string text(data + kWebSocketCloseCodeLength, data + size);
+  if (StreamingUtf8Validator::Validate(text)) {
+    reason->swap(text);
+    return true;
   }
-  return parsed_ok;
+
+  *code = kWebSocketErrorProtocolError;
+  *reason = "Invalid UTF-8 in Close frame";
+  *message = "Received a broken close frame containing invalid UTF-8.";
+  return false;
 }
 
 ChannelState WebSocketChannel::DoDropChannel(bool was_clean,
