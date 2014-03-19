@@ -4,6 +4,7 @@
 
 #include "apps/shell/browser/shell_browser_main_parts.h"
 
+#include "apps/browser_context_keyed_service_factories.h"
 #include "apps/shell/browser/shell_apps_client.h"
 #include "apps/shell/browser/shell_browser_context.h"
 #include "apps/shell/browser/shell_extension_system.h"
@@ -19,8 +20,8 @@
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
+#include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/renderer_startup_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -38,13 +39,13 @@ using extensions::Extension;
 using extensions::ExtensionSystem;
 using extensions::ShellExtensionSystem;
 
-namespace apps {
 namespace {
 
 // Register additional KeyedService factories here. See
 // ChromeBrowserMainExtraPartsProfiles for details.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  extensions::RendererStartupHelperFactory::GetInstance();
+  apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::ShellExtensionSystemFactory::GetInstance();
 }
 
@@ -70,6 +71,8 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 };
 
 }  // namespace
+
+namespace apps {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -121,7 +124,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
   CreateExtensionSystem();
 
-  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  ::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       browser_context_.get());
 

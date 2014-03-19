@@ -224,6 +224,8 @@
         'browser/app_sorting.h',
         'browser/blacklist_state.h',
         'browser/browser_context_keyed_api_factory.h',
+        'browser/browser_context_keyed_service_factories.cc',
+        'browser/browser_context_keyed_service_factories.h',
         'browser/error_map.cc',
         'browser/error_map.h',
         'browser/event_listener_map.cc',
@@ -316,6 +318,10 @@
           # when enable_extensions==0.
           'sources/': [
             ['exclude', '^browser/api/'],
+          ],
+          'sources!': [
+            'browser/browser_context_keyed_service_factories.cc',
+            'browser/browser_context_keyed_service_factories.h',
           ],
         }],
       ],

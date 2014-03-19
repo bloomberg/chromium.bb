@@ -624,6 +624,8 @@
         'browser/extensions/chrome_extension_host_delegate.h',
         'browser/extensions/chrome_extensions_browser_client.cc',
         'browser/extensions/chrome_extensions_browser_client.h',
+        'browser/extensions/browser_context_keyed_service_factories.cc',
+        'browser/extensions/browser_context_keyed_service_factories.h',
         'browser/extensions/chrome_notification_observer.cc',
         'browser/extensions/chrome_notification_observer.h',
         'browser/extensions/component_loader.cc',
@@ -931,6 +933,10 @@
           ],
         }],
         ['enable_extensions==0', {
+          'sources!': [
+            'browser/extensions/browser_context_keyed_service_factories.cc',
+            'browser/extensions/browser_context_keyed_service_factories.h',
+          ],
           'sources/': [
             # Handle files in browser/extensions/api. Exclude everything by default, white list
             # files if they are needed for linking.

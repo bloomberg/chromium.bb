@@ -45,6 +45,8 @@
         'app_window_registry.h',
         'apps_client.cc',
         'apps_client.h',
+        'browser_context_keyed_service_factories.cc',
+        'browser_context_keyed_service_factories.h',
         'launcher.cc',
         'launcher.h',
         'metrics_names.h',
