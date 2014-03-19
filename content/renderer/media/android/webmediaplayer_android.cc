@@ -442,9 +442,16 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     cached_stream_texture_size_ = natural_size_;
   }
 
+  uint32 source_texture = web_graphics_context->createTexture();
+  // This is strictly not necessary, because we flush when we create the
+  // one and only stream texture.
+  web_graphics_context->waitSyncPoint(texture_mailbox_sync_point_);
+
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
+  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, source_texture);
+  web_graphics_context->consumeTextureCHROMIUM(GL_TEXTURE_EXTERNAL_OES,
+                                               texture_mailbox_.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
@@ -456,7 +463,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, texture_id_,
+  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, source_texture,
                                             texture, level, internal_format,
                                             type);
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
@@ -464,6 +471,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
                                     false);
 
   web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+  web_graphics_context->deleteTexture(source_texture);
   return true;
 }
 
