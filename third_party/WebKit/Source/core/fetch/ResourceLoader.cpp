@@ -121,7 +121,7 @@ void ResourceLoader::init(const ResourceRequest& passedRequest)
     request.setReportLoadTiming(true);
     ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
-    m_originalRequest = m_request = applyOptions(request);
+    m_originalRequest = m_request = request;
     m_resource->updateRequest(request);
     m_host->didInitializeResourceLoader(this);
 }
@@ -153,6 +153,7 @@ void ResourceLoader::start()
     m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
     ASSERT(m_loader);
     blink::WrappedResourceRequest wrappedRequest(m_request);
+    wrappedRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
 
@@ -173,7 +174,7 @@ void ResourceLoader::setDefersLoading(bool defers)
     if (m_loader)
         m_loader->setDefersLoading(defers);
     if (!defers && !m_deferredRequest.isNull()) {
-        m_request = applyOptions(m_deferredRequest);
+        m_request = m_deferredRequest;
         m_deferredRequest = ResourceRequest();
         start();
     }
@@ -262,7 +263,7 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
 {
     RefPtr<ResourceLoader> protect(this);
 
-    ResourceRequest& request(applyOptions(passedRequest.toMutableResourceRequest()));
+    ResourceRequest& request(passedRequest.toMutableResourceRequest());
     ASSERT(!request.isNull());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
@@ -271,7 +272,6 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
         return;
     }
 
-    applyOptions(request); // canAccessRedirect() can modify m_options so we should re-apply it.
     m_host->redirectReceived(m_resource, redirectResponse);
     m_resource->willSendRequest(request, redirectResponse);
     if (request.isNull() || m_state == Terminated)
@@ -456,6 +456,7 @@ void ResourceLoader::requestSynchronously()
     m_connectionState = ConnectionStateStarted;
 
     blink::WrappedResourceRequest requestIn(m_request);
+    requestIn.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     blink::WebURLResponse responseOut;
     responseOut.initialize();
     blink::WebURLError errorOut;
@@ -473,12 +474,6 @@ void ResourceLoader::requestSynchronously()
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
-}
-
-ResourceRequest& ResourceLoader::applyOptions(ResourceRequest& request) const
-{
-    request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
-    return request;
 }
 
 }
