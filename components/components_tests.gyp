@@ -150,7 +150,7 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
 
-            'component_resources.gyp:component_resources',
+            'components_resources.gyp:components_resources',
 
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
@@ -159,7 +159,7 @@
             'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
             'components.gyp:autofill_core_test_support',
-            'component_strings.gyp:component_strings',
+            'components_strings.gyp:components_strings',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
             # Dependencies of cloud_devices

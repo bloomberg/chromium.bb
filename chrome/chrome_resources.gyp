@@ -70,7 +70,7 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            '../components/component_resources.gyp:component_resources',
+            '../components/components_resources.gyp:components_resources',
             '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
             '../content/browser/tracing/tracing_resources.gyp:tracing_resources',
           ],
@@ -360,7 +360,7 @@
         'chrome_strings',
         'platform_locale_settings',
         'theme_resources',
-        '<(DEPTH)/components/component_strings.gyp:component_strings',
+        '<(DEPTH)/components/components_strings.gyp:components_strings',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',

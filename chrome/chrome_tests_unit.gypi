@@ -498,7 +498,7 @@
         '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
-        '../components/component_resources.gyp:component_resources',
+        '../components/components_resources.gyp:components_resources',
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -1997,9 +1997,8 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
-            'common/extensions/api/api.gyp:chrome_api',
             '../components/components.gyp:autofill_content_test_support',
-            '../components/component_strings.gyp:component_strings',
+            '../components/components_strings.gyp:components_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../media/media.gyp:media_test_support',
@@ -2012,6 +2011,7 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/webkit_resources.gyp:webkit_resources',
+            'common/extensions/api/api.gyp:chrome_api',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

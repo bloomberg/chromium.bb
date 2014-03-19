@@ -186,13 +186,13 @@
   "third_party/libaddressinput/chromium/cpp/res/messages.grd": {
     "messages": [29050],
   },
-  "components/component_strings.grd": {
+  "components/components_strings.grd": {
     "messages": [30000],
   },
-  "components/resources/component_resources.grd": {
+  "components/resources/components_resources.grd": {
     "includes": [30250],
   },
-  "components/resources/component_scaled_resources.grd": {
+  "components/resources/components_scaled_resources.grd": {
     "structures": [30350],
   },
   "third_party/WebKit/public/blink_resources.grd": {

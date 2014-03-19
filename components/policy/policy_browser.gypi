@@ -10,7 +10,7 @@
     '../net/net.gyp:net',
     '../ui/base/ui_base.gyp:ui_base',
     '../url/url.gyp:url_lib',
-    'component_strings.gyp:component_strings',
+    'components_strings.gyp:components_strings',
     'user_prefs',
   ],
   'defines': [

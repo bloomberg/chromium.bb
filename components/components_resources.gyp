@@ -5,23 +5,23 @@
 {
   'targets': [
     {
-      'target_name': 'component_resources',
+      'target_name': 'components_resources',
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
       },
       'actions': [
         {
-          'action_name': 'generate_component_resources',
+          'action_name': 'generate_components_resources',
           'variables': {
-            'grit_grd_file': 'resources/component_resources.grd',
+            'grit_grd_file': 'resources/components_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'generate_component_scaled_resources',
+          'action_name': 'generate_components_scaled_resources',
           'variables': {
-            'grit_grd_file': 'resources/component_scaled_resources.grd',
+            'grit_grd_file': 'resources/components_scaled_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },

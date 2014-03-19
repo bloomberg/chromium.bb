@@ -35,7 +35,6 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'suggestions_proto',
-        '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:cloud_devices',
         '../components/components.gyp:domain_reliability',
@@ -52,6 +51,7 @@
         '../components/components.gyp:translate_core_browser',
         '../components/components.gyp:translate_core_common',
         '../components/components.gyp:user_prefs',
+        '../components/components_strings.gyp:components_strings',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.

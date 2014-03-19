@@ -13,7 +13,7 @@
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         '../url/url.gyp:url_lib',
-        'component_resources.gyp:component_resources',
+        'components_resources.gyp:components_resources',
         'language_usage_metrics',
         'translate_core_common',
         'user_prefs',
