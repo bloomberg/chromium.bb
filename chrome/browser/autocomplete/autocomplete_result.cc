@@ -219,12 +219,17 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
         base::ASCIIToUTF16(", input=") +
         input.text();
     DCHECK(default_match_->allowed_to_be_default_match) << debug_info;
-    // We shouldn't get query matches for URL inputs, or non-query matches
-    // for query inputs.
-    if (AutocompleteMatch::IsSearchType(default_match_->type)) {
-      DCHECK_NE(AutocompleteInput::URL, input.type()) << debug_info;
-    } else {
-      DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type()) << debug_info;
+    // If the default match is valid (i.e., not a prompt/placeholder), make
+    // sure the type of destination is what the user would expect given the
+    // input.
+    if (default_match_->destination_url.is_valid()) {
+      // We shouldn't get query matches for URL inputs, or non-query matches
+      // for query inputs.
+      if (AutocompleteMatch::IsSearchType(default_match_->type)) {
+        DCHECK_NE(AutocompleteInput::URL, input.type()) << debug_info;
+      } else {
+        DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type()) << debug_info;
+      }
     }
   }
 

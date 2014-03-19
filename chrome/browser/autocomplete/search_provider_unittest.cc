@@ -3084,6 +3084,14 @@ TEST_F(SearchProviderTest, NavigationInline) {
     { "http://www.abc.com/", "http://www.abc.com",
                              "http://www.abc.com", std::string(), true, true },
 
+    // Inputs with trailing whitespace should inline when possible.
+    { "abc.com ",      "http://www.abc.com",
+                              "www.abc.com",      std::string(), true,  true },
+    { "abc.com/ ",     "http://www.abc.com",
+                              "www.abc.com",      std::string(), true,  true },
+    { "abc.com ",      "http://www.abc.com/bar",
+                              "www.abc.com/bar",  "/bar",        false, false },
+
     // Inline matches when the input is a leading substring of the scheme.
     { "h",             "http://www.abc.com",
                        "http://www.abc.com", "ttp://www.abc.com", true, false },

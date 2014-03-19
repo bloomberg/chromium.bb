@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -1272,8 +1273,11 @@ int SearchProvider::CalculateRelevanceForHistory(
 
 AutocompleteMatch SearchProvider::NavigationToMatch(
     const NavigationResult& navigation) {
-  const base::string16& input = navigation.from_keyword_provider() ?
-      keyword_input_.text() : input_.text();
+  base::string16 input;
+  const bool trimmed_whitespace = base::TrimWhitespace(
+      navigation.from_keyword_provider() ?
+          keyword_input_.text() : input_.text(),
+      base::TRIM_TRAILING, &input) != base::TRIM_NONE;
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatchType::NAVSUGGEST);
   match.destination_url = navigation.url();
@@ -1313,13 +1317,16 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   }
   // An inlineable navsuggestion can only be the default match when there
   // is no keyword provider active, lest it appear first and break the user
-  // out of keyword mode.  It can also only be default when we're not
-  // preventing inline autocompletion (unless the inline autocompletion
-  // would be empty).
+  // out of keyword mode.  It can also only be default if either the inline
+  // autocompletion is empty or we're not preventing inline autocompletion.
+  // Finally, if we have an inlineable navsuggestion with an inline completion
+  // that we're not preventing, make sure we didn't trim any whitespace.
+  // We don't want to claim http://foo.com/bar is inlineable against the
+  // input "foo.com/b ".
   match.allowed_to_be_default_match = navigation.IsInlineable(input) &&
       (providers_.GetKeywordProviderURL() == NULL) &&
-      (!input_.prevent_inline_autocomplete() ||
-       match.inline_autocompletion.empty());
+      (match.inline_autocompletion.empty() ||
+       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();
