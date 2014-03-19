@@ -566,52 +566,72 @@ class GitCheckout(CheckoutBase):
     # remote branch.
     self.working_branch = 'working_branch'
     # There is no reason to not hardcode origin.
-    self.pull_remote = 'origin'
-    self.push_remote = 'upstream'
+    self.remote = 'origin'
+    # There is no reason to not hardcode master.
+    self.master_branch = 'master'
 
   def prepare(self, revision):
     """Resets the git repository in a clean state.
 
     Checks it out if not present and deletes the working branch.
     """
-    assert self.git_url
     assert self.remote_branch
-
-    self._check_call_git(
-        ['cache', 'populate', self.git_url], timeout=FETCH_TIMEOUT, cwd=None)
-    cache_path = self._check_output_git(
-        ['cache', 'exists', self.git_url], cwd=None).strip()
+    assert self.git_url
 
     if not os.path.isdir(self.project_path):
       # Clone the repo if the directory is not present.
+      logging.info(
+          'Checking out %s in %s', self.project_name, self.project_path)
       self._check_call_git(
-          ['clone', '--shared', cache_path, self.project_path],
+          ['clone', self.git_url, '-b', self.remote_branch, self.project_path],
           cwd=None, timeout=FETCH_TIMEOUT)
-      self._call_git(
-          ['config', 'remote.%s.url' % self.push_remote, self.git_url],
-          cwd=self.project_path)
+    else:
+      # Throw away all uncommitted changes in the existing checkout.
+      self._check_call_git(['checkout', self.remote_branch])
+      self._check_call_git(
+          ['reset', '--hard', '--quiet',
+           '%s/%s' % (self.remote, self.remote_branch)])
 
-    if not revision:
-      revision = self.remote_branch
+    if revision:
+      try:
+        # Look if the commit hash already exist. If so, we can skip a
+        # 'git fetch' call.
+        revision = self._check_output_git(['rev-parse', revision])
+      except subprocess.CalledProcessError:
+        self._check_call_git(
+            ['fetch', self.remote, self.remote_branch, '--quiet'])
+        revision = self._check_output_git(['rev-parse', revision])
+      self._check_call_git(['checkout', '--force', '--quiet', revision])
+    else:
+      branches, active = self._branches()
+      if active != self.master_branch:
+        self._check_call_git(
+            ['checkout', '--force', '--quiet', self.master_branch])
+      self._sync_remote_branch()
 
-    if not re.match(r'[0-9a-f]{40}$', revision, flags=re.IGNORECASE):
-      self._check_call_git(['fetch', self.pull_remote, revision])
-      revision = self.pull_remote + '/' + revision
-
-    self._check_call_git(['checkout', '--force', '--quiet', revision])
-    self._call_git(['clean', '-fdx'])
-
-    branches, _ = self._branches()
-    if self.working_branch in branches:
-      self._call_git(['branch', '-D', self.working_branch])
-
+      if self.working_branch in branches:
+        self._call_git(['branch', '-D', self.working_branch])
     return self._get_head_commit_hash()
+
+  def _sync_remote_branch(self):
+    """Syncs the remote branch."""
+    # We do a 'git pull origin master:refs/remotes/origin/master' instead of
+    # 'git pull origin master' because from the manpage for git-pull: 
+    #   A parameter <ref> without a colon is equivalent to <ref>: when
+    #   pulling/fetching, so it merges <ref> into the current branch without
+    #   storing the remote branch anywhere locally.
+    remote_tracked_path = 'refs/remotes/%s/%s' % (
+        self.remote, self.remote_branch)
+    self._check_call_git(
+        ['pull', self.remote,
+         '%s:%s' % (self.remote_branch, remote_tracked_path),
+         '--quiet'])
 
   def _get_head_commit_hash(self):
     """Gets the current revision (in unicode) from the local branch."""
     return unicode(self._check_output_git(['rev-parse', 'HEAD']).strip())
 
-  def apply_patch(self, patches, post_processors=None, verbose=False,
+  def apply_patch(self, patches, post_processors=None, verbose=False, 
                   name=None, email=None):
     """Applies a patch on 'working_branch' and switches to it.
 
@@ -624,8 +644,7 @@ class GitCheckout(CheckoutBase):
     # trying again?
     if self.remote_branch:
       self._check_call_git(
-          ['checkout', '-b', self.working_branch,
-           '-t', '%s/%s' % (self.pull_remote, self.remote_branch),
+          ['checkout', '-b', self.working_branch, '-t', self.remote_branch,
            '--quiet'])
 
     for index, p in enumerate(patches):
@@ -701,7 +720,8 @@ class GitCheckout(CheckoutBase):
     if self.base_ref:
       base_ref = self.base_ref
     else:
-      base_ref = '%s/%s' % (self.pull_remote, self.remote_branch)
+      base_ref = '%s/%s' % (self.remote,
+                            self.remote_branch or self.master_branch)
     found_files = self._check_output_git(
         ['diff', base_ref,
          '--name-only']).splitlines(False)
@@ -715,7 +735,7 @@ class GitCheckout(CheckoutBase):
     current_branch = self._check_output_git(
         ['rev-parse', '--abbrev-ref', 'HEAD']).strip()
     assert current_branch == self.working_branch
-
+ 
     commit_cmd = ['commit', '--amend', '-m', commit_message]
     if user and user != self.commit_user:
       # We do not have the first or last name of the user, grab the username
@@ -728,16 +748,13 @@ class GitCheckout(CheckoutBase):
 
     # Push to the remote repository.
     self._check_call_git(
-        ['push', self.push_remote,
-          '%s:%s' % (self.working_branch, self.remote_branch),
+        ['push', 'origin', '%s:%s' % (self.working_branch, self.remote_branch),
          '--force', '--quiet'])
     # Get the revision after the push.
     revision = self._get_head_commit_hash()
-    # Switch back to the remote_branch.
-    self._check_call_git(['cache', 'populate', self.git_url])
-    self._check_call_git(['fetch', self.pull_remote])
-    self._check_call_git(['checkout', '--force', '--quiet',
-                          '%s/%s' % (self.pull_remote, self.remote_branch)])
+    # Switch back to the remote_branch and sync it.
+    self._check_call_git(['checkout', self.remote_branch])
+    self._sync_remote_branch()
     # Delete the working branch since we are done with it.
     self._check_call_git(['branch', '-D', self.working_branch])
 
@@ -777,7 +794,7 @@ class GitCheckout(CheckoutBase):
     """Returns the number of actual commits between both hash."""
     self._fetch_remote()
 
-    rev2 = rev2 or '%s/%s' % (self.pull_remote, self.remote_branch)
+    rev2 = rev2 or '%s/%s' % (self.remote, self.remote_branch)
     # Revision range is ]rev1, rev2] and ordering matters.
     try:
       out = self._check_output_git(
@@ -789,7 +806,7 @@ class GitCheckout(CheckoutBase):
   def _fetch_remote(self):
     """Fetches the remote without rebasing."""
     # git fetch is always verbose even with -q, so redirect its output.
-    self._check_output_git(['fetch', self.pull_remote, self.remote_branch],
+    self._check_output_git(['fetch', self.remote, self.remote_branch],
                            timeout=FETCH_TIMEOUT)
 
 
