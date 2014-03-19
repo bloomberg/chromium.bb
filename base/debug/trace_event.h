@@ -195,6 +195,7 @@
 #include "base/debug/trace_event_impl.h"
 #include "base/debug/trace_event_memory.h"
 #include "base/debug/trace_event_system_stats_monitor.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
@@ -1157,6 +1158,22 @@ static inline void SetTraceValue(const std::string& arg,
   type_value.as_string = arg.c_str();
   *type = TRACE_VALUE_TYPE_COPY_STRING;
   *value = type_value.as_uint;
+}
+
+// base::Time and base::TimeTicks version of SetTraceValue to make it easier to
+// trace these types.
+static inline void SetTraceValue(const base::Time arg,
+                                 unsigned char* type,
+                                 unsigned long long* value) {
+  *type = TRACE_VALUE_TYPE_INT;
+  *value = arg.ToInternalValue();
+}
+
+static inline void SetTraceValue(const base::TimeTicks arg,
+                                 unsigned char* type,
+                                 unsigned long long* value) {
+  *type = TRACE_VALUE_TYPE_INT;
+  *value = arg.ToInternalValue();
 }
 
 // These AddTraceEvent and AddTraceEventWithThreadIdAndTimestamp template

@@ -21,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2011,6 +2012,14 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   TRACE_EVENT1("foo", "event9", "pointer_badf00d", p);
   TRACE_EVENT1("foo", "event10", "bool_true", true);
   TRACE_EVENT1("foo", "event11", "bool_false", false);
+  TRACE_EVENT1("foo", "event12", "time_null",
+      base::Time());
+  TRACE_EVENT1("foo", "event13", "time_one",
+      base::Time::FromInternalValue(1));
+  TRACE_EVENT1("foo", "event14", "timeticks_null",
+      base::TimeTicks());
+  TRACE_EVENT1("foo", "event15", "timeticks_one",
+      base::TimeTicks::FromInternalValue(1));
   EndTraceAndFlush();
 
   const DictionaryValue* args_dict = NULL;
@@ -2116,6 +2125,34 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   ASSERT_TRUE(args_dict);
   EXPECT_TRUE(args_dict->GetBoolean("bool_false", &bool_value));
   EXPECT_FALSE(bool_value);
+
+  dict = FindNamePhase("event12", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("time_null", &int_value));
+  EXPECT_EQ(0, int_value);
+
+  dict = FindNamePhase("event13", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("time_one", &int_value));
+  EXPECT_EQ(1, int_value);
+
+  dict = FindNamePhase("event14", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("timeticks_null", &int_value));
+  EXPECT_EQ(0, int_value);
+
+  dict = FindNamePhase("event15", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("timeticks_one", &int_value));
+  EXPECT_EQ(1, int_value);
 }
 
 class TraceEventCallbackTest : public TraceEventTestFixture {
