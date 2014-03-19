@@ -78,9 +78,6 @@
               'PASSWORD_MANAGER_ENABLE_SYNC',
             ],
           },
-          'export_dependent_settings': [
-            '../sync/sync.gyp:sync',
-          ],
           'sources': [
             'password_manager/core/browser/password_syncable_service.cc',
             'password_manager/core/browser/password_syncable_service.h',
@@ -95,7 +92,6 @@
       'type': 'static_library',
       'dependencies': [
         'autofill_core_common',
-        'password_manager_core_browser',
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

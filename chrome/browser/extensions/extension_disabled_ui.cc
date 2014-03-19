@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 
-#include <bitset>
 #include <string>
 
 #include "base/bind.h"

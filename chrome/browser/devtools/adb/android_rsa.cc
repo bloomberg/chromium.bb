@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "crypto/rsa_private_key.h"

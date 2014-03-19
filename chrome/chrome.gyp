@@ -139,7 +139,6 @@
             'chrome_resources.gyp:theme_resources',
             'common/extensions/api/api.gyp:chrome_api',
             '../base/base.gyp:base',
-            '../base/base.gyp:base_prefs',
             '../content/content.gyp:content_browser',
             '../net/net.gyp:http_server',
             '../net/net.gyp:net',
