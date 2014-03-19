@@ -244,7 +244,7 @@ protected:
     virtual bool ensureParsedDataReady() OVERRIDE;
 
 private:
-    InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
+    InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
 
     InspectorCSSId ruleIdByStyle(CSSStyleDeclaration*) const;
     unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
