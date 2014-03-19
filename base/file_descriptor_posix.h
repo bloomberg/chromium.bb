@@ -29,6 +29,10 @@ struct FileDescriptor {
     return (fd == other.fd && auto_close == other.auto_close);
   }
 
+  bool operator!=(const FileDescriptor& other) const {
+    return !operator==(other);
+  }
+
   // A comparison operator so that we can use these as keys in a std::map.
   bool operator<(const FileDescriptor& other) const {
     return other.fd < fd;
