@@ -113,7 +113,9 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 
 // Fails on official Linux bot. See http://crbug.com/315276
 // Flaky on Mac trybots. See http://crbug.com/326324
-#if (defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)) || defined(OS_MACOSX)
+// Times out on Win7 x64. See http://crbug.com/353955
+#if (defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)) || \
+    defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
 #define MAYBE_DeviceAttachDetachEvents DISABLED_DeviceAttachDetachEvents
 #else
 #define MAYBE_DeviceAttachDetachEvents DeviceAttachDetachEvents
