@@ -232,6 +232,7 @@ Component: Modal Dialog
   overflow: hidden;
   z-index: 100;
   opacity: 0.0;
+  margin: auto;
   -webkit-transform: scale(1.05);
   -webkit-transition: all 0.218s;
 }
@@ -617,7 +618,6 @@ button {
   top: 200px;
   left: 0;
   width: 100%;
-  display: flex;
 }
 
 .dialog-screen {
