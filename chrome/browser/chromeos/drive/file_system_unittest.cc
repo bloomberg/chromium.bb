@@ -570,8 +570,6 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
   ASSERT_TRUE(entry);
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
-
   // After "fast fetch" is done, full resource list is fetched.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
@@ -605,17 +603,6 @@ TEST_F(FileSystemTest, GetNonExistingFile) {
       FILE_PATH_LITERAL("drive/root/nonexisting.file"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   EXPECT_FALSE(entry);
-}
-
-TEST_F(FileSystemTest, GetExistingDirectory) {
-  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/Directory 1"));
-  scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
-  ASSERT_TRUE(entry);
-  ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
-
-  // The changestamp should be propagated to the directory.
-  EXPECT_EQ(fake_drive_service_->about_resource().largest_change_id(),
-            entry->directory_specific_info().changestamp());
 }
 
 TEST_F(FileSystemTest, GetInSubSubdir) {
@@ -678,15 +665,17 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   // SetUpTestFileSystem and "account_metadata.json" have the same
   // changestamp (i.e. the local metadata is up-to-date), so no request for
   // new resource list (i.e., call to GetResourceList) should happen.
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 
   // Since the file system has verified that it holds the latest snapshot,
   // it should change its state to "loaded", which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
+  const int about_resource_load_count_before =
+      fake_drive_service_->about_resource_load_count();
   file_system_->CheckForUpdates();
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
+  EXPECT_LT(about_resource_load_count_before,
+            fake_drive_service_->about_resource_load_count());
 }
 
 TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {

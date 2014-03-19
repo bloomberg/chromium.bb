@@ -79,20 +79,21 @@ class DirectoryLoader {
                                     FileError error,
                                     scoped_ptr<ResourceEntryVector> entries,
                                     bool has_more);
-  void ReadDirectoryAfterGetLargestChangestamp(
-      const DirectoryFetchInfo& directory_fetch_info,
-      int64 local_changestamp);
   void ReadDirectoryAfterGetAboutResource(
-      const DirectoryFetchInfo& directory_fetch_info,
-      int64 local_changestamp,
+      const std::string& local_id,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
+  void ReadDirectoryAfterCheckLocalState(
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      const std::string& local_id,
+      const ResourceEntry* entry,
+      const int64* local_changestamp,
+      FileError error);
 
   // Part of ReadDirectory().
   // This function should be called when the directory load is complete.
   // Flushes the callbacks waiting for the directory to be loaded.
-  void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
-                               FileError error);
+  void OnDirectoryLoadComplete(const std::string& local_id, FileError error);
 
   // ================= Implementation for directory loading =================
   // Loads the directory contents from server, and updates the local metadata.

@@ -32,17 +32,33 @@ namespace {
 // Minimum changestamp gap required to start loading directory.
 const int kMinimumChangestampGap = 50;
 
-FileError RefreshMyDriveIfNeeded(
-    ResourceMetadata* resource_metadata,
-    const google_apis::AboutResource& about_resource) {
-  ResourceEntry entry;
+FileError CheckLocalState(ResourceMetadata* resource_metadata,
+                          const google_apis::AboutResource& about_resource,
+                          const std::string& local_id,
+                          ResourceEntry* entry,
+                          int64* local_changestamp) {
+  // Fill My Drive resource ID.
+  ResourceEntry mydrive;
   FileError error = resource_metadata->GetResourceEntryByPath(
-      util::GetDriveMyDriveRootPath(), &entry);
-  if (error != FILE_ERROR_OK || !entry.resource_id().empty())
+      util::GetDriveMyDriveRootPath(), &mydrive);
+  if (error != FILE_ERROR_OK)
     return error;
 
-  entry.set_resource_id(about_resource.root_folder_id());
-  return resource_metadata->RefreshEntry(entry);
+  if (mydrive.resource_id().empty()) {
+    mydrive.set_resource_id(about_resource.root_folder_id());
+    error = resource_metadata->RefreshEntry(mydrive);
+    if (error != FILE_ERROR_OK)
+      return error;
+  }
+
+  // Get entry.
+  error = resource_metadata->GetResourceEntryById(local_id, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // Get the local changestamp.
+  *local_changestamp = resource_metadata->GetLargestChangestamp();
+  return FILE_ERROR_OK;
 }
 
 void ReadDirectoryAfterRead(const std::vector<ReadDirectoryCallback>& callbacks,
@@ -240,12 +256,7 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Should load grand root first if My Drive's resource ID is not set.
-  const bool mydrive_resource_id_is_empty =
-      directory_path == util::GetDriveMyDriveRootPath() &&
-      error == FILE_ERROR_OK &&
-      entry->resource_id().empty();
-  if ((error == FILE_ERROR_NOT_FOUND || mydrive_resource_id_is_empty) &&
+  if (error == FILE_ERROR_NOT_FOUND &&
       should_try_loading_parent &&
       util::GetDriveGrandRootPath().IsParent(directory_path)) {
     // This entry may be found after loading the parent.
@@ -280,23 +291,16 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
   if (pending_load_callback_[local_id].size() > 1)
     return;
 
-  // This entry does not exist on the server. Grand root is excluded as it's
-  // specially handled in LoadDirectoryFromServer().
-  if (entry->resource_id().empty() &&
-      entry->local_id() != util::kDriveGrandRootLocalId) {
-    OnDirectoryLoadComplete(directory_fetch_info, FILE_ERROR_OK);
-    return;
-  }
-
-  // Check the current status of local metadata, and start loading if needed.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_)),
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetLargestChangestamp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_fetch_info));
+  // Note: To be precise, we need to call UpdateAboutResource() here. However,
+  // - It is costly to do GetAboutResource HTTP request every time.
+  // - The chance using an old value is small; it only happens when
+  //   ReadDirectory is called during one GetAboutResource roundtrip time
+  //   of a change list fetching.
+  // - Even if the value is old, it just marks the directory as older. It may
+  //   trigger one future unnecessary re-fetch, but it'll never lose data.
+  about_resource_loader_->GetAboutResource(
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetAboutResource,
+                 weak_ptr_factory_.GetWeakPtr(), local_id));
 }
 
 void DirectoryLoader::ReadDirectoryAfterLoadParent(
@@ -332,46 +336,68 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
                  base::Owned(entry)));
 }
 
-void DirectoryLoader::ReadDirectoryAfterGetLargestChangestamp(
-    const DirectoryFetchInfo& directory_fetch_info,
-    int64 local_changestamp) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Note: To be precise, we need to call UpdateAboutResource() here. However,
-  // - It is costly to do GetAboutResource HTTP request every time.
-  // - The chance using an old value is small; it only happens when
-  //   ReadDirectory is called during one GetAboutResource roundtrip time
-  //   of a change list fetching.
-  // - Even if the value is old, it just marks the directory as older. It may
-  //   trigger one future unnecessary re-fetch, but it'll never lose data.
-  about_resource_loader_->GetAboutResource(
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetAboutResource,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_fetch_info,
-                 local_changestamp));
-}
-
 void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
-    const DirectoryFetchInfo& directory_fetch_info,
-    int64 local_changestamp,
+    const std::string& local_id,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    OnDirectoryLoadComplete(directory_fetch_info, error);
+    OnDirectoryLoadComplete(local_id, error);
     return;
   }
 
   DCHECK(about_resource);
 
+  // Check the current status of local metadata, and start loading if needed.
+  google_apis::AboutResource* about_resource_ptr = about_resource.get();
+  ResourceEntry* entry = new ResourceEntry;
+  int64* local_changestamp = new int64;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&CheckLocalState,
+                 resource_metadata_,
+                 *about_resource_ptr,
+                 local_id,
+                 entry,
+                 local_changestamp),
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&about_resource),
+                 local_id,
+                 base::Owned(entry),
+                 base::Owned(local_changestamp)));
+}
+
+void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
+    scoped_ptr<google_apis::AboutResource> about_resource,
+    const std::string& local_id,
+    const ResourceEntry* entry,
+    const int64* local_changestamp,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(about_resource);
+
+  if (error != FILE_ERROR_OK) {
+    OnDirectoryLoadComplete(local_id, error);
+    return;
+  }
+  // This entry does not exist on the server.
+  if (entry->resource_id().empty()) {
+    OnDirectoryLoadComplete(local_id, FILE_ERROR_OK);
+    return;
+  }
+
   int64 remote_changestamp = about_resource->largest_change_id();
 
-  // If the caller is interested in a particular directory, start loading the
-  // directory.
-  int64 directory_changestamp = std::max(directory_fetch_info.changestamp(),
-                                         local_changestamp);
+  // Start loading the directory.
+  int64 directory_changestamp = std::max(
+      entry->directory_specific_info().changestamp(), *local_changestamp);
+
+  DirectoryFetchInfo directory_fetch_info(
+      local_id, entry->resource_id(), remote_changestamp);
 
   // We may not fetch from the server at all if the local metadata is new
   // enough, but we log this message here, so "Fast-fetch start" and
@@ -385,27 +411,22 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
   // If the directory's changestamp is new enough, just schedule to run the
   // callback, as there is no need to fetch the directory.
   if (directory_changestamp + kMinimumChangestampGap > remote_changestamp) {
-    OnDirectoryLoadComplete(directory_fetch_info, FILE_ERROR_OK);
+    OnDirectoryLoadComplete(local_id, FILE_ERROR_OK);
   } else {
     // Start fetching the directory content, and mark it with the changestamp
     // |remote_changestamp|.
-    DirectoryFetchInfo new_directory_fetch_info(
-        directory_fetch_info.local_id(), directory_fetch_info.resource_id(),
-        remote_changestamp);
-    LoadDirectoryFromServer(new_directory_fetch_info);
+    LoadDirectoryFromServer(directory_fetch_info);
   }
 }
 
-void DirectoryLoader::OnDirectoryLoadComplete(
-    const DirectoryFetchInfo& directory_fetch_info,
-    FileError error) {
+void DirectoryLoader::OnDirectoryLoadComplete(const std::string& local_id,
+                                              FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   logger_->Log(logging::LOG_INFO,
                "Fast-fetch complete: %s => %s",
-               directory_fetch_info.ToString().c_str(),
+               local_id.c_str(),
                FileErrorToString(error).c_str());
-  const std::string& local_id = directory_fetch_info.local_id();
   LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it != pending_load_callback_.end()) {
     DVLOG(1) << "Running callback for " << local_id;
@@ -415,9 +436,7 @@ void DirectoryLoader::OnDirectoryLoadComplete(
         blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&ResourceMetadata::ReadDirectoryById,
-                   base::Unretained(resource_metadata_),
-                   directory_fetch_info.local_id(),
-                   entries),
+                   base::Unretained(resource_metadata_), local_id, entries),
         base::Bind(&ReadDirectoryAfterRead, callbacks,
                    base::Passed(scoped_ptr<ResourceEntryVector>(entries))));
     pending_load_callback_.erase(it);
@@ -430,24 +449,6 @@ void DirectoryLoader::LoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DCHECK(about_resource_loader_->cached_about_resource());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
-
-  if (directory_fetch_info.local_id() == util::kDriveGrandRootLocalId) {
-    // Load for a grand root directory means slightly different from other
-    // directories. It means filling resource ID of mydrive root.
-    base::FilePath* changed_directory_path = new base::FilePath;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
-        FROM_HERE,
-        base::Bind(&RefreshMyDriveIfNeeded,
-                   resource_metadata_,
-                   google_apis::AboutResource(
-                       *about_resource_loader_->cached_about_resource())),
-        base::Bind(&DirectoryLoader::LoadDirectoryFromServerAfterRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   directory_fetch_info,
-                   base::Owned(changed_directory_path)));
-    return;
-  }
 
   FeedFetcher* fetcher = new FeedFetcher(
       scheduler_,
@@ -478,7 +479,7 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
     LOG(ERROR) << "Failed to load directory: "
                << directory_fetch_info.local_id()
                << ": " << FileErrorToString(error);
-    OnDirectoryLoadComplete(directory_fetch_info, error);
+    OnDirectoryLoadComplete(directory_fetch_info.local_id(), error);
     return;
   }
 
@@ -506,7 +507,7 @@ void DirectoryLoader::LoadDirectoryFromServerAfterRefresh(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
-  OnDirectoryLoadComplete(directory_fetch_info, error);
+  OnDirectoryLoadComplete(directory_fetch_info.local_id(), error);
 
   // Also notify the observers.
   if (error == FILE_ERROR_OK && !directory_path->empty()) {
