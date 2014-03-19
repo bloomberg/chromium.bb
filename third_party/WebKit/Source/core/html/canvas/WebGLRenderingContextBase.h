@@ -356,6 +356,7 @@ protected:
     friend class WebGLCompressedTextureS3TC;
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
+    friend class ScopedTexture2DRestorer;
 
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, WebGLContextAttributes*);
     void initializeNewContext();

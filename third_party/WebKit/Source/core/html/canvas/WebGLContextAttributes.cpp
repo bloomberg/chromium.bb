@@ -159,7 +159,7 @@ blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes(
     attrs.failIfMajorPerformanceCaveat = m_failIfMajorPerformanceCaveat;
 
     attrs.noExtensions = true;
-    attrs.shareResources = true;
+    attrs.shareResources = false;
     attrs.preferDiscreteGPU = true;
 
     attrs.topDocumentURL = topDocumentURL;

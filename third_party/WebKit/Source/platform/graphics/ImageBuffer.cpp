@@ -47,6 +47,7 @@
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/image-encoders/skia/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
@@ -138,22 +139,52 @@ bool ImageBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Pl
     if (!m_surface->isAccelerated() || !platformLayer() || !isValid())
         return false;
 
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+        return false;
+
+    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!provider)
+        return false;
+    blink::WebGraphicsContext3D* sharedContext = provider->context3d();
+    if (!sharedContext || !sharedContext->makeContextCurrent())
+        return false;
+
+    OwnPtr<blink::WebExternalTextureMailbox> mailbox = adoptPtr(new blink::WebExternalTextureMailbox);
+
+    // Contexts may be in a different share group. We must transfer the texture through a mailbox first
+    sharedContext->genMailboxCHROMIUM(mailbox->name);
+    sharedContext->bindTexture(GL_TEXTURE_2D, getBackingTexture());
+    sharedContext->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
+    sharedContext->flush();
+
+    mailbox->syncPoint = sharedContext->insertSyncPoint();
+
     if (!context->makeContextCurrent())
         return false;
 
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
-        return false;
+    Platform3DObject sourceTexture = context->createTexture();
+
+    context->bindTexture(GL_TEXTURE_2D, sourceTexture);
+
+    context->waitSyncPoint(mailbox->syncPoint);
+    context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, !premultiplyAlpha);
 
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, !flipY);
-    context->copyTextureCHROMIUM(GL_TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
+    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, level, internalFormat, destType);
 
     context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
     context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
+
+    context->bindTexture(GL_TEXTURE_2D, 0);
+    context->deleteTexture(sourceTexture);
+
     context->flush();
+    sharedContext->waitSyncPoint(context->insertSyncPoint());
+
     return true;
 }
 

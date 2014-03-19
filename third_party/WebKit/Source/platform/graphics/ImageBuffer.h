@@ -108,9 +108,11 @@ public:
     // FIXME: current implementations of this method have the restriction that they only work
     // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
     // Extensions3D::canUseCopyTextureCHROMIUM().
+    // Destroys the TEXTURE_2D binding for the active texture unit of the passed context
     bool copyToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
 
     Platform3DObject getBackingTexture();
+
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*);
 
     void flush();

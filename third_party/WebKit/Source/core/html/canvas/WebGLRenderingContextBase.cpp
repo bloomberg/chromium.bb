@@ -455,6 +455,22 @@ namespace {
     }
 } // namespace anonymous
 
+class ScopedTexture2DRestorer {
+public:
+    ScopedTexture2DRestorer(WebGLRenderingContextBase* context)
+        : m_context(context)
+    {
+    }
+
+    ~ScopedTexture2DRestorer()
+    {
+        m_context->restoreCurrentTexture2D();
+    }
+
+private:
+    WebGLRenderingContextBase* m_context;
+};
+
 class WebGLRenderingContextLostCallback : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -830,6 +846,8 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
 
     canvas()->clearCopiedImage();
     m_markedCanvasDirty = false;
+
+    ScopedTexture2DRestorer restorer(this);
 
     m_drawingBuffer->commit();
     if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(m_drawingBuffer.get())) {
@@ -3406,9 +3424,12 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         return;
 
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
+
     // If possible, copy from the canvas element directly to the texture
     // via the GPU, without a read-back to system memory.
     if (GL_TEXTURE_2D == target && texture) {
+        ScopedTexture2DRestorer restorer(this);
+
         if (!canvas->is3D()) {
             ImageBuffer* buffer = canvas->buffer();
             if (buffer && buffer->copyToPlatformTexture(m_context.get(), texture->object(), internalformat, type,
@@ -3418,6 +3439,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
             }
         } else {
             WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
+            ScopedTexture2DRestorer restorer(gl);
             if (gl && gl->m_drawingBuffer->copyToPlatformTexture(m_context.get(), texture->object(), internalformat, type,
                 level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
@@ -5338,7 +5360,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         return;
 
     blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
-    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
+    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
     if (!context) {
         if (m_contextLostMode == RealLostContext) {
             m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts, FROM_HERE);
