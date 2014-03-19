@@ -3543,13 +3543,13 @@ TEST_F(ViewLayerTest, RecreateLayerZOrder) {
 
   scoped_ptr<ui::Layer> v1_old_layer(v1->RecreateLayer());
 
-  // Test the new layer order. |v1_old_layer| should be above the layers
+  // Test the new layer order. We expect: |v1| |v1_old_layer| |v2|.
   // for |v1| and |v2|.
   const std::vector<ui::Layer*>& child_layers_post = v->layer()->children();
   ASSERT_EQ(3u, child_layers_post.size());
   EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v2->layer(), child_layers_post[1]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[2]);
+  EXPECT_EQ(v1_old_layer, child_layers_post[1]);
+  EXPECT_EQ(v2->layer(), child_layers_post[2]);
 }
 
 // Verify the z-order of the layers as a result of calling RecreateLayer when
@@ -3575,13 +3575,41 @@ TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
 
   scoped_ptr<ui::Layer> v1_old_layer(v1->RecreateLayer());
 
-  // Test the new layer order. |v1_old_layer| should be above the layers
-  // for |v1| and |v2|.
+  // Test the new layer order. We expect: |v1| |v1_old_layer| |v2|.
   const std::vector<ui::Layer*>& child_layers_post = root_layer->children();
   ASSERT_EQ(3u, child_layers_post.size());
   EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v2->layer(), child_layers_post[1]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[2]);
+  EXPECT_EQ(v1_old_layer, child_layers_post[1]);
+  EXPECT_EQ(v2->layer(), child_layers_post[2]);
+}
+
+// Verifies RecreateLayer() moves all Layers over, even those that don't have
+// a View.
+TEST_F(ViewLayerTest, RecreateLayerMovesNonViewChildren) {
+  View v;
+  v.SetPaintToLayer(true);
+  View child;
+  child.SetPaintToLayer(true);
+  v.AddChildView(&child);
+  ASSERT_TRUE(v.layer() != NULL);
+  ASSERT_EQ(1u, v.layer()->children().size());
+  EXPECT_EQ(v.layer()->children()[0], child.layer());
+
+  ui::Layer layer(ui::LAYER_NOT_DRAWN);
+  v.layer()->Add(&layer);
+  v.layer()->StackAtBottom(&layer);
+
+  scoped_ptr<ui::Layer> old_layer(v.RecreateLayer());
+
+  // All children should be moved from old layer to new layer.
+  ASSERT_TRUE(old_layer.get() != NULL);
+  EXPECT_TRUE(old_layer->children().empty());
+
+  // And new layer should have the two children.
+  ASSERT_TRUE(v.layer() != NULL);
+  ASSERT_EQ(2u, v.layer()->children().size());
+  EXPECT_EQ(v.layer()->children()[0], &layer);
+  EXPECT_EQ(v.layer()->children()[1], child.layer());
 }
 
 TEST_F(ViewTest, FocusableAssertions) {

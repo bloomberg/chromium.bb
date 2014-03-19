@@ -19,6 +19,6 @@ class Layer;
 COMPOSITOR_EXPORT void PrintLayerHierarchy(const Layer* layer,
                                            gfx::Point mouse_location);
 
-} // namespace ui
+}  // namespace ui
 
 #endif  // UI_COMPOSITOR_DEBUG_UTILS_H_

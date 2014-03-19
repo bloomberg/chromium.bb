@@ -104,4 +104,4 @@ void PrintLayerHierarchy(const Layer* layer, gfx::Point mouse_location) {
   LOG(ERROR) << out.str();
 }
 
-} // namespace ui
+}  // namespace ui
