@@ -29,7 +29,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '920fcaa7f6f2c8c5b85ce5204b2e37e79edf1133'
+BIONIC_VERSION = '9ee77ccedbf569083d141bcb215ff0d5037fbd71'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -39,11 +39,12 @@ TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
 
 BIONIC_SRC = os.path.join(TOOLCHAIN_BUILD_SRC, 'bionic')
 NATIVE_CLIENT = os.path.dirname(TOOLCHAIN_BUILD)
+TOOLCHAIN = os.path.join(NATIVE_CLIENT, 'toolchain')
+
 
 def GetToolchainPath(host_arch, libc, *extra_paths):
   os_name = pynacl.platform.GetOS()
-  return os.path.join(NATIVE_CLIENT, 'toolchain',
-                      '%s_%s_%s' % (os_name, host_arch, libc),
+  return os.path.join(TOOLCHAIN,  '%s_%s_%s' % (os_name, host_arch, libc),
                       *extra_paths)
 
 
