@@ -864,22 +864,6 @@ crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure 
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
 
-crbug.com/345027 compositing/webgl/webgl-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 virtual/threaded/compositing/webgl/webgl-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 css3/flexbox/repaint-column-reverse.html [ NeedsRebaseline Failure ]
-crbug.com/345027 css3/flexbox/repaint-during-resize-no-flex.html [ NeedsRebaseline Failure ]
-crbug.com/345027 css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline Failure ]
-crbug.com/345027 css3/flexbox/repaint.html [ NeedsRebaseline Failure ]
-crbug.com/345027 fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 virtual/gpu/fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 fast/canvas/canvas-composite-fill-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 fast/canvas/canvas-incremental-repaint-2.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 fast/canvas/canvas-resize-after-paint-without-layout.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 fast/canvas/setWidthResetAfterForcedRender.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 media/audio-repaint.html [ NeedsRebaseline ImageOnlyFailure ]
-crbug.com/345027 media/media-document-audio-repaint.html [ NeedsRebaseline Failure ]
-
 # Flaky since being added
 crbug.com/340277 http/tests/navigation/back-to-get-after-post.php [ Failure Pass ]
 
