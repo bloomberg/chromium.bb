@@ -1311,21 +1311,6 @@ void ExtensionService::CheckForUpdatesSoon() {
   }
 }
 
-void ExtensionService::OnExtensionMoved(
-    const std::string& moved_extension_id,
-    const std::string& predecessor_extension_id,
-    const std::string& successor_extension_id) {
-  extension_prefs_->app_sorting()->OnExtensionMoved(
-      moved_extension_id,
-      predecessor_extension_id,
-      successor_extension_id);
-
-  const Extension* extension = GetInstalledExtension(moved_extension_id);
-  if (extension_sync_service_ && extension) {
-    extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);
-  }
-}
-
 // Some extensions will autoupdate themselves externally from Chrome.  These
 // are typically part of some larger client application package.  To support
 // these, the extension will register its location in the the preferences file

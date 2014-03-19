@@ -208,8 +208,6 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
   if (!prev && !next)
     return;  // No reordering necessary
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   extensions::AppSorting* sorting = GetAppSorting(profile_);
 
@@ -230,7 +228,7 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
   }
   prefs->SetAppDraggedByUser(extension_id_);
   sorting->SetPageOrdinal(extension_id_, page);
-  service->OnExtensionMoved(extension_id_, prev_id, next_id);
+  sorting->OnExtensionMoved(extension_id_, prev_id, next_id);
   UpdatePositionFromExtensionOrdering();
 }
 

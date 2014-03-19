@@ -174,14 +174,6 @@ class ExtensionService
 
   const base::FilePath& install_directory() const { return install_directory_; }
 
-  // Updates the app launcher value for the moved extension so that it is now
-  // located after the given predecessor and before the successor. This will
-  // trigger a sync if needed. Empty strings are used to indicate no successor
-  // or predecessor.
-  void OnExtensionMoved(const std::string& moved_extension_id,
-                        const std::string& predecessor_extension_id,
-                        const std::string& successor_extension_id);
-
   // Getter and setter for the flag that specifies whether the extension is
   // being reloaded.
   bool IsBeingReloaded(const std::string& extension_id) const;

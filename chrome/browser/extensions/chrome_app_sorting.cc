@@ -278,6 +278,8 @@ void ChromeAppSorting::OnExtensionMoved(
     }
   }
 
+  SyncIfNeeded(moved_extension_id);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       content::Source<ChromeAppSorting>(this),

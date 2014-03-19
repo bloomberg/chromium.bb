@@ -278,17 +278,17 @@ TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
   sorting->SetPageOrdinal(kHostedAppId,
                           sorting->GetPageOrdinal(kPackagedApp1Id));
 
-  service_->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
+  sorting->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
-  service_->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
+  sorting->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
   // Old behavior: This would be restored to the default order.
   // New behavior: Sorting order still doesn't change.
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
-  service_->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
+  sorting->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));

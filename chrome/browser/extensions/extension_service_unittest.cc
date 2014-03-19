@@ -5808,6 +5808,10 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
   }
 }
 
+// TODO (rdevlin.cronin): The OnExtensionMoved() method has been removed from
+// ExtensionService, so this test probably needs a new home. Unfortunately, it
+// relies pretty heavily on things like InitializeExtension[Sync]Service() and
+// PackAndInstallCRX(). When we clean up a bit more, this should move out.
 TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
   InitializeEmptyExtensionService();
   InitializeExtensionSyncService();
@@ -5829,7 +5833,9 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
           new syncer::FakeSyncChangeProcessor),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
-  service_->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
+  ExtensionPrefs::Get(service_->GetBrowserContext())
+      ->app_sorting()
+      ->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
   {
     syncer::SyncDataList list = extension_sync_service_->GetAllSyncData(
         syncer::APPS);
