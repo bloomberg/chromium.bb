@@ -309,10 +309,14 @@ NSString* GetPlatform() {
       }
 
       // A report must be sent later.
-      if (timeToWait > 0)
-        [self performSelector:@selector(sendStoredCrashReports)
-                   withObject:nil
-                   afterDelay:timeToWait];
+      if (timeToWait > 0) {
+        // performSelector: doesn't work on queue_
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self performSelector:@selector(sendStoredCrashReports)
+                       withObject:nil
+                       afterDelay:timeToWait];
+        });
+     }
   });
 }
 
