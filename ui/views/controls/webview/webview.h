@@ -117,8 +117,6 @@ class WEBVIEW_EXPORT WebView : public View,
   virtual void RenderViewHostChanged(
       content::RenderViewHost* old_host,
       content::RenderViewHost* new_host) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
@@ -129,7 +127,7 @@ class WEBVIEW_EXPORT WebView : public View,
 
  private:
   void AttachWebContents();
-  void DetachWebContents(content::WebContents* web_contents);
+  void DetachWebContents();
   void ReattachForFullscreenChange(bool enter_fullscreen);
 
   // Create a regular or test web contents (based on whether we're running

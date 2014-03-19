@@ -55,7 +55,7 @@ content::WebContents* WebView::GetWebContents() {
 void WebView::SetWebContents(content::WebContents* replacement) {
   if (replacement == web_contents())
     return;
-  DetachWebContents(web_contents());
+  DetachWebContents();
   WebContentsObserver::Observe(replacement);
   // web_contents() now returns |replacement| from here onwards.
   if (wc_owner_ != replacement)
@@ -236,10 +236,6 @@ void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
     OnFocus();
 }
 
-void WebView::WebContentsDestroyed(content::WebContents* web_contents) {
-  DetachWebContents(web_contents);
-}
-
 void WebView::DidShowFullscreenWidget(int routing_id) {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(true);
@@ -287,12 +283,12 @@ void WebView::AttachWebContents() {
 #endif
 }
 
-void WebView::DetachWebContents(content::WebContents* web_contents) {
-  if (web_contents) {
+void WebView::DetachWebContents() {
+  if (web_contents()) {
     holder_->Detach();
 #if defined(OS_WIN)
     if (!is_embedding_fullscreen_widget_)
-      web_contents->SetParentNativeViewAccessible(NULL);
+      web_contents()->SetParentNativeViewAccessible(NULL);
 #endif
   }
 }
@@ -304,7 +300,7 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
   if (is_embedding_fullscreen_widget_ || web_contents_has_separate_fs_widget) {
     // Shutting down or starting up the embedding of the separate fullscreen
     // widget.  Need to detach and re-attach to a different native view.
-    DetachWebContents(web_contents());
+    DetachWebContents();
     is_embedding_fullscreen_widget_ =
         enter_fullscreen && web_contents_has_separate_fs_widget;
     AttachWebContents();
