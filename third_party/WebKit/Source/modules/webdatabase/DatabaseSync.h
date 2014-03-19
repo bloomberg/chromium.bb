@@ -88,6 +88,11 @@ private:
         SQLTransactionSync& m_transaction;
     };
 
+    // Need a Persistent field because a HeapHashMap entry should be removed
+    // just after a SQLTransactionSync becomes untraceable. If this field was a
+    // Member<>, we could not assume the destruction order of DatabaseSync,
+    // SQLTransactionSync, and the field. We can not make the field static
+    // because multiple worker threads create SQLTransactionSync.
     GC_PLUGIN_IGNORE("http://crbug.com/353083")
     PersistentHeapHashMap<WeakMember<SQLTransactionSync>, OwnPtr<TransactionObserver> > m_observers;
 #endif
