@@ -98,7 +98,7 @@ private:
     SQLTransactionState nextStateForTransactionError();
 
     RefPtrWillBeMember<Database> m_database;
-    RefPtr<AbstractSQLTransactionBackend> m_backend;
+    RefPtrWillBeMember<AbstractSQLTransactionBackend> m_backend;
     SQLCallbackWrapper<SQLTransactionCallback> m_callbackWrapper;
     SQLCallbackWrapper<VoidCallback> m_successCallbackWrapper;
     SQLCallbackWrapper<SQLTransactionErrorCallback> m_errorCallbackWrapper;

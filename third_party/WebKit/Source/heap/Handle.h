@@ -430,7 +430,6 @@ public:
     Member(T* raw) : m_raw(raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
-        ASSERT(!raw || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(raw));
     }
 
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))

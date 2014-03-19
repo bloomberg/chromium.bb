@@ -72,6 +72,7 @@ SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> 
 void SQLTransaction::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
+    visitor->trace(m_backend);
 }
 
 bool SQLTransaction::hasCallback() const

@@ -144,7 +144,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
 #endif
     RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
-    RefPtr<SQLTransactionBackend> transactionBackend = backend()->runTransaction(transaction, readOnly, changeVersionData);
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = backend()->runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
         OwnPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);

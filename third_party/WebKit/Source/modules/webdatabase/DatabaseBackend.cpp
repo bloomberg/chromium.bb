@@ -49,6 +49,7 @@ DatabaseBackend::DatabaseBackend(PassRefPtr<DatabaseContext> databaseContext, co
 
 void DatabaseBackend::trace(Visitor* visitor)
 {
+    visitor->trace(m_transactionQueue);
     DatabaseBackendBase::trace(visitor);
 }
 
@@ -90,7 +91,7 @@ void DatabaseBackend::close()
         // Clean up transactions that have not been scheduled yet:
         // Transaction phase 1 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
-        RefPtr<SQLTransactionBackend> transaction;
+        RefPtrWillBeRawPtr<SQLTransactionBackend> transaction;
         while (!m_transactionQueue.isEmpty()) {
             transaction = m_transactionQueue.takeFirst();
             transaction->notifyDatabaseThreadIsShuttingDown();
@@ -104,7 +105,7 @@ void DatabaseBackend::close()
     databaseContext()->databaseThread()->recordDatabaseClosed(this);
 }
 
-PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
+PassRefPtrWillBeRawPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
     bool readOnly, const ChangeVersionData* data)
 {
     MutexLocker locker(m_transactionInProgressMutex);
@@ -115,7 +116,7 @@ PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtrWill
     if (data)
         wrapper = ChangeVersionWrapper::create(data->oldVersion(), data->newVersion());
 
-    RefPtr<SQLTransactionBackend> transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper, readOnly);
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper, readOnly);
     m_transactionQueue.append(transactionBackend);
     if (!m_transactionInProgress)
         scheduleTransaction();
@@ -133,7 +134,7 @@ void DatabaseBackend::inProgressTransactionCompleted()
 void DatabaseBackend::scheduleTransaction()
 {
     ASSERT(!m_transactionInProgressMutex.tryLock()); // Locked by caller.
-    RefPtr<SQLTransactionBackend> transaction;
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transaction;
 
     if (m_isTransactionQueueEnabled && !m_transactionQueue.isEmpty())
         transaction = m_transactionQueue.takeFirst();

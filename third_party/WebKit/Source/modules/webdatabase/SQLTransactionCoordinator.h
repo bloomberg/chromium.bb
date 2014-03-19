@@ -32,6 +32,7 @@
 #ifndef SQLTransactionCoordinator_h
 #define SQLTransactionCoordinator_h
 
+#include "heap/Handle.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -50,15 +51,23 @@ public:
     void releaseLock(SQLTransactionBackend*);
     void shutdown();
 private:
-    typedef Deque<RefPtr<SQLTransactionBackend> > TransactionsQueue;
+    typedef Deque<RefPtrWillBeMember<SQLTransactionBackend> > TransactionsQueue;
     struct CoordinationInfo {
         TransactionsQueue pendingTransactions;
-        HashSet<RefPtr<SQLTransactionBackend> > activeReadTransactions;
-        RefPtr<SQLTransactionBackend> activeWriteTransaction;
+        WillBeHeapHashSet<RefPtrWillBeMember<SQLTransactionBackend> > activeReadTransactions;
+        RefPtrWillBeMember<SQLTransactionBackend> activeWriteTransaction;
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(pendingTransactions);
+            visitor->trace(activeReadTransactions);
+            visitor->trace(activeWriteTransaction);
+        }
+        ALLOW_ONLY_INLINE_ALLOCATION();
     };
     // Maps database names to information about pending transactions
-    typedef HashMap<String, CoordinationInfo> CoordinationInfoMap;
-    CoordinationInfoMap m_coordinationInfoMap;
+    typedef WillBePersistentHeapHashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
+    CoordinationInfoHeapMap m_coordinationInfoMap;
     bool m_isShuttingDown;
 
     void processPendingTransactions(CoordinationInfo&);

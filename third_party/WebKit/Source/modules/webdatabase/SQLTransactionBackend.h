@@ -57,12 +57,13 @@ public:
     virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
 };
 
-class SQLTransactionBackend FINAL : public SQLTransactionStateMachine<SQLTransactionBackend>, public AbstractSQLTransactionBackend {
+class SQLTransactionBackend FINAL : public AbstractSQLTransactionBackend, public SQLTransactionStateMachine<SQLTransactionBackend> {
 public:
-    static PassRefPtr<SQLTransactionBackend> create(DatabaseBackend*,
+    static PassRefPtrWillBeRawPtr<SQLTransactionBackend> create(DatabaseBackend*,
         PassRefPtrWillBeRawPtr<AbstractSQLTransaction>, PassRefPtr<SQLTransactionWrapper>, bool readOnly);
 
     virtual ~SQLTransactionBackend();
+    virtual void trace(Visitor*) OVERRIDE;
 
     void lockAcquired();
     void performNextStep();
@@ -108,10 +109,10 @@ private:
 
     void getNextStatement();
 
-    RefPtrWillBeCrossThreadPersistent<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
+    RefPtrWillBeMember<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
     RefPtr<SQLStatementBackend> m_currentStatementBackend;
 
-    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
+    RefPtrWillBeMember<DatabaseBackend> m_database;
     RefPtr<SQLTransactionWrapper> m_wrapper;
     RefPtr<SQLError> m_transactionError;
 

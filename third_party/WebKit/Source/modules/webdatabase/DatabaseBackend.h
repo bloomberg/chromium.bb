@@ -54,7 +54,7 @@ public:
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
     void close();
 
-    PassRefPtr<SQLTransactionBackend> runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
+    PassRefPtrWillBeRawPtr<SQLTransactionBackend> runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
     void scheduleTransactionStep(SQLTransactionBackend*);
     void inProgressTransactionCompleted();
 
@@ -71,7 +71,7 @@ private:
 
     void scheduleTransaction();
 
-    Deque<RefPtr<SQLTransactionBackend> > m_transactionQueue;
+    Deque<RefPtrWillBeMember<SQLTransactionBackend> > m_transactionQueue;
     Mutex m_transactionInProgressMutex;
     bool m_transactionInProgress;
     bool m_isTransactionQueueEnabled;

@@ -26,6 +26,7 @@
 #ifndef AbstractSQLTransactionBackend_h
 #define AbstractSQLTransactionBackend_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/SQLError.h"
@@ -37,9 +38,10 @@
 
 namespace WebCore {
 
-class AbstractSQLTransactionBackend : public ThreadSafeRefCounted<AbstractSQLTransactionBackend> {
+class AbstractSQLTransactionBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransactionBackend> {
 public:
     virtual ~AbstractSQLTransactionBackend() { }
+    virtual void trace(Visitor*) = 0;
 
     virtual void requestTransitToState(SQLTransactionState) = 0;
 

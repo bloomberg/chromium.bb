@@ -54,7 +54,7 @@ void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& inf
     if (info.activeWriteTransaction || info.pendingTransactions.isEmpty())
         return;
 
-    RefPtr<SQLTransactionBackend> firstPendingTransaction = info.pendingTransactions.first();
+    RefPtrWillBeRawPtr<SQLTransactionBackend> firstPendingTransaction = info.pendingTransactions.first();
     if (firstPendingTransaction->isReadOnly()) {
         do {
             firstPendingTransaction = info.pendingTransactions.takeFirst();
@@ -74,7 +74,7 @@ void SQLTransactionCoordinator::acquireLock(SQLTransactionBackend* transaction)
 
     String dbIdentifier = getDatabaseIdentifier(transaction);
 
-    CoordinationInfoMap::iterator coordinationInfoIterator = m_coordinationInfoMap.find(dbIdentifier);
+    CoordinationInfoHeapMap::iterator coordinationInfoIterator = m_coordinationInfoMap.find(dbIdentifier);
     if (coordinationInfoIterator == m_coordinationInfoMap.end()) {
         // No pending transactions for this DB
         CoordinationInfo& info = m_coordinationInfoMap.add(dbIdentifier, CoordinationInfo()).storedValue->value;
@@ -95,7 +95,7 @@ void SQLTransactionCoordinator::releaseLock(SQLTransactionBackend* transaction)
 
     String dbIdentifier = getDatabaseIdentifier(transaction);
 
-    CoordinationInfoMap::iterator coordinationInfoIterator = m_coordinationInfoMap.find(dbIdentifier);
+    CoordinationInfoHeapMap::iterator coordinationInfoIterator = m_coordinationInfoMap.find(dbIdentifier);
     ASSERT_WITH_SECURITY_IMPLICATION(coordinationInfoIterator != m_coordinationInfoMap.end());
     CoordinationInfo& info = coordinationInfoIterator->value;
 
@@ -117,7 +117,7 @@ void SQLTransactionCoordinator::shutdown()
     m_isShuttingDown = true;
 
     // Notify all transactions in progress that the database thread is shutting down
-    for (CoordinationInfoMap::iterator coordinationInfoIterator = m_coordinationInfoMap.begin();
+    for (CoordinationInfoHeapMap::iterator coordinationInfoIterator = m_coordinationInfoMap.begin();
          coordinationInfoIterator != m_coordinationInfoMap.end(); ++coordinationInfoIterator) {
         CoordinationInfo& info = coordinationInfoIterator->value;
 
@@ -126,7 +126,7 @@ void SQLTransactionCoordinator::shutdown()
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         if (info.activeWriteTransaction)
             info.activeWriteTransaction->notifyDatabaseThreadIsShuttingDown();
-        for (HashSet<RefPtr<SQLTransactionBackend> >::iterator activeReadTransactionsIterator =
+        for (WillBeHeapHashSet<RefPtrWillBeMember<SQLTransactionBackend> >::iterator activeReadTransactionsIterator =
                      info.activeReadTransactions.begin();
              activeReadTransactionsIterator != info.activeReadTransactions.end();
              ++activeReadTransactionsIterator) {
@@ -137,7 +137,7 @@ void SQLTransactionCoordinator::shutdown()
         // Transaction phase 3 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         while (!info.pendingTransactions.isEmpty()) {
-            RefPtr<SQLTransactionBackend> transaction = info.pendingTransactions.first();
+            RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = info.pendingTransactions.first();
             transaction->notifyDatabaseThreadIsShuttingDown();
         }
     }

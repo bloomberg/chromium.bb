@@ -340,10 +340,10 @@
 
 namespace WebCore {
 
-PassRefPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
+PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
     PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
 {
-    return adoptRef(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
+    return adoptRefWillBeNoop(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
 }
 
 SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
@@ -368,6 +368,12 @@ SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
 SQLTransactionBackend::~SQLTransactionBackend()
 {
     ASSERT(!m_sqliteTransaction);
+}
+
+void SQLTransactionBackend::trace(Visitor* visitor)
+{
+    visitor->trace(m_frontend);
+    visitor->trace(m_database);
 }
 
 void SQLTransactionBackend::doCleanup()
