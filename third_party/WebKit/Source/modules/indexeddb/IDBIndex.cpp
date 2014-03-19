@@ -32,6 +32,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"

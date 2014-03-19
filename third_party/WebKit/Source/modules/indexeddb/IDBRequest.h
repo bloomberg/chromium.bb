@@ -30,6 +30,7 @@
 #define IDBRequest_h
 
 #include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
@@ -40,7 +41,6 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "heap/Handle.h"
 #include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBCursor.h"
@@ -48,6 +48,7 @@
 namespace WebCore {
 
 class ExceptionState;
+class IDBCursor;
 struct IDBDatabaseMetadata;
 class SharedBuffer;
 

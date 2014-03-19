@@ -31,7 +31,6 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBMetadata.h"
-#include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
