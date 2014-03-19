@@ -331,7 +331,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     test_server_.GetServiceURL().spec());
-    command_line->AppendSwitch(policy::switches::kEnablePolicyKeyVerification);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

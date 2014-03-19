@@ -159,7 +159,6 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
-    command_line->AppendSwitch(switches::kEnablePolicyKeyVerification);
 
     invalidation::InvalidationServiceFactory::GetInstance()->
         RegisterTestingFactory(invalidation::FakeInvalidationService::Build);

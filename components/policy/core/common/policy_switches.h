@@ -16,7 +16,7 @@ POLICY_EXPORT extern const char kCloudPolicyInvalidationDelay[];
 POLICY_EXPORT extern const char kDeviceManagementUrl[];
 POLICY_EXPORT extern const char kDisableCloudPolicyPush[];
 POLICY_EXPORT extern const char kEnableComponentCloudPolicy[];
-POLICY_EXPORT extern const char kEnablePolicyKeyVerification[];
+POLICY_EXPORT extern const char kDisablePolicyKeyVerification[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 POLICY_EXPORT extern const char kFakeCloudPolicyType[];

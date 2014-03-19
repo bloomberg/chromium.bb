@@ -4,7 +4,6 @@
 
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -57,8 +56,6 @@ class UserCloudPolicyStoreTest : public testing::Test {
   UserCloudPolicyStoreTest() {}
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePolicyKeyVerification);
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(
         new UserCloudPolicyStore(policy_file(),

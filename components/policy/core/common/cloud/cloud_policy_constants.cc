@@ -92,7 +92,7 @@ std::string GetPolicyVerificationKey() {
   // Disable key verification by default until production servers generate
   // the proper signatures.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnablePolicyKeyVerification)) {
+  if (command_line->HasSwitch(switches::kDisablePolicyKeyVerification)) {
     return std::string();
   } else {
     return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
