@@ -2097,6 +2097,25 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     int flags = ui::GetModifiersFromKeyState();
     TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
+      POINT point;
+      point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
+                gfx::win::GetUndocumentedDPITouchScale();
+      point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
+                gfx::win::GetUndocumentedDPITouchScale();
+
+      if (base::win::GetVersion() == base::win::VERSION_WIN7) {
+        // Windows 7 sends touch events for touches in the non-client area,
+        // whereas Windows 8 does not. In order to unify the behaviour, always
+        // ignore touch events in the non-client area.
+        LPARAM l_param_ht = MAKELPARAM(point.x, point.y);
+        LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
+
+        if (hittest != HTCLIENT)
+          return 0;
+      }
+
+      ScreenToClient(hwnd(), &point);
+
       ui::EventType touch_event_type = ui::ET_UNKNOWN;
 
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
@@ -2115,14 +2134,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_event_type = ui::ET_TOUCH_MOVED;
       }
       if (touch_event_type != ui::ET_UNKNOWN) {
-        POINT point;
-        point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
-            gfx::win::GetUndocumentedDPITouchScale();
-        point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
-            gfx::win::GetUndocumentedDPITouchScale();
-
-        ScreenToClient(hwnd(), &point);
-
         ui::TouchEvent event(
             touch_event_type,
             gfx::Point(point.x, point.y),
