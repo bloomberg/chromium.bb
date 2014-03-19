@@ -1107,7 +1107,7 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
     }
 
     if (!SetupDeviceCaptureRequest(request)) {
-      FinalizeRequestFailed(label, request, MEDIA_DEVICE_CAPTURE_FAILURE);
+      FinalizeRequestFailed(label, request, MEDIA_DEVICE_NO_HARDWARE);
       return;
     }
   }
@@ -1120,17 +1120,23 @@ bool MediaStreamManager::SetupDeviceCaptureRequest(DeviceRequest* request) {
          (request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE ||
           request->video_type() == MEDIA_NO_SERVICE));
   std::string audio_device_id;
-  if (request->options.audio_requested &&
-      !GetRequestedDeviceCaptureId(request, request->audio_type(),
-                                   &audio_device_id)) {
-    return false;
+  if (request->options.audio_requested) {
+    if (audio_enumeration_cache_.devices.empty() ||
+        !GetRequestedDeviceCaptureId(request, request->audio_type(),
+                                     &audio_device_id)) {
+      DLOG(WARNING) << "No available audio input device found.";
+      return false;
+    }
   }
 
   std::string video_device_id;
-  if (request->options.video_requested &&
-      !GetRequestedDeviceCaptureId(request, request->video_type(),
-                                   &video_device_id)) {
-    return false;
+  if (request->options.video_requested) {
+    if (video_enumeration_cache_.devices.empty() ||
+        !GetRequestedDeviceCaptureId(request, request->video_type(),
+                                     &video_device_id)) {
+      DLOG(WARNING) << "No available video capture device found.";
+      return false;
+    }
   }
   request->CreateUIRequest(audio_device_id, video_device_id);
   DVLOG(3) << "Audio requested " << request->options.audio_requested
@@ -1557,7 +1563,7 @@ void MediaStreamManager::DevicesEnumerated(
         if (!SetupDeviceCaptureRequest(request)) {
           FinalizeRequestFailed(*it,
                                 request,
-                                MEDIA_DEVICE_CAPTURE_FAILURE);
+                                MEDIA_DEVICE_NO_HARDWARE);
         } else {
           PostRequestToUI(*it, request);
         }

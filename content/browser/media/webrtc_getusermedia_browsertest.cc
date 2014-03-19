@@ -351,21 +351,21 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   // Test with invalid mandatory audio sourceID.
   NavigateToURL(shell(), url);
-  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
+  EXPECT_EQ("DevicesNotFoundError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           "something invalid",
           video_ids[0])));
 
   // Test with invalid mandatory video sourceID.
-  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
+  EXPECT_EQ("DevicesNotFoundError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           audio_ids[0],
           "something invalid")));
 
   // Test with empty mandatory audio sourceID.
-  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
+  EXPECT_EQ("DevicesNotFoundError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           "",

@@ -290,6 +290,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
 
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
 
     // Force SW rendering to check autosize bug.

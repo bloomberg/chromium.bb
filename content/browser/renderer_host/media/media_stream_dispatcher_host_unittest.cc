@@ -628,7 +628,7 @@ TEST_F(MediaStreamDispatcherHostTest,
       kRenderId,
       kPageRequestId,
       options,
-      MEDIA_DEVICE_CAPTURE_FAILURE);
+      MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that generating a stream with an invalid mandatory audio source id fail.
@@ -641,7 +641,7 @@ TEST_F(MediaStreamDispatcherHostTest,
       kRenderId,
       kPageRequestId,
       options,
-      MEDIA_DEVICE_CAPTURE_FAILURE);
+      MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that generating a stream with an invalid optional video source id
@@ -672,9 +672,8 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   media::FakeVideoCaptureDevice::GetDeviceNames(&physical_video_devices_);
   StreamOptions options(true, true);
 
-  SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
-  EXPECT_TRUE(host_->video_devices_.empty());
+  GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, options,
+                                  MEDIA_DEVICE_NO_HARDWARE);
 
   // Reset the number of fake devices for next test.
   media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(number_of_fake_devices);
