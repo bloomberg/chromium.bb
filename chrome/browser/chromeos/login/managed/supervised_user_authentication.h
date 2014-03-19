@@ -14,13 +14,15 @@
 namespace chromeos {
 
 class SupervisedUserManager;
+struct UserContext;
 
 // This is a class that encapsulates all details of password handling for
 // supervised users.
 // Main property is the schema used to handle password. For now it can be either
 // plain password schema, when plain text password is passed to standard
 // cryprohome authentication algorithm without modification, or hashed password
-// schema, when password is additionally hashed with user-specific salt.
+// schema, when password is additioUpdateContextToChecknally hashed with
+// user-specific salt.
 // Second schema is required to allow password syncing across devices for
 // supervised users.
 class SupervisedUserAuthentication {
@@ -40,6 +42,9 @@ class SupervisedUserAuthentication {
   // Transforms password according to schema specified in Local State.
   std::string TransformPassword(const std::string& supervised_user_id,
                                 const std::string& password);
+
+  // Transforms password according to schema specified in Local State.
+  UserContext TransformPasswordInContext(const UserContext& context);
 
   // Schedules password migration for |user_id| with |password| as a plain text
   // password. Migration should happen during |user_login_flow|.

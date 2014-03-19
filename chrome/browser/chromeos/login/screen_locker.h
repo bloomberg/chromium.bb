@@ -31,6 +31,7 @@ class Image;
 namespace chromeos {
 
 class Authenticator;
+class ExtendedAuthenticator;
 class LoginFailure;
 class ScreenlockIconProvider;
 
@@ -165,6 +166,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Returns true if |username| is found among logged in users.
   bool IsUserLoggedIn(const std::string& username);
 
+  // Looks up user in unlock user list.
+  const User* FindUnlockUser(const std::string& user_id);
+
   // ScreenLockerDelegate instance in use.
   scoped_ptr<ScreenLockerDelegate> delegate_;
 
@@ -173,6 +177,9 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;
+
+  // Used to authenticate the user to unlock supervised users.
+  scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
 
   // True if the screen is locked, or false otherwise.  This changes
   // from false to true, but will never change from true to

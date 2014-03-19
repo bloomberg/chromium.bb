@@ -238,18 +238,11 @@ void LoginPerformer::LoginAsLocallyManagedUser(
   SupervisedUserAuthentication* authentication = UserManager::Get()->
       GetSupervisedUserManager()->GetAuthentication();
 
-  UserContext user_context_copy;
-  user_context_copy.CopyFrom(user_context);
-
-  user_context_copy.password = authentication->TransformPassword(
-      user_context_copy.username,
-      user_context_copy.password);
-  user_context_copy.key_label = kCryptohomeManagedUserKeyLabel;
-  user_context_copy.using_oauth = false;
+  UserContext user_context_copy =
+      authentication->TransformPasswordInContext(user_context);
 
   if (authentication->GetPasswordSchema(user_context.username) ==
       SupervisedUserAuthentication::SCHEMA_SALT_HASHED) {
-    user_context_copy.need_password_hashing = false;
     if (extended_authenticator_.get()) {
       extended_authenticator_->SetConsumer(NULL);
     }

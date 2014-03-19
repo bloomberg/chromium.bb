@@ -85,6 +85,20 @@ void ExtendedAuthenticator::AuthenticateToMount(const UserContext& context) {
   }
 }
 
+void ExtendedAuthenticator::AuthenticateToCheck(const UserContext& context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!context.need_password_hashing) {
+    DoAuthenticateToCheck(context);
+  } else {
+    DoHashWithSalt(
+        context.password,
+        base::Bind(
+            &ExtendedAuthenticator::UpdateContextAndCheckKey, this, context),
+        system_salt_);
+  }
+}
+
 void ExtendedAuthenticator::UpdateContextToMount(
     const UserContext& context,
     const std::string& hashed_password) {
@@ -95,6 +109,18 @@ void ExtendedAuthenticator::UpdateContextToMount(
   copy.password = hashed_password;
   copy.need_password_hashing = false;
   DoAuthenticateToMount(copy);
+}
+
+void ExtendedAuthenticator::UpdateContextAndCheckKey(
+    const UserContext& context,
+    const std::string& hashed_password) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UserContext copy;
+  copy.CopyFrom(context);
+  copy.password = hashed_password;
+  copy.need_password_hashing = false;
+  DoAuthenticateToCheck(copy);
 }
 
 void ExtendedAuthenticator::CreateMount(
@@ -143,6 +169,25 @@ void ExtendedAuthenticator::DoAuthenticateToMount(
                  user_context));
 }
 
+void ExtendedAuthenticator::DoAuthenticateToCheck(
+    const UserContext& user_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordStartMarker("CheckKeyEx");
+
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  cryptohome::Identification id(canonicalized);
+  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+
+  cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
+      id,
+      auth,
+      base::Bind(&ExtendedAuthenticator::OnCheckKeyComplete,
+                 this,
+                 "CheckKeyEx",
+                 user_context));
+}
+
 void ExtendedAuthenticator::OnMountComplete(const std::string& time_marker,
                                             const UserContext& user_context,
                                             bool success,
@@ -171,6 +216,41 @@ void ExtendedAuthenticator::OnMountComplete(const std::string& time_marker,
     }
     if (consumer_)
       consumer_->OnAuthenticationFailure(state);
+    if (old_consumer_) {
+      LoginFailure failure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME);
+      old_consumer_->OnLoginFailure(failure);
+    }
+  }
+}
+
+void ExtendedAuthenticator::OnCheckKeyComplete(
+    const std::string& time_marker,
+    const UserContext& user_context,
+    bool success,
+    cryptohome::MountError return_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordEndMarker(time_marker);
+  if (return_code == cryptohome::MOUNT_ERROR_NONE) {
+    if (consumer_)
+      consumer_->OnCheckSuccess();
+    if (old_consumer_)
+      old_consumer_->OnLoginSuccess(user_context);
+  } else {
+    AuthState state = FAILED_MOUNT;
+
+    if (return_code && (cryptohome::MOUNT_ERROR_TPM_COMM_ERROR ||
+                        cryptohome::MOUNT_ERROR_TPM_DEFEND_LOCK ||
+                        cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT)) {
+      state = FAILED_TPM;
+    }
+
+    if (return_code && cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST)
+      state = NO_MOUNT;
+
+    if (consumer_)
+      consumer_->OnAuthenticationFailure(state);
+
     if (old_consumer_) {
       LoginFailure failure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME);
       old_consumer_->OnLoginFailure(failure);

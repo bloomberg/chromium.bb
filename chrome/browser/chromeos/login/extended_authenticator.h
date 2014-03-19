@@ -42,9 +42,10 @@ class ExtendedAuthenticator
     // The current login attempt has ended in failure, with error.
     virtual void OnAuthenticationFailure(AuthState state) = 0;
     // The current login attempt has ended succesfully.
-    virtual void OnMountSuccess(const std::string& mount_hash) = 0;
+    virtual void OnMountSuccess(const std::string& mount_hash) {}
+    virtual void OnCheckSuccess() {}
     virtual void OnPasswordHashingSuccess(int id,
-                                          const std::string& password_hash) = 0;
+                                          const std::string& password_hash) {}
   };
 
   explicit ExtendedAuthenticator(AuthStatusConsumer* consumer);
@@ -59,6 +60,10 @@ class ExtendedAuthenticator
   // call assumes that homedir already exist for user, otherwise call will
   // result in error.
   void AuthenticateToMount(const UserContext& context);
+
+  // This call will attempt to authenticate |user| with key (and key label)
+  // specified in |context|. No actions are taken upon authentication.
+  void AuthenticateToCheck(const UserContext& context);
 
   // This call will create and mount home dir for |user_id| with supplied
   // |keys| if home dir is missing. If homedir already exist, the mount attempt
@@ -80,20 +85,39 @@ class ExtendedAuthenticator
 
   typedef base::Callback<void(const std::string& result)> HashingCallback;
 
+  // Callback for system salt getter.
   void OnSaltObtained(const std::string& system_salt);
+
+  // Updates UserContext (salts given key with system salt) if necessary.
   void UpdateContextToMount(const UserContext& context,
                             const std::string& hashed_password);
+  void UpdateContextAndCheckKey(const UserContext& context,
+                                const std::string& hashed_password);
+
+  // Performs actual operation with fully configured |context|
   void DoAuthenticateToMount(const UserContext& context);
+  void DoAuthenticateToCheck(const UserContext& context);
+
+  // Inner operation callbacks.
   void OnMountComplete(const std::string& time_marker,
                        const UserContext& context,
                        bool success,
                        cryptohome::MountError return_code,
                        const std::string& mount_hash);
+  void OnCheckKeyComplete(const std::string& time_marker,
+                          const UserContext& context,
+                          bool success,
+                          cryptohome::MountError return_code);
 
-  void DidHashPasswordWithSalt(int id, const std::string& hash);
+  // Inner implementation for hashing |password| with system salt. Will queue
+  // requests if |system_salt| is not known yet.
+  // Invokes |callback| with result.
   void DoHashWithSalt(const std::string& password,
                       const HashingCallback& callback,
                       const std::string& system_salt);
+
+  // Internal hashing callback.
+  void DidHashPasswordWithSalt(int id, const std::string& hash);
 
   bool salt_obtained_;
   std::string system_salt_;

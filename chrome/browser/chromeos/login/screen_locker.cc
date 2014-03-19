@@ -27,8 +27,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/extended_authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
@@ -154,6 +157,7 @@ ScreenLocker::ScreenLocker(const UserList& users)
 
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  extended_authenticator_ = new ExtendedAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
   delegate_->LockScreen();
 
@@ -256,15 +260,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   // if the authentication type is not the system password.
   LoginDisplay::AuthType auth_type = GetAuthType(user_context.username);
   if (auth_type != LoginDisplay::OFFLINE_PASSWORD) {
-    const User* unlock_user = NULL;
-    for (UserList::const_iterator it = users_.begin();
-         it != users_.end();
-         ++it) {
-      if ((*it)->email() == user_context.username) {
-        unlock_user = *it;
-        break;
-      }
-    }
+    const User* unlock_user = FindUnlockUser(user_context.username);
     LOG_ASSERT(unlock_user);
 
     Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
@@ -275,11 +271,41 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     return;
   }
 
+  // Special case: supervised users. Use special authenticator.
+  if (const User* user = FindUnlockUser(user_context.username)) {
+    if (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
+      UserContext updated_context =
+          UserManager::Get()
+              ->GetSupervisedUserManager()
+              ->GetAuthentication()
+              ->TransformPasswordInContext(user_context);
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ExtendedAuthenticator::AuthenticateToCheck,
+                     extended_authenticator_.get(),
+                     updated_context));
+    }
+  }
+
+  // TODO(antrim) : migrate to new authenticator for all types of users.
+  // http://crbug.com/351268
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::AuthenticateToUnlock,
                  authenticator_.get(),
                  user_context));
+}
+
+const User* ScreenLocker::FindUnlockUser(const std::string& user_id) {
+  const User* unlock_user = NULL;
+  for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it) {
+    if ((*it)->email() == user_id) {
+      unlock_user = *it;
+      break;
+    }
+  }
+  return unlock_user;
 }
 
 void ScreenLocker::AuthenticateByPassword(const std::string& password) {

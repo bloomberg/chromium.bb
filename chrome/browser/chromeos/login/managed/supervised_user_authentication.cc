@@ -9,7 +9,9 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
@@ -97,6 +99,31 @@ std::string SupervisedUserAuthentication::TransformPassword(
   }
   NOTREACHED();
   return password;
+}
+
+UserContext SupervisedUserAuthentication::TransformPasswordInContext(
+    const UserContext& context) {
+  UserContext result;
+  result.CopyFrom(context);
+  int user_schema = GetPasswordSchema(context.username);
+  if (user_schema == SCHEMA_PLAIN)
+    return result;
+
+  if (user_schema == SCHEMA_SALT_HASHED) {
+    base::DictionaryValue holder;
+    std::string salt;
+    owner_->GetPasswordInformation(context.username, &holder);
+    holder.GetStringWithoutPathExpansion(kSalt, &salt);
+    DCHECK(!salt.empty());
+    result.password =
+        BuildPasswordForHashWithSaltSchema(salt, context.password);
+    result.need_password_hashing = false;
+    result.using_oauth = false;
+    result.key_label = kCryptohomeManagedUserKeyLabel;
+    return result;
+  }
+  NOTREACHED() << "Unknown password schema for " << context.username;
+  return context;
 }
 
 bool SupervisedUserAuthentication::FillDataForNewUser(
