@@ -35,12 +35,12 @@ per-file metrics*=jar@chromium.org
 per-file metrics*=isherman@chromium.org
 # OWNER-to-be: per-file metrics*=holte@chromium.org
 
-per-file nacl*=bradchen@chromium.org
 per-file nacl*=bradnelson@chromium.org
+per-file nacl*=dmichael@chromium.org
 per-file nacl*=jvoung@chromium.org
 per-file nacl*=mseaborn@chromium.org
 per-file nacl*=noelallen@chromium.org
-per-file nacl*=sehr@chromium.org
+per-file nacl*=teravest@chromium.org
 
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
