@@ -6,8 +6,11 @@
 
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
+#include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/test/fake_output_surface.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
@@ -89,8 +92,32 @@ void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
 LayerTestCommon::LayerImplTest::LayerImplTest()
     : host_(FakeLayerTreeHost::Create()),
       root_layer_impl_(
-          LayerImpl::Create(host_->host_impl()->active_tree(), 1)) {}
+          LayerImpl::Create(host_->host_impl()->active_tree(), 1)) {
+  scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
+  host_->host_impl()->InitializeRenderer(
+      output_surface.PassAs<OutputSurface>());
+}
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {}
+
+void LayerTestCommon::LayerImplTest::CalcDrawProps(
+    const gfx::Size& viewport_size) {
+  LayerImplList layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer_impl_.get(), viewport_size, &layer_list);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
+    LayerImpl* layer_impl,
+    const gfx::Rect& occluded) {
+  AppendQuadsData data;
+
+  quad_culler_.clear_lists();
+  quad_culler_.set_occluded_content_rect(occluded);
+  layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
+  layer_impl->AppendQuads(&quad_culler_, &data);
+  layer_impl->DidDraw(resource_provider());
+}
 
 }  // namespace cc

@@ -172,7 +172,11 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect = opaque ? quad_rect : gfx::Rect();
-  gfx::Rect visible_quad_rect(quad_rect);
+  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+      quad_rect, draw_properties().target_space_transform);
+  if (visible_quad_rect.IsEmpty())
+    return;
+
   scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
   ResourceProvider::ResourceId id =
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
@@ -187,7 +191,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                bg_color,
                vertex_opacity_,
                flipped_);
-  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {

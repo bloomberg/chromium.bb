@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/mock_quad_culler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
@@ -27,7 +28,9 @@
 namespace gfx { class Rect; }
 
 namespace cc {
+class OutputSurface;
 class QuadList;
+class ResourceProvider;
 
 class LayerTestCommon {
  public:
@@ -55,16 +58,30 @@ class LayerTestCommon {
       return ptr;
     }
 
-    void CalcDrawProps(const gfx::Size& viewport_size) {
-      LayerImplList layer_list;
-      LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-          root_layer_impl_.get(), viewport_size, &layer_list);
-      LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    template <typename T, typename A>
+    T* AddChildToRoot(A a) {
+      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2, a);
+      T* ptr = layer.get();
+      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      return ptr;
     }
+
+    void CalcDrawProps(const gfx::Size& viewport_size);
+    void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
+                                  const gfx::Rect& occluded);
+
+    OutputSurface* output_surface() const {
+      return host_->host_impl()->output_surface();
+    }
+    ResourceProvider* resource_provider() const {
+      return host_->host_impl()->resource_provider();
+    }
+    const QuadList& quad_list() const { return quad_culler_.quad_list(); }
 
    private:
     scoped_ptr<FakeLayerTreeHost> host_;
     scoped_ptr<LayerImpl> root_layer_impl_;
+    MockQuadCuller quad_culler_;
   };
 };
 
