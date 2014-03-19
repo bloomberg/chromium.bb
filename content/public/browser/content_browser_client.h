@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/base/window_open_disposition.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/resource_type.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -582,6 +583,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // FileSystem API.
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) {}
+
+  // Returns auto mount handlers for URL requests for FileSystem APIs.
+  virtual void GetURLRequestAutoMountHandlers(
+      std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {}
 
   // Returns additional file system backends for FileSystem API.
   // |browser_context| is needed in the additional FileSystemBackends.

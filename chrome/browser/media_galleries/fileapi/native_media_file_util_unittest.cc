@@ -133,6 +133,7 @@ class NativeMediaFileUtilTest : public testing::Test {
         storage_policy.get(),
         NULL,
         additional_providers.Pass(),
+        std::vector<fileapi::URLRequestAutoMountHandler>(),
         data_dir_.path(),
         content::CreateAllowFileAccessOptions());
 

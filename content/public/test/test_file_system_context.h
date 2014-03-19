@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace quota {
 class QuotaManagerProxy;
@@ -14,7 +15,6 @@ class SpecialStoragePolicy;
 }
 
 namespace fileapi {
-class FileSystemContext;
 class FileSystemBackend;
 }
 
@@ -30,6 +30,13 @@ fileapi::FileSystemContext*
 CreateFileSystemContextWithAdditionalProvidersForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     ScopedVector<fileapi::FileSystemBackend> additional_providers,
+    const base::FilePath& base_path);
+
+fileapi::FileSystemContext*
+CreateFileSystemContextWithAutoMountersForTesting(
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    ScopedVector<fileapi::FileSystemBackend> additional_providers,
+    const std::vector<fileapi::URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path);
 
 fileapi::FileSystemContext* CreateIncognitoFileSystemContextForTesting(

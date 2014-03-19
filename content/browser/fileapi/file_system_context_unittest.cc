@@ -66,14 +66,16 @@ class FileSystemContextTest : public testing::Test {
  protected:
   FileSystemContext* CreateFileSystemContextForTest(
       fileapi::ExternalMountPoints* external_mount_points) {
-    return new FileSystemContext(base::MessageLoopProxy::current().get(),
-                                 base::MessageLoopProxy::current().get(),
-                                 external_mount_points,
-                                 storage_policy_.get(),
-                                 mock_quota_manager_->proxy(),
-                                 ScopedVector<FileSystemBackend>(),
-                                 data_dir_.path(),
-                                 CreateAllowFileAccessOptions());
+    return new FileSystemContext(
+        base::MessageLoopProxy::current().get(),
+        base::MessageLoopProxy::current().get(),
+        external_mount_points,
+        storage_policy_.get(),
+        mock_quota_manager_->proxy(),
+        ScopedVector<FileSystemBackend>(),
+        std::vector<fileapi::URLRequestAutoMountHandler>(),
+        data_dir_.path(),
+        CreateAllowFileAccessOptions());
   }
 
   // Verifies a *valid* filesystem url has expected values.
