@@ -57,16 +57,22 @@ ChaCha20Poly1305Encrypter::~ChaCha20Poly1305Encrypter() {}
 
 // static
 bool ChaCha20Poly1305Encrypter::IsSupported() {
-  // TODO(wtc): return true when FillAeadParams is implemented.
-  return false;
+  return true;
 }
 
 void ChaCha20Poly1305Encrypter::FillAeadParams(StringPiece nonce,
                                                StringPiece associated_data,
                                                size_t auth_tag_size,
                                                AeadParams* aead_params) const {
-  // TODO(wtc): implement this.
-  NOTIMPLEMENTED();
+  aead_params->len = sizeof(aead_params->data.nss_aead_params);
+  CK_NSS_AEAD_PARAMS* nss_aead_params = &aead_params->data.nss_aead_params;
+  nss_aead_params->pIv =
+      reinterpret_cast<CK_BYTE*>(const_cast<char*>(nonce.data()));
+  nss_aead_params->ulIvLen = nonce.size();
+  nss_aead_params->pAAD =
+      reinterpret_cast<CK_BYTE*>(const_cast<char*>(associated_data.data()));
+  nss_aead_params->ulAADLen = associated_data.size();
+  nss_aead_params->ulTagLen = auth_tag_size;
 }
 
 #endif  // defined(USE_NSS)
