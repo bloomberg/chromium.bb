@@ -49,10 +49,6 @@ public:
 
     BLINK_EXPORT static void enableDatabase(bool);
 
-    BLINK_EXPORT static void enableDeviceMotion(bool);
-
-    BLINK_EXPORT static void enableDeviceOrientation(bool);
-
     BLINK_EXPORT static void enableDialogElement(bool);
 
     BLINK_EXPORT static void enableEncryptedMedia(bool);

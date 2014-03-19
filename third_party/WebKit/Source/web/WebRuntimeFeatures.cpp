@@ -72,16 +72,6 @@ void WebRuntimeFeatures::enableDatabase(bool enable)
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableDeviceMotion(bool enable)
-{
-    RuntimeEnabledFeatures::setDeviceMotionEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableDeviceOrientation(bool enable)
-{
-    RuntimeEnabledFeatures::setDeviceOrientationEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableDialogElement(bool enable)
 {
     RuntimeEnabledFeatures::setDialogElementEnabled(enable);
