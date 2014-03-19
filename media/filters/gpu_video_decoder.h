@@ -104,9 +104,15 @@ class MEDIA_EXPORT GpuVideoDecoder
   void EnqueueFrameAndTriggerFrameDelivery(
       const scoped_refptr<VideoFrame>& frame);
 
+  // Static method is to allow it to run even after GVD is deleted.
+  static void ReleaseMailbox(
+      base::WeakPtr<GpuVideoDecoder> decoder,
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+      int64 picture_buffer_id,
+      uint32 texture_id,
+      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
   // Indicate the picture buffer can be reused by the decoder.
-  void ReusePictureBuffer(int64 picture_buffer_id,
-                          scoped_ptr<gpu::MailboxHolder> mailbox_holder);
+  void ReusePictureBuffer(int64 picture_buffer_id);
 
   void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer);
@@ -154,11 +160,12 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   std::map<int32, BufferPair> bitstream_buffers_in_decoder_;
   PictureBufferMap assigned_picture_buffers_;
-  PictureBufferMap dismissed_picture_buffers_;
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via decode_cb_, and which will be returned
   // to us via ReusePictureBuffer.
-  std::set<int32> picture_buffers_at_display_;
+  typedef std::map<int32 /* picture_buffer_id */, uint32 /* texture_id */>
+      PictureBufferTextureMap;
+  PictureBufferTextureMap picture_buffers_at_display_;
 
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;

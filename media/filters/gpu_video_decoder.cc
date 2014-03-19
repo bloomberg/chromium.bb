@@ -208,9 +208,15 @@ void GpuVideoDecoder::DestroyVDA() {
   if (vda_)
     vda_.release()->Destroy();
 
-  DestroyPictureBuffers(&assigned_picture_buffers_);
-  // Not destroying PictureBuffers in |dismissed_picture_buffers_| yet, since
+  // Not destroying PictureBuffers in |picture_buffers_at_display_| yet, since
   // their textures may still be in use by the user of this GpuVideoDecoder.
+  for (PictureBufferTextureMap::iterator it =
+           picture_buffers_at_display_.begin();
+       it != picture_buffers_at_display_.end();
+       ++it) {
+    assigned_picture_buffers_.erase(it->first);
+  }
+  DestroyPictureBuffers(&assigned_picture_buffers_);
 }
 
 void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -395,20 +401,14 @@ void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
   PictureBuffer buffer_to_dismiss = it->second;
   assigned_picture_buffers_.erase(it);
 
-  std::set<int32>::iterator at_display_it =
-      picture_buffers_at_display_.find(id);
-
-  if (at_display_it == picture_buffers_at_display_.end()) {
+  if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
     factories_->DeleteTexture(buffer_to_dismiss.texture_id());
     CHECK_GT(available_pictures_, 0);
     --available_pictures_;
-  } else {
-    // Texture in display. Postpone deletion until after it's returned to us.
-    bool inserted = dismissed_picture_buffers_.insert(std::make_pair(
-        id, buffer_to_dismiss)).second;
-    DCHECK(inserted);
   }
+  // Not destroying a texture in display in |picture_buffers_at_display_|.
+  // Postpone deletion until after it's returned to us.
 }
 
 static void ReadPixelsSyncInner(
@@ -462,9 +462,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(
           pb.texture_mailbox(), decoder_texture_target_, 0 /* sync_point */)),
-      BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
+      BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReleaseMailbox,
                                    weak_factory_.GetWeakPtr(),
-                                   picture.picture_buffer_id())),
+                                   factories_,
+                                   picture.picture_buffer_id(),
+                                   pb.texture_id())),
       pb.size(),
       visible_rect,
       natural_size,
@@ -473,7 +475,9 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =
-      picture_buffers_at_display_.insert(picture.picture_buffer_id()).second;
+      picture_buffers_at_display_.insert(std::make_pair(
+                                             picture.picture_buffer_id(),
+                                             pb.texture_id())).second;
   DCHECK(inserted);
 
   EnqueueFrameAndTriggerFrameDelivery(frame);
@@ -501,37 +505,47 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   ready_video_frames_.pop_front();
 }
 
-void GpuVideoDecoder::ReusePictureBuffer(
+// static
+void GpuVideoDecoder::ReleaseMailbox(
+    base::WeakPtr<GpuVideoDecoder> decoder,
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
     int64 picture_buffer_id,
+    uint32 texture_id,
     scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+  DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
+  factories->WaitSyncPoint(mailbox_holder->sync_point);
+
+  if (decoder) {
+    decoder->ReusePictureBuffer(picture_buffer_id);
+    return;
+  }
+  // It's the last chance to delete the texture after display,
+  // because GpuVideoDecoder was destructed.
+  factories->DeleteTexture(texture_id);
+}
+
+void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   DVLOG(3) << "ReusePictureBuffer(" << picture_buffer_id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  if (!vda_)
-    return;
+  DCHECK(!picture_buffers_at_display_.empty());
+  PictureBufferTextureMap::iterator display_iterator =
+      picture_buffers_at_display_.find(picture_buffer_id);
+  uint32 texture_id = display_iterator->second;
+  DCHECK(display_iterator != picture_buffers_at_display_.end());
+  picture_buffers_at_display_.erase(display_iterator);
 
-  CHECK(!picture_buffers_at_display_.empty());
-
-  size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
-  DCHECK(num_erased);
-
-  factories_->WaitSyncPoint(mailbox_holder->sync_point);
-
-  PictureBufferMap::iterator it =
-      assigned_picture_buffers_.find(picture_buffer_id);
-
-  if (it == assigned_picture_buffers_.end()) {
+  if (!assigned_picture_buffers_.count(picture_buffer_id)) {
     // This picture was dismissed while in display, so we postponed deletion.
-    it = dismissed_picture_buffers_.find(picture_buffer_id);
-    DCHECK(it != dismissed_picture_buffers_.end());
-    factories_->DeleteTexture(it->second.texture_id());
-    dismissed_picture_buffers_.erase(it);
+    factories_->DeleteTexture(texture_id);
     return;
   }
 
   ++available_pictures_;
 
-  vda_->ReusePictureBuffer(picture_buffer_id);
+  // DestroyVDA() might already have been called.
+  if (vda_)
+    vda_->ReusePictureBuffer(picture_buffer_id);
 }
 
 GpuVideoDecoder::SHMBuffer* GpuVideoDecoder::GetSHM(size_t min_size) {
@@ -578,7 +592,8 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
 
 GpuVideoDecoder::~GpuVideoDecoder() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  DCHECK(!vda_.get());  // Stop should have been already called.
+  // Stop should have been already called.
+  DCHECK(!vda_.get() && assigned_picture_buffers_.empty());
   DCHECK(pending_decode_cb_.is_null());
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     available_shm_segments_[i]->shm->Close();
@@ -591,9 +606,6 @@ GpuVideoDecoder::~GpuVideoDecoder() {
     it->second.shm_buffer->shm->Close();
   }
   bitstream_buffers_in_decoder_.clear();
-
-  DestroyPictureBuffers(&assigned_picture_buffers_);
-  DestroyPictureBuffers(&dismissed_picture_buffers_);
 }
 
 void GpuVideoDecoder::NotifyFlushDone() {
