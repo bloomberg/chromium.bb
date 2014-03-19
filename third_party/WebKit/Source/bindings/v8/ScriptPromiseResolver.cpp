@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
@@ -43,14 +44,28 @@ namespace WebCore {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ExecutionContext* context)
     : m_isolate(toIsolate(context))
-    , m_promise(ScriptPromise::createPending(context))
 {
+    ASSERT(context);
+    v8::Isolate* isolate = toIsolate(context);
+    ASSERT(isolate->InContext());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
+        m_resolver = ScriptValue(v8::Promise::Resolver::New(isolate), isolate);
+    } else {
+        v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(isolate));
+        v8::Handle<v8::Object> creationContext = v8Context.IsEmpty() ? v8::Object::New(isolate) : v8Context->Global();
+        m_promise = ScriptPromise(V8PromiseCustom::createPromise(creationContext, isolate), isolate);
+    }
 }
 
 ScriptPromiseResolver::ScriptPromiseResolver(v8::Isolate* isolate)
     : m_isolate(isolate)
-    , m_promise(ScriptPromise::createPending(isolate))
 {
+    ASSERT(isolate->InContext());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
+        m_resolver = ScriptValue(v8::Promise::Resolver::New(isolate), isolate);
+    } else {
+        m_promise = ScriptPromise(V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate), isolate);
+    }
 }
 
 ScriptPromiseResolver::~ScriptPromiseResolver()
@@ -59,6 +74,17 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
     // to be in a v8 context.
 
     m_promise.clear();
+    m_resolver.clear();
+}
+
+ScriptPromise ScriptPromiseResolver::promise()
+{
+    ASSERT(m_isolate->InContext());
+    if (!m_resolver.hasNoValue()) {
+        v8::Local<v8::Promise::Resolver> v8Resolver = m_resolver.v8Value().As<v8::Promise::Resolver>();
+        return ScriptPromise(v8Resolver->GetPromise(), m_isolate);
+    }
+    return m_promise;
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ExecutionContext* context)
@@ -74,33 +100,32 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(v8::Isolate* iso
     return adoptRef(new ScriptPromiseResolver(isolate));
 }
 
-bool ScriptPromiseResolver::isPending() const
-{
-    ASSERT(m_isolate->InContext());
-    if (m_promise.hasNoValue())
-        return false;
-    v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
-    V8PromiseCustom::PromiseState state = V8PromiseCustom::getState(internal);
-    return state == V8PromiseCustom::Pending;
-}
-
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
     ASSERT(m_isolate->InContext());
-    if (!isPending())
-        return;
-    V8PromiseCustom::resolve(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
+    if (!m_resolver.hasNoValue()) {
+        m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
+    } else if (!m_promise.hasNoValue()) {
+        v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
+        ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
+        V8PromiseCustom::resolve(promise, value, m_isolate);
+    }
     m_promise.clear();
+    m_resolver.clear();
 }
 
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
     ASSERT(m_isolate->InContext());
-    if (!isPending())
-        return;
-    V8PromiseCustom::reject(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
+    if (!m_resolver.hasNoValue()) {
+        m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
+    } else if (!m_promise.hasNoValue()) {
+        v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
+        ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
+        V8PromiseCustom::reject(promise, value, m_isolate);
+    }
     m_promise.clear();
+    m_resolver.clear();
 }
 
 void ScriptPromiseResolver::resolve(ScriptValue value)

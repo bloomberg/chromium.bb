@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/V8Binding.h"
@@ -90,20 +91,21 @@ private:
 
 TEST_F(ScriptPromiseResolverTest, initialState)
 {
-    EXPECT_TRUE(m_resolver->isPending());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 }
 
 TEST_F(ScriptPromiseResolverTest, resolve)
 {
-    EXPECT_TRUE(m_resolver->isPending());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
     m_resolver->resolve(ScriptValue(v8::Integer::New(m_isolate, 3), m_isolate));
 
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
@@ -111,13 +113,13 @@ TEST_F(ScriptPromiseResolverTest, resolve)
 
 TEST_F(ScriptPromiseResolverTest, reject)
 {
-    EXPECT_TRUE(m_resolver->isPending());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
     m_resolver->reject(ScriptValue(v8::Integer::New(m_isolate, 3), m_isolate));
 
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Rejected, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
@@ -125,19 +127,18 @@ TEST_F(ScriptPromiseResolverTest, reject)
 
 TEST_F(ScriptPromiseResolverTest, resolveOverResolve)
 {
-    EXPECT_TRUE(m_resolver->isPending());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
     m_resolver->resolve(ScriptValue(v8::Integer::New(m_isolate, 3), m_isolate));
 
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 
     m_resolver->resolve(ScriptValue(v8::Integer::New(m_isolate, 4), m_isolate));
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
@@ -145,19 +146,18 @@ TEST_F(ScriptPromiseResolverTest, resolveOverResolve)
 
 TEST_F(ScriptPromiseResolverTest, rejectOverResolve)
 {
-    EXPECT_TRUE(m_resolver->isPending());
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
     m_resolver->resolve(ScriptValue(v8::Integer::New(m_isolate, 3), m_isolate));
 
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 
     m_resolver->reject(ScriptValue(v8::Integer::New(m_isolate, 4), m_isolate));
-    EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());

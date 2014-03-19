@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
@@ -41,7 +42,10 @@ namespace WebCore {
 
 ScriptPromise::ScriptPromise(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    if (value.IsEmpty() || !V8PromiseCustom::isPromise(value, isolate)) {
+    if (value.IsEmpty())
+        return;
+
+    if (!V8PromiseCustom::isPromise(value, isolate) && !value->IsPromise()) {
         m_promise = ScriptValue(v8::Handle<v8::Value>(), isolate);
         V8ThrowException::throwTypeError("the given value is not a Promise", isolate);
         return;
@@ -51,29 +55,34 @@ ScriptPromise::ScriptPromise(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 
 ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
 {
-    if (m_promise.hasNoValue() || !m_promise.isObject())
+    if (m_promise.hasNoValue())
         return ScriptPromise();
-    v8::Handle<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-    return ScriptPromise(V8PromiseCustom::then(promise, adoptByGarbageCollector(onFulfilled), adoptByGarbageCollector(onRejected), isolate()), isolate());
-}
 
-ScriptPromise ScriptPromise::createPending()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate);
-    return ScriptPromise(promise, isolate);
-}
+    v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
+    v8::Local<v8::Function> v8OnFulfilled = adoptByGarbageCollector(onFulfilled);
+    v8::Local<v8::Function> v8OnRejected = adoptByGarbageCollector(onRejected);
 
-ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
-{
-    ASSERT(context);
-    v8::Isolate* isolate = toIsolate(context);
-    ASSERT(isolate->InContext());
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(isolate));
-    v8::Handle<v8::Object> creationContext = v8Context.IsEmpty() ? v8::Object::New(isolate) : v8Context->Global();
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(creationContext, isolate);
-    return ScriptPromise(promise, isolate);
+    if (V8PromiseCustom::isPromise(promise, isolate()))
+        return ScriptPromise(V8PromiseCustom::then(promise, v8OnFulfilled, v8OnRejected, isolate()), isolate());
+
+    ASSERT(promise->IsPromise());
+    // Return this Promise if no handlers are given.
+    // In fact it is not the exact bahavior of Promise.prototype.then
+    // but that is not a problem in this case.
+    v8::Local<v8::Promise> resultPromise = promise.As<v8::Promise>();
+    // FIXME: Use Then once it is introduced.
+    if (!v8OnFulfilled.IsEmpty()) {
+        resultPromise = resultPromise->Chain(v8OnFulfilled);
+        if (resultPromise.IsEmpty()) {
+            // v8::Promise::Chain may return an empty value, for example when
+            // the stack is exhausted.
+            return ScriptPromise();
+        }
+    }
+    if (!v8OnRejected.IsEmpty())
+        resultPromise = resultPromise->Catch(v8OnRejected);
+
+    return ScriptPromise(resultPromise, isolate());
 }
 
 ScriptPromise ScriptPromise::cast(const ScriptValue& value)
@@ -82,8 +91,18 @@ ScriptPromise ScriptPromise::cast(const ScriptValue& value)
         return ScriptPromise();
     v8::Local<v8::Value> v8Value(value.v8Value());
     v8::Isolate* isolate = value.isolate();
-    if (V8PromiseCustom::isPromise(v8Value, isolate)) {
+    if (V8PromiseCustom::isPromise(v8Value, isolate) || v8Value->IsPromise()) {
         return ScriptPromise(v8Value, isolate);
+    }
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
+        v8::Local<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(isolate);
+        if (resolver.IsEmpty()) {
+            // The Promise constructor may return an empty value, for example
+            // when the stack is exhausted.
+            return ScriptPromise();
+        }
+        resolver->Resolve(v8Value);
+        return ScriptPromise(resolver->GetPromise(), isolate);
     }
     return ScriptPromise(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
 }

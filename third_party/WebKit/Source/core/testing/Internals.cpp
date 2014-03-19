@@ -42,6 +42,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "core/animation/DocumentTimeline.h"
@@ -2386,6 +2387,27 @@ private:
 };
 
 } // namespace
+
+ScriptPromise Internals::createPromise(ExecutionContext* context)
+{
+    return ScriptPromiseResolver::create(context)->promise();
+}
+
+ScriptPromise Internals::createResolvedPromise(ExecutionContext* context, ScriptValue value)
+{
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    ScriptPromise promise = resolver->promise();
+    resolver->resolve(value);
+    return promise;
+}
+
+ScriptPromise Internals::createRejectedPromise(ExecutionContext* context, ScriptValue value)
+{
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    ScriptPromise promise = resolver->promise();
+    resolver->reject(value);
+    return promise;
+}
 
 ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromise promise)
 {

@@ -99,12 +99,6 @@ public:
     static ScriptPromise cast(const ScriptValue& /*value*/);
 
 private:
-    friend class ScriptPromiseResolver;
-
-    static ScriptPromise createPending();
-    static ScriptPromise createPending(ExecutionContext*);
-    static ScriptPromise createPending(v8::Isolate*) { return createPending(); }
-
     ScriptValue m_promise;
 };
 
