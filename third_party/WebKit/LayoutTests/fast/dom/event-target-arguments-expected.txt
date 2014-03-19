@@ -1,0 +1,34 @@
+EventTarget.addEventListener and EventTarget.removeEventLister should throw on invalid arguments.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Signature:
+void addEventListener(DOMString type, EventListener listener, optional boolean useCapture)
+PASS document.addEventListener() is undefined
+PASS document.addEventListener("foo") is undefined
+PASS document.addEventListener("foo", listener) did not throw exception.
+PASS document.addEventListener("", listener) did not throw exception.
+PASS document.addEventListener("", function(){}) did not throw exception.
+PASS document.addEventListener("bar", listener, false) did not throw exception.
+PASS document.addEventListener("bar", listener, true) did not throw exception.
+PASS document.addEventListener(null, listener) did not throw exception.
+PASS document.addEventListener("zork", listener, null) did not throw exception.
+PASS document.addEventListener("zork", listener, undefined) did not throw exception.
+
+Signature:
+void removeEventListener(DOMString type, EventListener listener, optional boolean useCapture)
+PASS document.removeEventListener() is undefined
+PASS document.removeEventListener("foo") is undefined
+PASS document.removeEventListener("foo", listener) did not throw exception.
+PASS document.removeEventListener("foo", listener, true) did not throw exception.
+PASS document.removeEventListener("bar", listener, false) did not throw exception.
+PASS document.removeEventListener("bar", listener, false) did not throw exception.
+PASS document.addEventListener("bar", listener, true) did not throw exception.
+PASS document.removeEventListener(null, listener) did not throw exception.
+PASS document.removeEventListener("zork", listener, null) did not throw exception.
+PASS document.removeEventListener("zork", listener, undefined) did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -63,7 +63,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -3508,62 +3507,6 @@ static void customMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "TestObject", info.Holder(), info.GetIsolate());
-    EventTarget* impl = V8TestObject::toNative(info.Holder());
-    if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
-    if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-        impl->addEventListener(eventName, listener, info[2]->BooleanValue());
-        if (!impl->toNode())
-            addHiddenValueToArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
-    }
-}
-
-static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::addEventListenerMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "TestObject", info.Holder(), info.GetIsolate());
-    EventTarget* impl = V8TestObject::toNative(info.Holder());
-    if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOnly);
-    if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-        impl->removeEventListener(eventName, listener.get(), info[2]->BooleanValue());
-        if (!impl->toNode())
-            removeHiddenValueFromArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
-    }
-}
-
-static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::removeEventListenerMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void withScriptStateVoidMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
@@ -5447,8 +5390,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodWithException", TestObjectV8Internal::methodWithExceptionMethodCallback, 0, 0},
     {"customMethod", TestObjectV8Internal::customMethodMethodCallback, 0, 0},
     {"customMethodWithArgs", TestObjectV8Internal::customMethodWithArgsMethodCallback, 0, 3},
-    {"addEventListener", TestObjectV8Internal::addEventListenerMethodCallback, 0, 2},
-    {"removeEventListener", TestObjectV8Internal::removeEventListenerMethodCallback, 0, 2},
     {"withScriptStateVoid", TestObjectV8Internal::withScriptStateVoidMethodCallback, 0, 0},
     {"withScriptStateObj", TestObjectV8Internal::withScriptStateObjMethodCallback, 0, 0},
     {"withScriptStateVoidException", TestObjectV8Internal::withScriptStateVoidExceptionMethodCallback, 0, 0},

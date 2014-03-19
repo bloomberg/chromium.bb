@@ -387,15 +387,6 @@ interface TestObjectPython {
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);
 
-    // Exceptional methods for EventListener
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
-
     // Extended attributes for arguments
     // [Clamp]
     void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);

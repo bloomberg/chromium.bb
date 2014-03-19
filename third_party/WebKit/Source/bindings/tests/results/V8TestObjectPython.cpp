@@ -40,7 +40,6 @@
 #include "V8DocumentFragment.h"
 #include "V8DocumentType.h"
 #include "V8Element.h"
-#include "V8Event.h"
 #include "V8EventTarget.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLElement.h"
@@ -79,7 +78,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/TraceEvent.h"
@@ -6312,94 +6310,6 @@ static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
-    EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
-    if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
-    if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-        impl->addEventListener(eventName, listener, info[2]->BooleanValue());
-        if (!impl->toNode())
-            addHiddenValueToArray(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
-    }
-}
-
-static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::addEventListenerMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
-    EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
-    if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOnly);
-    if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-        impl->removeEventListener(eventName, listener.get(), info[2]->BooleanValue());
-        if (!impl->toNode())
-            removeHiddenValueFromArray(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
-    }
-}
-
-static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::removeEventListenerMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "dispatchEvent", "TestObjectPython", info.Holder(), info.GetIsolate());
-    EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
-    if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Event*, event, V8Event::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    bool result = imp->dispatchEvent(event, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValueBool(info, result);
-}
-
-static void dispatchEventMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::dispatchEventMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedShortArg", "TestObjectPython", info.Holder(), info.GetIsolate());
@@ -7626,9 +7536,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"overloadedMethodG", TestObjectPythonV8Internal::overloadedMethodGMethodCallback, 0, 0},
     {"overloadedMethodH", TestObjectPythonV8Internal::overloadedMethodHMethodCallback, 0, 0},
     {"overloadedPerWorldBindingsMethod", TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
-    {"addEventListener", TestObjectPythonV8Internal::addEventListenerMethodCallback, 0, 2},
-    {"removeEventListener", TestObjectPythonV8Internal::removeEventListenerMethodCallback, 0, 2},
-    {"dispatchEvent", TestObjectPythonV8Internal::dispatchEventMethodCallback, 0, 1},
     {"voidMethodClampUnsignedShortArg", TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectPythonV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},
     {"voidMethodDefaultUndefinedTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, 0, 0},

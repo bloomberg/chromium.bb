@@ -6,14 +6,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {% if method.name in ['addEventListener', 'removeEventListener',
-                          'dispatchEvent'] %}
-    {{add_event_listener_remove_event_listener_dispatch_event() | indent}}
-    {% endif %}
-    {% if method.name in ['addEventListener', 'removeEventListener'] %}
-    {{add_event_listener_remove_event_listener_method(method.name) | indent}}
-    {% else %}
-    {% if method.number_of_required_arguments %}
+    {# FIXME: remove these special cases: http://crbug.com/353484 #}
+    {% if method.number_of_required_arguments and not
+          method.name in ['addEventListener', 'removeEventListener' ] %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         {{throw_type_error(method,
               'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
@@ -27,7 +22,10 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
-    {% if method.is_check_security_for_frame %}
+    {# Security checks #}
+    {% if interface_name == 'EventTarget' %}
+    {{event_target_check_security_for_frame() | indent }}
+    {% elif method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -40,6 +38,11 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
         return;
     }
     {% endif %}
+    {# Call method #}
+    {% if interface_name == 'EventTarget' and
+          method.name in ['addEventListener', 'removeEventListener'] %}
+    {{add_event_listener_remove_event_listener_method(method.name) | indent}}
+    {% else %}
     {% for argument in method.arguments %}
     {{generate_argument(method, argument, world_suffix) | indent}}
     {% endfor %}
@@ -55,11 +58,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
 
 {######################################}
-{% macro add_event_listener_remove_event_listener_dispatch_event() %}
-{# FIXME: Clean up: use the normal |imp| above,
-          use the existing shouldAllowAccessToFrame check if possible. #}
-EventTarget* impl = {{v8_class}}::toNative(info.Holder());
-if (DOMWindow* window = impl->toDOMWindow()) {
+{% macro event_target_check_security_for_frame() %}
+{# FIXME: use the existing shouldAllowAccessToFrame check if possible. #}
+if (DOMWindow* window = imp->toDOMWindow()) {
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -81,8 +82,8 @@ if (DOMWindow* window = impl->toDOMWindow()) {
 RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, {{listener_lookup_type}});
 if (listener) {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
-    impl->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
-    if (!impl->toNode())
+    imp->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
+    if (!imp->toNode())
         {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
 }
 {% endmacro %}

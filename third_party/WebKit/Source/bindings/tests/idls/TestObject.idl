@@ -128,13 +128,6 @@ interface TestObject : EventTarget {
     [Custom, MeasureAs=CustomTestFeature] void customMethod();
     [Custom] void customMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
 
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-
     // 'CallWith' extended attribute
     [CallWith=ScriptState] void withScriptStateVoid();
     [CallWith=ScriptState] TestObject withScriptStateObj();
