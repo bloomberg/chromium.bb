@@ -140,8 +140,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
         new chromeos::DhcpProxyScriptFetcherChromeos(context);
 #else
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
-    if (command_line.HasSwitch(switches::kDisableDhcpWpad))
-      dhcp_factory.set_enabled(false);
     dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
 #endif
 

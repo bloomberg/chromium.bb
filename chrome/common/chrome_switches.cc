@@ -292,9 +292,6 @@ const char kDisableDeviceDiscovery[]        = "disable-device-discovery";
 const char kDisableDeviceDiscoveryNotifications[] =
     "disable-device-discovery-notifications";
 
-// Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
-const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
-
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
 

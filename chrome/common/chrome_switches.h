@@ -90,7 +90,6 @@ extern const char kDisableCustomJumpList[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscovery[];
 extern const char kDisableDeviceDiscoveryNotifications[];
-extern const char kDisableDhcpWpad[];
 extern const char kDisableDnsProbes[];
 extern const char kDisableDomainReliability[];
 extern const char kDisableExtensionsFileAccessCheck[];

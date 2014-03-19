@@ -189,10 +189,6 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     }
 
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableDhcpWpad)) {
-      dhcp_factory.set_enabled(false);
-    }
 
 #if defined(OS_IOS)
     experiment_proxy_service->reset(
