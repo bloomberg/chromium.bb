@@ -424,6 +424,14 @@
       #   2: Use only CLD2.
       'cld_version%': 2,
 
+      # For CLD2, the size of the tables that should be included in the build
+      # Only evaluated if cld_version == 2.
+      # See third_party/cld_2/cld_2.gyp for more information.
+      #   0: Small tables, lower accuracy
+      #   1: Medium tables, medium accuracy
+      #   2: Large tables, high accuracy
+      'cld2_table_size%': 2,
+
       # Enable spell checker.
       'enable_spellcheck%': 1,
 
@@ -978,6 +986,7 @@
     'enable_spellcheck%': '<(enable_spellcheck)',
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
+    'cld2_table_size%': '<(cld2_table_size)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'enable_task_manager%': '<(enable_task_manager)',
