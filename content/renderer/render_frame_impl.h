@@ -263,6 +263,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didNavigateWithinPage(blink::WebFrame* frame,
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebFrame* frame);
+  virtual void didChangeSelection(bool is_empty_selection);
   virtual void showContextMenu(const blink::WebContextMenuData& data);
   virtual void clearContextMenu();
   virtual void willRequestAfterPreconnect(blink::WebFrame* frame,

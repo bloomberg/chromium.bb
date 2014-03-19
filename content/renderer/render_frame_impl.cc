@@ -1755,6 +1755,10 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
+void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
+  render_view_->didChangeSelection(is_empty_selection);
+}
+
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   params.source_type = GetRenderWidget()->context_menu_source_type();
