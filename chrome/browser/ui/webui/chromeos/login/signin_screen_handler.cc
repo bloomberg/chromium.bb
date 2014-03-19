@@ -1244,7 +1244,8 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (delegate_ &&
       !auto_enrollment_progress_subscription_ &&
-      !connector->IsEnterpriseManaged()) {
+      !connector->IsEnterpriseManaged() &&
+      LoginDisplayHostImpl::default_host()) {
     auto_enrollment_progress_subscription_ =
         LoginDisplayHostImpl::default_host()
             ->RegisterAutoEnrollmentProgressHandler(
