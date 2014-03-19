@@ -344,7 +344,7 @@ enum PageshowEventPersistence {
         HashSet<DOMWindowProperty*> m_properties;
 
         mutable RefPtrWillBePersistent<Screen> m_screen;
-        mutable RefPtr<History> m_history;
+        mutable RefPtrWillBePersistent<History> m_history;
         mutable RefPtr<BarProp> m_locationbar;
         mutable RefPtr<BarProp> m_menubar;
         mutable RefPtr<BarProp> m_personalbar;

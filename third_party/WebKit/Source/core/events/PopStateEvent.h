@@ -28,6 +28,7 @@
 #define PopStateEvent_h
 
 #include "core/events/Event.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -40,7 +41,7 @@ class PopStateEvent FINAL : public Event {
 public:
     virtual ~PopStateEvent();
     static PassRefPtr<PopStateEvent> create();
-    static PassRefPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, PassRefPtr<History>);
+    static PassRefPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, PassRefPtrWillBeRawPtr<History>);
     static PassRefPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
 
     SerializedScriptValue* serializedState() const { return m_serializedState.get(); }
@@ -58,10 +59,10 @@ public:
 private:
     PopStateEvent();
     PopStateEvent(const AtomicString&, const PopStateEventInit&);
-    explicit PopStateEvent(PassRefPtr<SerializedScriptValue>, PassRefPtr<History>);
+    PopStateEvent(PassRefPtr<SerializedScriptValue>, PassRefPtrWillBeRawPtr<History>);
 
     RefPtr<SerializedScriptValue> m_serializedState;
-    RefPtr<History> m_history;
+    RefPtrWillBePersistent<History> m_history;
 };
 
 } // namespace WebCore

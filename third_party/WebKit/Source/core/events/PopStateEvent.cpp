@@ -48,7 +48,7 @@ PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& 
     ScriptWrappable::init(this);
 }
 
-PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtr<History> history)
+PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtrWillBeRawPtr<History> history)
     : Event(EventTypeNames::popstate, false, true)
     , m_serializedState(serializedState)
     , m_history(history)
@@ -65,7 +65,7 @@ PassRefPtr<PopStateEvent> PopStateEvent::create()
     return adoptRef(new PopStateEvent);
 }
 
-PassRefPtr<PopStateEvent> PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtr<History> history)
+PassRefPtr<PopStateEvent> PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtrWillBeRawPtr<History> history)
 {
     return adoptRef(new PopStateEvent(serializedState, history));
 }

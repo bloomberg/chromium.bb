@@ -30,6 +30,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,9 +42,12 @@ class KURL;
 class ExecutionContext;
 class ExceptionState;
 
-class History FINAL : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
+class History FINAL : public RefCountedWillBeGarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
 public:
-    static PassRefPtr<History> create(LocalFrame* frame) { return adoptRef(new History(frame)); }
+    static PassRefPtrWillBeRawPtr<History> create(LocalFrame* frame)
+    {
+        return adoptRefWillBeNoop(new History(frame));
+    }
 
     unsigned length() const;
     SerializedScriptValue* state();
@@ -56,6 +60,8 @@ public:
     bool isSameAsCurrentState(SerializedScriptValue*) const;
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, UpdateBackForwardListPolicy, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     explicit History(LocalFrame*);
