@@ -749,7 +749,7 @@ class GitCheckout(CheckoutBase):
     # Push to the remote repository.
     self._check_call_git(
         ['push', 'origin', '%s:%s' % (self.working_branch, self.remote_branch),
-         '--force', '--quiet'])
+         '--quiet'])
     # Get the revision after the push.
     revision = self._get_head_commit_hash()
     # Switch back to the remote_branch and sync it.
