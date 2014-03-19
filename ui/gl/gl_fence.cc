@@ -25,8 +25,11 @@ class GLFenceNVFence: public gfx::GLFence {
     //     We will arbitrarily return TRUE for consistency.
     glGenFencesNV(1, &fence_);
     glSetFenceNV(fence_, GL_ALL_COMPLETED_NV);
-    if (flush)
+    if (flush) {
       glFlush();
+    } else {
+      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+    }
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -34,11 +37,15 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
   virtual void ClientWait() OVERRIDE {
-    glFinishFenceNV(fence_);
+    if (!flush_event_ || flush_event_->IsSignaled()) {
+      glFinishFenceNV(fence_);
+    } else {
+      LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+    }
   }
 
   virtual void ServerWait() OVERRIDE {
-    glFinishFenceNV(fence_);
+    ClientWait();
   }
 
  private:
@@ -47,14 +54,18 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
   GLuint fence_;
+  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
 };
 
 class GLFenceARBSync: public gfx::GLFence {
  public:
   GLFenceARBSync(bool flush) {
     sync_ = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    if (flush)
+    if (flush) {
       glFlush();
+    } else {
+      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+    }
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -69,11 +80,19 @@ class GLFenceARBSync: public gfx::GLFence {
   }
 
   virtual void ClientWait() OVERRIDE {
-    glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    if (!flush_event_ || flush_event_->IsSignaled()) {
+      glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    } else {
+      LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+    }
   }
 
   virtual void ServerWait() OVERRIDE {
-    glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
+    if (!flush_event_ || flush_event_->IsSignaled()) {
+      glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
+    } else {
+      LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+    }
   }
 
  private:
@@ -82,6 +101,7 @@ class GLFenceARBSync: public gfx::GLFence {
   }
 
   GLsync sync_;
+  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
 };
 
 #if !defined(OS_MACOSX)
@@ -90,8 +110,11 @@ class EGLFenceSync : public gfx::GLFence {
   EGLFenceSync(bool flush) {
     display_ = eglGetCurrentDisplay();
     sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
-    if (flush)
+    if (flush) {
       glFlush();
+    } else {
+      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+    }
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -102,14 +125,22 @@ class EGLFenceSync : public gfx::GLFence {
   }
 
   virtual void ClientWait() OVERRIDE {
-    EGLint flags = 0;
-    EGLTimeKHR time = EGL_FOREVER_KHR;
-    eglClientWaitSyncKHR(display_, sync_, flags, time);
+    if (!flush_event_ || flush_event_->IsSignaled()) {
+      EGLint flags = 0;
+      EGLTimeKHR time = EGL_FOREVER_KHR;
+      eglClientWaitSyncKHR(display_, sync_, flags, time);
+    } else {
+      LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+    }
   }
 
   virtual void ServerWait() OVERRIDE {
-    EGLint flags = 0;
-    eglWaitSyncKHR(display_, sync_, flags);
+    if (!flush_event_ || flush_event_->IsSignaled()) {
+      EGLint flags = 0;
+      eglWaitSyncKHR(display_, sync_, flags);
+    } else {
+      LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
+    }
   }
 
 
@@ -120,11 +151,15 @@ class EGLFenceSync : public gfx::GLFence {
 
   EGLSyncKHR sync_;
   EGLDisplay display_;
+  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
 };
 #endif // !OS_MACOSX
 
 // static
 gfx::GLFence* CreateFence(bool flush) {
+  DCHECK(gfx::GLContext::GetCurrent())
+      << "Trying to create fence with no context";
+
 #if !defined(OS_MACOSX)
   if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
     return new EGLFenceSync(flush);
