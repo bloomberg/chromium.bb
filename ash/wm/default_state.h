@@ -20,10 +20,8 @@ class DefaultState : public WindowState::State {
   // WindowState::State overrides:
   virtual void OnWMEvent(WindowState* window_state,
                          const WMEvent* event) OVERRIDE;
+
   virtual WindowStateType GetType() const OVERRIDE;
-  virtual void AttachState(WindowState* window_state,
-                           WindowState::State* previous_state) OVERRIDE;
-  virtual void DetachState(WindowState* window_state) OVERRIDE;
 
  private:
   // Process state dependent events, such as TOGGLE_MAXIMIZED,
@@ -45,19 +43,7 @@ class DefaultState : public WindowState::State {
   static void SetBounds(WindowState* window_state,
                         const SetBoundsEvent* bounds_event);
 
-  // The current type of the window.
   WindowStateType state_type_;
-
-  // The saved window state for the case that the state gets de-/activated.
-  gfx::Rect stored_bounds_;
-  gfx::Rect stored_restore_bounds_;
-
-  // The size of the workspace when the mode got started. If it differs from
-  // the current values the bounds will get ignored.
-  gfx::Size stored_workspace_size_;
-
-  // The window state only gets remembered for DCHECK reasons.
-  WindowState* stored_window_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultState);
 };

@@ -20,7 +20,6 @@ namespace ash {
 class Shell;
 
 namespace internal{
-class MaximizeModeWindowState;
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -37,9 +36,6 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
 
   // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
-
-  // Called from a window state object when it gets destroyed.
-  void WindowStateDestroyed(aura::Window* window);
 
   // Overridden from WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
@@ -65,7 +61,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   MaximizeModeWindowManager();
 
  private:
-  typedef std::map<aura::Window*, MaximizeModeWindowState*> WindowToState;
+  typedef std::map<aura::Window*, wm::WindowStateType> WindowToStateType;
 
   // Maximize all windows and restore their current state.
   void MaximizeAllWindows();
@@ -80,11 +76,20 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // immediately.
   void MaximizeAndTrackWindow(aura::Window* window);
 
+  // Restore the window to its original state and remove it from our tracking.
+  void RestoreAndForgetWindow(aura::Window* window);
+
   // Remove a window from our tracking list.
-  void ForgetWindow(aura::Window* window);
+  wm::WindowStateType ForgetWindow(aura::Window* window);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);
+
+  // Returns true when the given window can be maximized.
+  bool CanMaximize(aura::Window* window);
+
+  // Maximize the window on the screen's workspace.
+  void CenterWindow(aura::Window* window);
 
   // Add window creation observers to track creation of new windows.
   void AddWindowCreationObservers();
@@ -103,7 +108,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
 
   // Every window which got touched by our window manager gets added here.
-  WindowToState window_state_map_;
+  WindowToStateType initial_state_type_;
 
   // All container windows which have to be tracked.
   std::set<aura::Window*> observed_container_windows_;

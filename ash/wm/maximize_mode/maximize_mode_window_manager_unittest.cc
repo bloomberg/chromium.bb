@@ -10,7 +10,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/wm_event.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "ui/aura/client/aura_constants.h"
@@ -22,12 +21,8 @@
 
 namespace ash {
 
-// TODO(skuhne): These tests are failing on Widows because maximized is there
-// differently handled. Fix this!
-#if !defined(OS_WIN)
-
 class MaximizeModeWindowManagerTest : public test::AshTestBase {
- public:
+public:
   MaximizeModeWindowManagerTest() {}
   virtual ~MaximizeModeWindowManagerTest() {}
 
@@ -268,18 +263,16 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindowsAndDeleteWhileActive) {
     gfx::Rect rect1(10, 10, 200, 50);
     gfx::Rect rect2(10, 60, 200, 50);
     gfx::Rect rect3(20, 140, 100, 100);
+    // Bounds for anything else.
+    gfx::Rect rect(80, 90, 100, 110);
     scoped_ptr<aura::Window> w1(
-        CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(10, 10, 200, 50)));
+        CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
     scoped_ptr<aura::Window> w2(
-        CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(10, 60, 200, 50)));
+        CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
     scoped_ptr<aura::Window> w3(
-        CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                   gfx::Rect(20, 140, 100, 100)));
-    // Check that the windows got automatically maximized as well.
+        CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
+
     EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
-    EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
-    EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
-    EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMaximized());
   }
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
   DestroyMaximizeModeWindowManager();
@@ -308,8 +301,7 @@ TEST_F(MaximizeModeWindowManagerTest, MaximizedShouldRemainMaximized) {
 }
 
 // Test that minimized windows do neither get maximized nor restored upon
-// entering maximized mode and get restored to their previous state after
-// leaving.
+// entering or leaving the maximized mode.
 TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
   // Bounds for windows we know can be controlled.
   gfx::Rect rect(10, 10, 200, 50);
@@ -333,7 +325,7 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
   EXPECT_TRUE(wm::GetWindowState(
       initially_maximized_window.get())->IsMaximized());
   // Now minimize the second window to check that upon leaving the window
-  // will get restored to its minimized state.
+  // remains in its minimized state.
   wm::GetWindowState(initially_normal_window.get())->Minimize();
   wm::GetWindowState(initially_maximized_window.get())->Minimize();
   EXPECT_TRUE(wm::GetWindowState(
@@ -343,14 +335,13 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
   EXPECT_TRUE(wm::GetWindowState(
       initially_maximized_window.get())->IsMinimized());
 
-  // Destroy the manager again and check that the window will get minimized.
+  // Destroy the manager again and check that the window will remain minimized.
   DestroyMaximizeModeWindowManager();
   EXPECT_TRUE(wm::GetWindowState(
       initially_minimized_window.get())->IsMinimized());
-  EXPECT_FALSE(wm::GetWindowState(
-                   initially_normal_window.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(initially_normal_window.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(
-      initially_maximized_window.get())->IsMaximized());
+      initially_maximized_window.get())->IsMinimized());
 }
 
 // Check that resizing the desktop does reposition unmaximizable & managed
@@ -377,38 +368,7 @@ TEST_F(MaximizeModeWindowManagerTest, DesktopSizeChangeMovesUnmaximizable) {
   EXPECT_EQ(rect.size().ToString(), new_moved_bounds.size().ToString());
   EXPECT_NE(moved_bounds.origin().ToString(), new_moved_bounds.ToString());
 
-  // Turning off the mode should not restore to the initial coordinates since
-  // the new resolution is different.
-  DestroyMaximizeModeWindowManager();
-  EXPECT_NE(rect.ToString(), window->bounds().ToString());
-}
-
-// Check that windows return to original location if desktop size changes to
-// something else and back while in maximize mode.
-TEST_F(MaximizeModeWindowManagerTest, SizeChangeReturnWindowToOriginalPos) {
-  gfx::Rect rect(20, 140, 100, 100);
-  scoped_ptr<aura::Window> window(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
-
-  // Turning on the manager will reposition (but not resize) the window.
-  ash::internal::MaximizeModeWindowManager* manager =
-      CreateMaximizeModeWindowManager();
-  ASSERT_TRUE(manager);
-  EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
-  gfx::Rect moved_bounds(window->bounds());
-  EXPECT_NE(rect.origin().ToString(), moved_bounds.origin().ToString());
-  EXPECT_EQ(rect.size().ToString(), moved_bounds.size().ToString());
-
-  // Simulating a desktop resize should move the window again.
-  ResizeDesktop(-10);
-  gfx::Rect new_moved_bounds(window->bounds());
-  EXPECT_NE(rect.origin().ToString(), new_moved_bounds.origin().ToString());
-  EXPECT_EQ(rect.size().ToString(), new_moved_bounds.size().ToString());
-  EXPECT_NE(moved_bounds.origin().ToString(), new_moved_bounds.ToString());
-
-  // Then resize back to the original desktop size which should move windows
-  // to their original location after leaving the maximize mode.
-  ResizeDesktop(10);
+  // Turning off the mode however should restore to the initial coordinates.
   DestroyMaximizeModeWindowManager();
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
 }
@@ -466,74 +426,6 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   }
 }
 
-// Check that a restore state change does always restore to maximized.
-TEST_F(MaximizeModeWindowManagerTest, IgnoreRestoreStateChages) {
-  gfx::Rect rect(20, 140, 100, 100);
-  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
-  wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  CreateMaximizeModeWindowManager();
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->Minimize();
-  EXPECT_TRUE(window_state->IsMinimized());
-  window_state->Restore();
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->Restore();
-  EXPECT_TRUE(window_state->IsMaximized());
-  DestroyMaximizeModeWindowManager();
-}
-
-// Check that a full screen window is changing to maximized in maximize mode,
-// cannot go to fullscreen and goes back to fullscreen thereafter.
-TEST_F(MaximizeModeWindowManagerTest, FullScreenModeTests) {
-  gfx::Rect rect(20, 140, 100, 100);
-  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
-  wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  window_state->OnWMEvent(&event);
-  EXPECT_TRUE(window_state->IsFullscreen());
-
-  CreateMaximizeModeWindowManager();
-
-  // Fullscreen mode should now be off and it should not come back while in
-  // maximize mode.
-  EXPECT_FALSE(window_state->IsFullscreen());
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->OnWMEvent(&event);
-  EXPECT_FALSE(window_state->IsFullscreen());
-  EXPECT_TRUE(window_state->IsMaximized());
-
-  DestroyMaximizeModeWindowManager();
-  EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_FALSE(window_state->IsMaximized());
-}
-
-// Check that snapping operations get ignored.
-TEST_F(MaximizeModeWindowManagerTest, SnapModeTests) {
-  gfx::Rect rect(20, 140, 100, 100);
-  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
-  wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  wm::WMEvent event_left(wm::WM_EVENT_SNAP_LEFT);
-  wm::WMEvent event_right(wm::WM_EVENT_SNAP_RIGHT);
-  window_state->OnWMEvent(&event_left);
-  EXPECT_TRUE(window_state->IsSnapped());
-
-  CreateMaximizeModeWindowManager();
-
-  // Fullscreen mode should now be off and it should not come back while in
-  // maximize mode.
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->OnWMEvent(&event_left);
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->OnWMEvent(&event_right);
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-
-  DestroyMaximizeModeWindowManager();
-  EXPECT_TRUE(window_state->IsSnapped());
-}
-
 // Check that non maximizable windows cannot be dragged by the user.
 TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   gfx::Rect rect(10, 10, 100, 100);
@@ -579,7 +471,5 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   EXPECT_EQ(first_dragged_origin.x() + 10, window->bounds().x());
   EXPECT_EQ(first_dragged_origin.y() + 5, window->bounds().y());
 }
-
-#endif  // OS_WIN
 
 }  // namespace ash

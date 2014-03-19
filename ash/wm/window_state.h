@@ -26,7 +26,6 @@ class Rect;
 namespace ash {
 namespace internal {
 class WorkspaceLayoutManager;
-class MaximizeModeWindowState;
 }
 
 namespace wm {
@@ -58,22 +57,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     virtual ~State() {}
 
     // Update WindowState based on |event|.
-    virtual void OnWMEvent(WindowState* window_state, const WMEvent* event) = 0;
+    virtual void OnWMEvent(WindowState* state, const WMEvent* event) = 0;
 
     virtual WindowStateType GetType() const = 0;
-
-    // Gets called when the state object became active and the managed window
-    // needs to be adjusted to the State's requirement.
-    // The passed |previous_state| may be used to properly implement state
-    // transitions such as bound animations from the previous state.
-    // Note: This only gets called when the state object gets changed.
-    virtual void AttachState(WindowState* window_state,
-                             State* previous_state) = 0;
-
-    // Gets called before the state objects gets deactivated / detached from the
-    // window, so that it can save the various states it is interested in.
-    // Note: This only gets called when the state object gets changed.
-    virtual void DetachState(WindowState* window_state) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
@@ -163,11 +149,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Deletes and clears the restore bounds property on the window.
   void ClearRestoreBounds();
-
-  // Replace the State object of a window with a state handler which can
-  // implement a new window manager type. The passed object will be owned
-  // by this object and the returned object will be owned by the caller.
-  scoped_ptr<State> SetStateObject(scoped_ptr<State> new_state);
 
   // True if the window should be unminimized to the restore bounds, as
   // opposed to the window's current bounds. |unminimized_to_restore_bounds_| is
@@ -296,7 +277,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class DefaultState;
-  friend class ash::internal::MaximizeModeWindowState;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
