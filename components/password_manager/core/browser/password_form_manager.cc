@@ -23,6 +23,36 @@ using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 using base::Time;
 
+namespace {
+
+enum PasswordGenerationSubmissionEvent {
+  // Generated password was submitted and saved.
+  PASSWORD_SUBMITTED,
+
+  // Generated password submission failed. These passwords aren't saved.
+  PASSWORD_SUBMISSION_FAILED,
+
+  // Generated password was not submitted before navigation. Currently these
+  // passwords are not saved.
+  PASSWORD_NOT_SUBMITTED,
+
+  // Generated password was overridden by a non-generated one. This generally
+  // signals that the user was unhappy with the generated password for some
+  // reason.
+  PASSWORD_OVERRIDDEN,
+
+  // Number of enum entries, used for UMA histogram reporting macros.
+  SUBMISSION_EVENT_ENUM_COUNT
+};
+
+void LogPasswordGenerationSubmissionEvent(
+    PasswordGenerationSubmissionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent",
+                            event, SUBMISSION_EVENT_ENUM_COUNT);
+}
+
+}  // namespace
+
 PasswordFormManager::PasswordFormManager(PasswordManager* password_manager,
                                          PasswordManagerClient* client,
                                          PasswordManagerDriver* driver,
@@ -49,6 +79,8 @@ PasswordFormManager::~PasswordFormManager() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenWithPsl",
                             GetActionsTaken(),
                             kMaxNumActionsTaken);
+  if (has_generated_password_ && submit_result_ == kSubmitResultNotSubmitted)
+    LogPasswordGenerationSubmissionEvent(PASSWORD_NOT_SUBMITTED);
 }
 
 int PasswordFormManager::GetActionsTaken() {
@@ -247,6 +279,12 @@ void PasswordFormManager::ProvisionallySave(
 
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
+
+  if (user_action_ == kUserActionOverride &&
+      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
+      !has_generated_password_) {
+    LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);
+  }
 
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
@@ -645,8 +683,12 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
 
 void PasswordFormManager::SubmitPassed() {
   submit_result_ = kSubmitResultPassed;
+  if (has_generated_password_)
+    LogPasswordGenerationSubmissionEvent(PASSWORD_SUBMITTED);
 }
 
 void PasswordFormManager::SubmitFailed() {
   submit_result_ = kSubmitResultFailed;
+  if (has_generated_password_)
+    LogPasswordGenerationSubmissionEvent(PASSWORD_SUBMISSION_FAILED);
 }

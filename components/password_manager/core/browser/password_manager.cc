@@ -299,8 +299,6 @@ void PasswordManager::OnPasswordFormsRendered(
   // given consent, either through previously accepting the infobar or by having
   // the browser generate the password.
   provisional_save_manager_->SubmitPassed();
-  if (provisional_save_manager_->HasGeneratedPassword())
-    UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
 
   if (ShouldPromptUserToSavePassword()) {
     client_->PromptUserToSavePassword(provisional_save_manager_.release());

@@ -14667,6 +14667,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordGeneration.SubmissionEvent"
+    enum="PasswordGenerationSubmissionEvent">
+  <summary>
+    Measures the frequency of submission events for generated passwords. This is
+    similar to PasswordManager.ActionsTakenWithPsl but only tracks events which
+    are interesting for generated passwords.
+  </summary>
+</histogram>
+
 <histogram name="PasswordGeneration.UploadStarted" enum="Boolean">
   <owner>gcasto@chromium.org</owner>
   <summary>
@@ -33848,6 +33857,13 @@ other types of suffix sets.
   <int value="7" label="Editing popup shown"/>
   <int value="8" label="Generated password edited"/>
   <int value="9" label="Generated password deleted"/>
+</enum>
+
+<enum name="PasswordGenerationSubmissionEvent" type="int">
+  <int value="0" label="Generated password submission succeeded"/>
+  <int value="1" label="Generated password submission failed"/>
+  <int value="2" label="Generated password not submitted"/>
+  <int value="3" label="Generated password overridden by a non-generated one"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken" type="int">
