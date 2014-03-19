@@ -27,7 +27,7 @@ function test()
 
     function testLineReveal(lineNumber)
     {
-        textEditor.revealLine(lineNumber);
+        textEditor.revealPosition(lineNumber);
         var firstLine = textEditor.firstVisibleLine();
         var lastLine = textEditor.lastVisibleLine();
         var lineCentered = Math.abs(2 * lineNumber - firstLine - lastLine) <= 1;

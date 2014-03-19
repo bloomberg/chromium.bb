@@ -16,7 +16,7 @@ var test = function()
         {
             var executionLineSet = false;
             var executionLineRevealed = false;
-            InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "revealLine", didRevealLine);
+            InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "revealPosition", didRevealLine);
             InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLine", didSetExecutionLine);
             InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
 

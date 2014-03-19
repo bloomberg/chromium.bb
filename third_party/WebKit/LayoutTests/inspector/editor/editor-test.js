@@ -7,6 +7,7 @@ InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
     var textEditor = new WebInspector.CodeMirrorTextEditor("", textEditorDelegate || new WebInspector.TextEditorDelegate());
     if (clientHeight)
         textEditor.element.style.height = clientHeight + "px";
+    textEditor.element.style.flex = "none";
     textEditor.show(WebInspector.inspectorView.element);
     return textEditor;
 };
