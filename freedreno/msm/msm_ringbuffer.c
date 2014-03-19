@@ -143,6 +143,7 @@ static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
 		cmd->submit_idx = bo2idx(ring, target_bo, FD_RELOC_READ);
 		cmd->submit_offset = submit_offset;
 		cmd->size = size;
+		cmd->pad = 0;
 	}
 
 	return cmd;
