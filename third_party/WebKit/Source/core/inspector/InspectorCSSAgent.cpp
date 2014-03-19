@@ -187,20 +187,12 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
-        if (m_styleSheet->setText(m_oldText, exceptionState)) {
-            m_styleSheet->reparseStyleSheet(m_oldText);
-            return true;
-        }
-        return false;
+        return m_styleSheet->setText(m_oldText, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
-        if (m_styleSheet->setText(m_text, exceptionState)) {
-            m_styleSheet->reparseStyleSheet(m_text);
-            return true;
-        }
-        return false;
+        return m_styleSheet->setText(m_text, exceptionState);
     }
 
     virtual String mergeId() OVERRIDE
