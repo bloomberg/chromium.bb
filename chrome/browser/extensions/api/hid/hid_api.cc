@@ -114,6 +114,18 @@ void HidConnectFunction::AsyncWorkStart() {
     CompleteWithError(kErrorInvalidDeviceId);
     return;
   }
+
+  UsbDevicePermission::CheckParam param(
+      device_info.vendor_id,
+      device_info.product_id,
+      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kUsbDevice, &param)) {
+    LOG(WARNING) << "Insufficient permissions to access device.";
+    CompleteWithError(kErrorPermissionDenied);
+    return;
+  }
+
   HidService* hid_service = HidService::GetInstance();
   DCHECK(hid_service);
   scoped_refptr<HidConnection> connection =
