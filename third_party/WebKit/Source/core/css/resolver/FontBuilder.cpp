@@ -148,7 +148,6 @@ void FontBuilder::setFontFamilyInherit(const FontDescription& parentFontDescript
 
     scope.fontDescription().setGenericFamily(parentFontDescription.genericFamily());
     scope.fontDescription().setFamily(parentFontDescription.family());
-    scope.fontDescription().setIsSpecifiedFont(parentFontDescription.isSpecifiedFont());
 }
 
 // FIXME: I am not convinced FontBuilder needs to know anything about CSSValues.
@@ -215,7 +214,6 @@ void FontBuilder::setFontFamilyValue(CSSValue* value)
                 firstFamily.setFamily(face);
                 firstFamily.appendFamily(nullptr); // Remove any inherited family-fallback list.
                 currFamily = &firstFamily;
-                scope.fontDescription().setIsSpecifiedFont(scope.fontDescription().genericFamily() == FontDescription::NoFamily);
             } else {
                 RefPtr<SharedFontFamily> newFamily = SharedFontFamily::create();
                 newFamily->setFamily(face);

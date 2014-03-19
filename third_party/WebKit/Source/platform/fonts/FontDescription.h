@@ -74,7 +74,6 @@ public:
         , m_keywordSize(0)
         , m_fontSmoothing(AutoSmoothing)
         , m_textRendering(AutoTextRendering)
-        , m_isSpecifiedFont(false)
         , m_script(USCRIPT_COMMON)
         , m_syntheticBold(false)
         , m_syntheticItalic(false)
@@ -122,7 +121,6 @@ public:
     FontTraits traits() const;
     float wordSpacing() const { return m_wordSpacing; }
     float letterSpacing() const { return m_letterSpacing; }
-    bool isSpecifiedFont() const { return m_isSpecifiedFont; }
     FontOrientation orientation() const { return static_cast<FontOrientation>(m_orientation); }
     NonCJKGlyphOrientation nonCJKGlyphOrientation() const { return static_cast<NonCJKGlyphOrientation>(m_nonCJKGlyphOrientation); }
     FontWidthVariant widthVariant() const { return static_cast<FontWidthVariant>(m_widthVariant); }
@@ -151,7 +149,6 @@ public:
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
     void setTextRendering(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
-    void setIsSpecifiedFont(bool isSpecifiedFont) { m_isSpecifiedFont = isSpecifiedFont; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
     void setNonCJKGlyphOrientation(NonCJKGlyphOrientation orientation) { m_nonCJKGlyphOrientation = orientation; }
     void setWidthVariant(FontWidthVariant widthVariant) { m_widthVariant = widthVariant; }
@@ -211,7 +208,6 @@ private:
 
     unsigned m_fontSmoothing : 2; // FontSmoothingMode
     unsigned m_textRendering : 2; // TextRenderingMode
-    unsigned m_isSpecifiedFont : 1; // True if a web page specifies a non-generic font family as the first font family.
     unsigned m_script : 7; // Used to help choose an appropriate font for generic font families.
     unsigned m_syntheticBold : 1;
     unsigned m_syntheticItalic : 1;
@@ -246,7 +242,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_keywordSize == other.m_keywordSize
         && m_fontSmoothing == other.m_fontSmoothing
         && m_textRendering == other.m_textRendering
-        && m_isSpecifiedFont == other.m_isSpecifiedFont
         && m_orientation == other.m_orientation
         && m_nonCJKGlyphOrientation == other.m_nonCJKGlyphOrientation
         && m_widthVariant == other.m_widthVariant

@@ -157,13 +157,13 @@ static AtomicString familyNameFromSettings(const GenericFontFamilySettings& sett
     UScriptCode script = fontDescription.script();
 
 #if OS(ANDROID)
-    if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
+    if (fontDescription.genericFamily() == FontDescription::StandardFamily)
         return FontCache::getGenericFamilyNameForScript(FontFamilyNames::webkit_standard, script);
 
     if (genericFamilyName.startsWith("-webkit-"))
         return FontCache::getGenericFamilyNameForScript(genericFamilyName, script);
 #else
-    if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
+    if (fontDescription.genericFamily() == FontDescription::StandardFamily)
         return settings.standard(script);
     if (genericFamilyName == FontFamilyNames::webkit_serif)
         return settings.serif(script);

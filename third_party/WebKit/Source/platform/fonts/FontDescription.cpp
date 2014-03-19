@@ -42,7 +42,7 @@ struct SameSizeAsFontDescription {
     float sizes[4];
     // FXIME: Make them fit into one word.
     uint32_t bitfields;
-    uint32_t bitfields2 : 8;
+    uint32_t bitfields2 : 7;
 };
 
 COMPILE_ASSERT(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), FontDescription_should_stay_small);
