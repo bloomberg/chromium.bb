@@ -91,8 +91,8 @@
 }
 
 - (void)cr_setWantsLayer:(BOOL)wantsLayer {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCoreAnimation))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCoreAnimation))
     return;
 
   // Dynamically removing layers on SnowLeopard will sometimes result in

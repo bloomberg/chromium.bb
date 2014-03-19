@@ -40,7 +40,7 @@
     // Register to be an URL drop target.
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
 
-    [self cr_setWantsLayer:YES];
+    [self setWantsLayer:YES];
   }
   return self;
 }
