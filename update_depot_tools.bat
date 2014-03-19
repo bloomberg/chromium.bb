@@ -21,11 +21,8 @@ SHIFT
 
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-:: Will download svn and python.
-:: If you don't want to install the depot_tools version of these tools, remove
-:: the 'force' option on the next command. The tools will be installed only if
-:: not already in the PATH environment variable.
-call "%DEPOT_TOOLS_DIR%bootstrap\win\win_tools.bat" force
+:: Will download git, svn and python.
+call "%DEPOT_TOOLS_DIR%bootstrap\win\win_tools.bat"
 if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=

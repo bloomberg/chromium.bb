@@ -60,39 +60,36 @@ goto :END
 
 
 :GIT_CHECK
-if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_1852_UNINSTALL
-goto :GIT_1852_CHECK
+goto :GIT_190_CHECK
 
 
-:GIT_1852_CHECK
-set GIT_VERSION=1.8.5.2.chromium.1
-:: This git uses APIs that target WINVER 0x0502, so refuse to install it on
-:: anything older.
-for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
-for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
-if %VERMAJOR% lss 5 goto :GIT_VER_UNSUPPORTED
-if %VERMAJOR% equ 5 if %VERMINOR% lss 2 goto :GIT_VER_UNSUPPORTED
+:GIT_190_CHECK
+if "%DEPOT_TOOLS_GIT_190%" == "0" goto :GIT_1852_CHECK
+set GIT_VERSION=1.9.0.chromium.1
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
 set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
 goto :GIT_COMMON
 
 
+:GIT_1852_CHECK
+if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_180_CHECK
+set GIT_VERSION=1.8.5.2.chromium.1
+set GIT_BIN_DIR=git-%GIT_VERSION%_bin
+set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
+set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
+:: This git uses APIs that target WINVER 0x0502, so refuse to install it on
+:: anything older.
+for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
+for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
+if %VERMAJOR% lss 5 goto :GIT_VER_UNSUPPORTED
+if %VERMAJOR% equ 5 if %VERMINOR% lss 2 goto :GIT_VER_UNSUPPORTED
+goto :GIT_COMMON
+
+
 :GIT_VER_UNSUPPORTED
 echo Git %GIT_VERSION% cannot be installed on:
 ver
-goto :GIT_180_CHECK
-
-
-:GIT_1852_UNINSTALL
-:: If the new git was installed, remove all installed git packages to trigger
-:: reinstallation of the old version.
-if exist "%WIN_TOOLS_ROOT_DIR%\git-1.8.5.2.chromium.1_bin" (
-  rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\git-1.8.5.2.chromium.1_bin"
-  if exist "%WIN_TOOLS_ROOT_DIR%\git-1.8.0_bin" (
-    rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\git-1.8.0_bin"
-  )
-)
 goto :GIT_180_CHECK
 
 
@@ -105,18 +102,17 @@ goto :GIT_COMMON
 
 
 :GIT_COMMON
-:: If the batch file exists, skip the git check.
-if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :MSYS_PATH_CHECK
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
-call git --version 2>nul 1>nul
-if errorlevel 1 goto :GIT_INSTALL
-goto :SVN_CHECK
-
-
-:MSYS_PATH_CHECK
-call find "mingw" "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" 2>nul 1>nul
-if errorlevel 1 goto :SVN_CHECK
-rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
+if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" (
+  call "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" --version 2>nul 1>nul
+  if errorlevel 1 goto :GIT_INSTALL
+  rem Several git versions can live side-by-side; check the top-level
+  rem batch script to make sure it points to the desired version.
+  find "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\git.bat" 2>nul 1>nul
+  if errorlevel 1 goto :GIT_COPY_BATCH_FILES
+  goto :SVN_CHECK
+)
+goto :GIT_INSTALL
 
 
 :GIT_INSTALL
@@ -133,14 +129,18 @@ cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\git.zip" "%WIN_TOOLS_ROO
 if errorlevel 1 goto :GIT_FAIL
 if not exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\." goto :GIT_FAIL
 del "%ZIP_DIR%\git.zip"
+:: Ensure autocrlf and filemode are set correctly.
+call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
+call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.filemode false
+goto :GIT_COPY_BATCH_FILES
+
+
+:GIT_COPY_BATCH_FILES
 :: Create the batch files.
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
-:: Ensure autocrlf and filemode are set correctly.
-call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.autocrlf false
-call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.filemode false
 goto :SVN_CHECK
 
 

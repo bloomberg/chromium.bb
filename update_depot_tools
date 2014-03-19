@@ -29,7 +29,7 @@ fi
 OUTPUT="$(uname | grep 'CYGWIN')"
 CYGWIN=$?
 if [ $CYGWIN = 0 ]; then
-  cmd /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"` force
+  cmd /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"`
 fi
 
 CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"
