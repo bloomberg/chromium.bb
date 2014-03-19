@@ -126,17 +126,18 @@ WebSocketHostState WebSocketDispatcherHost::SendFlowControl(int routing_id,
   return SendOrDrop(new WebSocketMsg_FlowControl(routing_id, quota));
 }
 
-WebSocketHostState WebSocketDispatcherHost::SendClosing(int routing_id) {
+WebSocketHostState WebSocketDispatcherHost::NotifyClosingHandshake(
+    int routing_id) {
   return SendOrDrop(new WebSocketMsg_NotifyClosing(routing_id));
 }
 
-WebSocketHostState WebSocketDispatcherHost::SendStartOpeningHandshake(
+WebSocketHostState WebSocketDispatcherHost::NotifyStartOpeningHandshake(
     int routing_id, const WebSocketHandshakeRequest& request) {
   return SendOrDrop(new WebSocketMsg_NotifyStartOpeningHandshake(
       routing_id, request));
 }
 
-WebSocketHostState WebSocketDispatcherHost::SendFinishOpeningHandshake(
+WebSocketHostState WebSocketDispatcherHost::NotifyFinishOpeningHandshake(
     int routing_id, const WebSocketHandshakeResponse& response) {
   return SendOrDrop(new WebSocketMsg_NotifyFinishOpeningHandshake(
       routing_id, response));

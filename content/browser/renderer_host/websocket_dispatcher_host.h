@@ -82,15 +82,15 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
                                      int64 quota) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_NotifyClosing IPC
-  WebSocketHostState SendClosing(int routing_id) WARN_UNUSED_RESULT;
+  WebSocketHostState NotifyClosingHandshake(int routing_id) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_NotifyStartOpeningHandshake IPC.
-  WebSocketHostState SendStartOpeningHandshake(
+  WebSocketHostState NotifyStartOpeningHandshake(
       int routing_id,
       const WebSocketHandshakeRequest& request) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_NotifyFinishOpeningHandshake IPC.
-  WebSocketHostState SendFinishOpeningHandshake(
+  WebSocketHostState NotifyFinishOpeningHandshake(
       int routing_id,
       const WebSocketHandshakeResponse& response) WARN_UNUSED_RESULT;
 

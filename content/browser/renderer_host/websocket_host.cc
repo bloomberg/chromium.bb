@@ -148,7 +148,7 @@ ChannelState WebSocketEventHandler::OnClosingHandshake() {
   DVLOG(3) << "WebSocketEventHandler::OnClosingHandshake"
            << " routing_id=" << routing_id_;
 
-  return StateCast(dispatcher_->SendClosing(routing_id_));
+  return StateCast(dispatcher_->NotifyClosingHandshake(routing_id_));
 }
 
 ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
@@ -194,8 +194,8 @@ ChannelState WebSocketEventHandler::OnStartOpeningHandshake(
       request->headers.ToString();
   request_to_pass.request_time = request->request_time;
 
-  return StateCast(dispatcher_->SendStartOpeningHandshake(routing_id_,
-                                                          request_to_pass));
+  return StateCast(dispatcher_->NotifyStartOpeningHandshake(routing_id_,
+                                                            request_to_pass));
 }
 
 ChannelState WebSocketEventHandler::OnFinishOpeningHandshake(
@@ -217,8 +217,8 @@ ChannelState WebSocketEventHandler::OnFinishOpeningHandshake(
           response->headers->raw_headers());
   response_to_pass.response_time = response->response_time;
 
-  return StateCast(dispatcher_->SendFinishOpeningHandshake(routing_id_,
-                                                           response_to_pass));
+  return StateCast(dispatcher_->NotifyFinishOpeningHandshake(routing_id_,
+                                                             response_to_pass));
 }
 
 }  // namespace
