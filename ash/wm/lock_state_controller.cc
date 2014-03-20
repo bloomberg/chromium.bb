@@ -600,9 +600,22 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     delegate_->RequestLockScreen();
   }
 
+  int lock_timeout = kLockFailTimeoutMs;
+
+#if defined(OS_CHROMEOS)
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
+
+  // Increase lock timeout for slower hardware, see http://crbug.com/350628
+  if (board == "x86-mario" ||
+      board.substr(0, 8) == "x86-alex" ||
+      board.substr(0, 7) == "x86-zgb") {
+    lock_timeout *= 2;
+  }
+#endif
+
   lock_fail_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs),
+      base::TimeDelta::FromMilliseconds(lock_timeout),
       this,
       &LockStateController::OnLockFailTimeout);
 }
