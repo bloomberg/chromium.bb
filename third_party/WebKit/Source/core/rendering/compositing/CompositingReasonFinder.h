@@ -41,7 +41,7 @@ private:
     bool requiresCompositingForVideo(RenderObject*) const;
     bool requiresCompositingForCanvas(RenderObject*) const;
     bool requiresCompositingForPlugin(RenderObject*, bool* needToRecomputeCompositingRequirements) const;
-    bool requiresCompositingForFrame(RenderObject*, bool* needToRecomputeCompositingRequirements) const;
+    bool requiresCompositingForFrame(RenderObject*) const;
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
     bool requiresCompositingForOverflowScrollingParent(const RenderLayer*) const;

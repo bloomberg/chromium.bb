@@ -219,17 +219,19 @@ RenderLayerCompositor::~RenderLayerCompositor()
     ASSERT(m_rootLayerAttachment == RootLayerUnattached);
 }
 
-void RenderLayerCompositor::enableCompositingMode(bool enable /* = true */)
+void RenderLayerCompositor::enableCompositingMode(bool enable)
 {
-    if (enable != m_compositing) {
-        m_compositing = enable;
+    if (enable == m_compositing)
+        return;
 
-        if (m_compositing) {
-            ensureRootLayer();
-            notifyIFramesOfCompositingChange();
-        } else
-            destroyRootLayer();
-    }
+    m_compositing = enable;
+
+    if (m_compositing)
+        ensureRootLayer();
+    else
+        destroyRootLayer();
+
+    notifyIFramesOfCompositingChange();
 }
 
 void RenderLayerCompositor::cacheAcceleratedCompositingFlags()

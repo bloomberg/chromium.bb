@@ -74,7 +74,7 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
         directReasons |= CompositingReasonCanvas;
     else if (requiresCompositingForPlugin(renderer, needToRecomputeCompositingRequirements))
         directReasons |= CompositingReasonPlugin;
-    else if (requiresCompositingForFrame(renderer, needToRecomputeCompositingRequirements))
+    else if (requiresCompositingForFrame(renderer))
         directReasons |= CompositingReasonIFrame;
 
     if (requiresCompositingForBackfaceVisibilityHidden(renderer))
@@ -183,33 +183,9 @@ bool CompositingReasonFinder::requiresCompositingForPlugin(RenderObject* rendere
     return contentBox.height() * contentBox.width() > 1;
 }
 
-bool CompositingReasonFinder::requiresCompositingForFrame(RenderObject* renderer, bool* needToRecomputeCompositingRequirements) const
+bool CompositingReasonFinder::requiresCompositingForFrame(RenderObject* renderer) const
 {
-    if (!renderer->isRenderPart())
-        return false;
-
-    RenderPart* frameRenderer = toRenderPart(renderer);
-
-    if (!frameRenderer->requiresAcceleratedCompositing())
-        return false;
-
-    if (frameRenderer->node() && frameRenderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame()->remotePlatformLayer())
-        return true;
-
-    // FIXME: this seems bogus. If we don't know the layout position/size of the frame yet, wouldn't that be handled elsehwere?
-    *needToRecomputeCompositingRequirements = true;
-
-    RenderLayerCompositor* innerCompositor = RenderLayerCompositor::frameContentsCompositor(frameRenderer);
-    if (!innerCompositor)
-        return false;
-
-    // If we can't reliably know the size of the iframe yet, don't change compositing state.
-    if (renderer->needsLayout())
-        return frameRenderer->hasLayer() && frameRenderer->layer()->hasCompositedLayerMapping();
-
-    // Don't go into compositing mode if height or width are zero.
-    IntRect contentBox = pixelSnappedIntRect(frameRenderer->contentBoxRect());
-    return contentBox.height() * contentBox.width() > 0;
+    return renderer->isRenderPart() && toRenderPart(renderer)->requiresAcceleratedCompositing();
 }
 
 bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const

@@ -46,10 +46,10 @@
             if (window.testRunner) {
                 var haveLayers = window.internals.layerTreeAsText(document) != "";
                 var result;
-                if (hadLayers && !haveLayers)
-                  result = "PASS: had layers, and now do not";
+                if (hadLayers && haveLayers)
+                  result = "PASS: Had layers before and after";
                 else
-                  result = "FAIL: layers should have gone. hadLayers = " + hadLayers + ", haveLayers = " + haveLayers;
+                  result = "FAIL: Layers should have stayed. hadLayers = " + hadLayers + ", haveLayers = " + haveLayers;
                 document.getElementById('result').innerHTML = result;
                 testRunner.notifyDone();
             }
