@@ -16,8 +16,13 @@ from chromite import cros
 
 def _GetProjectPath(path):
   """Find the absolute path of the git checkout that contains |path|."""
-  manifest = git.ManifestCheckout.Cached(path)
-  return manifest.FindCheckoutFromPath(path).GetPath(absolute=True)
+  if git.FindRepoCheckoutRoot(path):
+    manifest = git.ManifestCheckout.Cached(path)
+    return manifest.FindCheckoutFromPath(path).GetPath(absolute=True)
+  else:
+    # Maybe they're running on a file outside of a checkout.
+    # e.g. cros lint ~/foo.py /tmp/test.py
+    return os.path.dirname(path)
 
 
 def _GetPylintGroups(paths):
