@@ -90,6 +90,16 @@ PassRefPtr<StyleImage> ElementStyleResources::cursorOrPendingFromValue(CSSProper
     return image.release();
 }
 
+void ElementStyleResources::clearPendingImageProperties()
+{
+    m_pendingImageProperties.clear();
+}
+
+void ElementStyleResources::clearPendingSVGDocuments()
+{
+    m_pendingSVGDocuments.clear();
+}
+
 void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, CSSSVGDocumentValue* cssSVGDocumentValue)
 {
     m_pendingSVGDocuments.set(filterOperation, cssSVGDocumentValue);

@@ -40,12 +40,11 @@ namespace WebCore {
 class AnimatableImage FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableImage() { }
-    static PassRefPtr<AnimatableImage> create(StyleImage* image)
+    static PassRefPtr<AnimatableImage> create(const StyleImage& image)
     {
-        return adoptRef(new AnimatableImage(image));
+        return create(image.cssValue());
     }
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const { return m_image->cssValue(); }
-    StyleImage* toStyleImage() const { return m_image.get(); }
+    CSSValue* toCSSValue() const { return m_value.get(); }
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
@@ -53,15 +52,18 @@ protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableImage(StyleImage* image)
-        : m_image(image)
+    static PassRefPtr<AnimatableImage> create(PassRefPtr<CSSValue> value)
     {
-        ASSERT(m_image);
+        return adoptRef(new AnimatableImage(value));
+    }
+    AnimatableImage(PassRefPtr<CSSValue> value)
+        : m_value(value)
+    {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeImage; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    const RefPtr<StyleImage> m_image;
+    const RefPtr<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());

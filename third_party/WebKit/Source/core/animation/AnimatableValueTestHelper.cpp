@@ -60,7 +60,7 @@ void PrintTo(const AnimatableDouble& animDouble, ::std::ostream* os)
 
 void PrintTo(const AnimatableImage& animImage, ::std::ostream* os)
 {
-    PrintTo(*(animImage.toCSSValue().get()), os, "AnimatableImage");
+    PrintTo(*(animImage.toCSSValue()), os, "AnimatableImage");
 }
 
 void PrintTo(const AnimatableLength& animLength, ::std::ostream* os)

@@ -46,10 +46,10 @@ public:
     void loadPendingResources(RenderStyle*, ElementStyleResources&);
 
 private:
-    void loadPendingSVGDocuments(RenderStyle*, const ElementStyleResources&);
+    void loadPendingSVGDocuments(RenderStyle*, ElementStyleResources&);
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
-    void loadPendingImages(RenderStyle*, const ElementStyleResources&);
+    void loadPendingImages(RenderStyle*, ElementStyleResources&);
     void loadPendingShapeImage(RenderStyle*, ShapeValue*, float deviceScaleFactor);
 
     ResourceFetcher* m_fetcher;
