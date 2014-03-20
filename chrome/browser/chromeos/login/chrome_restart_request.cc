@@ -40,6 +40,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/ozone/ozone_switches.h"
 #include "ui/wm/core/wm_core_switches.h"
 #include "url/gurl.h"
 
@@ -155,6 +156,9 @@ std::string DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebRtcHWEncoding,
     ::switches::kEnableAudioTrackProcessing,
     ::switches::kEnableWebRtcHWVp8Encoding,
+#endif
+#if defined(USE_OZONE)
+    ::switches::kOzonePlatform,
 #endif
     ash::switches::kAshDefaultWallpaperLarge,
     ash::switches::kAshDefaultWallpaperSmall,

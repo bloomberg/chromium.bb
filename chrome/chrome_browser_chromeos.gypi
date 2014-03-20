@@ -1002,6 +1002,11 @@
             '../printing/printing.gyp:printing',
           ],
         }],
+        ['use_ozone == 1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {
