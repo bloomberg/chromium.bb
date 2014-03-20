@@ -60,7 +60,6 @@ public:
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) OVERRIDE;
     virtual void setCompositorDrivenAcceleratedScrollingEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedCompositingForTransitionEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForGpuRasterizationHintEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) OVERRIDE;

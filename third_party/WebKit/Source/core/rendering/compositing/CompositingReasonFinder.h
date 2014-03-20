@@ -36,7 +36,6 @@ private:
     bool isMainFrame() const;
 
     bool requiresCompositingForAnimation(RenderObject*) const;
-    bool requiresCompositingForTransition(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;

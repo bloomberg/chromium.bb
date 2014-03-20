@@ -73,9 +73,6 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForAnimation(renderer))
         directReasons |= CompositingReasonActiveAnimation;
 
-    if (requiresCompositingForTransition(renderer))
-        directReasons |= CompositingReasonTransitionProperty;
-
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
@@ -138,21 +135,6 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* rend
         return false;
 
     return shouldCompositeForActiveAnimations(*renderer);
-}
-
-bool CompositingReasonFinder::requiresCompositingForTransition(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & AnimationTrigger))
-        return false;
-
-    if (Settings* settings = m_renderView.document().settings()) {
-        if (!settings->acceleratedCompositingForTransitionEnabled())
-            return false;
-    }
-
-    return renderer->style()->transitionForProperty(CSSPropertyOpacity)
-        || renderer->style()->transitionForProperty(CSSPropertyWebkitFilter)
-        || renderer->style()->transitionForProperty(CSSPropertyWebkitTransform);
 }
 
 bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* renderer) const

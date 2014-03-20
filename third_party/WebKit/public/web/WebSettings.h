@@ -69,7 +69,8 @@ public:
     virtual void setAcceleratedCompositingForGpuRasterizationHintEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) = 0;
     virtual void setCompositorDrivenAcceleratedScrollingEnabled(bool) = 0;
-    virtual void setAcceleratedCompositingForTransitionEnabled(bool)  = 0;
+    // Not implemented yet, see http://crbug.com/178119
+    virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForScrollableFramesEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForVideoEnabled(bool) = 0;
