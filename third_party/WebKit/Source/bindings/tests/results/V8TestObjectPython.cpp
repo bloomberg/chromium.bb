@@ -5368,13 +5368,17 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
 
 static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEventListenerArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodEventListenerArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
     RefPtr<EventListener> eventListenerArg = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
     impl->voidMethodEventListenerArg(eventListenerArg);
+    if (listener && !impl->toNode())
+        removeHiddenValueFromArray(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
 }
 
 static void voidMethodEventListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

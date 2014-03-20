@@ -447,7 +447,7 @@
             'xml/XSLTProcessor.idl',
         ],
         # 'partial interface', target (right side of) 'implements', and
-        # static bindings (in bindings/v8/)
+        # interfaces with static bindings (in bindings/v8/)
         'core_dependency_idl_files': [
             'animation/DocumentAnimation.idl',
             'animation/ElementAnimation.idl',

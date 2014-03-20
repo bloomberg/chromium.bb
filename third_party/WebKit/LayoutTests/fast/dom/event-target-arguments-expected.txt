@@ -12,8 +12,13 @@ PASS document.addEventListener("", listener) did not throw exception.
 PASS document.addEventListener("", function(){}) did not throw exception.
 PASS document.addEventListener("bar", listener, false) did not throw exception.
 PASS document.addEventListener("bar", listener, true) did not throw exception.
+PASS document.addEventListener(null) is undefined
 PASS document.addEventListener(null, listener) did not throw exception.
+PASS document.addEventListener("foo", null) is undefined
 PASS document.addEventListener("zork", listener, null) did not throw exception.
+PASS document.addEventListener(undefined) is undefined
+PASS document.addEventListener(undefined, listener) is undefined
+PASS document.addEventListener("foo", undefined) is undefined
 PASS document.addEventListener("zork", listener, undefined) did not throw exception.
 
 Signature:
@@ -24,9 +29,14 @@ PASS document.removeEventListener("foo", listener) did not throw exception.
 PASS document.removeEventListener("foo", listener, true) did not throw exception.
 PASS document.removeEventListener("bar", listener, false) did not throw exception.
 PASS document.removeEventListener("bar", listener, false) did not throw exception.
-PASS document.addEventListener("bar", listener, true) did not throw exception.
+PASS document.removeEventListener("bar", listener, true) did not throw exception.
+PASS document.removeEventListener(null) is undefined
 PASS document.removeEventListener(null, listener) did not throw exception.
+PASS document.removeEventListener("foo", null) is undefined
 PASS document.removeEventListener("zork", listener, null) did not throw exception.
+PASS document.removeEventListener(undefined) is undefined
+PASS document.removeEventListener(undefined, listener) is undefined
+PASS document.removeEventListener("foo", undefined) is undefined
 PASS document.removeEventListener("zork", listener, undefined) did not throw exception.
 PASS successfullyParsed is true
 

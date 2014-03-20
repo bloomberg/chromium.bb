@@ -3,12 +3,11 @@
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {# Local variables #}
     {% if method.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {# FIXME: remove these special cases: http://crbug.com/353484 #}
-    {% if method.number_of_required_arguments and not
-          method.name in ['addEventListener', 'removeEventListener' ] %}
+    {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         {{throw_type_error(method,
               'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
@@ -23,8 +22,16 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {# Security checks #}
+    {# FIXME: change to method.is_check_security_for_window #}
     {% if interface_name == 'EventTarget' %}
-    {{event_target_check_security_for_frame() | indent }}
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
     {% elif method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -42,21 +49,13 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% for argument in method.arguments %}
     {{generate_argument(method, argument, world_suffix) | indent}}
     {% endfor %}
-    {% if interface_name == 'EventTarget' and
-          method.name in ['addEventListener', 'removeEventListener'] %}
-    {# FIXME: can we move this |listener| check into Blink and
-       hidden_dependency_action? I.e., "if (!listener) return;" in Blink
-       and "if (listener && !impl->toNode())" in hidden_dependency_action} #}
-    if (!listener)
-        return;
-    {% endif %}
     {% if world_suffix %}
     {{cpp_method_call(method, method.v8_set_return_value_for_main_world, method.cpp_value) | indent}}
     {% else %}
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
     {% endif %}
-    {% if interface_name == 'EventTarget' and
-          method.name in ['addEventListener', 'removeEventListener'] %}
+    {# Post-call #}
+    {% if method.has_event_listener_argument %}
     {{hidden_dependency_action(method.name) | indent}}
     {% endif %}
 }
@@ -65,22 +64,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
 
 {######################################}
-{% macro event_target_check_security_for_frame() %}
-{# FIXME: use the existing shouldAllowAccessToFrame check if possible. #}
-if (DOMWindow* window = impl->toDOMWindow()) {
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    if (!window->document())
-        return;
-}
-{% endmacro %}
-
-
-{######################################}
 {% macro hidden_dependency_action(method_name) %}
-if (!impl->toNode())
+if (listener && !impl->toNode())
     {% if method_name == 'addEventListener' %}
     addHiddenValueToArray(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% else %}{# method_name == 'removeEventListener' #}
@@ -98,17 +83,12 @@ if (!impl->toNode())
    fewer arguments if they are omitted.
    Optional Dictionary arguments default to empty dictionary. #}
 if (UNLIKELY(info.Length() <= {{argument.index}})) {
-    {% if interface_name == 'EventTarget' %}
-    {# FIXME: can we move this |listener| check into Blink? (see above) #}
-    if (!listener)
-        return;
-    {% endif %}
     {% if world_suffix %}
     {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | indent}}
     {% else %}
     {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent}}
     {% endif %}
-    {% if interface_name == 'EventTarget' %}
+    {% if argument.has_event_listener_argument %}
     {{hidden_dependency_action(method.name) | indent}}
     {% endif %}
     return;
@@ -200,6 +180,7 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
+{# Local variables #}
 {% if method.is_implemented_by and not method.is_static %}
 ASSERT(impl);
 {% endif %}
@@ -215,12 +196,14 @@ ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
 {% if method.is_call_with_script_arguments %}
 RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_arguments}}));
 {% endif %}
+{# Call #}
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
 {% elif method.is_call_with_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
+{# Post-call #}
 {% if method.is_raises_exception %}
 if (exceptionState.throwIfNeeded())
     return;
@@ -233,13 +216,15 @@ if (state.hadException()) {
     return;
 }
 {% endif %}
+{# Set return value #}
 {% if method.union_arguments %}
-{{union_type_method_call(method)}}
+{{union_type_method_call_and_set_return_value(method)}}
 {% elif v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
 {% endmacro %}
 
+
 {######################################}
-{% macro union_type_method_call(method) %}
+{% macro union_type_method_call_and_set_return_value(method) %}
 {% for cpp_type in method.cpp_type %}
 bool result{{loop.index0}}Enabled = false;
 {{cpp_type}} result{{loop.index0}};

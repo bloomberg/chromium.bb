@@ -21,15 +21,21 @@ shouldNotThrow('document.addEventListener("", function(){})');
 shouldNotThrow('document.addEventListener("bar", listener, false)');
 shouldNotThrow('document.addEventListener("bar", listener, true)');
 // null
+shouldBe('document.addEventListener(null)', 'undefined');
 shouldNotThrow('document.addEventListener(null, listener)'); // converted to "null"
 // FIXME: throw on |null|: http://crbug.com/249598
 // shouldThrow('document.addEventListener("foo", null)');
+shouldBe('document.addEventListener("foo", null)', 'undefined');
 shouldNotThrow('document.addEventListener("zork", listener, null)');
 // undefined
-// FIXME: behavior of undefined here is unclear, but probably should throw
+// FIXME: behavior of undefined for mandatory arguments is unclear, but
+// probably should throw
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=23532
+shouldBe('document.addEventListener(undefined)', 'undefined');
 // shouldThrow('document.addEventListener(undefined, listener)');
 // shouldThrow('document.addEventListener("foo", undefined)');
+shouldBe('document.addEventListener(undefined, listener)', 'undefined');
+shouldBe('document.addEventListener("foo", undefined)', 'undefined');
 shouldNotThrow('document.addEventListener("zork", listener, undefined)');
 
 debug('');
@@ -44,16 +50,22 @@ shouldNotThrow('document.removeEventListener("foo", listener)');
 shouldNotThrow('document.removeEventListener("foo", listener, true)');
 shouldNotThrow('document.removeEventListener("bar", listener, false)');
 shouldNotThrow('document.removeEventListener("bar", listener, false)');
-shouldNotThrow('document.addEventListener("bar", listener, true)');
+shouldNotThrow('document.removeEventListener("bar", listener, true)');
 // null
+shouldBe('document.removeEventListener(null)', 'undefined');
 shouldNotThrow('document.removeEventListener(null, listener)'); // converted to "null"
 // FIXME: throw on |null|: http://crbug.com/249598
 // shouldThrow('document.removeEventListener("foo", null)');
+shouldBe('document.removeEventListener("foo", null)', 'undefined');
 shouldNotThrow('document.removeEventListener("zork", listener, null)');
 // undefined
-// FIXME: behavior of undefined here is unclear, but probably should throw
+// FIXME: behavior of undefined for mandatory arguments is unclear, but
+// probably should throw
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=23532
-// shouldThrow('document.removeEventListener("foo", undefined)');
-// shouldThrow('document.removeEventListener(undefined, listener)');
+shouldBe('document.removeEventListener(undefined)', 'undefined');
+// shouldthrow('document.removeeventlistener("foo", undefined)');
+// shouldthrow('document.removeeventlistener(undefined, listener)');
+shouldBe('document.removeEventListener(undefined, listener)', 'undefined');
+shouldBe('document.removeEventListener("foo", undefined)', 'undefined');
 shouldNotThrow('document.removeEventListener("zork", listener, undefined)');
 </script>

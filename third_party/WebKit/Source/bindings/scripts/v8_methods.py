@@ -71,6 +71,9 @@ def generate_method(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
+    has_event_listener_argument = any(
+        argument for argument in arguments
+        if argument.idl_type.name == 'EventListener')
     is_check_security_for_frame = (
         'CheckSecurity' in interface.extended_attributes and
         'DoNotCheckSecurity' not in extended_attributes)
@@ -90,13 +93,14 @@ def generate_method(interface, method):
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
         'idl_type': idl_type.base_type,
+        'has_event_listener_argument': has_event_listener_argument,
         'has_exception_state':
+            has_event_listener_argument or
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
-                   argument.idl_type.is_integer_type) or
-            name in ['addEventListener', 'removeEventListener', 'dispatchEvent'],
+                   argument.idl_type.is_integer_type),
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
@@ -146,6 +150,9 @@ def generate_argument(interface, method, argument, index):
         'cpp_value': this_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_default': 'Default' in extended_attributes,
+        'has_event_listener_argument': any(
+            argument_so_far for argument_so_far in method.arguments[:index]
+            if argument_so_far.idl_type.name == 'EventListener'),
         'idl_type_object': idl_type,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,

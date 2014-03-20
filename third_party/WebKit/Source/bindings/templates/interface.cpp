@@ -273,7 +273,7 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 
 {##############################################################################}
-{% from 'methods.cpp' import union_type_method_call %}
+{% from 'methods.cpp' import union_type_method_call_and_set_return_value %}
 {% block named_property_getter %}
 {% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
@@ -293,7 +293,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if getter.union_arguments %}
-    {{union_type_method_call(getter) | indent}}
+    {{union_type_method_call_and_set_return_value(getter) | indent}}
     {% else %}
     {{getter.cpp_type}} result = {{getter.cpp_value}};
     {% if getter.is_raises_exception %}
