@@ -44,9 +44,8 @@ class MeasurementUnitTest(unittest.TestCase):
         continue
 
       # Only measure a single page so that this test cycles reasonably quickly.
-      benchmark.options['pageset_repeat_iters'] = 1
-      benchmark.options['page_repeat_iters'] = 1
-      benchmark.options['page_repeat_secs'] = 1
+      benchmark.options['pageset_repeat'] = 1
+      benchmark.options['page_repeat'] = 1
 
       class SinglePageBenchmark(benchmark):  # pylint: disable=W0232
         def CreatePageSet(self, options):

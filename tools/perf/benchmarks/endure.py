@@ -23,7 +23,7 @@ class _EndureBenchmark(test.Test):
       'skip_navigate_on_repeat': True,
       # Depending on the page and the actions performed on the page,
       # 2000 iterations should be between 1 and 2 hours.
-      'page_repeat_iters': 2000,
+      'page_repeat': 2000,
       # One sample per 10 iterations -> 200 points per run.
       'perf_stats_interval': '10'
   }
@@ -66,7 +66,7 @@ class EndureGmailRefresh(test.Test):
   # Options for endure gmail page refresh benchmark test.
   options = {
       'skip_navigate_on_repeat': True,
-      'page_repeat_iters': 20,
+      'page_repeat': 20,
       'perf_stats_interval': '1'
   }
   page_set = 'page_sets/endure_gmail_refresh.json'

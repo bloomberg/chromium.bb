@@ -9,4 +9,4 @@ class MemoryPressure(test.Test):
   test = memory_pressure.MemoryPressure
   page_set = 'page_sets/typical_25.json'
   options = {'cold': True,
-             'pageset_repeat_iters': 6}
+             'pageset_repeat': 6}

@@ -12,7 +12,7 @@ class SessionRestoreWithUrlCold(test.Test):
   test = session_restore_with_url.SessionRestoreWithUrl
   page_set = 'page_sets/startup_pages.json'
   options = {'cold': True,
-             'pageset_repeat_iters': 5}
+             'pageset_repeat': 5}
 
 class SessionRestoreWithUrlWarm(test.Test):
   """Measure Chrome warm session restore with startup URLs."""
@@ -20,5 +20,5 @@ class SessionRestoreWithUrlWarm(test.Test):
   test = session_restore_with_url.SessionRestoreWithUrl
   page_set = 'page_sets/startup_pages.json'
   options = {'warm': True,
-             'pageset_repeat_iters': 10}
+             'pageset_repeat': 10}
 

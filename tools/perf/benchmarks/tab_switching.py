@@ -14,4 +14,4 @@ class TabSwitchingTop10(test.Test):
 class TabSwitchingFiveBlankTabs(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/five_blank_pages.json'
-  options = {'pageset_repeat_iters': 10}
+  options = {'pageset_repeat': 10}

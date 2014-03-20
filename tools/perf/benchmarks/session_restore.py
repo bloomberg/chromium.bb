@@ -13,7 +13,7 @@ class SessionRestoreColdTypical25(test.Test):
   test = session_restore.SessionRestore
   page_set = 'page_sets/typical_25.json'
   options = {'cold': True,
-             'pageset_repeat_iters': 5}
+             'pageset_repeat': 5}
 
 
 class SessionRestoreWarmTypical25(test.Test):
@@ -21,4 +21,4 @@ class SessionRestoreWarmTypical25(test.Test):
   test = session_restore.SessionRestore
   page_set = 'page_sets/typical_25.json'
   options = {'warm': True,
-             'pageset_repeat_iters': 20}
+             'pageset_repeat': 20}

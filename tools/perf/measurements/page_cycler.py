@@ -108,11 +108,6 @@ class PageCycler(page_measurement.PageMeasurement):
     cold_runs_percent_set = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
     if (cold_runs_percent_set and
-        (options.repeat_options.page_repeat_secs or
-         options.repeat_options.pageset_repeat_secs)):
-      raise Exception('--cold-load-percent is incompatible with timed repeat')
-
-    if (cold_runs_percent_set and
         (options.cold_load_percent < 0 or options.cold_load_percent > 100)):
       raise Exception('--cold-load-percent must be in the range [0-100]')
 
@@ -121,18 +116,18 @@ class PageCycler(page_measurement.PageMeasurement):
     # assertion failures on _started_warm in WillNavigateToPage.
     if cold_runs_percent_set:
       number_warm_pageset_runs = int(
-          (int(options.repeat_options.pageset_repeat_iters) - 1) *
+          (int(options.repeat_options.pageset_repeat) - 1) *
           (100 - options.cold_load_percent) / 100)
       number_warm_runs = (number_warm_pageset_runs *
-                          options.repeat_options.page_repeat_iters)
+                          options.repeat_options.page_repeat)
       self._cold_run_start_index = (number_warm_runs +
-          options.repeat_options.page_repeat_iters)
+          options.repeat_options.page_repeat)
       self.discard_first_result = (not options.cold_load_percent or
                                    self.discard_first_result)
     else:
       self._cold_run_start_index = (
-          options.repeat_options.pageset_repeat_iters *
-          options.repeat_options.page_repeat_iters)
+          options.repeat_options.pageset_repeat *
+          options.repeat_options.page_repeat)
 
   def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('__pc_load_time', 60)

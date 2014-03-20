@@ -97,18 +97,6 @@ class PageCyclerUnitTest(unittest.TestCase):
 
     self.assertEquals(cycler._cold_run_start_index, 26)
 
-  def testIncompatibleOptions(self):
-    exception_seen = False
-    try:
-      self.SetUpCycler(['--pageset-repeat=20s', '--page-repeat=2s',
-                        '--cold-load-percent=40'])
-    except Exception as e:
-      exception_seen = True
-      self.assertEqual('--cold-load-percent is incompatible with '
-                       'timed repeat', e.args[0])
-
-    self.assertTrue(exception_seen)
-
   def testCacheHandled(self):
     cycler = self.SetUpCycler(['--pageset-repeat=5',
                                '--cold-load-percent=50'],
