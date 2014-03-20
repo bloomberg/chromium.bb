@@ -15,7 +15,7 @@ class MessageLoopProxy;
 
 namespace content {
 
-// RenderMediaLog is an implementation of MediaLog that passes all events to the
+// RenderMediaLog is an implementation of MediaLog that forwards events to the
 // browser process, throttling as necessary.
 class RenderMediaLog : public media::MediaLog {
  public:
@@ -30,6 +30,9 @@ class RenderMediaLog : public media::MediaLog {
   scoped_refptr<base::MessageLoopProxy> render_loop_;
   base::Time last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
+
+  // Limits the number buffered extents changed events we send over IPC to one.
+  scoped_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };
