@@ -12,7 +12,7 @@ per-file breakpad.gypi=thestig@chromium.org
 
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=noamsml@chromium.org
-per-file cloud_devices*=vitalybuka@chromium.org 
+per-file cloud_devices*=vitalybuka@chromium.org
 
 per-file dom_distiller*=bengr@chromium.org
 per-file dom_distiller*=cjhopman@chromium.org
@@ -86,6 +86,7 @@ per-file sync_driver*=zea@chromium.org
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
+per-file translate.gypi=droger@chromium.org
 per-file translate.gypi=hajimehoshi@chromium.org
 per-file translate.gypi=mad@chromium.org
 per-file translate.gypi=toyoshim@chromium.org
