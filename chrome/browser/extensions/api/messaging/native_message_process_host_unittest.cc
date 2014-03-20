@@ -221,10 +221,8 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 #else  // defined(OS_WIN)
   base::PlatformFile pipe_handles[2];
   ASSERT_EQ(0, pipe(pipe_handles));
-  base::ScopedFD read_fd(pipe_handles[0]);
-  base::ScopedFD write_fd(pipe_handles[1]);
-
   read_file = base::File(pipe_handles[0]);
+  base::File write_file(pipe_handles[1]);
 #endif  // !defined(OS_WIN)
 
   scoped_ptr<NativeProcessLauncher> launcher =
