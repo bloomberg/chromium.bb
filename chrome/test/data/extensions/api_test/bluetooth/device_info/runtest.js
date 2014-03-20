@@ -13,6 +13,12 @@ function testDeviceInfo() {
   chrome.test.assertEq(0x0400, devices[0].deviceId);
   chrome.test.assertEq('computer', devices[0].type);
 
+  chrome.test.assertEq(2, devices[0].uuids.length);
+  chrome.test.assertEq('00001105-0000-1000-8000-00805f9b34fb',
+                       devices[0].uuids[0]);
+  chrome.test.assertEq('00001106-0000-1000-8000-00805f9b34fb',
+                       devices[0].uuids[1]);
+
   chrome.test.assertEq('d2', devices[1].name);
   chrome.test.assertEq(0, devices[1].deviceClass);
   chrome.test.assertEq(undefined, devices[1].vendorIdSource);
@@ -20,6 +26,7 @@ function testDeviceInfo() {
   chrome.test.assertEq(undefined, devices[1].productId);
   chrome.test.assertEq(undefined, devices[1].deviceId);
   chrome.test.assertEq(undefined, devices[1].type);
+  chrome.test.assertEq(0, devices[1].uuids.length);
 
   chrome.test.succeed();
 }

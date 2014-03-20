@@ -21,7 +21,7 @@
 namespace extensions {
 
 namespace bluetooth_errors {
-const char kErrorInvalidProfileUuid[] = "Invalid UUID '*'";
+const char kErrorInvalidUuid[] = "Invalid UUID '*'";
 }
 
 namespace errors = bluetooth_errors;
@@ -29,24 +29,23 @@ namespace errors = bluetooth_errors;
 namespace {
 
 bool ParseUuid(BluetoothManifestPermission* permission,
-               const std::string& profile_uuid,
+               const std::string& uuid,
                base::string16* error) {
-  std::string canonical_uuid =
-      device::bluetooth_utils::CanonicalUuid(profile_uuid);
+  std::string canonical_uuid = device::bluetooth_utils::CanonicalUuid(uuid);
   if (canonical_uuid.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kErrorInvalidProfileUuid, profile_uuid);
+        errors::kErrorInvalidUuid, uuid);
     return false;
   }
-  permission->AddPermission(profile_uuid);
+  permission->AddPermission(uuid);
   return true;
 }
 
 bool ParseUuidArray(BluetoothManifestPermission* permission,
-                    const scoped_ptr<std::vector<std::string> >& profiles,
+                    const scoped_ptr<std::vector<std::string> >& uuids,
                     base::string16* error) {
-  for (std::vector<std::string>::const_iterator it = profiles->begin();
-       it != profiles->end();
+  for (std::vector<std::string>::const_iterator it = uuids->begin();
+       it != uuids->end();
        ++it) {
     if (!ParseUuid(permission, *it, error)) {
       return false;
@@ -72,8 +71,8 @@ scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
 
   scoped_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
-  if (bluetooth->profiles) {
-    if (!ParseUuidArray(result.get(), bluetooth->profiles, error)) {
+  if (bluetooth->uuids) {
+    if (!ParseUuidArray(result.get(), bluetooth->uuids, error)) {
       return scoped_ptr<BluetoothManifestPermission>();
     }
   }
@@ -85,9 +84,9 @@ bool BluetoothManifestPermission::CheckRequest(
     const BluetoothPermissionRequest& request) const {
 
   std::string canonical_param_uuid =
-      device::bluetooth_utils::CanonicalUuid(request.profile_uuid);
-  for (BluetoothProfileUuidSet::const_iterator it = profile_uuids_.begin();
-       it != profile_uuids_.end();
+      device::bluetooth_utils::CanonicalUuid(request.uuid);
+  for (BluetoothUuidSet::const_iterator it = uuids_.begin();
+       it != uuids_.end();
        ++it) {
     std::string canonical_uuid = device::bluetooth_utils::CanonicalUuid(*it);
     if (canonical_uuid == canonical_param_uuid)
@@ -112,7 +111,7 @@ PermissionMessages BluetoothManifestPermission::GetMessages() const {
       PermissionMessage::kBluetooth,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH)));
 
-  if (!profile_uuids_.empty()) {
+  if (!uuids_.empty()) {
     result.push_back(
         PermissionMessage(PermissionMessage::kBluetoothDevices,
                           l10n_util::GetStringUTF16(
@@ -132,21 +131,21 @@ bool BluetoothManifestPermission::FromValue(const base::Value* value) {
   if (!manifest_permission)
     return false;
 
-  profile_uuids_ = manifest_permission->profile_uuids_;
+  uuids_ = manifest_permission->uuids_;
   return true;
 }
 
 scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   api::manifest_types::Bluetooth bluetooth;
-  bluetooth.profiles.reset(new std::vector<std::string>(profile_uuids_.begin(),
-                                                        profile_uuids_.end()));
+  bluetooth.uuids.reset(new std::vector<std::string>(uuids_.begin(),
+                                                     uuids_.end()));
   return bluetooth.ToValue().PassAs<base::Value>();
 }
 
 ManifestPermission* BluetoothManifestPermission::Clone() const {
   scoped_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
-  result->profile_uuids_ = profile_uuids_;
+  result->uuids_ = uuids_;
   return result.release();
 }
 
@@ -157,8 +156,8 @@ ManifestPermission* BluetoothManifestPermission::Diff(
 
   scoped_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
-  result->profile_uuids_ = base::STLSetDifference<BluetoothProfileUuidSet>(
-      profile_uuids_, other->profile_uuids_);
+  result->uuids_ = base::STLSetDifference<BluetoothUuidSet>(
+      uuids_, other->uuids_);
   return result.release();
 }
 
@@ -169,8 +168,8 @@ ManifestPermission* BluetoothManifestPermission::Union(
 
   scoped_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
-  result->profile_uuids_ = base::STLSetUnion<BluetoothProfileUuidSet>(
-      profile_uuids_, other->profile_uuids_);
+  result->uuids_ = base::STLSetUnion<BluetoothUuidSet>(
+      uuids_, other->uuids_);
   return result.release();
 }
 
@@ -181,8 +180,8 @@ ManifestPermission* BluetoothManifestPermission::Intersect(
 
   scoped_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
-  result->profile_uuids_ = base::STLSetIntersection<BluetoothProfileUuidSet>(
-      profile_uuids_, other->profile_uuids_);
+  result->uuids_ = base::STLSetIntersection<BluetoothUuidSet>(
+      uuids_, other->uuids_);
   return result.release();
 }
 
@@ -191,32 +190,31 @@ bool BluetoothManifestPermission::Contains(const ManifestPermission* rhs)
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  return base::STLIncludes(profile_uuids_, other->profile_uuids_);
+  return base::STLIncludes(uuids_, other->uuids_);
 }
 
 bool BluetoothManifestPermission::Equal(const ManifestPermission* rhs) const {
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  return (profile_uuids_ == other->profile_uuids_);
+  return (uuids_ == other->uuids_);
 }
 
 void BluetoothManifestPermission::Write(IPC::Message* m) const {
-  IPC::WriteParam(m, profile_uuids_);
+  IPC::WriteParam(m, uuids_);
 }
 
 bool BluetoothManifestPermission::Read(const IPC::Message* m,
                                        PickleIterator* iter) {
-  return IPC::ReadParam(m, iter, &profile_uuids_);
+  return IPC::ReadParam(m, iter, &uuids_);
 }
 
 void BluetoothManifestPermission::Log(std::string* log) const {
-  IPC::LogParam(profile_uuids_, log);
+  IPC::LogParam(uuids_, log);
 }
 
-void BluetoothManifestPermission::AddPermission(
-    const std::string& profile_uuid) {
-  profile_uuids_.insert(profile_uuid);
+void BluetoothManifestPermission::AddPermission(const std::string& uuid) {
+  uuids_.insert(uuid);
 }
 
 }  // namespace extensions

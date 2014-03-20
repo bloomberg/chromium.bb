@@ -213,28 +213,13 @@ bool BluetoothDeviceChromeOS::IsConnecting() const {
   return num_connecting_calls_ > 0;
 }
 
-BluetoothDeviceChromeOS::ServiceList BluetoothDeviceChromeOS::GetServices()
-    const {
+BluetoothDeviceChromeOS::UUIDList BluetoothDeviceChromeOS::GetUUIDs() const {
   BluetoothDeviceClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothDeviceClient()->
           GetProperties(object_path_);
   DCHECK(properties);
 
   return properties->uuids.value();
-}
-
-void BluetoothDeviceChromeOS::GetServiceRecords(
-    const ServiceRecordsCallback& callback,
-    const ErrorCallback& error_callback) {
-  // TODO(keybuk): not implemented; remove
-  error_callback.Run();
-}
-
-void BluetoothDeviceChromeOS::ProvidesServiceWithName(
-    const std::string& name,
-    const ProvidesServiceCallback& callback) {
-  // TODO(keybuk): not implemented; remove
-  callback.Run(false);
 }
 
 bool BluetoothDeviceChromeOS::ExpectingPinCode() const {

@@ -101,17 +101,6 @@ class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothGetProfilesFunction : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getProfiles", BLUETOOTH_GETPROFILES)
-
- protected:
-  virtual ~BluetoothGetProfilesFunction() {}
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-};
-
 class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getAdapterState",
@@ -144,23 +133,6 @@ class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
 
   // BluetoothExtensionFunction:
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-};
-
-class BluetoothGetServicesFunction : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getServices", BLUETOOTH_GETSERVICES)
-
- protected:
-  virtual ~BluetoothGetServicesFunction() {}
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-
- private:
-  void GetServiceRecordsCallback(
-      base::ListValue* services,
-      const device::BluetoothDevice::ServiceRecordList& records);
-  void OnErrorCallback();
 };
 
 class BluetoothConnectFunction : public BluetoothExtensionFunction {

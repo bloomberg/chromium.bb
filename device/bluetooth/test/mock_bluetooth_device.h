@@ -39,14 +39,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(IsConnectable, bool());
   MOCK_CONST_METHOD0(IsConnecting, bool());
-  MOCK_CONST_METHOD0(GetServices, ServiceList());
-  MOCK_METHOD2(GetServiceRecords,
-               void(const BluetoothDevice::ServiceRecordsCallback&,
-                    const BluetoothDevice::ErrorCallback&));
-  MOCK_CONST_METHOD1(ProvidesServiceWithUUID, bool(const std::string&));
-  MOCK_METHOD2(ProvidesServiceWithName,
-               void(const std::string&,
-                    const BluetoothDevice::ProvidesServiceCallback&));
+  MOCK_CONST_METHOD0(GetUUIDs, UUIDList());
   MOCK_CONST_METHOD0(ExpectingPinCode, bool());
   MOCK_CONST_METHOD0(ExpectingPasskey, bool());
   MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
@@ -84,7 +77,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   uint32 bluetooth_class_;
   std::string name_;
   std::string address_;
-  BluetoothDevice::ServiceList service_list_;
+  BluetoothDevice::UUIDList uuids_;
 };
 
 }  // namespace device

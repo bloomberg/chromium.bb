@@ -48,7 +48,7 @@ BluetoothDeviceWin::BluetoothDeviceWin(
         (*iter)->sdp_bytes.size(),
         sdp_bytes_buffer);
     service_record_list_.push_back(service_record);
-    service_uuids_.push_back(service_record->uuid());
+    uuids_.push_back(service_record->uuid());
   }
 }
 
@@ -104,28 +104,8 @@ bool BluetoothDeviceWin::IsConnecting() const {
   return false;
 }
 
-BluetoothDevice::ServiceList BluetoothDeviceWin::GetServices() const {
-  return service_uuids_;
-}
-
-void BluetoothDeviceWin::GetServiceRecords(
-    const ServiceRecordsCallback& callback,
-    const ErrorCallback& error_callback) {
-  callback.Run(service_record_list_);
-}
-
-void BluetoothDeviceWin::ProvidesServiceWithName(
-    const std::string& name,
-    const ProvidesServiceCallback& callback) {
-  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
-       iter != service_record_list_.end();
-       ++iter) {
-    if ((*iter)->name() == name) {
-      callback.Run(true);
-      return;
-    }
-  }
-  callback.Run(false);
+BluetoothDevice::UUIDList BluetoothDeviceWin::GetUUIDs() const {
+  return uuids_;
 }
 
 bool BluetoothDeviceWin::ExpectingPinCode() const {

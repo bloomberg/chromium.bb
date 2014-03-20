@@ -11,10 +11,10 @@ available for the $ref:bluetooth API.
   "name": "My Bluetooth {{platform}}",
   "bluetooth": {
     // Permission for chrome.bluetooth.addProfile:
-    // The application is allowed to make and receive connections
-    // implementing the profiles identified by the UUIDs
+    // The application is allowed to communicate with devices using the
+    // protocols, profiles or services identified by the UUIDs
     // 0x1105 and 0x1106.
-    "profiles": [ "1105", "1106" ]
+    "uuids": [ "1105", "1106" ]
   },
   ...
 }

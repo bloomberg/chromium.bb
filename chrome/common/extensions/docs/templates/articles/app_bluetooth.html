@@ -15,19 +15,20 @@
 <p>
   For Chrome Apps that use Bluetooth, add the
   <a href="manifest/bluetooth.html">bluetooth</a> entry to the manifest
-  and specify, if appropriate, the UUIDs of profiles you wish to implement.
+  and specify, if appropriate, the UUIDs of profiles, protocols or services
+  you wish to implement.
   For example:
 </p>
 
 <pre data-filename="manifest.json">
 "bluetooth": {
-  "profiles": [ "1105", "1106" ]
+  "uuids": [ "1105", "1106" ]
 }
 </pre>
 
 <p>
   To only access adapter state, discover nearby devices, and obtain basic
-  information about devices, omit the <code>profiles</code> list.
+  information about devices, omit the <code>uuids</code> list.
 </p>
 
 <h2 id="adapter_state">Obtaining adapter state</h2>

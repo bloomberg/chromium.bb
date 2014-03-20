@@ -569,31 +569,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnConnection) {
   event_router()->RemoveProfile("1234");
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetProfiles) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  BluetoothDevice::ServiceList service_list;
-  service_list.push_back("1234");
-  service_list.push_back("5678");
-
-  EXPECT_CALL(*device1_, GetServices())
-      .WillOnce(testing::Return(service_list));
-
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
-      .WillOnce(testing::Return(device1_.get()));
-
-  // Load and wait for setup
-  ExtensionTestMessageListener listener("ready", true);
-  ASSERT_TRUE(
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth/get_profiles")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  listener.Reply("go");
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
@@ -663,6 +638,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
     .WillRepeatedly(testing::Return(0x240A));
   EXPECT_CALL(*device1_.get(), GetDeviceID())
     .WillRepeatedly(testing::Return(0x0400));
+
+  BluetoothDevice::UUIDList uuids;
+  uuids.push_back("00001105-0000-1000-8000-00805f9b34fb");
+  uuids.push_back("00001106-0000-1000-8000-00805f9b34fb");
+
+  EXPECT_CALL(*device1_.get(), GetUUIDs())
+      .WillOnce(testing::Return(uuids));
 
   devices.push_back(device1_.get());
 

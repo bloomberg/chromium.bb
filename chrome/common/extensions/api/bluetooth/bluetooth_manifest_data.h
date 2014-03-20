@@ -47,10 +47,10 @@ class BluetoothManifestData : public Extension::ManifestData {
 
 // Used for checking bluetooth permission.
 struct BluetoothPermissionRequest {
-  explicit BluetoothPermissionRequest(const std::string& profile_uuid);
+  explicit BluetoothPermissionRequest(const std::string& uuid);
   ~BluetoothPermissionRequest();
 
-  std::string profile_uuid;
+  std::string uuid;
 };
 
 }  // namespace extensions

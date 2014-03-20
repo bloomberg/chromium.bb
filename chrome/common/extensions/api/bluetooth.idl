@@ -58,6 +58,13 @@ namespace bluetooth {
 
     // Indicates whether the device is currently connected to the system.
     boolean? connected;
+
+    // UUIDs of protocols, profiles and services advertised by the device.
+    // For classic Bluetooth devices, this list is obtained from EIR data and
+    // SDP tables. For Low Energy devices, this list is obtained from AD and
+    // GATT primary services. For dual mode devices this may be obtained from
+    // both.
+    DOMString[]? uuids;
   };
 
   dictionary Profile {
@@ -132,24 +139,9 @@ namespace bluetooth {
   callback DevicesCallback = void(Device[] result);
   callback NameCallback = void(DOMString result);
   callback OutOfBandPairingDataCallback = void(OutOfBandPairingData data);
-  callback ProfilesCallback = void(Profile[] result);
   callback ResultCallback = void();
-  callback ServicesCallback = void(ServiceRecord[] result);
   callback SizeCallback = void(long result);
   callback SocketCallback = void(Socket result);
-
-  // Options for the getProfiles function.
-  dictionary GetProfilesOptions {
-    // The remote Bluetooth device to retrieve the exported profiles list from.
-    Device device;
-  };
-
-  // Options for the getServices function.
-  dictionary GetServicesOptions {
-    // The address of the device to inquire about. |deviceAddress| should be
-    // in the format 'XX:XX:XX:XX:XX:XX'.
-    DOMString deviceAddress;
-  };
 
   // Options for the connect function.
   dictionary ConnectOptions {
@@ -217,15 +209,6 @@ namespace bluetooth {
     // |deviceAddress| : Address of device to get.
     // |callback| : Called with the Device object describing the device.
     static void getDevice(DOMString deviceAddress, DeviceCallback callback);
-
-    // Returns the set of exported profiles for the device specified in options.
-    // This function will not initiate a connection to the remote device.
-    static void getProfiles(GetProfilesOptions options,
-                            ProfilesCallback callback);
-
-    // Get a list of services provided by a device.
-    static void getServices(GetServicesOptions options,
-                            ServicesCallback callback);
 
     // Connect to a service on a device.
     // |options|  : The options for the connection.

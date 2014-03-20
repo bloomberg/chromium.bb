@@ -9,7 +9,7 @@
     }
   },
   "bluetooth": {
-    "profiles": [
+    "uuids": [
       "1234",
       "5678"
     ]

@@ -39,9 +39,7 @@ namespace device {
 
 class BluetoothDeviceWinTest : public testing::Test {
  public:
-  BluetoothDeviceWinTest()
-      : error_called_(false),
-        provides_service_with_name_(false) {
+  BluetoothDeviceWinTest() {
     BluetoothTaskManagerWin::DeviceState device_state;
     device_state.name = kDeviceName;
     device_state.address = kDeviceAddress;
@@ -63,81 +61,20 @@ class BluetoothDeviceWinTest : public testing::Test {
     device_.reset(new BluetoothDeviceWin(device_state));
   }
 
-  void GetServiceRecords(
-      const BluetoothDevice::ServiceRecordList& service_record_list) {
-    service_records_ = &service_record_list;
-  }
-
-  void OnError() {
-    error_called_ = true;
-  }
-
-  void SetProvidesServiceWithName(bool provides_service_with_name) {
-    provides_service_with_name_ = provides_service_with_name;
-  }
-
  protected:
   scoped_ptr<BluetoothDevice> device_;
   scoped_ptr<BluetoothDevice> empty_device_;
-  const BluetoothDevice::ServiceRecordList* service_records_;
-  bool error_called_;
-  bool provides_service_with_name_;
 };
 
-TEST_F(BluetoothDeviceWinTest, GetServices) {
-  BluetoothDevice::ServiceList service_list = device_->GetServices();
+TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
+  BluetoothDevice::UUIDList uuids = device_->GetUUIDs();
 
-  EXPECT_EQ(2, service_list.size());
-  EXPECT_STREQ(kTestAudioSdpUuid, service_list[0].c_str());
-  EXPECT_STREQ(kTestVideoSdpUuid, service_list[1].c_str());
-}
+  EXPECT_EQ(2, uuids.size());
+  EXPECT_STREQ(kTestAudioSdpUuid, uuids[0].c_str());
+  EXPECT_STREQ(kTestVideoSdpUuid, uuids[1].c_str());
 
-TEST_F(BluetoothDeviceWinTest, GetServiceRecords) {
-  device_->GetServiceRecords(
-      base::Bind(&BluetoothDeviceWinTest::GetServiceRecords,
-                 base::Unretained(this)),
-      BluetoothDevice::ErrorCallback());
-  ASSERT_TRUE(service_records_ != NULL);
-  EXPECT_EQ(2, service_records_->size());
-  EXPECT_STREQ(kTestAudioSdpUuid, (*service_records_)[0]->uuid().c_str());
-  EXPECT_STREQ(kTestVideoSdpUuid, (*service_records_)[1]->uuid().c_str());
-
-  BluetoothDeviceWin* device_win =
-      reinterpret_cast<BluetoothDeviceWin*>(device_.get());
-
-  const BluetoothServiceRecord* audio_device =
-      device_win->GetServiceRecord(kTestAudioSdpUuid);
-  ASSERT_TRUE(audio_device != NULL);
-  EXPECT_EQ((*service_records_)[0], audio_device);
-
-  const BluetoothServiceRecord* video_device =
-      device_win->GetServiceRecord(kTestVideoSdpUuid);
-  ASSERT_TRUE(video_device != NULL);
-  EXPECT_EQ((*service_records_)[1], video_device);
-
-  const BluetoothServiceRecord* invalid_device =
-      device_win->GetServiceRecord(kTestVideoSdpAddress);
-  EXPECT_TRUE(invalid_device == NULL);
-}
-
-TEST_F(BluetoothDeviceWinTest, ProvidesServiceWithName) {
-  device_->ProvidesServiceWithName(
-      kTestAudioSdpName,
-      base::Bind(&BluetoothDeviceWinTest::SetProvidesServiceWithName,
-                 base::Unretained(this)));
-  EXPECT_TRUE(provides_service_with_name_);
-
-  device_->ProvidesServiceWithName(
-      kTestVideoSdpName,
-      base::Bind(&BluetoothDeviceWinTest::SetProvidesServiceWithName,
-                 base::Unretained(this)));
-  EXPECT_TRUE(provides_service_with_name_);
-
-  device_->ProvidesServiceWithName(
-      "name that does not exist",
-      base::Bind(&BluetoothDeviceWinTest::SetProvidesServiceWithName,
-                 base::Unretained(this)));
-  EXPECT_FALSE(provides_service_with_name_);
+  uuids = empty_device_->GetUUIDs();
+  EXPECT_EQ(0, uuids.size());
 }
 
 }  // namespace device

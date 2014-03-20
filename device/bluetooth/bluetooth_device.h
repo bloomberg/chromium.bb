@@ -15,7 +15,6 @@
 namespace device {
 
 class BluetoothProfile;
-class BluetoothServiceRecord;
 class BluetoothSocket;
 
 struct BluetoothOutOfBandPairingData;
@@ -233,10 +232,14 @@ class BluetoothDevice {
   // were called after the corresponding call to Connect().
   virtual bool IsConnecting() const = 0;
 
-  // Returns the services (as UUID strings) that this device provides.
-  // TODO(youngki): Rename this to GetProfiles().
-  typedef std::vector<std::string> ServiceList;
-  virtual ServiceList GetServices() const = 0;
+  // Returns the set of UUIDs that this device supports. For classic Bluetooth
+  // devices this data is collected from both the EIR data and SDP tables,
+  // for Low Energy devices this data is collected from AD and GATT primary
+  // services, for dual mode devices this may be collected from both./
+  //
+  // All UUIDs are returned in the canonical 128-bit format.
+  typedef std::vector<std::string> UUIDList;
+  virtual UUIDList GetUUIDs() const = 0;
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
@@ -246,25 +249,6 @@ class BluetoothDevice {
   // passed back as an error code argument to this callback.
   // In the success case this callback is not called.
   typedef base::Callback<void(enum ConnectErrorCode)> ConnectErrorCallback;
-
-  // Returns the services (as BluetoothServiceRecord objects) that this device
-  // provides.
-  typedef ScopedVector<BluetoothServiceRecord> ServiceRecordList;
-  typedef base::Callback<void(const ServiceRecordList&)> ServiceRecordsCallback;
-  virtual void GetServiceRecords(const ServiceRecordsCallback& callback,
-                                 const ErrorCallback& error_callback) = 0;
-
-  // Indicates whether this device provides the given service.
-  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const;
-
-  // The ProvidesServiceCallback is used by ProvidesServiceWithName to indicate
-  // whether or not a matching service was found.
-  typedef base::Callback<void(bool)> ProvidesServiceCallback;
-
-  // Indicates whether this device provides the given service.
-  virtual void ProvidesServiceWithName(
-      const std::string& name,
-      const ProvidesServiceCallback& callback) = 0;
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.

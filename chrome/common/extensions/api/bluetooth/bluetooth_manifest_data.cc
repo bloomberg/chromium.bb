@@ -45,8 +45,8 @@ scoped_ptr<BluetoothManifestData> BluetoothManifestData::FromValue(
 }
 
 BluetoothPermissionRequest::BluetoothPermissionRequest(
-    const std::string& profile_uuid)
-    : profile_uuid(profile_uuid) {}
+    const std::string& uuid)
+    : uuid(uuid) {}
 
 BluetoothPermissionRequest::~BluetoothPermissionRequest() {}
 

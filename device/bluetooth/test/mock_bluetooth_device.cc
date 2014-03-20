@@ -50,8 +50,8 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, ExpectingConfirmation())
       .WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetServices())
-      .WillByDefault(testing::Return(service_list_));
+  ON_CALL(*this, GetUUIDs())
+      .WillByDefault(testing::Return(uuids_));
 }
 
 MockBluetoothDevice::~MockBluetoothDevice() {}

@@ -34,13 +34,7 @@ class BluetoothDeviceChromeOS
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectable() const OVERRIDE;
   virtual bool IsConnecting() const OVERRIDE;
-  virtual ServiceList GetServices() const OVERRIDE;
-  virtual void GetServiceRecords(
-      const ServiceRecordsCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual void ProvidesServiceWithName(
-      const std::string& name,
-      const ProvidesServiceCallback& callback) OVERRIDE;
+  virtual UUIDList GetUUIDs() const OVERRIDE;
   virtual bool ExpectingPinCode() const OVERRIDE;
   virtual bool ExpectingPasskey() const OVERRIDE;
   virtual bool ExpectingConfirmation() const OVERRIDE;

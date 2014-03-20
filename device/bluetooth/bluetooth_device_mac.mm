@@ -115,37 +115,15 @@ bool BluetoothDeviceMac::IsConnecting() const {
   return false;
 }
 
-// TODO(youngki): BluetoothServiceRecord is deprecated; implement this method
+// TODO(keybuk): BluetoothServiceRecord is deprecated; implement this method
 // without using BluetoothServiceRecord.
-BluetoothDevice::ServiceList BluetoothDeviceMac::GetServices() const {
-  ServiceList service_uuids;
+BluetoothDevice::UUIDList BluetoothDeviceMac::GetUUIDs() const {
+  UUIDList uuids;
   for (IOBluetoothSDPServiceRecord* service in [device_ services]) {
     BluetoothServiceRecordMac service_record(service);
-    service_uuids.push_back(service_record.uuid());
+    uuids.push_back(service_record.uuid());
   }
-  return service_uuids;
-}
-
-// NOTE(youngki): This method is deprecated; it will be removed soon.
-void BluetoothDeviceMac::GetServiceRecords(
-    const ServiceRecordsCallback& callback,
-    const ErrorCallback& error_callback) {
-  ServiceRecordList service_record_list;
-  for (IOBluetoothSDPServiceRecord* service in [device_ services]) {
-    BluetoothServiceRecord* service_record =
-        new BluetoothServiceRecordMac(service);
-    service_record_list.push_back(service_record);
-  }
-
-  callback.Run(service_record_list);
-}
-
-// NOTE(youngki): This method is deprecated; it will be removed soon.
-void BluetoothDeviceMac::ProvidesServiceWithName(
-    const std::string& name,
-    const ProvidesServiceCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  return uuids;
 }
 
 bool BluetoothDeviceMac::ExpectingPinCode() const {

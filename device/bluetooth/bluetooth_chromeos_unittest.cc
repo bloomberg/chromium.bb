@@ -1446,7 +1446,7 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
   // Non HID devices are always connectable.
   EXPECT_TRUE(devices[0]->IsConnectable());
 
-  BluetoothDevice::ServiceList uuids = devices[0]->GetServices();
+  BluetoothDevice::UUIDList uuids = devices[0]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
   EXPECT_EQ(uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
   EXPECT_EQ(uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
@@ -1521,7 +1521,7 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
 
-  BluetoothDevice::ServiceList uuids = devices[0]->GetServices();
+  BluetoothDevice::UUIDList uuids = devices[0]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
   ASSERT_EQ(uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
   ASSERT_EQ(uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
@@ -1544,7 +1544,7 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   EXPECT_EQ(devices[0], observer.last_device_);
 
   // Fetching the value should give the new one.
-  uuids = devices[0]->GetServices();
+  uuids = devices[0]->GetUUIDs();
   ASSERT_EQ(5U, uuids.size());
   EXPECT_EQ(uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
   EXPECT_EQ(uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
@@ -1698,7 +1698,7 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   EXPECT_TRUE(properties->trusted.value());
 
   // Verify is a HID device and is not connectable.
-  BluetoothDevice::ServiceList uuids = device->GetServices();
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   ASSERT_EQ(1U, uuids.size());
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
   EXPECT_FALSE(device->IsConnectable());
@@ -1888,7 +1888,7 @@ TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device and is connectable.
-  BluetoothDevice::ServiceList uuids = device->GetServices();
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   ASSERT_EQ(1U, uuids.size());
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
   EXPECT_TRUE(device->IsConnectable());
@@ -1944,7 +1944,7 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPinCode) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device and is connectable.
-  BluetoothDevice::ServiceList uuids = device->GetServices();
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   ASSERT_EQ(1U, uuids.size());
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
   EXPECT_TRUE(device->IsConnectable());
@@ -2020,7 +2020,7 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPasskey) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device.
-  BluetoothDevice::ServiceList uuids = device->GetServices();
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   ASSERT_EQ(1U, uuids.size());
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
 
@@ -2078,7 +2078,7 @@ TEST_F(BluetoothChromeOSTest, PairRequestPinCode) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is not a HID device.
-  BluetoothDevice::ServiceList uuids = device->GetServices();
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   ASSERT_EQ(0U, uuids.size());
 
   // Non HID devices are always connectable.

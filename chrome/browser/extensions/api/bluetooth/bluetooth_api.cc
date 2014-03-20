@@ -56,7 +56,6 @@ const char kProfileAlreadyRegistered[] =
     "This profile has already been registered";
 const char kProfileNotFound[] = "Profile not found: invalid uuid";
 const char kProfileRegistrationFailed[] = "Profile registration failed";
-const char kServiceDiscoveryFailed[] = "Service discovery failed";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
 const char kStartDiscoveryFailed[] = "Starting discovery failed";
 const char kStopDiscoveryFailed[] = "Failed to stop discovery";
@@ -69,8 +68,6 @@ namespace Connect = extensions::api::bluetooth::Connect;
 namespace Disconnect = extensions::api::bluetooth::Disconnect;
 namespace GetDevice = extensions::api::bluetooth::GetDevice;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
-namespace GetProfiles = extensions::api::bluetooth::GetProfiles;
-namespace GetServices = extensions::api::bluetooth::GetServices;
 namespace Read = extensions::api::bluetooth::Read;
 namespace RemoveProfile = extensions::api::bluetooth::RemoveProfile;
 namespace SetOutOfBandPairingData =
@@ -239,37 +236,6 @@ bool BluetoothRemoveProfileFunction::RunImpl() {
   return true;
 }
 
-// TODO(youngki): Implement.
-bool BluetoothGetProfilesFunction::DoWork(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  scoped_ptr<GetProfiles::Params> params(GetProfiles::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const bluetooth::GetProfilesOptions& options = params->options;
-
-  BluetoothDevice* device = adapter->GetDevice(options.device.address);
-  if (!device) {
-    SetError(kInvalidDevice);
-    SendResponse(false);
-    return false;
-  }
-
-  BluetoothDevice::ServiceList service_list = device->GetServices();
-
-  base::ListValue* profiles = new base::ListValue;
-  for (BluetoothDevice::ServiceList::const_iterator iter = service_list.begin();
-       iter != service_list.end();
-       ++iter) {
-    bluetooth::Profile api_profile;
-    api_profile.uuid = *iter;
-    profiles->Append(api_profile.ToValue().release());
-  }
-
-  SetResult(profiles);
-  SendResponse(true);
-
-  return true;
-}
-
 bool BluetoothGetAdapterStateFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   bluetooth::AdapterState state;
@@ -324,53 +290,6 @@ bool BluetoothGetDeviceFunction::DoWork(
   }
 
   return false;
-}
-
-void BluetoothGetServicesFunction::GetServiceRecordsCallback(
-    base::ListValue* services,
-    const BluetoothDevice::ServiceRecordList& records) {
-  for (BluetoothDevice::ServiceRecordList::const_iterator i = records.begin();
-      i != records.end(); ++i) {
-    const BluetoothServiceRecord& record = **i;
-    bluetooth::ServiceRecord api_record;
-    api_record.name = record.name();
-    if (!record.uuid().empty())
-      api_record.uuid.reset(new std::string(record.uuid()));
-    services->Append(api_record.ToValue().release());
-  }
-
-  SendResponse(true);
-}
-
-void BluetoothGetServicesFunction::OnErrorCallback() {
-  SetError(kServiceDiscoveryFailed);
-  SendResponse(false);
-}
-
-bool BluetoothGetServicesFunction::DoWork(
-    scoped_refptr<BluetoothAdapter> adapter) {
-  scoped_ptr<GetServices::Params> params(GetServices::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const bluetooth::GetServicesOptions& options = params->options;
-
-  BluetoothDevice* device = adapter->GetDevice(options.device_address);
-  if (!device) {
-    SetError(kInvalidDevice);
-    SendResponse(false);
-    return false;
-  }
-
-  base::ListValue* services = new base::ListValue;
-  SetResult(services);
-
-  device->GetServiceRecords(
-      base::Bind(&BluetoothGetServicesFunction::GetServiceRecordsCallback,
-                 this,
-                 services),
-      base::Bind(&BluetoothGetServicesFunction::OnErrorCallback,
-                 this));
-
-  return true;
 }
 
 void BluetoothConnectFunction::OnSuccessCallback() {

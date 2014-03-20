@@ -174,17 +174,4 @@ bool BluetoothDevice::IsPairable() const {
   return true;
 }
 
-bool BluetoothDevice::ProvidesServiceWithUUID(
-    const std::string& uuid) const {
-  std::string canonical_uuid = bluetooth_utils::CanonicalUuid(uuid);
-  BluetoothDevice::ServiceList services = GetServices();
-  for (BluetoothDevice::ServiceList::const_iterator iter = services.begin();
-       iter != services.end();
-       ++iter) {
-    if (bluetooth_utils::CanonicalUuid(*iter) == canonical_uuid)
-      return true;
-  }
-  return false;
-}
-
 }  // namespace device

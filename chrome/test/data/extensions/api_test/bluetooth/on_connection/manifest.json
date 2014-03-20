@@ -8,5 +8,5 @@
       "scripts": ["runtest.js"]
     }
   },
-  "bluetooth": { "profiles": ["1234"] }
+  "bluetooth": { "uuids": ["1234"] }
 }

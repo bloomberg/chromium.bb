@@ -19,7 +19,7 @@
   "bluetooth": {
     "documentation": "manifest/bluetooth.html",
     "example": {
-      "profiles": [ "1105", "1006" ]
+      "uuids": [ "1105", "1006" ]
     }
   },
    "browser_action": {
