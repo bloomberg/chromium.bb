@@ -49,6 +49,7 @@
 
 #define MAX_FREERDP_FDS 32
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+#define RDP_MODE_FREQ 60 * 1000
 
 struct rdp_compositor_config {
 	int width;
@@ -58,7 +59,6 @@ struct rdp_compositor_config {
 	char *rdp_key;
 	char *server_cert;
 	char *server_key;
-	char *extra_modes;
 	int env_socket;
 };
 
@@ -121,7 +121,6 @@ rdp_compositor_config_init(struct rdp_compositor_config *config) {
 	config->rdp_key = NULL;
 	config->server_cert = NULL;
 	config->server_key = NULL;
-	config->extra_modes = NULL;
 	config->env_socket = 0;
 }
 
@@ -320,11 +319,13 @@ rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
 	pixman_renderer_output_set_buffer(output_base, output->shadow_surface);
 	ec->renderer->repaint_output(&output->base, damage);
 
-	wl_list_for_each(outputPeer, &output->peers, link) {
-		if ((outputPeer->flags & RDP_PEER_ACTIVATED) &&
-				(outputPeer->flags & RDP_PEER_OUTPUT_ENABLED))
-		{
-			rdp_peer_refresh_region(damage, outputPeer->peer);
+	if (pixman_region32_not_empty(damage)) {
+		wl_list_for_each(outputPeer, &output->peers, link) {
+			if ((outputPeer->flags & RDP_PEER_ACTIVATED) &&
+					(outputPeer->flags & RDP_PEER_OUTPUT_ENABLED))
+			{
+				rdp_peer_refresh_region(damage, outputPeer->peer);
+			}
 		}
 	}
 
@@ -352,16 +353,29 @@ finish_frame_handler(void *data)
 	return 1;
 }
 
+static struct weston_mode *
+rdp_insert_new_mode(struct weston_output *output, int width, int height, int rate) {
+	struct weston_mode *ret;
+	ret = zalloc(sizeof *ret);
+	if (!ret)
+		return NULL;
+	ret->width = width;
+	ret->height = height;
+	ret->refresh = rate;
+	wl_list_insert(&output->mode_list, &ret->link);
+	return ret;
+}
 
 static struct weston_mode *
-find_matching_mode(struct weston_output *output, struct weston_mode *target) {
+ensure_matching_mode(struct weston_output *output, struct weston_mode *target) {
 	struct weston_mode *local;
 
 	wl_list_for_each(local, &output->mode_list, link) {
-		if((local->width == target->width) && (local->height == target->height))
+		if ((local->width == target->width) && (local->height == target->height))
 			return local;
 	}
-	return 0;
+
+	return rdp_insert_new_mode(output, target->width, target->height, RDP_MODE_FREQ);
 }
 
 static int
@@ -372,13 +386,13 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
 	pixman_image_t *new_shadow_buffer;
 	struct weston_mode *local_mode;
 
-	local_mode = find_matching_mode(output, target_mode);
-	if(!local_mode) {
+	local_mode = ensure_matching_mode(output, target_mode);
+	if (!local_mode) {
 		weston_log("mode %dx%d not available\n", target_mode->width, target_mode->height);
 		return -ENOENT;
 	}
 
-	if(local_mode == output->current_mode)
+	if (local_mode == output->current_mode)
 		return 0;
 
 	output->current_mode->flags &= ~WL_OUTPUT_MODE_CURRENT;
@@ -398,7 +412,10 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
 
 	wl_list_for_each(rdpPeer, &rdpOutput->peers, link) {
 		settings = rdpPeer->peer->settings;
-		if(!settings->DesktopResize) {
+		if (settings->DesktopWidth == target_mode->width && settings->DesktopHeight == target_mode->height)
+			continue;
+
+		if (!settings->DesktopResize) {
 			/* too bad this peer does not support desktop resize */
 			rdpPeer->peer->Close(rdpPeer->peer);
 		} else {
@@ -411,49 +428,12 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
 }
 
 static int
-parse_extra_modes(const char *modes_str, struct rdp_output *output) {
-	const char *startAt = modes_str;
-	const char *nextPos;
-	int w, h;
-	struct weston_mode *mode;
-
-	while(startAt && *startAt) {
-		nextPos = strchr(startAt, 'x');
-		if(!nextPos)
-			return -1;
-
-		w = strtoul(startAt, NULL, 0);
-		startAt = nextPos + 1;
-		if(!*startAt)
-			return -1;
-
-		h = strtoul(startAt, NULL, 0);
-
-		if(!w || (w > 3000) || !h || (h > 3000))
-			return -1;
-		mode = malloc(sizeof *mode);
-		if(!mode)
-			return -1;
-
-		mode->width = w;
-		mode->height = h;
-		mode->refresh = 5;
-		mode->flags = 0;
-		wl_list_insert(&output->base.mode_list, &mode->link);
-
-		startAt = strchr(startAt, ',');
-		if(startAt && *startAt == ',')
-			startAt++;
-	}
-	return 0;
-}
-static int
-rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
-		const char *extraModes)
+rdp_compositor_create_output(struct rdp_compositor *c, int width, int height)
 {
 	struct rdp_output *output;
 	struct wl_event_loop *loop;
-	struct weston_mode *currentMode, *next;
+	struct weston_mode *currentMode;
+	struct weston_mode initMode;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
@@ -462,19 +442,14 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 	wl_list_init(&output->peers);
 	wl_list_init(&output->base.mode_list);
 
-	currentMode = malloc(sizeof *currentMode);
-	if(!currentMode)
-		goto out_free_output;
-	currentMode->flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	currentMode->width = width;
-	currentMode->height = height;
-	currentMode->refresh = 5;
-	wl_list_insert(&output->base.mode_list, &currentMode->link);
+	initMode.flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	initMode.width = width;
+	initMode.height = height;
+	initMode.refresh = RDP_MODE_FREQ;
 
-	if(parse_extra_modes(extraModes, output) < 0) {
-		weston_log("invalid extra modes\n");
-		goto out_free_output_and_modes;
-	}
+	currentMode = ensure_matching_mode(&output->base, &initMode);
+	if (!currentMode)
+		goto out_free_output;
 
 	output->base.current_mode = output->base.native_mode = currentMode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
@@ -513,9 +488,6 @@ out_shadow_surface:
 	pixman_image_unref(output->shadow_surface);
 out_output:
 	weston_output_destroy(&output->base);
-out_free_output_and_modes:
-	wl_list_for_each_safe(currentMode, next, &output->base.mode_list, link)
-		free(currentMode);
 out_free_output:
 	free(output);
 	return -1;
@@ -599,7 +571,7 @@ static void
 rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 {
 	int i;
-	if(!context)
+	if (!context)
 		return;
 
 	wl_list_remove(&context->item.link);
@@ -608,7 +580,7 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 			wl_event_source_remove(context->events[i]);
 	}
 
-	if(context->item.flags & RDP_PEER_ACTIVATED) {
+	if (context->item.flags & RDP_PEER_ACTIVATED) {
 		weston_seat_release_keyboard(&context->item.seat);
 		weston_seat_release_pointer(&context->item.seat);
 		weston_seat_release(&context->item.seat);
@@ -704,7 +676,7 @@ xf_peer_post_connect(freerdp_peer* client)
 		struct weston_mode *target_mode;
 		new_mode.width = (int)settings->DesktopWidth;
 		new_mode.height = (int)settings->DesktopHeight;
-		target_mode = find_matching_mode(&output->base, &new_mode);
+		target_mode = ensure_matching_mode(&output->base, &new_mode);
 		if (!target_mode) {
 			weston_log("client mode not found\n");
 			return FALSE;
@@ -719,19 +691,19 @@ xf_peer_post_connect(freerdp_peer* client)
 			settings->KeyboardFunctionKey);
 
 	memset(&xkbRuleNames, 0, sizeof(xkbRuleNames));
-	if(settings->KeyboardType <= 7)
+	if (settings->KeyboardType <= 7)
 		xkbRuleNames.model = rdp_keyboard_types[settings->KeyboardType];
 	for(i = 0; rdp_keyboards[i].xkbLayout; i++) {
-		if(rdp_keyboards[i].rdpLayoutCode == settings->KeyboardLayout) {
+		if (rdp_keyboards[i].rdpLayoutCode == settings->KeyboardLayout) {
 			xkbRuleNames.layout = rdp_keyboards[i].xkbLayout;
 			break;
 		}
 	}
 
 	keymap = NULL;
-	if(xkbRuleNames.layout) {
+	if (xkbRuleNames.layout) {
 		xkbContext = xkb_context_new(0);
-		if(!xkbContext) {
+		if (!xkbContext) {
 			weston_log("unable to create a xkb_context\n");
 			return FALSE;
 		}
@@ -779,7 +751,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpCompositor->output;
-		if(x < output->base.width && y < output->base.height) {
+		if (x < output->base.width && y < output->base.height) {
 			wl_x = wl_fixed_from_int((int)x);
 			wl_y = wl_fixed_from_int((int)y);
 			notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
@@ -794,7 +766,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 	else if (flags & PTR_FLAGS_BUTTON3)
 		button = BTN_MIDDLE;
 
-	if(button) {
+	if (button) {
 		notify_button(&peerContext->item.seat, weston_compositor_get_time(), button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
@@ -824,7 +796,7 @@ xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 	struct rdp_output *output;
 
 	output = peerContext->rdpCompositor->output;
-	if(x < output->base.width && y < output->base.height) {
+	if (x < output->base.width && y < output->base.height) {
 		wl_x = wl_fixed_from_int((int)x);
 		wl_y = wl_fixed_from_int((int)y);
 		notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
@@ -882,13 +854,13 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 		notify = 1;
 	}
 
-	if(notify) {
+	if (notify) {
 		full_code = code;
-		if(flags & KBD_FLAGS_EXTENDED)
+		if (flags & KBD_FLAGS_EXTENDED)
 			full_code |= KBD_FLAGS_EXTENDED;
 
 		vk_code = GetVirtualKeyCodeFromVirtualScanCode(full_code, 4);
-		if(vk_code > 0xff) {
+		if (vk_code > 0xff) {
 			weston_log("invalid vk_code %x", vk_code);
 			return;
 		}
@@ -912,7 +884,7 @@ xf_input_unicode_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 static void
 xf_suppress_output(rdpContext *context, BYTE allow, RECTANGLE_16 *area) {
 	RdpPeerContext *peerContext = (RdpPeerContext *)context;
-	if(allow)
+	if (allow)
 		peerContext->item.flags |= RDP_PEER_OUTPUT_ENABLED;
 	else
 		peerContext->item.flags &= (~RDP_PEER_OUTPUT_ENABLED);
@@ -940,7 +912,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 
 	settings = client->settings;
 	settings->RdpKeyFile = c->rdp_key;
-	if(c->tls_enabled) {
+	if (c->tls_enabled) {
 		settings->CertificateFile = c->server_cert;
 		settings->PrivateKeyFile = c->server_key;
 	} else {
@@ -1018,11 +990,11 @@ rdp_compositor_create(struct wl_display *display,
 	c->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
 
 	/* activate TLS only if certificate/key are available */
-	if(config->server_cert && config->server_key) {
+	if (config->server_cert && config->server_key) {
 		weston_log("TLS support activated\n");
 		c->server_cert = strdup(config->server_cert);
 		c->server_key = strdup(config->server_key);
-		if(!c->server_cert || !c->server_key)
+		if (!c->server_cert || !c->server_key)
 			goto err_free_strings;
 		c->tls_enabled = 1;
 	}
@@ -1030,14 +1002,14 @@ rdp_compositor_create(struct wl_display *display,
 	if (pixman_renderer_init(&c->base) < 0)
 		goto err_compositor;
 
-	if (rdp_compositor_create_output(c, config->width, config->height, config->extra_modes) < 0)
+	if (rdp_compositor_create_output(c, config->width, config->height) < 0)
 		goto err_compositor;
 
-	if(!config->env_socket) {
+	if (!config->env_socket) {
 		c->listener = freerdp_listener_new();
 		c->listener->PeerAccepted = rdp_incoming_peer;
 		c->listener->param4 = c;
-		if(!c->listener->Open(c->listener, config->bind_address, config->port)) {
+		if (!c->listener->Open(c->listener, config->bind_address, config->port)) {
 			weston_log("unable to bind rdp socket\n");
 			goto err_listener;
 		}
@@ -1047,13 +1019,13 @@ rdp_compositor_create(struct wl_display *display,
 	} else {
 		/* get the socket from RDP_FD var */
 		fd_str = getenv("RDP_FD");
-		if(!fd_str) {
+		if (!fd_str) {
 			weston_log("RDP_FD env variable not set");
 			goto err_output;
 		}
 
 		fd = strtoul(fd_str, NULL, 10);
-		if(rdp_peer_init(freerdp_peer_new(fd), c))
+		if (rdp_peer_init(freerdp_peer_new(fd), c))
 			goto err_output;
 	}
 
@@ -1066,11 +1038,11 @@ err_output:
 err_compositor:
 	weston_compositor_shutdown(&c->base);
 err_free_strings:
-	if(c->rdp_key)
+	if (c->rdp_key)
 		free(c->rdp_key);
-	if(c->server_cert)
+	if (c->server_cert)
 		free(c->server_cert);
-	if(c->server_key)
+	if (c->server_key)
 		free(c->server_key);
 err_free:
 	free(c);
@@ -1093,7 +1065,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
 		{ WESTON_OPTION_INTEGER, "width", 0, &config.width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
-		{ WESTON_OPTION_STRING,  "extra-modes", 0, &config.extra_modes },
 		{ WESTON_OPTION_STRING,  "address", 0, &config.bind_address },
 		{ WESTON_OPTION_INTEGER, "port", 0, &config.port },
 		{ WESTON_OPTION_STRING,  "rdp4-key", 0, &config.rdp_key },

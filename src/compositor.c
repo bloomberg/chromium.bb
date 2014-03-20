@@ -4056,7 +4056,6 @@ usage(int error_code)
        "Options for rdp-backend.so:\n\n"
        "  --width=WIDTH\t\tWidth of desktop\n"
        "  --height=HEIGHT\tHeight of desktop\n"
-       "  --extra-modes=MODES\t\n"
        "  --env-socket=SOCKET\tUse that socket as peer connection\n"
        "  --address=ADDR\tThe address to bind\n"
        "  --port=PORT\tThe port to listen on\n"
