@@ -174,6 +174,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool DisableAutoResizeMode(int new_width, int new_height);
   void SetMockDeviceMotion(gin::Arguments* args);
   void SetMockDeviceOrientation(gin::Arguments* args);
+  void SetMockScreenOrientation(const std::string& orientation);
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
@@ -362,6 +363,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockDeviceMotion)
       .SetMethod("setMockDeviceOrientation",
                  &TestRunnerBindings::SetMockDeviceOrientation)
+      .SetMethod("setMockScreenOrientation",
+                 &TestRunnerBindings::SetMockScreenOrientation)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didNotAcquirePointerLock",
@@ -852,6 +855,13 @@ void TestRunnerBindings::SetMockDeviceOrientation(gin::Arguments* args) {
                                     has_beta, beta,
                                     has_gamma, gamma,
                                     has_absolute, absolute);
+}
+
+void TestRunnerBindings::SetMockScreenOrientation(const std::string& orientation) {
+  if (!runner_)
+    return;
+
+  runner_->SetMockScreenOrientation(orientation);
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
@@ -2185,6 +2195,22 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
   orientation.absolute = absolute;
 
   delegate_->setDeviceOrientationData(orientation);
+}
+
+void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
+  blink::WebScreenOrientation orientation;
+
+  if (orientation_str == "portrait-primary") {
+    orientation = WebScreenOrientationPortraitPrimary;
+  } else if (orientation_str == "portrait-secondary") {
+    orientation = WebScreenOrientationPortraitSecondary;
+  } else if (orientation_str == "landscape-primary") {
+    orientation = WebScreenOrientationLandscapePrimary;
+  } else if (orientation_str == "landscape-secondary") {
+    orientation = WebScreenOrientationLandscapeSecondary;
+  }
+
+  delegate_->setScreenOrientation(orientation);
 }
 
 void TestRunner::DidAcquirePointerLock() {

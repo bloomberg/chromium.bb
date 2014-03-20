@@ -91,6 +91,11 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
       SetMockDeviceOrientationDataForTesting(data);
 }
 
+void SetMockScreenOrientation(const blink::WebScreenOrientation& orientation) {
+  RendererWebKitPlatformSupportImpl::
+      SetMockScreenOrientationForTesting(orientation);
+}
+
 void EnableRendererLayoutTestMode() {
   RenderThreadImpl::current()->set_layout_test_mode(true);
 }

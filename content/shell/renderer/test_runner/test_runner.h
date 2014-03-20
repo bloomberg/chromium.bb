@@ -296,6 +296,8 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
                                 bool has_gamma, double gamma,
                                 bool has_absolute, bool absolute);
 
+  void SetMockScreenOrientation(const std::string& orientation);
+
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();

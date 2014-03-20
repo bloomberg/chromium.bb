@@ -69,6 +69,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/gfx/color_profile.h"
@@ -141,6 +142,8 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<blink::WebScreenOrientation>::Leaky
+    g_test_screen_orientation_value = LAZY_INSTANCE_INITIALIZER;
 
 //------------------------------------------------------------------------------
 
@@ -1113,6 +1116,21 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 
 void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
     blink::WebScreenOrientationListener* listener) {
+  if (!(g_test_screen_orientation_value == 0)) {
+    if (!listener)
+      return;
+
+    // When testing, we only pretend that the screen orientation is now set to
+    // g_test_screen_orientation_value.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &blink::WebScreenOrientationListener::didChangeScreenOrientation,
+            base::Unretained(listener),
+            g_test_screen_orientation_value.Get()));
+    return;
+  }
+
   if (!screen_orientation_dispatcher_) {
     screen_orientation_dispatcher_.reset(
         new ScreenOrientationDispatcher(RenderThread::Get()));
@@ -1123,11 +1141,23 @@ void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
 
 void RendererWebKitPlatformSupportImpl::lockOrientation(
     blink::WebScreenOrientations orientations) {
+  // No-op if we are currently using mock values.
+  if (!(g_test_screen_orientation_value == 0))
+    return;
   RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientations));
 }
 
 void RendererWebKitPlatformSupportImpl::unlockOrientation() {
+  // No-op if we are currently using mock values.
+  if (!(g_test_screen_orientation_value == 0))
+    return;
   RenderThread::Get()->Send(new ScreenOrientationHostMsg_Unlock);
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(
+    blink::WebScreenOrientation orientation) {
+  g_test_screen_orientation_value.Get() = orientation;
 }
 
 //------------------------------------------------------------------------------

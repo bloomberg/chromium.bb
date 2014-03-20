@@ -83,6 +83,7 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
+using blink::WebScreenOrientation;
 using blink::WebTestingSupport;
 using blink::WebVector;
 using blink::WebView;
@@ -242,6 +243,11 @@ void WebKitTestRunner::setDeviceMotionData(const WebDeviceMotionData& data) {
 void WebKitTestRunner::setDeviceOrientationData(
     const WebDeviceOrientationData& data) {
   SetMockDeviceOrientationData(data);
+}
+
+void WebKitTestRunner::setScreenOrientation(
+    const WebScreenOrientation& orientation) {
+  SetMockScreenOrientation(orientation);
 }
 
 void WebKitTestRunner::printMessage(const std::string& message) {

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -44,6 +45,9 @@ public:
     virtual void setDeviceMotionData(const blink::WebDeviceMotionData&) = 0;
     // Set data to return when registering via Platform::setDeviceOrientationListener().
     virtual void setDeviceOrientationData(const blink::WebDeviceOrientationData&) = 0;
+
+    // Set orientation to set when registering via Platform::setScreenOrientationListener().
+    virtual void setScreenOrientation(const blink::WebScreenOrientation&) = 0;
 
     // Add a message to the text dump for the layout test.
     virtual void printMessage(const std::string& message) = 0;
