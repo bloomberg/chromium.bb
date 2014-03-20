@@ -12,14 +12,6 @@
 namespace mojo {
 namespace shell {
 
-namespace {
-
-void TrivialPostedTask() {
-  VLOG(2) << "TrivialPostedTask()";
-}
-
-}  // namespace
-
 TestChildProcess::TestChildProcess() {
 }
 
@@ -29,9 +21,7 @@ TestChildProcess::~TestChildProcess() {
 void TestChildProcess::Main() {
   VLOG(2) << "TestChildProcess::Main()";
 
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&TrivialPostedTask));
-  base::MessageLoop::current()->QuitWhenIdle();
+  CHECK(!base::MessageLoop::current());
 }
 
 }  // namespace shell

@@ -50,10 +50,6 @@ scoped_ptr<ChildProcess> ChildProcess::Create(const CommandLine& command_line) {
   return rv.Pass();
 }
 
-void ChildProcess::Run() {
-  Main();
-}
-
 ChildProcess::ChildProcess() {
 }
 

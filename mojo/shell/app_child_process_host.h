@@ -9,6 +9,11 @@
 #include "mojo/shell/child_process_host.h"
 
 namespace mojo {
+
+namespace embedder {
+struct ChannelInfo;
+}
+
 namespace shell {
 
 // Note: After |Start()|, this object must remain alive until the delegate's
@@ -28,7 +33,12 @@ class AppChildProcessHost : public ChildProcessHost,
   // |ChildProcessHost::Delegate| method:
   virtual void DidStart(bool success) OVERRIDE;
 
+  // Callback for |embedder::CreateChannel()|.
+  void DidCreateChannel(embedder::ChannelInfo* channel_info);
+
   AppDelegate* const app_delegate_;
+
+  embedder::ChannelInfo* channel_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AppChildProcessHost);
 };

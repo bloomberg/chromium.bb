@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/time/time.h"
 #include "mojo/common/mojo_common_export.h"
@@ -22,6 +23,10 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
  public:
   MessagePumpMojo();
   virtual ~MessagePumpMojo();
+
+  // Static factory function (for using with |base::Thread::Options|, wrapped
+  // using |base::Bind()|).
+  static scoped_ptr<base::MessagePump> Create();
 
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
   // handler can be registered for a specified handle.

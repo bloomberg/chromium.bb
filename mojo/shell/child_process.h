@@ -27,17 +27,15 @@ class ChildProcess {
     TYPE_APP
   };
 
-  // Returns null if the command line doesn't indicate that this is a child
-  // process. |main()| should call this, and if it returns non-null it should
-  // call |Run()| inside a main message loop.
-  static scoped_ptr<ChildProcess> Create(const base::CommandLine& command_line);
-
-  void Run();
-
   virtual ~ChildProcess();
 
+  // Returns null if the command line doesn't indicate that this is a child
+  // process. |main()| should call this, and if it returns non-null it should
+  // call |Main()| (without a message loop on the current thread).
+  static scoped_ptr<ChildProcess> Create(const base::CommandLine& command_line);
+
   // To be implemented by subclasses. This is the "entrypoint" for a child
-  // process.
+  // process. Run with no message loop for the main thread.
   virtual void Main() = 0;
 
  protected:
@@ -48,7 +46,7 @@ class ChildProcess {
   }
 
  private:
-  // Available in |Main()| (after |Run()|).
+  // Available in |Main()| (after a successful |Create()|).
   embedder::ScopedPlatformHandle platform_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);

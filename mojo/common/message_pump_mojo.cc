@@ -42,6 +42,11 @@ MessagePumpMojo::MessagePumpMojo() : run_state_(NULL), next_handler_id_(0) {
 MessagePumpMojo::~MessagePumpMojo() {
 }
 
+// static
+scoped_ptr<base::MessagePump> MessagePumpMojo::Create() {
+  return scoped_ptr<MessagePump>(new MessagePumpMojo());
+}
+
 void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
                                  const Handle& handle,
                                  MojoWaitFlags wait_flags,
