@@ -841,6 +841,15 @@
         ['OS=="win"', {
           'use_mojo%': 1,
         }],
+
+        # By default, use ICU data file (icudtl.dat) on all platforms
+        # except when building Android WebView.
+        # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
+        ['android_webview_build==0', {
+          'icu_use_data_file_flag%' : 1,
+        }, {
+          'icu_use_data_file_flag%' : 0,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -993,6 +1002,7 @@
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_webview_build%': '<(android_webview_build)',
+    'icu_use_data_file_flag%': '<(icu_use_data_file_flag)',
     'gyp_managed_install%': 0,
     'create_standalone_apk%': 1,
     'enable_app_list%': '<(enable_app_list)',
@@ -1295,9 +1305,6 @@
     # IPC fuzzer is disabled by default.
     'enable_ipc_fuzzer%': 0,
 
-    # By default, use ICU data file (icudtl.dat) on all platforms.
-    # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
-    'icu_use_data_file_flag%' : 1,
 
     # Force disable libstdc++ debug mode.
     'disable_glibcxx_debug%': 0,
@@ -1381,6 +1388,7 @@
       ['OS=="ios"', {
         'disable_nacl%': 1,
         'enable_background%': 0,
+        'icu_use_data_file_flag%': 1,
         'input_speech%': 0,
         'use_system_libxml%': 1,
         'use_system_sqlite%': 1,
