@@ -1330,7 +1330,7 @@
           ['OS=="android"', {
             # We directly set the gcc_version since we know what we use.
             'conditions': [
-              ['target_arch=="x64"', {
+              ['target_arch=="x64" or target_arch=="arm64"', {
                 'gcc_version%': 48,
               }, {
                 'gcc_version%': 46,
@@ -1460,13 +1460,15 @@
           'conditions': [
             ['target_arch == "ia32"', {
               'android_app_abi%': 'x86',
+              'android_gdbserver_executable%': 'gdbserver',
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-x86',
               'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
             ['target_arch == "x64"', {
               'android_app_abi%': 'x86_64',
-              'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86_64/gdbserver/gdbserver',
+              'android_gdbserver_executable%': 'gdbserver64',
+              'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86_64/gdbserver/gdbserver64',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-19/arch-x86_64',
               'android_toolchain%': '<(android_ndk_root)/toolchains/x86_64-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
@@ -1478,12 +1480,21 @@
                   'android_app_abi%': 'armeabi-v7a',
                 }],
               ],
+              'android_gdbserver_executable%': 'gdbserver',
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-arm/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-arm',
               'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
+            ['target_arch == "arm64"', {
+              'android_app_abi%': 'arm64',
+              'android_gdbserver_executable%': 'gdbserver64',
+              'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-arm64/gdbserver64/gdbserver64',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-19/arch-arm64',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/aarch64-linux-android-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+            }],
             ['target_arch == "mipsel"', {
               'android_app_abi%': 'mips',
+              'android_gdbserver_executable%': 'gdbserver',
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-mips/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
               'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
@@ -1492,6 +1503,7 @@
         },
         # Copy conditionally-set variables out one scope.
         'android_app_abi%': '<(android_app_abi)',
+        'android_gdbserver_executable': '<(android_gdbserver_executable)',
         'android_gdbserver%': '<(android_gdbserver)',
         'android_ndk_root%': '<(android_ndk_root)',
         'android_ndk_sysroot': '<(android_ndk_sysroot)',
@@ -3007,7 +3019,7 @@
     },
   },
   'conditions': [
-    # TODO(jochen): Enable this on chromeos. http://crbug.com/353127 
+    # TODO(jochen): Enable this on chromeos. http://crbug.com/353127
     ['os_posix==1 and chromeos==0', {
       'target_defaults': {
         'ldflags': [
@@ -3404,6 +3416,19 @@
                           '-marm', # Required for frame pointer based stack traces.
                         ],
                       }],
+                    ],
+                  }],
+                ],
+              }],
+            ],
+          }],
+          ['target_arch=="arm64"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'conditions': [
+                  ['OS=="android"', {
+                    'cflags!': [
+                       '-fstack-protector',  # stack protector is always enabled on arm64.
                     ],
                   }],
                 ],

@@ -38,12 +38,14 @@
       ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and \
-           target_arch != "arm" and target_arch != "mipsel"', {
+           target_arch != "arm" and target_arch != "arm64" and \
+           target_arch != "mipsel"', {
           'cflags': [
             '-msse2',
           ],
         }],
-        [ 'target_arch != "arm" and target_arch != "mipsel"', {
+        [ 'target_arch != "arm" and target_arch != "mipsel" and \
+           target_arch != "arm64"', {
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp',
@@ -58,6 +60,7 @@
             'skia_opts_ssse3',
           ],
         }],
+        # TODO(rmcilroy): Add neon support for arm64 - http://crbug.com/354405
         [ 'target_arch == "arm"', {
           'conditions': [
             [ 'arm_version >= 7 and arm_neon == 1', {
@@ -177,7 +180,8 @@
             ],
           },
         }],
-        [ 'target_arch != "arm" and target_arch != "mipsel"', {
+        [ 'target_arch != "arm" and target_arch != "arm64" and \
+           target_arch != "mipsel"', {
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp',
           ],

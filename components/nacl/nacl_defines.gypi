@@ -26,10 +26,10 @@
           'NACL_OSX=1',
         ],
       }],
-      # "disabled_nacl" is always set to "1" when building for "ios", so
-      # set "nacl_defines" to the empty list to ensure the variable is
+      # "disabled_nacl" is always set to "1" when building for "ios" or android,
+      # so set "nacl_defines" to the empty list to ensure the variable is
       # always defined.
-      ['OS=="ios"', {
+      ['OS=="ios" or OS=="android"', {
         'nacl_defines': [
         ],
       }],
