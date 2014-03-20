@@ -11,6 +11,8 @@ PASS window.getComputedStyle(gridWithTwoRowsTemplate).getPropertyValue('grid-tem
 PASS window.getComputedStyle(gridWithSpanningColumnsTemplate).getPropertyValue('grid-template-areas') is "\"span span\""
 PASS window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template-areas') is "\"span\" \".\""
 PASS window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template-areas') is "\"header .\" \"footer .\""
+PASS window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid-template-areas') is "\"a a a\" \"a a a\""
+PASS window.getComputedStyle(gridWithVerticalRectangle).getPropertyValue('grid-template-areas') is "\"a a\" \"a a\" \"a a\""
 Test grid-template-areas: initial
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "\"foobar\""
 Test grid-template-areas: inherit

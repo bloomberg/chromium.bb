@@ -29,6 +29,18 @@
     grid-template-areas: "header ."
                          "footer .";
 }
+
+#gridWithHorizontalRectangle {
+    grid-template-areas: "a a a"
+                         "a a a";
+}
+
+#gridWithVerticalRectangle {
+    grid-template-areas: "a a"
+                         "a a"
+                         "a a";
+}
+
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -40,6 +52,8 @@
 <div class="grid" id="gridWithSpanningColumnsTemplate"></div>
 <div class="grid" id="gridWithSpanningRowsDotTemplate"></div>
 <div class="grid" id="gridWithDotColumn"></div>
+<div class="grid" id="gridWithHorizontalRectangle"></div>
+<div class="grid" id="gridWithVerticalRectangle"></div>
 <script>
     description("This test checks that grid-template-areas is properly parsed.");
 
@@ -64,6 +78,12 @@
 
     var gridWithDotColumn = document.getElementById("gridWithDotColumn");
     shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
+
+    var gridWithHorizontalRectangle = document.getElementById("gridWithHorizontalRectangle");
+    shouldBeEqualToString("window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid-template-areas')", '"a a a" "a a a"');
+
+    var gridWithVerticalRectangle = document.getElementById("gridWithVerticalRectangle");
+    shouldBeEqualToString("window.getComputedStyle(gridWithVerticalRectangle).getPropertyValue('grid-template-areas')", '"a a" "a a" "a a"');
 
     debug("Test grid-template-areas: initial");
     var element = document.createElement("div");
