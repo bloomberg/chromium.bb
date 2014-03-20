@@ -314,7 +314,7 @@ void PageSerializer::addImageToResources(ImageResource* image, RenderObject* ima
     if (!shouldAddURL(url))
         return;
 
-    if (!image || image->image() == Image::nullImage())
+    if (!image || image->image() == Image::nullImage() || image->errorOccurred())
         return;
 
     RefPtr<SharedBuffer> data = imageRenderer ? image->imageForRenderer(imageRenderer)->data() : 0;
