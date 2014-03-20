@@ -14,11 +14,34 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/vector2d.h"
+#include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/core/transient_window_stacking_client.h"
+#include "ui/wm/core/window_util.h"
 
 using aura::Window;
 using ui::Layer;
 
 namespace wm {
+namespace {
+
+template<typename T>int GetZPosition(const T* child) {
+  const T* parent = child->parent();
+  const std::vector<T*> children = parent->children();
+  typename std::vector<T*>::const_iterator iter =
+      std::find(children.begin(), children.end(), child);
+  DCHECK(iter != children.end());
+  return iter - children.begin();
+}
+
+int GetWindowZPosition(const aura::Window* child) {
+  return GetZPosition<aura::Window>(child);
+}
+
+int GetLayerZPosition(const ui::Layer* child) {
+  return GetZPosition<ui::Layer>(child);
+}
+
+}  // namespace
 
 class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
@@ -99,6 +122,133 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateHide) {
   EXPECT_TRUE(window->layer()->GetTargetVisibility());
   EXPECT_EQ(1, window->layer()->opacity());
   EXPECT_EQ(gfx::Transform(), window->layer()->transform());
+}
+
+TEST_F(WindowAnimationsTest, HideAnimationDetachLayers) {
+  scoped_ptr<aura::Window> parent(aura::test::CreateTestWindowWithId(0, NULL));
+
+  scoped_ptr<aura::Window> other(
+      aura::test::CreateTestWindowWithId(1, parent.get()));
+
+  scoped_ptr<aura::Window> animating_window(
+      aura::test::CreateTestWindowWithId(2, parent.get()));
+  SetWindowVisibilityAnimationTransition(animating_window.get(), ANIMATE_HIDE);
+
+  EXPECT_EQ(0, GetWindowZPosition(other.get()));
+  EXPECT_EQ(1, GetWindowZPosition(animating_window.get()));
+  EXPECT_EQ(0, GetLayerZPosition(other->layer()));
+  EXPECT_EQ(1, GetLayerZPosition(animating_window->layer()));
+
+  {
+    ui::ScopedAnimationDurationScaleMode scale_mode(
+        ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+    ui::Layer* animating_layer = animating_window->layer();
+
+    animating_window->Hide();
+    EXPECT_TRUE(AnimateOnChildWindowVisibilityChanged(
+        animating_window.get(), false));
+    EXPECT_TRUE(animating_layer->GetAnimator()->is_animating());
+    EXPECT_FALSE(animating_layer->delegate());
+
+    // Make sure the Hide animation create another layer, and both are in
+    // the parent layer.
+    EXPECT_NE(animating_window->layer(), animating_layer);
+    EXPECT_TRUE(
+        std::find(parent->layer()->children().begin(),
+                  parent->layer()->children().end(),
+                  animating_layer) !=
+        parent->layer()->children().end());
+    EXPECT_TRUE(
+        std::find(parent->layer()->children().begin(),
+                  parent->layer()->children().end(),
+                  animating_window->layer()) !=
+        parent->layer()->children().end());
+    // Current layer must be already hidden.
+    EXPECT_FALSE(animating_window->layer()->visible());
+
+    EXPECT_EQ(1, GetWindowZPosition(animating_window.get()));
+    EXPECT_EQ(1, GetLayerZPosition(animating_window->layer()));
+    EXPECT_EQ(2, GetLayerZPosition(animating_layer));
+
+    parent->StackChildAtTop(other.get());
+    EXPECT_EQ(0, GetWindowZPosition(animating_window.get()));
+    EXPECT_EQ(1, GetWindowZPosition(other.get()));
+
+    EXPECT_EQ(0, GetLayerZPosition(animating_window->layer()));
+    EXPECT_EQ(1, GetLayerZPosition(other->layer()));
+    // Make sure the animating layer is on top.
+    EXPECT_EQ(2, GetLayerZPosition(animating_layer));
+
+    // Animating layer must be gone
+    animating_layer->GetAnimator()->StopAnimating();
+    EXPECT_TRUE(
+        std::find(parent->layer()->children().begin(),
+                  parent->layer()->children().end(),
+                  animating_layer) ==
+        parent->layer()->children().end());
+  }
+}
+
+TEST_F(WindowAnimationsTest, HideAnimationDetachLayersWithTransientChildren) {
+  TransientWindowStackingClient transient_stacking_client;
+
+  scoped_ptr<aura::Window> parent(aura::test::CreateTestWindowWithId(0, NULL));
+
+  scoped_ptr<aura::Window> other(
+      aura::test::CreateTestWindowWithId(1, parent.get()));
+
+  scoped_ptr<aura::Window> animating_window(
+      aura::test::CreateTestWindowWithId(2, parent.get()));
+  SetWindowVisibilityAnimationTransition(animating_window.get(), ANIMATE_HIDE);
+
+  scoped_ptr<aura::Window> transient1(
+      aura::test::CreateTestWindowWithId(3, parent.get()));
+  scoped_ptr<aura::Window> transient2(
+      aura::test::CreateTestWindowWithId(4, parent.get()));
+
+  TransientWindowManager::Get(animating_window.get());
+  AddTransientChild(animating_window.get(), transient1.get());
+  AddTransientChild(animating_window.get(), transient2.get());
+
+  EXPECT_EQ(0, GetWindowZPosition(other.get()));
+  EXPECT_EQ(1, GetWindowZPosition(animating_window.get()));
+  EXPECT_EQ(2, GetWindowZPosition(transient1.get()));
+  EXPECT_EQ(3, GetWindowZPosition(transient2.get()));
+
+  {
+    ui::ScopedAnimationDurationScaleMode scale_mode(
+        ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+    ui::Layer* animating_layer = animating_window->layer();
+
+    animating_window->Hide();
+    EXPECT_TRUE(AnimateOnChildWindowVisibilityChanged(
+        animating_window.get(), false));
+    EXPECT_TRUE(animating_layer->GetAnimator()->is_animating());
+    EXPECT_FALSE(animating_layer->delegate());
+
+    EXPECT_EQ(1, GetWindowZPosition(animating_window.get()));
+    EXPECT_EQ(2, GetWindowZPosition(transient1.get()));
+    EXPECT_EQ(3, GetWindowZPosition(transient2.get()));
+
+    EXPECT_EQ(1, GetLayerZPosition(animating_window->layer()));
+    EXPECT_EQ(2, GetLayerZPosition(transient1->layer()));
+    EXPECT_EQ(3, GetLayerZPosition(transient2->layer()));
+    EXPECT_EQ(4, GetLayerZPosition(animating_layer));
+
+    parent->StackChildAtTop(other.get());
+
+    EXPECT_EQ(0, GetWindowZPosition(animating_window.get()));
+    EXPECT_EQ(1, GetWindowZPosition(transient1.get()));
+    EXPECT_EQ(2, GetWindowZPosition(transient2.get()));
+    EXPECT_EQ(3, GetWindowZPosition(other.get()));
+
+    EXPECT_EQ(0, GetLayerZPosition(animating_window->layer()));
+    EXPECT_EQ(1, GetLayerZPosition(transient1->layer()));
+    EXPECT_EQ(2, GetLayerZPosition(transient2->layer()));
+    EXPECT_EQ(3, GetLayerZPosition(other->layer()));
+    // Make sure the animating layer is on top of all windows.
+    EXPECT_EQ(4, GetLayerZPosition(animating_layer));
+  }
 }
 
 // A simple AnimationHost implementation for the NotifyHideCompleted test.

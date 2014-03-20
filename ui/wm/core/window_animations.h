@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
@@ -80,12 +81,27 @@ WM_CORE_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
     aura::Window* window,
     float position);
 
-// Creates an ImplicitAnimationObserver that takes ownership of the layers
-// associated with a Window so that the animation can continue after the Window
-// has been destroyed.
-// The returned object deletes itself when the animations are done.
-WM_CORE_EXPORT ui::ImplicitAnimationObserver*
-    CreateHidingWindowAnimationObserver(aura::Window* window);
+class HidingWindowAnimationObserver;
+// A wrapper of ui::ScopedLayerAnimationSettings for hiding animations.
+// Use this to ensure that the hiding animation is visible even after
+// the window is deleted or deactivated, instead of using
+// ui::ScopedLayerAnimationSettings directly.
+class WM_CORE_EXPORT ScopedHidingAnimationSettings {
+ public:
+  explicit ScopedHidingAnimationSettings(aura::Window* window);
+  ~ScopedHidingAnimationSettings();
+
+  // Returns the wrapped ScopedLayeAnimationSettings instance.
+  ui::ScopedLayerAnimationSettings* layer_animation_settings() {
+    return &layer_animation_settings_;
+  }
+
+ private:
+  ui::ScopedLayerAnimationSettings layer_animation_settings_;
+  HidingWindowAnimationObserver* observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedHidingAnimationSettings);
+};
 
 // Returns false if the |window| didn't animate.
 WM_CORE_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,

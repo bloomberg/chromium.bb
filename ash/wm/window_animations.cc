@@ -155,7 +155,6 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
 }
 
 void AnimateShowWindow_Minimize(aura::Window* window) {
-  window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
@@ -170,15 +169,11 @@ void AnimateShowWindow_Minimize(aura::Window* window) {
 }
 
 void AnimateHideWindow_Minimize(aura::Window* window) {
-  window->layer()->set_delegate(NULL);
-
   // Property sets within this scope will be implicitly animated.
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  ::wm::ScopedHidingAnimationSettings hiding_settings(window);
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kLayerAnimationsForMinimizeDurationMS);
-  settings.SetTransitionDuration(duration);
-  settings.AddObserver(
-      ::wm::CreateHidingWindowAnimationObserver(window));
+  hiding_settings.layer_animation_settings()->SetTransitionDuration(duration);
   window->layer()->SetVisible(false);
 
   AddLayerAnimationsForMinimize(window, false);
@@ -186,8 +181,6 @@ void AnimateHideWindow_Minimize(aura::Window* window) {
 
 void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
                                                      bool show) {
-  window->layer()->set_delegate(window);
-
   float start_value, end_value;
   if (show) {
     start_value = kWindowAnimation_HideBrightnessGrayscale;
@@ -207,17 +200,16 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kBrightnessGrayscaleFadeDurationMs);
 
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.SetTransitionDuration(duration);
-  if (!show) {
-    settings.AddObserver(
-        ::wm::CreateHidingWindowAnimationObserver(window));
-  }
-
-  window->layer()->GetAnimator()->
-      ScheduleTogether(
-          CreateBrightnessGrayscaleAnimationSequence(end_value, duration));
-  if (!show) {
+  if (show) {
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    window->layer()->GetAnimator()->
+        ScheduleTogether(
+            CreateBrightnessGrayscaleAnimationSequence(end_value, duration));
+  } else {
+    ::wm::ScopedHidingAnimationSettings hiding_settings(window);
+    window->layer()->GetAnimator()->
+        ScheduleTogether(
+            CreateBrightnessGrayscaleAnimationSequence(end_value, duration));
     window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
     window->layer()->SetVisible(false);
   }

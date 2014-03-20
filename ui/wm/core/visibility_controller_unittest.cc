@@ -18,43 +18,6 @@ namespace wm {
 
 typedef aura::test::AuraTestBase VisibilityControllerTest;
 
-// Hiding a window in an animatable container should not hide the window's layer
-// immediately.
-TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
-  // We cannot disable animations for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-
-  VisibilityController controller;
-  aura::client::SetVisibilityClient(root_window(), &controller);
-
-  SetChildWindowVisibilityChangesAnimated(root_window());
-
-  aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> animatable(aura::test::CreateTestWindowWithDelegate(
-      &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
-  scoped_ptr<aura::Window> non_animatable(
-      aura::test::CreateTestWindowWithDelegateAndType(
-          &d,
-          ui::wm::WINDOW_TYPE_CONTROL,
-          -3,
-          gfx::Rect(51, 51, 50, 50),
-          root_window()));
-  EXPECT_TRUE(animatable->IsVisible());
-  EXPECT_TRUE(animatable->layer()->visible());
-  animatable->Hide();
-  EXPECT_FALSE(animatable->IsVisible());
-  EXPECT_TRUE(animatable->layer()->visible());
-
-  EXPECT_TRUE(non_animatable->IsVisible());
-  EXPECT_TRUE(non_animatable->layer()->visible());
-  non_animatable->Hide();
-  EXPECT_FALSE(non_animatable->IsVisible());
-  EXPECT_FALSE(non_animatable->layer()->visible());
-
-  aura::client::SetVisibilityClient(root_window(), NULL);
-}
-
 // Check that a transparency change to 0 will not cause a hide call to be
 // ignored.
 TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {

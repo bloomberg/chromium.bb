@@ -201,6 +201,8 @@ TEST_F(WindowAnimationsTest, LockAnimationDuration) {
 
   // Test that it is possible to lock transition duration
   {
+    // Update layer as minimizing will replace the window's layer.
+    layer = window->layer();
     ui::ScopedLayerAnimationSettings settings1(layer->GetAnimator());
     settings1.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
     // Duration is locked in outer scope.
@@ -221,6 +223,7 @@ TEST_F(WindowAnimationsTest, LockAnimationDuration) {
 
   // Test that duration respects default.
   {
+    layer = window->layer();
     // Query default duration.
     MinimizeAnimationObserver observer(layer->GetAnimator());
     wm::GetWindowState(window.get())->Minimize();
@@ -229,6 +232,7 @@ TEST_F(WindowAnimationsTest, LockAnimationDuration) {
     window->Show();
     layer->GetAnimator()->StopAnimating();
 
+    layer = window->layer();
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.LockTransitionDuration();
     // Setting transition duration is ignored since duration is locked

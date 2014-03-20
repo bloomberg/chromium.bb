@@ -1005,24 +1005,6 @@ class FocusControllerHideTest : public FocusControllerImplicitTestBase {
   virtual void ChangeWindowDisposition(aura::Window* window) OVERRIDE {
     GetDispositionWindow(window)->Hide();
   }
-  virtual void PostDispostionChangeExpectations() OVERRIDE {
-    // BasicActivation() starts with the stacking order: 1, 2, 3 (3 topmost)
-    // and then activates 2. After 2 is hidden in ChangeWindowDisposition
-    // above, 3 is activated, but code in
-    // FocusController::OnWindowVisibilityChanging keeps 2's layer above 3's
-    // until a hide animation completes (e.g. a fade-out transition).
-    aura::Window* w2 = root_window()->GetChildById(2);
-    aura::Window* w3 = root_window()->GetChildById(3);
-
-    // W2 was hidden, but its layer should still be stacked above W3's.
-    typedef std::vector<ui::Layer*> Layers;
-    const Layers& children = w3->parent()->layer()->children();
-    Layers::const_iterator w3_iter =
-        std::find(children.begin(), children.end(), w3->layer());
-    Layers::const_iterator w2_iter =
-        std::find(children.begin(), children.end(), w2->layer());
-    EXPECT_TRUE(w2_iter > w3_iter);
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FocusControllerHideTest);

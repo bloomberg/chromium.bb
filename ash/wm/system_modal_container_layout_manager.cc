@@ -176,11 +176,9 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
   // modal_background_ can be NULL when a root window is shutting down
   // and OnWindowDestroying is called first.
   if (modal_background_) {
-    ui::ScopedLayerAnimationSettings settings(
-        modal_background_->GetNativeView()->layer()->GetAnimator());
+    ::wm::ScopedHidingAnimationSettings settings(
+        modal_background_->GetNativeView());
     modal_background_->Close();
-    settings.AddObserver(::wm::CreateHidingWindowAnimationObserver(
-        modal_background_->GetNativeView()));
     modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
     modal_background_ = NULL;
   }

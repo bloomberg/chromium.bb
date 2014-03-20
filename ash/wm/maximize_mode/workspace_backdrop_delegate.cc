@@ -12,6 +12,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -48,11 +49,9 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
 
 WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
   container_->RemoveObserver(this);
-  ui::ScopedLayerAnimationSettings settings(
-      background_->GetNativeView()->layer()->GetAnimator());
+  ::wm::ScopedHidingAnimationSettings hiding_settings(
+      background_->GetNativeView());
   background_->Close();
-  settings.AddObserver(::wm::CreateHidingWindowAnimationObserver(
-      background_->GetNativeView()));
   background_->GetNativeView()->layer()->SetOpacity(0.0f);
 }
 

@@ -353,11 +353,16 @@ TEST_F(WorkspaceControllerTest, MinimizeFullscreenWindow) {
   EXPECT_FALSE(w2_state->IsActive());
   EXPECT_FALSE(w2->layer()->IsDrawn());
   EXPECT_TRUE(w1_state->IsActive());
+  EXPECT_EQ(w2.get(), GetDesktop()->children()[0]);
+  EXPECT_EQ(w1.get(), GetDesktop()->children()[1]);
 
   // Make the window normal.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(w1.get(), GetDesktop()->children()[0]);
-  EXPECT_EQ(w2.get(), GetDesktop()->children()[1]);
+  // Setting back to normal doesn't change the activation.
+  EXPECT_FALSE(w2_state->IsActive());
+  EXPECT_TRUE(w1_state->IsActive());
+  EXPECT_EQ(w2.get(), GetDesktop()->children()[0]);
+  EXPECT_EQ(w1.get(), GetDesktop()->children()[1]);
   EXPECT_TRUE(w2->layer()->IsDrawn());
 }
 

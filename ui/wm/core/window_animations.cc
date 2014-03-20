@@ -26,6 +26,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -42,10 +43,6 @@ DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationTransition)
 DECLARE_WINDOW_PROPERTY_TYPE(float)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(WM_CORE_EXPORT, bool)
 
-using aura::Window;
-using base::TimeDelta;
-using ui::Layer;
-
 namespace wm {
 namespace {
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
@@ -61,6 +58,44 @@ DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
 DEFINE_WINDOW_PROPERTY_KEY(float,
                            kWindowVisibilityAnimationVerticalPositionKey,
                            kWindowAnimation_Vertical_TranslateY);
+
+// An AnimationObserer which has two roles:
+// 1) Notifies AnimationHost at the end of hiding animation.
+// 2) Detaches the window's layers for hiding animation and deletes
+// them upon completion of the animation. This is necessary to a)
+// ensure that the animation continues in the event of the window being
+// deleted, and b) to ensure that the animation is visible even if the
+// window gets restacked below other windows when focus or activation
+// changes.
+class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
+                                      public aura::WindowObserver {
+ public:
+  HidingWindowAnimationObserver(aura::Window* window,
+                                ui::ScopedLayerAnimationSettings* settings);
+  virtual ~HidingWindowAnimationObserver() {}
+
+  // ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
+  // aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // Detach the current layers and create new layers for |window_|.
+  // Stack the original layers above |window_| and its transient
+  // children.  If the window has transient children, the original
+  // layers will be moved above the top most transient child so that
+  // activation change does not put the window above the animating
+  // layer.
+  void DetachAndRecreateLayers();
+
+ private:
+  aura::Window* window_;
+
+  // The owner of detached layers.
+  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
+};
 
 namespace {
 
@@ -90,7 +125,7 @@ base::TimeDelta GetWindowVisibilityAnimationDuration(
     return base::TimeDelta::FromMilliseconds(
         kDefaultAnimationDurationForMenuMS);
   }
-  return TimeDelta::FromInternalValue(duration);
+  return base::TimeDelta::FromInternalValue(duration);
 }
 
 // Gets/sets the WindowVisibilityAnimationType associated with a window.
@@ -106,71 +141,8 @@ int GetWindowVisibilityAnimationType(aura::Window* window) {
   return type;
 }
 
-// Observes a hide animation.
-// A window can be hidden for a variety of reasons. Sometimes, Hide() will be
-// called and life is simple. Sometimes, the window is actually bound to a
-// views::Widget and that Widget is closed, and life is a little more
-// complicated. When a Widget is closed the aura::Window* is actually not
-// destroyed immediately - it is actually just immediately hidden and then
-// destroyed when the stack unwinds. To handle this case, we start the hide
-// animation immediately when the window is hidden, then when the window is
-// subsequently destroyed this object acquires ownership of the window's layer,
-// so that it can continue animating it until the animation completes.
-// Regardless of whether or not the window is destroyed, this object deletes
-// itself when the animation completes.
-class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
-                                      public aura::WindowObserver {
- public:
-  explicit HidingWindowAnimationObserver(aura::Window* window)
-      : window_(window) {
-    window_->AddObserver(this);
-  }
-  virtual ~HidingWindowAnimationObserver() {
-    STLDeleteElements(&layers_);
-  }
-
- private:
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    // Window may have been destroyed by this point.
-    if (window_) {
-      aura::client::AnimationHost* animation_host =
-          aura::client::GetAnimationHost(window_);
-      if (animation_host)
-        animation_host->OnWindowHidingAnimationCompleted();
-      window_->RemoveObserver(this);
-    }
-    delete this;
-  }
-
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    DCHECK_EQ(window, window_);
-    DCHECK(layers_.empty());
-    AcquireAllLayers(window_->layer());
-    window_->RemoveObserver(this);
-    window_ = NULL;
-  }
-
-  void AcquireAllLayers(ui::Layer* layer) {
-    if (layer->owner()) {
-      ui::Layer* released = layer->owner()->AcquireLayer();
-      DCHECK_EQ(layer, released);
-      layers_.push_back(released);
-    }
-    std::vector<Layer*>::const_iterator it = layer->children().begin();
-    for (; it != layer->children().end(); ++it)
-      AcquireAllLayers(*it);
-  }
-
-  aura::Window* window_;
-  std::vector<ui::Layer*> layers_;
-
-  DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
-};
-
 void GetTransformRelativeToRoot(ui::Layer* layer, gfx::Transform* transform) {
-  const Layer* root = layer;
+  const ui::Layer* root = layer;
   while (root->parent())
     root = root->parent();
   layer->GetTargetTransformRelativeTo(root, transform);
@@ -225,8 +197,6 @@ void AugmentWindowSize(aura::Window* window,
 void AnimateShowWindowCommon(aura::Window* window,
                              const gfx::Transform& start_transform,
                              const gfx::Transform& end_transform) {
-  window->layer()->set_delegate(window);
-
   AugmentWindowSize(window, end_transform);
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
@@ -250,15 +220,12 @@ void AnimateShowWindowCommon(aura::Window* window,
 void AnimateHideWindowCommon(aura::Window* window,
                              const gfx::Transform& end_transform) {
   AugmentWindowSize(window, end_transform);
-  window->layer()->set_delegate(NULL);
 
   // Property sets within this scope will be implicitly animated.
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.AddObserver(new HidingWindowAnimationObserver(window));
-
+  ScopedHidingAnimationSettings hiding_settings(window);
   base::TimeDelta duration = GetWindowVisibilityAnimationDuration(*window);
   if (duration.ToInternalValue() > 0)
-    settings.SetTransitionDuration(duration);
+    hiding_settings.layer_animation_settings()->SetTransitionDuration(duration);
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
@@ -335,7 +302,6 @@ void AnimateBounce(aura::Window* window) {
       window->layer()->GetAnimator());
   scoped_settings.SetPreemptionStrategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  window->layer()->set_delegate(window);
   scoped_ptr<ui::LayerAnimationSequence> sequence(
       new ui::LayerAnimationSequence);
   sequence->AddElement(CreateGrowShrinkElement(window, true));
@@ -350,15 +316,17 @@ void AnimateBounce(aura::Window* window) {
 }
 
 void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
-  window->layer()->set_delegate(window);
   if (show)
     window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kWindowAnimation_Rotate_DurationMS);
 
+  HidingWindowAnimationObserver* observer = NULL;
+
   if (!show) {
-    new HidingWindowAnimationObserver(window);
+    // TODO(oshima): Fix observer leak.
+    observer = new HidingWindowAnimationObserver(window, NULL);
     window->layer()->GetAnimator()->SchedulePauseForProperties(
         duration * (100 - kWindowAnimation_Rotate_OpacityDurationPercent) / 100,
         ui::LayerAnimationElement::OPACITY);
@@ -406,6 +374,8 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
 
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(transition.release()));
+  if (observer)
+    observer->DetachAndRecreateLayers();
 }
 
 void AnimateShowWindow_Rotate(aura::Window* window) {
@@ -421,7 +391,6 @@ bool AnimateShowWindow(aura::Window* window) {
     if (HasWindowVisibilityAnimationTransition(window, ANIMATE_HIDE)) {
       // Since hide animation may have changed opacity and transform,
       // reset them to show the window.
-      window->layer()->set_delegate(window);
       window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
       window->layer()->SetTransform(gfx::Transform());
     }
@@ -451,7 +420,6 @@ bool AnimateHideWindow(aura::Window* window) {
     if (HasWindowVisibilityAnimationTransition(window, ANIMATE_SHOW)) {
       // Since show animation may have changed opacity and transform,
       // reset them, though the change should be hidden.
-      window->layer()->set_delegate(NULL);
       window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
       window->layer()->SetTransform(gfx::Transform());
     }
@@ -479,6 +447,82 @@ bool AnimateHideWindow(aura::Window* window) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// HidingWindowAnimationObserver
+
+HidingWindowAnimationObserver::HidingWindowAnimationObserver(
+    aura::Window* window,
+    ui::ScopedLayerAnimationSettings* settings)
+    : window_(window) {
+  window->AddObserver(this);
+  if (settings)
+    settings->AddObserver(this);
+}
+
+void HidingWindowAnimationObserver::OnImplicitAnimationsCompleted() {
+  // Window may have been destroyed by this point.
+  if (window_) {
+    aura::client::AnimationHost* animation_host =
+        aura::client::GetAnimationHost(window_);
+    if (animation_host)
+      animation_host->OnWindowHidingAnimationCompleted();
+    window_->RemoveObserver(this);
+  }
+  delete this;
+}
+
+void HidingWindowAnimationObserver::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window, window_);
+  window_->RemoveObserver(this);
+  window_ = NULL;
+}
+
+void HidingWindowAnimationObserver::DetachAndRecreateLayers() {
+  layer_owner_ = RecreateLayers(window_);
+  if (window_->parent()) {
+    const aura::Window::Windows& transient_children =
+        GetTransientChildren(window_);
+    aura::Window::Windows::const_iterator iter =
+        std::find(window_->parent()->children().begin(),
+                  window_->parent()->children().end(),
+                  window_);
+    DCHECK(iter != window_->parent()->children().end());
+    aura::Window* topmost_transient_child = NULL;
+    for (++iter; iter != window_->parent()->children().end(); ++iter) {
+      if (std::find(transient_children.begin(),
+                    transient_children.end(),
+                    *iter) !=
+          transient_children.end()) {
+        topmost_transient_child = *iter;
+      }
+    }
+    if (topmost_transient_child) {
+      window_->parent()->layer()->StackAbove(
+          layer_owner_->root(), topmost_transient_child->layer());
+    }
+  }
+
+  // TODO(sky): The recreated layer should have the target visibility of
+  // the original layer.
+  // Make the new layer invisible immediately.
+  window_->layer()->SetVisible(false);
+  window_->layer()->SetOpacity(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ScopedHidingAnimationSettings
+
+ScopedHidingAnimationSettings::ScopedHidingAnimationSettings(
+    aura::Window* window)
+    : layer_animation_settings_(window->layer()->GetAnimator()),
+      observer_(new HidingWindowAnimationObserver(
+          window, &layer_animation_settings_)) {
+}
+
+ScopedHidingAnimationSettings::~ScopedHidingAnimationSettings() {
+  observer_->DetachAndRecreateLayers();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // External interface
 
 void SetWindowVisibilityAnimationType(aura::Window* window, int type) {
@@ -504,7 +548,7 @@ bool HasWindowVisibilityAnimationTransition(
 }
 
 void SetWindowVisibilityAnimationDuration(aura::Window* window,
-                                          const TimeDelta& duration) {
+                                          const base::TimeDelta& duration) {
   window->SetProperty(kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
 }
@@ -518,11 +562,6 @@ base::TimeDelta GetWindowVisibilityAnimationDuration(
 void SetWindowVisibilityAnimationVerticalPosition(aura::Window* window,
                                                   float position) {
   window->SetProperty(kWindowVisibilityAnimationVerticalPositionKey, position);
-}
-
-ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
-    aura::Window* window) {
-  return new HidingWindowAnimationObserver(window);
 }
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
