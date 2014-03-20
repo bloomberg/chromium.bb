@@ -19,17 +19,7 @@
 
 namespace content {
 
-
 namespace {
-
-// On Windows, the write must be performed on the UI thread because the
-// clipboard object from the IO thread cannot create windows so it cannot be
-// the "owner" of the clipboard's contents. See http://crbug.com/5823.
-void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, *objects);
-}
 
 enum BitmapPolicy {
   kFilterBitmap,
@@ -141,8 +131,20 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsOnUIThread,
+      base::Bind(&ClipboardMessageFilter::WriteObjectsOnUIThread,
                  base::Owned(long_living_objects.release())));
+}
+
+// On Windows, the write must be performed on the UI thread because the
+// clipboard object from the IO thread cannot create windows so it cannot be
+// the "owner" of the clipboard's contents. See http://crbug.com/5823.
+// TODO(dcheng): Temporarily a member of ClipboardMessageFilter so it can access
+// ui::Clipboard::WriteObjects().
+void ClipboardMessageFilter::WriteObjectsOnUIThread(
+    const ui::Clipboard::ObjectMap* objects) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, *objects);
 }
 
 void ClipboardMessageFilter::OnWriteObjectsAsync(

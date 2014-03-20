@@ -39,8 +39,18 @@ using base::UTF16ToUTF8;
 namespace ui {
 
 class ClipboardTest : public PlatformTest {
+ public:
+  static void WriteObjectsToClipboard(ui::Clipboard* clipboard,
+                                      const Clipboard::ObjectMap& objects) {
+    clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
+  }
+
  protected:
   Clipboard& clipboard() { return clipboard_; }
+
+  void WriteObjectsToClipboard(const Clipboard::ObjectMap& objects) {
+    WriteObjectsToClipboard(&clipboard(), objects);
+  }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -335,6 +345,9 @@ TEST_F(ClipboardTest, URLTest) {
 #endif
 }
 
+// TODO(dcheng): The tests for copying to the clipboard also test IPC
+// interaction... consider moving them to a different layer so we can
+// consolidate the validation logic.
 // Note that |bitmap_data| is not premultiplied!
 static void TestBitmapWrite(Clipboard* clipboard,
                             const uint32* bitmap_data,
@@ -376,7 +389,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
   ASSERT_TRUE(Clipboard::ReplaceSharedMemHandle(
       &objects, handle_to_share, current_process));
 
-  clipboard->WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
+  ClipboardTest::WriteObjectsToClipboard(clipboard, objects);
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                            CLIPBOARD_TYPE_COPY_PASTE));
@@ -461,7 +474,7 @@ TEST_F(ClipboardTest, SharedBitmapWithTwoNegativeSizes) {
   Clipboard::ObjectMap objects;
   objects[Clipboard::CBF_SMBITMAP] = params;
 
-  clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
+  WriteObjectsToClipboard(objects);
   EXPECT_FALSE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                              CLIPBOARD_TYPE_COPY_PASTE));
 }
@@ -484,7 +497,7 @@ TEST_F(ClipboardTest, SharedBitmapWithOneNegativeSize) {
   Clipboard::ObjectMap objects;
   objects[Clipboard::CBF_SMBITMAP] = params;
 
-  clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
+  WriteObjectsToClipboard(objects);
   EXPECT_FALSE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                              CLIPBOARD_TYPE_COPY_PASTE));
 }
@@ -509,7 +522,7 @@ TEST_F(ClipboardTest, BitmapWithSuperSize) {
   Clipboard::ObjectMap objects;
   objects[Clipboard::CBF_SMBITMAP] = params;
 
-  clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
+  WriteObjectsToClipboard(objects);
   EXPECT_FALSE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                              CLIPBOARD_TYPE_COPY_PASTE));
 }
@@ -533,7 +546,7 @@ TEST_F(ClipboardTest, BitmapWithSuperSize2) {
   Clipboard::ObjectMap objects;
   objects[Clipboard::CBF_SMBITMAP] = params;
 
-  clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
+  WriteObjectsToClipboard(objects);
   EXPECT_FALSE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                              CLIPBOARD_TYPE_COPY_PASTE));
 }

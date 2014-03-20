@@ -45,6 +45,11 @@ class MessageWindow;
 }  // namespace win
 }  // namespace base
 
+// TODO(dcheng): Temporary until the IPC layer doesn't use WriteObjects().
+namespace content {
+class ClipboardMessageFilter;
+}
+
 namespace gfx {
 class Size;
 }
@@ -63,6 +68,7 @@ class NSString;
 
 namespace ui {
 class ClipboardTest;
+class ScopedClipboardWriter;
 
 class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  public:
@@ -140,6 +146,8 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     // Copyable and assignable, since this is essentially an opaque value type.
   };
 
+  // TODO(dcheng): Make this private once the IPC layer no longer needs to
+  // serialize this information.
   // ObjectType designates the type of data to be stored in the clipboard. This
   // designation is shared across all OSes. The system-specific designation
   // is defined by FormatType. A single ObjectType might be represented by
@@ -212,12 +220,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // all clipboards, except on Windows. (Previous code leaks the IO thread
   // clipboard, so it shouldn't be a problem.)
   static void DestroyClipboardForCurrentThread();
-
-  // Write a bunch of objects to the system clipboard. Copies are made of the
-  // contents of |objects|.
-  // Note: If you're thinking about calling this, you should probably be using
-  // ScopedClipboardWriter instead.
-  void WriteObjects(ClipboardType type, const ObjectMap& objects);
 
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
@@ -313,9 +315,17 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, EmptyHTMLTest);
   friend class ClipboardTest;
+  // For access to WriteObjects().
+  // TODO(dcheng): Remove the temporary exception for content.
+  friend class content::ClipboardMessageFilter;
+  friend class ScopedClipboardWriter;
 
   Clipboard();
   ~Clipboard();
+
+  // Write a bunch of objects to the system clipboard. Copies are made of the
+  // contents of |objects|.
+  void WriteObjects(ClipboardType type, const ObjectMap& objects);
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 

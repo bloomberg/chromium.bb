@@ -31,6 +31,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
   void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
                           base::SharedMemoryHandle bitmap_handle);
+  static void WriteObjectsOnUIThread(const ui::Clipboard::ObjectMap* objects);
 
   void OnGetSequenceNumber(const ui::ClipboardType type,
                            uint64* sequence_number);

@@ -285,11 +285,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   // Verify that copying selected text works.
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   // Reset the clipboard first.
-  ui::Clipboard::ObjectMap objects;
-  ui::Clipboard::ObjectMapParams params;
-  params.push_back(std::vector<char>());
-  objects[ui::Clipboard::CBF_TEXT] = params;
-  clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
+  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   browser()->tab_strip_model()->GetActiveWebContents()->
       GetMainFrame()->Copy();

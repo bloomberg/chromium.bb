@@ -90,14 +90,9 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   }
   EXPECT_EQ(kSpace1, OmniboxView::GetClipboardText());
 
-  // TODO(shess): ChromeOS hits a DCHECK() at CommitToClipboard() if
-  // ObjectMap is empty.  http://crbug.com/133848
-#if !defined(OS_CHROMEOS)
   // Does an empty clipboard get empty text?
-  clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE,
-                          ui::Clipboard::ObjectMap());
+  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
   EXPECT_EQ(base::string16(), OmniboxView::GetClipboardText());
-#endif
 
   // Bookmark clipboard apparently not supported on Linux.
   // See TODO on ClipboardText.BookmarkTest.
