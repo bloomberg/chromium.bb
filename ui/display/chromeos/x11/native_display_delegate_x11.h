@@ -32,6 +32,8 @@ struct _XRROutputInfo;
 typedef _XRROutputInfo XRROutputInfo;
 struct _XRRScreenResources;
 typedef _XRRScreenResources XRRScreenResources;
+struct _XRRCrtcGamma;
+typedef _XRRCrtcGamma XRRCrtcGamma;
 
 namespace ui {
 
@@ -63,7 +65,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   NativeDisplayDelegateX11();
   virtual ~NativeDisplayDelegateX11();
 
-  // OutputConfigurator::Delegate overrides:
+  // NativeDisplayDelegate overrides:
   virtual void Initialize() OVERRIDE;
   virtual void GrabServer() OVERRIDE;
   virtual void UngrabServer() OVERRIDE;
@@ -81,7 +83,9 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
                             HDCPState* state) OVERRIDE;
   virtual bool SetHDCPState(const DisplaySnapshot& output,
                             HDCPState state) OVERRIDE;
-
+  virtual bool SetColorCalibrationProfile(
+      const DisplaySnapshot& output,
+      ColorCalibrationProfile new_profile) OVERRIDE;
   virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE;
   virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE;
 
@@ -108,6 +112,12 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
 
   // Returns whether |id| is configured to preserve aspect when scaling.
   bool IsOutputAspectPreservingScaling(RROutput id);
+
+  // Creates the gamma ramp for |new_profile|, or NULL if it doesn't exist.
+  // The caller should take the ownership.
+  XRRCrtcGamma* CreateGammaRampForProfile(
+      const DisplaySnapshotX11& x11_output,
+      ColorCalibrationProfile new_profile);
 
   Display* display_;
   Window window_;

@@ -71,6 +71,11 @@ class DISPLAY_EXPORT NativeDisplayDelegate {
   virtual bool SetHDCPState(const ui::DisplaySnapshot& output,
                             ui::HDCPState state) = 0;
 
+  // Sets the color calibration of |output| to |new_profile|.
+  virtual bool SetColorCalibrationProfile(
+      const ui::DisplaySnapshot& output,
+      ui::ColorCalibrationProfile new_profile) = 0;
+
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 
   virtual void RemoveObserver(NativeDisplayObserver* observer) = 0;

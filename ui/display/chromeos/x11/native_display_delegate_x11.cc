@@ -42,6 +42,33 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
   return output_info->nmode > 0 ? output_info->modes[0] : None;
 }
 
+XRRCrtcGamma* ResampleGammaRamp(XRRCrtcGamma* gamma_ramp, int gamma_ramp_size) {
+  if (gamma_ramp->size == gamma_ramp_size)
+    return gamma_ramp;
+
+#define RESAMPLE(array, i, r) \
+  array[i] + (array[i + 1] - array[i]) * r / gamma_ramp_size
+
+  XRRCrtcGamma* resampled = XRRAllocGamma(gamma_ramp_size);
+  for (int i = 0; i < gamma_ramp_size; ++i) {
+    int base_index = gamma_ramp->size * i / gamma_ramp_size;
+    int remaining = gamma_ramp->size * i % gamma_ramp_size;
+    if (base_index < gamma_ramp->size - 1) {
+      resampled->red[i] = RESAMPLE(gamma_ramp->red, base_index, remaining);
+      resampled->green[i] = RESAMPLE(gamma_ramp->green, base_index, remaining);
+      resampled->blue[i] = RESAMPLE(gamma_ramp->blue, base_index, remaining);
+    } else {
+      resampled->red[i] = gamma_ramp->red[gamma_ramp->size - 1];
+      resampled->green[i] = gamma_ramp->green[gamma_ramp->size - 1];
+      resampled->blue[i] = gamma_ramp->blue[gamma_ramp->size - 1];
+    }
+  }
+
+#undef RESAMPLE
+  XRRFreeGamma(gamma_ramp);
+  return resampled;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -356,6 +383,10 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   const DisplayMode* current_mode = NULL;
   const DisplayMode* native_mode = NULL;
   std::vector<const DisplayMode*> display_modes;
+
+  // TODO(mukai|marcheu): check the system status and fill the correct list of
+  // available color profiles.
+
   for (int i = 0; i < info->nmode; ++i) {
     const RRMode mode = info->modes[i];
     if (modes_.find(mode) != modes_.end()) {
@@ -574,6 +605,33 @@ bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
     XFree(props);
 
   return ret;
+}
+
+bool NativeDisplayDelegateX11::SetColorCalibrationProfile(
+    const DisplaySnapshot& output,
+    ColorCalibrationProfile new_profile) {
+  const DisplaySnapshotX11& x11_output =
+      static_cast<const DisplaySnapshotX11&>(output);
+
+  XRRCrtcGamma* gamma_ramp = CreateGammaRampForProfile(x11_output, new_profile);
+
+  if (!gamma_ramp)
+    return false;
+
+  int gamma_ramp_size = XRRGetCrtcGammaSize(display_, x11_output.crtc());
+  XRRSetCrtcGamma(display_,
+                  x11_output.crtc(),
+                  ResampleGammaRamp(gamma_ramp, gamma_ramp_size));
+  XRRFreeGamma(gamma_ramp);
+  return true;
+}
+
+XRRCrtcGamma* NativeDisplayDelegateX11::CreateGammaRampForProfile(
+    const DisplaySnapshotX11& x11_output,
+    ColorCalibrationProfile new_profile) {
+  // TODO(mukai|marcheu): Creates the appropriate gamma ramp data from the
+  // profile enum. It would be served by the vendor.
+  return NULL;
 }
 
 void NativeDisplayDelegateX11::AddObserver(NativeDisplayObserver* observer) {

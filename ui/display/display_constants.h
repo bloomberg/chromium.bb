@@ -37,6 +37,14 @@ enum OutputProtectionMethod {
 // HDCP protection state.
 enum HDCPState { HDCP_STATE_UNDESIRED, HDCP_STATE_DESIRED, HDCP_STATE_ENABLED };
 
+// Color calibration profiles.
+enum ColorCalibrationProfile {
+  COLOR_PROFILE_STANDARD,
+  COLOR_PROFILE_DYNAMIC,
+  COLOR_PROFILE_MOVIE,
+  COLOR_PROFILE_READING,
+};
+
 }  // namespace ui
 
 #endif  // UI_DISPLAY_DISPLAY_CONSTANTS_H_

@@ -98,6 +98,8 @@ OutputConfigurator::DisplayState::DisplayState()
       selected_mode(NULL),
       mirror_mode(NULL) {}
 
+OutputConfigurator::DisplayState::~DisplayState() {}
+
 bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
   if (configurator_->configure_timer_.get() &&
       configurator_->configure_timer_->IsRunning()) {
@@ -377,6 +379,27 @@ bool OutputConfigurator::EnableOutputProtection(
   }
 
   return true;
+}
+
+bool OutputConfigurator::SetColorCalibrationProfile(
+    int64 display_id,
+    ui::ColorCalibrationProfile new_profile) {
+  for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+    if (cached_outputs_[i].display &&
+        cached_outputs_[i].display->display_id() == display_id) {
+      std::vector<ColorCalibrationProfile>::const_iterator iter =
+          std::find(cached_outputs_[i].available_color_profiles.begin(),
+                    cached_outputs_[i].available_color_profiles.end(),
+                    new_profile);
+      if (iter == cached_outputs_[i].available_color_profiles.end())
+        return false;
+
+      return native_display_delegate_->SetColorCalibrationProfile(
+          *cached_outputs_[i].display, new_profile);
+    }
+  }
+
+  return false;
 }
 
 void OutputConfigurator::PrepareForExit() {
