@@ -61,6 +61,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -1135,8 +1136,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     for (size_t i = 0; i < touch_event.touchesLength; ++i) {
       if (touch_event.touches[i].state == WebTouchPoint::StatePressed &&
           HasTouchEventHandlersAt(
-              blink::WebPoint(touch_event.touches[i].position.x,
-                              touch_event.touches[i].position.y))) {
+              gfx::ToFlooredPoint(touch_event.touches[i].position))) {
         ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
         break;
       }

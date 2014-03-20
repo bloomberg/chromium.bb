@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 using blink::WebFloatPoint;
 using blink::WebFloatSize;
@@ -231,8 +232,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
         continue;
       if (input_handler_->HaveTouchEventHandlersAt(
-              blink::WebPoint(touch_event.touches[i].position.x,
-                              touch_event.touches[i].position.y))) {
+              gfx::Point(touch_event.touches[i].position.x,
+                         touch_event.touches[i].position.y))) {
         return DID_NOT_HANDLE;
       }
     }

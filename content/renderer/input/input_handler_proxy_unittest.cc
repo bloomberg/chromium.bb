@@ -141,10 +141,8 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
                                   float y) {
   WebTouchPoint point;
   point.state = state;
-  point.screenPosition.x = x;
-  point.screenPosition.y = y;
-  point.position.x = x;
-  point.position.y = y;
+  point.screenPosition = WebFloatPoint(x, y);
+  point.position = WebFloatPoint(x, y);
   return point;
 }
 

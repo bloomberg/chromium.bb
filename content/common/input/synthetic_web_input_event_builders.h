@@ -66,8 +66,8 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
   void ResetPoints();
 
   // Adds an additional point to the touch list, returning the point's index.
-  int PressPoint(int x, int y);
-  void MovePoint(int index, int x, int y);
+  int PressPoint(float x, float y);
+  void MovePoint(int index, float x, float y);
   void ReleasePoint(int index);
   void CancelPoint(int index);
 

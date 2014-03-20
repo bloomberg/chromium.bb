@@ -990,8 +990,7 @@ void EventSender::addTouchPoint(const CppArgumentList& arguments, CppVariant* re
 
     WebTouchPoint touchPoint;
     touchPoint.state = WebTouchPoint::StatePressed;
-    touchPoint.position.x = arguments[0].toInt32();
-    touchPoint.position.y = arguments[1].toInt32();
+    touchPoint.position = WebFloatPoint(arguments[0].toInt32(), arguments[1].toInt32());
     touchPoint.screenPosition = touchPoint.position;
 
     if (arguments.size() > 2) {
@@ -1060,8 +1059,7 @@ void EventSender::updateTouchPoint(const CppArgumentList& arguments, CppVariant*
 
     WebTouchPoint* touchPoint = &touchPoints[index];
     touchPoint->state = WebTouchPoint::StateMoved;
-    touchPoint->position.x = arguments[1].toInt32();
-    touchPoint->position.y = arguments[2].toInt32();
+    touchPoint->position = WebFloatPoint(arguments[1].toInt32(), arguments[2].toInt32());
     touchPoint->screenPosition = touchPoint->position;
 }
 

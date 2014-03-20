@@ -125,17 +125,22 @@ class TouchEventQueueTest : public testing::Test,
     sync_ack_result_.reset(new InputEventAckState(sync_ack_result));
   }
 
-  void PressTouchPoint(int x, int y) {
+  void PressTouchPoint(float x, float y) {
     touch_event_.PressPoint(x, y);
     SendTouchEvent();
   }
 
-  void MoveTouchPoint(int index, int x, int y) {
+  void MoveTouchPoint(int index, float x, float y) {
     touch_event_.MovePoint(index, x, y);
     SendTouchEvent();
   }
 
-  void MoveTouchPoints(int index0, int x0, int y0, int index1, int x1, int y1) {
+  void MoveTouchPoints(int index0,
+                       float x0,
+                       float y0,
+                       int index1,
+                       float x1,
+                       float y1) {
     touch_event_.MovePoint(index0, x0, y0);
     touch_event_.MovePoint(index1, x1, y1);
     SendTouchEvent();
@@ -1357,12 +1362,10 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
 
   // As soon as a TouchMove exceeds the (Euclidean) distance, no more
   // TouchMove's should be suppressed.
-  // TODO(jdduke): Remove ceil with adoption of floating point touch coords,
-  // crbug/336807.
   const double kFortyFiveDegreeSlopLengthXY =
-      std::ceil(kSlopLengthDips * std::sqrt(2.) / 2.);
-  MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .1,
-                    kFortyFiveDegreeSlopLengthXY + .1);
+      kSlopLengthDips * std::sqrt(2.) / 2.;
+  MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .2,
+                    kFortyFiveDegreeSlopLengthXY + .2);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1386,17 +1389,16 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   ASSERT_EQ(2U, GetAndResetAckedEventCount());
   ASSERT_EQ(0U, queued_event_count());
 
-  // The slop region is boundary-exclusive.
-  // TODO(jdduke): Change to inclusive upon resolving crbug.com/336807.
+  // The slop region is boundary-inclusive.
   MoveTouchPoint(0, kSlopLengthDips - 1., 0);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, kSlopLengthDips, 0);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
 // Tests that TouchMove's are not dropped within the slop suppression region if
@@ -1420,8 +1422,8 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
-// Tests that TouchMove's are not dropped due to integral truncation of
-// WebTouchPoint coordinates after DPI scaling.
+// Tests that TouchMove's are not dropped due to incorrect handling of DPI
+// scaling.
 TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
   const float kSlopLengthPixels = 7.f;
   const float kDPIScale = 3.f;
@@ -1433,12 +1435,11 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  // TouchMove's along the slop boundary should not be suppresed.
-  // TODO(jdduke): These should be suppressed, crbug.com/336807.
+  // TouchMove's along the slop boundary should be suppresed.
   MoveTouchPoint(0, 0, kSlopLengthPixels / kDPIScale);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Reset the touch sequence.
   ReleaseTouchPoint(0);
@@ -1454,20 +1455,18 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove's outside the region should not be suppressed.
-  const float kPixelCoordOutsideSlopRegion = kSlopLengthPixels + 1.f;
+  const float kPixelCoordOutsideSlopRegion = kSlopLengthPixels + 0.5f;
   MoveTouchPoint(0, 0, kPixelCoordOutsideSlopRegion / kDPIScale);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
-
 // Tests that TouchMove's are not dropped if a secondary pointer is present
 // during any movement.
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   const double kSlopLengthDips = 10.;
   const double kHalfSlopLengthDips = kSlopLengthDips / 2;
-  const double kDoubleSlopLengthDips = 10.;
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
@@ -1483,13 +1482,13 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Simulate a secondary pointer press.
-  PressTouchPoint(kDoubleSlopLengthDips, 0);
+  PressTouchPoint(kSlopLengthDips, 0);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove with a secondary pointer should not be suppressed.
-  MoveTouchPoint(1, kDoubleSlopLengthDips, 0);
+  MoveTouchPoint(1, kSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);

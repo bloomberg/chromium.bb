@@ -169,17 +169,15 @@ class TouchEventQueue::TouchTimeoutHandler {
 // a given slop region, unless the touchstart is preventDefault'ed.
 class TouchEventQueue::TouchMoveSlopSuppressor {
  public:
-  // TODO(jdduke): Remove int cast on suppression length, crbug.com/336807.
   TouchMoveSlopSuppressor(double slop_suppression_length_dips)
-      : slop_suppression_length_dips_squared_(
-            static_cast<int>(slop_suppression_length_dips) *
-            static_cast<int>(slop_suppression_length_dips)),
+      : slop_suppression_length_dips_squared_(slop_suppression_length_dips *
+                                              slop_suppression_length_dips),
         suppressing_touch_moves_(false) {}
 
   bool FilterEvent(const WebTouchEvent& event) {
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
       touch_sequence_start_position_ =
-          gfx::PointF(event.touches[0].position.x, event.touches[0].position.y);
+          gfx::PointF(event.touches[0].position);
       suppressing_touch_moves_ = slop_suppression_length_dips_squared_ != 0;
     }
 
@@ -192,11 +190,9 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
         suppressing_touch_moves_ = false;
       } else if (event.touchesLength == 1) {
         // Movement outside of the slop region should terminate suppression.
-        // TODO(jdduke): Use strict inequality, crbug.com/336807.
-        gfx::PointF position(event.touches[0].position.x,
-                             event.touches[0].position.y);
-        if ((position - touch_sequence_start_position_).LengthSquared() >=
-                slop_suppression_length_dips_squared_)
+        gfx::PointF position(event.touches[0].position);
+        if ((position - touch_sequence_start_position_).LengthSquared() >
+            slop_suppression_length_dips_squared_)
           suppressing_touch_moves_ = false;
       }
     }

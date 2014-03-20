@@ -121,11 +121,11 @@ bool MakeUITouchEventsFromWebTouchEvents(
     if (WebTouchPointStateToEventType(point.state) != type)
       continue;
     // ui events start in the co-ordinate space of the EventDispatcher.
-    gfx::Point location;
+    gfx::PointF location;
     if (coordinate_system == LOCAL_COORDINATES)
-      location = gfx::Point(point.position.x, point.position.y);
+      location = point.position;
     else
-      location = gfx::Point(point.screenPosition.x, point.screenPosition.y);
+      location = point.screenPosition;
     ui::TouchEvent* uievent = new ui::TouchEvent(type,
           location,
           flags,

@@ -89,7 +89,12 @@ void printTouchList(WebTestDelegate* delegate, const WebTouchPoint* points, int 
 {
     for (int i = 0; i < length; ++i) {
         char buffer[100];
-        snprintf(buffer, sizeof(buffer), "* %d, %d: %s\n", static_cast<int>(points[i].position.x), static_cast<int>(points[i].position.y), pointState(points[i].state));
+        snprintf(buffer,
+                 sizeof(buffer),
+                 "* %f, %f: %s\n",
+                 points[i].position.x,
+                 points[i].position.y,
+                 pointState(points[i].state));
         delegate->printMessage(buffer);
     }
 }

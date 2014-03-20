@@ -211,10 +211,8 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     if (!started_) {
       ASSERT_EQ(touch_event.type, WebInputEvent::TouchStart);
 
-      start_0_ = gfx::PointF(touch_event.touches[0].position.x,
-                             touch_event.touches[0].position.y);
-      start_1_ = gfx::PointF(touch_event.touches[1].position.x,
-                             touch_event.touches[1].position.y);
+      start_0_ = gfx::PointF(touch_event.touches[0].position);
+      start_1_ = gfx::PointF(touch_event.touches[1].position);
       last_pointer_distance_ = (start_0_ - start_1_).Length();
 
       started_ = true;
@@ -222,10 +220,8 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
       ASSERT_NE(touch_event.type, WebInputEvent::TouchStart);
       ASSERT_NE(touch_event.type, WebInputEvent::TouchCancel);
 
-      gfx::PointF current_0 = gfx::PointF(touch_event.touches[0].position.x,
-                                          touch_event.touches[0].position.y);
-      gfx::PointF current_1 = gfx::PointF(touch_event.touches[1].position.x,
-                                          touch_event.touches[1].position.y);
+      gfx::PointF current_0 = gfx::PointF(touch_event.touches[0].position);
+      gfx::PointF current_1 = gfx::PointF(touch_event.touches[1].position);
 
       total_num_pixels_covered_ =
           (current_0 - start_0_).Length() + (current_1 - start_1_).Length();
@@ -280,8 +276,6 @@ class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
     FINISHED
   };
 
-  // TODO(tdresser): clean up accesses to position_ once WebTouchPoint stores
-  // its location as a WebFloatPoint. See crbug.com/336807.
   gfx::PointF position_;
   base::TimeDelta start_time_;
   base::TimeDelta stop_time_;
@@ -302,16 +296,14 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
     switch (state_) {
       case NOT_STARTED:
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchStart);
-        position_ = gfx::PointF(touch_event.touches[0].position.x,
-                                touch_event.touches[0].position.y);
+        position_ = gfx::PointF(touch_event.touches[0].position);
         start_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchEnd);
-        EXPECT_EQ(position_, gfx::PointF(touch_event.touches[0].position.x,
-                                         touch_event.touches[0].position.y));
+        EXPECT_EQ(position_, gfx::PointF(touch_event.touches[0].position));
         stop_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = FINISHED;
@@ -338,7 +330,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.type, WebInputEvent::MouseDown);
         EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event.clickCount, 1);
-        position_ = gfx::Point(mouse_event.x, mouse_event.y);
+        position_ = gfx::PointF(mouse_event.x, mouse_event.y);
         start_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(mouse_event.timeStampSeconds * 1000));
         state_ = STARTED;
@@ -347,7 +339,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.type, WebInputEvent::MouseUp);
         EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event.clickCount, 1);
-        EXPECT_EQ(position_, gfx::Point(mouse_event.x, mouse_event.y));
+        EXPECT_EQ(position_, gfx::PointF(mouse_event.x, mouse_event.y));
         stop_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(mouse_event.timeStampSeconds * 1000));
         state_ = FINISHED;
