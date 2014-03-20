@@ -6,20 +6,19 @@
 
 // These includes will be processed at build time by grit.
 <include src="../../../../third_party/dom_distiller_js/js/domdistiller.js"/>
-<include src="../../../../third_party/readability/js/readability.js"/>
 
-// Extracts long-form content from a page and returns and array where the first
+// Extracts long-form content from a page and returns an array where the first
 // element is the article title, the second element is HTML containing the
-// long-form content, and remaining elements are URLs for images referenced by
-// that HTML. Each <img> tag in the HTML has an id field set to k - 2, which
-// corresponds to a URL listed at index k in the array returned.
+// long-form content, the third element is the next page link, and the fourth
+// element is the previous page link.
 (function() {
-  readability.init();
   var result = new Array(4);
-  result[0] = readability.getArticleTitle();
-  result[1] = com.dom_distiller.ContentExtractor.extractContent()
-  result[2] = readability.getNextPageLink();
+  result[0] = com.dom_distiller.DocumentTitleGetter.getDocumentTitle(
+      document.title, document.documentElement);
+  result[1] = com.dom_distiller.ContentExtractor.extractContent();
+  result[2] = com.dom_distiller.PagingLinksFinder.findNext(
+      document.documentElement);
   // TODO(shashishekhar): Add actual previous page link here.
   result[3] = '';
-  return result.concat(readability.getImages());
+  return result;
 })()
