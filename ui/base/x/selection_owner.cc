@@ -35,7 +35,11 @@ SelectionOwner::SelectionOwner(Display* x_display,
 }
 
 SelectionOwner::~SelectionOwner() {
-  Clear();
+  // If we are the selection owner, we need to release the selection so we
+  // don't receive further events. However, we don't call ClearSelectionOwner()
+  // because we don't want to do this indiscriminately.
+  if (XGetSelectionOwner(x_display_, selection_name_) == x_window_)
+    XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
 }
 
 void SelectionOwner::RetrieveTargets(std::vector<Atom>* targets) {
@@ -55,10 +59,8 @@ void SelectionOwner::TakeOwnershipOfSelection(
   }
 }
 
-void SelectionOwner::Clear() {
-  if (XGetSelectionOwner(x_display_, selection_name_) == x_window_)
-    XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
-
+void SelectionOwner::ClearSelectionOwner() {
+  XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
   format_map_ = SelectionFormatMap();
 }
 
