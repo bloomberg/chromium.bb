@@ -53,6 +53,9 @@ enum WMEventType {
   // A user requested to toggle fullscreen state.
   WM_EVENT_TOGGLE_FULLSCREEN,
 
+  // A user requested to center a window.
+  WM_EVENT_CENTER,
+
   // TODO(oshima): Investigate if this can be removed from ash.
   // Widget requested to show in inactive state.
   WM_EVENT_SHOW_INACTIVE,

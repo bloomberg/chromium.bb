@@ -45,6 +45,8 @@ class DefaultState : public WindowState::State {
   static void SetBounds(WindowState* window_state,
                         const SetBoundsEvent* bounds_event);
 
+  static void CenterWindow(WindowState* window_state);
+
   // The current type of the window.
   WindowStateType state_type_;
 

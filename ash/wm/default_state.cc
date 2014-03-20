@@ -108,6 +108,7 @@ void DefaultState::OnWMEvent(WindowState* window_state,
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_CENTER:
       NOTREACHED() << "Compound event should not reach here:" << event;
       return;
     case WM_EVENT_ADDED_TO_WORKSPACE:
@@ -331,6 +332,9 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     }
+    case WM_EVENT_CENTER:
+      CenterWindow(window_state);
+      return true;
     case WM_EVENT_NORMAL:
     case WM_EVENT_MAXIMIZE:
     case WM_EVENT_MINIMIZE:
@@ -420,6 +424,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_CENTER:
     case WM_EVENT_NORMAL:
     case WM_EVENT_MAXIMIZE:
     case WM_EVENT_MINIMIZE:
@@ -584,6 +589,28 @@ void DefaultState::SetBounds(WindowState* window_state,
     window_state->SetBoundsDirect(child_bounds);
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     window_state->SetBoundsConstrained(event->requested_bounds());
+  }
+}
+
+// static
+void DefaultState::CenterWindow(WindowState* window_state) {
+  if (!window_state->IsNormalOrSnapped())
+    return;
+  aura::Window* window = window_state->window();
+  if (window_state->IsSnapped()) {
+    gfx::Rect center_in_screen =
+        Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+    gfx::Size size = window_state->HasRestoreBounds() ?
+        window_state->GetRestoreBoundsInScreen().size() :
+        window->bounds().size();
+    center_in_screen.ClampToCenteredSize(size);
+    window_state->SetRestoreBoundsInScreen(center_in_screen);
+    window_state->Restore();
+  } else {
+    gfx::Rect center_in_parent =
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+    center_in_parent.ClampToCenteredSize(window->bounds().size());
+    window_state->SetBoundsDirectAnimated(center_in_parent);
   }
 }
 

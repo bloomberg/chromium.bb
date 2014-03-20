@@ -121,6 +121,7 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_FULLSCREEN:
     case wm::WM_EVENT_TOGGLE_MAXIMIZE:
+    case wm::WM_EVENT_CENTER:
     case wm::WM_EVENT_FULLSCREEN:
     case wm::WM_EVENT_SNAP_LEFT:
     case wm::WM_EVENT_SNAP_RIGHT:

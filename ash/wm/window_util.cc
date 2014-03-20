@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -75,27 +76,9 @@ bool IsWindowMinimized(aura::Window* window) {
 }
 
 void CenterWindow(aura::Window* window) {
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  if (!window_state->IsNormalOrSnapped())
-    return;
-  const gfx::Display display =
-      Shell::GetScreen()->GetDisplayNearestWindow(window);
-  gfx::Rect center = display.work_area();
-  gfx::Size size = window->bounds().size();
-  if (window_state->IsSnapped()) {
-    if (window_state->HasRestoreBounds())
-      size = window_state->GetRestoreBoundsInScreen().size();
-    center.ClampToCenteredSize(size);
-    window_state->SetRestoreBoundsInScreen(center);
-    window_state->Restore();
-  } else {
-    center = ScreenUtil::ConvertRectFromScreen(window->parent(),
-        center);
-    center.ClampToCenteredSize(size);
-    window->SetBounds(center);
-  }
+  wm::WMEvent event(wm::WM_EVENT_CENTER);
+  wm::GetWindowState(window)->OnWMEvent(&event);
 }
-
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
   gfx::Rect work_area_in_parent(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
