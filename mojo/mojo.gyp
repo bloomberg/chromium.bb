@@ -336,27 +336,21 @@
     },
     {
       'target_name': 'mojo_service_manager',
-      'type': '<(component)',
-      'defines': [
-        'MOJO_SERVICE_MANAGER_IMPLEMENTATION',
-      ],
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
-        'mojo_environment_chromium',
         'mojo_shell_bindings',
       ],
       'sources': [
         'service_manager/service_loader.h',
         'service_manager/service_manager.cc',
         'service_manager/service_manager.h',
-        'service_manager/service_manager_export.h',
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_shell_bindings',
       ],
     },
     {
@@ -368,6 +362,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_gles2_impl',
+        'mojo_shell_bindings',
         'mojo_service_manager',
         'mojo_system',
         'mojo_system_impl',
@@ -424,7 +419,7 @@
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
         'mojo_environment_chromium',
-        'mojo_service_manager',
+        'mojo_shell_bindings',
         'mojo_shell_lib',
         'mojo_system',
         'mojo_system_impl',
@@ -439,12 +434,10 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        '../url/url.gyp:url_lib',
         'mojo_bindings',
         'mojo_environment_standalone',
         'mojo_run_all_unittests',
         'mojo_service_manager',
-        'mojo_shell_client',
         'mojo_system',
         'mojo_utility',
       ],
