@@ -34,7 +34,8 @@ struct NaClValidationCache;
  *   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
  *   // Fill out args...
  *   NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, NaClDescMakeCustomDesc(...));
- *   NaClChromeMainStartApp(nap, args);
+ *   NaClChromeMainLoad(nap, args);
+ *   NaClChromeMainStart(nap);
  */
 
 /*
@@ -180,10 +181,22 @@ void NaClChromeMainInit(void);
 /* Create a new args struct containing default values. */
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
 
-/* Launch NaCl.  This does not return. */
+/*
+ * Prepare to launch NaCl. Returns zero on success or a non-zero error code on
+ * failure.
+ */
+int NaClChromeMainLoad(struct NaClApp *nap,
+                       struct NaClChromeMainArgs *args);
+
+/* Start NaCl. This does not return. */
+void NaClChromeMainStart(struct NaClApp *nap);
+
+/*
+ * DEPRECATED. Calls NaClChromeMainLoad and NaClChromeMainStart.
+ * TODO(teravest): Remove this old interface after current users are migrated.
+ */
 void NaClChromeMainStartApp(struct NaClApp *nap,
                             struct NaClChromeMainArgs *args);
-
 
 EXTERN_C_END
 
