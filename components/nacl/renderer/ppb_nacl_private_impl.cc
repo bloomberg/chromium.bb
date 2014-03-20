@@ -4,8 +4,6 @@
 
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 
-#ifndef DISABLE_NACL
-
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -628,5 +626,3 @@ const PPB_NaCl_Private* GetNaClPrivateInterface() {
 }
 
 }  // namespace nacl
-
-#endif  // DISABLE_NACL

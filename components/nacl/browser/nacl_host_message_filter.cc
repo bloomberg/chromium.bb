@@ -68,7 +68,6 @@ net::HostResolver* NaClHostMessageFilter::GetHostResolver() {
   return request_context_->GetURLRequestContext()->host_resolver();
 }
 
-#if !defined(DISABLE_NACL)
 void NaClHostMessageFilter::OnLaunchNaCl(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg) {
@@ -181,6 +180,5 @@ void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
   nacl_file_host::OpenNaClExecutable(this, render_view_id, file_url,
                                      reply_msg);
 }
-#endif
 
 }  // namespace nacl

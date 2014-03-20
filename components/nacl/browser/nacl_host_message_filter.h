@@ -48,7 +48,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 
   virtual ~NaClHostMessageFilter();
 
-#if !defined(DISABLE_NACL)
   void OnLaunchNaCl(const NaClLaunchParams& launch_params,
                     IPC::Message* reply_msg);
   void OnGetReadonlyPnaclFd(const std::string& filename,
@@ -68,7 +67,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void AsyncReturnTemporaryFile(int pp_instance,
                                 base::PlatformFile fd,
                                 bool is_hit);
-#endif
   int render_process_id_;
 
   // off_the_record_ is copied from the profile partly so that it can be
