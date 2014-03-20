@@ -1,0 +1,7 @@
+W3C نشاط
+AB
+ This is a testharness.js-based test.
+PASS SVGTextContentElement.getSubStringLength, BiDi. 
+PASS SVGTextContentElement.getSubStringLength, multiple text-chunks. 
+Harness: the test ran to completion.
+

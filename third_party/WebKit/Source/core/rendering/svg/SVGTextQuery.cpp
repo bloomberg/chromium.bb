@@ -141,7 +141,9 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
     startPosition -= queryData->processedCharacters;
     endPosition -= queryData->processedCharacters;
 
-    if (startPosition >= endPosition || startPosition < 0 || endPosition < 0)
+    startPosition = max(0, startPosition);
+
+    if (startPosition >= endPosition)
         return false;
 
     modifyStartEndPositionsRespectingLigatures(queryData, startPosition, endPosition);
