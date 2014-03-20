@@ -29,7 +29,6 @@
 #include "platform/graphics/Pattern.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -73,12 +72,7 @@ void FETile::applySoftware()
 
     OwnPtr<ImageBufferSurface> surface;
     IntSize intTileSize = roundedIntSize(tileRect.size());
-    if (filter()->isAccelerated()) {
-        surface = adoptPtr(new AcceleratedImageBufferSurface(intTileSize));
-    }
-    if (!surface || !surface->isValid()) {
-        surface = adoptPtr(new UnacceleratedImageBufferSurface(intTileSize));
-    }
+    surface = adoptPtr(new UnacceleratedImageBufferSurface(intTileSize));
     OwnPtr<ImageBuffer> tileImage = ImageBuffer::create(surface.release());
     if (!tileImage)
         return;

@@ -34,8 +34,7 @@ class FilterEffect;
 class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
 public:
     Filter(const AffineTransform& absoluteTransform)
-    : m_isAccelerated(false)
-    , m_absoluteTransform(absoluteTransform)
+    : m_absoluteTransform(absoluteTransform)
     , m_inverseTransform(absoluteTransform.inverse())
     {
         // Filters can only accept scaling and translating transformations, as coordinates
@@ -62,9 +61,6 @@ public:
     FloatRect mapLocalRectToAbsoluteRect(const FloatRect& rect) const { return m_absoluteTransform.mapRect(rect); }
     FloatRect mapAbsoluteRectToLocalRect(const FloatRect& rect) const { return m_inverseTransform.mapRect(rect); }
 
-    bool isAccelerated() const { return m_isAccelerated; }
-    void setIsAccelerated(bool isAccelerated) { m_isAccelerated = isAccelerated; }
-
     virtual float applyHorizontalScale(float value) const
     {
         return value * m_absoluteTransform.a();
@@ -88,7 +84,6 @@ public:
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
-    bool m_isAccelerated;
     AffineTransform m_absoluteTransform;
     AffineTransform m_inverseTransform;
     FloatRect m_absoluteFilterRegion;

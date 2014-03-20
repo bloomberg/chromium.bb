@@ -45,7 +45,6 @@
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -278,13 +277,7 @@ void FilterEffectRenderer::allocateBackingStoreIfNeeded()
     if (!m_graphicsBufferAttached) {
         IntSize logicalSize(m_sourceDrawingRegion.width(), m_sourceDrawingRegion.height());
         if (!sourceImage() || sourceImage()->size() != logicalSize) {
-            OwnPtr<ImageBufferSurface> surface;
-            if (isAccelerated()) {
-                surface = adoptPtr(new AcceleratedImageBufferSurface(logicalSize));
-            }
-            if (!surface || !surface->isValid()) {
-                surface = adoptPtr(new UnacceleratedImageBufferSurface(logicalSize));
-            }
+            OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(logicalSize));
             setSourceImage(ImageBuffer::create(surface.release()));
         }
         m_graphicsBufferAttached = true;

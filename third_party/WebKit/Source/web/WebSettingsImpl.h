@@ -65,7 +65,6 @@ public:
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForScrollableFramesEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForVideoEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedFiltersEnabled(bool) OVERRIDE;
     virtual void setAllowDisplayOfInsecureContent(bool) OVERRIDE;
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
     virtual void setAllowCustomScrollbarInMainFrame(bool) OVERRIDE;

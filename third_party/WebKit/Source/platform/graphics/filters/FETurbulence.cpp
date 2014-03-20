@@ -415,24 +415,6 @@ SkShader* FETurbulence::createShader(const IntRect& filterRegion)
             stitchTiles() ? &size : 0);
 }
 
-bool FETurbulence::applySkia()
-{
-    // For now, only use the skia implementation for accelerated rendering.
-    if (!filter()->isAccelerated())
-        return false;
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return false;
-
-    const IntRect filterRegion(IntPoint::zero(), absolutePaintRect().size());
-
-    SkPaint paint;
-    paint.setShader(createShader(filterRegion))->unref();
-    resultImage->context()->drawRect((SkRect)filterRegion, paint);
-    return true;
-}
-
 PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkShader> shader(createShader(IntRect()));

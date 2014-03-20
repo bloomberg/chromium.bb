@@ -28,7 +28,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
 #if HAVE(ARM_NEON_INTRINSICS)
 #include <arm_neon.h>
@@ -290,10 +289,7 @@ ImageBuffer* FilterEffect::asImageBuffer()
     if (m_imageBufferResult)
         return m_imageBufferResult.get();
     OwnPtr<ImageBufferSurface> surface;
-    if (m_filter->isAccelerated())
-        surface = adoptPtr(new AcceleratedImageBufferSurface(m_absolutePaintRect.size()));
-    if (!m_filter->isAccelerated() || !surface->isValid())
-        surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
     m_imageBufferResult = ImageBuffer::create(surface.release());
     if (!m_imageBufferResult)
         return 0;
@@ -434,10 +430,7 @@ ImageBuffer* FilterEffect::createImageBufferResult()
     if (m_absolutePaintRect.isEmpty())
         return 0;
     OwnPtr<ImageBufferSurface> surface;
-    if (m_filter->isAccelerated())
-        surface = adoptPtr(new AcceleratedImageBufferSurface(m_absolutePaintRect.size()));
-    if (!m_filter->isAccelerated() || !surface->isValid())
-        surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
     m_imageBufferResult = ImageBuffer::create(surface.release());
     return m_imageBufferResult.get();
 }

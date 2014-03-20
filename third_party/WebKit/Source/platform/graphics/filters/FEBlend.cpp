@@ -201,43 +201,6 @@ static SkXfermode::Mode toSkiaMode(BlendModeType mode)
     }
 }
 
-bool FEBlend::applySkia()
-{
-    // For now, only use the skia implementation for accelerated rendering.
-    if (!filter()->isAccelerated())
-        return false;
-
-    FilterEffect* in = inputEffect(0);
-    FilterEffect* in2 = inputEffect(1);
-
-    if (!in || !in2)
-        return false;
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return false;
-
-    RefPtr<Image> foreground = in->asImageBuffer()->copyImage(DontCopyBackingStore);
-    RefPtr<Image> background = in2->asImageBuffer()->copyImage(DontCopyBackingStore);
-
-    RefPtr<NativeImageSkia> foregroundNativeImage = foreground->nativeImageForCurrentFrame();
-    RefPtr<NativeImageSkia> backgroundNativeImage = background->nativeImageForCurrentFrame();
-
-    if (!foregroundNativeImage || !backgroundNativeImage)
-        return false;
-
-    SkBitmap foregroundBitmap = foregroundNativeImage->bitmap();
-    SkBitmap backgroundBitmap = backgroundNativeImage->bitmap();
-
-    SkAutoTUnref<SkImageFilter> backgroundSource(new SkBitmapSource(backgroundBitmap));
-    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
-    SkAutoTUnref<SkImageFilter> blend(new SkXfermodeImageFilter(mode, backgroundSource));
-    SkPaint paint;
-    paint.setImageFilter(blend);
-    resultImage->context()->drawBitmap(foregroundBitmap, 0, 0, &paint);
-    return true;
-}
-
 PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));

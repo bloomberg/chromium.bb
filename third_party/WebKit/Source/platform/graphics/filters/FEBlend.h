@@ -56,7 +56,6 @@ private:
     FEBlend(Filter*, BlendModeType);
 
     virtual void applySoftware() OVERRIDE;
-    virtual bool applySkia() OVERRIDE;
 
     BlendModeType m_mode;
 };

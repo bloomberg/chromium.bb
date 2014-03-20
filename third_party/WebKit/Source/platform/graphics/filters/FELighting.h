@@ -122,7 +122,6 @@ protected:
 
 private:
     virtual void applySoftware() OVERRIDE;
-    virtual bool applySkia() OVERRIDE;
 
     void getTransform(FloatPoint3D* scale, FloatSize* offset) const;
 };

@@ -481,34 +481,4 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
     }
 }
 
-bool FELighting::applySkia()
-{
-    // For now, only use the skia implementation for accelerated rendering.
-    if (!filter()->isAccelerated())
-        return false;
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return false;
-
-    FilterEffect* in = inputEffect(0);
-
-    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-
-    setIsAlphaImage(in->isAlphaImage());
-
-    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
-    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
-    if (!nativeImage)
-        return false;
-
-    GraphicsContext* dstContext = resultImage->context();
-
-    SkPaint paint;
-    RefPtr<SkImageFilter> filter = createImageFilter(0);
-    paint.setImageFilter(filter.get());
-    dstContext->drawBitmap(nativeImage->bitmap(), drawingRegion.location().x(), drawingRegion.location().y(), &paint);
-    return true;
-}
-
 } // namespace WebCore
