@@ -73,6 +73,8 @@ class NET_EXPORT StreamListenSocket
 
   // Copies the local address to |address|. Returns a network error code.
   int GetLocalAddress(IPEndPoint* address);
+  // Copies the peer address to |address|. Returns a network error code.
+  int GetPeerAddress(IPEndPoint* address);
 
   static const int kSocketError;
 

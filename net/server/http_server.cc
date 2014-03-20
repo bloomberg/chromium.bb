@@ -132,6 +132,9 @@ void HttpServer::DidRead(StreamListenSocket* socket,
     if (!ParseHeaders(connection, &request, &pos))
       break;
 
+    // Sets peer address if exists.
+    socket->GetPeerAddress(&request.peer);
+
     std::string connection_header = request.GetHeaderValue("connection");
     if (connection_header == "Upgrade") {
       connection->web_socket_.reset(WebSocket::CreateWebSocket(connection,

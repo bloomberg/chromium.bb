@@ -176,6 +176,7 @@ TEST_F(HttpServerTest, Request) {
   ASSERT_EQ("/test", requests_[0].path);
   ASSERT_EQ("", requests_[0].data);
   ASSERT_EQ(0u, requests_[0].headers.size());
+  ASSERT_TRUE(StartsWithASCII(requests_[0].peer.ToString(), "127.0.0.1", true));
 }
 
 TEST_F(HttpServerTest, RequestWithHeaders) {
