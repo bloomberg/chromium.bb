@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,6 +49,10 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   std::string locale = g_browser_process->GetApplicationLocale();
   std::string product_tour_url = base::StringPrintf(
       kProductTourBaseURL, locale.c_str());
+
+  if (chrome::android::AccessibilityUtil::IsAccessibilityEnabled())
+    product_tour_url += "?talkback";
+
   html_source->AddString("productTourUrl", product_tour_url);
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_ui->GetWebContents());

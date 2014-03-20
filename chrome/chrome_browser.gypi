@@ -112,6 +112,8 @@
         'browser/accessibility/accessibility_events.h',
         'browser/accessibility/invert_bubble_prefs.cc',
         'browser/accessibility/invert_bubble_prefs.h',
+        'browser/android/accessibility_util.cc',
+        'browser/android/accessibility_util.h',
         'browser/android/activity_type_id_list.h',
         'browser/android/activity_type_ids.cc',
         'browser/android/activity_type_ids.h',
@@ -3730,6 +3732,7 @@
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/chrome/browser/AccessibilityUtil.java',
             'android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogControllerAndroid.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogResult.java',
