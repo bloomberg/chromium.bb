@@ -84,4 +84,17 @@ TEST(CSSParserValuesTest, EqualIgnoringCase16BitsString)
     ASSERT_FALSE(cssParserString.equalIgnoringCase("abCD"));
 }
 
+TEST(CSSParserValuesTest, CSSParserValuelistClear)
+{
+    CSSParserValueList list;
+    for (int i = 0; i < 3; ++i) {
+        CSSParserValue value;
+        value.setFromNumber(3);
+        list.addValue(value);
+    }
+    list.clear();
+    ASSERT_FALSE(list.size());
+    ASSERT_FALSE(list.currentIndex());
+}
+
 } // namespace
