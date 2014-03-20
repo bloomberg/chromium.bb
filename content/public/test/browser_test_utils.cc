@@ -460,22 +460,6 @@ bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
       adapter.render_view_host(), frame_xpath, script, NULL);
 }
 
-bool ExecuteScriptInFrameAndExtractInt(
-    const internal::ToRenderViewHost& adapter,
-    const std::string& frame_xpath,
-    const std::string& script,
-    int* result) {
-  DCHECK(result);
-  scoped_ptr<base::Value> value;
-  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
-                                  frame_xpath, script, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsInteger(result);
-}
-
 bool ExecuteScriptInFrameAndExtractBool(
     const internal::ToRenderViewHost& adapter,
     const std::string& frame_xpath,
