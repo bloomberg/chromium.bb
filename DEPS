@@ -103,7 +103,7 @@ deps = {
     "/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@257461",
+    "/trunk/deps/third_party/icu46@258166",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
