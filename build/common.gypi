@@ -837,6 +837,10 @@
           'remoting%': 0,
           'enable_printing%': 0,
         }],
+
+        ['OS=="win"', {
+          'use_mojo%': 1,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses

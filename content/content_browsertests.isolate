@@ -86,6 +86,7 @@
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/content_shell.pak',
+          '<(PRODUCT_DIR)/mojo_system.dll',
           '<(PRODUCT_DIR)/plugins/np_test_netscape_plugin.dll',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
         ],

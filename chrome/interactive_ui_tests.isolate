@@ -85,6 +85,7 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
+          '<(PRODUCT_DIR)/mojo_system.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
