@@ -425,9 +425,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.accelerated_2d_canvas_msaa_sample_count =
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
-  prefs.accelerated_filters_enabled =
-      GpuProcessHost::gpu_enabled() &&
-      command_line.HasSwitch(switches::kEnableAcceleratedFilters);
   prefs.deferred_filters_enabled =
       command_line.HasSwitch(switches::kEnableDeferredFilters);
   prefs.accelerated_compositing_for_3d_transforms_enabled =

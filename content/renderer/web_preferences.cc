@@ -228,9 +228,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setAccelerated2dCanvasMSAASampleCount(
       prefs.accelerated_2d_canvas_msaa_sample_count);
 
-  // Enable gpu-accelerated filters if requested on the command line.
-  settings->setAcceleratedFiltersEnabled(prefs.accelerated_filters_enabled);
-
   // Enable deferred filter rendering if requested on the command line.
   settings->setDeferredFiltersEnabled(prefs.deferred_filters_enabled);
 
