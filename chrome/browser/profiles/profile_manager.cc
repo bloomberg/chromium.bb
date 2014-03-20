@@ -906,7 +906,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   }
 
   if (profile) {
-    // If this was the guest profile, finish setting its incognito status.
+    // If this was the guest profile, finish setting its special status.
     if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
       SetGuestProfilePrefs(profile);
 
@@ -1115,11 +1115,12 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 }
 
 void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  prefs->SetBoolean(prefs::kSigninAllowed, false);
   // This can be removed in the future but needs to be present through
   // a release (or two) so that any existing installs get switched to
   // the new state and away from the previous "forced" state.
-  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
-                                      IncognitoModePrefs::ENABLED);
+  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::ENABLED);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
