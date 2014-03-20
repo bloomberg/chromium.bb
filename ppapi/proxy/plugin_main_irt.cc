@@ -14,7 +14,6 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
 // ViewMsgLog et al. functions.
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -36,6 +35,7 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(__native_client__)
+#include "base/at_exit.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #endif
@@ -327,8 +327,12 @@ void PpapiPluginRegisterThreadCreator(
 }
 
 int PpapiPluginMain() {
+  // For non-SFI mode, the manager is already instantiated in nacl_helper,
+  // so we do not need to instantiate it here.
+#if defined(__native_client__)
   // Though it isn't referenced here, we must instantiate an AtExitManager.
   base::AtExitManager exit_manager;
+#endif
   base::MessageLoop loop;
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
