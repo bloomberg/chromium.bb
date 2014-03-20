@@ -29,6 +29,7 @@ class SequencedTaskRunner;
 
 namespace extensions {
 class AppSyncData;
+class ExtensionGCMAppHandler;
 class ExtensionPrefs;
 class ExtensionSyncData;
 }  // namespace extensions
@@ -150,6 +151,9 @@ class ExtensionSyncService : public syncer::SyncableService,
   // have started happening. It will cause sync to call us back
   // asynchronously via MergeDataAndStartSyncing as soon as possible.
   syncer::SyncableService::StartSyncFlare flare_;
+
+  // Used to provide the extension specific logic for GCMProfileService.
+  scoped_ptr<extensions::ExtensionGCMAppHandler> extesnion_gcm_app_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSyncService);
 };

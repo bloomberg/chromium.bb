@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_gcm_app_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
@@ -186,8 +187,8 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessagesDeleted) {
       LoadTestExtension(kEventsExtension, "on_messages_deleted.html");
   ASSERT_TRUE(extension);
 
-  GcmJsEventRouter router(profile());
-  router.OnMessagesDeleted(extension->id());
+  extensions::ExtensionGCMAppHandler app_handler(profile());
+  app_handler.OnMessagesDeleted(extension->id());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -199,17 +200,17 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessage) {
       LoadTestExtension(kEventsExtension, "on_message.html");
   ASSERT_TRUE(extension);
 
-  GcmJsEventRouter router(profile());
+  extensions::ExtensionGCMAppHandler app_handler(profile());
 
   gcm::GCMClient::IncomingMessage message;
   message.data["property1"] = "value1";
   message.data["property2"] = "value2";
   // First message is sent without a collapse key.
-  router.OnMessage(extension->id(), message);
+  app_handler.OnMessage(extension->id(), message);
 
   // Second message carries the same data and a collapse key.
   message.collapse_key = "collapseKeyValue";
-  router.OnMessage(extension->id(), message);
+  app_handler.OnMessage(extension->id(), message);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -223,27 +224,32 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnSendError) {
   ASSERT_TRUE(extension);
 
   std::string total_expected_messages = "5";
-  GcmJsEventRouter router(profile());
-  router.OnSendError(extension->id(),
-                     CreateErrorDetails("error_message_1",
-                                        gcm::GCMClient::ASYNC_OPERATION_PENDING,
-                                        total_expected_messages));
-  router.OnSendError(extension->id(),
-                     CreateErrorDetails("error_message_2",
-                                        gcm::GCMClient::SERVER_ERROR,
-                                        total_expected_messages));
-  router.OnSendError(extension->id(),
-                     CreateErrorDetails("error_message_3",
-                                        gcm::GCMClient::NETWORK_ERROR,
-                                        total_expected_messages));
-  router.OnSendError(extension->id(),
-                     CreateErrorDetails("error_message_4",
-                                        gcm::GCMClient::UNKNOWN_ERROR,
-                                        total_expected_messages));
-  router.OnSendError(extension->id(),
-                     CreateErrorDetails("error_message_5",
-                                        gcm::GCMClient::TTL_EXCEEDED,
-                                        total_expected_messages));
+  extensions::ExtensionGCMAppHandler app_handler(profile());
+  app_handler.OnSendError(
+      extension->id(),
+      CreateErrorDetails("error_message_1",
+                         gcm::GCMClient::ASYNC_OPERATION_PENDING,
+                         total_expected_messages));
+  app_handler.OnSendError(
+      extension->id(),
+      CreateErrorDetails("error_message_2",
+                         gcm::GCMClient::SERVER_ERROR,
+                         total_expected_messages));
+  app_handler.OnSendError(
+      extension->id(),
+      CreateErrorDetails("error_message_3",
+                         gcm::GCMClient::NETWORK_ERROR,
+                         total_expected_messages));
+  app_handler.OnSendError(
+      extension->id(),
+      CreateErrorDetails("error_message_4",
+                         gcm::GCMClient::UNKNOWN_ERROR,
+                         total_expected_messages));
+  app_handler.OnSendError(
+      extension->id(),
+      CreateErrorDetails("error_message_5",
+                         gcm::GCMClient::TTL_EXCEEDED,
+                         total_expected_messages));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

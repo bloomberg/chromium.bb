@@ -16,13 +16,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
-#if !defined(OS_ANDROID)
-#include "chrome/browser/extensions/api/gcm/gcm_api.h"
-#endif
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/state_store.h"
+#include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
-#include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -36,11 +32,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/url_request/url_request_context_getter.h"
-
-using extensions::Extension;
 
 namespace gcm {
 
@@ -549,8 +542,6 @@ void GCMProfileService::RegisterProfilePrefs(
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
       gcm_client_ready_(false),
-      invalidation_event_router_(NULL),
-      testing_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(!profile->IsOffTheRecord());
 }
@@ -563,14 +554,6 @@ void GCMProfileService::Initialize(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
-  // TODO(jianli): move extension specific logic out of GCMProfileService.
-  registrar_.Add(this,
-                 chrome:: NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
-
-#if !defined(OS_ANDROID)
-  js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
-#endif
 
   SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
 
@@ -624,10 +607,28 @@ void GCMProfileService::Stop() {
 }
 
 void GCMProfileService::Shutdown() {
-#if !defined(OS_ANDROID)
-  js_event_router_.reset();
-#endif
+  for (GCMAppHandlerMap::const_iterator iter = app_handlers_.begin();
+       iter != app_handlers_.end(); ++iter) {
+    iter->second->ShutdownHandler();
+  }
+  app_handlers_.clear();
+
   SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
+}
+
+void GCMProfileService::AddAppHandler(const std::string& app_id,
+                                      GCMAppHandler* handler) {
+  DCHECK(!app_id.empty());
+  DCHECK(handler);
+  DCHECK(app_handlers_.find(app_id) == app_handlers_.end());
+
+  app_handlers_[app_id] = handler;
+}
+
+void GCMProfileService::RemoveAppHandler(const std::string& app_id) {
+  DCHECK(!app_id.empty());
+
+  app_handlers_.erase(app_id);
 }
 
 void GCMProfileService::Register(const std::string& app_id,
@@ -822,21 +823,6 @@ void GCMProfileService::DoSend(const std::string& app_id,
                  message));
 }
 
-void GCMProfileService::AddInvalidationEventRouter(
-    const std::string& app_id,
-    GCMEventRouter* event_router) {
-  DCHECK(invalidation_app_id_.empty() && invalidation_event_router_ == NULL);
-  invalidation_app_id_ = app_id;
-  invalidation_event_router_ = event_router;
-}
-
-void GCMProfileService::RemoveInvalidationEventRouter(
-    const std::string& app_id) {
-  DCHECK(invalidation_app_id_ == app_id);
-  invalidation_app_id_.clear();
-  invalidation_event_router_ = NULL;
-}
-
 GCMClient* GCMProfileService::GetGCMClientForTesting() const {
   return io_worker_ ? io_worker_->gcm_client_for_testing() : NULL;
 }
@@ -871,17 +857,6 @@ void GCMProfileService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       ResetGCMClient();
       break;
-    case chrome:: NOTIFICATION_EXTENSION_UNINSTALLED:
-      if (!username_.empty()) {
-        extensions::Extension* extension =
-            content::Details<extensions::Extension>(details).ptr();
-        Unregister(extension->id(),
-                   base::Bind(
-                       &GCMProfileService::UnregisterCompletedOnAppUninstall,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       extension->id()));
-      }
-      break;
     default:
       NOTREACHED();
   }
@@ -895,12 +870,6 @@ void GCMProfileService::GoogleSigninSucceeded(const std::string& username,
 
 void GCMProfileService::GoogleSignedOut(const std::string& username) {
   CheckOut();
-}
-
-void GCMProfileService::UnregisterCompletedOnAppUninstall(
-    const std::string& app_id,
-    GCMClient::Result result) {
-  // Nothing to do here.
 }
 
 void GCMProfileService::EnsureLoaded() {
@@ -1089,7 +1058,7 @@ void GCMProfileService::MessageReceived(const std::string& app_id,
     return;
   }
 
-  GetEventRouter(app_id)->OnMessage(app_id, message);
+  GetAppHandler(app_id)->OnMessage(app_id, message);
 }
 
 void GCMProfileService::MessagesDeleted(const std::string& app_id) {
@@ -1099,7 +1068,7 @@ void GCMProfileService::MessagesDeleted(const std::string& app_id) {
   if (username_.empty())
     return;
 
-  GetEventRouter(app_id)->OnMessagesDeleted(app_id);
+  GetAppHandler(app_id)->OnMessagesDeleted(app_id);
 }
 
 void GCMProfileService::MessageSendError(
@@ -1111,7 +1080,7 @@ void GCMProfileService::MessageSendError(
   if (username_.empty())
     return;
 
-  GetEventRouter(app_id)->OnSendError(app_id, send_error_details);
+  GetAppHandler(app_id)->OnSendError(app_id, send_error_details);
 }
 
 void GCMProfileService::GCMClientReady() {
@@ -1124,19 +1093,10 @@ void GCMProfileService::GCMClientReady() {
   delayed_task_controller_->SetGCMReady();
 }
 
-GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id)
-    const {
-  if (testing_delegate_ && testing_delegate_->GetEventRouter())
-    return testing_delegate_->GetEventRouter();
-#if defined(OS_ANDROID)
-  return NULL;
-#else
-  if (app_id == invalidation_app_id_) {
-    DCHECK(invalidation_event_router_ != NULL);
-    return invalidation_event_router_;
-  }
-  return js_event_router_.get();
-#endif
+GCMAppHandler* GCMProfileService::GetAppHandler(const std::string& app_id) {
+  std::map<std::string, GCMAppHandler*>::const_iterator iter =
+      app_handlers_.find(app_id);
+  return iter == app_handlers_.end() ? &default_app_handler_ : iter->second;
 }
 
 void GCMProfileService::ReadRegisteredAppIDs() {

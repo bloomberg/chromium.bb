@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/services/gcm/gcm_event_router.h"
+#include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -27,7 +27,7 @@ namespace invalidation {
 // Core lives on IO thread. Core implements GCMNetworkChannelDelegate and posts
 // all function calls to GCMInvalidationBridge which does actual work to perform
 // them.
-class GCMInvalidationBridge : public gcm::GCMEventRouter,
+class GCMInvalidationBridge : public gcm::GCMAppHandler,
                               public OAuth2TokenService::Consumer,
                               public base::NonThreadSafe {
  public:
@@ -44,6 +44,7 @@ class GCMInvalidationBridge : public gcm::GCMEventRouter,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
   // gcm::GCMEventRouter implementation.
+  virtual void ShutdownHandler() OVERRIDE;
   virtual void OnMessage(const std::string& app_id,
                          const gcm::GCMClient::IncomingMessage& message)
       OVERRIDE;

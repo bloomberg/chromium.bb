@@ -159,7 +159,7 @@ GCMInvalidationBridge::~GCMInvalidationBridge() {
         gcm::GCMProfileServiceFactory::GetForProfile(profile_);
     DCHECK(gcm_profile_service);
 
-    gcm_profile_service->RemoveInvalidationEventRouter(kInvalidationsAppId);
+    gcm_profile_service->RemoveAppHandler(kInvalidationsAppId);
   }
 }
 
@@ -291,8 +291,12 @@ void GCMInvalidationBridge::SubscribeForIncomingMessages() {
     return;
 
   DCHECK(!subscribed_for_incoming_messages_);
-  gcm_profile_service->AddInvalidationEventRouter(kInvalidationsAppId, this);
+  gcm_profile_service->AddAppHandler(kInvalidationsAppId, this);
   subscribed_for_incoming_messages_ = true;
+}
+
+void GCMInvalidationBridge::ShutdownHandler() {
+  // Nothing to do.
 }
 
 void GCMInvalidationBridge::OnMessage(
