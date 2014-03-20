@@ -59,10 +59,6 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   static scoped_ptr<DevToolsTargetImpl> CreateForRenderViewHost(
       content::RenderViewHost*, bool is_tab);
 
-  // Creates a new target associated with a shared worker.
-  static scoped_ptr<DevToolsTargetImpl> CreateForWorker(
-      const content::WorkerService::WorkerInfo&);
-
   typedef std::vector<DevToolsTargetImpl*> List;
   typedef base::Callback<void(const List&)> Callback;
 

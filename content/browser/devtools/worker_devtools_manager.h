@@ -32,11 +32,6 @@ class WorkerDevToolsManager {
       int worker_process_id,
       int worker_route_id);
 
-  // Called on the UI thread.
-  static bool HasDevToolsAgentHostForWorker(
-      int worker_process_id,
-      int worker_route_id);
-
   void ForwardToDevToolsClient(int worker_process_id,
                                int worker_route_id,
                                const std::string& message);

@@ -37,11 +37,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> GetForWorker(int worker_process_id,
                                                        int worker_route_id);
 
-  // Returns true iff an instance of DevToolsAgentHost exists for the shared
-  // worker with given process host id and routing id.
-  static bool HasForWorker(int worker_process_id,
-                           int worker_route_id);
-
   static bool IsDebuggerAttached(WebContents* web_contents);
 
   // Returns a list of all existing RenderViewHost's that can be debugged.

@@ -275,12 +275,6 @@ scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForRenderViewHost(
 }
 
 // static
-scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWorker(
-    const WorkerService::WorkerInfo& worker_info) {
-  return scoped_ptr<DevToolsTargetImpl>(new WorkerTarget(worker_info));
-}
-
-// static
 DevToolsTargetImpl::List DevToolsTargetImpl::EnumerateRenderViewHostTargets() {
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); it.Next())
