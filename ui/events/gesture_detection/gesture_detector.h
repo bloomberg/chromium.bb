@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_DETECTOR_H_
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_DETECTOR_H_
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/velocity_tracker_state.h"
@@ -83,6 +84,7 @@ class GestureDetector {
   bool OnTouchEvent(const MotionEvent& ev);
 
   void set_doubletap_listener(DoubleTapListener* double_tap_listener) {
+    DCHECK(!is_double_tapping_ || double_tap_listener_);
     double_tap_listener_ = double_tap_listener;
   }
 

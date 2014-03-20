@@ -17,7 +17,6 @@ M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_we
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
 M D SF: Switch statement found in org.chromium.chrome.browser.ChromeBrowserProvider.insert(Uri, ContentValues) where one case falls through to the next case  At ChromeBrowserProvider.java
 M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCursor.fillWindow(int, CursorWindow) where default case is missing  At SQLiteCursor.java
-M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
 M V EI2: new org.chromium.chrome.browser.FindMatchRectsDetails(int, RectF[], RectF) may expose internal representation by storing an externally mutable object into FindMatchRectsDetails.rects  At FindMatchRectsDetails.java
@@ -37,4 +36,3 @@ M B OS: org.chromium.tools.binary_size.Addr2LineWorkerPool$Addr2LineWorker$Addr2
 M B RV: Exceptional return value of java.io.File.mkdirs() ignored in new org.chromium.tools.binary_size.NmDumper$Output(NmDumper)  At NmDumper.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At NmDumper.java
 M D REC: Exception is caught when Exception is not thrown in org.chromium.tools.binary_size.Addr2LineWorkerPool$Addr2LineWorker$Addr2LineTask.run()  At Addr2LineWorkerPool.java
-M C RCN: Nullcheck of GestureDetector.mVelocityTracker at line 641 of value previously dereferenced in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent)  At GestureDetector.java

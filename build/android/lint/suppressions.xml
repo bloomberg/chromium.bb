@@ -38,7 +38,6 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="HandlerLeak">
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/third_party/GestureDetector.java"/>
     <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
   </issue>
   <issue id="InlinedApi">

@@ -264,6 +264,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
         const float scroll_y = last_focus_y_ - focus_y;
         if (is_double_tapping_) {
           // Give the move events of the double-tap.
+          DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else if (always_in_tap_region_) {
           const int delta_x = static_cast<int>(focus_x - down_focus_x_);
@@ -293,6 +294,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       {
         if (is_double_tapping_) {
           // Finally, give the up event of the double-tap.
+          DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else if (in_longpress_) {
           timeout_handler_->StopTimeout(TAP);
