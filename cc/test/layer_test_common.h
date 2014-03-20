@@ -76,6 +76,7 @@ class LayerTestCommon {
     ResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
     }
+    FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     const QuadList& quad_list() const { return quad_culler_.quad_list(); }
 
    private:

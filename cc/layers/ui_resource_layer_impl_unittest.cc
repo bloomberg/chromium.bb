@@ -148,5 +148,64 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
 }
 
+TEST(UIResourceLayerImplTest, Occlusion) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  SkBitmap sk_bitmap;
+  sk_bitmap.allocN32Pixels(10, 10);
+  sk_bitmap.setImmutable();
+  UIResourceId uid = 5;
+  UIResourceBitmap bitmap(sk_bitmap);
+  impl.host_impl()->CreateUIResource(uid, bitmap);
+
+  UIResourceLayerImpl* ui_resource_layer_impl =
+      impl.AddChildToRoot<UIResourceLayerImpl>();
+  ui_resource_layer_impl->SetAnchorPoint(gfx::PointF());
+  ui_resource_layer_impl->SetBounds(layer_size);
+  ui_resource_layer_impl->SetContentBounds(layer_size);
+  ui_resource_layer_impl->SetDrawsContent(true);
+  ui_resource_layer_impl->SetUIResourceId(uid);
+
+  impl.CalcDrawProps(viewport_size);
+
+  {
+    SCOPED_TRACE("No occlusion");
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
+                                                 gfx::Rect(layer_size));
+    EXPECT_EQ(1u, impl.quad_list().size());
+  }
+
+  {
+    SCOPED_TRACE("Full occlusion");
+    gfx::Rect occluded(ui_resource_layer_impl->visible_content_rect());
+    impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    EXPECT_EQ(impl.quad_list().size(), 0u);
+  }
+
+  {
+    SCOPED_TRACE("Partial occlusion");
+    gfx::Rect occluded(200, 0, 800, 1000);
+    impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
+
+    size_t partially_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
+        impl.quad_list(),
+        gfx::Rect(layer_size),
+        occluded,
+        &partially_occluded_count);
+    // The layer outputs one quad, which is partially occluded.
+    EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_EQ(1u, partially_occluded_count);
+  }
+}
+
 }  // namespace
 }  // namespace cc

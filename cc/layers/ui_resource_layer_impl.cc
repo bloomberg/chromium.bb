@@ -116,7 +116,11 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(bounds());
   gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
-  gfx::Rect visible_quad_rect(quad_rect);
+  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+      quad_rect, draw_properties().target_space_transform);
+  if (visible_quad_rect.IsEmpty())
+    return;
+
   scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
                quad_rect,
@@ -129,7 +133,7 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
                SK_ColorTRANSPARENT,
                vertex_opacity_,
                flipped);
-  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {
