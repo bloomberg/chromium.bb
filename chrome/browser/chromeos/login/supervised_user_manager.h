@@ -29,6 +29,7 @@ extern const int kMinPasswordRevision;
 
 // Values for these keys are not stored in local state.
 extern const char kEncryptedPassword[];
+extern const char kPasswordSignature[];
 extern const char kPasswordEncryptionKey[];
 extern const char kPasswordSignatureKey[];
 

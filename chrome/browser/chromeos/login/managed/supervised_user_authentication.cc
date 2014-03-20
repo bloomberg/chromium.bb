@@ -63,6 +63,15 @@ std::string BuildRawHMACKey() {
   return result;
 }
 
+std::string BuildPasswordSignature(const std::string& password,
+                                   int revision,
+                                   const std::string& base64_signature_key) {
+  std::string raw_result, result;
+  // TODO(antrim) : implement signature as soon as wad@ lands sample code.
+  base::Base64Encode(raw_result, &result);
+  return result;
+}
+
 }  // namespace
 
 SupervisedUserAuthentication::SupervisedUserAuthentication(
@@ -139,15 +148,20 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
     password_data->SetIntegerWithoutPathExpansion(kSchemaVersion, schema);
     std::string salt = CreateSalt();
     password_data->SetStringWithoutPathExpansion(kSalt, salt);
-    password_data->SetIntegerWithoutPathExpansion(kPasswordRevision,
-        kMinPasswordRevision);
+    int revision = kMinPasswordRevision;
+    password_data->SetIntegerWithoutPathExpansion(kPasswordRevision, revision);
+    std::string salted_password =
+        BuildPasswordForHashWithSaltSchema(salt, password);
+    std::string base64_signature_key = BuildRawHMACKey();
+    std::string base64_signature =
+        BuildPasswordSignature(salted_password, revision, base64_signature_key);
     password_data->SetStringWithoutPathExpansion(kEncryptedPassword,
-        BuildPasswordForHashWithSaltSchema(salt, password));
+                                                 salted_password);
 
     extra_data->SetStringWithoutPathExpansion(kPasswordEncryptionKey,
                                               BuildRawHMACKey());
     extra_data->SetStringWithoutPathExpansion(kPasswordSignatureKey,
-                                              BuildRawHMACKey());
+                                              base64_signature_key);
     return true;
   }
   NOTREACHED();
