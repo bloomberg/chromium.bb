@@ -1801,11 +1801,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
   CreditCard full_card(test::GetCreditCard());
   for (size_t i = 0; i < inputs.size(); ++i) {
     const ServerFieldType type = inputs[i].type;
-#if defined(OS_MACOSX)
     if (type == ADDRESS_BILLING_LINE1)
-#else
-    if (type == ADDRESS_BILLING_STREET_ADDRESS)
-#endif
       outputs[type] = ASCIIToUTF16(kEditedBillingAddress);
     else
       outputs[type] = full_profile.GetInfo(AutofillType(type), "en-US");

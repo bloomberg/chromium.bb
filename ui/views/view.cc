@@ -590,17 +590,12 @@ const char* View::GetClassName() const {
   return kViewClassName;
 }
 
-const View* View::GetAncestorWithClassName(const std::string& name) const {
-  for (const View* view = this; view; view = view->parent_) {
+View* View::GetAncestorWithClassName(const std::string& name) {
+  for (View* view = this; view; view = view->parent_) {
     if (!strcmp(view->GetClassName(), name.c_str()))
       return view;
   }
   return NULL;
-}
-
-View* View::GetAncestorWithClassName(const std::string& name) {
-  return const_cast<View*>(const_cast<const View*>(this)->
-      GetAncestorWithClassName(name));
 }
 
 const View* View::GetViewByID(int id) const {

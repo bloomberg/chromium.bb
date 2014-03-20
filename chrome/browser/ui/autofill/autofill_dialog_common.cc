@@ -23,8 +23,9 @@
 namespace autofill {
 namespace common {
 
-bool ServerTypeEncompassesFieldType(ServerFieldType type,
-                                    const AutofillType& field_type) {
+// Returns true if |input| should be shown when |field_type| has been requested.
+bool ServerTypeMatchesFieldType(ServerFieldType type,
+                                const AutofillType& field_type) {
   // If any credit card expiration info is asked for, show both month and year
   // inputs.
   ServerFieldType server_type = field_type.GetStorableType();
@@ -45,20 +46,15 @@ bool ServerTypeEncompassesFieldType(ServerFieldType type,
   if (autofill_type.group() != field_type.group())
     return false;
 
-#if defined(OS_MACOSX)
   // Street address (all lines) is matched to the first input address line.
   if (server_type == ADDRESS_HOME_STREET_ADDRESS)
     return autofill_type.GetStorableType() == ADDRESS_HOME_LINE1;
-#else
-  // The page may ask for individual address lines; this roughly matches the
-  // street address blob.
-  if (server_type == ADDRESS_HOME_LINE1 || server_type == ADDRESS_HOME_LINE2)
-    return autofill_type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS;
-#endif
 
   return autofill_type.GetStorableType() == server_type;
 }
 
+// Returns true if |input| in the given |section| should be used for a
+// site-requested |field|.
 bool ServerTypeMatchesField(DialogSection section,
                             ServerFieldType type,
                             const AutofillField& field) {
@@ -70,13 +66,14 @@ bool ServerTypeMatchesField(DialogSection section,
     return type == NAME_BILLING_FULL;
   }
 
-  return ServerTypeEncompassesFieldType(type, field_type);
+  return ServerTypeMatchesFieldType(type, field_type);
 }
 
 bool IsCreditCardType(ServerFieldType type) {
   return AutofillType(type).group() == CREDIT_CARD;
 }
 
+// Constructs |inputs| from template data.
 void BuildInputs(const DetailInput* input_template,
                  size_t template_size,
                  DetailInputs* inputs) {

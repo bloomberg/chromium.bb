@@ -1748,8 +1748,6 @@
         'browser/ui/views/autofill/new_credit_card_bubble_views.h',
         'browser/ui/views/autofill/decorated_textfield.cc',
         'browser/ui/views/autofill/decorated_textfield.h',
-        'browser/ui/views/autofill/expanding_textfield.cc',
-        'browser/ui/views/autofill/expanding_textfield.h',
         'browser/ui/views/autofill/info_bubble.cc',
         'browser/ui/views/autofill/info_bubble.h',
         'browser/ui/views/autofill/password_generation_popup_view_views.cc',

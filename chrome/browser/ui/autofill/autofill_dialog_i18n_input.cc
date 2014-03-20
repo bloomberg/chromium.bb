@@ -56,7 +56,6 @@ void BuildAddressInputs(common::AddressType address_type,
     DetailInput input = { length, server_type, placeholder };
     inputs->push_back(input);
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
     if (component.field == ::i18n::addressinput::STREET_ADDRESS &&
         component.length_hint == AddressUiComponent::HINT_LONG) {
       // TODO(dbeam): support more than 2 address lines. http://crbug.com/324889
@@ -66,7 +65,6 @@ void BuildAddressInputs(common::AddressType address_type,
       DetailInput input = { length, server_type, placeholder };
       inputs->push_back(input);
     }
-#endif
   }
 
   ServerFieldType server_type =
@@ -143,14 +141,8 @@ ServerFieldType TypeForField(AddressField address_field,
       return billing ? ADDRESS_BILLING_ZIP : ADDRESS_HOME_ZIP;
     case ::i18n::addressinput::SORTING_CODE:
       return billing ? ADDRESS_BILLING_SORTING_CODE : ADDRESS_HOME_SORTING_CODE;
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
     case ::i18n::addressinput::STREET_ADDRESS:
       return billing ? ADDRESS_BILLING_LINE1 : ADDRESS_HOME_LINE1;
-#else
-    case ::i18n::addressinput::STREET_ADDRESS:
-      return billing ? ADDRESS_BILLING_STREET_ADDRESS :
-                       ADDRESS_HOME_STREET_ADDRESS;
-#endif
     case ::i18n::addressinput::RECIPIENT:
       return billing ? NAME_BILLING_FULL : NAME_FULL;
     case ::i18n::addressinput::ORGANIZATION:

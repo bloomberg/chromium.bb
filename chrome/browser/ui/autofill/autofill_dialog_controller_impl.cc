@@ -189,7 +189,7 @@ bool ServerTypeMatchesShippingField(ServerFieldType type,
                                     const AutofillField& field) {
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
-  return common::ServerTypeEncompassesFieldType(
+  return common::ServerTypeMatchesFieldType(
       type,
       AutofillType(AutofillType::GetEquivalentBillingFieldType(
           field.Type().GetStorableType())));
@@ -3269,7 +3269,7 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
 
   std::string country_code = AutofillCountry::GetCountryCode(
       country_name, g_browser_process->GetApplicationLocale());
-  DCHECK(CanAcceptCountry(section, country_code)) << country_code;
+  DCHECK(CanAcceptCountry(section, country_code));
 
   if (view_ && !should_clobber) {
     FieldValueMap outputs;

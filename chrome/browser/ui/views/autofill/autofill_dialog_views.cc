@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/loading_animation.h"
-#include "chrome/browser/ui/views/autofill/expanding_textfield.h"
+#include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -147,6 +147,12 @@ void DrawArrow(gfx::Canvas* canvas,
   }
 }
 
+// Returns whether |view| is an input (e.g. textfield, combobox).
+bool IsInput(views::View* view) {
+  return view->GetClassName() == DecoratedTextfield::kViewClassName ||
+         view->GetClassName() == views::Combobox::kViewClassName;
+}
+
 void SelectComboboxValueOrSetToDefault(views::Combobox* combobox,
                                        const base::string16& value) {
   if (!combobox->SelectValue(value))
@@ -198,12 +204,12 @@ class SectionRowView : public views::View {
 
     // Textfield is right aligned.
     int end_x = bounds.width();
-    views::View* textfield = child_at(2);
-    if (textfield->visible()) {
-      const int preferred_width = textfield->GetPreferredSize().width();
-      textfield->SetBounds(bounds.width() - preferred_width, bounds.y(),
+    views::View* decorated = child_at(2);
+    if (decorated->visible()) {
+      const int preferred_width = decorated->GetPreferredSize().width();
+      decorated->SetBounds(bounds.width() - preferred_width, bounds.y(),
                            preferred_width, bounds.height());
-      end_x = textfield->bounds().x() - kAroundTextPadding;
+      end_x = decorated->bounds().x() - kAroundTextPadding;
     }
 
     // Label takes up all the space in between.
@@ -447,15 +453,6 @@ class LoadingAnimationView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(LoadingAnimationView);
 };
-
-// Gets either the Combobox or ExpandingTextfield that is an ancestor (including
-// self) of |view|.
-views::View* GetAncestralInputView(views::View* view) {
-  if (view->GetClassName() == views::Combobox::kViewClassName)
-    return view;
-
-  return view->GetAncestorWithClassName(ExpandingTextfield::kViewClassName);
-}
 
 }  // namespace
 
@@ -923,7 +920,7 @@ views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForRect(
 
   // Special case for (CVC) inputs in the suggestion view.
   if (forward_mouse_events_ &&
-      handler->GetAncestorWithClassName(ExpandingTextfield::kViewClassName)) {
+      handler->GetAncestorWithClassName(DecoratedTextfield::kViewClassName)) {
     return handler;
   }
 
@@ -1028,10 +1025,9 @@ AutofillDialogViews::SuggestionView::SuggestionView(
     : label_(new views::Label()),
       label_line_2_(new views::Label()),
       icon_(new views::ImageView()),
-      textfield_(
-          new ExpandingTextfield(base::string16(),
+      decorated_(
+          new DecoratedTextfield(base::string16(),
                                  base::string16(),
-                                 false,
                                  autofill_dialog)) {
   // TODO(estade): Make this the correct color.
   SetBorder(views::Border::CreateSolidSidedBorder(1, 0, 0, 0, SK_ColorLTGRAY));
@@ -1045,9 +1041,9 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   label_container->AddChildView(label_);
 
   // TODO(estade): get the sizing and spacing right on this textfield.
-  textfield_->SetVisible(false);
-  textfield_->SetDefaultWidthInCharacters(15);
-  label_container->AddChildView(textfield_);
+  decorated_->SetVisible(false);
+  decorated_->set_default_width_in_chars(15);
+  label_container->AddChildView(decorated_);
 
   label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_line_2_->SetVisible(false);
@@ -1147,9 +1143,9 @@ void AutofillDialogViews::SuggestionView::SetIcon(
 void AutofillDialogViews::SuggestionView::SetTextfield(
     const base::string16& placeholder_text,
     const gfx::Image& icon) {
-  textfield_->SetPlaceholderText(placeholder_text);
-  textfield_->SetIcon(icon);
-  textfield_->SetVisible(!placeholder_text.empty());
+  decorated_->set_placeholder_text(placeholder_text);
+  decorated_->SetIcon(icon);
+  decorated_->SetVisible(!placeholder_text.empty());
 }
 
 void AutofillDialogViews::SuggestionView::UpdateLabelText() {
@@ -1363,7 +1359,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
   DetailsGroup* group = GroupForSection(section);
   for (TextfieldMap::const_iterator it = group->textfields.begin();
        it != group->textfields.end(); ++it) {
-    output->insert(std::make_pair(it->first, it->second->GetText()));
+    output->insert(std::make_pair(it->first, it->second->text()));
   }
   for (ComboboxMap::const_iterator it = group->comboboxes.begin();
        it != group->comboboxes.end(); ++it) {
@@ -1374,7 +1370,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
 
 base::string16 AutofillDialogViews::GetCvc() {
   return GroupForSection(GetCreditCardSection())->suggested_info->
-      textfield()->GetText();
+      decorated_textfield()->text();
 }
 
 bool AutofillDialogViews::HitTestInput(ServerFieldType type,
@@ -1577,14 +1573,13 @@ views::View* AutofillDialogViews::GetInitiallyFocusedView() {
   for (views::View* next = scrollable_area_;
        next;
        next = manager->GetNextFocusableView(next, window_, false, true)) {
-    views::View* input_view = GetAncestralInputView(next);
-    if (!input_view)
+    if (!IsInput(next))
       continue;
 
     // If there are no invalid inputs, return the first input found. Otherwise,
     // return the first invalid input found.
     if (validity_map_.empty() ||
-        validity_map_.find(input_view) != validity_map_.end()) {
+        validity_map_.find(next) != validity_map_.end()) {
       return next;
     }
   }
@@ -1645,11 +1640,6 @@ void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
   InputEditedOrActivated(TypeForTextfield(sender),
                          sender->GetBoundsInScreen(),
                          true);
-
-  const ExpandingTextfield* expanding = static_cast<ExpandingTextfield*>(
-      sender->GetAncestorWithClassName(ExpandingTextfield::kViewClassName));
-  if (expanding && expanding->needs_layout())
-    ContentsPreferredSizeChanged();
 }
 
 bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
@@ -1942,9 +1932,8 @@ void AutofillDialogViews::InitInputsView(DialogSection section) {
       SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
       view_to_add.reset(combobox);
     } else {
-      ExpandingTextfield* field = new ExpandingTextfield(input.initial_value,
+      DecoratedTextfield* field = new DecoratedTextfield(input.initial_value,
                                                          input.placeholder_text,
-                                                         input.IsMultiline(),
                                                          this);
       textfields->insert(std::make_pair(input.type, field));
       view_to_add.reset(field);
@@ -2015,8 +2004,8 @@ void AutofillDialogViews::UpdateSectionImpl(
     views::View* focused = GetFocusManager()->GetFocusedView();
     if (focused && group->container->Contains(focused)) {
       // Remember which view was focused before the inputs are clobbered.
-      if (focused->GetClassName() == ExpandingTextfield::kViewClassName)
-        type = TypeForTextfield(focused);
+      if (focused->GetClassName() == DecoratedTextfield::kViewClassName)
+        type = TypeForTextfield(static_cast<DecoratedTextfield*>(focused));
       else if (focused->GetClassName() == views::Combobox::kViewClassName)
         type = TypeForCombobox(static_cast<views::Combobox*>(focused));
     }
@@ -2040,9 +2029,9 @@ void AutofillDialogViews::UpdateSectionImpl(
 
       TextfieldMap::iterator text_mapping = group->textfields.find(input.type);
       if (text_mapping != group->textfields.end()) {
-        ExpandingTextfield* textfield = text_mapping->second;
-        if (textfield->GetText().empty())
-          textfield->SetText(input.initial_value);
+        DecoratedTextfield* decorated = text_mapping->second;
+        if (decorated->text().empty())
+          decorated->SetText(input.initial_value);
       }
 
       ComboboxMap::iterator combo_mapping = group->comboboxes.find(input.type);
@@ -2102,9 +2091,7 @@ void AutofillDialogViews::SetValidityForInput(
   } else {
     validity_map_.erase(input);
 
-    if (error_bubble_ &&
-        error_bubble_->anchor()->GetAncestorWithClassName(
-            input->GetClassName()) == input) {
+    if (error_bubble_ && error_bubble_->anchor() == input) {
       validity_map_.erase(input);
       HideErrorBubble();
     }
@@ -2120,16 +2107,10 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
     return;
   }
 
-  if (view->GetClassName() == DecoratedTextfield::kViewClassName &&
-      !static_cast<DecoratedTextfield*>(view)->invalid()) {
-    return;
-  }
-
-  views::View* input_view = GetAncestralInputView(view);
   std::map<views::View*, base::string16>::iterator error_message =
-      validity_map_.find(input_view);
+      validity_map_.find(view);
   if (error_message != validity_map_.end()) {
-    input_view->ScrollRectToVisible(input_view->GetLocalBounds());
+    view->ScrollRectToVisible(view->GetLocalBounds());
 
     if (!error_bubble_ || error_bubble_->anchor() != view) {
       HideErrorBubble();
@@ -2180,7 +2161,8 @@ void AutofillDialogViews::MarkInputsInvalid(
       const ValidityMessage& message =
           messages.GetMessageOrDefault(CREDIT_CARD_VERIFICATION_CODE);
       if (overwrite_unsure || message.sure) {
-        SetValidityForInput(group->suggested_info->textfield(), message.text);
+        SetValidityForInput(group->suggested_info->decorated_textfield(),
+                            message.text);
       }
     }
   }
@@ -2198,7 +2180,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
       if (!iter->second->editable())
         continue;
 
-      detail_outputs[iter->first] = iter->second->GetText();
+      detail_outputs[iter->first] = iter->second->text();
     }
     for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
          iter != group.comboboxes.end(); ++iter) {
@@ -2211,9 +2193,10 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
       detail_outputs[iter->first] = item;
     }
   } else if (group.section == GetCreditCardSection()) {
-    ExpandingTextfield* cvc = group.suggested_info->textfield();
-    if (cvc->visible())
-      detail_outputs[CREDIT_CARD_VERIFICATION_CODE] = cvc->GetText();
+    DecoratedTextfield* decorated_cvc =
+        group.suggested_info->decorated_textfield();
+    if (decorated_cvc->visible())
+      detail_outputs[CREDIT_CARD_VERIFICATION_CODE] = decorated_cvc->text();
   }
 
   ValidityMessages validity = delegate_->InputsAreValid(group.section,
@@ -2246,19 +2229,19 @@ void AutofillDialogViews::InputEditedOrActivated(ServerFieldType type,
                                                  bool was_edit) {
   DCHECK_NE(UNKNOWN_TYPE, type);
 
-  ExpandingTextfield* textfield = TextfieldForType(type);
+  DecoratedTextfield* decorated = TextfieldForType(type);
   views::Combobox* combobox = ComboboxForType(type);
 
   // Both views may be NULL if the event comes from an inactive section, which
   // may occur when using an IME.
-  if (!combobox && !textfield)
+  if (!combobox && !decorated)
     return;
 
-  DCHECK_NE(!!combobox, !!textfield);
-  DetailsGroup* group = textfield ? GroupForView(textfield) :
+  DCHECK_NE(!!combobox, !!decorated);
+  DetailsGroup* group = decorated ? GroupForView(decorated) :
                                     GroupForView(combobox);
-  base::string16 text = textfield ?
-      textfield->GetText() :
+  base::string16 text = decorated ?
+      decorated->text() :
       combobox->model()->GetItemAt(combobox->selected_index());
   DCHECK(group);
 
@@ -2274,15 +2257,15 @@ void AutofillDialogViews::InputEditedOrActivated(ServerFieldType type,
   // so flagging them as invalid prematurely is not helpful. However,
   // correcting a minor mistake (i.e. a wrong CC digit) should immediately
   // result in validation - positive user feedback.
-  if (textfield && textfield->invalid() && was_edit) {
+  if (decorated && decorated->invalid() && was_edit) {
     SetValidityForInput(
-        textfield,
+        decorated,
         delegate_->InputValidityMessage(
-            group->section, type, textfield->GetText()));
+            group->section, type, decorated->text()));
 
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.
-    if (!textfield->invalid())
+    if (!decorated->invalid())
       ValidateGroup(*group, VALIDATE_EDIT);
   }
 
@@ -2328,20 +2311,20 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
     views::View* view) {
   DCHECK(view);
 
-  views::View* input_view = GetAncestralInputView(view);
-  if (!input_view)
-    return NULL;
-
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     DetailsGroup* group = &iter->second;
-    if (input_view->parent() == group->manual_input)
+    if (view->parent() == group->manual_input)
       return group;
+
+    views::View* decorated =
+        view->GetAncestorWithClassName(DecoratedTextfield::kViewClassName);
 
     // Textfields need to check a second case, since they can be suggested
     // inputs instead of directly editable inputs. Those are accessed via
     // |suggested_info|.
-    if (input_view == group->suggested_info->textfield()) {
+    if (decorated &&
+        decorated == group->suggested_info->decorated_textfield()) {
       return group;
     }
   }
@@ -2359,12 +2342,12 @@ void AutofillDialogViews::EraseInvalidViewsInGroup(const DetailsGroup* group) {
   }
 }
 
-ExpandingTextfield* AutofillDialogViews::TextfieldForType(
+DecoratedTextfield* AutofillDialogViews::TextfieldForType(
     ServerFieldType type) {
   if (type == CREDIT_CARD_VERIFICATION_CODE) {
     DetailsGroup* group = GroupForSection(GetCreditCardSection());
     if (!group->manual_input->visible())
-      return group->suggested_info->textfield();
+      return group->suggested_info->decorated_textfield();
   }
 
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
@@ -2382,12 +2365,9 @@ ExpandingTextfield* AutofillDialogViews::TextfieldForType(
 }
 
 ServerFieldType AutofillDialogViews::TypeForTextfield(
-    const views::View* textfield) {
-  const views::View* expanding =
-      textfield->GetAncestorWithClassName(ExpandingTextfield::kViewClassName);
-
+    const views::Textfield* textfield) {
   DetailsGroup* cc_group = GroupForSection(GetCreditCardSection());
-  if (expanding == cc_group->suggested_info->textfield())
+  if (textfield == cc_group->suggested_info->decorated_textfield())
     return CREDIT_CARD_VERIFICATION_CODE;
 
   for (DetailGroupMap::const_iterator it = detail_groups_.begin();
@@ -2397,7 +2377,7 @@ ServerFieldType AutofillDialogViews::TypeForTextfield(
 
     for (TextfieldMap::const_iterator text_it = it->second.textfields.begin();
          text_it != it->second.textfields.end(); ++text_it) {
-      if (expanding == text_it->second)
+      if (textfield == text_it->second)
         return text_it->first;
     }
   }
@@ -2454,7 +2434,7 @@ void AutofillDialogViews::SetIconsForSection(DialogSection section) {
        ++textfield_it) {
     ServerFieldType field_type = textfield_it->first;
     FieldIconMap::const_iterator field_icon_it = field_icons.find(field_type);
-    ExpandingTextfield* textfield = textfield_it->second;
+    DecoratedTextfield* textfield = textfield_it->second;
     if (field_icon_it != field_icons.end())
       textfield->SetIcon(field_icon_it->second);
     else
@@ -2474,8 +2454,8 @@ void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
 
     TextfieldMap::iterator text_mapping = group->textfields.find(input.type);
     if (text_mapping != group->textfields.end()) {
-      ExpandingTextfield* textfield= text_mapping->second;
-      textfield->SetEditable(editable);
+      DecoratedTextfield* decorated = text_mapping->second;
+      decorated->SetEditable(editable);
       continue;
     }
 
