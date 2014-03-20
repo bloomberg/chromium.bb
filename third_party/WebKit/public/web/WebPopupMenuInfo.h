@@ -31,8 +31,8 @@
 #ifndef WebPopupMenuInfo_h
 #define WebPopupMenuInfo_h
 
-#include "public/platform/WebVector.h"
-#include "public/web/WebMenuItemInfo.h"
+#include "../platform/WebVector.h"
+#include "WebMenuItemInfo.h"
 
 namespace blink {
 

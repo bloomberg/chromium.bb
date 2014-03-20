@@ -26,7 +26,7 @@
 #ifndef WebSpeechRecognizerClient_h
 #define WebSpeechRecognizerClient_h
 
-#include "public/platform/WebVector.h"
+#include "../platform/WebVector.h"
 
 namespace blink {
 

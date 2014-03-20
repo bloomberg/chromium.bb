@@ -31,7 +31,7 @@
 #ifndef WebFindOptions_h
 #define WebFindOptions_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #ifndef WebUserGestureToken_h
 #define WebUserGestureToken_h
 
-#include "public/platform/WebPrivatePtr.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace WebCore {
 class UserGestureToken;

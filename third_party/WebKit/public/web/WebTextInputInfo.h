@@ -26,8 +26,8 @@
 #ifndef WebTextInputInfo_h
 #define WebTextInputInfo_h
 
-#include "public/platform/WebString.h"
-#include "public/web/WebTextInputType.h"
+#include "../platform/WebString.h"
+#include "WebTextInputType.h"
 
 namespace blink {
 

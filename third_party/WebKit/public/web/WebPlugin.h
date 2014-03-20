@@ -31,12 +31,12 @@
 #ifndef WebPlugin_h
 #define WebPlugin_h
 
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebDragOperation.h"
-#include "public/web/WebDragStatus.h"
-#include "public/web/WebWidget.h"
+#include "../platform/WebCanvas.h"
+#include "../platform/WebString.h"
+#include "../platform/WebURL.h"
+#include "WebDragOperation.h"
+#include "WebDragStatus.h"
+#include "WebWidget.h"
 
 struct NPObject;
 struct _NPP;

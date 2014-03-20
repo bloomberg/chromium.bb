@@ -26,11 +26,11 @@
 #ifndef WebDateTimeChooserParams_h
 #define WebDateTimeChooserParams_h
 
-#include "public/platform/WebRect.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebDateTimeInputType.h"
-#include "public/web/WebDateTimeSuggestion.h"
+#include "../platform/WebRect.h"
+#include "../platform/WebString.h"
+#include "../platform/WebVector.h"
+#include "WebDateTimeInputType.h"
+#include "WebDateTimeSuggestion.h"
 
 namespace blink {
 

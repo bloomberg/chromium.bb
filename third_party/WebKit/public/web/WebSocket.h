@@ -31,8 +31,8 @@
 #ifndef WebSocket_h
 #define WebSocket_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace WebCore { class WebSocketChannel; }
 

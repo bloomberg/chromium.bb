@@ -31,6 +31,13 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
+#include "WebDOMMessageEvent.h"
+#include "WebDataSource.h"
+#include "WebIconURL.h"
+#include "WebNavigationPolicy.h"
+#include "WebNavigationType.h"
+#include "WebSecurityOrigin.h"
+#include "WebTextDirection.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
@@ -38,13 +45,6 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/web/WebDOMMessageEvent.h"
-#include "public/web/WebDataSource.h"
-#include "public/web/WebIconURL.h"
-#include "public/web/WebNavigationPolicy.h"
-#include "public/web/WebNavigationType.h"
-#include "public/web/WebSecurityOrigin.h"
-#include "public/web/WebTextDirection.h"
 #include <v8.h>
 
 namespace blink {

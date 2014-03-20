@@ -31,9 +31,9 @@
 #ifndef WebPageSerializer_h
 #define WebPageSerializer_h
 
-#include "public/platform/WebCString.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebURL.h"
+#include "../platform/WebCString.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebURL.h"
 
 namespace blink {
 class WebFrame;

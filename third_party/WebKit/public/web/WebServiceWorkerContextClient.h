@@ -31,7 +31,7 @@
 #ifndef WebServiceWorkerContextClient_h
 #define WebServiceWorkerContextClient_h
 
-#include "public/web/WebWorkerPermissionClientProxy.h"
+#include "WebWorkerPermissionClientProxy.h"
 
 namespace blink {
 

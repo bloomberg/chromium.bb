@@ -31,7 +31,7 @@
 #ifndef WebGlyphCache_h
 #define WebGlyphCache_h
 
-#include "public/platform/WebCommon.h"
+#include "../platform/WebCommon.h"
 
 namespace blink {
 

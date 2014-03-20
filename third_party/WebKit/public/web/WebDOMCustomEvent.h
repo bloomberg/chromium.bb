@@ -30,8 +30,8 @@
 #ifndef WebDOMCustomEvent_h
 #define WebDOMCustomEvent_h
 
-#include "public/web/WebDOMEvent.h"
-#include "public/web/WebSerializedScriptValue.h"
+#include "WebDOMEvent.h"
+#include "WebSerializedScriptValue.h"
 
 namespace blink {
 

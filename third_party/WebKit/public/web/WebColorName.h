@@ -31,8 +31,8 @@
 #ifndef WebColorName_h
 #define WebColorName_h
 
-#include "public/platform/WebColor.h"
-#include "public/platform/WebCommon.h"
+#include "../platform/WebColor.h"
+#include "../platform/WebCommon.h"
 
 namespace blink {
 

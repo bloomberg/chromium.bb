@@ -26,7 +26,7 @@
 #ifndef WebMemoryUsageInfo_h
 #define WebMemoryUsageInfo_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

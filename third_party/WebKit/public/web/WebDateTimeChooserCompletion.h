@@ -26,7 +26,7 @@
 #ifndef WebDateTimeChooserCompletion_h
 #define WebDateTimeChooserCompletion_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

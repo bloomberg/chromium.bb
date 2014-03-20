@@ -31,8 +31,8 @@
 #ifndef WebRange_h
 #define WebRange_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebVector.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class Range; }

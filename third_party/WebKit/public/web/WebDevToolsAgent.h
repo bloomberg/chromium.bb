@@ -31,8 +31,8 @@
 #ifndef WebDevToolsAgent_h
 #define WebDevToolsAgent_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebVector.h"
 
 namespace blink {
 class WebDevToolsAgentClient;

@@ -31,8 +31,8 @@
 #ifndef WebOptionElement_h
 #define WebOptionElement_h
 
-#include "public/platform/WebVector.h"
-#include "public/web/WebElement.h"
+#include "../platform/WebVector.h"
+#include "WebElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLOptionElement; }

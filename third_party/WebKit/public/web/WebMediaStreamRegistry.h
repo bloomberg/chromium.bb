@@ -31,7 +31,7 @@
 #ifndef WebMediaStreamRegistry_h
 #define WebMediaStreamRegistry_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

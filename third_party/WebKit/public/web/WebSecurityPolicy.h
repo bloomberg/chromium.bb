@@ -31,8 +31,8 @@
 #ifndef WebSecurityPolicy_h
 #define WebSecurityPolicy_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebReferrerPolicy.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebReferrerPolicy.h"
 
 namespace blink {
 

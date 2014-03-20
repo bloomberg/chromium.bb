@@ -31,7 +31,7 @@
 #ifndef WebFontDescription_h
 #define WebFontDescription_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class FontDescription; }

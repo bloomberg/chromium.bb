@@ -31,12 +31,12 @@
 #ifndef WebView_h
 #define WebView_h
 
-#include "public/platform/WebColor.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebDragOperation.h"
-#include "public/web/WebPageVisibilityState.h"
-#include "public/web/WebWidget.h"
+#include "../platform/WebColor.h"
+#include "../platform/WebString.h"
+#include "../platform/WebVector.h"
+#include "WebDragOperation.h"
+#include "WebPageVisibilityState.h"
+#include "WebWidget.h"
 
 namespace blink {
 

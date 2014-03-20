@@ -31,7 +31,7 @@
 #ifndef WebSharedWorkerRepositoryClient_h
 #define WebSharedWorkerRepositoryClient_h
 
-#include "public/web/WebSharedWorkerConnector.h"
+#include "WebSharedWorkerConnector.h"
 
 namespace blink {
 

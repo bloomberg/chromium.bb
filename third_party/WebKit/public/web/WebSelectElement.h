@@ -31,9 +31,9 @@
 #ifndef WebSelectElement_h
 #define WebSelectElement_h
 
-#include "public/platform/WebVector.h"
-#include "public/web/WebFormControlElement.h"
-#include "public/web/WebOptionElement.h"
+#include "../platform/WebVector.h"
+#include "WebFormControlElement.h"
+#include "WebOptionElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLSelectElement; }

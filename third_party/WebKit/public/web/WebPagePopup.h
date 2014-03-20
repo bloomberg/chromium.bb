@@ -31,8 +31,8 @@
 #ifndef WebPagePopup_h
 #define WebPagePopup_h
 
-#include "public/platform/WebCommon.h"
-#include "public/web/WebWidget.h"
+#include "../platform/WebCommon.h"
+#include "WebWidget.h"
 
 namespace blink {
 

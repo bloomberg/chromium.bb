@@ -31,9 +31,9 @@
 #ifndef WebFileChooserParams_h
 #define WebFileChooserParams_h
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebFileChooserCompletion.h"
+#include "../platform/WebString.h"
+#include "../platform/WebVector.h"
+#include "WebFileChooserCompletion.h"
 
 namespace blink {
 

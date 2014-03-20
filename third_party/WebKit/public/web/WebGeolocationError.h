@@ -26,8 +26,8 @@
 #ifndef WebGeolocationError_h
 #define WebGeolocationError_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
 
 #if BLINK_IMPLEMENTATION
 #include "wtf/PassRefPtr.h"

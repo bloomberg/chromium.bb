@@ -31,7 +31,7 @@
 #ifndef WebNotificationPresenter_h
 #define WebNotificationPresenter_h
 
-#include "public/platform/WebString.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

@@ -30,9 +30,9 @@
 #ifndef WebDOMMessageEvent_h
 #define WebDOMMessageEvent_h
 
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/web/WebDOMEvent.h"
-#include "public/web/WebSerializedScriptValue.h"
+#include "../platform/WebMessagePortChannel.h"
+#include "WebDOMEvent.h"
+#include "WebSerializedScriptValue.h"
 
 #if BLINK_IMPLEMENTATION
 #include "core/events/Event.h"

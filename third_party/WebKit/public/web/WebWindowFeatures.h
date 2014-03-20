@@ -31,9 +31,9 @@
 #ifndef WebWindowFeatures_h
 #define WebWindowFeatures_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebString.h"
+#include "../platform/WebVector.h"
 
 #if BLINK_IMPLEMENTATION
 #include "core/page/WindowFeatures.h"

@@ -31,7 +31,7 @@
 #ifndef WebKit_h
 #define WebKit_h
 
-#include "public/platform/Platform.h"
+#include "../platform/Platform.h"
 
 namespace v8 {
 class Isolate;

@@ -31,7 +31,7 @@
 #ifndef WebPluginDocument_h
 #define WebPluginDocument_h
 
-#include "public/web/WebDocument.h"
+#include "WebDocument.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class PluginDocument; }

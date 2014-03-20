@@ -31,7 +31,7 @@
 #ifndef WebSecurityOrigin_h
 #define WebSecurityOrigin_h
 
-#include "public/platform/WebCommon.h"
+#include "../platform/WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class SecurityOrigin; }

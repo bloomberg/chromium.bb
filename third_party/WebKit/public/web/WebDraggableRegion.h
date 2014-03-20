@@ -31,9 +31,9 @@
 #ifndef WebDraggableRegion_h
 #define WebDraggableRegion_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebString.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebRect.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 

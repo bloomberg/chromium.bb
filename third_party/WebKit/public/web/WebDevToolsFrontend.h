@@ -31,7 +31,7 @@
 #ifndef WebDevToolsFrontend_h
 #define WebDevToolsFrontend_h
 
-#include "public/platform/WebCommon.h"
+#include "../platform/WebCommon.h"
 
 namespace blink {
 
