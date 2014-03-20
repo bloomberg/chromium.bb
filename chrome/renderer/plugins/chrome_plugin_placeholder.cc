@@ -317,6 +317,7 @@ void ChromePluginPlaceholder::OnMenuClosed(int request_id) {
 }
 
 void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
+#if !defined(OS_ANDROID)  // The context menu is not applicable on Android.
   if (context_menu_request_id_)
     return;  // Don't allow nested context menu requests.
 
@@ -350,6 +351,7 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   context_menu_request_id_ = render_frame()->ShowContextMenu(this, params);
   g_last_active_menu = this;
+#endif  // OS_ANDROID
 }
 
 void ChromePluginPlaceholder::BindWebFrame(blink::WebFrame* frame) {
