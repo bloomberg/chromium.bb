@@ -156,4 +156,16 @@ InspectorTest.waitUntilMessageReceived = function(callback)
     InspectorTest.addSniffer(WebInspector.console, "addMessage", callback, false);
 }
 
+InspectorTest.waitUntilNthMessageReceived = function(count, callback)
+{
+    function override()
+    {
+        if (--count === 0)
+            InspectorTest.safeWrap(callback)();
+        else
+            InspectorTest.addSniffer(WebInspector.console, "addMessage", override, false);
+    }
+    InspectorTest.addSniffer(WebInspector.console, "addMessage", override, false);
+}
+
 }
