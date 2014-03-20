@@ -229,6 +229,8 @@ struct SVGAttributeHashTranslator {
 
 DEFINE_ELEMENT_TYPE_CASTS(SVGElement, isSVGElement());
 
+template <> inline bool isElementOfType<const SVGElement>(const Node& node) { return node.isSVGElement(); }
+
 }
 
 #endif
