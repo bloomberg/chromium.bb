@@ -570,6 +570,11 @@ public class ContentViewCore
     }
 
     @VisibleForTesting
+    public void setImeAdapterForTest(ImeAdapter imeAdapter) {
+        mImeAdapter = imeAdapter;
+    }
+
+    @VisibleForTesting
     public ImeAdapter getImeAdapterForTest() {
         return mImeAdapter;
     }
@@ -1682,6 +1687,17 @@ public class ContentViewCore
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (getContentViewClient().shouldOverrideKeyEvent(event)) {
             return mContainerViewInternals.super_dispatchKeyEvent(event);
+        }
+
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER) {
+            showImeIfNeeded();
+            // Event is not consumed here, because ImeAdapter might interpret
+            // it as "Enter".
+            // showImeIfNeeded respects the policy of
+            // InputMethodService.onEvaluateInputViewShown. So IME will not be
+            // shown if you have QWERTY physical keyboard attached.
+            // Also, IME will not be shown if the focus is not on the input
+            // field. See ImeAdapter.attachAndShowIfNeeded
         }
 
         if (mImeAdapter.dispatchKeyEvent(event)) return true;
