@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -127,7 +127,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
   std::string default_target_language =
-      TranslateManager::GetTargetLanguage(prefs);
+      TranslateService::GetTargetLanguage(prefs);
   localized_strings->SetString("defaultTargetLanguage",
                                default_target_language);
 

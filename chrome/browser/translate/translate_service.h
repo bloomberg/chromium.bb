@@ -39,6 +39,14 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
   // used only for tests.
   static void SetUseInfobar(bool value);
 
+  // Returns the language to translate to. The language returned is the
+  // first language found in the following list that is supported by the
+  // translation service:
+  //     the UI language
+  //     the accept-language list
+  // If no language is found then an empty string is returned.
+  static std::string GetTargetLanguage(PrefService* prefs);
+
  private:
   TranslateService();
   ~TranslateService();

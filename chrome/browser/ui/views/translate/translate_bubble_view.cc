@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
@@ -80,7 +81,7 @@ void GetTranslateLanguages(content::WebContents* web_contents,
       return;
     }
   }
-  *target = TranslateManager::GetTargetLanguage(prefs);
+  *target = TranslateService::GetTargetLanguage(prefs);
 }
 
 class TranslateDenialComboboxModel : public ui::ComboboxModel {

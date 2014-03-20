@@ -37,7 +37,10 @@ class WebContents;
 class TranslateManager : public content::NotificationObserver {
  public:
   // TranslateTabHelper is expected to outlive the TranslateManager.
-  explicit TranslateManager(TranslateTabHelper* helper);
+  // |accept_language_pref_name| is the path for the preference for the
+  // accept-languages.
+  TranslateManager(TranslateTabHelper* helper,
+                   const std::string& accept_language_pref_name);
   virtual ~TranslateManager();
 
   // Returns true if the URL can be translated.
@@ -49,7 +52,8 @@ class TranslateManager : public content::NotificationObserver {
   //     the UI language
   //     the accept-language list
   // If no language is found then an empty string is returned.
-  static std::string GetTargetLanguage(PrefService* prefs);
+  static std::string GetTargetLanguage(
+      const std::vector<std::string>& accept_languages_list);
 
   // Returns the language to automatically translate to. |original_language| is
   // the webpage's original language.
@@ -118,6 +122,9 @@ class TranslateManager : public content::NotificationObserver {
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
+
+  // Preference name for the Accept-Languages HTTP header.
+  std::string accept_languages_pref_name_;
 
   // TODO(droger): Remove all uses of |translate_tab_helper_|, use
   // TranslateClient and TranslateDriver instead.

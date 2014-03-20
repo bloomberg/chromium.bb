@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/translate/core/browser/language_state.h"
@@ -211,8 +210,11 @@ TranslateManager::RegisterTranslateErrorCallback(
   return g_callback_list_->Add(callback);
 }
 
-TranslateManager::TranslateManager(TranslateTabHelper* helper)
+TranslateManager::TranslateManager(
+    TranslateTabHelper* helper,
+    const std::string& accept_languages_pref_name)
     : max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
+      accept_languages_pref_name_(accept_languages_pref_name),
       translate_tab_helper_(helper),
       translate_driver_(helper->GetTranslateDriver()),
       weak_method_factory_(this) {
@@ -272,7 +274,12 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  std::string target_lang = GetTargetLanguage(prefs);
+  // Get the accepted languages list.
+  std::vector<std::string> accept_languages_list;
+  base::SplitString(prefs->GetString(accept_languages_pref_name_.c_str()), ',',
+                    &accept_languages_list);
+
+  std::string target_lang = GetTargetLanguage(accept_languages_list);
   std::string language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
 
@@ -545,7 +552,8 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 }
 
 // static
-std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
+std::string TranslateManager::GetTargetLanguage(
+    const std::vector<std::string>& accept_languages_list) {
   std::string ui_lang = TranslatePrefs::ConvertLangCodeForTranslation(
       TranslateDownloadManager::GetLanguageCode(
           TranslateDownloadManager::GetInstance()->application_locale()));
@@ -553,17 +561,11 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   if (TranslateDownloadManager::IsSupportedLanguage(ui_lang))
     return ui_lang;
 
-  // Getting the accepted languages list
-  std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
-
-  std::vector<std::string> accept_langs_list;
-  base::SplitString(accept_langs_str, ',', &accept_langs_list);
-
   // Will translate to the first supported language on the Accepted Language
   // list or not at all if no such candidate exists
-  std::vector<std::string>::iterator iter;
-  for (iter = accept_langs_list.begin();
-       iter != accept_langs_list.end(); ++iter) {
+  std::vector<std::string>::const_iterator iter;
+  for (iter = accept_languages_list.begin();
+       iter != accept_languages_list.end(); ++iter) {
     std::string lang_code = TranslateDownloadManager::GetLanguageCode(*iter);
     if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
       return lang_code;

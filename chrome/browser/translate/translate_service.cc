@@ -5,8 +5,13 @@
 #include "chrome/browser/translate/translate_service.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 
 namespace {
@@ -94,4 +99,12 @@ bool TranslateService::IsTranslateBubbleEnabled() {
 void TranslateService::SetUseInfobar(bool value) {
   Initialize();
   g_translate_service->use_infobar_ = value;
+}
+
+// static
+std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
+  std::vector<std::string> accept_languages_list;
+  base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ',',
+                    &accept_languages_list);
+  return TranslateManager::GetTargetLanguage(accept_languages_list);
 }

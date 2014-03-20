@@ -4,6 +4,7 @@
 
 #include "chrome/browser/translate/translate_tab_helper.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
@@ -29,7 +30,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 TranslateTabHelper::TranslateTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       translate_driver_(&web_contents->GetController()),
-      translate_manager_(new TranslateManager(this)) {}
+      translate_manager_(new TranslateManager(this, prefs::kAcceptLanguages)) {}
 
 TranslateTabHelper::~TranslateTabHelper() {
 }
