@@ -20,6 +20,8 @@ void LayerOwner::SetLayer(Layer* layer) {
 }
 
 Layer* LayerOwner::AcquireLayer() {
+  if (layer_owner_)
+    layer_owner_->owner_ = NULL;
   return layer_owner_.release();
 }
 
