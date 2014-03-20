@@ -43,7 +43,7 @@ class WebCryptoImpl : public blink::WebCrypto {
   virtual void importKey(blink::WebCryptoKeyFormat format,
                          const unsigned char* key_data,
                          unsigned int key_data_size,
-                         const blink::WebCryptoAlgorithm& algorithm_or_null,
+                         const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
                          blink::WebCryptoResult result);

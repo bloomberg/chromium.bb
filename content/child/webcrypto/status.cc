@@ -57,12 +57,6 @@ Status Status::ErrorJwkAlgorithmInconsistent() {
       "by the Web Crypto call");
 }
 
-Status Status::ErrorJwkAlgorithmMissing() {
-  return Status(
-      "The JWK optional \"alg\" property is missing or not a string, "
-      "and one wasn't specified by the Web Crypto call");
-}
-
 Status Status::ErrorJwkUnrecognizedUse() {
   return Status("The JWK \"use\" property could not be parsed");
 }
@@ -149,18 +143,6 @@ Status Status::ErrorInvalidAesKwDataLength() {
 
 Status Status::ErrorGenerateKeyPublicExponent() {
   return Status("The \"publicExponent\" is either empty, zero, or too large");
-}
-
-Status Status::ErrorMissingAlgorithmImportRawKey() {
-  return Status(
-      "The key's algorithm must be specified when importing "
-      "raw-formatted key.");
-}
-
-Status Status::ErrorMissingAlgorithmUnwrapRawKey() {
-  return Status(
-      "The key's algorithm must be specified when unwrapping a "
-      "raw-formatted key.");
 }
 
 Status Status::ErrorImportRsaEmptyModulus() {

@@ -997,19 +997,6 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmacNoLength)) {
   EXPECT_EQ(128U, raw_key.byteLength());
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportSecretKeyNoAlgorithm)) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-
-  // This fails because the algorithm is null.
-  EXPECT_STATUS(Status::ErrorMissingAlgorithmImportRawKey(),
-                ImportKey(blink::WebCryptoKeyFormatRaw,
-                          CryptoData(HexStringToBytes("00000000000000000000")),
-                          blink::WebCryptoAlgorithm::createNull(),
-                          true,
-                          blink::WebCryptoKeyUsageEncrypt,
-                          &key));
-}
-
 TEST_F(SharedCryptoTest, ImportJwkKeyUsage) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   base::DictionaryValue dict;
@@ -1178,16 +1165,6 @@ TEST_F(SharedCryptoTest, ImportJwkFailures) {
   dict.SetString("alg", "A127CBC");
   EXPECT_STATUS(Status::ErrorJwkUnrecognizedAlgorithm(),
                 ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
-  RestoreJwkOctDictionary(&dict);
-
-  // Fail on both JWK and input algorithm missing.
-  dict.Remove("alg", NULL);
-  EXPECT_STATUS(Status::ErrorJwkAlgorithmMissing(),
-                ImportKeyJwkFromDict(dict,
-                                     blink::WebCryptoAlgorithm::createNull(),
-                                     false,
-                                     usage_mask,
-                                     &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid kty.
@@ -1425,14 +1402,6 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
                    usage_mask,
                    &key));
 
-  // Pass: JWK alg valid but input algorithm isNull: use JWK algorithm value.
-  EXPECT_STATUS_SUCCESS(ImportKeyJwk(CryptoData(json_vec),
-                                     blink::WebCryptoAlgorithm::createNull(),
-                                     extractable,
-                                     usage_mask,
-                                     &key));
-  EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
-
   // Pass: JWK alg missing but input algorithm specified: use input value
   dict.Remove("alg", NULL);
   EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(
@@ -1659,24 +1628,14 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
       "010001", CryptoData(key.algorithm().rsaParams()->publicExponent()));
 
   // Failing case: Empty SPKI data
-  EXPECT_STATUS(Status::ErrorImportEmptyKeyData(),
-                ImportKey(blink::WebCryptoKeyFormatSpki,
-                          CryptoData(std::vector<uint8>()),
-                          blink::WebCryptoAlgorithm::createNull(),
-                          true,
-                          blink::WebCryptoKeyUsageEncrypt,
-                          &key));
-
-  // Failing case: Import RSA key with NULL input algorithm. This is not
-  // allowed because the SPKI ASN.1 format for RSA keys is not specific enough
-  // to map to a Web Crypto algorithm.
-  EXPECT_STATUS(Status::Error(),
-                ImportKey(blink::WebCryptoKeyFormatSpki,
-                          CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
-                          blink::WebCryptoAlgorithm::createNull(),
-                          true,
-                          blink::WebCryptoKeyUsageEncrypt,
-                          &key));
+  EXPECT_STATUS(
+      Status::ErrorImportEmptyKeyData(),
+      ImportKey(blink::WebCryptoKeyFormatSpki,
+                CryptoData(std::vector<uint8>()),
+                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+                true,
+                blink::WebCryptoKeyUsageEncrypt,
+                &key));
 
   // Failing case: Bad DER encoding.
   EXPECT_STATUS(
@@ -1749,18 +1708,9 @@ TEST_F(SharedCryptoTest, MAYBE(ImportPkcs8)) {
   EXPECT_STATUS(Status::ErrorImportEmptyKeyData(),
                 ImportKey(blink::WebCryptoKeyFormatPkcs8,
                           CryptoData(std::vector<uint8>()),
-                          blink::WebCryptoAlgorithm::createNull(),
-                          true,
-                          blink::WebCryptoKeyUsageSign,
-                          &key));
-
-  // Failing case: Import RSA key with NULL input algorithm. This is not
-  // allowed because the PKCS#8 ASN.1 format for RSA keys is not specific enough
-  // to map to a Web Crypto algorithm.
-  EXPECT_STATUS(Status::Error(),
-                ImportKey(blink::WebCryptoKeyFormatPkcs8,
-                          CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
-                          blink::WebCryptoAlgorithm::createNull(),
+                          CreateRsaHashedImportAlgorithm(
+                              blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                              blink::WebCryptoAlgorithmIdSha1),
                           true,
                           blink::WebCryptoKeyUsageSign,
                           &key));
@@ -2513,21 +2463,10 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapErrors)) {
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
       blink::WebCryptoKeyUsageEncrypt);
 
-  // Unwrap with null algorithm must fail.
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
-  EXPECT_STATUS(Status::ErrorMissingAlgorithmUnwrapRawKey(),
-                UnwrapKey(blink::WebCryptoKeyFormatRaw,
-                          CryptoData(test_ciphertext),
-                          wrapping_key,
-                          wrapping_algorithm,
-                          blink::WebCryptoAlgorithm::createNull(),
-                          true,
-                          blink::WebCryptoKeyUsageEncrypt,
-                          &unwrapped_key));
-
   // Unwrap with wrapped data too small must fail.
   const std::vector<uint8> small_data(test_ciphertext.begin(),
                                       test_ciphertext.begin() + 23);
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
   EXPECT_STATUS(Status::ErrorDataTooSmall(),
                 UnwrapKey(blink::WebCryptoKeyFormatRaw,
                           CryptoData(small_data),
@@ -2612,14 +2551,15 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
 
   // Unwrap the known wrapped key data to produce a new key
   blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
-  ASSERT_STATUS_SUCCESS(UnwrapKey(blink::WebCryptoKeyFormatJwk,
-                                  CryptoData(wrapped_key_data),
-                                  wrapping_key,
-                                  wrapping_algorithm,
-                                  blink::WebCryptoAlgorithm::createNull(),
-                                  true,
-                                  blink::WebCryptoKeyUsageVerify,
-                                  &unwrapped_key));
+  ASSERT_STATUS_SUCCESS(
+      UnwrapKey(blink::WebCryptoKeyFormatJwk,
+                CryptoData(wrapped_key_data),
+                wrapping_key,
+                wrapping_algorithm,
+                CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256),
+                true,
+                blink::WebCryptoKeyUsageVerify,
+                &unwrapped_key));
 
   // Validate the new key's attributes.
   EXPECT_FALSE(unwrapped_key.isNull());

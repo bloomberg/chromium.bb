@@ -156,13 +156,13 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           const CryptoData& exponent_data,
                           blink::WebCryptoKey* key);
 
-Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
                      blink::WebCryptoKey* key);
 
-Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       const CryptoData& key_data,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usage_mask,

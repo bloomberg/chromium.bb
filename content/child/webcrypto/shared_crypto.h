@@ -100,13 +100,12 @@ CONTENT_EXPORT Status
                     blink::WebCryptoKey* public_key,
                     blink::WebCryptoKey* private_key);
 
-CONTENT_EXPORT Status
-    ImportKey(blink::WebCryptoKeyFormat format,
-              const CryptoData& key_data,
-              const blink::WebCryptoAlgorithm& algorithm_or_null,
-              bool extractable,
-              blink::WebCryptoKeyUsageMask usage_mask,
-              blink::WebCryptoKey* key);
+CONTENT_EXPORT Status ImportKey(blink::WebCryptoKeyFormat format,
+                                const CryptoData& key_data,
+                                const blink::WebCryptoAlgorithm& algorithm,
+                                bool extractable,
+                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKey* key);
 
 CONTENT_EXPORT Status ExportKey(blink::WebCryptoKeyFormat format,
                                 const blink::WebCryptoKey& key,
@@ -124,12 +123,11 @@ CONTENT_EXPORT Status
                     const CryptoData& data,
                     bool* signature_match);
 
-CONTENT_EXPORT Status
-    ImportKeyJwk(const CryptoData& key_data,
-                 const blink::WebCryptoAlgorithm& algorithm_or_null,
-                 bool extractable,
-                 blink::WebCryptoKeyUsageMask usage_mask,
-                 blink::WebCryptoKey* key);
+CONTENT_EXPORT Status ImportKeyJwk(const CryptoData& key_data,
+                                   const blink::WebCryptoAlgorithm& algorithm,
+                                   bool extractable,
+                                   blink::WebCryptoKeyUsageMask usage_mask,
+                                   blink::WebCryptoKey* key);
 
 CONTENT_EXPORT Status
     ExportKeyJwk(const blink::WebCryptoKey& key, blink::WebArrayBuffer* buffer);
@@ -146,7 +144,7 @@ CONTENT_EXPORT Status
               const CryptoData& wrapped_key_data,
               const blink::WebCryptoKey& wrapping_key,
               const blink::WebCryptoAlgorithm& wrapping_algorithm,
-              const blink::WebCryptoAlgorithm& algorithm_or_null,
+              const blink::WebCryptoAlgorithm& algorithm,
               bool extractable,
               blink::WebCryptoKeyUsageMask usage_mask,
               blink::WebCryptoKey* key);

@@ -617,24 +617,13 @@ typedef scoped_ptr<CERTSubjectPublicKeyInfo,
                                         SECKEY_DestroySubjectPublicKeyInfo> >
     ScopedCERTSubjectPublicKeyInfo;
 
-// Validates an NSS KeyType against a WebCrypto algorithm. Some NSS KeyTypes
-// contain enough information to fabricate a Web Crypto algorithm, which is
-// returned if the input algorithm isNull(). This function indicates failure by
-// returning a Null algorithm.
-blink::WebCryptoAlgorithm ResolveNssKeyTypeWithInputAlgorithm(
+// Validates an NSS KeyType against a WebCrypto import algorithm.
+bool ValidateNssKeyTypeAgainstInputAlgorithm(
     KeyType key_type,
-    const blink::WebCryptoAlgorithm& algorithm_or_null) {
+    const blink::WebCryptoAlgorithm& algorithm) {
   switch (key_type) {
     case rsaKey:
-      // NSS's rsaKey KeyType maps to keys with SEC_OID_PKCS1_RSA_ENCRYPTION and
-      // according to RFCs 4055/5756 this can be used for both encryption and
-      // signatures. However, this is not specific enough to build a compatible
-      // Web Crypto algorithm, since in Web Crypto, RSA encryption and signature
-      // algorithms are distinct. So if the input algorithm isNull() here, we
-      // have to fail.
-      if (!algorithm_or_null.isNull() && IsAlgorithmRsa(algorithm_or_null))
-        return algorithm_or_null;
-      break;
+      return IsAlgorithmRsa(algorithm);
     case dsaKey:
     case ecKey:
     case rsaPssKey:
@@ -644,12 +633,12 @@ blink::WebCryptoAlgorithm ResolveNssKeyTypeWithInputAlgorithm(
     default:
       break;
   }
-  return blink::WebCryptoAlgorithm::createNull();
+  return false;
 }
 
 }  // namespace
 
-Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
@@ -675,9 +664,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
     return Status::Error();
 
   const KeyType sec_key_type = SECKEY_GetPublicKeyType(sec_public_key.get());
-  blink::WebCryptoAlgorithm algorithm =
-      ResolveNssKeyTypeWithInputAlgorithm(sec_key_type, algorithm_or_null);
-  if (algorithm.isNull())
+  if (!ValidateNssKeyTypeAgainstInputAlgorithm(sec_key_type, algorithm))
     return Status::Error();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
@@ -708,7 +695,7 @@ Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
   return Status::Success();
 }
 
-Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       const CryptoData& key_data,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usage_mask,
@@ -741,9 +728,7 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm_or_null,
   crypto::ScopedSECKEYPrivateKey private_key(seckey_private_key);
 
   const KeyType sec_key_type = SECKEY_GetPrivateKeyType(private_key.get());
-  blink::WebCryptoAlgorithm algorithm =
-      ResolveNssKeyTypeWithInputAlgorithm(sec_key_type, algorithm_or_null);
-  if (algorithm.isNull())
+  if (!ValidateNssKeyTypeAgainstInputAlgorithm(sec_key_type, algorithm))
     return Status::Error();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;

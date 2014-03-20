@@ -382,7 +382,7 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
 }  // namespace
 
 Status ImportKeyJwk(const CryptoData& key_data,
-                    const blink::WebCryptoAlgorithm& algorithm_or_null,
+                    const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
@@ -526,19 +526,15 @@ Status ImportKeyJwk(const CryptoData& key_data,
   //   +-------+--------------------------------------------------------------+
   //
   // Consistency and conflict resolution
-  // The 'algorithm_or_null', 'extractable', and 'usage_mask' input parameters
+  // The 'algorithm', 'extractable', and 'usage_mask' input parameters
   // may be different than the corresponding values inside the JWK. The Web
   // Crypto spec says that if a JWK value is present but is inconsistent with
   // the input value, it is an error and the operation must fail. If no
-  // inconsistency is found, the input and JWK values are combined as follows:
+  // inconsistency is found then the input parameters are used.
   //
   // algorithm
-  //   If an algorithm is provided by both the input parameter and the JWK,
-  //   consistency between the two is based only on algorithm ID's (including an
-  //   inner hash algorithm if present). In this case if the consistency
-  //   check is passed, the input algorithm is used. If only one of either the
-  //   input algorithm and JWK alg is provided, it is used as the final
-  //   algorithm.
+  //   If the JWK algorithm is provided, it must match the web crypto input
+  //   algorithm (both the algorithm ID and inner hash if applicable).
   //
   // extractable
   //   If the JWK ext field is true but the input parameter is false, make the
@@ -583,17 +579,11 @@ Status ImportKeyJwk(const CryptoData& key_data,
       return Status::ErrorJwkExtInconsistent();
   }
 
-  // JWK "alg" (optional) --> algorithm parameter
-  // Note: input algorithm is also optional, so we have six cases to handle.
+  // JWK "alg" --> algorithm parameter
   // 1. JWK alg present but unrecognized: error
-  // 2. JWK alg valid AND input algorithm isNull: use JWK value
-  // 3. JWK alg valid AND input algorithm specified, but JWK value
-  //      inconsistent with input: error
-  // 4. JWK alg valid AND input algorithm specified, both consistent: use
-  //      input value (because it has potentially more details)
-  // 5. JWK alg missing AND input algorithm isNull: error
-  // 6. JWK alg missing AND input algorithm specified: use input value
-  blink::WebCryptoAlgorithm algorithm = blink::WebCryptoAlgorithm::createNull();
+  // 2. JWK alg valid and inconsistent with input algorithm: error
+  // 3. JWK alg valid and consistent with input algorithm: use input value
+  // 4. JWK alg is missing: use input value
   const JwkAlgorithmInfo* algorithm_info = NULL;
   std::string jwk_alg_value;
   bool has_jwk_alg;
@@ -613,23 +603,10 @@ Status ImportKeyJwk(const CryptoData& key_data,
     algorithm_info = jwk_alg_registry.Get().GetAlgorithmInfo(jwk_alg_value);
     if (!algorithm_info ||
         !algorithm_info->CreateImportAlgorithm(&jwk_algorithm))
-      return Status::ErrorJwkUnrecognizedAlgorithm();  // case 1
+      return Status::ErrorJwkUnrecognizedAlgorithm();
 
-    // JWK alg valid
-    if (algorithm_or_null.isNull()) {
-      // input algorithm not specified
-      algorithm = jwk_algorithm;  // case 2
-    } else {
-      // input algorithm specified
-      if (!ImportAlgorithmsConsistent(jwk_algorithm, algorithm_or_null))
-        return Status::ErrorJwkAlgorithmInconsistent();  // case 3
-      algorithm = algorithm_or_null;                     // case 4
-    }
-  } else {
-    // JWK alg missing
-    if (algorithm_or_null.isNull())
-      return Status::ErrorJwkAlgorithmMissing();  // case 5
-    algorithm = algorithm_or_null;                // case 6
+    if (!ImportAlgorithmsConsistent(jwk_algorithm, algorithm))
+      return Status::ErrorJwkAlgorithmInconsistent();
   }
   DCHECK(!algorithm.isNull());
 

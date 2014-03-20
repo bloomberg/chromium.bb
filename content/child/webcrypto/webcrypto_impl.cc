@@ -123,19 +123,18 @@ void WebCryptoImpl::generateKey(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
-void WebCryptoImpl::importKey(
-    blink::WebCryptoKeyFormat format,
-    const unsigned char* key_data,
-    unsigned int key_data_size,
-    const blink::WebCryptoAlgorithm& algorithm_or_null,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::importKey(blink::WebCryptoKeyFormat format,
+                              const unsigned char* key_data,
+                              unsigned int key_data_size,
+                              const blink::WebCryptoAlgorithm& algorithm,
+                              bool extractable,
+                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoResult result) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   Status status =
       webcrypto::ImportKey(format,
                            webcrypto::CryptoData(key_data, key_data_size),
-                           algorithm_or_null,
+                           algorithm,
                            extractable,
                            usage_mask,
                            &key);

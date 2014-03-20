@@ -364,7 +364,7 @@ Status VerifyRsaSsaPkcs1v1_5(PublicKey* key,
   return Status::ErrorUnsupported();
 }
 
-Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
@@ -373,7 +373,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
   return Status::ErrorUnsupported();
 }
 
-Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm_or_null,
+Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       const CryptoData& key_data,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usage_mask,

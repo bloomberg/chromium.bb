@@ -77,10 +77,6 @@ class CONTENT_EXPORT Status {
   // specified by the Web Crypto import operation.
   static Status ErrorJwkAlgorithmInconsistent();
 
-  // The "alg" parameter was not provided, however neither was an algorithm
-  // provided by the Web Crypto import operation.
-  static Status ErrorJwkAlgorithmMissing();
-
   // The "use" parameter was specified, however it couldn't be converted to an
   // equivalent Web Crypto usage.
   static Status ErrorJwkUnrecognizedUse();
@@ -166,14 +162,6 @@ class CONTENT_EXPORT Status {
   // were specified, or the number was too large to fit into an "unsigned long"
   // (implemention limitation), or the exponent was zero.
   static Status ErrorGenerateKeyPublicExponent();
-
-  // The algorithm was null when importing a raw-formatted key. In this case it
-  // is required.
-  static Status ErrorMissingAlgorithmImportRawKey();
-
-  // The algorithm was null when unwrapping a raw-formatted key. In this case it
-  // is required.
-  static Status ErrorMissingAlgorithmUnwrapRawKey();
 
   // The modulus bytes were empty when importing an RSA public key.
   static Status ErrorImportRsaEmptyModulus();

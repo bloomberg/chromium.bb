@@ -211,14 +211,11 @@ Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 Status ImportKeyRaw(const CryptoData& key_data,
-                    const blink::WebCryptoAlgorithm& algorithm_or_null,
+                    const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
-  if (algorithm_or_null.isNull())
-    return Status::ErrorMissingAlgorithmImportRawKey();
-
-  switch (algorithm_or_null.id()) {
+  switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesCtr:
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesGcm:
@@ -228,7 +225,7 @@ Status ImportKeyRaw(const CryptoData& key_data,
     // Fallthrough intentional!
     case blink::WebCryptoAlgorithmIdHmac:
       return platform::ImportKeyRaw(
-          algorithm_or_null, key_data, extractable, usage_mask, key);
+          algorithm, key_data, extractable, usage_mask, key);
     default:
       return Status::ErrorUnsupported();
   }
@@ -324,14 +321,10 @@ Status CheckAesKwInputSize(const CryptoData& aeskw_input_data) {
 Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
                     const blink::WebCryptoKey& wrapping_key,
                     const blink::WebCryptoAlgorithm& wrapping_algorithm,
-                    const blink::WebCryptoAlgorithm& algorithm_or_null,
+                    const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
-  // Must provide an algorithm when unwrapping a raw key
-  if (algorithm_or_null.isNull())
-    return Status::ErrorMissingAlgorithmUnwrapRawKey();
-
   // TODO(padolph): Handle other wrapping algorithms
   switch (wrapping_algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesKw: {
@@ -344,7 +337,7 @@ Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
         return status;
       return platform::UnwrapSymKeyAesKw(wrapped_key_data,
                                          platform_wrapping_key,
-                                         algorithm_or_null,
+                                         algorithm,
                                          extractable,
                                          usage_mask,
                                          key);
@@ -359,7 +352,7 @@ Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
         return Status::ErrorDataTooSmall();
       return platform::UnwrapSymKeyRsaEs(wrapped_key_data,
                                          platform_wrapping_key,
-                                         algorithm_or_null,
+                                         algorithm,
                                          extractable,
                                          usage_mask,
                                          key);
@@ -459,7 +452,7 @@ Status UnwrapKeyDecryptAndImport(
     const CryptoData& wrapped_key_data,
     const blink::WebCryptoKey& wrapping_key,
     const blink::WebCryptoAlgorithm& wrapping_algorithm,
-    const blink::WebCryptoAlgorithm& algorithm_or_null,
+    const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
@@ -468,12 +461,8 @@ Status UnwrapKeyDecryptAndImport(
       wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
   if (status.IsError())
     return status;
-  status = ImportKey(format,
-                     CryptoData(buffer),
-                     algorithm_or_null,
-                     extractable,
-                     usage_mask,
-                     key);
+  status = ImportKey(
+      format, CryptoData(buffer), algorithm, extractable, usage_mask, key);
   // NOTE! Returning the details of any ImportKey() failure here would leak
   // information about the plaintext internals of the encrypted key. Instead,
   // collapse any error into the generic Status::Error().
@@ -618,23 +607,21 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
 
 Status ImportKey(blink::WebCryptoKeyFormat format,
                  const CryptoData& key_data,
-                 const blink::WebCryptoAlgorithm& algorithm_or_null,
+                 const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usage_mask,
                  blink::WebCryptoKey* key) {
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      return ImportKeyRaw(
-          key_data, algorithm_or_null, extractable, usage_mask, key);
+      return ImportKeyRaw(key_data, algorithm, extractable, usage_mask, key);
     case blink::WebCryptoKeyFormatSpki:
       return platform::ImportKeySpki(
-          algorithm_or_null, key_data, extractable, usage_mask, key);
+          algorithm, key_data, extractable, usage_mask, key);
     case blink::WebCryptoKeyFormatPkcs8:
       return platform::ImportKeyPkcs8(
-          algorithm_or_null, key_data, extractable, usage_mask, key);
+          algorithm, key_data, extractable, usage_mask, key);
     case blink::WebCryptoKeyFormatJwk:
-      return ImportKeyJwk(
-          key_data, algorithm_or_null, extractable, usage_mask, key);
+      return ImportKeyJwk(key_data, algorithm, extractable, usage_mask, key);
     default:
       return Status::ErrorUnsupported();
   }
@@ -754,7 +741,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
                  const CryptoData& wrapped_key_data,
                  const blink::WebCryptoKey& wrapping_key,
                  const blink::WebCryptoAlgorithm& wrapping_algorithm,
-                 const blink::WebCryptoAlgorithm& algorithm_or_null,
+                 const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usage_mask,
                  blink::WebCryptoKey* key) {
@@ -768,7 +755,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
       return UnwrapKeyRaw(wrapped_key_data,
                           wrapping_key,
                           wrapping_algorithm,
-                          algorithm_or_null,
+                          algorithm,
                           extractable,
                           usage_mask,
                           key);
@@ -777,7 +764,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
                                        wrapped_key_data,
                                        wrapping_key,
                                        wrapping_algorithm,
-                                       algorithm_or_null,
+                                       algorithm,
                                        extractable,
                                        usage_mask,
                                        key);
