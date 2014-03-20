@@ -137,7 +137,6 @@ class TestFileSystemBackend::QuotaUtil
 
   virtual const fileapi::AccessObserverList* GetAccessObservers(
       FileSystemType type) const OVERRIDE {
-    NOTIMPLEMENTED();
     return NULL;
   }
 

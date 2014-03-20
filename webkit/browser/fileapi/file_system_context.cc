@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -113,6 +114,7 @@ FileSystemContext::FileSystemContext(
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ScopedVector<FileSystemBackend> additional_backends,
+    const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
     : io_task_runner_(io_task_runner),
@@ -133,6 +135,7 @@ FileSystemContext::FileSystemContext(
           special_storage_policy,
           options)),
       additional_backends_(additional_backends.Pass()),
+      auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),
       is_incognito_(options.is_incognito()),
@@ -335,6 +338,22 @@ void FileSystemContext::ResolveURL(
                  this,
                  url,
                  callback));
+}
+
+void FileSystemContext::AttemptAutoMountForURLRequest(
+    const net::URLRequest* url_request,
+    const std::string& storage_domain,
+    const StatusCallback& callback) {
+  FileSystemURL filesystem_url(url_request->url());
+  if (filesystem_url.type() == kFileSystemTypeExternal) {
+    for (size_t i = 0; i < auto_mount_handlers_.size(); i++) {
+      if (auto_mount_handlers_[i].Run(url_request, filesystem_url,
+                                      storage_domain, callback)) {
+        return;
+      }
+    }
+  }
+  callback.Run(base::File::FILE_ERROR_NOT_FOUND);
 }
 
 void FileSystemContext::DeleteFileSystem(

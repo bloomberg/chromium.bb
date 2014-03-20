@@ -21,10 +21,8 @@ class FilePath;
 }
 
 namespace fileapi {
-class FileSystemURL;
-}
 
-namespace fileapi {
+class FileSystemURL;
 
 // Manages external filesystem namespaces that are identified by 'mount name'
 // and are persisted until RevokeFileSystem is called.

@@ -250,6 +250,7 @@ class PicasaFileUtilTest : public testing::Test {
         storage_policy.get(),
         NULL,
         additional_providers.Pass(),
+        std::vector<fileapi::URLRequestAutoMountHandler>(),
         profile_dir_.path(),
         content::CreateAllowFileAccessOptions());
   }

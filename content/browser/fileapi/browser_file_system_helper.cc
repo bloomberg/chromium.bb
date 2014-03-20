@@ -21,6 +21,7 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -66,6 +67,12 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
       profile_path,
       &additional_backends);
 
+  // Set up the auto mount handlers for url requests.
+  std::vector<fileapi::URLRequestAutoMountHandler>
+      url_request_auto_mount_handlers;
+  GetContentClient()->browser()->GetURLRequestAutoMountHandlers(
+      &url_request_auto_mount_handlers);
+
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       new fileapi::FileSystemContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
@@ -74,6 +81,7 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           browser_context->GetSpecialStoragePolicy(),
           quota_manager_proxy,
           additional_backends.Pass(),
+          url_request_auto_mount_handlers,
           profile_path,
           CreateBrowserFileSystemOptions(is_incognito));
 
