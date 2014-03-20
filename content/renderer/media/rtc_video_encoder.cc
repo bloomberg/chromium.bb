@@ -564,6 +564,8 @@ int32_t RTCVideoEncoder::Encode(
     return impl_status_;
   }
 
+  bool want_key_frame = frame_types && frame_types->size() &&
+                        frame_types->front() == webrtc::kKeyFrame;
   base::WaitableEvent encode_waiter(true, false);
   int32_t encode_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_factories_->GetTaskRunner()->PostTask(
@@ -571,7 +573,7 @@ int32_t RTCVideoEncoder::Encode(
       base::Bind(&RTCVideoEncoder::Impl::Enqueue,
                  impl_,
                  &input_image,
-                 (frame_types->front() == webrtc::kKeyFrame),
+                 want_key_frame,
                  &encode_waiter,
                  &encode_retval));
 
