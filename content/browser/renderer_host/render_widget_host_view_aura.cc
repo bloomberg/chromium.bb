@@ -1051,12 +1051,20 @@ void RenderWidgetHostViewAura::SelectionChanged(const base::string16& text,
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   if (text.empty() || range.is_empty())
     return;
+  size_t pos = range.GetMin() - offset;
+  size_t n = range.length();
+
+  DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
+  if (pos >= text.length()) {
+    NOTREACHED() << "The text can not cover range.";
+    return;
+  }
 
   // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
   ui::ScopedClipboardWriter clipboard_writer(
       ui::Clipboard::GetForCurrentThread(),
       ui::CLIPBOARD_TYPE_SELECTION);
-  clipboard_writer.WriteText(text);
+  clipboard_writer.WriteText(text.substr(pos, n));
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }
 
