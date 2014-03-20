@@ -33,7 +33,7 @@
     </script>
 </head>
 <frameset rows="10%,*">
-    <frame id='main' src="data:text/html,<p>This test passes as long as the onerror handler logs PASS to the console, and the uncaught exception reported to the console has unsanitized detail.</p>">
-    <frame id='aFrame' src='http://localhost:8000/security/resources/cross-frame-iframe.html'>
+    <frame id='main' name='main' src="data:text/html,<p>This test passes as long as the onerror handler logs PASS to the console, and the uncaught exception reported to the console has unsanitized detail.</p>">
+    <frame id='aFrame' name="aFrame" src='http://localhost:8000/security/resources/cross-frame-iframe.html'>
 </frameset>
 </html>

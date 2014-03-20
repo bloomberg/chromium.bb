@@ -1,7 +1,7 @@
-frame "frameContext" - has 1 onunload handler(s)
-frame "frameContext" - has 1 onunload handler(s)
-frame "frameContext" - has 1 onunload handler(s)
-frame "frameContext" - has 1 onunload handler(s)
+frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
+frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
+frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
+frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
 Description
 
 This test validates the value of window.performance.navigation.type with a forward and back navigation.
