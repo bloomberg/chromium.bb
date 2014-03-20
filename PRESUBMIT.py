@@ -1354,9 +1354,10 @@ def GetDefaultTryConfigs(bots=None):
   }
 
   swarm_enabled_builders = (
-      'linux_rel',
-      'mac_rel',
-      'win_rel',
+  # http://crbug.com/354263
+  #    'linux_rel',
+  #    'mac_rel',
+  #    'win_rel',
   )
 
   swarm_enabled_tests = (
