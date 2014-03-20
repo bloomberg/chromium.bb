@@ -24,9 +24,30 @@
 namespace cc {
 namespace {
 
+class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
+  // Overridden from gpu::gles2::GLES2Interface:
+  virtual GLuint CreateImageCHROMIUM(GLsizei width,
+                                     GLsizei height,
+                                     GLenum internalformat) OVERRIDE {
+    return 1u;
+  }
+  virtual void GenBuffers(GLsizei n, GLuint* buffers) OVERRIDE {
+    for (GLsizei i = 0; i < n; ++i)
+      buffers[i] = 1u;
+  }
+  virtual void GenTextures(GLsizei n, GLuint* textures) OVERRIDE {
+    for (GLsizei i = 0; i < n; ++i)
+      textures[i] = 1u;
+  }
+  virtual void GetIntegerv(GLenum pname, GLint* params) OVERRIDE {
+    if (pname == GL_MAX_TEXTURE_SIZE)
+      *params = INT_MAX;
+  }
+};
+
 class PerfContextProvider : public ContextProvider {
  public:
-  PerfContextProvider() : context_gl_(new gpu::gles2::GLES2InterfaceStub) {}
+  PerfContextProvider() : context_gl_(new PerfGLES2Interface) {}
 
   virtual bool BindToCurrentThread() OVERRIDE { return true; }
   virtual Capabilities ContextCapabilities() OVERRIDE { return Capabilities(); }
@@ -45,7 +66,7 @@ class PerfContextProvider : public ContextProvider {
  private:
   virtual ~PerfContextProvider() {}
 
-  scoped_ptr<gpu::gles2::GLES2InterfaceStub> context_gl_;
+  scoped_ptr<PerfGLES2Interface> context_gl_;
   TestContextSupport support_;
 };
 
