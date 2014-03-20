@@ -38,7 +38,8 @@
 
 namespace WTF {
 
-// A utility class to build an ArrayBuffer instance.
+// A utility class to build an ArrayBuffer instance. Validity must be checked
+// by isValid() before using an instance.
 class WTF_EXPORT ArrayBufferBuilder {
     // Disallow copying since it's expensive and we don't want code to do it by
     // accident.
@@ -55,6 +56,12 @@ public:
         m_buffer = ArrayBuffer::create(capacity, 1);
     }
 
+    bool isValid() const
+    {
+        return m_buffer;
+    }
+
+    // Appending empty data is not allowed.
     unsigned append(const char* data, unsigned length);
 
     // Returns the accumulated data as an ArrayBuffer instance. If needed,

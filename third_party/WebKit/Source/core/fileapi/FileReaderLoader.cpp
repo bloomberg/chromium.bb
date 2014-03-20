@@ -201,17 +201,19 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
             return;
         }
 
-        if (initialBufferLength < 0) {
+        if (initialBufferLength < 0)
             m_rawData = adoptPtr(new ArrayBufferBuilder());
-        } else {
+        else
             m_rawData = adoptPtr(new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));
-            // Total size is known. Set m_rawData to ignore overflowed data.
-            m_rawData->setVariableCapacity(false);
-        }
 
-        if (!m_rawData) {
+        if (!m_rawData || !m_rawData->isValid()) {
             failed(FileError::NOT_READABLE_ERR);
             return;
+        }
+
+        if (initialBufferLength >= 0) {
+            // Total size is known. Set m_rawData to ignore overflowed data.
+            m_rawData->setVariableCapacity(false);
         }
     }
 
