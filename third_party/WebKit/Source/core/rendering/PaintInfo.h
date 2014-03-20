@@ -95,7 +95,10 @@ struct PaintInfo {
         if (rect == infiniteRect())
             return;
 
-        rect = localToAncestorTransform.inverse().mapRect(rect);
+        if (localToAncestorTransform.isInvertible())
+            rect = localToAncestorTransform.inverse().mapRect(rect);
+        else
+            rect.setSize(IntSize(0, 0));
     }
 
     static IntRect infiniteRect() { return IntRect(LayoutRect::infiniteRect()); }
