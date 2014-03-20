@@ -387,13 +387,18 @@ bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
+#if !defined(OS_CHROMEOS)
+  // ChromeOS shows avatar on V1 app.
   DCHECK(browser_view()->IsTabStripVisible());
+#endif
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
   int avatar_bottom = GetTopInset() +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
-  int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
+  int avatar_y =
+      (browser_view()->IsTabStripVisible() &&
+       (frame()->IsMaximized() || frame()->IsFullscreen())) ?
       GetTopInset() + kContentShadowHeight : avatar_restored_y;
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is

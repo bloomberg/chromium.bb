@@ -586,9 +586,10 @@ int BrowserView::GetGuestIconResourceID() const {
 }
 
 bool BrowserView::ShouldShowAvatar() const {
-  if (!IsBrowserTypeNormal())
-    return false;
 #if defined(OS_CHROMEOS)
+  if (!browser_->is_type_tabbed() && !browser_->is_app())
+    return false;
+  // Don't show incognito avatar in the guest session.
   if (IsOffTheRecord() && !IsGuestSession())
     return true;
   // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
@@ -599,6 +600,8 @@ bool BrowserView::ShouldShowAvatar() const {
   return chrome::MultiUserWindowManager::ShouldShowAvatar(
       browser_->window()->GetNativeWindow());
 #else
+  if (!IsBrowserTypeNormal())
+    return false;
   if (IsOffTheRecord())  // Desktop guest is incognito and needs avatar.
     return true;
   // Tests may not have a profile manager.
