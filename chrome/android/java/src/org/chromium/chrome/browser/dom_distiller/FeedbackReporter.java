@@ -74,6 +74,9 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
         mFeedbackReportingView = FeedbackReportingView.create(mContentView, this);
     }
 
+    /**
+     * Dismiss the overlay which is currently being displayed.
+     */
     @CalledByNative
     private void dismissOverlay() {
         if (mFeedbackReportingView != null) mFeedbackReportingView.dismiss();
@@ -81,9 +84,6 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
         mFeedbackReportingView = null;
     }
 
-    /**
-     * Dismiss the overlay which is currently being displayed.
-     */
     @CalledByNative
     private String getCurrentOverlayUrl() {
         return mOverlayUrl;
