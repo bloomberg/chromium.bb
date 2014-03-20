@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "ui/gfx/font.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 
@@ -68,7 +69,7 @@ NSMenu* LocationBarDecoration::GetMenu() {
 }
 
 NSFont* LocationBarDecoration::GetFont() const {
-  return OmniboxViewMac::GetFieldFont();
+  return OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL);
 }
 
 // static

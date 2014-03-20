@@ -232,7 +232,7 @@ void OmniboxResultView::PaintMatch(
   }
 
   int contents_max_width, description_max_width;
-  ComputeMatchMaxWidths(
+  OmniboxPopupModel::ComputeMatchMaxWidths(
       contents->GetContentWidth(),
       separator_width_,
       description ? description->GetContentWidth() : 0,
@@ -261,11 +261,9 @@ int OmniboxResultView::DrawRenderText(
     int max_width) const {
   DCHECK(!render_text->text().empty());
 
-  int remaining_width = mirroring_context_->remaining_width(x);
-  if (max_width >= 0)
-      remaining_width = std::min(remaining_width, max_width);
-  const int content_width = render_text->GetContentWidth();
-  int right_x = x + std::min(remaining_width, content_width);
+  const int remaining_width =
+      std::min(mirroring_context_->remaining_width(x), max_width);
+  int right_x = x + remaining_width;
 
   // Infinite suggestions should appear with the leading ellipses vertically
   // stacked.
@@ -310,7 +308,7 @@ int OmniboxResultView::DrawRenderText(
       const int start_offset = std::max(prefix_width,
           std::min(remaining_width - (prefix_width + max_match_contents_width),
                    offset));
-      right_x = x + std::min(remaining_width, start_offset + content_width);
+      right_x = x + std::min(remaining_width, start_offset + max_width);
       x += start_offset;
       prefix_x = x - prefix_width;
     }
@@ -417,63 +415,6 @@ int OmniboxResultView::GetDisplayOffset(
   return is_ui_rtl ?
       (input_render_text->GetContentWidth() - start_padding) : start_padding;
 }
-
-// static
-void OmniboxResultView::ComputeMatchMaxWidths(int contents_width,
-                                              int separator_width,
-                                              int description_width,
-                                              int available_width,
-                                              bool allow_shrinking_contents,
-                                              int* contents_max_width,
-                                              int* description_max_width) {
-  if (available_width <= 0) {
-      *contents_max_width = 0;
-      *description_max_width = 0;
-      return;
-  }
-
-  int total_width = contents_width + separator_width + description_width;
-
-  // The contents should never be empty.
-  DCHECK(contents_width);
-  *contents_max_width = -1;
-
-  // If the description is empty, the contents can get the full width.
-  *description_max_width = description_width ? -1 : 0;
-  if (!description_width)
-    return;
-
-  if (total_width > available_width) {
-    if (allow_shrinking_contents) {
-      // Try to split the available space fairly between contents and
-      // description (if one wants less than half, give it all it wants and
-      // give the other the remaining space; otherwise, give each half).
-      // However, if this makes the contents too narrow to show a significant
-      // amount of information, give the contents more space.
-      *contents_max_width = std::max(
-          (available_width - separator_width + 1) / 2,
-          available_width - separator_width - description_width);
-
-      const int kMinimumContentsWidth = 300;
-      *contents_max_width = std::min(
-          std::max(*contents_max_width, kMinimumContentsWidth), contents_width);
-    }
-
-    // Give the description the remaining space, unless this makes it too small
-    // to display anything meaningful, in which case just hide the description
-    // and let the contents take up the whole width.
-    *description_max_width =
-      available_width - separator_width -
-      (*contents_max_width == -1 ? contents_width : *contents_max_width);
-    const int kMinimumDescriptionWidth = 75;
-    if (*description_max_width <
-        std::min(description_width, kMinimumDescriptionWidth)) {
-      *description_max_width = 0;
-      *contents_max_width = -1;
-    }
-  }
-}
-
 
 // static
 void OmniboxResultView::CommonInitColors(const ui::NativeTheme* theme,

@@ -7,11 +7,22 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
+
 // OmniboxPopupCell overrides how backgrounds are displayed to
 // handle hover versus selected.  So long as we're in there, it also
 // provides some default initialization.
 @interface OmniboxPopupCell : NSButtonCell {
+ @private
+  // The match which will be rendered for this row in omnibox dropdown.
+  AutocompleteMatch match_;
+
+  base::scoped_nsobject<NSAttributedString> separator_;
+  base::scoped_nsobject<NSAttributedString> description_;
 }
+
+- (void)setMatch:(const AutocompleteMatch&)match;
 
 @end
 

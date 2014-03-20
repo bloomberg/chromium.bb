@@ -29,6 +29,7 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -207,7 +208,7 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
 void OmniboxViewMac::Update() {
   if (chrome::ShouldDisplayOriginChipV2()) {
     NSDictionary* placeholder_attributes = @{
-      NSFontAttributeName : GetFieldFont(),
+      NSFontAttributeName : GetFieldFont(gfx::Font::NORMAL),
       NSForegroundColorAttributeName : [NSColor disabledControlTextColor]
     };
     base::scoped_nsobject<NSMutableAttributedString> placeholder_text(
@@ -438,7 +439,7 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
   NSUInteger as_length = [as length];
   NSRange as_entire_string = NSMakeRange(0, as_length);
 
-  [as addAttribute:NSFontAttributeName value:GetFieldFont()
+  [as addAttribute:NSFontAttributeName value:GetFieldFont(gfx::Font::NORMAL)
              range:as_entire_string];
 
   // A kinda hacky way to add breaking at periods. This is what Safari does.
@@ -963,10 +964,10 @@ void OmniboxViewMac::FocusLocation(bool select_all) {
 }
 
 // static
-NSFont* OmniboxViewMac::GetFieldFont() {
+NSFont* OmniboxViewMac::GetFieldFont(int style) {
   // This value should be kept in sync with InstantPage::InitializeFonts.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(1)
+  return rb.GetFontList(ui::ResourceBundle::BaseFont).Derive(1, style)
       .GetPrimaryFont().GetNativeFont();
 }
 

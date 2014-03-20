@@ -118,18 +118,6 @@ class OmniboxResultView : public views::View,
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OmniboxResultViewTest, CheckComputeMatchWidths);
-
-  // Computes the maximum width, in pixels, that can be allocated for the two
-  // parts of an autocomplete result, i.e. the contents and the description.
-  static void ComputeMatchMaxWidths(int contents_width,
-                                    int separator_width,
-                                    int description_width,
-                                    int available_width,
-                                    bool allow_shrinking_contents,
-                                    int* contents_max_width,
-                                    int* description_max_width);
-
   // Common initialization code of the colors returned by GetColors().
   static void CommonInitColors(const ui::NativeTheme* theme,
                                SkColor colors[][NUM_KINDS]);

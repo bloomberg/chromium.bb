@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -115,7 +116,7 @@ class OmniboxViewMacTest : public CocoaProfileTest {
 };
 
 TEST_F(OmniboxViewMacTest, GetFieldFont) {
-  EXPECT_TRUE(OmniboxViewMac::GetFieldFont());
+  EXPECT_TRUE(OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL));
 }
 
 TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
