@@ -65,6 +65,8 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUninstalled(
       const extensions::Extension* extension) OVERRIDE;
+  virtual void OnDisabledExtensionUpdated(
+      const extensions::Extension* extension) OVERRIDE;
   virtual void OnAppInstalledToAppList(
       const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;

@@ -28,6 +28,7 @@ void InstallObserver::OnExtensionInstalled(const Extension* extension) {}
 void InstallObserver::OnExtensionLoaded(const Extension* extension) {}
 void InstallObserver::OnExtensionUnloaded(const Extension* extension) {}
 void InstallObserver::OnExtensionUninstalled(const Extension* extension) {}
+void InstallObserver::OnDisabledExtensionUpdated(const Extension* extension) {}
 void InstallObserver::OnAppInstalledToAppList(const std::string& extension_id) {
 }
 void InstallObserver::OnAppsReordered() {}

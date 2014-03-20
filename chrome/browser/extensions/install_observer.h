@@ -54,6 +54,7 @@ class InstallObserver {
   virtual void OnExtensionLoaded(const Extension* extension);
   virtual void OnExtensionUnloaded(const Extension* extension);
   virtual void OnExtensionUninstalled(const Extension* extension);
+  virtual void OnDisabledExtensionUpdated(const Extension* extension);
   virtual void OnAppInstalledToAppList(const std::string& extension_id);
 
   // Called when the app list is reordered.

@@ -179,6 +179,16 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
   model_->DeleteItem(extension->id());
 }
 
+void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
+    const Extension* extension) {
+  if (!extension->ShouldDisplayInAppLauncher())
+    return;
+
+  ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
+  if (existing_item)
+    existing_item->Reload();
+}
+
 void ExtensionAppModelBuilder::OnAppInstalledToAppList(
     const std::string& extension_id) {
   SetHighlightedApp(extension_id);
