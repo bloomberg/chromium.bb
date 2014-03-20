@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/network_time/navigation_time_helper.h"
@@ -152,7 +152,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   WindowAndroidHelper::CreateForWebContents(web_contents);
 #else
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   ExternalProtocolObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);

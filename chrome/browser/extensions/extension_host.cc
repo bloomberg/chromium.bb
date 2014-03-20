@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -138,11 +138,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   host_contents_->SetDelegate(this);
   SetViewType(host_contents_.get(), host_type);
 
-  // TODO(jamescook): Break ExtensionWebContentsObserver into pieces to extract
-  // the core IPC message handling and URL schema support from Chrome-level
-  // error console message and MessageService support.
-  ExtensionWebContentsObserver::CreateForWebContents(host_contents());
-
   render_view_host_ = host_contents_->GetRenderViewHost();
 
   // Listen for when an extension is unloaded from the same profile, as it may
@@ -150,7 +145,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(browser_context_));
 
-  // Set up Chrome-level pref observers.
+  // Set up web contents observers and pref observers.
   delegate_->OnExtensionHostCreated(host_contents());
 }
 

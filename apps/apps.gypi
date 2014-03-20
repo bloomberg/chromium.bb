@@ -194,6 +194,8 @@
             'shell/browser/shell_extension_system.h',
             'shell/browser/shell_extension_system_factory.cc',
             'shell/browser/shell_extension_system_factory.h',
+            'shell/browser/shell_extension_web_contents_observer.cc',
+            'shell/browser/shell_extension_web_contents_observer.h',
             'shell/browser/shell_extensions_browser_client.cc',
             'shell/browser/shell_extensions_browser_client.h',
             'shell/browser/web_view_window.cc',

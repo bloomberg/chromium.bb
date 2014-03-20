@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -256,7 +256,9 @@ void AppWindow::Init(const GURL& url,
   }
   delegate_->InitWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
+  // TODO(jamescook): Delegate out this creation.
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
 
   web_contents->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents)

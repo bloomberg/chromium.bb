@@ -15,8 +15,8 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -219,7 +219,7 @@ void DriveWebContentsManager::StartLoad() {
 
   web_contents_.reset(content::WebContents::Create(create_params));
   web_contents_->SetDelegate(this);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
 
   content::NavigationController::LoadURLParams load_params(url);

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -50,7 +50,7 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
   // Required for intercepting extension function calls when the page is loaded
   // in a bubble (not a full tab, thus tab helpers are not registered
   // automatically).
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_ui->GetWebContents());
 #endif
 }

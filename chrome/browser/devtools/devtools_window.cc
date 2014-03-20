@@ -21,8 +21,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
@@ -679,7 +679,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       web_contents_, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile));
   file_system_indexer_ = new DevToolsFileSystemIndexer();
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents_);
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents_);
 
   g_instances.Get().push_back(this);
 

@@ -8,8 +8,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webview/webview_api.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -115,7 +115,8 @@ void RemoveWebViewEventListenersOnIOThread(
 
 void AttachWebViewHelpers(WebContents* contents) {
   FaviconTabHelper::CreateForWebContents(contents);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(contents);
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      contents);
 #if defined(ENABLE_PLUGINS)
   PluginPermissionHelper::CreateForWebContents(contents);
 #endif

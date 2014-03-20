@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -494,7 +494,7 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   WebContents* preview_dialog = constrained_delegate->GetWebContents();
   EnableInternalPDFPluginForContents(preview_dialog);
   PrintViewManager::CreateForWebContents(preview_dialog);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       preview_dialog);
 
   waiting_for_new_preview_page_ = true;

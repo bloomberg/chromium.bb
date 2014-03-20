@@ -6,6 +6,7 @@
 
 #include "apps/shell/browser/shell_app_sorting.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
+#include "apps/shell/browser/shell_extension_web_contents_observer.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
@@ -28,7 +29,7 @@ void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionPrefs::RegisterProfilePrefs(registry);
 }
 
-// An ExtensionHostDelegate that does nothing.
+// A minimal ExtensionHostDelegate.
 class ShellExtensionHostDelegate : public ExtensionHostDelegate {
  public:
   ShellExtensionHostDelegate() {}
@@ -36,7 +37,7 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
 
   // ExtensionHostDelegate implementation.
   virtual void OnExtensionHostCreated(content::WebContents* web_contents)
-      OVERRIDE {}
+      OVERRIDE;
 
   virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host)
       OVERRIDE {}
@@ -67,6 +68,11 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
     NOTREACHED();
   }
 };
+
+void ShellExtensionHostDelegate::OnExtensionHostCreated(
+    content::WebContents* web_contents) {
+  ShellExtensionWebContentsObserver::CreateForWebContents(web_contents);
+}
 
 }  // namespace
 

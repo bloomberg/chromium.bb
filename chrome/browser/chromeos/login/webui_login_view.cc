@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -175,7 +175,8 @@ void WebUILoginView::Init() {
       SetDelegate(this);
 
   web_contents->SetDelegate(this);
-  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
   WebContentsObserver::Observe(web_contents);
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents->GetMutableRendererPrefs(),
