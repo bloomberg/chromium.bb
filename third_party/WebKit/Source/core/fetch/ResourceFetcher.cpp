@@ -1205,17 +1205,12 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)
 {
-    // FIXME: use frame of master document for imported documents.
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
     context().dispatchDidReceiveData(m_documentLoader, resource->identifier(), data, dataLength, encodedDataLength);
-    InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
 void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
     context().dispatchDidDownloadData(m_documentLoader, resource->identifier(), dataLength, encodedDataLength);
-    InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)

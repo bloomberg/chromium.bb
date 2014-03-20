@@ -89,7 +89,7 @@ public:
     void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
-    void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+    void didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     void didFinishLoading(unsigned long identifier, DocumentLoader*, double monotonicFinishTime, int64_t encodedDataLength);
     void didReceiveCORSRedirectResponse(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFailLoading(unsigned long identifier, const ResourceError&);

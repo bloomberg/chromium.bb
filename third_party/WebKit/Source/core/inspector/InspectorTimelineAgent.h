@@ -215,8 +215,7 @@ public:
     void didReceiveResourceResponse(LocalFrame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime, int64_t);
     void didFailLoading(unsigned long identifier, const ResourceError&);
-    bool willReceiveResourceData(LocalFrame*, unsigned long identifier, int length);
-    void didReceiveResourceData();
+    void didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     void didRequestAnimationFrame(Document*, int callbackId);
     void didCancelAnimationFrame(Document*, int callbackId);

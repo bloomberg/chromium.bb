@@ -280,12 +280,6 @@ interface InspectorInstrumentation {
     [Resource]
     void markResourceAsCached(Page*, unsigned long identifier);
 
-    [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willReceiveResourceData([Keep] LocalFrame*, unsigned long identifier, int length);
-
-    [Timeline, Inline=FastReturn]
-    void didReceiveResourceData(const InspectorInstrumentationCookie&);
-
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
     void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
@@ -298,8 +292,8 @@ interface InspectorInstrumentation {
     [Inline=Forward]
     void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
-    [Resource]
-    void didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+    [Timeline, Resource, Inline=FastReturn]
+    void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     [Timeline, Resource]
     void didFinishLoading(LocalFrame* frame, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength);

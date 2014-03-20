@@ -751,16 +751,10 @@ void InspectorTimelineAgent::willSendRequest(unsigned long identifier, DocumentL
     appendRecord(TimelineRecordFactory::createResourceSendRequestData(requestId, request), TimelineRecordType::ResourceSendRequest, true, loader->frame());
 }
 
-bool InspectorTimelineAgent::willReceiveResourceData(LocalFrame* frame, unsigned long identifier, int length)
+void InspectorTimelineAgent::didReceiveData(LocalFrame* frame, unsigned long identifier, const char*, int, int encodedDataLength)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-    pushCurrentRecord(TimelineRecordFactory::createReceiveResourceData(requestId, length), TimelineRecordType::ResourceReceivedData, false, frame);
-    return true;
-}
-
-void InspectorTimelineAgent::didReceiveResourceData()
-{
-    didCompleteCurrentRecord(TimelineRecordType::ResourceReceivedData);
+    appendRecord(TimelineRecordFactory::createReceiveResourceData(requestId, encodedDataLength), TimelineRecordType::ResourceReceivedData, false, frame);
 }
 
 void InspectorTimelineAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)

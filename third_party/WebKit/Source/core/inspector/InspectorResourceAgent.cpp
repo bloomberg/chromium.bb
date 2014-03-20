@@ -336,7 +336,7 @@ void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
     m_frontend->requestServedFromCache(IdentifiersFactory::requestId(identifier));
 }
 
-void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame*, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     if (!loader)
         return;
@@ -373,7 +373,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame*, unsigned lo
     // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
     // as there will be no calls to didReceiveData from the network stack.
     if (isNotModified && cachedResource && cachedResource->encodedSize())
-        didReceiveData(identifier, 0, cachedResource->encodedSize(), 0);
+        didReceiveData(frame, identifier, 0, cachedResource->encodedSize(), 0);
 }
 
 static bool isErrorStatusCode(int statusCode)
@@ -381,7 +381,7 @@ static bool isErrorStatusCode(int statusCode)
     return statusCode >= 400;
 }
 
-void InspectorResourceAgent::didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
+void InspectorResourceAgent::didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
