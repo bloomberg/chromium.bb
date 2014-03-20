@@ -1988,8 +1988,6 @@ void RenderBlockFlow::repaintOverflow()
     // The repaint rect may be split across columns, in which case adjustRectForColumns() will return the union.
     adjustRectForColumns(repaintRect);
 
-    repaintRect.inflate(maximalOutlineSize(PaintPhaseOutline));
-
     if (hasOverflowClip()) {
         // Adjust repaint rect for scroll offset
         repaintRect.move(-scrolledContentOffset());

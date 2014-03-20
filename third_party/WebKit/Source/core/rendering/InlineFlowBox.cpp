@@ -165,8 +165,8 @@ void InlineFlowBox::addToLine(InlineBox* child)
                 child->clearKnownToHaveNoOverflow();
         } else if (!child->renderer().isBR() && (child->renderer().style(isFirstLineStyle())->boxShadow() || child->boxModelObject()->hasSelfPaintingLayer()
             || (child->renderer().isListMarker() && !toRenderListMarker(child->renderer()).isInside())
-            || child->renderer().style(isFirstLineStyle())->hasBorderImageOutsets())) {
-
+            || child->renderer().style(isFirstLineStyle())->hasBorderImageOutsets()
+            || child->renderer().style(isFirstLineStyle())->hasOutline())) {
             child->clearKnownToHaveNoOverflow();
         }
 
@@ -832,6 +832,19 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
                                        logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
 }
 
+inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOverflow)
+{
+    // Outline on root line boxes is applied to the block and not to the lines.
+    if (!parent())
+        return;
+
+    RenderStyle* style = renderer().style(isFirstLineStyle());
+    if (!style->hasOutline())
+        return;
+
+    logicalVisualOverflow.inflate(style->outlineSize());
+}
+
 inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, LayoutRect& logicalVisualOverflow)
 {
     if (textBox->knownToHaveNoOverflow())
@@ -932,6 +945,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
 
     addBoxShadowVisualOverflow(logicalVisualOverflow);
     addBorderOutsetVisualOverflow(logicalVisualOverflow);
+    addOutlineVisualOverflow(logicalVisualOverflow);
 
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->renderer().isOutOfFlowPositioned())
@@ -1074,7 +1088,6 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
 void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     LayoutRect overflowRect(visualOverflowRect(lineTop, lineBottom));
-    overflowRect.inflate(renderer().maximalOutlineSize(paintInfo.phase));
     flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset);
 

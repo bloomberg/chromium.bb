@@ -1934,12 +1934,6 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     updateShapeImage(oldStyle ? oldStyle->shapeInside() : 0, m_style ? m_style->shapeInside() : 0);
     updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style ? m_style->shapeOutside() : 0);
 
-    // We need to ensure that view->maximalOutlineSize() is valid for any repaints that happen
-    // during styleDidChange (it's used by clippedOverflowRectForRepaint()).
-    // FIXME: Do this more cleanly. http://crbug.com/273904
-    if (m_style->outlineWidth() > 0 && m_style->outlineSize() > view()->maximalOutlineSize())
-        view()->setMaximalOutlineSize(m_style->outlineSize());
-
     bool doesNotNeedLayout = !m_parent || isText();
 
     styleDidChange(diff, oldStyle.get());
@@ -3097,13 +3091,6 @@ bool RenderObject::willRenderImage(ImageResource*)
     // If we're not in a window (i.e., we're dormant from being in a background tab)
     // then we don't want to render either.
     return document().view()->isVisible();
-}
-
-int RenderObject::maximalOutlineSize(PaintPhase p) const
-{
-    if (p != PaintPhaseOutline && p != PaintPhaseSelfOutline && p != PaintPhaseChildOutlines)
-        return 0;
-    return view()->maximalOutlineSize();
 }
 
 int RenderObject::caretMinOffset() const

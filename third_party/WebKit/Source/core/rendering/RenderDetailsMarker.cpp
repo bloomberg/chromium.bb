@@ -122,7 +122,6 @@ void RenderDetailsMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
     LayoutPoint boxOrigin(paintOffset + location());
     LayoutRect overflowRect(visualOverflowRect());
     overflowRect.moveBy(boxOrigin);
-    overflowRect.inflate(maximalOutlineSize(paintInfo.phase));
 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;

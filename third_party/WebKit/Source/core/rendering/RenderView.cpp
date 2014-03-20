@@ -54,7 +54,6 @@ RenderView::RenderView(Document* document)
     , m_selectionEnd(0)
     , m_selectionStartPos(-1)
     , m_selectionEndPos(-1)
-    , m_maximalOutlineSize(0)
     , m_pageLogicalHeight(0)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
@@ -576,19 +575,6 @@ void RenderView::repaintSelection() const
                 break;
             RenderSelectionInfo(block, true).repaint();
         }
-    }
-}
-
-// Compositing layer dimensions take outline size into account, so we have to recompute layer
-// bounds when it changes.
-// FIXME: This is ugly; it would be nice to have a better way to do this.
-void RenderView::setMaximalOutlineSize(int o)
-{
-    if (o != m_maximalOutlineSize) {
-        m_maximalOutlineSize = o;
-
-        // maximalOutlineSize affects compositing layer dimensions.
-        compositor()->setCompositingLayersNeedRebuild();    // FIXME: this really just needs to be a geometry update.
     }
 }
 

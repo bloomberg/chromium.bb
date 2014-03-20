@@ -880,6 +880,8 @@ void RenderTableSection::layoutRows()
 
     ASSERT(!needsLayout());
 
+    // FIXME: Changing the height without a layout can change the overflow so it seems wrong.
+
     unsigned totalRows = m_grid.size();
 
     // Set the width of our section now.  The rows will also be this width.
@@ -900,6 +902,8 @@ void RenderTableSection::layoutRows()
             rowRenderer->setLogicalWidth(logicalWidth());
             rowRenderer->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
             rowRenderer->updateLayerTransform();
+            rowRenderer->clearAllOverflows();
+            rowRenderer->addVisualEffectOverflow();
         }
 
         int rowHeightIncreaseForPagination = 0;
@@ -986,9 +990,11 @@ void RenderTableSection::layoutRows()
                 // FIXME: Pagination might have made us change size. For now just shrink or grow the cell to fit without doing a relayout.
                 // We'll also do a basic increase of the row height to accommodate the cell if it's bigger, but this isn't quite right
                 // either. It's at least stable though and won't result in an infinite # of relayouts that may never stabilize.
-                if (cell->logicalHeight() > rHeight)
-                    rowHeightIncreaseForPagination = max<int>(rowHeightIncreaseForPagination, cell->logicalHeight() - rHeight);
+                LayoutUnit oldLogicalHeight = cell->logicalHeight();
+                if (oldLogicalHeight > rHeight)
+                    rowHeightIncreaseForPagination = max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
                 cell->setLogicalHeight(rHeight);
+                cell->computeOverflow(oldLogicalHeight, false);
             }
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
@@ -1008,8 +1014,11 @@ void RenderTableSection::layoutRows()
                 m_rowPos[rowIndex] += rowHeightIncreaseForPagination;
             for (unsigned c = 0; c < nEffCols; ++c) {
                 Vector<RenderTableCell*, 1>& cells = cellAt(r, c).cells;
-                for (size_t i = 0; i < cells.size(); ++i)
-                    cells[i]->setLogicalHeight(cells[i]->logicalHeight() + rowHeightIncreaseForPagination);
+                for (size_t i = 0; i < cells.size(); ++i) {
+                    LayoutUnit oldLogicalHeight = cells[i]->logicalHeight();
+                    cells[i]->setLogicalHeight(oldLogicalHeight + rowHeightIncreaseForPagination);
+                    cells[i]->computeOverflow(oldLogicalHeight, false);
+                }
             }
         }
     }
@@ -1380,11 +1389,8 @@ CellSpan RenderTableSection::spannedColumns(const LayoutRect& flippedRect) const
 
 void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    PaintPhase paintPhase = paintInfo.phase;
-
     LayoutRect localRepaintRect = paintInfo.rect;
     localRepaintRect.moveBy(-paintOffset);
-    localRepaintRect.inflate(maximalOutlineSize(paintPhase));
 
     LayoutRect tableAlignedRect = logicalRectForWritingModeAndDirection(localRepaintRect);
 

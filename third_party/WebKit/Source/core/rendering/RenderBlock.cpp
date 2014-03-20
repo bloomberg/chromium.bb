@@ -1541,10 +1541,8 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
             m_overflow->setLayoutClientAfterEdge(oldClientAfterEdge);
     }
 
-    // Add visual overflow from box-shadow and border-image-outset.
     addVisualEffectOverflow();
 
-    // Add visual overflow from theme.
     addVisualOverflowFromTheme();
 }
 
@@ -1836,7 +1834,6 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     if (!isRoot()) {
         LayoutRect overflowBox = overflowRectForPaintRejection();
         flipForWritingMode(overflowBox);
-        overflowBox.inflate(maximalOutlineSize(paintInfo.phase));
         overflowBox.moveBy(adjustedPaintOffset);
         if (!overflowBox.intersects(paintInfo.rect))
             return;

@@ -1107,14 +1107,11 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE)
         return;
 
-    LayoutRect localRepaintRect = paintInfo.rect;
-    localRepaintRect.inflate(maximalOutlineSize(paintInfo.phase));
-
     LayoutRect paintRect = LayoutRect(paintOffset + location(), pixelSnappedSize());
-    if (paintRect.y() - table()->outerBorderTop() >= localRepaintRect.maxY())
+    if (paintRect.y() - table()->outerBorderTop() >= paintInfo.rect.maxY())
         return;
 
-    if (paintRect.maxY() + table()->outerBorderBottom() <= localRepaintRect.y())
+    if (paintRect.maxY() + table()->outerBorderBottom() <= paintInfo.rect.y())
         return;
 
     GraphicsContext* graphicsContext = paintInfo.context;

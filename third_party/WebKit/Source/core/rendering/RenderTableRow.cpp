@@ -178,6 +178,9 @@ void RenderTableRow::layout()
         }
     }
 
+    m_overflow.clear();
+    addVisualEffectOverflow();
+
     // We only ever need to repaint if our cells didn't, which means that they didn't need
     // layout, so we know that our bounds didn't change. This code is just making up for
     // the fact that we did not repaint in setStyle() because we had a layout hint.

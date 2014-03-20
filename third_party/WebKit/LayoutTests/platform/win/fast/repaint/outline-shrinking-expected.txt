@@ -6,5 +6,8 @@ There should be a green square and no trace of red.
   (rect 4 114 108 108)
   (rect 4 114 108 108)
   (rect 4 114 108 108)
+  (rect 8 118 100 100)
+  (rect 4 16 4 206)
+  (rect 4 218 788 4)
 )
 

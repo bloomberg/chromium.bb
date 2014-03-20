@@ -314,6 +314,10 @@ void RenderBox::layout()
         ASSERT(!child->needsLayout());
         child = child->nextSibling();
     }
+
+    m_overflow.clear();
+    addVisualEffectOverflow();
+
     statePusher.pop();
     invalidateBackgroundObscurationStatus();
     clearNeedsLayout();
@@ -1634,11 +1638,6 @@ bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumu
         if (contentsVisualOverflow.isEmpty())
             return false;
 
-        // FIXME: Get rid of this slop from here and elsewhere.
-        // Instead, properly include the outline in visual overflow.
-        if (RenderView* view = this->view())
-            contentsVisualOverflow.inflate(view->maximalOutlineSize());
-
         LayoutRect conservativeClipRect = clipRect;
         if (hasBorderRadius)
             conservativeClipRect.intersect(clipRoundedRect.radiusCenterRect());
@@ -1986,15 +1985,6 @@ LayoutRect RenderBox::clippedOverflowRectForRepaint(const RenderLayerModelObject
         // FIXME: layoutDelta needs to be applied in parts before/after transforms and
         // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
         r.move(v->layoutDelta());
-    }
-
-    if (style()) {
-        // We have to use maximalOutlineSize() because a child might have an outline
-        // that projects outside of our overflowRect.
-        if (v) {
-            ASSERT(style()->outlineSize() <= v->maximalOutlineSize());
-            r.inflate(v->maximalOutlineSize());
-        }
     }
 
     computeRectForRepaint(repaintContainer, r);
@@ -4138,7 +4128,7 @@ void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScop
 
 void RenderBox::addVisualEffectOverflow()
 {
-    if (!style()->boxShadow() && !style()->hasBorderImageOutsets())
+    if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
         return;
 
     bool isFlipped = style()->isFlippedBlocksWritingMode();
@@ -4177,7 +4167,16 @@ void RenderBox::addVisualEffectOverflow()
         overflowMaxY = max(overflowMaxY, borderBox.maxY() + ((!isFlipped || !isHorizontal) ? borderOutsets.bottom() : borderOutsets.top()));
     }
 
-    // Add in the final overflow with shadows and outsets combined.
+    if (style()->hasOutline()) {
+        LayoutUnit outlineSize = style()->outlineSize();
+
+        overflowMinX = min(overflowMinX, borderBox.x() - outlineSize);
+        overflowMaxX = max(overflowMaxX, borderBox.maxX() + outlineSize);
+        overflowMinY = min(overflowMinY, borderBox.y() - outlineSize);
+        overflowMaxY = max(overflowMaxY, borderBox.maxY() + outlineSize);
+    }
+
+    // Add in the final overflow with shadows, outsets and outline combined.
     LayoutRect visualEffectOverflow(overflowMinX, overflowMinY, overflowMaxX - overflowMinX, overflowMaxY - overflowMinY);
     addVisualOverflow(visualEffectOverflow);
 }

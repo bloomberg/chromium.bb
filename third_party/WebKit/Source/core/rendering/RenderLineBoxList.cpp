@@ -170,7 +170,7 @@ bool RenderLineBoxList::rangeIntersectsRect(RenderBoxModelObject* renderer, Layo
     return true;
 }
 
-bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset, LayoutUnit outlineSize) const
+bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset) const
 {
     // We can check the first box and last box and avoid painting/hit testing if we don't
     // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
@@ -180,17 +180,15 @@ bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, co
     RootInlineBox& lastRootBox = lastLineBox()->root();
     LayoutUnit firstLineTop = firstLineBox()->logicalTopVisualOverflow(firstRootBox.lineTop());
     LayoutUnit lastLineBottom = lastLineBox()->logicalBottomVisualOverflow(lastRootBox.lineBottom());
-    LayoutUnit logicalTop = firstLineTop - outlineSize;
-    LayoutUnit logicalBottom = outlineSize + lastLineBottom;
 
-    return rangeIntersectsRect(renderer, logicalTop, logicalBottom, rect, offset);
+    return rangeIntersectsRect(renderer, firstLineTop, lastLineBottom, rect, offset);
 }
 
 bool RenderLineBoxList::lineIntersectsDirtyRect(RenderBoxModelObject* renderer, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
 {
     RootInlineBox& root = box->root();
-    LayoutUnit logicalTop = min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop()) - renderer->maximalOutlineSize(paintInfo.phase);
-    LayoutUnit logicalBottom = box->logicalBottomVisualOverflow(root.lineBottom()) + renderer->maximalOutlineSize(paintInfo.phase);
+    LayoutUnit logicalTop = min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
+    LayoutUnit logicalBottom = box->logicalBottomVisualOverflow(root.lineBottom());
 
     return rangeIntersectsRect(renderer, logicalTop, logicalBottom, paintInfo.rect, offset);
 }
@@ -209,8 +207,7 @@ void RenderLineBoxList::paint(RenderBoxModelObject* renderer, PaintInfo& paintIn
     if (!firstLineBox())
         return;
 
-    LayoutUnit outlineSize = renderer->maximalOutlineSize(paintInfo.phase);
-    if (!anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset, outlineSize))
+    if (!anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset))
         return;
 
     PaintInfo info(paintInfo);

@@ -95,12 +95,6 @@ public:
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
-    void setMaximalOutlineSize(int o);
-    int maximalOutlineSize() const { return m_maximalOutlineSize; }
-
-    void setOldMaximalOutlineSize(int o) { m_oldMaximalOutlineSize = o; }
-    int oldMaximalOutlineSize() const { return m_oldMaximalOutlineSize; }
-
     virtual LayoutRect viewRect() const OVERRIDE;
 
     // layoutDelta is used transiently during layout to store how far an object has moved from its
@@ -255,9 +249,6 @@ private:
 
     int m_selectionStartPos;
     int m_selectionEndPos;
-
-    int m_maximalOutlineSize; // Used to apply a fudge factor to dirty-rect checks on blocks/tables.
-    int m_oldMaximalOutlineSize; // The fudge factor from the previous layout.
 
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;

@@ -848,9 +848,6 @@ public:
 
     bool hasReflection() const { return m_bitfields.hasReflection(); }
 
-    // Applied as a "slop" to dirty rect checks during the outline painting phase's dirty-rect checks.
-    int maximalOutlineSize(PaintPhase) const;
-
     enum SelectionState {
         SelectionNone, // The object is not selected.
         SelectionStart, // The object either contains the start of a selection run or is the start of a run

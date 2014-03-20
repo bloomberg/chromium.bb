@@ -204,12 +204,10 @@ bool RenderReplaced::shouldPaint(PaintInfo& paintInfo, const LayoutPoint& paintO
         bottom = max(selBottom, bottom);
     }
 
-    LayoutRect localRepaintRect = paintInfo.rect;
-    localRepaintRect.inflate(maximalOutlineSize(paintInfo.phase));
-    if (adjustedPaintOffset.x() + visualOverflowRect().x() >= localRepaintRect.maxX() || adjustedPaintOffset.x() + visualOverflowRect().maxX() <= localRepaintRect.x())
+    if (adjustedPaintOffset.x() + visualOverflowRect().x() >= paintInfo.rect.maxX() || adjustedPaintOffset.x() + visualOverflowRect().maxX() <= paintInfo.rect.x())
         return false;
 
-    if (top >= localRepaintRect.maxY() || bottom <= localRepaintRect.y())
+    if (top >= paintInfo.rect.maxY() || bottom <= paintInfo.rect.y())
         return false;
 
     return true;
@@ -637,10 +635,6 @@ LayoutRect RenderReplaced::clippedOverflowRectForRepaint(const RenderLayerModelO
         r.move(v->layoutDelta());
     }
 
-    if (style()) {
-        if (v)
-            r.inflate(style()->outlineSize());
-    }
     computeRectForRepaint(repaintContainer, r);
     return r;
 }

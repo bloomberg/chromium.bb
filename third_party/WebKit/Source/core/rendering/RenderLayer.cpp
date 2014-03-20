@@ -3277,9 +3277,7 @@ bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const Layo
     RenderView* view = renderer()->view();
     ASSERT(view);
     if (view && !renderer()->isRenderInline()) {
-        LayoutRect b = layerBounds;
-        b.inflate(view->maximalOutlineSize());
-        if (b.intersects(damageRect))
+        if (layerBounds.intersects(damageRect))
             return true;
     }
 
@@ -3328,10 +3326,7 @@ LayoutRect RenderLayer::localBoundingBox(CalculateLayerBoundsFlags flags) const
         }
     }
 
-    RenderView* view = renderer()->view();
-    ASSERT(view);
-    if (view)
-        result.inflate(view->maximalOutlineSize()); // Used to apply a fudge factor to dirty-rect checks on blocks/tables.
+    ASSERT(renderer()->view());
 
     return result;
 }

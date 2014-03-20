@@ -865,10 +865,6 @@ void FrameView::layout(bool allowSubtree)
 
     RELEASE_ASSERT(!isPainting());
 
-    // Store the current maximal outline size to use when computing the old/new
-    // outline rects for repainting.
-    renderView()->setOldMaximalOutlineSize(renderView()->maximalOutlineSize());
-
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willLayout(m_frame.get());
 
     if (!allowSubtree && isSubtreeLayout()) {
@@ -1055,10 +1051,8 @@ void FrameView::repaintTree(RenderObject* root)
         const LayoutRect& newRepaintRect = renderer->newRepaintRect();
 
         LayoutRect oldOutlineRect = oldRepaintRect;
-        oldOutlineRect.inflate(renderView()->oldMaximalOutlineSize());
 
         LayoutRect newOutlineRect = newRepaintRect;
-        newOutlineRect.inflate(renderView()->maximalOutlineSize());
 
         // FIXME: Currently renderers with layers will get repainted when we call updateLayerPositionsAfterLayout.
         // That call should be broken apart to position the layers be done before
@@ -1099,7 +1093,6 @@ void FrameView::repaintTree(RenderObject* root)
 
         renderer->clearRepaintRects();
     }
-    renderView()->setOldMaximalOutlineSize(0);
 
     // Repaint the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
