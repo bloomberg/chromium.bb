@@ -31,6 +31,7 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
+#include "bindings/v8/SerializedScriptValue.h"
 #include "public/platform/WebServiceWorker.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -58,6 +59,8 @@ public:
     }
 
     ~ServiceWorker() { }
+
+    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
 private:
     explicit ServiceWorker(PassOwnPtr<blink::WebServiceWorker>);

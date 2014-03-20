@@ -31,10 +31,22 @@
 #ifndef WebServiceWorker_h
 #define WebServiceWorker_h
 
+#include "WebCommon.h"
+#include "WebMessagePortChannel.h"
+#include "WebVector.h"
+
 namespace blink {
 
-class WebServiceWorker {
+class WebString;
+typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
+class WebServiceWorker {
+public:
+    virtual ~WebServiceWorker() { }
+
+    // Callee receives ownership of the passed vector.
+    // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+    virtual void postMessage(const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 }

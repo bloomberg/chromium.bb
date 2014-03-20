@@ -1,0 +1,14 @@
+Tests postMessage to and from a ServiceWorker
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+messageChannel = new MessageChannel()
+messageChannel.port1.onmessage = onMessageHandler
+
+navigator.serviceWorker.register('postmessage-worker.js')
+FAIL DisabledError
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

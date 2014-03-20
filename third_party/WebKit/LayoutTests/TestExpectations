@@ -963,3 +963,7 @@ crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353770 [ Linux ] media/encrypted-media/encrypted-media-playback-setmediakeys-after-src.html [ Pass Failure Timeout ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 crbug.com/353792 media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure Crash ]
+
+# Disabled until Chromium side lands
+crbug.com/350103 virtual/serviceworker/http/tests/serviceworker/indexeddb.html [ Skip ]
+crbug.com/350103 virtual/serviceworker/http/tests/serviceworker/postmessage.html [ Skip ]

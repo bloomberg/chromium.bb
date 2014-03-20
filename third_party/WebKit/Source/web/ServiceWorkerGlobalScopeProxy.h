@@ -68,6 +68,7 @@ public:
     // WebServiceWorkerContextProxy overrides:
     virtual void dispatchInstallEvent(int) OVERRIDE;
     virtual void dispatchFetchEvent(int) OVERRIDE;
+    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
 
     // WorkerReportingProxy overrides:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;

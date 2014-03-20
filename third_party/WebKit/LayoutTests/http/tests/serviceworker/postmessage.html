@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+
+description("Tests postMessage to and from a ServiceWorker");
+var jsTestIsAsync = true;
+
+evalAndLog("messageChannel = new MessageChannel()");
+evalAndLog("messageChannel.port1.onmessage = onMessageHandler");
+
+debug("");
+evalAndLog("navigator.serviceWorker.register('postmessage-worker.js')").then(
+    function(result) {
+        serviceWorker = result;
+
+        evalAndLog("serviceWorker.postMessage({port: messageChannel.port2}, [messageChannel.port2])");
+        evalAndLog("serviceWorker.postMessage({value: 1})");
+        evalAndLog("serviceWorker.postMessage({value: 2})");
+        evalAndLog("serviceWorker.postMessage({done: true})");
+    },
+    function(reason) {
+        testFailed(reason.name);
+        finishJSTest();
+    });
+
+function onMessageHandler(e) {
+    message = e.data;
+    debug("");
+    debug("onMessageHandler: " + JSON.stringify(message));
+
+    if (message === "quit")
+        finishJSTest();
+}
+</script>

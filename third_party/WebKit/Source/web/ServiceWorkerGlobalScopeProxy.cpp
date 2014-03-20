@@ -32,9 +32,12 @@
 #include "ServiceWorkerGlobalScopeProxy.h"
 
 #include "WebEmbeddedWorkerImpl.h"
+#include "WebSerializedScriptValue.h"
 #include "WebServiceWorkerContextClient.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/MessagePort.h"
+#include "core/events/MessageEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/serviceworkers/FetchEvent.h"
@@ -72,6 +75,15 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID)
     RefPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
     m_workerGlobalScope->dispatchEvent(FetchEvent::create(observer));
     observer->didDispatchEvent();
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
+{
+    ASSERT(m_workerGlobalScope);
+
+    OwnPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
+    m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports.release(), value));
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)

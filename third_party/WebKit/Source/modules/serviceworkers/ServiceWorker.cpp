@@ -31,12 +31,28 @@
 #include "config.h"
 #include "ServiceWorker.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/MessagePort.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore {
 
 ServiceWorker::ServiceWorker(PassOwnPtr<blink::WebServiceWorker> worker)
     : m_outerWorker(worker)
 {
+}
+
+void ServiceWorker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+{
+    // Disentangle the port in preparation for sending it to the remote context.
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    blink::WebString messageString = message->toWireString();
+    OwnPtr<blink::WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
+    m_outerWorker->postMessage(messageString, webChannels.leakPtr());
 }
 
 } // namespace WebCore

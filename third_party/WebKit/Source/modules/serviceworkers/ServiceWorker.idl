@@ -31,4 +31,7 @@
     RuntimeEnabled=ServiceWorker,
     NoInterfaceObject
 ] interface ServiceWorker {
+
+    // FIXME: Should inherit this from Worker.
+    [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional MessagePort[] messagePorts);
 };

@@ -53,12 +53,8 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     if (sourceFrame)
         window = toWebFrameImpl(sourceFrame)->frame()->domWindow();
     OwnPtr<MessagePortArray> ports;
-    if (!webChannels.isEmpty() && sourceFrame) {
-        OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
-        for (size_t i = 0; i < webChannels.size(); ++i)
-            (*channels)[i] = adoptPtr(webChannels[i]);
-        ports = MessagePort::entanglePorts(*window->document(), channels.release());
-    }
+    if (sourceFrame)
+        ports = MessagePort::toMessagePortArray(window->document(), webChannels);
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports.release());
 }
 

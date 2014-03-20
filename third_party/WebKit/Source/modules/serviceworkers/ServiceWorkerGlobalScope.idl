@@ -35,4 +35,3 @@
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
 };
-
