@@ -7,8 +7,10 @@
     'conditions': [
       ['sysroot!=""', {
         'pkg-config': '<(chroot_cmd) ./pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+        'libgcrypt-config': '<(chroot_cmd) ./libgcrypt-config-wrapper "<(sysroot)"',
       }, {
-        'pkg-config': 'pkg-config'
+        'pkg-config': 'pkg-config',
+        'libgcrypt-config': 'libgcrypt-config',
       }],
     ],
 
@@ -736,12 +738,12 @@
         ['_toolset=="target" and use_cups==1', {
           'direct_dependent_settings': {
             'cflags': [
-              '<!@(libgcrypt-config --cflags)',
+              '<!@(<(libgcrypt-config) --cflags)',
             ],
           },
           'link_settings': {
             'libraries': [
-              '<!@(libgcrypt-config --libs)',
+              '<!@(<(libgcrypt-config) --libs)',
             ],
           },
         }],

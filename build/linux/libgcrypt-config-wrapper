@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# This program wraps around libgcrypt-config to generate the correct include and
+# library paths when cross-compiling using a sysroot.
+
+sysroot="$1"
+shift
+
+if [ -z "$sysroot" ]
+then
+  echo "usage: $0 /path/to/sysroot [libgcrypt-config-arguments]" >&2
+  exit 1
+fi
+
+config_path=$sysroot/usr/bin/libgcrypt-config
+set -e
+echo `$config_path "$@" | sed -e 's|/|'$sysroot'/|'`
