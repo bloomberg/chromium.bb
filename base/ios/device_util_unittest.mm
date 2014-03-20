@@ -30,10 +30,6 @@ TEST_F(DeviceUtilTest, GetPlatform) {
   GTEST_ASSERT_GT(ios::device_util::GetPlatform().length(), 0U);
 }
 
-TEST_F(DeviceUtilTest, IsRunningOnHighRamDevice) {
-  ios::device_util::IsRunningOnHighRamDevice();
-}
-
 TEST_F(DeviceUtilTest, IsSingleCoreDevice) {
   ios::device_util::IsSingleCoreDevice();
 }

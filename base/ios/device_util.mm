@@ -68,10 +68,6 @@ std::string GetPlatform() {
   return platform;
 }
 
-bool IsRunningOnHighRamDevice() {
-  return RamIsAtLeast(500);
-}
-
 bool RamIsAtLeast512Mb() {
   // 512MB devices report anywhere from 502-504 MB, use 450 MB just to be safe.
   return RamIsAtLeast(450);
