@@ -6,6 +6,7 @@
 #define CC_OUTPUT_SOFTWARE_FRAME_DATA_H_
 
 #include "base/memory/shared_memory.h"
+#include "base/numerics/safe_math.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
 
@@ -20,6 +21,9 @@ class CC_EXPORT SoftwareFrameData {
   gfx::Size size;
   gfx::Rect damage_rect;
   base::SharedMemoryHandle handle;
+
+  size_t SizeInBytes() const;
+  base::CheckedNumeric<size_t> CheckedSizeInBytes() const;
 };
 
 }  // namespace cc

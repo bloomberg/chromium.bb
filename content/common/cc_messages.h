@@ -106,6 +106,14 @@ struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct CONTENT_EXPORT ParamTraits<cc::SoftwareFrameData> {
+  typedef cc::SoftwareFrameData param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CONTENT_COMMON_CC_MESSAGES_H_
@@ -265,11 +273,4 @@ IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)
   IPC_STRUCT_TRAITS_MEMBER(sync_point)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(sub_buffer_rect)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(cc::SoftwareFrameData)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(damage_rect)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
 IPC_STRUCT_TRAITS_END()

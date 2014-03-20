@@ -97,15 +97,9 @@ bool SoftwareFrameManager::SwapToNewFrame(
 
   // The NULL handle is used in testing.
   if (base::SharedMemory::IsHandleValid(shared_memory->handle())) {
-    base::CheckedNumeric<size_t> size_in_bytes_checked =
-        base::CheckedNumeric<size_t>(4) *
-        base::CheckedNumeric<size_t>(frame_data->size.width()) *
-        base::CheckedNumeric<size_t>(frame_data->size.height());
-    if (!size_in_bytes_checked.IsValid()) {
-      DLOG(ERROR) << "Integer overflow when computing bytes to map.";
-      return false;
-    }
-    size_t size_in_bytes = size_in_bytes_checked.ValueOrDie();
+    DCHECK(frame_data->CheckedSizeInBytes().IsValid())
+        << "Integer overflow when computing bytes to map.";
+    size_t size_in_bytes = frame_data->SizeInBytes();
 #ifdef OS_WIN
     if (!shared_memory->Map(0)) {
       DLOG(ERROR) << "Unable to map renderer memory.";

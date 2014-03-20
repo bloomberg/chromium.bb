@@ -755,4 +755,42 @@ void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
   l->append("])");
 }
 
+void ParamTraits<cc::SoftwareFrameData>::Write(Message* m,
+                                               const param_type& p) {
+  DCHECK(p.CheckedSizeInBytes().IsValid());
+
+  m->Reserve(sizeof(cc::SoftwareFrameData));
+  WriteParam(m, p.id);
+  WriteParam(m, p.size);
+  WriteParam(m, p.damage_rect);
+  WriteParam(m, p.handle);
+}
+
+bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
+                                              PickleIterator* iter,
+                                              param_type* p) {
+  if (!ReadParam(m, iter, &p->id))
+    return false;
+  if (!ReadParam(m, iter, &p->size) || !p->CheckedSizeInBytes().IsValid())
+    return false;
+  if (!ReadParam(m, iter, &p->damage_rect))
+    return false;
+  if (!ReadParam(m, iter, &p->handle))
+    return false;
+  return true;
+}
+
+void ParamTraits<cc::SoftwareFrameData>::Log(const param_type& p,
+                                             std::string* l) {
+  l->append("SoftwareFrameData(");
+  LogParam(p.id, l);
+  l->append(", ");
+  LogParam(p.size, l);
+  l->append(", ");
+  LogParam(p.damage_rect, l);
+  l->append(", ");
+  LogParam(p.handle, l);
+  l->append(")");
+}
+
 }  // namespace IPC
