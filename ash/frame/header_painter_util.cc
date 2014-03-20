@@ -74,10 +74,9 @@ gfx::Rect HeaderPainterUtil::GetTitleBounds(
   int x = icon ?
       icon->bounds().right() + kTitleIconOffsetX : kTitleNoIconOffsetX;
   int height = title_font_list.GetHeight();
-  int y = std::max(
-      0,
-      static_cast<int>(std::ceil(
-          (caption_button_container->height() - height) / 2.0f)));
+  // Floor when computing the center of |caption_button_container| and when
+  // computing the center of the text.
+  int y = std::max(0, (caption_button_container->height() / 2) - (height / 2));
   int width = std::max(
       0, caption_button_container->x() - kTitleCaptionButtonSpacing - x);
   return gfx::Rect(x, y, width, height);

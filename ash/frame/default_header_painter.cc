@@ -30,8 +30,6 @@ namespace {
 
 // Color for the window title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
-// Size of header/content separator line.
-const int kHeaderContentSeparatorSize = 1;
 // Color of the active window header/content separator line.
 const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(180, 180, 182);
 // Color of the inactive window header/content separator line.
@@ -218,13 +216,14 @@ void DefaultHeaderPainter::LayoutHeader() {
     // Vertically center the window icon with respect to the caption button
     // container.
     int icon_size = HeaderPainterUtil::GetIconSize();
-    int icon_offset_y = (caption_button_container_->height() - icon_size) / 2;
+    // Floor when computing the center of |caption_button_container_|.
+    int icon_offset_y = caption_button_container_->height() / 2 - icon_size / 2;
     window_icon_->SetBounds(HeaderPainterUtil::GetIconXOffset(), icon_offset_y,
         icon_size, icon_size);
   }
 
-  SetHeaderHeightForPainting(caption_button_container_->height() +
-      kHeaderContentSeparatorSize);
+  // The header/content separator line overlays the caption buttons.
+  SetHeaderHeightForPainting(caption_button_container_->height());
 }
 
 int DefaultHeaderPainter::GetHeaderHeightForPainting() const {
@@ -300,11 +299,14 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
       kHeaderContentSeparatorColor :
       kHeaderContentSeparatorInactiveColor;
 
-  canvas->FillRect(gfx::Rect(0,
-                             height_ - kHeaderContentSeparatorSize,
-                             view_->width(),
-                             kHeaderContentSeparatorSize),
-                   color);
+  SkPaint paint;
+  paint.setColor(color);
+  // Draw the line as 1px thick regardless of scale factor.
+  paint.setStrokeWidth(0);
+
+  float thickness = 1 / canvas->image_scale();
+  SkScalar y = SkIntToScalar(height_) - SkFloatToScalar(thickness);
+  canvas->sk_canvas()->drawLine(0, y, SkIntToScalar(view_->width()), y, paint);
 }
 
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {

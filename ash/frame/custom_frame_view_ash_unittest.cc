@@ -113,19 +113,9 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
   gfx::ImageSkia* close_button =
       rb.GetImageSkiaNamed(IDR_AURA_WINDOW_CONTROL_BACKGROUND_H);
 
-  // |kSeparatorSize| should match |kHeaderContentSeparatorSize| in
-  // default_header_painter.cc
-  // TODO(pkotwicz): Clean this test up once the separator overlays the window
-  // controls.
-  const int kSeparatorSize = 1;
-
-  // The header should have enough room for the window controls and the
-  // separator line.
-  EXPECT_EQ(close_button->height() + kSeparatorSize,
-            delegate->custom_frame_view()->GetHeaderView()->height());
-
-  widget->Maximize();
-  EXPECT_EQ(close_button->height() + kSeparatorSize,
+  // The header should have enough room for the window controls. The
+  // header/content separator line overlays the window controls.
+  EXPECT_EQ(close_button->height(),
             delegate->custom_frame_view()->GetHeaderView()->height());
 }
 
