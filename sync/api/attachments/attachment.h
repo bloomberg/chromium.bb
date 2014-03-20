@@ -5,13 +5,16 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_H_
 
+#include <map>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
-#include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -38,33 +41,28 @@ class SYNC_EXPORT Attachment {
   // Used when you want to recreate a specific attachment. E.g. creating a local
   // copy of an attachment that already exists on the sync server.
   static scoped_ptr<Attachment> CreateWithId(
-      const sync_pb::AttachmentId& id,
+      const AttachmentId& id,
       const scoped_refptr<base::RefCountedMemory>& data);
 
   // Returns this attachment's id.
-  const sync_pb::AttachmentId& GetId() const;
+  const AttachmentId& GetId() const;
 
   // Returns this attachment's data.
   const scoped_refptr<base::RefCountedMemory>& GetData() const;
 
  private:
-  sync_pb::AttachmentId id_;
+  AttachmentId id_;
   scoped_refptr<base::RefCountedMemory> data_;
 
   friend class AttachmentTest;
   FRIEND_TEST_ALL_PREFIXES(AttachmentTest, CreateId_UniqueIdIsUnique);
 
-  Attachment(const sync_pb::AttachmentId& id,
+  Attachment(const AttachmentId& id,
              const scoped_refptr<base::RefCountedMemory>& data);
-
-  // Creates a unique attachment id.
-  static sync_pb::AttachmentId CreateId();
 };
 
 typedef std::vector<syncer::Attachment> AttachmentList;
-typedef std::string AttachmentIdUniqueId;  // AttachmentId.unique_id()
-typedef std::map<AttachmentIdUniqueId, Attachment> AttachmentMap;
-typedef std::vector<sync_pb::AttachmentId> AttachmentIdList;
+typedef std::map<AttachmentId, Attachment> AttachmentMap;
 
 }  // namespace syncer
 

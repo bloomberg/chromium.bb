@@ -15,7 +15,6 @@
     'protocol/app_specifics.proto',
     'protocol/app_list_specifics.proto',
     'protocol/article_specifics.proto',
-    'protocol/attachments.proto',
     'protocol/autofill_specifics.proto',
     'protocol/bookmark_specifics.proto',
     'protocol/client_commands.proto',

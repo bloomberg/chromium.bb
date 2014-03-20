@@ -462,6 +462,7 @@
         ],
         'sources': [
           'api/attachments/attachment_unittest.cc',
+          'api/attachments/attachment_id_unittest.cc',
           'api/attachments/fake_attachment_store_unittest.cc',
           'api/sync_change_unittest.cc',
           'api/sync_data_unittest.cc',

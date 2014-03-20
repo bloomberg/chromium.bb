@@ -19,7 +19,6 @@ import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "article_specifics.proto";
-import "attachments.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";

@@ -15,6 +15,8 @@
   'sources': [
     'api/attachments/attachment.cc',
     'api/attachments/attachment.h',
+    'api/attachments/attachment_id.cc',
+    'api/attachments/attachment_id.h',
     'api/attachments/attachment_store.cc',
     'api/attachments/attachment_store.h',
     'api/attachments/fake_attachment_store.cc',

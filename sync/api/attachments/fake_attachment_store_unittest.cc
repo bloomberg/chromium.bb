@@ -12,14 +12,14 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_pb::AttachmentId;
-
 namespace syncer {
 
 const char kTestData[] = "some data";
 
 class FakeAttachmentStoreTest : public testing::Test {
  protected:
+  FakeAttachmentStoreTest() : id(AttachmentId::Create()) {}
+
   virtual void SetUp() {
     Clear();
     read_callback =
@@ -51,7 +51,6 @@ class FakeAttachmentStoreTest : public testing::Test {
  private:
   void Clear() {
     result = AttachmentStore::UNSPECIFIED_ERROR;
-    id.Clear();
     attachment.reset();
   }
 
@@ -87,13 +86,12 @@ TEST_F(FakeAttachmentStoreTest, WriteReadRoundTrip) {
   store.Write(some_data, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_TRUE(id.has_unique_id());
   AttachmentId id_written(id);
 
   store.Read(id_written, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_EQ(id_written.unique_id(), attachment->GetId().unique_id());
+  EXPECT_EQ(id_written, attachment->GetId());
   EXPECT_EQ(some_data, attachment->GetData());
 }
 
@@ -115,7 +113,6 @@ TEST_F(FakeAttachmentStoreTest, Drop) {
   store.Write(some_data, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_TRUE(id.has_unique_id());
   AttachmentId id_written(id);
 
   // First drop.

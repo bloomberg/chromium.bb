@@ -14,13 +14,10 @@ namespace base {
 class RefCountedMemory;
 }  // namespace base
 
-namespace sync_pb {
-class AttachmentId;
-}  // namespace sync_pb
-
 namespace syncer {
 
 class Attachment;
+class AttachmentId;
 
 // A place to locally store and access Attachments.
 class SYNC_EXPORT AttachmentStore {
@@ -39,7 +36,7 @@ class SYNC_EXPORT AttachmentStore {
 
   typedef base::Callback<void(const Result&, scoped_ptr<Attachment>)>
       ReadCallback;
-  typedef base::Callback<void(const Result&, const sync_pb::AttachmentId& id)>
+  typedef base::Callback<void(const Result&, const AttachmentId& id)>
       WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
 
@@ -48,8 +45,7 @@ class SYNC_EXPORT AttachmentStore {
   // |callback| will be invoked when finished. If the attachment does not exist,
   // |callback|'s Result will be NOT_FOUND and |callback|'s attachment will be
   // null.
-  virtual void Read(const sync_pb::AttachmentId& id,
-                    const ReadCallback& callback) = 0;
+  virtual void Read(const AttachmentId& id, const ReadCallback& callback) = 0;
 
   // Asynchronously writes |bytes| to the store.
   //
@@ -62,8 +58,7 @@ class SYNC_EXPORT AttachmentStore {
   // This does not remove the attachment from the server. |callback| will be
   // invoked when finished. If the attachment does not exist, |callback|'s
   // Result will be NOT_FOUND.
-  virtual void Drop(const sync_pb::AttachmentId& id,
-                    const DropCallback& callback) = 0;
+  virtual void Drop(const AttachmentId& id, const DropCallback& callback) = 0;
 };
 
 }  // namespace syncer
