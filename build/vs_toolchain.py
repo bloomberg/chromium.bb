@@ -82,8 +82,6 @@ def DownloadVsToolchain():
     # Include the VS runtime in the PATH in case it's not machine-installed.
     runtime_path = ';'.join(vs2013_runtime_dll_dirs)
     os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
-    print('Using automatic toolchain in %s (%s edition).' % (
-              toolchain, 'Pro' if version_is_pro else 'Express'))
   return vs2013_runtime_dll_dirs
 
 
@@ -135,7 +133,18 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
 
 
 def main():
+  if len(sys.argv) < 2:
+    print >>sys.stderr, 'Expected either "get_toolchain_dir" or "copy_dlls"'
+    return 1
+  if sys.argv[1] == 'get_toolchain_dir':
+    DownloadVsToolchain()
+    print '["%s", "%s"]' % (
+        os.environ['GYP_MSVS_OVERRIDE_PATH'], os.environ['WINDOWSSDKDIR'])
+  else:
+    print >>sys.stderr, 'TODO: not implemented "%s"' % sys.argv[1]
+    return 1
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main())

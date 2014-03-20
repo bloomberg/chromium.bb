@@ -36,6 +36,7 @@ config("compiler") {
       "/GS",  # Enable buffer security checking.
       "/EHsc",  # Assume C functions can't throw exceptions and don't catch
                 # structured exceptions (only C++ ones).
+      "/FS",  # Preserve previous PDB behavior.
     ]
   } else {
     # Common GCC compiler flags setup.

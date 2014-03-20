@@ -4,13 +4,6 @@
 
 import("//build/config/win/visual_studio_version.gni")
 
-declare_args() {
-  # Full path to the Windows SDK, not including a backslash at the end.
-  # This value is the default location, override if you have a different
-  # installation location.
-  windows_sdk_path = "C:\Program Files (x86)\Windows Kits\8.0"
-}
-
 # Compiler setup for the Windows SDK. Applied to all targets.
 config("sdk") {
   # The include path is the stuff returned by the script.
