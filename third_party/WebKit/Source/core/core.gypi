@@ -836,6 +836,8 @@
             'css/StyleColor.h',
             'css/StyleInvalidationAnalysis.cpp',
             'css/StyleInvalidationAnalysis.h',
+            'css/invalidation/StyleInvalidator.cpp',
+            'css/invalidation/StyleInvalidator.h',
             'css/StyleMedia.cpp',
             'css/StyleMedia.h',
             'css/StylePropertySerializer.cpp',

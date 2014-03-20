@@ -34,6 +34,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
+#include "core/css/invalidation/StyleInvalidator.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -366,18 +367,6 @@ RuleFeatureSet::InvalidationList& RuleFeatureSet::ensurePendingInvalidationList(
     return *addResult.storedValue->value;
 }
 
-void RuleFeatureSet::computeStyleInvalidation(Document& document)
-{
-    Vector<AtomicString> invalidationClasses;
-    if (Element* documentElement = document.documentElement()) {
-        if (documentElement->childNeedsStyleInvalidation())
-            invalidateStyleForClassChange(documentElement, invalidationClasses, false);
-    }
-    document.clearChildNeedsStyleInvalidation();
-    document.clearNeedsStyleInvalidation();
-    m_pendingInvalidationMap.clear();
-}
-
 void RuleFeatureSet::clearStyleInvalidation(Node* node)
 {
     node->clearChildNeedsStyleInvalidation();
@@ -386,81 +375,9 @@ void RuleFeatureSet::clearStyleInvalidation(Node* node)
         m_pendingInvalidationMap.remove(toElement(node));
 }
 
-bool RuleFeatureSet::invalidateStyleForClassChangeOnChildren(Element* element, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet)
+RuleFeatureSet::PendingInvalidationMap& RuleFeatureSet::pendingInvalidationMap()
 {
-    bool someChildrenNeedStyleRecalc = false;
-    for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        for (Element* child = ElementTraversal::firstWithin(*root); child; child = ElementTraversal::nextSibling(*child)) {
-            bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
-            someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
-        }
-        root->clearChildNeedsStyleInvalidation();
-        root->clearNeedsStyleInvalidation();
-    }
-    for (Element* child = ElementTraversal::firstWithin(*element); child; child = ElementTraversal::nextSibling(*child)) {
-        bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
-        someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
-    }
-    return someChildrenNeedStyleRecalc;
-}
-
-bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet)
-{
-    bool thisElementNeedsStyleRecalc = false;
-    int oldSize = invalidationClasses.size();
-    if (element->needsStyleInvalidation()) {
-        if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(element)) {
-            // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
-            thisElementNeedsStyleRecalc = true;
-            foundInvalidationSet = true;
-            for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
-                if ((*it)->wholeSubtreeInvalid()) {
-                    element->setNeedsStyleRecalc(SubtreeStyleChange);
-                    // Even though we have set needsStyleRecalc on the whole subtree, we need to keep walking over the subtree
-                    // in order to clear the invalidation dirty bits on all elements.
-                    // FIXME: we can optimize this by having a dedicated function that just traverses the tree and removes the dirty bits,
-                    // without checking classes etc.
-                    break;
-                }
-                (*it)->getClasses(invalidationClasses);
-            }
-        }
-    }
-
-    if (element->hasClass()) {
-        const SpaceSplitString& classNames = element->classNames();
-        for (Vector<AtomicString>::const_iterator it = invalidationClasses.begin(); it != invalidationClasses.end(); ++it) {
-            if (classNames.contains(*it)) {
-                thisElementNeedsStyleRecalc = true;
-                break;
-            }
-        }
-    }
-
-    bool someChildrenNeedStyleRecalc = false;
-    // foundInvalidationSet will be true if we are in a subtree of a node with a DescendantInvalidationSet on it.
-    // We need to check all nodes in the subtree of such a node.
-    if (foundInvalidationSet || element->childNeedsStyleInvalidation()) {
-        someChildrenNeedStyleRecalc = invalidateStyleForClassChangeOnChildren(element, invalidationClasses, foundInvalidationSet);
-    }
-
-    if (thisElementNeedsStyleRecalc) {
-        element->setNeedsStyleRecalc(LocalStyleChange);
-    } else if (foundInvalidationSet && someChildrenNeedStyleRecalc) {
-        // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
-        if (RenderObject* renderer = element->renderer()) {
-            ASSERT(renderer->style());
-            renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
-        } else {
-            element->setNeedsStyleRecalc(LocalStyleChange);
-        }
-    }
-
-    invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
-    element->clearChildNeedsStyleInvalidation();
-    element->clearNeedsStyleInvalidation();
-
-    return thisElementNeedsStyleRecalc;
+    return m_pendingInvalidationMap;
 }
 
 } // namespace WebCore

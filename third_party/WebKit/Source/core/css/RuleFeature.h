@@ -76,7 +76,6 @@ public:
     {
         ASSERT(!classValue.isEmpty());
         return m_classInvalidationSets.get(classValue);
-
     }
 
     inline bool hasSelectorForId(const AtomicString& idValue) const
@@ -86,8 +85,6 @@ public:
 
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element*);
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
-
-    void computeStyleInvalidation(Document&);
 
     // Clears all style invalidation state for the passed node.
     void clearStyleInvalidation(Node*);
@@ -104,10 +101,14 @@ public:
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 
-private:
-    typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
     typedef Vector<RefPtr<DescendantInvalidationSet> > InvalidationList;
     typedef HashMap<Element*, OwnPtr<InvalidationList> > PendingInvalidationMap;
+
+    PendingInvalidationMap& pendingInvalidationMap();
+
+private:
+    typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
+
     struct FeatureMetadata {
         FeatureMetadata()
             : usesFirstLineRules(false)
@@ -140,9 +141,6 @@ private:
 
     void addClassToInvalidationSet(const AtomicString& className, Element*);
 
-    bool invalidateStyleForClassChange(Element*, Vector<AtomicString>&, bool foundInvalidationSet);
-    bool invalidateStyleForClassChangeOnChildren(Element*, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet);
-
     InvalidationList& ensurePendingInvalidationList(Element*);
 
     FeatureMetadata m_metadata;
@@ -151,6 +149,7 @@ private:
 
     bool m_targetedStyleRecalcEnabled;
 };
+
 
 } // namespace WebCore
 

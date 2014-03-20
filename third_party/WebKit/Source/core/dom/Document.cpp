@@ -53,6 +53,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
+#include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
@@ -1586,7 +1587,7 @@ void Document::updateStyleInvalidationIfNeeded()
     TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
     ASSERT(styleResolver());
 
-    styleResolver()->ruleFeatureSet().computeStyleInvalidation(*this);
+    StyleInvalidator(*this).invalidate();
 }
 
 void Document::updateDistributionForNodeIfNeeded(Node* node)
