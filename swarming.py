@@ -100,10 +100,12 @@ class Manifest(object):
     self._isolate_item = None
     self._tasks = []
 
-  def add_task(self, task_name, actions, time_out=600):
+  def add_task(self, task_name, actions, time_out=2*60*60):
     """Appends a new task as a TestObject to the swarming manifest file.
 
     Tasks cannot be added once the manifest was uploaded.
+
+    By default, command will be killed after 2 hours of execution.
 
     See TestObject in services/swarming/src/common/test_request_message.py for
     the valid format.
@@ -114,7 +116,7 @@ class Manifest(object):
           'action': actions,
           'decorate_output': self.verbose,
           'test_name': task_name,
-          'time_out': time_out,
+          'hard_time_out': time_out,
         })
 
   def to_json(self):

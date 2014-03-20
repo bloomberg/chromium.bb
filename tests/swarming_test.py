@@ -446,7 +446,7 @@ def chromium_tasks(retrieval_url, file_hash):
       ],
       u'decorate_output': False,
       u'test_name': u'Run Test',
-      u'time_out': 600,
+      u'hard_time_out': 2*60*60,
     },
     {
       u'action' : [
@@ -454,7 +454,7 @@ def chromium_tasks(retrieval_url, file_hash):
       ],
       u'decorate_output': False,
       u'test_name': u'Clean Up',
-      u'time_out': 600,
+      u'hard_time_out': 2*60*60,
     }
   ]
 
