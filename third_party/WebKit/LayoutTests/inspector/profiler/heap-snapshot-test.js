@@ -29,23 +29,23 @@ InspectorTest.createJSHeapSnapshotMockObject = function()
         //       b\   v   /
         //         -> B (6) -bd- D (12)
         //
-        _nodes: new Uint32Array([
+        _nodes: [
             0, 0, 2,    //  0: root
             1, 1, 2,    //  3: A
             1, 2, 2,    //  6: B
             1, 3, 1,    //  9: C
             1, 4, 0,    // 12: D
-            1, 5, 0]),  // 15: E
-        _containmentEdges: new Uint32Array([
+            1, 5, 0],   // 15: E
+        _containmentEdges: [
             2,  6, 3,   //  0: shortcut 'a' to node 'A'
             1,  7, 6,   //  3: property 'b' to node 'B'
             0,  1, 6,   //  6: element '1' to node 'B'
             1,  8, 9,   //  9: property 'ac' to node 'C'
             1,  9, 9,   // 12: property 'bc' to node 'C'
             1, 10, 12,  // 15: property 'bd' to node 'D'
-            1, 11, 15]),// 18: property 'ce' to node 'E'
+            1, 11, 15], // 18: property 'ce' to node 'E'
         _strings: ["", "A", "B", "C", "D", "E", "a", "b", "ac", "bc", "bd", "ce"],
-        _firstEdgeIndexes: new Uint32Array([0, 6, 12, 18, 21, 21, 21]),
+        _firstEdgeIndexes: [0, 6, 12, 18, 21, 21, 21],
         createNode: WebInspector.JSHeapSnapshot.prototype.createNode,
         createEdge: WebInspector.JSHeapSnapshot.prototype.createEdge,
         createRetainingEdge: WebInspector.JSHeapSnapshot.prototype.createRetainingEdge
@@ -325,12 +325,6 @@ InspectorTest.HeapSnapshotBuilder.prototype = {
         rawSnapshot.snapshot.node_count = rawSnapshot.nodes.length / meta.node_fields.length;
 
         return rawSnapshot;
-    },
-
-    createJSHeapSnapshot: function()
-    {
-        var parsedSnapshot = InspectorTest._postprocessHeapSnapshotMock(this.generateSnapshot());
-        return new WebInspector.JSHeapSnapshot(parsedSnapshot, new WebInspector.HeapSnapshotProgress());
     },
 
     _registerNode: function(node)
