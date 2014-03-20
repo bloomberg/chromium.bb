@@ -64,10 +64,6 @@ public:
         clearFlag(TabIndexWasSetExplicitly);
     }
 
-    bool hasFlag(ElementFlags mask) const { return m_flags & mask; }
-    void setFlag(ElementFlags mask, bool value) { m_flags = (m_flags & ~mask) | (-(int32_t)value & mask); }
-    void clearFlag(ElementFlags mask) { m_flags &= ~mask; }
-
     unsigned childIndex() const { return m_childIndex; }
     void setChildIndex(unsigned index) { m_childIndex = index; }
 
@@ -130,7 +126,6 @@ public:
 private:
     short m_tabindex;
     unsigned short m_childIndex;
-    unsigned m_flags;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -162,7 +157,6 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
     , m_childIndex(0)
-    , m_flags(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
 }

@@ -95,6 +95,8 @@ enum ElementFlags {
     ChildrenAffectedByForwardPositionalRules = 1 << 15,
     ChildrenAffectedByBackwardPositionalRules = 1 << 16,
 
+    NumberOfElementFlags = 17, // Required size of bitfield used to store the flags.
+
     // If any of these flags are set we cannot share style.
     ElementFlagsPreventingStyleSharing =
         ChildrenAffectedByFocus
