@@ -462,8 +462,8 @@ void LocationBarViewMac::Layout() {
     selected_keyword_decoration_->SetVisible(true);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
-  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
-             ToolbarModel::EV_SECURE) {
+  } else if ((GetToolbarModel()->GetSecurityLevel(false) ==
+              ToolbarModel::EV_SECURE) && !origin_chip_decoration_.get()) {
     // Switch from location icon to show the EV bubble instead.
     location_icon_decoration_->SetVisible(false);
     ev_bubble_decoration_->SetVisible(true);
