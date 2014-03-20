@@ -464,8 +464,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   virtual void ConvertEventToTarget(ui::EventTarget* target,
                                     ui::LocatedEvent* event) OVERRIDE;
 
-  // Updates the layer name with a name based on the window's name and id.
-  void UpdateLayerName(const std::string& name);
+  // Updates the layer name based on the window's name and id.
+  void UpdateLayerName();
 
   // Returns true if the mouse is currently within our bounds.
   bool ContainsMouse();

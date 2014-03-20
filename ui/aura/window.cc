@@ -271,7 +271,7 @@ void Window::Init(WindowLayerType window_layer_type) {
     SetLayer(new ui::Layer(WindowLayerTypeToUILayerType(window_layer_type)));
     layer()->SetVisible(false);
     layer()->set_delegate(this);
-    UpdateLayerName(name_);
+    UpdateLayerName();
     layer()->SetFillsBoundsOpaquely(!transparent_);
   }
 
@@ -288,7 +288,7 @@ void Window::SetName(const std::string& name) {
   name_ = name;
 
   if (layer())
-    UpdateLayerName(name_);
+    UpdateLayerName();
 }
 
 void Window::SetTransparent(bool transparent) {
@@ -1387,7 +1387,7 @@ void Window::ConvertEventToTarget(ui::EventTarget* target,
                                  static_cast<Window*>(target));
 }
 
-void Window::UpdateLayerName(const std::string& name) {
+void Window::UpdateLayerName() {
 #if !defined(NDEBUG)
   DCHECK(layer());
 
