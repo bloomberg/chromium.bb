@@ -332,16 +332,17 @@ class SSLClientSocketOpenSSL::SSLContext {
 // and the other elements are in the order given by the server.
 class SSLClientSocketOpenSSL::PeerCertificateChain {
  public:
-  explicit PeerCertificateChain(SSL* ssl) { Reset(ssl); }
+  explicit PeerCertificateChain(STACK_OF(X509)* chain) { Reset(chain); }
   PeerCertificateChain(const PeerCertificateChain& other) { *this = other; }
   ~PeerCertificateChain() {}
   PeerCertificateChain& operator=(const PeerCertificateChain& other);
 
-  // Resets the PeerCertificateChain to the set of certificates supplied by the
-  // peer of |ssl|, which may be NULL, indicating to empty the store
-  // certificates. Note: If an error occurs, such as being unable to parse the
-  // certificates,  this will behave as if Reset(NULL) was called.
-  void Reset(SSL* ssl);
+  // Resets the PeerCertificateChain to the set of certificates in|chain|,
+  // which may be NULL, indicating to empty the store certificates.
+  // Note: If an error occurs, such as being unable to parse the certificates,
+  // this will behave as if Reset(NULL) was called.
+  void Reset(STACK_OF(X509)* chain);
+
   // Note that when USE_OPENSSL is defined, OSCertHandle is X509*
   const scoped_refptr<X509Certificate>& AsOSChain() const { return os_chain_; }
 
@@ -355,6 +356,8 @@ class SSLClientSocketOpenSSL::PeerCertificateChain {
     DCHECK_LT(index, size());
     return sk_X509_value(openssl_chain_.get(), index);
   }
+
+  bool IsValid() { return os_chain_.get() && openssl_chain_.get(); }
 
  private:
   static void FreeX509Stack(STACK_OF(X509)* cert_chain) {
@@ -389,14 +392,11 @@ SSLClientSocketOpenSSL::PeerCertificateChain::operator=(
 #if defined(USE_OPENSSL)
 // When OSCertHandle is typedef'ed to X509, this implementation does a short cut
 // to avoid converting back and forth between der and X509 struct.
-void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(SSL* ssl) {
+void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
+    STACK_OF(X509)* chain) {
   openssl_chain_.reset(NULL);
   os_chain_ = NULL;
 
-  if (ssl == NULL)
-    return;
-
-  STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl);
   if (!chain)
     return;
 
@@ -418,14 +418,11 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(SSL* ssl) {
   }
 }
 #else  // !defined(USE_OPENSSL)
-void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(SSL* ssl) {
+void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
+    STACK_OF(X509)* chain) {
   openssl_chain_.reset(NULL);
   os_chain_ = NULL;
 
-  if (ssl == NULL)
-    return;
-
-  STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl);
   if (!chain)
     return;
 
@@ -1058,8 +1055,12 @@ void SSLClientSocketOpenSSL::DoConnectCallback(int rv) {
 }
 
 X509Certificate* SSLClientSocketOpenSSL::UpdateServerCert() {
-  server_cert_chain_->Reset(ssl_);
+  server_cert_chain_->Reset(SSL_get_peer_cert_chain(ssl_));
   server_cert_ = server_cert_chain_->AsOSChain();
+
+  if (!server_cert_chain_->IsValid())
+    DVLOG(1) << "UpdateServerCert received invalid certificate chain from peer";
+
   return server_cert_.get();
 }
 
@@ -1502,12 +1503,16 @@ int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
     return 1;
   }
 
-  if (X509Certificate::IsSameOSCert(server_cert_->os_cert_handle(),
-                                    sk_X509_value(store_ctx->untrusted, 0))) {
-    return 1;
-  }
+  CHECK(server_cert_.get());
 
-  LOG(ERROR) << "Server certificate changed between handshakes";
+  PeerCertificateChain chain(store_ctx->chain);
+  if (chain.IsValid() && server_cert_->Equals(chain.AsOSChain()))
+    return 1;
+
+  if (!chain.IsValid())
+    LOG(ERROR) << "Received invalid certificate chain between handshakes";
+  else
+    LOG(ERROR) << "Server certificate changed between handshakes";
   return 0;
 }
 
