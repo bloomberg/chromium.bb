@@ -27,7 +27,7 @@ void A::traceAfterDispatch(Visitor* visitor)
 {
 }
 
-void A::finalize()
+void A::finalizeGarbageCollectedObject()
 {
     switch (m_type) {
     case TB:

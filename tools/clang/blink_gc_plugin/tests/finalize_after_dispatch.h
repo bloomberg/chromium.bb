@@ -13,14 +13,28 @@ class NeedsFinalize : public GarbageCollectedFinalized<NeedsFinalize> {
 public:
     void trace(Visitor*);
     void traceAfterDispatch(Visitor*);
-    // Needs a finalize dispatch method.
+    // Needs a finalizeGarbageCollectedObject method.
+};
+
+class NeedsDispatch : public GarbageCollectedFinalized<NeedsDispatch> {
+public:
+    void trace(Visitor*);
+    // Needs a traceAfterDispatch method.
+    void finalizeGarbageCollectedObject() { };
+};
+
+class NeedsFinalizedBase : public GarbageCollected<NeedsFinalizedBase> {
+public:
+    void trace(Visitor*) { };
+    void traceAfterDispatch(Visitor*) { };
+    void finalizeGarbageCollectedObject() { };
 };
 
 class A : GarbageCollectedFinalized<A> {
 public:
     void trace(Visitor*);
     void traceAfterDispatch(Visitor*);
-    void finalize();
+    void finalizeGarbageCollectedObject();
 protected:
     enum Type { TB, TC, TD };
     A(Type type) : m_type(type) { }

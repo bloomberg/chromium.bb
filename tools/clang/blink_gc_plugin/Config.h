@@ -12,7 +12,7 @@
 const char kNewOperatorName[] = "operator new";
 const char kCreateName[] = "create";
 const char kTraceName[] = "trace";
-const char kFinalizeName[] = "finalize";
+const char kFinalizeName[] = "finalizeGarbageCollectedObject";
 const char kTraceAfterDispatchName[] = "traceAfterDispatch";
 const char kRegisterWeakMembersName[] = "registerWeakMembers";
 const char kHeapAllocatorName[] = "HeapAllocator";

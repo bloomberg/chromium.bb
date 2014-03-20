@@ -68,9 +68,11 @@ const char kOverriddenNonVirtualTrace[] =
 const char kOverriddenNonVirtualTraceNote[] =
     "[blink-gc] Non-virtual trace method declared here:";
 
-const char kVirtualTraceAndManualDispatch[] =
-    "[blink-gc] Class %0 declares a virtual trace"
-    " but implements manual dispatching.";
+const char kMissingTraceDispatchMethod[] =
+    "[blink-gc] Class %0 is missing manual trace dispatch.";
+
+const char kMissingFinalizeDispatchMethod[] =
+    "[blink-gc] Class %0 is missing manual finalize dispatch.";
 
 const char kVirtualAndManualDispatch[] =
     "[blink-gc] Class %0 contains or inherits virtual methods"
@@ -78,9 +80,6 @@ const char kVirtualAndManualDispatch[] =
 
 const char kMissingTraceDispatch[] =
     "[blink-gc] Missing dispatch to class %0 in manual trace dispatch.";
-
-const char kMissingFinalize[] =
-    "[blink-gc] Class %0 is missing manual finalize dispatch.";
 
 const char kMissingFinalizeDispatch[] =
     "[blink-gc] Missing dispatch to class %0 in manual finalize dispatch.";
@@ -91,11 +90,17 @@ const char kFinalizedFieldNote[] =
 const char kUserDeclaredDestructorNote[] =
     "[blink-gc] User-declared destructor declared here:";
 
+const char kUserDeclaredFinalizerNote[] =
+    "[blink-gc] User-declared finalizer declared here:";
+
 const char kBaseRequiresFinalizationNote[] =
     "[blink-gc] Base class %0 requiring finalization declared here:";
 
 const char kFieldRequiresFinalizationNote[] =
     "[blink-gc] Field %0 requiring finalization declared here:";
+
+const char kManualDispatchMethodNote[] =
+    "[blink-gc] Manual dispatch %0 declared here:";
 
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false) {}
@@ -495,12 +500,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         getErrorLevel(), kFinalizerAccessesFinalizedField);
     diag_overridden_non_virtual_trace_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kOverriddenNonVirtualTrace);
+    diag_missing_trace_dispatch_method_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kMissingTraceDispatchMethod);
+    diag_missing_finalize_dispatch_method_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kMissingFinalizeDispatchMethod);
     diag_virtual_and_manual_dispatch_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kVirtualAndManualDispatch);
     diag_missing_trace_dispatch_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kMissingTraceDispatch);
-    diag_missing_finalize_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kMissingFinalize);
     diag_missing_finalize_dispatch_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kMissingFinalizeDispatch);
 
@@ -521,12 +528,16 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kFinalizedFieldNote);
     diag_user_declared_destructor_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kUserDeclaredDestructorNote);
+    diag_user_declared_finalizer_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kUserDeclaredFinalizerNote);
     diag_base_requires_finalization_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kBaseRequiresFinalizationNote);
     diag_field_requires_finalization_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFieldRequiresFinalizationNote);
     diag_overridden_non_virtual_trace_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kOverriddenNonVirtualTraceNote);
+    diag_manual_dispatch_method_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kManualDispatchMethodNote);
   }
 
   virtual void HandleTranslationUnit(ASTContext& context) {
@@ -581,8 +592,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (info->RequiresTraceMethod() && !info->GetTraceMethod())
       ReportClassRequiresTraceMethod(info);
 
-    if (CXXMethodDecl* dispatch = info->GetTraceDispatchMethod())
-      CheckDispatch(info, dispatch);
+    CheckDispatch(info);
 
     {
       CheckFieldsVisitor visitor(options_);
@@ -600,28 +610,33 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
-  void CheckDispatch(RecordInfo* info, CXXMethodDecl* dispatch) {
-    if (info->record()->isPolymorphic())
-      ReportVirtualAndManualDispatch(info);
+  void CheckDispatch(RecordInfo* info) {
+    bool finalized = info->IsGCFinalized();
+    CXXMethodDecl* trace_dispatch = info->GetTraceDispatchMethod();
+    CXXMethodDecl* finalize_dispatch = info->GetFinalizeDispatchMethod();
+    if (!trace_dispatch && !finalize_dispatch)
+      return;
 
-    CXXRecordDecl* base = dispatch->getParent();
-    // If this class is finalized get its finalize dispatch method.
-    bool is_finalized = info->IsGCFinalized();
-    CXXMethodDecl* finalize = 0;
-    if (is_finalized) {
-      for (CXXRecordDecl::method_iterator it = base->method_begin();
-           it != base->method_end();
-           ++it) {
-        if (it->getNameAsString() == kFinalizeName) {
-          finalize = *it;
-          break;
-        }
+    CXXRecordDecl* base = trace_dispatch ?
+                          trace_dispatch->getParent() :
+                          finalize_dispatch->getParent();
+
+    // Check that dispatch methods are defined at the base.
+    if (base == info->record()) {
+      if (!trace_dispatch)
+        ReportMissingTraceDispatchMethod(info);
+      if (finalized && !finalize_dispatch)
+        ReportMissingFinalizeDispatchMethod(info);
+      if (!finalized && finalize_dispatch) {
+        ReportClassRequiresFinalization(info);
+        NoteUserDeclaredFinalizer(finalize_dispatch);
       }
     }
 
-    // Check that the dispatching class implements finalize if needed.
-    if (is_finalized && !finalize && base == info->record())
-      ReportMissingFinalize(info);
+    // Check that classes implementing manual dispatch do not have vtables.
+    if (info->record()->isPolymorphic())
+      ReportVirtualAndManualDispatch(
+          info, trace_dispatch ? trace_dispatch : finalize_dispatch);
 
     // If this is a non-abstract class check that it is dispatched to.
     // TODO: Create a global variant of this local check. We can only check if
@@ -631,14 +646,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
     const FunctionDecl* defn;
 
-    if (dispatch->isDefined(defn)) {
+    if (trace_dispatch && trace_dispatch->isDefined(defn)) {
       CheckDispatchVisitor visitor(info);
       visitor.TraverseStmt(defn->getBody());
       if (!visitor.dispatched_to_receiver())
         ReportMissingTraceDispatch(defn, info);
     }
 
-    if (is_finalized && finalize && finalize->isDefined(defn)) {
+    if (finalized && finalize_dispatch && finalize_dispatch->isDefined(defn)) {
       CheckDispatchVisitor visitor(info);
       visitor.TraverseStmt(defn->getBody());
       if (!visitor.dispatched_to_receiver())
@@ -646,9 +661,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
+  // TODO: Should we collect destructors similar to trace methods?
   void CheckFinalization(RecordInfo* info) {
-    // TODO: Should we collect destructors similar to trace methods?
-    // TODO: Check overridden finalize().
     CXXDestructorDecl* dtor = info->record()->getDestructor();
 
     // For finalized classes, check the finalization method if possible.
@@ -939,24 +953,34 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     NoteOverriddenNonVirtualTrace(overridden);
   }
 
-  void ReportVirtualAndManualDispatch(RecordInfo* info) {
+  void ReportMissingTraceDispatchMethod(RecordInfo* info) {
+    ReportMissingDispatchMethod(info, diag_missing_trace_dispatch_method_);
+  }
+
+  void ReportMissingFinalizeDispatchMethod(RecordInfo* info) {
+    ReportMissingDispatchMethod(info, diag_missing_finalize_dispatch_method_);
+  }
+
+  void ReportMissingDispatchMethod(RecordInfo* info, unsigned error) {
+    SourceLocation loc = info->record()->getInnerLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, error) << info->record();
+  }
+
+  void ReportVirtualAndManualDispatch(RecordInfo* info,
+                                      CXXMethodDecl* dispatch) {
     SourceLocation loc = info->record()->getInnerLocStart();
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, diag_virtual_and_manual_dispatch_)
         << info->record();
+    NoteManualDispatchMethod(dispatch);
   }
 
   void ReportMissingTraceDispatch(const FunctionDecl* dispatch,
                                   RecordInfo* receiver) {
     ReportMissingDispatch(dispatch, receiver, diag_missing_trace_dispatch_);
-  }
-
-  void ReportMissingFinalize(RecordInfo* info) {
-    SourceLocation loc = info->record()->getInnerLocStart();
-    SourceManager& manager = instance_.getSourceManager();
-    FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_missing_finalize_) << info->record();
   }
 
   void ReportMissingFinalizeDispatch(const FunctionDecl* dispatch,
@@ -971,6 +995,13 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, error) << receiver->record();
+  }
+
+  void NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
+    SourceLocation loc = dispatch->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_manual_dispatch_method_note_) << dispatch;
   }
 
   void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
@@ -995,6 +1026,13 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, diag_user_declared_destructor_note_);
+  }
+
+  void NoteUserDeclaredFinalizer(CXXMethodDecl* dtor) {
+    SourceLocation loc = dtor->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_user_declared_finalizer_note_);
   }
 
   void NoteBaseRequiresFinalization(BasePoint* base) {
@@ -1032,9 +1070,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_class_requires_finalization_;
   unsigned diag_finalizer_accesses_finalized_field_;
   unsigned diag_overridden_non_virtual_trace_;
+  unsigned diag_missing_trace_dispatch_method_;
+  unsigned diag_missing_finalize_dispatch_method_;
   unsigned diag_virtual_and_manual_dispatch_;
   unsigned diag_missing_trace_dispatch_;
-  unsigned diag_missing_finalize_;
   unsigned diag_missing_finalize_dispatch_;
 
   unsigned diag_field_requires_tracing_note_;
@@ -1045,9 +1084,11 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;
   unsigned diag_user_declared_destructor_note_;
+  unsigned diag_user_declared_finalizer_note_;
   unsigned diag_base_requires_finalization_note_;
   unsigned diag_field_requires_finalization_note_;
   unsigned diag_overridden_non_virtual_trace_note_;
+  unsigned diag_manual_dispatch_method_note_;
 
   CompilerInstance& instance_;
   DiagnosticsEngine& diagnostic_;

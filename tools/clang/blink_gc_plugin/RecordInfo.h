@@ -79,6 +79,7 @@ class RecordInfo {
   Bases& GetBases();
   clang::CXXMethodDecl* GetTraceMethod();
   clang::CXXMethodDecl* GetTraceDispatchMethod();
+  clang::CXXMethodDecl* GetFinalizeDispatchMethod();
 
   bool GetTemplateArgs(size_t count, TemplateArgs* output_args);
 
@@ -115,6 +116,7 @@ class RecordInfo {
   bool determined_trace_methods_;
   clang::CXXMethodDecl* trace_method_;
   clang::CXXMethodDecl* trace_dispatch_method_;
+  clang::CXXMethodDecl* finalize_dispatch_method_;
 
   bool is_gc_derived_;
   clang::CXXBasePaths* base_paths_;
