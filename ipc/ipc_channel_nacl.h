@@ -40,6 +40,7 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   virtual ~ChannelImpl();
 
   // Channel implementation.
+  base::ProcessId peer_pid() const;
   bool Connect();
   void Close();
   bool Send(Message* message);
@@ -53,6 +54,7 @@ class Channel::ChannelImpl : public internal::ChannelReader {
 
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);
   bool ProcessOutgoingMessages();
+  void CallOnChannelConnected();
 
   // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
