@@ -151,7 +151,7 @@ bool DOMMediaStreamTrackToResource(
     scoped_ptr<IPC::Message>* create_message) {
   DCHECK(!dom_media_stream_track.isNull());
   *pending_renderer_id = 0;
-
+#if defined(ENABLE_WEBRTC)
   const blink::WebMediaStreamTrack track = dom_media_stream_track.component();
   const std::string id = track.source().id().utf8();
 
@@ -176,7 +176,7 @@ bool DOMMediaStreamTrackToResource(
         new PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost(id));
     return true;
   }
-
+#endif
   return false;
 }
 
