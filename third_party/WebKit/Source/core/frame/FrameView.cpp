@@ -1004,8 +1004,7 @@ void FrameView::layout(bool allowSubtree)
         if (m_doFullRepaint)
             renderView()->setShouldDoFullRepaintAfterLayout(true);
 
-        if (m_doFullRepaint)
-            repaintTree(rootForThisLayout);
+        repaintTree(rootForThisLayout);
 
     } else if (m_doFullRepaint) {
         // FIXME: This isn't really right, since the RenderView doesn't fully encompass
