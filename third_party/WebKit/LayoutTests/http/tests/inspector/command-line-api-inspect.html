@@ -35,7 +35,7 @@ function test()
     InspectorTest.runTestSuite([
         function testRevealElement(next)
         {
-            InspectorTest.addSniffer(WebInspector.Revealer, "reveal", step2);
+            InspectorTest.addSniffer(WebInspector.Revealer, "reveal", step2, true);
             evalAndDump("inspect($('#p1'))");
 
             function step2(node)

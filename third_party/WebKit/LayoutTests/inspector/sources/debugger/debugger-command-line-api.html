@@ -12,7 +12,7 @@ function testFunction()
 var test = function()
 {
     InspectorTest.addSniffer(WebInspector.Main.prototype, "inspect", inspect);
-    InspectorTest.addSniffer(WebInspector.Revealer, "reveal", updateFocusedNode);
+    InspectorTest.addSniffer(WebInspector.Revealer, "reveal", updateFocusedNode, true);
 
     function updateFocusedNode(node)
     {
