@@ -44,8 +44,9 @@ class SQLTransactionBackend;
 
 class SQLStatementBackend FINAL : public AbstractSQLStatementBackend {
 public:
-    static PassRefPtr<SQLStatementBackend> create(PassOwnPtr<AbstractSQLStatement>,
+    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtr<AbstractSQLStatement>,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool execute(DatabaseBackend*);
     bool lastExecutionFailedDueToQuota() const;

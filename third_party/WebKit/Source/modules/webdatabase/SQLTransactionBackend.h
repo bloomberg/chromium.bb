@@ -86,7 +86,7 @@ private:
 
     void doCleanup();
 
-    void enqueueStatementBackend(PassRefPtr<SQLStatementBackend>);
+    void enqueueStatementBackend(PassRefPtrWillBeRawPtr<SQLStatementBackend>);
 
     // State Machine functions:
     virtual StateFunction stateFunctionFor(SQLTransactionState) OVERRIDE;
@@ -110,7 +110,7 @@ private:
     void getNextStatement();
 
     RefPtrWillBeMember<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
-    RefPtr<SQLStatementBackend> m_currentStatementBackend;
+    RefPtrWillBeMember<SQLStatementBackend> m_currentStatementBackend;
 
     RefPtrWillBeMember<DatabaseBackend> m_database;
     RefPtr<SQLTransactionWrapper> m_wrapper;
@@ -126,7 +126,7 @@ private:
     bool m_hasVersionMismatch;
 
     Mutex m_statementMutex;
-    Deque<RefPtr<SQLStatementBackend> > m_statementQueue;
+    Deque<RefPtrWillBeMember<SQLStatementBackend> > m_statementQueue;
 
     OwnPtr<SQLiteTransaction> m_sqliteTransaction;
 };

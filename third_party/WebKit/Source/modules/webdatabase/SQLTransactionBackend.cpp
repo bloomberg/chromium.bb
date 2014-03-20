@@ -373,7 +373,9 @@ SQLTransactionBackend::~SQLTransactionBackend()
 void SQLTransactionBackend::trace(Visitor* visitor)
 {
     visitor->trace(m_frontend);
+    visitor->trace(m_currentStatementBackend);
     visitor->trace(m_database);
+    visitor->trace(m_statementQueue);
 }
 
 void SQLTransactionBackend::doCleanup()
@@ -466,7 +468,7 @@ SQLTransactionBackend::StateFunction SQLTransactionBackend::stateFunctionFor(SQL
     return stateFunctions[static_cast<int>(state)];
 }
 
-void SQLTransactionBackend::enqueueStatementBackend(PassRefPtr<SQLStatementBackend> statementBackend)
+void SQLTransactionBackend::enqueueStatementBackend(PassRefPtrWillBeRawPtr<SQLStatementBackend> statementBackend)
 {
     MutexLocker locker(m_statementMutex);
     m_statementQueue.append(statementBackend);
@@ -521,9 +523,7 @@ void SQLTransactionBackend::performNextStep()
 void SQLTransactionBackend::executeSQL(PassOwnPtr<AbstractSQLStatement> statement,
     const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions)
 {
-    RefPtr<SQLStatementBackend> statementBackend;
-    statementBackend = SQLStatementBackend::create(statement, sqlStatement, arguments, permissions);
-    enqueueStatementBackend(statementBackend);
+    enqueueStatementBackend(SQLStatementBackend::create(statement, sqlStatement, arguments, permissions));
 }
 
 void SQLTransactionBackend::notifyDatabaseThreadIsShuttingDown()
