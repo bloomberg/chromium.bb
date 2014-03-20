@@ -122,10 +122,11 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
         } else if (!isSkippableComponentForInvalidation(*component)) {
             return foundDescendantRelation ? UseLocalStyleChange : UseSubtreeStyleChange;
         }
-        // FIXME: We can probably support ShadowAll and ShadowDeep.
         switch (component->relation()) {
         case CSSSelector::Descendant:
         case CSSSelector::Child:
+        case CSSSelector::Shadow:
+        case CSSSelector::ShadowDeep:
             foundDescendantRelation = true;
             // Fall through!
         case CSSSelector::SubSelector:

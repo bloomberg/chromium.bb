@@ -1,0 +1,15 @@
+Check that targeted class invalidation works for /shadow/ and /shadow-deep/ combinators.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getComputedStyle(match1, null).backgroundColor is transparent
+PASS getComputedStyle(match2, null).backgroundColor is transparent
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS getComputedStyle(match1, null).backgroundColor is green
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS getComputedStyle(match2, null).backgroundColor is green
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
