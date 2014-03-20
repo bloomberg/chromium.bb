@@ -40,38 +40,22 @@ class MediaControlPanelElement FINAL : public MediaControlDivElement {
 public:
     static PassRefPtr<MediaControlPanelElement> create(MediaControls&);
 
-    void setCanBeDragged(bool);
     void setIsDisplayed(bool);
 
-    void resetPosition();
     void makeOpaque();
     void makeTransparent();
-
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
-    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
 
 private:
     explicit MediaControlPanelElement(MediaControls&);
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-
-    void startDrag(const LayoutPoint& eventLocation);
-    void continueDrag(const LayoutPoint& eventLocation);
-    void endDrag();
 
     void startTimer();
     void stopTimer();
     void transitionTimerFired(Timer<MediaControlPanelElement>*);
 
-    void setPosition(const LayoutPoint&);
-
-    bool m_canBeDragged;
-    bool m_isBeingDragged;
     bool m_isDisplayed;
     bool m_opaque;
-    LayoutPoint m_lastDragEventLocation;
-    LayoutPoint m_cumulativeDragOffset;
 
     Timer<MediaControlPanelElement> m_transitionTimer;
 };

@@ -60,8 +60,6 @@ static const double fadeOutDuration = 0.3;
 
 MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
     : MediaControlDivElement(mediaControls, MediaControlsPanel)
-    , m_canBeDragged(false)
-    , m_isBeingDragged(false)
     , m_isDisplayed(false)
     , m_opaque(true)
     , m_transitionTimer(this, &MediaControlPanelElement::transitionTimerFired)
@@ -77,54 +75,6 @@ const AtomicString& MediaControlPanelElement::shadowPseudoId() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-panel", AtomicString::ConstructFromLiteral));
     return id;
-}
-
-void MediaControlPanelElement::startDrag(const LayoutPoint& eventLocation)
-{
-    if (!m_canBeDragged)
-        return;
-
-    if (m_isBeingDragged)
-        return;
-
-    RenderObject* renderer = this->renderer();
-    if (!renderer || !renderer->isBox())
-        return;
-
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return;
-
-    m_lastDragEventLocation = eventLocation;
-
-    frame->eventHandler().setCapturingMouseEventsNode(this);
-
-    m_isBeingDragged = true;
-}
-
-void MediaControlPanelElement::continueDrag(const LayoutPoint& eventLocation)
-{
-    if (!m_isBeingDragged)
-        return;
-
-    LayoutSize distanceDragged = eventLocation - m_lastDragEventLocation;
-    m_cumulativeDragOffset.move(distanceDragged);
-    m_lastDragEventLocation = eventLocation;
-    setPosition(m_cumulativeDragOffset);
-}
-
-void MediaControlPanelElement::endDrag()
-{
-    if (!m_isBeingDragged)
-        return;
-
-    m_isBeingDragged = false;
-
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return;
-
-    frame->eventHandler().setCapturingMouseEventsNode(nullptr);
 }
 
 void MediaControlPanelElement::startTimer()
@@ -150,35 +100,6 @@ void MediaControlPanelElement::transitionTimerFired(Timer<MediaControlPanelEleme
         hide();
 
     stopTimer();
-}
-
-void MediaControlPanelElement::setPosition(const LayoutPoint& position)
-{
-    // FIXME: Do we really want to up-convert these to doubles and not round? crbug.com/350474
-    double left = position.x().toFloat();
-    double top = position.y().toFloat();
-
-    // Set the left and top to control the panel's position; this depends on it being absolute positioned.
-    // Set the margin to zero since the position passed in will already include the effect of the margin.
-    setInlineStyleProperty(CSSPropertyLeft, left, CSSPrimitiveValue::CSS_PX);
-    setInlineStyleProperty(CSSPropertyTop, top, CSSPrimitiveValue::CSS_PX);
-    setInlineStyleProperty(CSSPropertyMarginLeft, 0.0, CSSPrimitiveValue::CSS_PX);
-    setInlineStyleProperty(CSSPropertyMarginTop, 0.0, CSSPrimitiveValue::CSS_PX);
-
-    classList().add("dragged", IGNORE_EXCEPTION);
-}
-
-void MediaControlPanelElement::resetPosition()
-{
-    removeInlineStyleProperty(CSSPropertyLeft);
-    removeInlineStyleProperty(CSSPropertyTop);
-    removeInlineStyleProperty(CSSPropertyMarginLeft);
-    removeInlineStyleProperty(CSSPropertyMarginTop);
-
-    classList().remove("dragged", IGNORE_EXCEPTION);
-
-    m_cumulativeDragOffset.setX(0);
-    m_cumulativeDragOffset.setY(0);
 }
 
 void MediaControlPanelElement::makeOpaque()
@@ -207,36 +128,6 @@ void MediaControlPanelElement::makeTransparent()
 
     m_opaque = false;
     startTimer();
-}
-
-void MediaControlPanelElement::defaultEventHandler(Event* event)
-{
-    MediaControlDivElement::defaultEventHandler(event);
-
-    if (event->isMouseEvent()) {
-        LayoutPoint location = toMouseEvent(event)->absoluteLocation();
-        if (event->type() == EventTypeNames::mousedown && event->target() == this) {
-            startDrag(location);
-            event->setDefaultHandled();
-        } else if (event->type() == EventTypeNames::mousemove && m_isBeingDragged)
-            continueDrag(location);
-        else if (event->type() == EventTypeNames::mouseup && m_isBeingDragged) {
-            continueDrag(location);
-            endDrag();
-            event->setDefaultHandled();
-        }
-    }
-}
-
-void MediaControlPanelElement::setCanBeDragged(bool canBeDragged)
-{
-    if (m_canBeDragged == canBeDragged)
-        return;
-
-    m_canBeDragged = canBeDragged;
-
-    if (!canBeDragged)
-        endDrag();
 }
 
 void MediaControlPanelElement::setIsDisplayed(bool isDisplayed)
