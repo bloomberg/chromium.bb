@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Mar 18 11:15:05 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Mar 20 14:02:02 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -282,6 +282,7 @@ struct PPB_NaCl_Private_1_0 {
   void (*ReportLoadError)(PP_Instance instance,
                           PP_NaClError error,
                           const char* error_message,
+                          const char* console_message,
                           PP_Bool is_installed);
   /* Performs internal cleanup when an instance is destroyed. */
   void (*InstanceDestroyed)(PP_Instance instance);
@@ -295,6 +296,8 @@ struct PPB_NaCl_Private_1_0 {
   const char* (*GetSandboxArch)(void);
   /* Returns the scheme type for a given url. */
   PP_UrlSchemeType (*GetUrlScheme)(struct PP_Var url);
+  /* Logs the message to the console. */
+  void (*LogToConsole)(PP_Instance instance, const char* message);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

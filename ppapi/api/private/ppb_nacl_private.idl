@@ -275,6 +275,7 @@ interface PPB_NaCl_Private {
   void ReportLoadError([in] PP_Instance instance,
                        [in] PP_NaClError error,
                        [in] str_t error_message,
+                       [in] str_t console_message,
                        [in] PP_Bool is_installed);
 
   /* Performs internal cleanup when an instance is destroyed. */
@@ -292,4 +293,8 @@ interface PPB_NaCl_Private {
 
   /* Returns the scheme type for a given url. */
   PP_UrlSchemeType GetUrlScheme([in] PP_Var url);
+
+  /* Logs the message to the console. */
+  void LogToConsole([in] PP_Instance instance,
+                    [in] str_t message);
 };

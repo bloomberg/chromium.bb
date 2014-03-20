@@ -130,9 +130,6 @@ class Plugin : public pp::Instance {
   // Report loading a module was aborted, typically due to user action.
   void ReportLoadAbort();
 
-  // Write a text string on the JavaScript console.
-  void AddToConsole(const nacl::string& text);
-
   // Dispatch a JavaScript event to indicate a key step in loading.
   // |event_type| is a character string indicating which type of progress
   // event (loadstart, progress, error, abort, load, loadend).  Events are

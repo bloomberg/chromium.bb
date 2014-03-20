@@ -802,7 +802,8 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
 static void LogLineToConsole(Plugin* plugin, const nacl::string& one_line) {
   PLUGIN_PRINTF(("LogLineToConsole: %s\n",
                  one_line.c_str()));
-  plugin->AddToConsole(one_line);
+  plugin->nacl_interface()->LogToConsole(plugin->pp_instance(),
+                                         one_line.c_str());
 }
 
 void Plugin::CopyCrashLogToJsConsole() {
@@ -918,7 +919,7 @@ void Plugin::ReportDeadNexe() {
 
     nacl::string message = nacl::string("NaCl module crashed");
     set_last_error_string(message);
-    AddToConsole(message);
+    nacl_interface()->LogToConsole(pp_instance(), message.c_str());
 
     EnqueueProgressEvent(PP_NACL_EVENT_CRASH);
     set_nexe_error_reported(true);
@@ -1262,14 +1263,12 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
                                    error_info.message().c_str(),
+                                   error_info.console_message().c_str(),
                                    PP_FromBool(is_installed_));
 
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
   set_nexe_error_reported(true);
-  // Report an error on the JavaScript console.
-  AddToConsole(nacl::string("NaCl module load failed: ") +
-               error_info.console_message());
 }
 
 
@@ -1281,7 +1280,7 @@ void Plugin::ReportLoadAbort() {
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);
-  AddToConsole(error_string);
+  nacl_interface()->LogToConsole(pp_instance(), error_string.c_str());
   // Inform JavaScript that loading was aborted and is complete.
   EnqueueProgressEvent(PP_NACL_EVENT_ABORT);
   EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
@@ -1412,25 +1411,6 @@ bool Plugin::OpenURLFast(const nacl::string& url,
 bool Plugin::DocumentCanRequest(const std::string& url) {
   CHECK(url_util_ != NULL);
   return url_util_->DocumentCanRequest(this, pp::Var(url));
-}
-
-void Plugin::AddToConsole(const nacl::string& text) {
-  pp::Module* module = pp::Module::Get();
-  const PPB_Var* var_interface =
-      static_cast<const PPB_Var*>(
-          module->GetBrowserInterface(PPB_VAR_INTERFACE));
-  nacl::string prefix_string("NativeClient");
-  PP_Var prefix =
-      var_interface->VarFromUtf8(prefix_string.c_str(),
-                                 static_cast<uint32_t>(prefix_string.size()));
-  PP_Var str = var_interface->VarFromUtf8(text.c_str(),
-                                          static_cast<uint32_t>(text.size()));
-  const PPB_Console* console_interface =
-      static_cast<const PPB_Console*>(
-          module->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
-  console_interface->LogWithSource(pp_instance(), PP_LOGLEVEL_LOG, prefix, str);
-  var_interface->Release(prefix);
-  var_interface->Release(str);
 }
 
 void Plugin::set_last_error_string(const nacl::string& error) {

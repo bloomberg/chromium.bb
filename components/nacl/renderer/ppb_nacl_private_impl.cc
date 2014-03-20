@@ -44,6 +44,9 @@
 
 namespace {
 
+// Forward declare LogToConsole() we can use it in other functions here.
+void LogToConsole(PP_Instance instance, const char* message);
+
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
@@ -512,6 +515,7 @@ void SetReadOnlyProperty(PP_Instance instance,
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message,
+                     const char* console_message,
                      PP_Bool is_installed) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
@@ -525,8 +529,6 @@ void ReportLoadError(PP_Instance instance,
   }
   // TODO(dmichael): Move the following actions here:
   // - Set ready state to DONE.
-  // - Set last error string.
-  // - Print error message to JavaScript console.
 
   // Inform JavaScript that loading encountered an error and is complete.
   DispatchEvent(instance, PP_NACL_EVENT_ERROR, NULL, PP_FALSE, 0, 0);
@@ -546,6 +548,10 @@ void ReportLoadError(PP_Instance instance,
   plugin_instance->SetEmbedProperty(
       ppapi::StringVar::StringToPPVar("lastError"),
       ppapi::StringVar::StringToPPVar(error_string));
+
+  std::string console_string = std::string("NaCl module load failed: ") +
+      std::string(console_message);
+  LogToConsole(instance, console_string.c_str());
 }
 
 void InstanceDestroyed(PP_Instance instance) {
@@ -582,6 +588,14 @@ PP_UrlSchemeType GetUrlScheme(PP_Var url) {
   return PP_SCHEME_OTHER;
 }
 
+void LogToConsole(PP_Instance instance, const char* message) {
+  std::string source("NativeClient");
+  ppapi::PpapiGlobals::Get()->LogWithSource(instance,
+                                            PP_LOGLEVEL_LOG,
+                                            source,
+                                            std::string(message));
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -601,7 +615,8 @@ const PPB_NaCl_Private nacl_interface = {
   &InstanceDestroyed,
   &NaClDebugStubEnabled,
   &GetSandboxArch,
-  &GetUrlScheme
+  &GetUrlScheme,
+  &LogToConsole
 };
 
 }  // namespace

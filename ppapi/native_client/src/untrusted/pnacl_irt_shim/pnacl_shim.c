@@ -3163,9 +3163,9 @@ static void Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty(PP_Instance instance,
   iface->SetReadOnlyProperty(instance, *key, *value);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, const char* error_message, PP_Bool is_installed) {
+static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message, PP_Bool is_installed) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportLoadError(instance, error, error_message, is_installed);
+  iface->ReportLoadError(instance, error, error_message, console_message, is_installed);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
@@ -3186,6 +3186,11 @@ static const char* Pnacl_M25_PPB_NaCl_Private_GetSandboxArch(void) {
 static PP_UrlSchemeType Pnacl_M25_PPB_NaCl_Private_GetUrlScheme(struct PP_Var* url) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetUrlScheme(*url);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_LogToConsole(PP_Instance instance, const char* message) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->LogToConsole(instance, message);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5075,11 +5080,12 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
-    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
+    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
     .NaClDebugStubEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled,
     .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
-    .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme
+    .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme,
+    .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
