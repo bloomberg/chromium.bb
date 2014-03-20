@@ -413,6 +413,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     if (tex) {
         m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer,
             tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        m_context->flush();
         return;
     }
 
