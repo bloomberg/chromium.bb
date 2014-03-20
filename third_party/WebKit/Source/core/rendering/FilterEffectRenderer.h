@@ -28,7 +28,7 @@
 
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRectExtent.h"
+#include "platform/geometry/IntBoxExtent.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -118,7 +118,7 @@ private:
     RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
 
-    IntRectExtent m_outsets;
+    IntBoxExtent m_outsets;
 
     bool m_graphicsBufferAttached;
     bool m_hasFilterThatMovesPixels;
