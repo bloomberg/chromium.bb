@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_CLIPBOARD_CLIENT_H_
 #define CONTENT_RENDERER_CLIPBOARD_CLIENT_H_
 
+#include "content/common/clipboard_format.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
@@ -36,7 +37,7 @@ class ClipboardClient {
   virtual uint64 GetSequenceNumber(ui::ClipboardType type) = 0;
 
   // Tests whether the clipboard contains a certain format
-  virtual bool IsFormatAvailable(const ui::Clipboard::FormatType& format,
+  virtual bool IsFormatAvailable(ClipboardFormat format,
                                  ui::ClipboardType type) = 0;
 
   // Clear the contents of the clipboard.
@@ -47,13 +48,10 @@ class ClipboardClient {
                                   std::vector<base::string16>* types,
                                   bool* contains_filenames) = 0;
 
-  // Reads UNICODE text from the clipboard, if available.
+  // Reads text from the clipboard, trying UNICODE first, then falling back to
+  // ASCII.
   virtual void ReadText(ui::ClipboardType type,
                         base::string16* result) = 0;
-
-  // Reads ASCII text from the clipboard, if available.
-  virtual void ReadAsciiText(ui::ClipboardType type,
-                             std::string* result) = 0;
 
   // Reads HTML from the clipboard, if available.
   virtual void ReadHTML(ui::ClipboardType type,

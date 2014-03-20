@@ -8,6 +8,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/clipboard_format.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/clipboard_utils.h"
 #include "content/renderer/drop_data_builder.h"
@@ -57,21 +58,16 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 
   switch (format) {
     case FormatPlainText:
-      return client_->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
-                                        clipboard_type) ||
-          client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                     clipboard_type);
+      return client_->IsFormatAvailable(CLIPBOARD_FORMAT_PLAINTEXT,
+                                        clipboard_type);
     case FormatHTML:
-      return client_->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                        clipboard_type);
+      return client_->IsFormatAvailable(CLIPBOARD_FORMAT_HTML, clipboard_type);
     case FormatSmartPaste:
-      return client_->IsFormatAvailable(
-          ui::Clipboard::GetWebKitSmartPasteFormatType(), clipboard_type);
-    case FormatBookmark:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      return client_->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
+      return client_->IsFormatAvailable(CLIPBOARD_FORMAT_SMART_PASTE,
                                         clipboard_type);
-#endif
+    case FormatBookmark:
+      return client_->IsFormatAvailable(CLIPBOARD_FORMAT_BOOKMARK,
+                                        clipboard_type);
     default:
       NOTREACHED();
   }
@@ -94,23 +90,9 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
   if (!ConvertBufferType(buffer, &clipboard_type))
     return WebString();
 
-  if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                 clipboard_type)) {
-    base::string16 text;
-    client_->ReadText(clipboard_type, &text);
-    if (!text.empty())
-      return text;
-  }
-
-  if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
-                                 clipboard_type)) {
-    std::string text;
-    client_->ReadAsciiText(clipboard_type, &text);
-    if (!text.empty())
-      return base::ASCIIToUTF16(text);
-  }
-
-  return WebString();
+  base::string16 text;
+  client_->ReadText(clipboard_type, &text);
+  return text;
 }
 
 WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/clipboard_format.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -35,7 +36,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
 
   void OnGetSequenceNumber(const ui::ClipboardType type,
                            uint64* sequence_number);
-  void OnIsFormatAvailable(const ui::Clipboard::FormatType& format,
+  void OnIsFormatAvailable(ClipboardFormat format,
                            ui::ClipboardType type,
                            bool* result);
   void OnClear(ui::ClipboardType type);
@@ -43,7 +44,6 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
                             std::vector<base::string16>* types,
                             bool* contains_filenames);
   void OnReadText(ui::ClipboardType type, base::string16* result);
-  void OnReadAsciiText(ui::ClipboardType type, std::string* result);
   void OnReadHTML(ui::ClipboardType type,
                   base::string16* markup,
                   GURL* url,

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/shared_memory.h"
+#include "content/common/clipboard_format.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -32,6 +33,8 @@ struct ParamTraits<ui::Clipboard::FormatType> {
 
 #endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::ClipboardFormat,
+                          content::CLIPBOARD_FORMAT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::ClipboardType, ui::CLIPBOARD_TYPE_LAST)
 
 // Clipboard IPC messages sent from the renderer to the browser.
@@ -49,7 +52,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_GetSequenceNumber,
                             ui::ClipboardType /* type */,
                             uint64 /* result */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_IsFormatAvailable,
-                            ui::Clipboard::FormatType /* format */,
+                            content::ClipboardFormat /* format */,
                             ui::ClipboardType /* type */,
                             bool /* result */)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_Clear,
@@ -61,9 +64,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadAvailableTypes,
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadText,
                             ui::ClipboardType /* type */,
                             base::string16 /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadAsciiText,
-                            ui::ClipboardType /* type */,
-                            std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
                             ui::ClipboardType /* type */,
                             base::string16 /* markup */,

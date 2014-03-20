@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "ipc/ipc_message_macros.h"
@@ -88,7 +89,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAvailableTypes,
                         OnReadAvailableTypes)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadRTF, OnReadRTF)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
@@ -182,11 +182,30 @@ void ClipboardMessageFilter::OnReadAvailableTypes(
   GetClipboard()->ReadAvailableTypes(type, types, contains_filenames);
 }
 
-void ClipboardMessageFilter::OnIsFormatAvailable(
-    const ui::Clipboard::FormatType& format,
-    ui::ClipboardType type,
-    bool* result) {
-  *result = GetClipboard()->IsFormatAvailable(format, type);
+void ClipboardMessageFilter::OnIsFormatAvailable(ClipboardFormat format,
+                                                 ui::ClipboardType type,
+                                                 bool* result) {
+  switch (format) {
+    case CLIPBOARD_FORMAT_PLAINTEXT:
+      *result = GetClipboard()->IsFormatAvailable(
+                    ui::Clipboard::GetPlainTextWFormatType(), type) ||
+                GetClipboard()->IsFormatAvailable(
+                    ui::Clipboard::GetPlainTextFormatType(), type);
+      break;
+    case CLIPBOARD_FORMAT_HTML:
+      *result = GetClipboard()->IsFormatAvailable(
+          ui::Clipboard::GetHtmlFormatType(), type);
+    case CLIPBOARD_FORMAT_SMART_PASTE:
+      *result = GetClipboard()->IsFormatAvailable(
+          ui::Clipboard::GetWebKitSmartPasteFormatType(), type);
+    case CLIPBOARD_FORMAT_BOOKMARK:
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      *result = GetClipboard()->IsFormatAvailable(
+          ui::Clipboard::GetUrlWFormatType(), type);
+#else
+      *result = false;
+#endif
+  }
 }
 
 void ClipboardMessageFilter::OnClear(ui::ClipboardType type) {
@@ -195,12 +214,17 @@ void ClipboardMessageFilter::OnClear(ui::ClipboardType type) {
 
 void ClipboardMessageFilter::OnReadText(ui::ClipboardType type,
                                         base::string16* result) {
-  GetClipboard()->ReadText(type, result);
-}
-
-void ClipboardMessageFilter::OnReadAsciiText(ui::ClipboardType type,
-                                             std::string* result) {
-  GetClipboard()->ReadAsciiText(type, result);
+  if (GetClipboard()->IsFormatAvailable(
+          ui::Clipboard::GetPlainTextWFormatType(), type)) {
+    GetClipboard()->ReadText(type, result);
+  } else if (GetClipboard()->IsFormatAvailable(
+                 ui::Clipboard::GetPlainTextFormatType(), type)) {
+    std::string ascii;
+    GetClipboard()->ReadAsciiText(type, &ascii);
+    *result = base::ASCIIToUTF16(ascii);
+  } else {
+    result->clear();
+  }
 }
 
 void ClipboardMessageFilter::OnReadHTML(ui::ClipboardType type,
