@@ -233,7 +233,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
   // Test several sizes. We use 12^N for message size, and limit the message
   // count to keep the test duration reasonable.
   const size_t kMsgSize[5] = {12, 144, 1728, 20736, 248832};
-  const size_t kMessageCount[5] = {50000, 50000, 50000, 12000, 1000};
+  const int kMessageCount[5] = {50000, 50000, 50000, 12000, 1000};
 
   for (size_t i = 0; i < 5; i++) {
     listener.SetTestParams(kMessageCount[i], kMsgSize[i]);
