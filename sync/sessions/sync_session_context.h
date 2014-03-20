@@ -62,9 +62,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
     return directory_;
   }
 
-  ModelTypeSet enabled_types() const {
-    return enabled_types_;
-  }
+  ModelTypeSet GetEnabledTypes() const;
 
   void SetRoutingInfo(const ModelSafeRoutingInfo& routing_info);
 
@@ -141,10 +139,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
 
   ServerConnectionManager* const connection_manager_;
   syncable::Directory* const directory_;
-
-  // The set of enabled types.  Derrived from the routing info set with
-  // set_routing_info().
-  ModelTypeSet enabled_types_;
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.
