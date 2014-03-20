@@ -732,6 +732,8 @@ WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() 
         flags |= WebCore::ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())
         flags |= WebCore::FilterTrigger;
+    if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
+        flags |= WebCore::GPURasterizationTrigger;
 
     return flags;
 }

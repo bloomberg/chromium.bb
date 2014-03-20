@@ -32,7 +32,8 @@ enum CompositingTrigger {
     AnimationTrigger = 1 << 4,
     FilterTrigger = 1 << 5,
     ScrollableInnerFrameTrigger = 1 << 6,
-    AllCompositingTriggers = 0xFFFFFFFF
+    GPURasterizationTrigger = 1 << 7,
+    AllCompositingTriggers = 0xFFFFFFFF,
 };
 
 typedef unsigned CompositingTriggerFlags;

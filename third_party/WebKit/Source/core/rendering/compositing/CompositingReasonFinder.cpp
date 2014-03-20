@@ -160,10 +160,8 @@ bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObjec
     if (renderer->style()->hasWillChangeCompositingHint())
         return true;
 
-    if (Settings* settings = m_renderView.document().settings()) {
-        if (!settings->acceleratedCompositingForGpuRasterizationHintEnabled())
-            return false;
-    }
+    if (!(m_compositingTriggers & GPURasterizationTrigger))
+        return false;
 
     return renderer->style()->hasWillChangeGpuRasterizationHint();
 }
