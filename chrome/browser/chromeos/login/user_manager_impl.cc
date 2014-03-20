@@ -560,12 +560,16 @@ void UserManagerImpl::RemoveUser(const std::string& user_id,
                 user->GetType() != User::USER_TYPE_LOCALLY_MANAGED))
     return;
 
-  // Sanity check: we must not remove single user. This check may seem
-  // redundant at a first sight because this single user must be an owner and
-  // we perform special check later in order not to remove an owner.  However
-  // due to non-instant nature of ownership assignment this later check may
-  // sometimes fail. See http://crosbug.com/12723
-  if (users_.size() < 2)
+  // Sanity check: we must not remove single user unless it's an enterprise
+  // device. This check may seem redundant at a first sight because
+  // this single user must be an owner and we perform special check later
+  // in order not to remove an owner. However due to non-instant nature of
+  // ownership assignment this later check may sometimes fail.
+  // See http://crosbug.com/12723
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos();
+  if (users_.size() < 2 && !connector->IsEnterpriseManaged())
     return;
 
   // Sanity check: do not allow any of the the logged in users to be removed.

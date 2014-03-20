@@ -293,7 +293,6 @@ SigninScreenHandler::SigninScreenHandler(
       native_window_delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
-      focus_stolen_(false),
       gaia_silent_load_(false),
       is_account_picker_showing_first_time_(false),
       dns_cleared_(false),
@@ -826,6 +825,8 @@ void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
   CallJS("login.AccountPickerScreen.removeUser", username);
+  if (delegate_->GetUsers().empty())
+    OnShowAddUser("");
 }
 
 void SigninScreenHandler::OnUserImageChanged(const User& user) {
@@ -1043,8 +1044,6 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
        gaia_silent_load_network_ != active_network_path)) {
     // Network has changed. Force Gaia reload.
     gaia_silent_load_ = false;
-    // Gaia page will be realoded, so focus isn't stolen anymore.
-    focus_stolen_ = false;
   }
 
   // Note that LoadAuthExtension clears |email_|.
@@ -1064,8 +1063,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     // The variable is assigned to false because silently loaded Gaia page was
     // used.
     gaia_silent_load_ = false;
-    if (focus_stolen_)
-      HandleLoginWebuiReady();
+    HandleLoginWebuiReady();
   }
 
   UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
@@ -1082,7 +1080,7 @@ void SigninScreenHandler::LoadAuthExtension(
     context.show_users = delegate_->IsShowUsers();
   context.use_offline = offline;
   if (delegate_)
-    context.has_users = delegate_->GetUsers().size() != 0;
+    context.has_users = !delegate_->GetUsers().empty();
   context.email = email_;
 
   email_.clear();
@@ -1095,7 +1093,7 @@ void SigninScreenHandler::UserSettingsChanged() {
   DCHECK(gaia_screen_handler_);
   GaiaContext context;
   if (delegate_)
-    context.has_users = delegate_->GetUsers().size() != 0;
+    context.has_users = !delegate_->GetUsers().empty();
   gaia_screen_handler_->UpdateGaia(context);
   UpdateAddButtonStatus();
 }
@@ -1350,6 +1348,10 @@ void SigninScreenHandler::SendUserList(bool animated) {
   bool has_owner = owner.size() > 0;
   size_t max_non_owner_users = has_owner ? kMaxUsers - 1 : kMaxUsers;
   size_t non_owner_count = 0;
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->
+          browser_policy_connector_chromeos();
+  bool is_enterprise_managed = connector->IsEnterpriseManaged();
 
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
@@ -1371,8 +1373,9 @@ void SigninScreenHandler::SendUserList(bool animated) {
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
       // See http://crosbug.com/12723
-      bool can_remove_user = !single_user && !email.empty() && !is_owner &&
-          !is_public_account && !signed_in && !is_signin_to_add;
+      bool can_remove_user = ((!single_user || is_enterprise_managed) &&
+          !email.empty() && !is_owner && !is_public_account &&
+          !signed_in && !is_signin_to_add);
       user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
       if (!is_owner)
@@ -1424,32 +1427,12 @@ void SigninScreenHandler::HandleWallpaperReady() {
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady() {
-  if (focus_stolen_) {
-    // Set focus to the Gaia page.
-    // TODO(altimofeev): temporary solution, until focus parameters are
-    // implemented on the Gaia side.
-    // Do this only once. Any subsequent call would relod GAIA frame.
-    focus_stolen_ = false;
-    const char code[] = "gWindowOnLoad();";
-    content::RenderFrameHost* frame =
-        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
-    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
-  }
   if (!gaia_silent_load_) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_WEBUI_LOADED,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   } else {
-    focus_stolen_ = true;
-    // Prevent focus stealing by the Gaia page.
-    // TODO(altimofeev): temporary solution, until focus parameters are
-    // implemented on the Gaia side.
-    const char code[] = "var gWindowOnLoad = window.onload; "
-                        "window.onload=function() {};";
-    content::RenderFrameHost* frame =
-        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
-    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
     // As we could miss and window.onload could already be called, restore
     // focus to current pod (see crbug/175243).
     RefocusCurrentPod();
@@ -1764,6 +1747,7 @@ void SigninScreenHandler::OnShowAddUser(const std::string& email) {
     cookies_cleared_ = true;
     ShowSigninScreenIfReady();
   } else {
+    LOG(ERROR) << "OnShowAddUser 2";
     StartClearingDnsCache();
     StartClearingCookies(base::Bind(
         &SigninScreenHandler::ShowSigninScreenIfReady,

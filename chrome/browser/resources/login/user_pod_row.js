@@ -1446,7 +1446,8 @@ cr.define('login', function() {
         return;
       }
       this.removeChild(podToRemove);
-      this.placePods_();
+      if (this.pods.length > 0)
+        this.placePods_();
     },
 
     /**
