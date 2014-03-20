@@ -89,8 +89,11 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
     return buffer_size_in_bytes;
   int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
   DCHECK_GE(frames_required, frame->nb_samples);
-  scoped_refptr<AudioBuffer> buffer =
-      AudioBuffer::CreateBuffer(sample_format, channels, frames_required);
+  scoped_refptr<AudioBuffer> buffer = AudioBuffer::CreateBuffer(
+      sample_format,
+      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels),
+      s->sample_rate,
+      frames_required);
 
   // Initialize the data[] and extended_data[] fields to point into the memory
   // allocated for AudioBuffer. |number_of_planes| will be 1 for interleaved

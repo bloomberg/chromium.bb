@@ -500,7 +500,8 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   // Allocate a buffer for the output samples.
   *output_buffer = AudioBuffer::CreateBuffer(
       sample_format_,
-      ChannelLayoutToChannelCount(channel_layout_),
+      channel_layout_,
+      samples_per_second_,
       kMaxOpusOutputPacketSizeSamples);
   const int buffer_size =
       output_buffer->get()->channel_count() *

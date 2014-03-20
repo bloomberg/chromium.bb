@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "media/base/channel_layout.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"
 #include "media/base/video_decoder_config.h"
@@ -112,7 +113,8 @@ class TestVideoConfig {
 // the duration.
 template <class T>
 scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
-                                           int channels,
+                                           ChannelLayout channel_layout,
+                                           int sample_rate,
                                            T start,
                                            T increment,
                                            int frames,

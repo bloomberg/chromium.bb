@@ -150,14 +150,16 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
 
 template <class T>
 scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
-                                           int channels,
+                                           ChannelLayout channel_layout,
+                                           int sample_rate,
                                            T start,
                                            T increment,
                                            int frames,
                                            base::TimeDelta timestamp,
                                            base::TimeDelta duration) {
+  int channels = ChannelLayoutToChannelCount(channel_layout);
   scoped_refptr<AudioBuffer> output =
-      AudioBuffer::CreateBuffer(format, channels, frames);
+      AudioBuffer::CreateBuffer(format, channel_layout, sample_rate, frames);
   output->set_timestamp(timestamp);
   output->set_duration(duration);
 
@@ -195,7 +197,8 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
 #define DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(type)              \
   template scoped_refptr<AudioBuffer> MakeAudioBuffer<type>( \
       SampleFormat format,                                   \
-      int channels,                                          \
+      ChannelLayout channel_layout,                          \
+      int sample_rate,                                       \
       type start,                                            \
       type increment,                                        \
       int frames,                                            \

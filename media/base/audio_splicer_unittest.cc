@@ -18,6 +18,7 @@ static const SampleFormat kSampleFormat = kSampleFormatF32;
 COMPILE_ASSERT(kSampleFormat == kSampleFormatF32, invalid_splice_format);
 
 static const int kChannels = 1;
+static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
 static const int kDefaultSampleRate = 44100;
 static const int kDefaultBufferSize = 100;
 
@@ -36,7 +37,8 @@ class AudioSplicerTest : public ::testing::Test {
   scoped_refptr<AudioBuffer> GetNextInputBuffer(float value, int frame_size) {
     scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
         kSampleFormat,
-        kChannels,
+        kChannelLayout,
+        kDefaultSampleRate,
         value,
         0.0f,
         frame_size,
@@ -127,7 +129,8 @@ class AudioSplicerTest : public ::testing::Test {
         input->end_of_stream()
             ? AudioBuffer::CreateEOSBuffer()
             : AudioBuffer::CopyFrom(kSampleFormat,
-                                    input->channel_count(),
+                                    input->channel_layout(),
+                                    input->sample_rate(),
                                     input->frame_count(),
                                     &input->channel_data()[0],
                                     input->timestamp(),

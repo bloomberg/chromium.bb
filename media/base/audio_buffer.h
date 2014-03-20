@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/sample_format.h"
 
@@ -36,7 +37,8 @@ class MEDIA_EXPORT AudioBuffer
   //
   // TODO(jrummell): Compute duration rather than pass it in.
   static scoped_refptr<AudioBuffer> CopyFrom(SampleFormat sample_format,
-                                             int channel_count,
+                                             ChannelLayout channel_layout,
+                                             int sample_rate,
                                              int frame_count,
                                              const uint8* const* data,
                                              const base::TimeDelta timestamp,
@@ -45,12 +47,14 @@ class MEDIA_EXPORT AudioBuffer
   // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
   // not initialized. Timestamp and duration are set to kNoTimestamp().
   static scoped_refptr<AudioBuffer> CreateBuffer(SampleFormat sample_format,
-                                                 int channel_count,
+                                                 ChannelLayout channel_layout,
+                                                 int sample_rate,
                                                  int frame_count);
 
   // Create an empty AudioBuffer with |frame_count| frames.
   static scoped_refptr<AudioBuffer> CreateEmptyBuffer(
-      int channel_count,
+      ChannelLayout channel_layout,
+      int sample_rate,
       int frame_count,
       const base::TimeDelta timestamp,
       const base::TimeDelta duration);
@@ -86,6 +90,12 @@ class MEDIA_EXPORT AudioBuffer
   // Return the number of frames held.
   int frame_count() const { return adjusted_frame_count_; }
 
+  // Return the sample rate.
+  int sample_rate() const { return sample_rate_; }
+
+  // Return the channel layout.
+  ChannelLayout channel_layout() const { return channel_layout_; }
+
   // Access to constructor parameters.
   base::TimeDelta timestamp() const { return timestamp_; }
   base::TimeDelta duration() const { return duration_; }
@@ -112,7 +122,8 @@ class MEDIA_EXPORT AudioBuffer
   // data is copied. If |create_buffer| is false, no data buffer is created (or
   // copied to).
   AudioBuffer(SampleFormat sample_format,
-              int channel_count,
+              ChannelLayout channel_layout,
+              int sample_rate,
               int frame_count,
               bool create_buffer,
               const uint8* const* data,
@@ -122,7 +133,9 @@ class MEDIA_EXPORT AudioBuffer
   virtual ~AudioBuffer();
 
   const SampleFormat sample_format_;
+  const ChannelLayout channel_layout_;
   const int channel_count_;
+  const int sample_rate_;
   int adjusted_frame_count_;
   int trim_start_;
   const bool end_of_stream_;

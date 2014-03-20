@@ -69,7 +69,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
   AudioRendererAlgorithmTest()
       : frames_enqueued_(0),
         channels_(0),
+        channel_layout_(CHANNEL_LAYOUT_NONE),
         sample_format_(kUnknownSampleFormat),
+        samples_per_second_(0),
         bytes_per_sample_(0) {
   }
 
@@ -83,6 +85,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
                   SampleFormat sample_format,
                   int samples_per_second) {
     channels_ = ChannelLayoutToChannelCount(channel_layout);
+    samples_per_second_ = samples_per_second;
+    channel_layout_ = channel_layout;
     sample_format_ = sample_format;
     bytes_per_sample_ = SampleFormatToBytesPerChannel(sample_format);
     AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
@@ -102,7 +106,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
       switch (sample_format_) {
         case kSampleFormatU8:
           buffer = MakeAudioBuffer<uint8>(sample_format_,
-                                          channels_,
+                                          channel_layout_,
+                                          samples_per_second_,
                                           1,
                                           1,
                                           kFrameSize,
@@ -111,7 +116,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
           break;
         case kSampleFormatS16:
           buffer = MakeAudioBuffer<int16>(sample_format_,
-                                          channels_,
+                                          channel_layout_,
+                                          samples_per_second_,
                                           1,
                                           1,
                                           kFrameSize,
@@ -120,7 +126,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
           break;
         case kSampleFormatS32:
           buffer = MakeAudioBuffer<int32>(sample_format_,
-                                          channels_,
+                                          channel_layout_,
+                                          samples_per_second_,
                                           1,
                                           1,
                                           kFrameSize,
@@ -242,8 +249,11 @@ class AudioRendererAlgorithmTest : public testing::Test {
     scoped_ptr<AudioBus> output = AudioBus::Create(channels_, 1);
 
     // Input buffer to inject pulses.
-    scoped_refptr<AudioBuffer> input = AudioBuffer::CreateBuffer(
-        kSampleFormatPlanarF32, channels_, kPulseWidthSamples);
+    scoped_refptr<AudioBuffer> input =
+        AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
+                                  kChannelLayout,
+                                  kSampleRateHz,
+                                  kPulseWidthSamples);
 
     const std::vector<uint8*>& channel_data = input->channel_data();
 
@@ -300,7 +310,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
   AudioRendererAlgorithm algorithm_;
   int frames_enqueued_;
   int channels_;
+  ChannelLayout channel_layout_;
   SampleFormat sample_format_;
+  int samples_per_second_;
   int bytes_per_sample_;
 };
 

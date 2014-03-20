@@ -26,6 +26,8 @@ using ::testing::StrictMock;
 
 namespace media {
 
+static const int kSampleRate = 44100;
+
 // Make sure the kFakeAudioFrameSize is a valid frame size for all audio decoder
 // configs used in this test.
 static const int kFakeAudioFrameSize = 48;
@@ -92,14 +94,11 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   void InitializeAndExpectStatus(const AudioDecoderConfig& config,
                                  PipelineStatus status) {
-    // Initialize data now that the config is known. Since the code uses
-    // invalid values (that CreateEmptyBuffer() doesn't support), tweak them
-    // just for CreateEmptyBuffer().
-    int channels = ChannelLayoutToChannelCount(config.channel_layout());
-    if (channels < 1)
-      channels = 1;
-    decoded_frame_ = AudioBuffer::CreateEmptyBuffer(
-        channels, kFakeAudioFrameSize, kNoTimestamp(), kNoTimestamp());
+    decoded_frame_ = AudioBuffer::CreateEmptyBuffer(config.channel_layout(),
+                                                    kSampleRate,
+                                                    kFakeAudioFrameSize,
+                                                    kNoTimestamp(),
+                                                    kNoTimestamp());
     decoded_frame_list_.push_back(decoded_frame_);
 
     decoder_->Initialize(config, NewExpectedStatusCB(status));
@@ -116,7 +115,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                       CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true, true,
+                       CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true, true,
                        base::TimeDelta(), base::TimeDelta());
     InitializeAndExpectStatus(config_, PIPELINE_OK);
 
@@ -283,7 +282,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_Normal) {
 // Ensure that DecryptingAudioDecoder only accepts encrypted audio.
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, false);
 
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
 }
@@ -304,7 +303,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
       .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
@@ -313,7 +312,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_NullDecryptor) {
       .WillRepeatedly(RunCallbackIfNotNull(static_cast<Decryptor*>(NULL)));
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
@@ -358,12 +357,14 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
   Initialize();
 
   scoped_refptr<AudioBuffer> frame_a = AudioBuffer::CreateEmptyBuffer(
-      ChannelLayoutToChannelCount(config_.channel_layout()),
+      config_.channel_layout(),
+      kSampleRate,
       kFakeAudioFrameSize,
       kNoTimestamp(),
       kNoTimestamp());
   scoped_refptr<AudioBuffer> frame_b = AudioBuffer::CreateEmptyBuffer(
-      ChannelLayoutToChannelCount(config_.channel_layout()),
+      config_.channel_layout(),
+      kSampleRate,
       kFakeAudioFrameSize,
       kNoTimestamp(),
       kNoTimestamp());

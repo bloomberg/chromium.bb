@@ -307,7 +307,8 @@ class AudioRendererImplTest : public ::testing::Test {
 
     scoped_refptr<AudioBuffer> buffer =
         MakeAudioBuffer<float>(kSampleFormat,
-                               kChannels,
+                               kChannelLayout,
+                               kSamplesPerSecond,
                                kPlayingAudio,
                                0.0f,
                                size,

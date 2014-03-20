@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -57,14 +58,17 @@ class MEDIA_EXPORT AudioSplicer {
   // |max_crossfade_duration_|.
   //
   // |pre_splice_sanitizer_| will be empty after this operation.
-  scoped_ptr<AudioBus> ExtractCrossfadeFromPreSplice();
+  scoped_ptr<AudioBus> ExtractCrossfadeFromPreSplice(
+      scoped_refptr<AudioBuffer>* crossfade_buffer);
 
-  // Crossfades |pre_splice_bus->frames()| frames from |post_splice_sanitizer_|
+  // Crossfades |pre_splice_bus->frames()| frames from
+  // |post_splice_sanitizer_|
   // with those from |pre_splice_bus|.  Adds the crossfaded buffer to
   // |output_sanitizer_| along with all buffers in |post_splice_sanitizer_|.
   //
   // |post_splice_sanitizer_| will be empty after this operation.
-  void CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus);
+  void CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus,
+                           scoped_refptr<AudioBuffer> crossfade_buffer);
 
   const base::TimeDelta max_crossfade_duration_;
   base::TimeDelta splice_timestamp_;

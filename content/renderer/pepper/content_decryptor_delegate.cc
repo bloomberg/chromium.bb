@@ -249,6 +249,7 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       next_decryption_request_id_(1),
       audio_samples_per_second_(0),
       audio_channel_count_(0),
+      audio_channel_layout_(media::CHANNEL_LAYOUT_NONE),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -418,6 +419,7 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
 
   audio_samples_per_second_ = pp_decoder_config.samples_per_second;
   audio_channel_count_ = pp_decoder_config.channel_count;
+  audio_channel_layout_ = decoder_config.channel_layout();
 
   scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
@@ -1020,7 +1022,8 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
     const int frame_count = frame_size / audio_bytes_per_frame;
     scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
         sample_format,
-        audio_channel_count_,
+        audio_channel_layout_,
+        audio_samples_per_second_,
         frame_count,
         &channel_ptrs[0],
         base::TimeDelta::FromMicroseconds(timestamp),

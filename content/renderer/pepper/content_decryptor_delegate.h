@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/channel_layout.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
@@ -211,6 +212,7 @@ class ContentDecryptorDelegate {
   // Keep track of audio parameters.
   int audio_samples_per_second_;
   int audio_channel_count_;
+  media::ChannelLayout audio_channel_layout_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

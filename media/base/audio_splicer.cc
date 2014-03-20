@@ -180,7 +180,8 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     // Create a buffer with enough silence samples to fill the gap and
     // add it to the output buffer.
     scoped_refptr<AudioBuffer> gap = AudioBuffer::CreateEmptyBuffer(
-        input->channel_count(),
+        input->channel_layout(),
+        input->sample_rate(),
         frames_to_fill,
         expected_timestamp,
         output_timestamp_helper_.GetFrameDuration(frames_to_fill));
@@ -332,9 +333,13 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     return true;
   }
 
+  scoped_refptr<AudioBuffer> crossfade_buffer;
+  scoped_ptr<AudioBus> pre_splice =
+      ExtractCrossfadeFromPreSplice(&crossfade_buffer);
+
   // Crossfade the pre splice and post splice sections and transfer all relevant
   // buffers into |output_sanitizer_|.
-  CrossfadePostSplice(ExtractCrossfadeFromPreSplice().Pass());
+  CrossfadePostSplice(pre_splice.Pass(), crossfade_buffer);
 
   // Clear the splice timestamp so new splices can be accepted.
   splice_timestamp_ = kNoTimestamp();
@@ -362,7 +367,9 @@ void AudioSplicer::SetSpliceTimestamp(base::TimeDelta splice_timestamp) {
   splice_timestamp_ = splice_timestamp;
 }
 
-scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice() {
+scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
+    scoped_refptr<AudioBuffer>* crossfade_buffer) {
+  DCHECK(crossfade_buffer);
   const AudioTimestampHelper& output_ts_helper =
       output_sanitizer_->timestamp_helper();
 
@@ -398,6 +405,11 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice() {
     if (!output_bus) {
       output_bus =
           AudioBus::Create(preroll->channel_count(), frames_to_crossfade);
+      // Allocate output buffer for crossfade.
+      *crossfade_buffer = AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
+                                                    preroll->channel_layout(),
+                                                    preroll->sample_rate(),
+                                                    frames_to_crossfade);
     }
 
     // There may be enough of a gap introduced during decoding such that an
@@ -437,13 +449,9 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice() {
   return output_bus.Pass();
 }
 
-void AudioSplicer::CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus) {
-  // Allocate output buffer for crossfade.
-  scoped_refptr<AudioBuffer> crossfade_buffer =
-      AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
-                                pre_splice_bus->channels(),
-                                pre_splice_bus->frames());
-
+void AudioSplicer::CrossfadePostSplice(
+    scoped_ptr<AudioBus> pre_splice_bus,
+    scoped_refptr<AudioBuffer> crossfade_buffer) {
   // Use the calculated timestamp and duration to ensure there's no extra gaps
   // or overlaps to process when adding the buffer to |output_sanitizer_|.
   const AudioTimestampHelper& output_ts_helper =
