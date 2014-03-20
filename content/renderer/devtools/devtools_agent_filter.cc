@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "content/child/child_process.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -42,6 +43,7 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
 DevToolsAgentFilter::DevToolsAgentFilter()
     : message_handled_(false),
       render_thread_loop_(base::MessageLoop::current()),
+      io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
       current_routing_id_(0) {}
 
 bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
@@ -60,6 +62,11 @@ DevToolsAgentFilter::~DevToolsAgentFilter() {}
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
     const std::string& message) {
+  if (shared_worker_routes_.find(current_routing_id_) !=
+      shared_worker_routes_.end()) {
+    message_handled_ = false;
+    return;
+  }
   if (!WebDevToolsAgent::shouldInterruptForMessage(
           WebString::fromUTF8(message))) {
       message_handled_ = false;
@@ -70,6 +77,28 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
 
   render_thread_loop_->PostTask(
       FROM_HERE, base::Bind(&WebDevToolsAgent::processPendingMessages));
+}
+
+void DevToolsAgentFilter::AddSharedWorkerRouteOnMainThread(int32 routing_id) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsAgentFilter::AddSharedWorkerRoute, this, routing_id));
+}
+
+void DevToolsAgentFilter::RemoveSharedWorkerRouteOnMainThread(
+    int32 routing_id) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &DevToolsAgentFilter::RemoveSharedWorkerRoute, this, routing_id));
+}
+
+void DevToolsAgentFilter::AddSharedWorkerRoute(int32 routing_id) {
+  shared_worker_routes_.insert(routing_id);
+}
+
+void DevToolsAgentFilter::RemoveSharedWorkerRoute(int32 routing_id) {
+  shared_worker_routes_.erase(routing_id);
 }
 
 }  // namespace content

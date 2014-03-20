@@ -374,6 +374,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void WidgetHidden();
   void WidgetRestored();
 
+  void AddSharedWorkerRoute(int32 routing_id, IPC::Listener* listener);
+  void RemoveSharedWorkerRoute(int32 routing_id);
+
  private:
   // ChildThread
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;

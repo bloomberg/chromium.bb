@@ -684,6 +684,23 @@ void RenderThreadImpl::RemoveRoute(int32 routing_id) {
   ChildThread::GetRouter()->RemoveRoute(routing_id);
 }
 
+void RenderThreadImpl::AddSharedWorkerRoute(int32 routing_id,
+                                            IPC::Listener* listener) {
+  AddRoute(routing_id, listener);
+  if (devtools_agent_message_filter_.get()) {
+    devtools_agent_message_filter_->AddSharedWorkerRouteOnMainThread(
+        routing_id);
+  }
+}
+
+void RenderThreadImpl::RemoveSharedWorkerRoute(int32 routing_id) {
+  RemoveRoute(routing_id);
+  if (devtools_agent_message_filter_.get()) {
+    devtools_agent_message_filter_->RemoveSharedWorkerRouteOnMainThread(
+        routing_id);
+  }
+}
+
 int RenderThreadImpl::GenerateRoutingID() {
   int routing_id = MSG_ROUTING_NONE;
   Send(new ViewHostMsg_GenerateRoutingID(&routing_id));

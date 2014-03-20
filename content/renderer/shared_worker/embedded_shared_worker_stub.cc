@@ -26,7 +26,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       name_(name),
       runing_(false),
       url_(url) {
-  RenderThreadImpl::current()->AddRoute(route_id_, this);
+  RenderThreadImpl::current()->AddSharedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::create(this);
   worker_devtools_agent_.reset(
       new SharedWorkerDevToolsAgent(route_id, impl_));
@@ -35,7 +35,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
-  RenderThreadImpl::current()->RemoveRoute(route_id_);
+  RenderThreadImpl::current()->RemoveSharedWorkerRoute(route_id_);
 }
 
 bool EmbeddedSharedWorkerStub::OnMessageReceived(
