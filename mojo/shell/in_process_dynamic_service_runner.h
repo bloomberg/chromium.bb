@@ -32,7 +32,7 @@ class InProcessDynamicServiceRunner
 
   base::FilePath app_path_;
   ScopedShellHandle service_handle_;
-  base::Closure app_completed_callback_;
+  base::Callback<bool(void)> app_completed_callback_runner_;
 
   base::DelegateSimpleThread thread_;
 

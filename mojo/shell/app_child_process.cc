@@ -117,6 +117,8 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
                         ScopedMessagePipeHandle service) OVERRIDE {
     DVLOG(2) << "AppChildControllerImpl::StartApp("
              << app_path.To<std::string>() << ", ...)";
+
+    // TODO(vtl): Load/run app.
   }
 
  private:

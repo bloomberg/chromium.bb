@@ -66,22 +66,14 @@ class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
                                const std::string* mime_type) OVERRIDE {
     DVLOG(2) << "Completed load of " << app_url << " (" << url_ << ") to "
              << app_path.value();
+    DCHECK(loader_->context_->task_runners()->ui_runner()->
+               BelongsToCurrentThread());
 
     runner_->Start(
         app_path,
         service_handle_.Pass(),
-        base::Bind(&LoadContext::AppCompleted,
-                   scoped_refptr<base::TaskRunner>(
-                       loader_->context_->task_runners()->ui_runner()),
+        base::Bind(&DynamicServiceLoader::AppCompleted,
                    base::Unretained(loader_), url_));
-  }
-
-  static void AppCompleted(scoped_refptr<base::TaskRunner> task_runner,
-                           DynamicServiceLoader* loader,
-                           const GURL& url) {
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&DynamicServiceLoader::AppCompleted,
-                                     base::Unretained(loader), url));
   }
 
   DynamicServiceLoader* const loader_;
@@ -114,6 +106,9 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
 }
 
 void DynamicServiceLoader::AppCompleted(const GURL& url) {
+  DCHECK(context_->task_runners()->ui_runner()->BelongsToCurrentThread());
+  DVLOG(2) << "App completed (url: " << url << ")";
+
   LoadContextMap::iterator it = url_to_load_context_.find(url);
   DCHECK(it != url_to_load_context_.end()) << url;
 

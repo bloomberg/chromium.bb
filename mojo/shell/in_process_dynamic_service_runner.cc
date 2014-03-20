@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/scoped_native_library.h"
 
 namespace mojo {
@@ -34,8 +36,11 @@ void InProcessDynamicServiceRunner::Start(
   DCHECK(!service_handle_.is_valid());
   service_handle_ = service_handle.Pass();
 
-  DCHECK(app_completed_callback_.is_null());
-  app_completed_callback_ = app_completed_callback;
+  DCHECK(app_completed_callback_runner_.is_null());
+  app_completed_callback_runner_ = base::Bind(&base::TaskRunner::PostTask,
+                                              base::MessageLoopProxy::current(),
+                                              FROM_HERE,
+                                              app_completed_callback);
 
   DCHECK(!thread_.HasBeenStarted());
   thread_.Start();
@@ -71,8 +76,9 @@ void InProcessDynamicServiceRunner::Run() {
       LOG(ERROR) << "MojoMain returned an error: " << result;
   } while (false);
 
-  app_completed_callback_.Run();
-  app_completed_callback_.Reset();
+  bool success = app_completed_callback_runner_.Run();
+  app_completed_callback_runner_.Reset();
+  LOG_IF(ERROR, !success) << "Failed post run app_completed_callback";
 }
 
 }  // namespace shell
