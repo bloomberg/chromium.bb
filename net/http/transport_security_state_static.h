@@ -911,6 +911,17 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {13, true, "\007mailbox\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {12, false, "\006roddis\003net", true, kNoPins, DOMAIN_NOT_PINNED },
   {16, false, "\003www\006roddis\003net", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, true, "\005fiken\002no", true, kNoPins, DOMAIN_NOT_PINNED },
+  {14, true, "\010fairbill\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\005nexth\003net", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, true, "\005nexth\002us", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, true, "\005nexth\002de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\006souyar\003net", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\006souyar\002de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\006souyar\002us", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, false, "\003www\007banking\002co\002at", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, false, "\003mbp\007banking\002co\002at", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, false, "\007feedbin\003com", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
@@ -922,6 +933,7 @@ static const struct HSTSPreload kPreloadedSNISTS[] = {
   {22, true, "\020google-analytics\003com", false, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
   {18, true, "\014googlegroups\003com", false, kGooglePins, DOMAIN_GOOGLEGROUPS_COM },
   {13, true, "\007mykolab\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, true, "\013semenkovich\003com", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSNISTS = ARRAYSIZE_UNSAFE(kPreloadedSNISTS);
 
