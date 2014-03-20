@@ -241,6 +241,10 @@ class FileBrowserPrivateRequestDriveShareFunction
  protected:
   virtual ~FileBrowserPrivateRequestDriveShareFunction() {}
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Called back after the drive file system operation is finished.
+  void OnAddPermission(drive::FileError error);
 };
 
 }  // namespace extensions

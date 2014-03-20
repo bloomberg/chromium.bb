@@ -38,6 +38,7 @@ enum JobType {
   TYPE_CREATE_FILE,
   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY_BY_WAPI,
   TYPE_GET_REMAINING_RESOURCE_LIST,
+  TYPE_ADD_PERMISSION,
 };
 
 // Returns the string representation of |type|.

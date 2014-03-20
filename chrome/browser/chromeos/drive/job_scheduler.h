@@ -219,6 +219,12 @@ class JobScheduler
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback);
 
+  // Adds AddPermission operation to the queue. |callback| must not be null.
+  void AddPermission(const std::string& resource_id,
+                     const std::string& email,
+                     google_apis::drive::PermissionRole role,
+                     const google_apis::EntryActionCallback& callback);
+
  private:
   friend class JobSchedulerTest;
 

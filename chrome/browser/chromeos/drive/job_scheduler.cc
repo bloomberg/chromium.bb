@@ -734,6 +734,28 @@ void JobScheduler::GetRemainingResourceList(
   StartJob(new_job);
 }
 
+void JobScheduler::AddPermission(
+    const std::string& resource_id,
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  JobEntry* new_job = CreateNewJob(TYPE_ADD_PERMISSION);
+  new_job->task = base::Bind(&DriveServiceInterface::AddPermission,
+                             base::Unretained(drive_service_),
+                             resource_id,
+                             email,
+                             role,
+                             base::Bind(&JobScheduler::OnEntryActionJobDone,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        new_job->job_info.job_id,
+                                        callback));
+  new_job->abort_callback = callback;
+  StartJob(new_job);
+}
+
 JobScheduler::JobEntry* JobScheduler::CreateNewJob(JobType type) {
   JobEntry* job = new JobEntry(type);
   job->job_info.job_id = job_map_.Add(job);  // Takes the ownership of |job|.
@@ -1101,6 +1123,7 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_CREATE_FILE:
     case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY_BY_WAPI:
     case TYPE_GET_REMAINING_RESOURCE_LIST:
+    case TYPE_ADD_PERMISSION:
       return METADATA_QUEUE;
 
     case TYPE_DOWNLOAD_FILE:

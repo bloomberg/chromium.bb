@@ -423,6 +423,13 @@ class FileSystemInterface {
   virtual void GetCacheEntry(const base::FilePath& drive_file_path,
                              const GetCacheEntryCallback& callback) = 0;
 
+  // Adds permission as |role| to |email| for the entry at |drive_file_path|.
+  // |callback| must not be null.
+  virtual void AddPermission(const base::FilePath& drive_file_path,
+                             const std::string& email,
+                             google_apis::drive::PermissionRole role,
+                             const FileOperationCallback& callback) = 0;
+
   // Resets local data.
   virtual void Reset(const FileOperationCallback& callback) = 0;
 };

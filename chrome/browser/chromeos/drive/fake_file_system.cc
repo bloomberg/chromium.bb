@@ -221,6 +221,13 @@ void FakeFileSystem::GetCacheEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::AddPermission(const base::FilePath& drive_file_path,
+                                   const std::string& email,
+                                   google_apis::drive::PermissionRole role,
+                                   const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::Reset(const FileOperationCallback& callback) {
 }
 

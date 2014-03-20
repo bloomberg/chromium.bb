@@ -229,6 +229,13 @@ void FilterHostedDocuments(const ReadDirectoryCallback& callback,
   callback.Run(error, entries.Pass(), has_more);
 }
 
+// Adapter for using FileOperationCallback as google_apis::EntryActionCallback.
+void RunFileOperationCallbackAsEntryActionCallback(
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode error) {
+  callback.Run(GDataToFileError(error));
+}
+
 }  // namespace
 
 struct FileSystem::CreateDirectoryParams {
@@ -924,6 +931,50 @@ void FileSystem::GetCacheEntry(
       base::Bind(&RunGetCacheEntryCallback,
                  callback,
                  base::Owned(cache_entry)));
+}
+
+void FileSystem::AddPermission(const base::FilePath& drive_file_path,
+                               const std::string& email,
+                               google_apis::drive::PermissionRole role,
+                               const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // Resolve the resource id.
+  ResourceEntry* const entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(resource_metadata_),
+                 drive_file_path,
+                 entry),
+      base::Bind(&FileSystem::AddPermissionAfterGetResourceEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 email,
+                 role,
+                 callback,
+                 base::Owned(entry)));
+}
+
+void FileSystem::AddPermissionAfterGetResourceEntry(
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const FileOperationCallback& callback,
+    ResourceEntry* entry,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  scheduler_->AddPermission(
+      entry->resource_id(),
+      email,
+      role,
+      base::Bind(&RunFileOperationCallbackAsEntryActionCallback, callback));
 }
 
 void FileSystem::OpenFile(const base::FilePath& file_path,

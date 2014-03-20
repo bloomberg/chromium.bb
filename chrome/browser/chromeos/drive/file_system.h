@@ -155,6 +155,10 @@ class FileSystem : public FileSystemInterface,
   virtual void GetCacheEntry(
       const base::FilePath& drive_file_path,
       const GetCacheEntryCallback& callback) OVERRIDE;
+  virtual void AddPermission(const base::FilePath& drive_file_path,
+                             const std::string& email,
+                             google_apis::drive::PermissionRole role,
+                             const FileOperationCallback& callback) OVERRIDE;
   virtual void Reset(const FileOperationCallback& callback) OVERRIDE;
 
   // file_system::OperationObserver overrides.
@@ -227,6 +231,13 @@ class FileSystem : public FileSystemInterface,
   void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
                                         google_apis::GDataErrorCode status,
                                         const GURL& share_url);
+  // Part of AddPermission.
+  void AddPermissionAfterGetResourceEntry(
+      const std::string& email,
+      google_apis::drive::PermissionRole role,
+      const FileOperationCallback& callback,
+      ResourceEntry* entry,
+      FileError error);
 
   // Part of OnDriveSyncError().
   virtual void OnDriveSyncErrorAfterGetFilePath(
