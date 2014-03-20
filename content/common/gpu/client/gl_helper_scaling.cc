@@ -463,7 +463,6 @@ GLHelper::ScalerInterface* GLHelperScaling::CreatePlanarScaler(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
-    bool swizzle,
     const float color_weights[4]) {
   ScalerStage stage(SHADER_PLANAR,
                     src_size,
@@ -471,7 +470,7 @@ GLHelper::ScalerInterface* GLHelperScaling::CreatePlanarScaler(
                     dst_size,
                     true,
                     vertically_flip_texture,
-                    swizzle);
+                    false);
   return new ScalerImpl(gl_, this, stage, NULL, color_weights);
 }
 
@@ -480,7 +479,6 @@ GLHelperScaling::ShaderInterface* GLHelperScaling::CreateYuvMrtShader(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
-    bool swizzle,
     ShaderType shader) {
   DCHECK(shader == SHADER_YUV_MRT_PASS1 || shader == SHADER_YUV_MRT_PASS2);
   ScalerStage stage(shader,
@@ -489,7 +487,7 @@ GLHelperScaling::ShaderInterface* GLHelperScaling::CreateYuvMrtShader(
                     dst_size,
                     true,
                     vertically_flip_texture,
-                    swizzle);
+                    false);
   return new ScalerImpl(gl_, this, stage, NULL, NULL);
 }
 
@@ -722,6 +720,8 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
             "    vec4(texture2D(s_texture, v_texcoords[0].zw).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[1].xy).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[1].zw).rgb, 1.0));\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
         break;
 
       case SHADER_YUV_MRT_PASS1:
@@ -784,6 +784,8 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
             "                        dot(pixel34, kRGBtoU),\n"
             "                        dot(pixel12, kRGBtoV),\n"
             "                        dot(pixel34, kRGBtoV)) + kUVBias;\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
         break;
 
       case SHADER_YUV_MRT_PASS2:
@@ -805,21 +807,12 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
             "  vec4 hi_uuvv = texture2D(s_texture, v_texcoords.zw);\n"
             "  gl_FragData[0] = vec4(lo_uuvv.rg, hi_uuvv.rg);\n"
             "  gl_FragData[1] = vec4(lo_uuvv.ba, hi_uuvv.ba);\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
         break;
     }
     if (swizzle) {
-      switch(type) {
-        case SHADER_YUV_MRT_PASS1:
-          fragment_program.append("  gl_FragData[0] = gl_FragData[0].bgra;\n");
-          break;
-        case SHADER_YUV_MRT_PASS2:
-          fragment_program.append("  gl_FragData[0] = gl_FragData[0].bgra;\n");
-          fragment_program.append("  gl_FragData[1] = gl_FragData[1].bgra;\n");
-          break;
-        default:
-          fragment_program.append("  gl_FragColor = gl_FragColor.bgra;\n");
-          break;
-      }
+      fragment_program.append("  gl_FragColor = gl_FragColor.bgra;\n");
     }
 
     vertex_program = vertex_header + shared_variables + "void main() {\n" +

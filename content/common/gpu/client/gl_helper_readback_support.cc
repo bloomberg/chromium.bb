@@ -53,18 +53,13 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
       supports_format ? FORMAT_SUPPORTED : FORMAT_NOT_SUPPORTED;
 }
 
-void GLHelperReadbackSupport::GetAdditionalFormat(GLint format, GLint type,
-                                                  GLint *format_out,
-                                                  GLint *type_out) {
-  for (unsigned int i = 0; i < format_cache_.size(); i++) {
-    if (format_cache_[i].format == format && format_cache_[i].type == type) {
-      *format_out = format_cache_[i].read_format;
-      *type_out = format_cache_[i].read_type;
-      return;
-    }
-  }
-
+bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
+  // GLES2.0 Specification says this pairing is always supported
+  // with additional format from GL_IMPLEMENTATION_COLOR_READ_FORMAT/TYPE
+  if (format == GL_RGBA && type == GL_UNSIGNED_BYTE)
+    return true;
   const int kTestSize = 64;
+  bool supports_format = false;
   content::ScopedTexture dst_texture(gl_);
   ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -78,21 +73,9 @@ void GLHelperReadbackSupport::GetAdditionalFormat(GLint format, GLint type,
                                                              dst_framebuffer);
   gl_->FramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst_texture, 0);
-  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, format_out);
-  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, type_out);
-
-  struct FormatCacheEntry entry = { format, type, *format_out, *type_out };
-  format_cache_.push_back(entry);
-}
-
-bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
-  // GLES2.0 Specification says this pairing is always supported
-  // with additional format from GL_IMPLEMENTATION_COLOR_READ_FORMAT/TYPE
-  if (format == GL_RGBA && type == GL_UNSIGNED_BYTE)
-    return true;
-  bool supports_format = false;
   GLint ext_format = 0, ext_type = 0;
-  GetAdditionalFormat(format, type, &ext_format, &ext_type);
+  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
+  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
   if ((ext_format == format) && (ext_type == type)) {
     supports_format = true;
   }

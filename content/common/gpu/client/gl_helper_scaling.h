@@ -69,7 +69,6 @@ class CONTENT_EXPORT GLHelperScaling {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       bool vertically_flip_texture,
-      bool swizzle,
       const float color_weights[4]);
 
   ShaderInterface* CreateYuvMrtShader(
@@ -77,7 +76,6 @@ class CONTENT_EXPORT GLHelperScaling {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       bool vertically_flip_texture,
-      bool swizzle,
       ShaderType shader);
 
  private:

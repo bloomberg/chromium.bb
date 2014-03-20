@@ -4165,12 +4165,6 @@ bool GLES2DecoderImpl::GetHelper(
     switch (pname) {
       case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
         *num_written = 1;
-        // Trigger the passthrough for _COLOR_READ_FORMAT and (see below) for
-        // _COLOR_READ_TYPE if we have the GL extension that exposes this.
-        // This allows the GPU client to use the implementation's preferred
-        // format for glReadPixels.
-        if (context_->HasExtension("GL_OES_read_format"))
-          return false;
         if (params) {
           *params = GLES2Util::GetPreferredGLReadPixelsFormat(
               GetBoundReadFrameBufferInternalFormat());
@@ -4178,8 +4172,6 @@ bool GLES2DecoderImpl::GetHelper(
         return true;
       case GL_IMPLEMENTATION_COLOR_READ_TYPE:
         *num_written = 1;
-        if (context_->HasExtension("GL_OES_read_format"))
-          return false;
         if (params) {
           *params = GLES2Util::GetPreferredGLReadPixelsType(
               GetBoundReadFrameBufferInternalFormat(),
@@ -7230,7 +7222,6 @@ void GLES2DecoderImpl::FinishReadPixels(
 
 error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const cmds::ReadPixels& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleReadPixels");
   error::Error fbo_error = WillAccessBoundFramebufferForRead();
   if (fbo_error != error::kNoError)
     return fbo_error;

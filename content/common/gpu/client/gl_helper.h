@@ -330,11 +330,6 @@ class CONTENT_EXPORT GLHelper {
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
 
-  enum ReadbackSwizzle {
-    kSwizzleNone = 0,
-    kSwizzleBGRA
-  };
-
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;

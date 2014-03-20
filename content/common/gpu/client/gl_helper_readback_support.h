@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
 #define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
 
-#include <vector>
-
 #include "content/common/gpu/client/gl_helper.h"
 
 namespace content {
@@ -24,19 +22,8 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   // Here we pass the internal textureformat as skia config.
   bool IsReadbackConfigSupported(SkBitmap::Config texture_format);
 
-  // Provides the additional readback format/type pairing for a render target
-  // of a given format/type pairing
-  void GetAdditionalFormat(GLint format, GLint type, GLint *format_out,
-                           GLint *type_out);
  private:
   enum FormatSupport { FORMAT_NOT_SUPPORTED = 0, FORMAT_SUPPORTED, };
-
-  struct FormatCacheEntry {
-    GLint format;
-    GLint type;
-    GLint read_format;
-    GLint read_type;
-  };
 
   // This populates the format_support_table with the list of supported
   // formats.
@@ -56,7 +43,7 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   FormatSupport format_support_table_[SkBitmap::kConfigCount];
 
   gpu::gles2::GLES2Interface* gl_;
-  std::vector<struct FormatCacheEntry> format_cache_;
+
 };
 
 }  // namespace content
