@@ -376,14 +376,23 @@ def _GenTSBotSpec(checkouts, change, changed_files, options):
                                         options.issue,
                                         options.patchset,
                                         options.email)
-    trybots = presubmit_support.DoGetTryMasters(
+    masters = presubmit_support.DoGetTryMasters(
         change,
         checkouts[0].GetFileNames(),
         checkouts[0].checkout_root,
         root_presubmit,
         options.project,
         options.verbose,
-        sys.stdout).get('tryserver.chromium', [])
+        sys.stdout)
+
+    # Compatibility for old checkouts and bots that were on tryserver.chromium.
+    trybots = masters.get('tryserver.chromium', [])
+
+    # Compatibility for checkouts that are not using tryserver.chromium
+    # but are stuck with git-try or gcl-try.
+    if not trybots and len(masters) == 1:
+      trybots = masters.values()[0]
+
     if trybots:
       old_style = filter(lambda x: isinstance(x, basestring), trybots)
       new_style = filter(lambda x: isinstance(x, tuple), trybots)
