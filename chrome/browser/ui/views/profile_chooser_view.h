@@ -10,6 +10,7 @@
 
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -43,12 +44,25 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            public AvatarMenuObserver,
                            public OAuth2TokenService::Observer {
  public:
+  // Different views that can be displayed in the bubble.
+  enum BubbleViewMode {
+    // Shows a "fast profile switcher" view.
+    BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
+    // Shows a list of accounts for the active user.
+    BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
+    // Shows a web view for primary sign in.
+    BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+    // Shows a web view for adding secondary accounts.
+    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT
+  };
+
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
-  static void ShowBubble(views::View* anchor_view,
+  static void ShowBubble(BubbleViewMode view_mode,
+                         views::View* anchor_view,
                          views::BubbleBorder::Arrow arrow,
                          views::BubbleBorder::BubbleAlignment border_alignment,
                          const gfx::Rect& anchor_rect,
@@ -70,14 +84,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
   typedef std::map<views::View*, std::string> AccountButtonIndexes;
-
-  // Different views that can be displayed in the bubble.
-  enum BubbleViewMode {
-    PROFILE_CHOOSER_VIEW,     // Shows a "fast profile switcher" view.
-    ACCOUNT_MANAGEMENT_VIEW,  // Shows a list of accounts for the active user.
-    GAIA_SIGNIN_VIEW,         // Shows a web view for primary sign in.
-    GAIA_ADD_ACCOUNT_VIEW     // Shows a web view for adding secondary accounts.
-  };
 
   ProfileChooserView(views::View* anchor_view,
                      views::BubbleBorder::Arrow arrow,

@@ -367,8 +367,13 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) = 0;
 
-  // Shows the avatar bubble on the window frame off of the avatar button.
-  virtual void ShowAvatarBubbleFromAvatarButton() = 0;
+  // Shows the avatar bubble on the window frame off of the avatar button with
+  // the given mode.
+  enum AvatarBubbleMode {
+    AVATAR_BUBBLE_MODE_DEFAULT,
+    AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT
+  };
+  virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) = 0;
 
   // Show bubble for password generation positioned relative to |rect|. The
   // subclasses implementing this interface do not own the |password_generator|

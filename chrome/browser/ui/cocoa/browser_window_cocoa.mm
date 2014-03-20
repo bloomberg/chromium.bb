@@ -705,7 +705,8 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
   [menu showWindow:nil];
 }
 
-void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton() {
+void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
+    AvatarBubbleMode mode) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
   [controller showAvatarBubble:[controller buttonView]];
 }

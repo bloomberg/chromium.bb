@@ -36,9 +36,10 @@ void ShowAvatarBubbleUIThread(int child_id, int route_id) {
 
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser)
-    browser->window()->ShowAvatarBubbleFromAvatarButton();
-  // TODO(guohui): need to handle the case when avatar button is not available.
+  if (browser) {
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT);
+  }
 #else  // defined(OS_ANDROID)
   AccountManagementScreenHelper::OpenAccountManagementScreen(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
