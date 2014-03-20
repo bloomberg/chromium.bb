@@ -36,6 +36,9 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
+typedef Vector<SkScalar, 8> ColorStopOffsetVector;
+typedef Vector<SkColor, 8> ColorStopColorVector;
+
 namespace WebCore {
 
 Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
@@ -165,7 +168,7 @@ static inline SkColor makeSkColor(const Color& c)
 // enough to hold information for all stops, including the new endpoints if
 // stops at 0.0 and 1.0 aren't already included.
 static void fillStops(const Gradient::ColorStop* stopData,
-    size_t count, SkScalar* pos, SkColor* colors)
+    size_t count, ColorStopOffsetVector& pos, ColorStopColorVector& colors)
 {
     const Gradient::ColorStop* stop = stopData;
     size_t start = 0;
@@ -210,11 +213,8 @@ SkShader* Gradient::shader()
     ASSERT(countUsed >= 2);
     ASSERT(countUsed >= m_stops.size());
 
-    // FIXME: Why is all this manual pointer math needed?!
-    SkAutoMalloc storage(countUsed * (sizeof(SkColor) + sizeof(SkScalar)));
-    SkColor* colors = (SkColor*)storage.get();
-    SkScalar* pos = (SkScalar*)(colors + countUsed);
-
+    ColorStopOffsetVector pos(countUsed);
+    ColorStopColorVector colors(countUsed);
     fillStops(m_stops.data(), m_stops.size(), pos, colors);
 
     SkShader::TileMode tile = SkShader::kClamp_TileMode;
@@ -235,13 +235,13 @@ SkShader* Gradient::shader()
         // Since the two-point radial gradient is slower than the plain radial,
         // only use it if we have to.
         if (m_p0 == m_p1 && m_r0 <= 0.0f) {
-            m_gradient = adoptRef(SkGradientShader::CreateRadial(m_p1, m_r1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
+            m_gradient = adoptRef(SkGradientShader::CreateRadial(m_p1, m_r1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
         } else {
             // The radii we give to Skia must be positive. If we're given a
             // negative radius, ask for zero instead.
             SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
             SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            m_gradient = adoptRef(SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
+            m_gradient = adoptRef(SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
         }
 
         if (aspectRatio() != 1) {
@@ -254,7 +254,7 @@ SkShader* Gradient::shader()
         }
     } else {
         SkPoint pts[2] = { m_p0, m_p1 };
-        m_gradient = adoptRef(SkGradientShader::CreateLinear(pts, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
+        m_gradient = adoptRef(SkGradientShader::CreateLinear(pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
     }
 
     if (!m_gradient) {
