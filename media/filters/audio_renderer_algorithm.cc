@@ -46,12 +46,6 @@ namespace media {
 //    |search_block_index_| = |search_block_center_offset_| -
 //        |search_block_center_offset_|.
 
-// Max/min supported playback rates for fast/slow audio. Audio outside of these
-// ranges are muted.
-// Audio at these speeds would sound better under a frequency domain algorithm.
-static const float kMinPlaybackRate = 0.5f;
-static const float kMaxPlaybackRate = 4.0f;
-
 // Overlap-and-add window size in milliseconds.
 static const int kOlaWindowSizeMs = 20;
 
@@ -76,8 +70,6 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
       playback_rate_(0),
-      muted_(false),
-      muted_partial_frame_(0),
       capacity_(kStartingBufferSizeInFrames),
       output_time_(0.0),
       search_block_center_offset_(0),
@@ -151,31 +143,6 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest, int requested_frames) {
 
   DCHECK_EQ(channels_, dest->channels());
 
-  // Optimize the |muted_| case to issue a single clear instead of performing
-  // the full crossfade and clearing each crossfaded frame.
-  if (muted_) {
-    int frames_to_render =
-        std::min(static_cast<int>(audio_buffer_.frames() / playback_rate_),
-                 requested_frames);
-
-    // Compute accurate number of frames to actually skip in the source data.
-    // Includes the leftover partial frame from last request. However, we can
-    // only skip over complete frames, so a partial frame may remain for next
-    // time.
-    muted_partial_frame_ += frames_to_render * playback_rate_;
-    int seek_frames = static_cast<int>(muted_partial_frame_);
-    dest->ZeroFrames(frames_to_render);
-    audio_buffer_.SeekFrames(seek_frames);
-
-    // Determine the partial frame that remains to be skipped for next call. If
-    // the user switches back to playing, it may be off time by this partial
-    // frame, which would be undetectable. If they subsequently switch to
-    // another playback rate that mutes, the code will attempt to line up the
-    // frames again.
-    muted_partial_frame_ -= seek_frames;
-    return frames_to_render;
-  }
-
   int slower_step = ceil(ola_window_size_ * playback_rate_);
   int faster_step = ceil(ola_window_size_ / playback_rate_);
 
@@ -200,8 +167,6 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest, int requested_frames) {
 void AudioRendererAlgorithm::SetPlaybackRate(float new_rate) {
   DCHECK_GE(new_rate, 0);
   playback_rate_ = new_rate;
-  muted_ =
-      playback_rate_ < kMinPlaybackRate || playback_rate_ > kMaxPlaybackRate;
 }
 
 void AudioRendererAlgorithm::FlushBuffers() {

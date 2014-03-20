@@ -19,8 +19,6 @@
 // are preserved. See audio_renderer_algorith.cc for a more elaborate
 // description of the algorithm.
 //
-// Audio at very low or very high playback rates are muted to preserve quality.
-//
 
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
@@ -84,9 +82,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Returns the samples per second for this audio stream.
   int samples_per_second() { return samples_per_second_; }
 
-  // Is the sound currently muted?
-  bool is_muted() { return muted_; }
-
  private:
   // Within |search_block_|, find the block of data that is most similar to
   // |target_block_|, and write it in |optimal_block_|. This method assumes that
@@ -139,12 +134,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Buffered audio data.
   AudioBufferQueue audio_buffer_;
-
-  // True if the audio should be muted.
-  bool muted_;
-
-  // If muted, keep track of partial frames that should have been skipped over.
-  double muted_partial_frame_;
 
   // How many frames to have in the queue before we report the queue is full.
   int capacity_;
