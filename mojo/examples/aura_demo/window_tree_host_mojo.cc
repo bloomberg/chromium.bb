@@ -128,10 +128,6 @@ void WindowTreeHostMojo::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::PrepareForShutdown() {
-  NOTIMPLEMENTED();
-}
-
 void WindowTreeHostMojo::SetCursorNative(gfx::NativeCursor cursor) {
   NOTIMPLEMENTED();
 }

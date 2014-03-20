@@ -92,12 +92,6 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 }
 
-void WindowEventDispatcher::PrepareForShutdown() {
-  host_->PrepareForShutdown();
-  // discard synthesize event request as well.
-  synthesize_mouse_move_ = false;
-}
-
 void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent& event) {
   DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
          event.type() == ui::ET_GESTURE_TAP_DOWN);

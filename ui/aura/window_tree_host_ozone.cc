@@ -96,8 +96,6 @@ void WindowTreeHostOzone::OnDeviceScaleFactorChanged(
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostOzone::PrepareForShutdown() { NOTIMPLEMENTED(); }
-
 void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorFactoryOzone::GetInstance()->SetCursor(GetAcceleratedWidget(),
                                                    cursor.platform());

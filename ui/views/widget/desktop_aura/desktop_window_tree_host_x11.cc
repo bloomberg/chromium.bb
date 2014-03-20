@@ -903,9 +903,6 @@ void DesktopWindowTreeHostX11::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void DesktopWindowTreeHostX11::PrepareForShutdown() {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, ui::EventSource implementation:
 

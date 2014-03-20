@@ -232,7 +232,11 @@ gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
   const aura::Window* root_window = window->GetRootWindow();
   if (!root_window)
     return GetPrimaryDisplay();
-  int64 id = internal::GetRootWindowSettings(root_window)->display_id;
+  const internal::RootWindowSettings* rws =
+      internal::GetRootWindowSettings(root_window);
+  if (rws->shutdown)
+    return gfx::Display(1);
+  int64 id = rws->display_id;
   // if id is |kInvaildDisplayID|, it's being deleted.
   DCHECK(id != gfx::Display::kInvalidDisplayID);
 

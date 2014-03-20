@@ -6,6 +6,7 @@
 
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
@@ -28,6 +29,10 @@ RootWindowLayoutManager::~RootWindowLayoutManager() {
 // RootWindowLayoutManager, aura::LayoutManager implementation:
 
 void RootWindowLayoutManager::OnWindowResized() {
+  // X event may arrive during shutdown.
+  if (GetRootWindowSettings(owner_->GetRootWindow())->shutdown)
+    return;
+
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
 

@@ -100,10 +100,6 @@ void WindowTreeHostMac::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMac::PrepareForShutdown() {
-  NOTIMPLEMENTED();
-}
-
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostMac(bounds);

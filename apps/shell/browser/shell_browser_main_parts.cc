@@ -194,7 +194,6 @@ void ShellBrowserMainParts::DestroyRootWindow() {
   webview_window_.reset();
   devtools_delegate_->Stop();
   wm_test_helper_->host()->RemoveObserver(this);
-  wm_test_helper_->host()->dispatcher()->PrepareForShutdown();
   wm_test_helper_.reset();
   ui::ShutdownInputMethodForTesting();
 }
