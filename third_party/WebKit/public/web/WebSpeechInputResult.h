@@ -26,10 +26,10 @@
 #ifndef WebSpeechInputResult_h
 #define WebSpeechInputResult_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 namespace WebCore {
 class SpeechInputResult;

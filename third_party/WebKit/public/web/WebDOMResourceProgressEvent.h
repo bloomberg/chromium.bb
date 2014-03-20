@@ -31,7 +31,7 @@
 #ifndef WebDOMResourceProgressEvent_h
 #define WebDOMResourceProgressEvent_h
 
-#include "WebDOMProgressEvent.h"
+#include "public/web/WebDOMProgressEvent.h"
 
 namespace blink {
 

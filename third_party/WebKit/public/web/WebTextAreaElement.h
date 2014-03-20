@@ -31,7 +31,7 @@
 #ifndef WebTextAreaElement_h
 #define WebTextAreaElement_h
 
-#include "WebFormControlElement.h"
+#include "public/web/WebFormControlElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLTextAreaElement; }

@@ -30,7 +30,7 @@
 #ifndef WebDOMMouseEvent_h
 #define WebDOMMouseEvent_h
 
-#include "WebDOMEvent.h"
+#include "public/web/WebDOMEvent.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class Event; }

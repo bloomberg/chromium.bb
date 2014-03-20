@@ -31,7 +31,7 @@
 #ifndef WebDocumentType_h
 #define WebDocumentType_h
 
-#include "WebNode.h"
+#include "public/web/WebNode.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class DocumentType; }

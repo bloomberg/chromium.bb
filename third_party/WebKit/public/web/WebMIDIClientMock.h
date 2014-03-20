@@ -31,9 +31,9 @@
 #ifndef WebMIDIClientMock_h
 #define WebMIDIClientMock_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivateOwnPtr.h"
-#include "WebMIDIClient.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivateOwnPtr.h"
+#include "public/web/WebMIDIClient.h"
 
 namespace WebCore {
 class MIDIClientMock;

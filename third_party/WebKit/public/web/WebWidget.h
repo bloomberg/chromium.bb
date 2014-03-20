@@ -31,13 +31,13 @@
 #ifndef WebWidget_h
 #define WebWidget_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebCommon.h"
-#include "../platform/WebRect.h"
-#include "../platform/WebSize.h"
-#include "WebCompositionUnderline.h"
-#include "WebTextDirection.h"
-#include "WebTextInputInfo.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/web/WebCompositionUnderline.h"
+#include "public/web/WebTextDirection.h"
+#include "public/web/WebTextInputInfo.h"
 
 namespace blink {
 

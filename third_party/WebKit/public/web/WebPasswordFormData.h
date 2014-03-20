@@ -31,10 +31,10 @@
 #ifndef WebPasswordFormData_h
 #define WebPasswordFormData_h
 
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
-#include "../platform/WebVector.h"
-#include "WebFormElement.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebFormElement.h"
 
 namespace blink {
 

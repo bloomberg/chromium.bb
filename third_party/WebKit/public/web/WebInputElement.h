@@ -31,7 +31,7 @@
 #ifndef WebInputElement_h
 #define WebInputElement_h
 
-#include "WebFormControlElement.h"
+#include "public/web/WebFormControlElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLInputElement; }

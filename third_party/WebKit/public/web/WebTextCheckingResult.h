@@ -31,9 +31,9 @@
 #ifndef WebTextCheckingResult_h
 #define WebTextCheckingResult_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-#include "WebTextDecorationType.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/web/WebTextDecorationType.h"
 
 namespace WebCore {
 struct TextCheckingResult;

@@ -31,9 +31,9 @@
 #ifndef WebEmbeddedWorkerStartData_h
 #define WebEmbeddedWorkerStartData_h
 
-#include "WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebContentSecurityPolicy.h"
 
 namespace blink {
 

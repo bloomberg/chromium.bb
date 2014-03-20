@@ -29,8 +29,8 @@
 #ifndef WebArrayBufferView_h
 #define WebArrayBufferView_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace v8 {
 class Value;

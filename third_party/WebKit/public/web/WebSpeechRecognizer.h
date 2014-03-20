@@ -26,8 +26,8 @@
 #ifndef WebSpeechRecognizer_h
 #define WebSpeechRecognizer_h
 
-#include "../platform/WebCommon.h"
-#include "WebSpeechRecognitionHandle.h"
+#include "public/platform/WebCommon.h"
+#include "public/web/WebSpeechRecognitionHandle.h"
 
 namespace blink {
 

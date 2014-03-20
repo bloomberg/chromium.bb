@@ -31,9 +31,9 @@
 #ifndef WebCachedURLRequest_h
 #define WebCachedURLRequest_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivateOwnPtr.h"
-#include "../platform/WebString.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivateOwnPtr.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore { class FetchRequest; }
 

@@ -31,7 +31,7 @@
 #ifndef WebSpeechInputListener_h
 #define WebSpeechInputListener_h
 
-#include "WebSpeechInputResult.h"
+#include "public/web/WebSpeechInputResult.h"
 
 namespace blink {
 

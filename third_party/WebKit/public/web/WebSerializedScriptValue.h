@@ -31,8 +31,8 @@
 #ifndef WebSerializedScriptValue_h
 #define WebSerializedScriptValue_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace WebCore { class SerializedScriptValue; }
 

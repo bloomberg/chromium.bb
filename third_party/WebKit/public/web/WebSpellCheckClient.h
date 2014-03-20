@@ -31,9 +31,9 @@
 #ifndef WebSpellCheckClient_h
 #define WebSpellCheckClient_h
 
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
-#include "WebTextCheckingType.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebTextCheckingType.h"
 
 namespace blink {
 

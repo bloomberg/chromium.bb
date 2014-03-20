@@ -31,7 +31,7 @@
 #ifndef WebSharedWorkerClient_h
 #define WebSharedWorkerClient_h
 
-#include "../platform/WebMessagePortChannel.h"
+#include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
 

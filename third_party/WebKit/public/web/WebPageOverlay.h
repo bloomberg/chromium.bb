@@ -29,8 +29,8 @@
 #ifndef WebPageOverlay_h
 #define WebPageOverlay_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebRect.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebRect.h"
 
 namespace blink {
 

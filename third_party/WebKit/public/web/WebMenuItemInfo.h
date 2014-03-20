@@ -31,10 +31,10 @@
 #ifndef WebMenuItemInfo_h
 #define WebMenuItemInfo_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
-#include "WebTextDirection.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebTextDirection.h"
 
 namespace blink {
 

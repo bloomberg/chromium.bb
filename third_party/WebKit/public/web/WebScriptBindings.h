@@ -31,7 +31,7 @@
 #ifndef WebScriptBindings_h
 #define WebScriptBindings_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace v8 {
 class Isolate;

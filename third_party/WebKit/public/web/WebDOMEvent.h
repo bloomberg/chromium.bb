@@ -31,10 +31,10 @@
 #ifndef WebDOMEvent_h
 #define WebDOMEvent_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebString.h"
-#include "WebNode.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
+#include "public/web/WebNode.h"
 
 namespace WebCore { class Event; }
 #if BLINK_IMPLEMENTATION

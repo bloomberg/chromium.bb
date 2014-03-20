@@ -31,9 +31,9 @@
 #ifndef WebDataSource_h
 #define WebDataSource_h
 
-#include "../platform/WebCommon.h"
-#include "WebNavigationType.h"
-#include "WebTextDirection.h"
+#include "public/platform/WebCommon.h"
+#include "public/web/WebNavigationType.h"
+#include "public/web/WebTextDirection.h"
 
 namespace blink {
 

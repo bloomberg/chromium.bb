@@ -31,7 +31,7 @@
 #ifndef WebCompositionUnderline_h
 #define WebCompositionUnderline_h
 
-#include "../platform/WebColor.h"
+#include "public/platform/WebColor.h"
 
 namespace blink {
 

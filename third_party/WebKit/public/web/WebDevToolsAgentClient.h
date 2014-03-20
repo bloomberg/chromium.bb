@@ -31,8 +31,8 @@
 #ifndef WebDevToolsAgentClient_h
 #define WebDevToolsAgentClient_h
 
-#include "../platform/WebCString.h"
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCString.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 class WebString;

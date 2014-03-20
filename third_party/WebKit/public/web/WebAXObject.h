@@ -31,10 +31,10 @@
 #ifndef WebAXObject_h
 #define WebAXObject_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebVector.h"
-#include "WebAXEnums.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebAXEnums.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }

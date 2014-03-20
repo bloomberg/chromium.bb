@@ -31,20 +31,20 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#include "../platform/WebColor.h"
-#include "../platform/WebGraphicsContext3D.h"
-#include "../platform/WebString.h"
-#include "WebAXEnums.h"
-#include "WebContentDetectionResult.h"
-#include "WebDragOperation.h"
-#include "WebFileChooserCompletion.h"
-#include "WebFileChooserParams.h"
-#include "WebNavigatorContentUtilsClient.h"
-#include "WebPageVisibilityState.h"
-#include "WebPopupType.h"
-#include "WebTextAffinity.h"
-#include "WebTextDirection.h"
-#include "WebWidgetClient.h"
+#include "public/platform/WebColor.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebString.h"
+#include "public/web/WebAXEnums.h"
+#include "public/web/WebContentDetectionResult.h"
+#include "public/web/WebDragOperation.h"
+#include "public/web/WebFileChooserCompletion.h"
+#include "public/web/WebFileChooserParams.h"
+#include "public/web/WebNavigatorContentUtilsClient.h"
+#include "public/web/WebPageVisibilityState.h"
+#include "public/web/WebPopupType.h"
+#include "public/web/WebTextAffinity.h"
+#include "public/web/WebTextDirection.h"
+#include "public/web/WebWidgetClient.h"
 
 namespace blink {
 

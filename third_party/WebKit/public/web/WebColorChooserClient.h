@@ -26,8 +26,8 @@
 #ifndef WebColorChooserClient_h
 #define WebColorChooserClient_h
 
-#include "../platform/WebColor.h"
-#include "../platform/WebCommon.h"
+#include "public/platform/WebColor.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 

@@ -31,11 +31,11 @@
 #ifndef WebWidgetClient_h
 #define WebWidgetClient_h
 
-#include "WebNavigationPolicy.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScreenInfo.h"
+#include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebTouchAction.h"
 
 namespace blink {

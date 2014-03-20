@@ -31,12 +31,12 @@
 #ifndef WebDocument_h
 #define WebDocument_h
 
-#include "../platform/WebReferrerPolicy.h"
-#include "../platform/WebVector.h"
-#include "WebDraggableRegion.h"
-#include "WebExceptionCode.h"
-#include "WebNode.h"
-#include "WebSecurityOrigin.h"
+#include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebDraggableRegion.h"
+#include "public/web/WebExceptionCode.h"
+#include "public/web/WebNode.h"
+#include "public/web/WebSecurityOrigin.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore {

@@ -25,8 +25,8 @@
 #ifndef WebPluginScrollbar_h
 #define WebPluginScrollbar_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebScrollbar.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebScrollbar.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #ifndef WebLabelElement_h
 #define WebLabelElement_h
 
-#include "WebElement.h"
+#include "public/web/WebElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLLabelElement; }

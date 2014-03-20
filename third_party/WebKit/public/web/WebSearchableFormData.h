@@ -31,9 +31,9 @@
 #ifndef WebSearchableFormData_h
 #define WebSearchableFormData_h
 
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
-#include "WebInputElement.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/web/WebInputElement.h"
 
 namespace blink {
 class WebFormElement;

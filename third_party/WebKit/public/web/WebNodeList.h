@@ -31,7 +31,7 @@
 #ifndef WebNodeList_h
 #define WebNodeList_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace WebCore { class NodeList; }
 #if BLINK_IMPLEMENTATION

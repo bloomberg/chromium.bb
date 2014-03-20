@@ -31,9 +31,9 @@
 #ifndef WebFormControlElement_h
 #define WebFormControlElement_h
 
-#include "../platform/WebString.h"
-#include "WebElement.h"
-#include "WebFormElement.h"
+#include "public/platform/WebString.h"
+#include "public/web/WebElement.h"
+#include "public/web/WebFormElement.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLFormControlElement; }

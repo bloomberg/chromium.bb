@@ -31,7 +31,7 @@
 #ifndef WebSharedWorkerConnector_h
 #define WebSharedWorkerConnector_h
 
-#include "WebContentSecurityPolicy.h"
+#include "public/web/WebContentSecurityPolicy.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #ifndef WebNotification_h
 #define WebNotification_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-#include "../platform/WebString.h"
-#include "WebTextDirection.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
+#include "public/web/WebTextDirection.h"
 
 namespace WebCore { class Notification; }
 

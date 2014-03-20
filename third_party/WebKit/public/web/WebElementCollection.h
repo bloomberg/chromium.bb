@@ -32,7 +32,7 @@
 #ifndef WebElementCollection_h
 #define WebElementCollection_h
 
-#include "../platform/WebCommon.h"
+#include "public/platform/WebCommon.h"
 
 namespace WebCore { class HTMLCollection; }
 #if BLINK_IMPLEMENTATION

@@ -31,7 +31,7 @@
 #ifndef WebScopedMicrotaskSuppression_h
 #define WebScopedMicrotaskSuppression_h
 
-#include "../platform/WebPrivateOwnPtr.h"
+#include "public/platform/WebPrivateOwnPtr.h"
 
 namespace blink {
 
