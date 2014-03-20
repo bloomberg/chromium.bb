@@ -13,7 +13,7 @@
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
  <div id="mainDiv" class="dialog-body">
-  <iframe class="hidden" id="paymentForm" frameborder="0"></iframe>
+  <iframe class="hidden" id="paymentForm" name="paymentForm" frameborder="0"></iframe>
   <div id="systemStatus" class="overlay opaque-overlay hidden">
     <div class="startup">
       <div id="banner">
@@ -28,7 +28,7 @@
           </tr>
         </tbody></table>
       </div>
-      <iframe id="carrierPage" frameborder="0"></iframe>
+      <iframe id="carrierPage" name="carrierPage" frameborder="0"></iframe>
     </div>
   </div>
   <div id="finalStatus" class="overlay translucent-black-overlay hidden">
