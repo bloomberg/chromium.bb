@@ -36,6 +36,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,11 +45,8 @@ namespace WebCore {
 
 class ScriptArguments;
 
-class ConsoleBase {
+class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase> {
 public:
-    void ref() { refConsole(); }
-    void deref() { derefConsole(); }
-
     void debug(ScriptState*, PassRefPtr<ScriptArguments>);
     void error(ScriptState*, PassRefPtr<ScriptArguments>);
     void info(ScriptState*, PassRefPtr<ScriptArguments>);
@@ -73,15 +71,15 @@ public:
     void groupCollapsed(ScriptState*, PassRefPtr<ScriptArguments>);
     void groupEnd();
 
-protected:
+    virtual void trace(Visitor*) = 0;
+
     virtual ~ConsoleBase();
+
+protected:
     virtual ExecutionContext* context() = 0;
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) = 0;
 
 private:
-    virtual void refConsole() = 0;
-    virtual void derefConsole() = 0;
-
     void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
 };
 

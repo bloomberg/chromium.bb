@@ -44,14 +44,11 @@ namespace WebCore {
 
 class ScriptArguments;
 
-class WorkerConsole FINAL : public RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
+class WorkerConsole FINAL : public ConsoleBase, public ScriptWrappable {
 public:
-    using RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>::ref;
-    using RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>::deref;
-
     static PassRefPtrWillBeRawPtr<WorkerConsole> create(WorkerGlobalScope* scope)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WorkerConsole(scope));
+        return adoptRefWillBeNoop(new WorkerConsole(scope));
     }
     virtual ~WorkerConsole();
 
@@ -63,9 +60,6 @@ protected:
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);
-
-    virtual void refConsole() OVERRIDE { ref(); }
-    virtual void derefConsole() OVERRIDE { deref(); }
 
     RawPtrWillBeMember<WorkerGlobalScope> m_scope;
 };

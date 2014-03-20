@@ -27,7 +27,6 @@
  */
 
 [
-    NoInterfaceObject,
-    WillBeGarbageCollected
+    NoInterfaceObject
 ] interface WorkerConsole : ConsoleBase {
 };

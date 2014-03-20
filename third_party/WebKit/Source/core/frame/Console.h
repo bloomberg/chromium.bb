@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,15 +45,17 @@ class MemoryInfo;
 class Page;
 class ScriptArguments;
 
-class Console FINAL : public RefCounted<Console>, public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
+class Console FINAL : public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
 public:
-    using RefCounted<Console>::ref;
-    using RefCounted<Console>::deref;
-
-    static PassRefPtr<Console> create(LocalFrame* frame) { return adoptRef(new Console(frame)); }
+    static PassRefPtrWillBeRawPtr<Console> create(LocalFrame* frame)
+    {
+        return adoptRefWillBeNoop(new Console(frame));
+    }
     virtual ~Console();
 
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
+
+    void trace(Visitor*) { }
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;
@@ -60,9 +63,6 @@ protected:
 
 private:
     explicit Console(LocalFrame*);
-
-    virtual void refConsole() OVERRIDE { ref(); }
-    virtual void derefConsole() OVERRIDE { deref(); }
 };
 
 } // namespace WebCore
