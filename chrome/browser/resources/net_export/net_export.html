@@ -23,22 +23,24 @@
     <div>
       <button id="export-view-start-data" disabled>
         Start Logging to Disk
+	<div class="warning" id="export-view-deletes-log-text" hidden>
+          Deletes old log
+	</div>
       </button>
-      <span class="warning" id="export-view-deletes-log-text" hidden>
-        Deletes old log
-      </span>
     </div>
     <div>
       <button id="export-view-stop-data" disabled>Stop Logging</button>
     </div>
     <div>
-      <button id="export-view-send-data" disabled>Email Log</button>
-      <span class="warning" id="export-view-private-data-text" hidden>
-        Log contains private information
-      </span>
-      <span class="warning" id="export-view-send-old-log-text" hidden>
-        Log file from previous session
-      </span>
+      <button id="export-view-send-data" disabled>
+        Email Log
+        <div class="warning" id="export-view-private-data-text" hidden>
+          Log contains private information
+        </div>
+        <div class="warning" id="export-view-send-old-log-text" hidden>
+          Log file from previous session
+        </div>
+      </button>
     </div>
     <pre id="export-view-file-path-text"></pre>
     <p>

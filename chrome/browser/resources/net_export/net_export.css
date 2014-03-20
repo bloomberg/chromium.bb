@@ -9,12 +9,18 @@ body {
 }
 
 button {
-  font-size: 100%;
+  display: block;
+  font-size: 110%;
   font-weight: bold;
+  margin: 10px auto;
+  min-height: 48px;
+  width: 200px;
 }
 
 .warning {
   color: red;
+  font-size: 90%;
+  font-weight: normal;
 }
 
 #net-export-main {
