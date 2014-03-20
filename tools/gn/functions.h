@@ -54,6 +54,22 @@ typedef Value (*NoBlockFunction)(Scope* scope,
                                  const std::vector<Value>& args,
                                  Err* err);
 
+extern const char kAction[];
+extern const char kAction_Help[];
+Value RunAction(Scope* scope,
+                const FunctionCallNode* function,
+                const std::vector<Value>& args,
+                BlockNode* block,
+                Err* err);
+
+extern const char kActionForEach[];
+extern const char kActionForEach_Help[];
+Value RunActionForEach(Scope* scope,
+                       const FunctionCallNode* function,
+                       const std::vector<Value>& args,
+                       BlockNode* block,
+                       Err* err);
+
 extern const char kAssert[];
 extern const char kAssert_Help[];
 Value RunAssert(Scope* scope,
@@ -82,14 +98,6 @@ Value RunCopy(const FunctionCallNode* function,
               const std::vector<Value>& args,
               Scope* block_scope,
               Err* err);
-
-extern const char kCustom[];
-extern const char kCustom_Help[];
-Value RunCustom(Scope* scope,
-                const FunctionCallNode* function,
-                const std::vector<Value>& args,
-                BlockNode* block,
-                Err* err);
 
 extern const char kDeclareArgs[];
 extern const char kDeclareArgs_Help[];

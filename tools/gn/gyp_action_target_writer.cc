@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/gn/gyp_script_target_writer.h"
+#include "tools/gn/gyp_action_target_writer.h"
 
 #include "tools/gn/builder_record.h"
 #include "tools/gn/err.h"
@@ -11,11 +11,11 @@
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 
-// Write script targets as GYP actions that just invoke Ninja. This allows us
-// to not have to worry about duplicating the precise GN script execution
+// Write action targets as GYP actions that just invoke Ninja. This allows us
+// to not have to worry about duplicating the precise GN action execution
 // semantices in GYP for each platform (GYP varies a bit).
 
-GypScriptTargetWriter::GypScriptTargetWriter(const TargetGroup& group,
+GypActionTargetWriter::GypActionTargetWriter(const TargetGroup& group,
                                              const Toolchain* toolchain,
                                              const SourceDir& gyp_dir,
                                              std::ostream& out)
@@ -23,14 +23,14 @@ GypScriptTargetWriter::GypScriptTargetWriter(const TargetGroup& group,
                       gyp_dir, out) {
 }
 
-GypScriptTargetWriter::~GypScriptTargetWriter() {
+GypActionTargetWriter::~GypActionTargetWriter() {
 }
 
-void GypScriptTargetWriter::Run() {
+void GypActionTargetWriter::Run() {
   int indent = 4;
   std::string name = helper_.GetNameForTarget(target_);
 
-  // Put the ninja build for this script target in this directory.
+  // Put the ninja build for this action target in this directory.
   SourceDir ninja_dir(GetTargetOutputDir(target_).value() + name + "_ninja/");
 
   Indent(indent) << "{\n";
@@ -57,7 +57,7 @@ void GypScriptTargetWriter::Run() {
   Indent(indent) << "},\n";
 }
 
-void GypScriptTargetWriter::WriteActionInputs(int indent) {
+void GypActionTargetWriter::WriteActionInputs(int indent) {
   Indent(indent) << "'inputs': [\n";
 
   // Write everything that should be considered an input for dependency
@@ -79,13 +79,13 @@ void GypScriptTargetWriter::WriteActionInputs(int indent) {
   Indent(indent) << "],\n";
 }
 
-void GypScriptTargetWriter::WriteActionOutputs(int indent) {
+void GypActionTargetWriter::WriteActionOutputs(int indent) {
   Indent(indent) << "'outputs': [\n";
 
   const Target::FileList& sources = target_->sources();
   if (sources.empty()) {
     // Just write outputs directly if there are no sources.
-    const Target::FileList& output = target_->script_values().outputs();
+    const Target::FileList& output = target_->action_values().outputs();
     for (size_t output_i = 0; output_i < output.size(); output_i++) {
       Indent(indent + kExtraIndent) << "'";
       path_output_.WriteFile(out_, output[output_i]);

@@ -7,21 +7,21 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/file_template.h"
-#include "tools/gn/ninja_script_target_writer.h"
+#include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/test_with_scope.h"
 
-TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLine) {
+TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/gen/a b{{source_name_part}}.h"));
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/gen/{{source_name_part}}.cc"));
 
   std::ostringstream out;
-  NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
 
   FileTemplate output_template = writer.GetOutputTemplate();
 
@@ -36,20 +36,20 @@ TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLine) {
   EXPECT_EQ(" gen/a$ bbar.h gen/bar.cc", out_str);
 }
 
-TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLineWithDepfile) {
+TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLineWithDepfile) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
-  target.script_values().set_depfile(
+  target.action_values().set_depfile(
       SourceFile("//out/Debug/gen/{{source_name_part}}.d"));
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/gen/{{source_name_part}}.h"));
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/gen/{{source_name_part}}.cc"));
 
   std::ostringstream out;
-  NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
 
   FileTemplate output_template = writer.GetOutputTemplate();
 
@@ -64,13 +64,13 @@ TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLineWithDepfile) {
   EXPECT_EQ(" gen/bar.d gen/bar.h gen/bar.cc", out_str);
 }
 
-TEST(NinjaScriptTargetWriter, WriteArgsSubstitutions) {
+TEST(NinjaActionTargetWriter, WriteArgsSubstitutions) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
   std::ostringstream out;
-  NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
 
   std::vector<std::string> args;
   args.push_back("-i");
@@ -88,24 +88,100 @@ TEST(NinjaScriptTargetWriter, WriteArgsSubstitutions) {
             out_str);
 }
 
-// Tests the "run script over multiple source files" mode.
-TEST(NinjaScriptTargetWriter, InvokeOverSources) {
+// Makes sure that we write sources as input dependencies for actions with
+// both sources and source_prereqs (ACTION_FOREACH treats the sources
+// differently).
+TEST(NinjaActionTargetWriter, ActionWithSources) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  target.set_output_type(Target::CUSTOM);
+  target.set_output_type(Target::ACTION);
+
+  target.action_values().set_script(SourceFile("//foo/script.py"));
+
+  target.sources().push_back(SourceFile("//foo/source.txt"));
+  target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
+
+  target.action_values().outputs().push_back(
+      SourceFile("//out/Debug/foo.out"));
+
+  // Posix.
+  {
+    setup.settings()->set_target_os(Settings::LINUX);
+    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+        "/usr/bin/python")));
+
+    std::ostringstream out;
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    writer.Run();
+
+    const char expected_linux[] =
+        "rule __foo_bar___rule\n"
+        "  command = /usr/bin/python ../../foo/script.py\n"
+        "  description = ACTION //foo:bar()\n"
+        "  restat = 1"
+        "\n"
+        "\n"
+        "build foo.out: __foo_bar___rule | ../../foo/included.txt ../../foo/source.txt\n"
+        "\n"
+        "build obj/foo/bar.stamp: stamp foo.out\n";
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_linux, out_str);
+  }
+
+  // Windows.
+  {
+    // Note: we use forward slashes here so that the output will be the same on
+    // Linux and Windows.
+    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+        "C:/python/python.exe")));
+    setup.settings()->set_target_os(Settings::WIN);
+
+    std::ostringstream out;
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    writer.Run();
+
+    // TODO(brettw) I think we'll need to worry about backslashes here
+    // depending if we're on actual Windows or Linux pretending to be Windows.
+    const char expected_win[] =
+        "rule __foo_bar___rule\n"
+        "  command = C:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
+        "  description = ACTION //foo:bar()\n"
+        "  restat = 1\n"
+        "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
+        "  rspfile_content = C:/python/python.exe ../../foo/script.py\n"
+        "\n"
+        "build foo.out: __foo_bar___rule | ../../foo/included.txt ../../foo/source.txt\n"
+        "\n"
+        "build obj/foo/bar.stamp: stamp foo.out\n";
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_win, out_str);
+  }
+}
+
+TEST(NinjaActionTargetWriter, ForEach) {
+  TestWithScope setup;
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  target.set_output_type(Target::ACTION_FOREACH);
 
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
-  target.script_values().set_script(SourceFile("//foo/script.py"));
+  target.action_values().set_script(SourceFile("//foo/script.py"));
 
-  target.script_values().args().push_back("-i");
-  target.script_values().args().push_back("{{source}}");
-  target.script_values().args().push_back(
+  target.action_values().args().push_back("-i");
+  target.action_values().args().push_back("{{source}}");
+  target.action_values().args().push_back(
       "--out=foo bar{{source_name_part}}.o");
 
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_name_part}}.out"));
 
   target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
@@ -117,14 +193,14 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     const char expected_linux[] =
         "rule __foo_bar___rule\n"
         "  command = /usr/bin/python ../../foo/script.py -i ${source} "
             "\"--out=foo$ bar${source_name_part}.o\"\n"
-        "  description = CUSTOM //foo:bar()\n"
+        "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "\n"
         "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
@@ -154,7 +230,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
@@ -163,7 +239,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "rule __foo_bar___rule\n"
         "  command = C:/python/python.exe gyp-win-tool action-wrapper "
             "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
-        "  description = CUSTOM //foo:bar()\n"
+        "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
         "  rspfile_content = C:/python/python.exe ../../foo/script.py -i "
@@ -189,26 +265,25 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
   }
 }
 
-// Tests the "run script over multiple source files" mode, with a depfile.
-TEST(NinjaScriptTargetWriter, InvokeOverSourcesWithDepfile) {
+TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  target.set_output_type(Target::CUSTOM);
+  target.set_output_type(Target::ACTION_FOREACH);
 
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
-  target.script_values().set_script(SourceFile("//foo/script.py"));
-  target.script_values().set_depfile(
+  target.action_values().set_script(SourceFile("//foo/script.py"));
+  target.action_values().set_depfile(
       SourceFile("//out/Debug/gen/{{source_name_part}}.d"));
 
-  target.script_values().args().push_back("-i");
-  target.script_values().args().push_back("{{source}}");
-  target.script_values().args().push_back(
+  target.action_values().args().push_back("-i");
+  target.action_values().args().push_back("{{source}}");
+  target.action_values().args().push_back(
       "--out=foo bar{{source_name_part}}.o");
 
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_name_part}}.out"));
 
   target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
@@ -220,14 +295,14 @@ TEST(NinjaScriptTargetWriter, InvokeOverSourcesWithDepfile) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     const char expected_linux[] =
         "rule __foo_bar___rule\n"
         "  command = /usr/bin/python ../../foo/script.py -i ${source} "
             "\"--out=foo$ bar${source_name_part}.o\"\n"
-        "  description = CUSTOM //foo:bar()\n"
+        "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "\n"
         "build gen/input1.d input1.out: __foo_bar___rule ../../foo/input1.txt"
@@ -259,7 +334,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSourcesWithDepfile) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
@@ -268,7 +343,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSourcesWithDepfile) {
         "rule __foo_bar___rule\n"
         "  command = C:/python/python.exe gyp-win-tool action-wrapper "
             "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
-        "  description = CUSTOM //foo:bar()\n"
+        "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
         "  rspfile_content = C:/python/python.exe ../../foo/script.py -i "

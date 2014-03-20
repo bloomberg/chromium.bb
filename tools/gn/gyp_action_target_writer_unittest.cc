@@ -4,20 +4,20 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/builder_record.h"
-#include "tools/gn/gyp_script_target_writer.h"
+#include "tools/gn/gyp_action_target_writer.h"
 #include "tools/gn/test_with_scope.h"
 
-TEST(GypScriptTargetWriter, Run) {
+TEST(GypActionTargetWriter, Run) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   scoped_ptr<Target> target(
       new Target(setup.settings(), Label(SourceDir("//foo/"), "bar")));
-  target->set_output_type(Target::CUSTOM);
+  target->set_output_type(Target::ACTION);
 
   target->sources().push_back(SourceFile("//foo/input1.txt"));
   target->sources().push_back(SourceFile("//foo/input2.txt"));
 
-  target->script_values().outputs().push_back(
+  target->action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_file_part}}.out"));
 
   BuilderRecord record(BuilderRecord::ITEM_TARGET, target->label());
@@ -28,7 +28,7 @@ TEST(GypScriptTargetWriter, Run) {
   setup.settings()->set_target_os(Settings::WIN);
 
   std::ostringstream out;
-  GypScriptTargetWriter writer(group, setup.toolchain(),
+  GypActionTargetWriter writer(group, setup.toolchain(),
                                SourceDir("//out/gn_gyp/"), out);
   writer.Run();
 

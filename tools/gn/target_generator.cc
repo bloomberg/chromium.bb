@@ -4,6 +4,7 @@
 
 #include "tools/gn/target_generator.h"
 
+#include "tools/gn/action_target_generator.h"
 #include "tools/gn/binary_target_generator.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/config.h"
@@ -15,7 +16,6 @@
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
-#include "tools/gn/script_target_generator.h"
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
 #include "tools/gn/value_extractors.h"
@@ -75,8 +75,13 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   if (output_type == functions::kCopy) {
     CopyTargetGenerator generator(target.get(), scope, function_call, err);
     generator.Run();
-  } else if (output_type == functions::kCustom) {
-    ScriptTargetGenerator generator(target.get(), scope, function_call, err);
+  } else if (output_type == functions::kAction) {
+    ActionTargetGenerator generator(target.get(), scope, function_call,
+                                    Target::ACTION, err);
+    generator.Run();
+  } else if (output_type == functions::kActionForEach) {
+    ActionTargetGenerator generator(target.get(), scope, function_call,
+                                    Target::ACTION_FOREACH, err);
     generator.Run();
   } else if (output_type == functions::kExecutable) {
     BinaryTargetGenerator generator(target.get(), scope, function_call,
@@ -215,7 +220,7 @@ void TargetGenerator::FillOutputs() {
             outputs[i].value(), value->list_value()[i], err_))
       return;
   }
-  target_->script_values().outputs().swap(outputs);
+  target_->action_values().outputs().swap(outputs);
 }
 
 void TargetGenerator::FillGenericConfigs(const char* var_name,

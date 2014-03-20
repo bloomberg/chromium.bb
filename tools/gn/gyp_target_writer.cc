@@ -11,8 +11,8 @@
 #include "tools/gn/build_settings.h"
 #include "tools/gn/builder_record.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/gyp_action_target_writer.h"
 #include "tools/gn/gyp_binary_target_writer.h"
-#include "tools/gn/gyp_script_target_writer.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
@@ -77,8 +77,9 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
     switch (cur->output_type()) {
       case Target::COPY_FILES:
         break;  // TODO(brettw)
-      case Target::CUSTOM: {
-        GypScriptTargetWriter writer(targets[i], debug_toolchain,
+      case Target::ACTION:
+      case Target::ACTION_FOREACH: {
+        GypActionTargetWriter writer(targets[i], debug_toolchain,
                                      gyp_file.GetDir(), file);
         writer.Run();
         break;

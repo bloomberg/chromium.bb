@@ -18,7 +18,7 @@ NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
 }
 
 void NinjaCopyTargetWriter::Run() {
-  CHECK(target_->script_values().outputs().size() == 1);
+  CHECK(target_->action_values().outputs().size() == 1);
   FileTemplate output_template(GetOutputTemplate());
 
   std::vector<OutputFile> output_files;

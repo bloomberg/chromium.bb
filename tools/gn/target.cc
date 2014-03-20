@@ -76,8 +76,10 @@ const char* Target::GetStringForOutputType(OutputType type) {
       return "Static library";
     case COPY_FILES:
       return "Copy";
-    case CUSTOM:
-      return "Custom";
+    case ACTION:
+      return "Action";
+    case ACTION_FOREACH:
+      return "ActionForEach";
     default:
       return "";
   }

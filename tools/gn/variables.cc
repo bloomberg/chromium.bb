@@ -181,7 +181,7 @@ const char kRootOutDir_Help[] =
     "\n"
     "Example:\n"
     "\n"
-    "  custom(\"myscript\") {\n"
+    "  action(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
     "    args = [ \"-o\", rebase_path(root_out_dir, root_build_dir) ]\n"
     "  }\n";
@@ -206,7 +206,7 @@ const char kTargetGenDir_Help[] =
     "\n"
     "Example:\n"
     "\n"
-    "  custom(\"myscript\") {\n"
+    "  action(\"myscript\") {\n"
     "    # Pass the generated output dir to the script.\n"
     "    args = [ \"-o\", rebase_path(target_gen_dir, root_build_dir) ]"
     "\n"
@@ -232,7 +232,7 @@ const char kTargetOutDir_Help[] =
     "\n"
     "Example:\n"
     "\n"
-    "  custom(\"myscript\") {\n"
+    "  action(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
     "    args = [ \"-o\", rebase_path(target_out_dir, root_build_dir) ]"
     "\n"
@@ -263,15 +263,15 @@ const char kAllDependentConfigs_Help[] =
 
 const char kArgs[] = "args";
 const char kArgs_HelpShort[] =
-    "args: [string list] Arguments passed to a custom script.";
+    "args: [string list] Arguments passed to an action.";
 const char kArgs_Help[] =
-    "args: Arguments passed to a custom script.\n"
+    "args: Arguments passed to an action.\n"
     "\n"
-    "  For custom script targets, args is the list of arguments to pass\n"
-    "  to the script. Typically you would use source expansion (see\n"
+    "  For action and action_foreach targets, args is the list of arguments\n"
+    "  to pass to the script. Typically you would use source expansion (see\n"
     "  \"gn help source_expansion\") to insert the source file names.\n"
     "\n"
-    "  See also \"gn help custom\".\n";
+    "  See also \"gn help action\" and \"gn help action_foreach\".\n";
 
 const char kCflags[] = "cflags";
 const char kCflags_HelpShort[] =
@@ -398,25 +398,25 @@ const char kDefines_Help[] =
 
 const char kDepfile[] = "depfile";
 const char kDepfile_HelpShort[] =
-    "depfile: [string] File name for input dependencies for custom targets.";
+    "depfile: [string] File name for input dependencies for actions.";
 const char kDepfile_Help[] =
-    "depfile: [string] File name for input dependencies for custom targets.\n"
+    "depfile: [string] File name for input dependencies for actions.\n"
     "\n"
-    "  If nonempty, this string specifies that the current \"custom\" target\n"
-    "  will generate the given \".d\" file containing the dependencies of the\n"
-    "  input. Empty or unset means that the script doesn't generate the\n"
-    "  files.\n"
+    "  If nonempty, this string specifies that the current action or\n"
+    "  action_foreach target will generate the given \".d\" file containing\n"
+    "  the dependencies of the input. Empty or unset means that the script\n"
+    "  doesn't generate the files.\n"
     "\n"
     "  The .d file should go in the target output directory. If you have more\n"
     "  than one source file that the script is being run over, you can use\n"
-    "  the output file expansions described in \"gn help custom\" to name the\n"
-    "  .d file according to the input."
+    "  the output file expansions described in \"gn help action_foreach\" to\n"
+    "  name the .d file according to the input."
     "\n"
     "  The format is that of a Makefile, and all of the paths should be\n"
     "  relative to the root build directory.\n"
     "\n"
     "Example:\n"
-    "  custom(\"myscript_target\") {\n"
+    "  action_foreach(\"myscript_target\") {\n"
     "    script = \"myscript.py\"\n"
     "    sources = [ ... ]\n"
     "\n"
@@ -438,9 +438,9 @@ const char kDeps_Help[] =
     "\n"
     "  Specifies dependencies of a target. Shared and dynamic libraries will\n"
     "  be linked into the current target. Other target types that can't be\n"
-    "  linked (like custom scripts and groups) listed in \"deps\" will be\n"
-    "  treated as \"datadeps\". Likewise, if the current target isn't\n"
-    "  linkable, then all deps will be treated as \"datadeps\".\n"
+    "  linked (like actions and groups) listed in \"deps\" will be treated\n"
+    "  as \"datadeps\". Likewise, if the current target isn't linkable, then\n"
+    "  all deps will be treated as \"datadeps\".\n"
     "\n"
     "  See also \"datadeps\".\n";
 
@@ -578,7 +578,7 @@ const char kHardDep_Help[] =
     "    ...\n"
     "  }\n"
     "\n"
-    "  custom(\"myresource\") {\n"
+    "  action(\"myresource\") {\n"
     "    hard_dep = true\n"
     "    script = \"my_generator.py\"\n"
     "    outputs = \"$target_gen_dir/myresource.h\"\n"
@@ -708,27 +708,28 @@ const char kOutputName_Help[] =
 
 const char kOutputs[] = "outputs";
 const char kOutputs_HelpShort[] =
-    "outputs: [file list] Output files for custom script and copy targets.";
+    "outputs: [file list] Output files for actions and copy targets.";
 const char kOutputs_Help[] =
-    "outputs: Output files for custom script and copy targets.\n"
+    "outputs: Output files for actions and copy targets.\n"
     "\n"
-    "  Outputs is valid for \"copy\" and \"custom\" target types and\n"
-    "  indicates the resulting files. The values may contain source\n"
-    "  expansions to generate the output names from the sources (see\n"
+    "  Outputs is valid for \"copy\", \"action\", and \"action_foreach\"\n"
+    "  target types and indicates the resulting files. The values may contain\n"
+    "  source expansions to generate the output names from the sources (see\n"
     "  \"gn help source_expansion\").\n"
     "\n"
     "  For copy targets, the outputs is the destination for the copied\n"
-    "  file(s). For custom script targets, the outputs should be the list of\n"
-    "  files generated by the script.\n";
+    "  file(s). For actions, the outputs should be the list of files\n"
+    "  generated by the script.\n";
 
 const char kScript[] = "script";
 const char kScript_HelpShort[] =
-    "script: [file name] Script file for custom script targets.";
+    "script: [file name] Script file for actions.";
 const char kScript_Help[] =
-    "script: Script file for custom script targets.\n"
+    "script: Script file for actions.\n"
     "\n"
     "  An absolute or buildfile-relative file name of a Python script to run\n"
-    "  for a custom script target (see \"gn help custom\").\n";
+    "  for a action and action_foreach targets (see \"gn help action\" and\n"
+    "  \"gn help action_foreach\").\n";
 
 const char kSourcePrereqs[] = "source_prereqs";
 const char kSourcePrereqs_HelpShort[] =
@@ -757,7 +758,7 @@ const char kSourcePrereqs_Help[] =
     "  the normal include file dependency management will handle them more\n"
     "  efficiently anyway.\n"
     "\n"
-    "  For custom script targets that don't generate \".d\" files, the\n"
+    "  For action targets that don't generate \".d\" files, the\n"
     "  \"source_prereqs\" section is how you can list known compile-time\n"
     "  dependencies your script may have.\n"
     "\n"
@@ -772,7 +773,7 @@ const char kSourcePrereqs_Help[] =
     "    source_prereqs = [ \"$root_gen_dir/something/generated_data.h\" ]\n"
     "  }\n"
     "\n"
-    "  custom(\"myscript\") {\n"
+    "  action(\"myscript\") {\n"
     "    script = \"domything.py\"\n"
     "    source_prereqs = [ \"input.data\" ]\n"
     "  }\n";

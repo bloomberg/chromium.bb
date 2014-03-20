@@ -19,7 +19,7 @@ TEST(NinjaCopyTargetWriter, Run) {
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
-  target.script_values().outputs().push_back(
+  target.action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_name_part}}.out"));
 
   // Posix.

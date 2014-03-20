@@ -19,7 +19,7 @@ const char FileTemplate::kSourceFilePart[] = "{{source_file_part}}";
 const char kSourceExpansion_Help[] =
     "How Source Expansion Works\n"
     "\n"
-    "  Source expansion is used for the custom script and copy target types\n"
+    "  Source expansion is used for the action_foreach and copy target types\n"
     "  to map source file names to output file names or arguments.\n"
     "\n"
     "  To perform source expansion in the outputs, GN maps every entry in the\n"
@@ -34,8 +34,8 @@ const char kSourceExpansion_Help[] =
     "  as a static list of literal file names that do not depend on the\n"
     "  sources.\n"
     "\n"
-    "  See \"gn help copy\" and \"gn help custom\" for more on how this is\n"
-    "  applied.\n"
+    "  See \"gn help copy\" and \"gn help action_foreach\" for more on how\n"
+    "  this is applied.\n"
     "\n"
     "Placeholders\n"
     "\n"
@@ -59,7 +59,7 @@ const char kSourceExpansion_Help[] =
     "Examples\n"
     "\n"
     "  Non-varying outputs:\n"
-    "    script(\"hardcoded_outputs\") {\n"
+    "    action(\"hardcoded_outputs\") {\n"
     "      sources = [ \"input1.idl\", \"input2.idl\" ]\n"
     "      outputs = [ \"$target_out_dir/output1.dat\",\n"
     "                  \"$target_out_dir/output2.dat\" ]\n"
@@ -67,7 +67,7 @@ const char kSourceExpansion_Help[] =
     "  The outputs in this case will be the two literal files given.\n"
     "\n"
     "  Varying outputs:\n"
-    "    script(\"varying_outputs\") {\n"
+    "    action_foreach(\"varying_outputs\") {\n"
     "      sources = [ \"input1.idl\", \"input2.idl\" ]\n"
     "      outputs = [ \"$target_out_dir/{{source_name_part}}.h\",\n"
     "                  \"$target_out_dir/{{source_name_part}}.cc\" ]\n"
@@ -96,7 +96,7 @@ FileTemplate::~FileTemplate() {
 
 // static
 FileTemplate FileTemplate::GetForTargetOutputs(const Target* target) {
-  const Target::FileList& outputs = target->script_values().outputs();
+  const Target::FileList& outputs = target->action_values().outputs();
   std::vector<std::string> output_template_args;
   for (size_t i = 0; i < outputs.size(); i++)
     output_template_args.push_back(outputs[i].value());

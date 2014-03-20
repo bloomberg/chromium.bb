@@ -14,11 +14,11 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "tools/gn/action_values.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/ordered_set.h"
-#include "tools/gn/script_values.h"
 #include "tools/gn/source_file.h"
 
 class InputFile;
@@ -35,7 +35,8 @@ class Target : public Item {
     STATIC_LIBRARY,
     SOURCE_SET,
     COPY_FILES,
-    CUSTOM,
+    ACTION,
+    ACTION_FOREACH,
   };
   typedef std::vector<SourceFile> FileList;
   typedef std::vector<std::string> StringVector;
@@ -131,8 +132,8 @@ class Target : public Item {
   ConfigValues& config_values() { return config_values_; }
   const ConfigValues& config_values() const { return config_values_; }
 
-  ScriptValues& script_values() { return script_values_; }
-  const ScriptValues& script_values() const { return script_values_; }
+  ActionValues& action_values() { return action_values_; }
+  const ActionValues& action_values() const { return action_values_; }
 
   const OrderedSet<SourceDir>& all_lib_dirs() const { return all_lib_dirs_; }
   const OrderedSet<std::string>& all_libs() const { return all_libs_; }
@@ -187,7 +188,7 @@ class Target : public Item {
   OrderedSet<std::string> all_libs_;
 
   ConfigValues config_values_;  // Used for all binary targets.
-  ScriptValues script_values_;  // Used for script (CUSTOM) targets.
+  ActionValues action_values_;  // Used for action[_foreach] targets.
 
   SourceFile gyp_file_;
 

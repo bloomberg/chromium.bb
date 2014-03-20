@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TOOLS_GN_NINJA_SCRIPT_TARGET_WRITER_H_
-#define TOOLS_GN_NINJA_SCRIPT_TARGET_WRITER_H_
+#ifndef TOOLS_GN_NINJA_ACTION_TARGET_WRITER_H_
+#define TOOLS_GN_NINJA_ACTION_TARGET_WRITER_H_
 
 #include <vector>
 
@@ -14,22 +14,22 @@
 class FileTemplate;
 class OutputFile;
 
-// Writes a .ninja file for a custom script target type.
-class NinjaScriptTargetWriter : public NinjaTargetWriter {
+// Writes a .ninja file for a action target type.
+class NinjaActionTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaScriptTargetWriter(const Target* target,
+  NinjaActionTargetWriter(const Target* target,
                           const Toolchain* toolchain,
                           std::ostream& out);
-  virtual ~NinjaScriptTargetWriter();
+  virtual ~NinjaActionTargetWriter();
 
   virtual void Run() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
+  FRIEND_TEST_ALL_PREFIXES(NinjaActionTargetWriter,
                            WriteOutputFilesForBuildLine);
-  FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
+  FRIEND_TEST_ALL_PREFIXES(NinjaActionTargetWriter,
                            WriteOutputFilesForBuildLineWithDepfile);
-  FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
+  FRIEND_TEST_ALL_PREFIXES(NinjaActionTargetWriter,
                            WriteArgsSubstitutions);
 
   bool has_sources() const { return !target_->sources().empty(); }
@@ -77,7 +77,7 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   // computing intermediate strings.
   PathOutput path_output_no_escaping_;
 
-  DISALLOW_COPY_AND_ASSIGN(NinjaScriptTargetWriter);
+  DISALLOW_COPY_AND_ASSIGN(NinjaActionTargetWriter);
 };
 
-#endif  // TOOLS_GN_NINJA_SCRIPT_TARGET_WRITER_H_
+#endif  // TOOLS_GN_NINJA_ACTION_TARGET_WRITER_H_

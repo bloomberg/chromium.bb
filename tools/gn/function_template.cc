@@ -58,7 +58,7 @@ const char kTemplate_Help[] =
     "               \"$target_gen_dir/{{source_name_part}}.h\" ]\n"
     "\n"
     "    # Intermediate target to compile IDL to C source.\n"
-    "    custom(\"${target_name}_code_gen\") {\n"
+    "    action_foreach(\"${target_name}_code_gen\") {\n"
     "      # The |sources| will be inherited from the surrounding scope so\n"
     "      # we don't need to redefine it.\n"
     "      script = \"foo.py\"\n"

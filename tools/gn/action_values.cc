@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/gn/script_values.h"
+#include "tools/gn/action_values.h"
 
-ScriptValues::ScriptValues() {
+ActionValues::ActionValues() {
 }
 
-ScriptValues::~ScriptValues() {
+ActionValues::~ActionValues() {
 }

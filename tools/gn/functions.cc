@@ -574,11 +574,12 @@ struct FunctionInfoInitializer {
     #define INSERT_FUNCTION(command) \
         map[k##command] = FunctionInfo(&Run##command, k##command##_Help);
 
+    INSERT_FUNCTION(Action)
+    INSERT_FUNCTION(ActionForEach)
     INSERT_FUNCTION(Assert)
     INSERT_FUNCTION(Component)
     INSERT_FUNCTION(Config)
     INSERT_FUNCTION(Copy)
-    INSERT_FUNCTION(Custom)
     INSERT_FUNCTION(DeclareArgs)
     INSERT_FUNCTION(Defined)
     INSERT_FUNCTION(ExecScript)

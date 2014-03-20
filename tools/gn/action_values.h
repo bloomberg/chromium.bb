@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TOOLS_GN_SCRIPT_VALUES_H_
-#define TOOLS_GN_SCRIPT_VALUES_H_
+#ifndef TOOLS_GN_ACTION_VALUES_H_
+#define TOOLS_GN_ACTION_VALUES_H_
 
 #include <string>
 #include <vector>
@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "tools/gn/source_file.h"
 
-// Holds the values (outputs, args, script name, etc.) for a script-based
-// target.
-class ScriptValues {
+// Holds the values (outputs, args, script name, etc.) for either an action or
+// an action_foreach target.
+class ActionValues {
  public:
-  ScriptValues();
-  ~ScriptValues();
+  ActionValues();
+  ~ActionValues();
 
   // Filename of the script to execute.
   const SourceFile& script() const { return script_; }
@@ -43,7 +43,7 @@ class ScriptValues {
   std::vector<SourceFile> outputs_;
   SourceFile depfile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScriptValues);
+  DISALLOW_COPY_AND_ASSIGN(ActionValues);
 };
 
-#endif  // TOOLS_GN_SCRIPT_VALUES_H_
+#endif  // TOOLS_GN_ACTION_VALUES_H_

@@ -10,10 +10,10 @@
 #include "base/file_util.h"
 #include "tools/gn/err.h"
 #include "tools/gn/file_template.h"
+#include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/ninja_binary_target_writer.h"
 #include "tools/gn/ninja_copy_target_writer.h"
 #include "tools/gn/ninja_group_target_writer.h"
-#include "tools/gn/ninja_script_target_writer.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/target.h"
@@ -61,8 +61,9 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target,
   if (target->output_type() == Target::COPY_FILES) {
     NinjaCopyTargetWriter writer(target, toolchain, file);
     writer.Run();
-  } else if (target->output_type() == Target::CUSTOM) {
-    NinjaScriptTargetWriter writer(target, toolchain, file);
+  } else if (target->output_type() == Target::ACTION ||
+             target->output_type() == Target::ACTION_FOREACH) {
+    NinjaActionTargetWriter writer(target, toolchain, file);
     writer.Run();
   } else if (target->output_type() == Target::GROUP) {
     NinjaGroupTargetWriter writer(target, toolchain, file);
@@ -110,7 +111,7 @@ std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {
 }
 
 FileTemplate NinjaTargetWriter::GetOutputTemplate() const {
-  const Target::FileList& outputs = target_->script_values().outputs();
+  const Target::FileList& outputs = target_->action_values().outputs();
   std::vector<std::string> output_template_args;
   for (size_t i = 0; i < outputs.size(); i++) {
     // All outputs should be in the output dir.

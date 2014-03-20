@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/gn/ninja_script_target_writer.h"
+#include "tools/gn/ninja_action_target_writer.h"
 
 #include "base/strings/string_util.h"
 #include "tools/gn/err.h"
@@ -10,7 +10,7 @@
 #include "tools/gn/string_utils.h"
 #include "tools/gn/target.h"
 
-NinjaScriptTargetWriter::NinjaScriptTargetWriter(const Target* target,
+NinjaActionTargetWriter::NinjaActionTargetWriter(const Target* target,
                                                  const Toolchain* toolchain,
                                                  std::ostream& out)
     : NinjaTargetWriter(target, toolchain, out),
@@ -19,30 +19,32 @@ NinjaScriptTargetWriter::NinjaScriptTargetWriter(const Target* target,
           ESCAPE_NONE, false) {
 }
 
-NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {
+NinjaActionTargetWriter::~NinjaActionTargetWriter() {
 }
 
-void NinjaScriptTargetWriter::Run() {
-  FileTemplate args_template(target_->script_values().args());
+void NinjaActionTargetWriter::Run() {
+  FileTemplate args_template(target_->action_values().args());
   std::string custom_rule_name = WriteRuleDefinition(args_template);
   std::string implicit_deps = GetSourcesImplicitDeps();
 
   // Collects all output files for writing below.
   std::vector<OutputFile> output_files;
 
-  if (has_sources()) {
+  if (target_->output_type() == Target::ACTION_FOREACH) {
     // Write separate build lines for each input source file.
     WriteSourceRules(custom_rule_name, implicit_deps, args_template,
                      &output_files);
   } else {
-    // No sources, write a rule that invokes the script once with the
-    // outputs as outputs, and the data as inputs.
+    DCHECK(target_->output_type() == Target::ACTION);
+
+    // Write a rule that invokes the script once with the outputs as outputs,
+    // and the data as inputs.
     out_ << "build";
-    if (target_->script_values().has_depfile()) {
+    if (target_->action_values().has_depfile()) {
       out_ << " ";
       WriteDepfile(SourceFile());
     }
-    const Target::FileList& outputs = target_->script_values().outputs();
+    const Target::FileList& outputs = target_->action_values().outputs();
     for (size_t i = 0; i < outputs.size(); i++) {
       OutputFile output_path(
           RemovePrefix(outputs[i].value(),
@@ -51,8 +53,21 @@ void NinjaScriptTargetWriter::Run() {
       out_ << " ";
       path_output_.WriteFile(out_, output_path);
     }
-    out_ << ": " << custom_rule_name << implicit_deps << std::endl;
-    if (target_->script_values().has_depfile()) {
+
+    out_ << ": " << custom_rule_name << implicit_deps;
+
+    // In the case of running the script once, we allow you to write the input
+    // dependencies in both sources and source_prereqs. source_prereqs are
+    // already in the implicit deps written above, but the sources aren't
+    // (since treating the sources this was is unique to an action).
+    const Target::FileList& sources = target_->sources();
+    for (size_t i = 0; i < sources.size(); i++) {
+      out_ << " ";
+      path_output_.WriteFile(out_, sources[i]);
+    }
+    out_ << std::endl;
+
+    if (target_->action_values().has_depfile()) {
       out_ << "  depfile = ";
       WriteDepfile(SourceFile());
       out_ << std::endl;
@@ -63,7 +78,7 @@ void NinjaScriptTargetWriter::Run() {
   WriteStamp(output_files);
 }
 
-std::string NinjaScriptTargetWriter::WriteRuleDefinition(
+std::string NinjaActionTargetWriter::WriteRuleDefinition(
     const FileTemplate& args_template) {
   // Make a unique name for this rule.
   //
@@ -90,7 +105,7 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
     // python without requiring this gyp_win_tool thing.
     out_ << " gyp-win-tool action-wrapper environment.x86 " << rspfile
          << std::endl;
-    out_ << "  description = CUSTOM " << target_label << std::endl;
+    out_ << "  description = ACTION " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
     out_ << "  rspfile = " << rspfile << std::endl;
 
@@ -98,7 +113,7 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
     out_ << "  rspfile_content = ";
     path_output_.WriteFile(out_, settings_->build_settings()->python_path());
     out_ << " ";
-    path_output_.WriteFile(out_, target_->script_values().script());
+    path_output_.WriteFile(out_, target_->action_values().script());
     args_template.WriteWithNinjaExpansions(out_);
     out_ << std::endl;
   } else {
@@ -107,10 +122,10 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
     out_ << "  command = ";
     path_output_.WriteFile(out_, settings_->build_settings()->python_path());
     out_ << " ";
-    path_output_.WriteFile(out_, target_->script_values().script());
+    path_output_.WriteFile(out_, target_->action_values().script());
     args_template.WriteWithNinjaExpansions(out_);
     out_ << std::endl;
-    out_ << "  description = CUSTOM " << target_label << std::endl;
+    out_ << "  description = ACTION " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
   }
 
@@ -118,7 +133,7 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
   return custom_rule_name;
 }
 
-void NinjaScriptTargetWriter::WriteArgsSubstitutions(
+void NinjaActionTargetWriter::WriteArgsSubstitutions(
     const SourceFile& source,
     const FileTemplate& args_template) {
   std::ostringstream source_file_stream;
@@ -132,7 +147,7 @@ void NinjaScriptTargetWriter::WriteArgsSubstitutions(
       out_, source_file_stream.str(), template_escape_options);
 }
 
-void NinjaScriptTargetWriter::WriteSourceRules(
+void NinjaActionTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
     const std::string& implicit_deps,
     const FileTemplate& args_template,
@@ -155,7 +170,7 @@ void NinjaScriptTargetWriter::WriteSourceRules(
     if (args_template.has_substitutions())
       WriteArgsSubstitutions(sources[i], args_template);
 
-    if (target_->script_values().has_depfile()) {
+    if (target_->action_values().has_depfile()) {
       out_ << "  depfile = ";
       WriteDepfile(sources[i]);
       out_ << std::endl;
@@ -163,7 +178,7 @@ void NinjaScriptTargetWriter::WriteSourceRules(
   }
 }
 
-void NinjaScriptTargetWriter::WriteStamp(
+void NinjaActionTargetWriter::WriteStamp(
     const std::vector<OutputFile>& output_files) {
   out_ << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
@@ -177,13 +192,13 @@ void NinjaScriptTargetWriter::WriteStamp(
   out_ << std::endl;
 }
 
-void NinjaScriptTargetWriter::WriteOutputFilesForBuildLine(
+void NinjaActionTargetWriter::WriteOutputFilesForBuildLine(
     const FileTemplate& output_template,
     const SourceFile& source,
     std::vector<OutputFile>* output_files) {
   // If there is a depfile specified we need to list it as the first output as
   // that is what ninja will expect the depfile to refer to itself as.
-  if (target_->script_values().has_depfile()) {
+  if (target_->action_values().has_depfile()) {
     out_ << " ";
     WriteDepfile(source);
   }
@@ -197,16 +212,16 @@ void NinjaScriptTargetWriter::WriteOutputFilesForBuildLine(
   }
 }
 
-void NinjaScriptTargetWriter::WriteDepfile(const SourceFile& source) {
+void NinjaActionTargetWriter::WriteDepfile(const SourceFile& source) {
   std::vector<std::string> result;
   GetDepfileTemplate().ApplyString(source.value(), &result);
   path_output_.WriteFile(out_, OutputFile(result[0]));
 }
 
-FileTemplate NinjaScriptTargetWriter::GetDepfileTemplate() const {
+FileTemplate NinjaActionTargetWriter::GetDepfileTemplate() const {
   std::vector<std::string> template_args;
   std::string depfile_relative_to_build_dir =
-      RemovePrefix(target_->script_values().depfile().value(),
+      RemovePrefix(target_->action_values().depfile().value(),
                    settings_->build_settings()->build_dir().value());
   template_args.push_back(depfile_relative_to_build_dir);
   return FileTemplate(template_args);
