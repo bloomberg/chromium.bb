@@ -1648,6 +1648,29 @@ cr.define('login', function() {
     },
 
     /**
+     * Shows a tooltip bubble explaining Easy Unlock for the focused pod.
+     */
+    showEasyUnlockBubble: function() {
+      if (!this.focusedPod_) {
+        console.error('No focused pod to show Easy Unlock bubble.');
+        return;
+      }
+
+      var bubbleContent = document.createElement('div');
+      bubbleContent.classList.add('easy-unlock-button-content');
+      bubbleContent.textContent = loadTimeData.getString('easyUnlockTooltip');
+
+      var attachElement = this.focusedPod_.customButtonElement;
+      /** @const */ var BUBBLE_OFFSET = 20;
+      /** @const */ var BUBBLE_PADDING = 8;
+      $('bubble').showContentForElement(attachElement,
+                                        cr.ui.Bubble.Attachment.RIGHT,
+                                        bubbleContent,
+                                        BUBBLE_OFFSET,
+                                        BUBBLE_PADDING);
+    },
+
+    /**
      * Called when window was resized.
      */
     onWindowResize: function() {

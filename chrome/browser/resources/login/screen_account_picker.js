@@ -35,6 +35,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'showUserPodButton',
       'hideUserPodButton',
       'setAuthType',
+      'showEasyUnlockBubble',
     ],
 
     preferredWidth_: 0,
@@ -300,6 +301,13 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setAuthType: function(username, authType, value) {
       $('pod-row').setAuthType(username, authType, value);
+    },
+
+    /**
+     * Shows a tooltip bubble explaining Easy Unlock.
+     */
+    showEasyUnlockBubble: function() {
+      $('pod-row').showEasyUnlockBubble();
     }
   };
 });

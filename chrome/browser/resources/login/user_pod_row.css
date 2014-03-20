@@ -348,6 +348,10 @@ html[dir=rtl] .user-type-bubble {
   margin-bottom: 14px;
 }
 
+.easy-unlock-button-content {
+  width: 145px;
+}
+
 html[dir=rtl] .action-box-area {
   left: 0;
   right: auto;

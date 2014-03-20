@@ -432,6 +432,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("confirmPasswordText", IDS_LOGIN_CONFIRM_PASSWORD_TEXT);
   builder->Add("confirmPasswordErrorText",
                IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT);
+  builder->Add("easyUnlockTooltip",
+               IDS_LOGIN_EASY_UNLOCK_TOOLTIP);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
@@ -863,6 +865,15 @@ void SigninScreenHandler::ShowUserPodButton(
     const base::Closure& click_callback) {
   user_pod_button_callback_map_[username] = click_callback;
   CallJS("login.AccountPickerScreen.showUserPodButton", username, iconURL);
+
+  // TODO(tengs): Move this code once we move unlocking to native code.
+  if (ScreenLocker::default_screen_locker()) {
+    PrefService* profile_prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    if (profile_prefs->GetBoolean(prefs::kEasyUnlockShowTutorial)) {
+      CallJS("login.AccountPickerScreen.showEasyUnlockBubble");
+      profile_prefs->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
+    }
+  }
 }
 
 void SigninScreenHandler::HideUserPodButton(const std::string& username) {

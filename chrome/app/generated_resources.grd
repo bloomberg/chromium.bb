@@ -14014,6 +14014,9 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME" desc="Text to be spoken when 'Remove user' item is selected on the pod menu.">
         Remove this user
       </message>
+      <message name="IDS_LOGIN_EASY_UNLOCK_TOOLTIP" desc="Tooltip text shown on lock screen when Easy Unlock is first setup.">
+        This icon appears when you and your phone are nearby and Easy Unlock is available. Just click to enter, no password needed.
+      </message>
       <if expr="chromeos">
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
