@@ -413,6 +413,7 @@
       'fonts/win/UniscribeHelper.h',
       'fonts/win/UniscribeHelperTextRun.cpp',
       'fonts/win/UniscribeHelperTextRun.h',
+      'geometry/FloatBoxExtent.h',
       'geometry/FloatPolygon.cpp',
       'geometry/FloatPolygon.h',
       'geometry/FloatPoint.cpp',

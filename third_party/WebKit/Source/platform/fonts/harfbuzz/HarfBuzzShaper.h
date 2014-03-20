@@ -33,6 +33,7 @@
 
 #include "hb.h"
 #include "platform/fonts/GlyphBuffer.h"
+#include "platform/geometry/FloatBoxExtent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
@@ -60,11 +61,7 @@ public:
     float totalWidth() { return m_totalWidth; }
     int offsetForPosition(float targetX);
     FloatRect selectionRect(const FloatPoint&, int height, int from, int to);
-
-    float minGlyphBoundingBoxX() const { return m_minGlyphBoundingBoxX; }
-    float maxGlyphBoundingBoxX() const { return m_maxGlyphBoundingBoxX; }
-    float minGlyphBoundingBoxY() const { return m_minGlyphBoundingBoxY; }
-    float maxGlyphBoundingBoxY() const { return m_maxGlyphBoundingBoxY; }
+    FloatBoxExtent glyphBoundingBox() const { return m_glyphBoundingBox; }
 
 private:
     class HarfBuzzRun {
@@ -163,10 +160,7 @@ private:
     ForTextEmphasisOrNot m_forTextEmphasis;
 
     float m_totalWidth;
-    float m_minGlyphBoundingBoxX;
-    float m_maxGlyphBoundingBoxX;
-    float m_minGlyphBoundingBoxY;
-    float m_maxGlyphBoundingBoxY;
+    FloatBoxExtent m_glyphBoundingBox;
 
     friend struct CachedShapingResults;
 };
