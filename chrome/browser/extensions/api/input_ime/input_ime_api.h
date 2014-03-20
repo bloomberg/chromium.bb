@@ -61,11 +61,11 @@ class InputImeEventRouter {
   InputImeEventRouter();
   ~InputImeEventRouter();
 
-  std::map<std::string, std::map<std::string,
-                                 chromeos::InputMethodEngineInterface*> >
-      engines_;
-  // The map from extension id to ImeObserver.
-  std::map<std::string, chromeos::ImeObserver*> observers_;
+  typedef std::map<std::string, chromeos::InputMethodEngineInterface*>
+      EngineMap;
+  std::map<std::string, EngineMap> engines_;
+
+  Profile* current_profile_;
 
   unsigned int next_request_id_;
   RequestMap request_map_;
