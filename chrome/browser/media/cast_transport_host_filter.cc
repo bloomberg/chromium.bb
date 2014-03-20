@@ -74,7 +74,6 @@ void CastTransportHostFilter::RawEvents(
 
 void CastTransportHostFilter::OnNew(
     int32 channel_id,
-    const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     const media::cast::CastLoggingConfig& logging_config) {
   if (id_map_.Lookup(channel_id)) {
@@ -85,7 +84,6 @@ void CastTransportHostFilter::OnNew(
       media::cast::transport::CastTransportSender::Create(
           g_browser_process->net_log(),
           &clock_,
-          local_end_point,
           remote_end_point,
           logging_config,
           base::Bind(&CastTransportHostFilter::NotifyStatusChange,

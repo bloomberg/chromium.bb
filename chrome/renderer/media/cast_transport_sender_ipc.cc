@@ -13,7 +13,6 @@
 #include "media/cast/transport/cast_transport_sender.h"
 
 CastTransportSenderIPC::CastTransportSenderIPC(
-    const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     const media::cast::transport::CastTransportStatusCallback& status_cb,
     const media::cast::CastLoggingConfig& logging_config,
@@ -22,8 +21,7 @@ CastTransportSenderIPC::CastTransportSenderIPC(
   if (CastIPCDispatcher::Get()) {
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
   }
-  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point,
-                           logging_config));
+  Send(new CastHostMsg_New(channel_id_, remote_end_point, logging_config));
 }
 
 CastTransportSenderIPC::~CastTransportSenderIPC() {

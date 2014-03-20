@@ -170,10 +170,9 @@ IPC_MESSAGE_CONTROL3(
     bool /* is_audio */,
     media::cast::MissingFramesAndPacketsMap /* missing_packets */)
 
-IPC_MESSAGE_CONTROL4(
+IPC_MESSAGE_CONTROL3(
     CastHostMsg_New,
     int32 /* channel_id */,
-    net::IPEndPoint /*local_end_point*/,
     net::IPEndPoint /*remote_end_point*/,
     media::cast::CastLoggingConfig /* logging_config */);
 

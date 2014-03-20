@@ -163,7 +163,6 @@ class RtcpTest : public ::testing::Test {
         NULL,
         testing_clock_,
         dummy_endpoint,
-        dummy_endpoint,
         logging_config_,
         base::Bind(&UpdateCastTransportStatus),
         transport::BulkRawEventsCallback(),

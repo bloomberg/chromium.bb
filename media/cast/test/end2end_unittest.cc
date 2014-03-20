@@ -505,7 +505,6 @@ class End2EndTest : public ::testing::Test {
         NULL,
         testing_clock_sender_,
         dummy_endpoint,
-        dummy_endpoint,
         logging_config_,
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),

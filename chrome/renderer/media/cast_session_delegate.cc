@@ -112,8 +112,7 @@ void CastSessionDelegate::StartVideo(
       NULL /* GPU*/);
 }
 
-void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
-                                   const net::IPEndPoint& remote_endpoint) {
+void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Logging: enable raw events and stats collection.
@@ -136,7 +135,6 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(
-      local_endpoint,
       remote_endpoint,
       base::Bind(&CastSessionDelegate::StatusNotificationCB,
                  base::Unretained(this)),

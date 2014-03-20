@@ -80,7 +80,6 @@ class AudioSenderTest : public ::testing::Test {
         NULL,
         testing_clock_,
         dummy_endpoint,
-        dummy_endpoint,
         logging_config,
         base::Bind(&UpdateCastTransportStatus),
         transport::BulkRawEventsCallback(),

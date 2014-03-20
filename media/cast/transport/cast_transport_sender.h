@@ -59,7 +59,6 @@ class CastTransportSender : public base::NonThreadSafe {
   static scoped_ptr<CastTransportSender> Create(
       net::NetLog* net_log,
       base::TickClock* clock,
-      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const CastLoggingConfig& logging_config,
       const CastTransportStatusCallback& status_callback,

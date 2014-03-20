@@ -37,7 +37,6 @@ class CastTransportSenderImpl : public CastTransportSender {
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
-      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const CastLoggingConfig& logging_config,
       const CastTransportStatusCallback& status_callback,

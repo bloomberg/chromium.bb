@@ -67,7 +67,6 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       const media::cast::MissingFramesAndPacketsMap& missing_packets);
   void OnNew(
       int32 channel_id,
-      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const media::cast::CastLoggingConfig& logging_config);
   void OnDelete(int32 channel_id);

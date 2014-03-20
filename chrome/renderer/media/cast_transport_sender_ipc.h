@@ -19,7 +19,6 @@ class CastTransportSenderIPC
     : public media::cast::transport::CastTransportSender {
  public:
   CastTransportSenderIPC(
-      const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const media::cast::transport::CastTransportStatusCallback& status_cb,
       const media::cast::CastLoggingConfig& logging_config,

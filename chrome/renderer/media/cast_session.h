@@ -68,8 +68,7 @@ class CastSession : public base::RefCounted<CastSession> {
 
   // This will create the Cast transport and connect to |remote_endpoint|.
   // Must be called before initialization of audio or video.
-  void StartUDP(const net::IPEndPoint& local_endpoint,
-                const net::IPEndPoint& remote_endpoint);
+  void StartUDP(const net::IPEndPoint& remote_endpoint);
 
   // Creates or destroys event subscriber for the audio or video stream.
   // |is_audio|: true if the event subscriber is for audio. Video otherwise.

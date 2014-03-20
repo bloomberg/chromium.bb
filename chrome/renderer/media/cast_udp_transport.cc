@@ -16,6 +16,5 @@ CastUdpTransport::~CastUdpTransport() {
 
 void CastUdpTransport::SetDestination(const net::IPEndPoint& remote_address) {
   remote_address_ = remote_address;
-  cast_session_->StartUDP(net::IPEndPoint(net::IPAddressNumber(4, 0), 0),
-                          remote_address);
+  cast_session_->StartUDP(remote_address);
 }

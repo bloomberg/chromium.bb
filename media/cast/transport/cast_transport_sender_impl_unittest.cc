@@ -46,7 +46,6 @@ class CastTransportSenderImplTest : public ::testing::Test {
         new CastTransportSenderImpl(NULL,
                                     &testing_clock_,
                                     net::IPEndPoint(),
-                                    net::IPEndPoint(),
                                     GetDefaultCastSenderLoggingConfig(),
                                     base::Bind(&UpdateCastTransportStatus),
                                     BulkRawEventsCallback(),
@@ -60,7 +59,6 @@ class CastTransportSenderImplTest : public ::testing::Test {
     transport_sender_.reset(new CastTransportSenderImpl(
         NULL,
         &testing_clock_,
-        net::IPEndPoint(),
         net::IPEndPoint(),
         GetLoggingConfigWithRawEventsAndStatsEnabled(),
         base::Bind(&UpdateCastTransportStatus),

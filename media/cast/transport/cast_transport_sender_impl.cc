@@ -15,7 +15,6 @@ namespace transport {
 scoped_ptr<CastTransportSender> CastTransportSender::Create(
     net::NetLog* net_log,
     base::TickClock* clock,
-    const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
@@ -25,7 +24,6 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
   return scoped_ptr<CastTransportSender>(
       new CastTransportSenderImpl(net_log,
                                   clock,
-                                  local_end_point,
                                   remote_end_point,
                                   logging_config,
                                   status_callback,
@@ -38,7 +36,6 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
 CastTransportSenderImpl::CastTransportSenderImpl(
     net::NetLog* net_log,
     base::TickClock* clock,
-    const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
@@ -52,7 +49,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
       transport_(external_transport ? NULL
                                     : new UdpTransport(net_log,
                                                        transport_task_runner,
-                                                       local_end_point,
+                                                       net::IPEndPoint(),
                                                        remote_end_point,
                                                        status_callback)),
       logging_(logging_config),
