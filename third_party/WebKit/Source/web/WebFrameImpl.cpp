@@ -489,7 +489,7 @@ int WebFrame::instanceCount()
     return frameCount;
 }
 
-WebFrame* WebFrame::frameForCurrentContext()
+WebLocalFrame* WebFrame::frameForCurrentContext()
 {
     v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
     if (context.IsEmpty())
@@ -497,12 +497,12 @@ WebFrame* WebFrame::frameForCurrentContext()
     return frameForContext(context);
 }
 
-WebFrame* WebFrame::frameForContext(v8::Handle<v8::Context> context)
+WebLocalFrame* WebFrame::frameForContext(v8::Handle<v8::Context> context)
 {
    return WebFrameImpl::fromFrame(toFrameIfNotDetached(context));
 }
 
-WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& element)
+WebLocalFrame* WebFrame::fromFrameOwnerElement(const WebElement& element)
 {
     return WebFrameImpl::fromFrameOwnerElement(PassRefPtr<Element>(element).get());
 }

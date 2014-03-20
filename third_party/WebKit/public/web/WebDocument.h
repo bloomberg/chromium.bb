@@ -35,6 +35,7 @@
 #include "../platform/WebVector.h"
 #include "WebDraggableRegion.h"
 #include "WebExceptionCode.h"
+#include "WebFrame.h"
 #include "WebNode.h"
 #include "WebSecurityOrigin.h"
 
@@ -56,7 +57,6 @@ class WebAXObject;
 class WebDocumentType;
 class WebElement;
 class WebFormElement;
-class WebFrame;
 class WebElementCollection;
 class WebNodeList;
 class WebString;
@@ -87,7 +87,7 @@ public:
     BLINK_EXPORT WebURL openSearchDescriptionURL() const;
 
     // Returns the frame the document belongs to or 0 if the document is frameless.
-    BLINK_EXPORT WebFrame* frame() const;
+    BLINK_EXPORT WebLocalFrame* frame() const;
     BLINK_EXPORT bool isHTMLDocument() const;
     BLINK_EXPORT bool isXHTMLDocument() const;
     BLINK_EXPORT bool isPluginDocument() const;

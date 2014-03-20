@@ -85,6 +85,8 @@ struct WebURLLoaderOptions;
 
 template <typename T> class WebVector;
 
+typedef class WebFrame WebLocalFrame;
+
 class WebFrame {
 public:
     // Control of renderTreeAsText output
@@ -97,7 +99,7 @@ public:
 
     // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
     // It is valid to pass a null client pointer.
-    BLINK_EXPORT static WebFrame* create(WebFrameClient*);
+    BLINK_EXPORT static WebLocalFrame* create(WebFrameClient*);
 
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
@@ -105,16 +107,18 @@ public:
     // Returns the WebFrame associated with the current V8 context. This
     // function can return 0 if the context is associated with a Document that
     // is not currently being displayed in a Frame.
-    BLINK_EXPORT static WebFrame* frameForCurrentContext();
+    BLINK_EXPORT static WebLocalFrame* frameForCurrentContext();
 
     // Returns the frame corresponding to the given context. This can return 0
     // if the context is detached from the frame, or if the context doesn't
     // correspond to a frame (e.g., workers).
-    BLINK_EXPORT static WebFrame* frameForContext(v8::Handle<v8::Context>);
+    BLINK_EXPORT static WebLocalFrame* frameForContext(v8::Handle<v8::Context>);
 
     // Returns the frame inside a given frame or iframe element. Returns 0 if
     // the given element is not a frame, iframe or if the frame is empty.
-    BLINK_EXPORT static WebFrame* fromFrameOwnerElement(const WebElement&);
+    BLINK_EXPORT static WebLocalFrame* fromFrameOwnerElement(const WebElement&);
+
+    virtual WebLocalFrame* toWebLocalFrame() = 0;
 
     // This method closes and deletes the WebFrame.
     virtual void close() = 0;

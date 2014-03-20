@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class WebFrame;
 class WebString;
 
 class WebDOMCustomEvent : public WebDOMEvent {

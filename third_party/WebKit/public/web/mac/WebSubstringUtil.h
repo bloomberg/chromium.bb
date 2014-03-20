@@ -32,13 +32,11 @@
 #define WebSubstringUtil_h
 
 #include "../../platform/WebCommon.h"
+#include "public/web/WebFrame.h"
 
 namespace blink {
-class WebFrame;
-class WebRange;
 class WebView;
 struct WebPoint;
-struct WebRect;
 }
 
 #if __OBJC__
@@ -61,7 +59,7 @@ public:
 
     // Returns an autoreleased NSAttributedString that is a substring of the
     // Frame at the given range, or nil on error.
-    BLINK_EXPORT static NSAttributedString* attributedSubstringInRange(WebFrame*,
+    BLINK_EXPORT static NSAttributedString* attributedSubstringInRange(WebLocalFrame*,
         size_t location,
         size_t length);
 };

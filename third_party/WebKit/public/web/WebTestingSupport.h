@@ -27,15 +27,14 @@
 #define WebTestingSupport_h
 
 #include "../platform/WebCommon.h"
+#include "WebFrame.h"
 
 namespace blink {
 
-class WebFrame;
-
 class WebTestingSupport {
 public:
-    BLINK_EXPORT static void injectInternalsObject(WebFrame*);
-    BLINK_EXPORT static void resetInternalsObject(WebFrame*);
+    BLINK_EXPORT static void injectInternalsObject(WebLocalFrame*);
+    BLINK_EXPORT static void resetInternalsObject(WebLocalFrame*);
 };
 
 }

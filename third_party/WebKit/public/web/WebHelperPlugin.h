@@ -32,10 +32,10 @@
 #define WebHelperPlugin_h
 
 #include "../platform/WebCommon.h"
+#include "WebFrame.h"
 
 namespace blink {
 
-class WebFrame;
 class WebPlugin;
 class WebString;
 
@@ -43,7 +43,7 @@ class WebHelperPlugin {
 public:
     // May return null if initialization fails. If the returned pointer is
     // non-null, the caller must free it by calling destroy().
-    BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType, WebFrame*);
+    BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType, WebLocalFrame*);
 
     // Returns a WebPlugin corresponding to the instantiated plugin. This will
     // never return null.

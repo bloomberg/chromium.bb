@@ -45,7 +45,6 @@ class WebDOMEventListenerPrivate;
 class WebDocument;
 class WebElement;
 class WebElementCollection;
-class WebFrame;
 class WebNodeList;
 class WebPluginContainer;
 

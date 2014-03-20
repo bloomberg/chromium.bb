@@ -45,7 +45,6 @@ namespace blink {
 
 class WebDataSource;
 class WebDragData;
-class WebFrame;
 class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;

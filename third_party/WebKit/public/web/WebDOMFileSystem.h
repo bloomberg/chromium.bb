@@ -35,6 +35,7 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
+#include "WebFrame.h"
 
 #if BLINK_IMPLEMENTATION
 #include "heap/Handle.h"
@@ -48,8 +49,6 @@ template <class T> class Handle;
 namespace WebCore { class DOMFileSystem; }
 
 namespace blink {
-
-class WebFrame;
 
 class WebDOMFileSystem {
 public:
@@ -77,7 +76,7 @@ public:
     // FIXME: Deprecate the last argument when all filesystems become
     // serializable.
     BLINK_EXPORT static WebDOMFileSystem create(
-        WebFrame*,
+        WebLocalFrame*,
         WebFileSystemType,
         const WebString& name,
         const WebURL& rootURL,

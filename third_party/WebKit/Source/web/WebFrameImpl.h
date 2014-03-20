@@ -72,10 +72,11 @@ template <typename T> class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
 class WebFrameImpl FINAL
-    : public WebFrame
+    : public WebLocalFrame
     , public RefCounted<WebFrameImpl> {
 public:
     // WebFrame methods:
+    virtual WebLocalFrame* toWebLocalFrame() OVERRIDE { return this; }
     virtual void close() OVERRIDE;
     virtual WebString uniqueName() const OVERRIDE;
     virtual WebString assignedName() const OVERRIDE;

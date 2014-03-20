@@ -33,6 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebVector.h"
+#include "WebFrame.h"
 
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class Range; }
@@ -42,7 +43,6 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace blink {
 
 struct WebFloatQuad;
-class WebFrame;
 class WebNode;
 class WebRangePrivate;
 class WebString;
@@ -75,7 +75,7 @@ public:
 
     BLINK_EXPORT WebRange expandedToParagraph() const;
 
-    BLINK_EXPORT static WebRange fromDocumentRange(WebFrame*, int start, int length);
+    BLINK_EXPORT static WebRange fromDocumentRange(WebLocalFrame*, int start, int length);
 
     BLINK_EXPORT WebVector<WebFloatQuad> textQuads() const;
 

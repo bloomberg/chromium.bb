@@ -37,7 +37,6 @@
 namespace blink {
 class WebDevToolsAgentClient;
 class WebDevToolsMessageTransport;
-class WebFrame;
 class WebString;
 class WebURLRequest;
 class WebURLResponse;

@@ -31,16 +31,15 @@
 #ifndef WebLeakDetector_h
 #define WebLeakDetector_h
 
+#include "WebFrame.h"
 #include "public/platform/WebCommon.h"
 
 namespace blink {
 
-class WebFrame;
-
 class WebLeakDetector {
 public:
     // Cleans up the DOM objects and counts them. This is supposed to be used for detecting DOM-object leaks.
-    BLINK_EXPORT static void collectGarbargeAndGetDOMCounts(WebFrame*, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes);
+    BLINK_EXPORT static void collectGarbargeAndGetDOMCounts(WebLocalFrame*, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes);
 };
 
 } // namespace blink

@@ -34,9 +34,9 @@
 #include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebURL.h"
+#include "WebFrame.h"
 
 namespace blink {
-class WebFrame;
 class WebPageSerializerClient;
 class WebString;
 class WebView;
@@ -88,12 +88,13 @@ public:
     // saved links, which matched with vector:links one by one.
     // The parameter localDirectoryName is relative path of directory which
     // contain all saved auxiliary files included all sub frames and resources.
-    BLINK_EXPORT static bool serialize(WebFrame*,
-                                        bool recursive,
-                                        WebPageSerializerClient*,
-                                        const WebVector<WebURL>& links,
-                                        const WebVector<WebString>& localPaths,
-                                        const WebString& localDirectoryName);
+    BLINK_EXPORT static bool serialize(
+        WebLocalFrame*,
+        bool recursive,
+        WebPageSerializerClient*,
+        const WebVector<WebURL>& links,
+        const WebVector<WebString>& localPaths,
+        const WebString& localDirectoryName);
 
     // Retrieve all the resource for the passed view, including the main frame
     // and sub-frames. Returns true if all resources were retrieved

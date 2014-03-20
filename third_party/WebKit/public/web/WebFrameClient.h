@@ -33,6 +33,7 @@
 
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
+#include "WebFrame.h"
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
 #include "WebNavigationType.h"
@@ -56,7 +57,6 @@ class WebCookieJar;
 class WebDataSource;
 class WebDOMEvent;
 class WebFormElement;
-class WebFrame;
 class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -84,28 +84,28 @@ public:
     // Factory methods -----------------------------------------------------
 
     // May return null.
-    virtual WebPlugin* createPlugin(WebFrame*, const WebPluginParams&) { return 0; }
+    virtual WebPlugin* createPlugin(WebLocalFrame*, const WebPluginParams&) { return 0; }
 
     // May return null.
-    virtual WebMediaPlayer* createMediaPlayer(WebFrame*, const WebURL&, WebMediaPlayerClient*) { return 0; }
+    virtual WebMediaPlayer* createMediaPlayer(WebLocalFrame*, const WebURL&, WebMediaPlayerClient*) { return 0; }
 
     // May return null.
-    virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) { return 0; }
+    virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) { return 0; }
 
     // May return null. Takes ownership of the client.
     // FIXME: Deprecate the second argument.
-    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame*, WebServiceWorkerProviderClient*) { return 0; }
-    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame* frame) { return createServiceWorkerProvider(frame, 0); }
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebLocalFrame*, WebServiceWorkerProviderClient*) { return 0; }
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebLocalFrame* frame) { return createServiceWorkerProvider(frame, 0); }
 
     // May return null.
-    virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebFrame*) { return 0; }
+    virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebLocalFrame*) { return 0; }
 
 
     // Services ------------------------------------------------------------
 
     // A frame specific cookie jar.  May return null, in which case
     // WebKitPlatformSupport::cookieJar() will be called to access cookies.
-    virtual WebCookieJar* cookieJar(WebFrame*) { return 0; }
+    virtual WebCookieJar* cookieJar(WebLocalFrame*) { return 0; }
 
 
     // General notifications -----------------------------------------------
@@ -113,7 +113,7 @@ public:
     // Indicates that another page has accessed the DOM of the initial empty
     // document of a main frame. After this, it is no longer safe to show a
     // pending navigation's URL, because a URL spoof is possible.
-    virtual void didAccessInitialDocument(WebFrame*) { }
+    virtual void didAccessInitialDocument(WebLocalFrame*) { }
 
     // A child frame was created in this frame. This is called when the frame
     // is created and initialized. Takes the name of the new frame, the parent
@@ -121,11 +121,11 @@ public:
     // until frameDetached() is called on it.
     // Note: If you override this, you should almost certainly be overriding
     // frameDetached().
-    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) { return 0; }
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) { return 0; }
 
     // This frame set its opener to null, disowning it.
     // See http://html.spec.whatwg.org/#dom-opener.
-    virtual void didDisownOpener(WebFrame*) { }
+    virtual void didDisownOpener(WebLocalFrame*) { }
 
     // This frame has been detached from the view, but has not been closed yet.
     virtual void frameDetached(WebFrame*) { }
@@ -135,21 +135,21 @@ public:
 
     // This frame is about to be closed. This is called after frameDetached,
     // when the document is being unloaded, due to new one committing.
-    virtual void willClose(WebFrame*) { }
+    virtual void willClose(WebLocalFrame*) { }
 
     // This frame's name has changed.
-    virtual void didChangeName(WebFrame*, const WebString&) { }
+    virtual void didChangeName(WebLocalFrame*, const WebString&) { }
 
     // Called when a watched CSS selector matches or stops matching.
-    virtual void didMatchCSS(WebFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) { }
+    virtual void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) { }
 
     // Load commands -------------------------------------------------------
 
     // The client should handle the navigation externally.
     virtual void loadURLExternally(
-        WebFrame*, const WebURLRequest&, WebNavigationPolicy) { }
+        WebLocalFrame*, const WebURLRequest&, WebNavigationPolicy) { }
     virtual void loadURLExternally(
-        WebFrame*, const WebURLRequest&, WebNavigationPolicy, const WebString& downloadName) { }
+        WebLocalFrame*, const WebURLRequest&, WebNavigationPolicy, const WebString& downloadName) { }
 
 
     // Navigational queries ------------------------------------------------
@@ -157,7 +157,7 @@ public:
     // The client may choose to alter the navigation policy.  Otherwise,
     // defaultPolicy should just be returned.
     virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
+        WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
 
@@ -165,64 +165,64 @@ public:
 
     // A form submission has been requested, but the page's submit event handler
     // hasn't yet had a chance to run (and possibly alter/interrupt the submit.)
-    virtual void willSendSubmitEvent(WebFrame*, const WebFormElement&) { }
+    virtual void willSendSubmitEvent(WebLocalFrame*, const WebFormElement&) { }
 
     // A form submission is about to occur.
-    virtual void willSubmitForm(WebFrame*, const WebFormElement&) { }
+    virtual void willSubmitForm(WebLocalFrame*, const WebFormElement&) { }
 
     // A datasource has been created for a new navigation.  The given
     // datasource will become the provisional datasource for the frame.
-    virtual void didCreateDataSource(WebFrame*, WebDataSource*) { }
+    virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) { }
 
     // A new provisional load has been started.
-    virtual void didStartProvisionalLoad(WebFrame*) { }
+    virtual void didStartProvisionalLoad(WebLocalFrame*) { }
 
     // The provisional load was redirected via a HTTP 3xx response.
-    virtual void didReceiveServerRedirectForProvisionalLoad(WebFrame*) { }
+    virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) { }
 
     // The provisional load failed.
-    virtual void didFailProvisionalLoad(WebFrame*, const WebURLError&) { }
+    virtual void didFailProvisionalLoad(WebLocalFrame*, const WebURLError&) { }
 
     // The provisional datasource is now committed.  The first part of the
     // response body has been received, and the encoding of the response
     // body is known.
-    virtual void didCommitProvisionalLoad(WebFrame*, bool isNewNavigation) { }
+    virtual void didCommitProvisionalLoad(WebLocalFrame*, bool isNewNavigation) { }
 
     // The window object for the frame has been cleared of any extra
     // properties that may have been set by script from the previously
     // loaded document.
-    virtual void didClearWindowObject(WebFrame* frame, int worldId) { }
+    virtual void didClearWindowObject(WebLocalFrame* frame, int worldId) { }
 
     // The document element has been created.
-    virtual void didCreateDocumentElement(WebFrame*) { }
+    virtual void didCreateDocumentElement(WebLocalFrame*) { }
 
     // The page title is available.
-    virtual void didReceiveTitle(WebFrame* frame, const WebString& title, WebTextDirection direction) { }
+    virtual void didReceiveTitle(WebLocalFrame* frame, const WebString& title, WebTextDirection direction) { }
 
     // The icon for the page have changed.
-    virtual void didChangeIcon(WebFrame*, WebIconURL::Type) { }
+    virtual void didChangeIcon(WebLocalFrame*, WebIconURL::Type) { }
 
     // The frame's document finished loading.
-    virtual void didFinishDocumentLoad(WebFrame*) { }
+    virtual void didFinishDocumentLoad(WebLocalFrame*) { }
 
     // The 'load' event was dispatched.
-    virtual void didHandleOnloadEvents(WebFrame*) { }
+    virtual void didHandleOnloadEvents(WebLocalFrame*) { }
 
     // The frame's document or one of its subresources failed to load.
-    virtual void didFailLoad(WebFrame*, const WebURLError&) { }
+    virtual void didFailLoad(WebLocalFrame*, const WebURLError&) { }
 
     // The frame's document and all of its subresources succeeded to load.
-    virtual void didFinishLoad(WebFrame*) { }
+    virtual void didFinishLoad(WebLocalFrame*) { }
 
     // The navigation resulted in no change to the documents within the page.
     // For example, the navigation may have just resulted in scrolling to a
     // named anchor or a PopState event may have been dispatched.
-    virtual void didNavigateWithinPage(WebFrame*, bool isNewNavigation) { }
+    virtual void didNavigateWithinPage(WebLocalFrame*, bool isNewNavigation) { }
 
     // Called upon update to scroll position, document state, and other
     // non-navigational events related to the data held by WebHistoryItem.
     // WARNING: This method may be called very frequently.
-    virtual void didUpdateCurrentHistoryItem(WebFrame*) { }
+    virtual void didUpdateCurrentHistoryItem(WebLocalFrame*) { }
 
     // Editing -------------------------------------------------------------
 
@@ -245,77 +245,77 @@ public:
     // Low-level resource notifications ------------------------------------
 
     // An element will request a resource.
-    virtual void willRequestResource(WebFrame*, const WebCachedURLRequest&) { }
+    virtual void willRequestResource(WebLocalFrame*, const WebCachedURLRequest&) { }
 
     // The request is after preconnect is triggered.
-    virtual void willRequestAfterPreconnect(WebFrame*, WebURLRequest&) { }
+    virtual void willRequestAfterPreconnect(WebLocalFrame*, WebURLRequest&) { }
 
     // A request is about to be sent out, and the client may modify it.  Request
     // is writable, and changes to the URL, for example, will change the request
     // made.  If this request is the result of a redirect, then redirectResponse
     // will be non-null and contain the response that triggered the redirect.
     virtual void willSendRequest(
-        WebFrame*, unsigned identifier, WebURLRequest&,
+        WebLocalFrame*, unsigned identifier, WebURLRequest&,
         const WebURLResponse& redirectResponse) { }
 
     // Response headers have been received for the resource request given
     // by identifier.
     virtual void didReceiveResponse(
-        WebFrame*, unsigned identifier, const WebURLResponse&) { }
+        WebLocalFrame*, unsigned identifier, const WebURLResponse&) { }
 
     virtual void didChangeResourcePriority(
-        WebFrame*, unsigned identifier, const blink::WebURLRequest::Priority&) { }
+        WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&) { }
 
     // The resource request given by identifier succeeded.
     virtual void didFinishResourceLoad(
-        WebFrame*, unsigned identifier) { }
+        WebLocalFrame*, unsigned identifier) { }
 
     // The specified request was satified from WebCore's memory cache.
     virtual void didLoadResourceFromMemoryCache(
-        WebFrame*, const WebURLRequest&, const WebURLResponse&) { }
+        WebLocalFrame*, const WebURLRequest&, const WebURLResponse&) { }
 
     // This frame has displayed inactive content (such as an image) from an
     // insecure source.  Inactive content cannot spread to other frames.
-    virtual void didDisplayInsecureContent(WebFrame*) { }
+    virtual void didDisplayInsecureContent(WebLocalFrame*) { }
 
     // The indicated security origin has run active content (such as a
     // script) from an insecure source.  Note that the insecure content can
     // spread to other frames in the same origin.
-    virtual void didRunInsecureContent(WebFrame*, const WebSecurityOrigin&, const WebURL& insecureURL) { }
+    virtual void didRunInsecureContent(WebLocalFrame*, const WebSecurityOrigin&, const WebURL& insecureURL) { }
 
     // A reflected XSS was encountered in the page and suppressed.
-    virtual void didDetectXSS(WebFrame*, const WebURL&, bool didBlockEntirePage) { }
+    virtual void didDetectXSS(WebLocalFrame*, const WebURL&, bool didBlockEntirePage) { }
 
     // A PingLoader was created, and a request dispatched to a URL.
-    virtual void didDispatchPingLoader(WebFrame*, const WebURL&) { }
+    virtual void didDispatchPingLoader(WebLocalFrame*, const WebURL&) { }
 
     // The loaders in this frame have been stopped.
-    virtual void didAbortLoading(WebFrame*) { }
+    virtual void didAbortLoading(WebLocalFrame*) { }
 
     // Script notifications ------------------------------------------------
 
     // Notifies that a new script context has been created for this frame.
     // This is similar to didClearWindowObject but only called once per
     // frame context.
-    virtual void didCreateScriptContext(WebFrame*, v8::Handle<v8::Context>, int extensionGroup, int worldId) { }
+    virtual void didCreateScriptContext(WebLocalFrame*, v8::Handle<v8::Context>, int extensionGroup, int worldId) { }
 
     // WebKit is about to release its reference to a v8 context for a frame.
-    virtual void willReleaseScriptContext(WebFrame*, v8::Handle<v8::Context>, int worldId) { }
+    virtual void willReleaseScriptContext(WebLocalFrame*, v8::Handle<v8::Context>, int worldId) { }
 
     // Geometry notifications ----------------------------------------------
 
     // The frame's document finished the initial non-empty layout of a page.
-    virtual void didFirstVisuallyNonEmptyLayout(WebFrame*) { }
+    virtual void didFirstVisuallyNonEmptyLayout(WebLocalFrame*) { }
 
     // The size of the content area changed.
-    virtual void didChangeContentsSize(WebFrame*, const WebSize&) { }
+    virtual void didChangeContentsSize(WebLocalFrame*, const WebSize&) { }
 
     // The main frame scrolled.
-    virtual void didChangeScrollOffset(WebFrame*) { }
+    virtual void didChangeScrollOffset(WebLocalFrame*) { }
 
     // If the frame is loading an HTML document, this will be called to
     // notify that the <body> will be attached soon.
-    virtual void willInsertBody(WebFrame*) { }
+    virtual void willInsertBody(WebLocalFrame*) { }
 
     // Find-in-page notifications ------------------------------------------
 
@@ -345,7 +345,7 @@ public:
     // Note that the requesting quota size may not always be granted and
     // a smaller amount of quota than requested might be returned.
     virtual void requestStorageQuota(
-        WebFrame*, WebStorageQuotaType,
+        WebLocalFrame*, WebStorageQuotaType,
         unsigned long long newQuotaInBytes,
         WebStorageQuotaCallbacks) { }
 
@@ -357,7 +357,7 @@ public:
     // MediaStream -----------------------------------------------------
 
     // A new WebRTCPeerConnectionHandler is created.
-    virtual void willStartUsingPeerConnectionHandler(WebFrame*, WebRTCPeerConnectionHandler*) { }
+    virtual void willStartUsingPeerConnectionHandler(WebLocalFrame*, WebRTCPeerConnectionHandler*) { }
 
     // Messages ------------------------------------------------------
 
@@ -365,7 +365,7 @@ public:
     // gives the embedder a chance to handle it instead of WebKit. Returns true
     // if the embedder handled it.
     virtual bool willCheckAndDispatchMessageEvent(
-        WebFrame* sourceFrame,
+        WebLocalFrame* sourceFrame,
         WebFrame* targetFrame,
         WebSecurityOrigin target,
         WebDOMMessageEvent event) { return false; }
@@ -373,11 +373,11 @@ public:
     // Asks the embedder if a specific user agent should be used for the given
     // URL. Non-empty strings indicate an override should be used. Otherwise,
     // Platform::current()->userAgent() will be called to provide one.
-    virtual WebString userAgentOverride(WebFrame*, const WebURL& url) { return WebString(); }
+    virtual WebString userAgentOverride(WebLocalFrame*, const WebURL& url) { return WebString(); }
 
     // Asks the embedder what value the network stack will send for the DNT
     // header. An empty string indicates that no DNT header will be send.
-    virtual WebString doNotTrackValue(WebFrame*) { return WebString(); }
+    virtual WebString doNotTrackValue(WebLocalFrame*) { return WebString(); }
 
     // WebGL ------------------------------------------------------
 
@@ -385,12 +385,12 @@ public:
     // This call is placed here instead of WebPermissionClient because this
     // class is implemented in content/, and putting it here avoids adding
     // more public content/ APIs.
-    virtual bool allowWebGL(WebFrame*, bool defaultValue) { return defaultValue; }
+    virtual bool allowWebGL(WebLocalFrame*, bool defaultValue) { return defaultValue; }
 
     // Notifies the client that a WebGL context was lost on this page with the
     // given reason (one of the GL_ARB_robustness status codes; see
     // Extensions3D.h in WebCore/platform/graphics).
-    virtual void didLoseWebGLContext(WebFrame*, int) { }
+    virtual void didLoseWebGLContext(WebLocalFrame*, int) { }
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.

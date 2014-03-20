@@ -31,10 +31,11 @@
 #ifndef WebPermissionClient_h
 #define WebPermissionClient_h
 
+#include "WebFrame.h"
+
 namespace blink {
 
 class WebDocument;
-class WebFrame;
 class WebPermissionCallbacks;
 class WebSecurityOrigin;
 class WebString;
@@ -43,72 +44,72 @@ class WebURL;
 class WebPermissionClient {
 public:
     // Controls whether access to Web Databases is allowed for this frame.
-    virtual bool allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize) { return true; }
+    virtual bool allowDatabase(WebLocalFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize) { return true; }
 
     // Controls whether access to File System is allowed for this frame.
-    virtual bool allowFileSystem(WebFrame*) { return true; }
+    virtual bool allowFileSystem(WebLocalFrame*) { return true; }
 
     virtual void requestFileSystemAccess(WebFrame* frame, const WebPermissionCallbacks& callbacks) { }
 
     // Controls whether images are allowed for this frame.
-    virtual bool allowImage(WebFrame* frame, bool enabledPerSettings, const WebURL& imageURL) { return enabledPerSettings; }
+    virtual bool allowImage(WebLocalFrame* frame, bool enabledPerSettings, const WebURL& imageURL) { return enabledPerSettings; }
 
     // Controls whether access to Indexed DB are allowed for this frame.
-    virtual bool allowIndexedDB(WebFrame*, const WebString& name, const WebSecurityOrigin&) { return true; }
+    virtual bool allowIndexedDB(WebLocalFrame*, const WebString& name, const WebSecurityOrigin&) { return true; }
 
     // Controls whether plugins are allowed for this frame.
-    virtual bool allowPlugins(WebFrame*, bool enabledPerSettings) { return enabledPerSettings; }
+    virtual bool allowPlugins(WebLocalFrame*, bool enabledPerSettings) { return enabledPerSettings; }
 
     // Controls whether scripts are allowed to execute for this frame.
-    virtual bool allowScript(WebFrame*, bool enabledPerSettings) { return enabledPerSettings; }
+    virtual bool allowScript(WebLocalFrame*, bool enabledPerSettings) { return enabledPerSettings; }
 
     // Controls whether scripts loaded from the given URL are allowed to execute for this frame.
-    virtual bool allowScriptFromSource(WebFrame*, bool enabledPerSettings, const WebURL& scriptURL) { return enabledPerSettings; }
+    virtual bool allowScriptFromSource(WebLocalFrame*, bool enabledPerSettings, const WebURL& scriptURL) { return enabledPerSettings; }
 
     // Controls whether insecrure content is allowed to display for this frame.
-    virtual bool allowDisplayingInsecureContent(WebFrame*, bool enabledPerSettings, const WebSecurityOrigin&, const WebURL&) { return enabledPerSettings; }
+    virtual bool allowDisplayingInsecureContent(WebLocalFrame*, bool enabledPerSettings, const WebSecurityOrigin&, const WebURL&) { return enabledPerSettings; }
 
     // Controls whether insecrure scripts are allowed to execute for this frame.
-    virtual bool allowRunningInsecureContent(WebFrame*, bool enabledPerSettings, const WebSecurityOrigin&, const WebURL&) { return enabledPerSettings; }
+    virtual bool allowRunningInsecureContent(WebLocalFrame*, bool enabledPerSettings, const WebSecurityOrigin&, const WebURL&) { return enabledPerSettings; }
 
     // Controls whether the given script extension should run in a new script
     // context in this frame. If extensionGroup is 0, the script context is the
     // frame's main context. Otherwise, it is a context created by
-    // WebFrame::executeScriptInIsolatedWorld with that same extensionGroup
+    // WebLocalFrame::executeScriptInIsolatedWorld with that same extensionGroup
     // value.
-    virtual bool allowScriptExtension(WebFrame*, const WebString& extensionName, int extensionGroup) { return true; }
+    virtual bool allowScriptExtension(WebLocalFrame*, const WebString& extensionName, int extensionGroup) { return true; }
 
-    virtual bool allowScriptExtension(WebFrame* webFrame, const WebString& extensionName, int extensionGroup, int worldId)
+    virtual bool allowScriptExtension(WebLocalFrame* webFrame, const WebString& extensionName, int extensionGroup, int worldId)
     {
         return allowScriptExtension(webFrame, extensionName, extensionGroup);
     }
 
     // Controls whether HTML5 Web Storage is allowed for this frame.
     // If local is true, then this is for local storage, otherwise it's for session storage.
-    virtual bool allowStorage(WebFrame*, bool local) { return true; }
+    virtual bool allowStorage(WebLocalFrame*, bool local) { return true; }
 
     // Controls whether access to read the clipboard is allowed for this frame.
-    virtual bool allowReadFromClipboard(WebFrame*, bool defaultValue) { return defaultValue; }
+    virtual bool allowReadFromClipboard(WebLocalFrame*, bool defaultValue) { return defaultValue; }
 
     // Controls whether access to write the clipboard is allowed for this frame.
-    virtual bool allowWriteToClipboard(WebFrame*, bool defaultValue) { return defaultValue; }
+    virtual bool allowWriteToClipboard(WebLocalFrame*, bool defaultValue) { return defaultValue; }
 
     // Controls whether enabling Web Components API for this frame.
-    virtual bool allowWebComponents(WebFrame*, bool defaultValue) { return defaultValue; }
+    virtual bool allowWebComponents(WebLocalFrame*, bool defaultValue) { return defaultValue; }
 
     // Controls whether to enable MutationEvents for this frame.
     // The common use case of this method is actually to selectively disable MutationEvents,
     // but it's been named for consistency with the rest of the interface.
-    virtual bool allowMutationEvents(WebFrame*, bool defaultValue) { return defaultValue; }
+    virtual bool allowMutationEvents(WebLocalFrame*, bool defaultValue) { return defaultValue; }
 
     // Controls whether pushState and related History APIs are enabled for this frame.
-    virtual bool allowPushState(WebFrame*) { return true; }
+    virtual bool allowPushState(WebLocalFrame*) { return true; }
 
     // Notifies the client that the frame would have instantiated a plug-in if plug-ins were enabled.
-    virtual void didNotAllowPlugins(WebFrame*) { }
+    virtual void didNotAllowPlugins(WebLocalFrame*) { }
 
     // Notifies the client that the frame would have executed script if script were enabled.
-    virtual void didNotAllowScript(WebFrame*) { }
+    virtual void didNotAllowScript(WebLocalFrame*) { }
 
 protected:
     ~WebPermissionClient() { }

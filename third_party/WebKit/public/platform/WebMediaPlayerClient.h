@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class WebFrame;
 class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
