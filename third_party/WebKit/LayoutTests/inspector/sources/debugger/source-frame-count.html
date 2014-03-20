@@ -14,7 +14,6 @@ function test()
         function testSourceFramesCount(next)
         {
             var panel = WebInspector.panels.sources;
-            var select = panel._navigator._filesSelectElement;
             var sourceFrameCount = 0;
 
             InspectorTest.showScriptSource("source-frame-count.html", step2);
@@ -49,7 +48,7 @@ function test()
 
             function didShowScriptSourceAgain()
             {
-                InspectorTest.assertTrue(panel._editorContainer.visibleView._uiSourceCode.originURL().indexOf("script3.js") !== -1);
+                InspectorTest.assertTrue(panel.visibleView._uiSourceCode.originURL().indexOf("script3.js") !== -1);
                 // There should be maximum 3 source frames shown:
                 //  - first one is the first shown (first tab added)
                 //  - second one is the last viewed ("script2.js")

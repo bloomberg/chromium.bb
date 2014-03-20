@@ -256,7 +256,7 @@ InspectorTest.waitForScriptSource = function(scriptName, callback)
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
+    InspectorTest.addSniffer(WebInspector.SourcesEditor.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
 InspectorTest.dumpNavigatorView = function(navigatorView, id, prefix)
@@ -393,7 +393,7 @@ InspectorTest.checkUILocation = function(uiSourceCode, lineNumber, columnNumber,
 
 InspectorTest.scriptFormatter = function()
 {
-    var editorActions = WebInspector.moduleManager.instances(WebInspector.SourcesPanel.EditorAction);
+    var editorActions = WebInspector.moduleManager.instances(WebInspector.SourcesEditor.EditorAction);
     for (var i = 0; i < editorActions.length; ++i) {
         if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
             return editorActions[i];

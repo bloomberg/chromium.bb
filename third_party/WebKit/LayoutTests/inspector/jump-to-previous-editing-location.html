@@ -10,15 +10,18 @@ function test()
 {
     WebInspector.inspectorView.showPanel("sources");
     var panel = WebInspector.panels.sources;
+    var sourcesEditor = panel._sourcesEditor;
+    var historyManager = sourcesEditor._historyManager;
+    var editorContainer = sourcesEditor._editorContainer;
 
     function rollback()
     {
-        panel._historyManager.rollback();
+        historyManager.rollback();
     }
 
     function rollover()
     {
-        panel._historyManager.rollover();
+        historyManager.rollover();
     }
 
     function dumpSelection(editor, label)
@@ -158,8 +161,8 @@ function test()
 
         function testCloseCrossFile(next)
         {
-            var selectedTab = panel._editorContainer._tabbedPane.selectedTabId;
-            panel._editorContainer._tabbedPane.closeTab(selectedTab);
+            var selectedTab = editorContainer._tabbedPane.selectedTabId;
+            editorContainer._tabbedPane.closeTab(selectedTab);
             dumpSelection(panel.visibleView.textEditor, "Close active tab");
             for (var i = 0; i < 1; ++i) {
                 rollback();
