@@ -37,14 +37,15 @@ class InputMethodEngine : public InputMethodEngineInterface {
 
   virtual ~InputMethodEngine();
 
-  void Initialize(scoped_ptr<InputMethodEngineInterface::Observer> observer,
-                  const char* engine_name,
-                  const char* extension_id,
-                  const char* engine_id,
-                  const std::vector<std::string>& languages,
-                  const std::vector<std::string>& layouts,
-                  const GURL& options_page,
-                  const GURL& input_view);
+  void Initialize(
+      InputMethodEngineInterface::Observer* observer,
+      const char* engine_name,
+      const char* extension_id,
+      const char* engine_id,
+      const std::vector<std::string>& languages,
+      const std::vector<std::string>& layouts,
+      const GURL& options_page,
+      const GURL& input_view);
 
   // InputMethodEngineInterface overrides.
   virtual const input_method::InputMethodDescriptor& GetDescriptor()
@@ -127,8 +128,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // This IME ID in InputMethodManager.
   std::string imm_id_;
 
-  // The observer object recieving events for this IME.
-  scoped_ptr<InputMethodEngineInterface::Observer> observer_;
+  // Pointer to the object recieving events for this IME.
+  InputMethodEngineInterface::Observer* observer_;
 
   // The current preedit text, and it's cursor position.
   scoped_ptr<CompositionText> composition_text_;

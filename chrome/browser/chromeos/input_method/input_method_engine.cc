@@ -62,6 +62,7 @@ InputMethodEngine::InputMethodEngine()
       active_(false),
       context_id_(0),
       next_context_id_(1),
+      observer_(NULL),
       composition_text_(new CompositionText()),
       composition_cursor_(0),
       candidate_window_(new ui::CandidateWindow()),
@@ -73,7 +74,7 @@ InputMethodEngine::~InputMethodEngine() {
 }
 
 void InputMethodEngine::Initialize(
-    scoped_ptr<InputMethodEngineInterface::Observer> observer,
+    InputMethodEngineInterface::Observer* observer,
     const char* engine_name,
     const char* extension_id,
     const char* engine_id,
@@ -84,7 +85,7 @@ void InputMethodEngine::Initialize(
   DCHECK(observer) << "Observer must not be null.";
 
   // TODO(komatsu): It is probably better to set observer out of Initialize.
-  observer_ = observer.Pass();
+  observer_ = observer;
   engine_id_ = engine_id;
   extension_id_ = extension_id;
 
