@@ -259,6 +259,25 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     print self.manager.GetNextBuildSpec(retries=0)
     print self.manager.UpdateStatus('pass')
 
+  def testUnpickleBuildStatus(self):
+    """Tests that _UnpickleBuildStatus returns the correct values."""
+    failed_input_status = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_FAILED, 'you failed!')
+    passed_input_status = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_PASSED, 'you passed!')
+
+    failed_output_status = self.manager._UnpickleBuildStatus(
+        failed_input_status.AsPickledDict())
+    passed_output_status = self.manager._UnpickleBuildStatus(
+        passed_input_status.AsPickledDict())
+    empty_string_status = self.manager._UnpickleBuildStatus('')
+
+    self.assertEqual(failed_input_status.AsFlatDict(),
+                failed_output_status.AsFlatDict())
+    self.assertEqual(passed_input_status.AsFlatDict(),
+                passed_output_status.AsFlatDict())
+    self.assertTrue(empty_string_status.Failed())
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

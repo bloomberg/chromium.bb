@@ -373,6 +373,11 @@ class BuilderStatus(object):
       flat_dict['dashboard_url'] = str(self.dashboard_url)
     return flat_dict
 
+  def AsPickledDict(self):
+    """Returns a pickled dictionary representation of this builder status."""
+    return cPickle.dumps(dict(status=self.status, message=self.message,
+                              dashboard_url=self.dashboard_url))
+
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
@@ -588,7 +593,21 @@ class BuildSpecsManager(object):
       msg = BuilderStatus.GetMissingMessage(builder, version)
       return BuilderStatus(BuilderStatus.STATUS_MISSING, msg)
 
-    return BuilderStatus(**cPickle.loads(output))
+    return BuildSpecsManager._UnpickleBuildStatus(output)
+
+  @staticmethod
+  def _UnpickleBuildStatus(pickle_string):
+    """Returns a BuilderStatus instance from a pickled string."""
+    try:
+      status_dict = cPickle.loads(pickle_string)
+    except (cPickle.UnpicklingError, AttributeError, EOFError,
+            ImportError, IndexError) as e:
+      # The above exceptions are listed as possible unpickling exceptions
+      # by http://docs.python.org/2/library/pickle.
+      return BuilderStatus(BuilderStatus.STATUS_FAILED,
+                           'Failed with %s to unpickle status.' % e)
+
+    return BuilderStatus(**status_dict)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
@@ -696,12 +715,7 @@ class BuildSpecsManager(object):
       fail_if_exists: If set, fail if the status already exists.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
-    # Pickle the dictionary needed to recreate a BuilderStatus object.
-    # NOTE: It's important here not to use BuilderStatus.AsFlatDict to create
-    # the pickle dictionary, because that would flatten non-flat fields (like
-    # message) into strings.
-    data = cPickle.dumps(dict(status=status, message=message,
-                              dashboard_url=dashboard_url))
+    data = BuilderStatus(status, message, dashboard_url).AsPickledDict()
 
     # This HTTP header tells Google Storage to return the PreconditionFailed
     # error message if the file already exists.
