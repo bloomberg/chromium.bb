@@ -309,17 +309,17 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
 
 inline Element* firstMatchingChildElement(const HTMLCollection& nodeList, const ContainerNode& root)
 {
-    Element* element = ElementTraversal::firstWithin(root);
+    Element* element = ElementTraversal::firstChild(root);
     while (element && !isMatchingElement(nodeList, *element))
-        element = ElementTraversal::nextSkippingChildren(*element, &root);
+        element = ElementTraversal::nextSibling(*element);
     return element;
 }
 
-inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element& current, const ContainerNode& root)
+inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element& current)
 {
     Element* next = &current;
     do {
-        next = ElementTraversal::nextSkippingChildren(*next, &root);
+        next = ElementTraversal::nextSibling(*next);
     } while (next && !isMatchingElement(nodeList, *next));
     return next;
 }
@@ -345,7 +345,7 @@ inline Element* HTMLCollection::traverseNextElement(Element& previous, const Con
     if (overridesItemAfter())
         return virtualItemAfter(&previous);
     if (shouldOnlyIncludeDirectChildren())
-        return nextMatchingChildElement(*this, previous, root);
+        return nextMatchingChildElement(*this, previous);
     return nextMatchingElement(*this, previous, root);
 }
 
@@ -368,7 +368,7 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
         }
         if (shouldOnlyIncludeDirectChildren()) {
             Element* next = &currentElement;
-            while ((next = nextMatchingChildElement(*this, *next, root))) {
+            while ((next = nextMatchingChildElement(*this, *next))) {
                 if (++currentOffset == offset)
                     return next;
             }
