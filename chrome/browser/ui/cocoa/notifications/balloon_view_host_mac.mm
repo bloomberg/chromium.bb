@@ -19,7 +19,19 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  web_contents_->GetView()->SizeContents(new_size);
+  // Update the size of the web contents view.
+  // The view's new top left corner should be identical to the view's old top
+  // left corner.
+  NSView* web_contents_view = web_contents_->GetView()->GetNativeView();
+  NSRect old_wcv_frame = [web_contents_view frame];
+  CGFloat new_x = old_wcv_frame.origin.x;
+  CGFloat new_y =
+      old_wcv_frame.origin.y + (old_wcv_frame.size.height - new_size.height());
+  NSRect new_wcv_frame =
+      NSMakeRect(new_x, new_y, new_size.width(), new_size.height());
+  [web_contents_view setFrame:new_wcv_frame];
+
+  // Update the size of the balloon view.
   NSView* view = native_view();
   NSRect frame = [view frame];
   frame.size.width = new_size.width();
