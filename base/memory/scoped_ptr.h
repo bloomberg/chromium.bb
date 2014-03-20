@@ -88,7 +88,7 @@
 #define BASE_MEMORY_SCOPED_PTR_H_
 
 // This is an implementation designed to match the anticipated future TR2
-// implementation of the scoped_ptr class and scoped_ptr_malloc (deprecated).
+// implementation of the scoped_ptr class.
 
 #include <assert.h>
 #include <stddef.h>
@@ -568,139 +568,6 @@ bool operator==(T* p1, const scoped_ptr<T, D>& p2) {
 template <class T, class D>
 bool operator!=(T* p1, const scoped_ptr<T, D>& p2) {
   return p1 != p2.get();
-}
-
-// DEPRECATED: Use scoped_ptr<C, base::FreeDeleter> instead.
-//
-// scoped_ptr_malloc<> is similar to scoped_ptr<>, but it accepts a
-// second template argument, the functor used to free the object.
-
-template<class C, class FreeProc = base::FreeDeleter>
-class scoped_ptr_malloc {
-  MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr_malloc, RValue)
-
- public:
-
-  // The element type
-  typedef C element_type;
-
-  // Constructor.  Defaults to initializing with NULL.
-  // There is no way to create an uninitialized scoped_ptr.
-  // The input parameter must be allocated with an allocator that matches the
-  // Free functor.  For the default Free functor, this is malloc, calloc, or
-  // realloc.
-  explicit scoped_ptr_malloc(C* p = NULL): ptr_(p) {}
-
-  // Constructor.  Move constructor for C++03 move emulation of this type.
-  scoped_ptr_malloc(RValue rvalue)
-      : ptr_(rvalue.object->release()) {
-  }
-
-  // Destructor.  If there is a C object, call the Free functor.
-  ~scoped_ptr_malloc() {
-    reset();
-  }
-
-  // operator=.  Move operator= for C++03 move emulation of this type.
-  scoped_ptr_malloc& operator=(RValue rhs) {
-    // This detects an invalid assignment (which is properly detected by
-    // |scoped_ptr|) of the form |foo = bar.Pass();|, where |foo.get() ==
-    // bar.get()|.
-    if (this != rhs.object && ptr_ == rhs.object->ptr_)
-      abort();
-    reset(rhs.object->release());
-    return *this;
-  }
-
-  // Reset.  Calls the Free functor on the current owned object, if any.
-  // Then takes ownership of a new object, if given.
-  // this->reset(this->get()) works.
-  void reset(C* p = NULL) {
-    if (ptr_ != p) {
-      if (ptr_ != NULL) {
-        FreeProc free_proc;
-        free_proc(ptr_);
-      }
-      ptr_ = p;
-    }
-  }
-
-  // Get the current object.
-  // operator* and operator-> will cause an assert() failure if there is
-  // no current object.
-  C& operator*() const {
-    assert(ptr_ != NULL);
-    return *ptr_;
-  }
-
-  C* operator->() const {
-    assert(ptr_ != NULL);
-    return ptr_;
-  }
-
-  C* get() const {
-    return ptr_;
-  }
-
-  // Allow scoped_ptr_malloc<C> to be used in boolean expressions, but not
-  // implicitly convertible to a real bool (which is dangerous).
-  typedef C* scoped_ptr_malloc::*Testable;
-  operator Testable() const { return ptr_ ? &scoped_ptr_malloc::ptr_ : NULL; }
-
-  // Comparison operators.
-  // These return whether a scoped_ptr_malloc and a plain pointer refer
-  // to the same object, not just to two different but equal objects.
-  // For compatibility with the boost-derived implementation, these
-  // take non-const arguments.
-  bool operator==(C* p) const {
-    return ptr_ == p;
-  }
-
-  bool operator!=(C* p) const {
-    return ptr_ != p;
-  }
-
-  // Swap two scoped pointers.
-  void swap(scoped_ptr_malloc & b) {
-    C* tmp = b.ptr_;
-    b.ptr_ = ptr_;
-    ptr_ = tmp;
-  }
-
-  // Release a pointer.
-  // The return value is the current pointer held by this object.
-  // If this object holds a NULL pointer, the return value is NULL.
-  // After this operation, this object will hold a NULL pointer,
-  // and will not own the object any more.
-  C* release() WARN_UNUSED_RESULT {
-    C* tmp = ptr_;
-    ptr_ = NULL;
-    return tmp;
-  }
-
- private:
-  C* ptr_;
-
-  // no reason to use these: each scoped_ptr_malloc should have its own object
-  template <class C2, class GP>
-  bool operator==(scoped_ptr_malloc<C2, GP> const& p) const;
-  template <class C2, class GP>
-  bool operator!=(scoped_ptr_malloc<C2, GP> const& p) const;
-};
-
-template<class C, class FP> inline
-void swap(scoped_ptr_malloc<C, FP>& a, scoped_ptr_malloc<C, FP>& b) {
-  a.swap(b);
-}
-
-template<class C, class FP> inline
-bool operator==(C* p, const scoped_ptr_malloc<C, FP>& b) {
-  return p == b.get();
-}
-
-template<class C, class FP> inline
-bool operator!=(C* p, const scoped_ptr_malloc<C, FP>& b) {
-  return p != b.get();
 }
 
 // A function to convert T* into scoped_ptr<T>
