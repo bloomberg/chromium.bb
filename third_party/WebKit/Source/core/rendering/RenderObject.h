@@ -35,10 +35,12 @@
 #include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/ScrollAlignment.h"
 #include "core/rendering/SubtreeLayoutScope.h"
+#include "core/rendering/compositing/CompositingTriggers.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/CompositingReasons.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
@@ -676,6 +678,8 @@ public:
     void collectAnnotatedRegions(Vector<AnnotatedRegionValue>&);
 
     CompositingState compositingState() const;
+    virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const;
+
     bool acceleratedCompositingForOverflowScrollEnabled() const;
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).

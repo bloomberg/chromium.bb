@@ -711,27 +711,27 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer)
     m_webView->setRootGraphicsLayer(rootLayer);
 }
 
-ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() const
+WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() const
 {
     if (!m_webView->allowsAcceleratedCompositing())
         return 0;
 
-    CompositingTriggerFlags flags = 0;
+    WebCore::CompositingTriggerFlags flags = 0;
     Settings& settings = m_webView->page()->settings();
     if (settings.acceleratedCompositingFor3DTransformsEnabled())
-        flags |= ThreeDTransformTrigger;
+        flags |= WebCore::ThreeDTransformTrigger;
     if (settings.acceleratedCompositingForVideoEnabled())
-        flags |= VideoTrigger;
+        flags |= WebCore::VideoTrigger;
     if (settings.acceleratedCompositingForPluginsEnabled())
-        flags |= PluginTrigger;
+        flags |= WebCore::PluginTrigger;
     if (settings.acceleratedCompositingForAnimationEnabled())
-        flags |= AnimationTrigger;
+        flags |= WebCore::AnimationTrigger;
     if (settings.acceleratedCompositingForCanvasEnabled())
-        flags |= CanvasTrigger;
+        flags |= WebCore::CanvasTrigger;
     if (settings.acceleratedCompositingForScrollableFramesEnabled())
-        flags |= ScrollableInnerFrameTrigger;
+        flags |= WebCore::ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())
-        flags |= FilterTrigger;
+        flags |= WebCore::FilterTrigger;
 
     return flags;
 }

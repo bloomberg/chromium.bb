@@ -5,8 +5,8 @@
 #ifndef CompositingReasonFinder_h
 #define CompositingReasonFinder_h
 
-#include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/compositing/CompositingTriggers.h"
 #include "platform/graphics/CompositingReasons.h"
 
 namespace WebCore {
@@ -38,8 +38,6 @@ private:
     bool requiresCompositingForAnimation(RenderObject*) const;
     bool requiresCompositingForTransition(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
-    bool requiresCompositingForVideo(RenderObject*) const;
-    bool requiresCompositingForCanvas(RenderObject*) const;
     bool requiresCompositingForPlugin(RenderObject*, bool* needToRecomputeCompositingRequirements) const;
     bool requiresCompositingForFrame(RenderObject*) const;
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
@@ -50,7 +48,7 @@ private:
     bool requiresCompositingForWillChange(const RenderObject*) const;
 
     RenderView& m_renderView;
-    ChromeClient::CompositingTriggerFlags m_compositingTriggers;
+    CompositingTriggerFlags m_compositingTriggers;
 };
 
 } // namespace WebCore

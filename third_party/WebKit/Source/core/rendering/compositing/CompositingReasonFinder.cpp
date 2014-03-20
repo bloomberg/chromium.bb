@@ -34,7 +34,7 @@ namespace WebCore {
 
 CompositingReasonFinder::CompositingReasonFinder(RenderView& renderView)
     : m_renderView(renderView)
-    , m_compositingTriggers(static_cast<ChromeClient::CompositingTriggerFlags>(ChromeClient::AllTriggers))
+    , m_compositingTriggers(static_cast<CompositingTriggerFlags>(AllCompositingTriggers))
 {
 }
 
@@ -45,12 +45,12 @@ void CompositingReasonFinder::updateTriggers()
 
 bool CompositingReasonFinder::has3DTransformTrigger() const
 {
-    return m_compositingTriggers & ChromeClient::ThreeDTransformTrigger;
+    return m_compositingTriggers & ThreeDTransformTrigger;
 }
 
 bool CompositingReasonFinder::hasAnimationTrigger() const
 {
-    return m_compositingTriggers & ChromeClient::AnimationTrigger;
+    return m_compositingTriggers & AnimationTrigger;
 }
 
 bool CompositingReasonFinder::isMainFrame() const
@@ -68,11 +68,8 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
         directReasons |= CompositingReason3DTransform;
 
     // Only zero or one of the following conditions will be true for a given RenderLayer.
-    if (requiresCompositingForVideo(renderer))
-        directReasons |= CompositingReasonVideo;
-    else if (requiresCompositingForCanvas(renderer))
-        directReasons |= CompositingReasonCanvas;
-    else if (requiresCompositingForPlugin(renderer, needToRecomputeCompositingRequirements))
+    // FIXME: These should be handled by overrides of RenderObject::additionalCompositingReasons.
+    if (requiresCompositingForPlugin(renderer, needToRecomputeCompositingRequirements))
         directReasons |= CompositingReasonPlugin;
     else if (requiresCompositingForFrame(renderer))
         directReasons |= CompositingReasonIFrame;
@@ -104,6 +101,8 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForWillChange(renderer))
         directReasons |= CompositingReasonWillChange;
 
+    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
+
     return directReasons;
 }
 
@@ -114,7 +113,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
     if (isMainFrame())
         return false;
 
-    if (!(m_compositingTriggers & ChromeClient::ScrollableInnerFrameTrigger))
+    if (!(m_compositingTriggers & ScrollableInnerFrameTrigger))
         return false;
 
     FrameView* frameView = m_renderView.frameView();
@@ -123,7 +122,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
 
 bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::ThreeDTransformTrigger))
+    if (!(m_compositingTriggers & ThreeDTransformTrigger))
         return false;
 
     RenderStyle* style = renderer->style();
@@ -132,39 +131,9 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
     return renderer->hasTransform() && style->transform().has3DOperation();
 }
 
-bool CompositingReasonFinder::requiresCompositingForVideo(RenderObject* renderer) const
-{
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer->isVideo()) {
-        HTMLMediaElement* media = toHTMLMediaElement(renderer->node());
-        if (media->isFullscreen())
-            return true;
-    }
-
-    if (!(m_compositingTriggers & ChromeClient::VideoTrigger))
-        return false;
-
-    if (renderer->isVideo()) {
-        RenderVideo* video = toRenderVideo(renderer);
-        return video->shouldDisplayVideo() && video->supportsAcceleratedRendering();
-    }
-    return false;
-}
-
-bool CompositingReasonFinder::requiresCompositingForCanvas(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::CanvasTrigger))
-        return false;
-
-    if (renderer->isCanvas()) {
-        HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
-        return canvas->renderingContext() && canvas->renderingContext()->isAccelerated();
-    }
-    return false;
-}
-
 bool CompositingReasonFinder::requiresCompositingForPlugin(RenderObject* renderer, bool* needToRecomputeCompositingRequirements) const
 {
-    if (!(m_compositingTriggers & ChromeClient::PluginTrigger))
+    if (!(m_compositingTriggers & PluginTrigger))
         return false;
 
     if (!renderer->isEmbeddedObject() || !toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing())
@@ -190,7 +159,7 @@ bool CompositingReasonFinder::requiresCompositingForFrame(RenderObject* renderer
 
 bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::ThreeDTransformTrigger))
+    if (!(m_compositingTriggers & ThreeDTransformTrigger))
         return false;
 
     return renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden;
@@ -198,7 +167,7 @@ bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(Ren
 
 bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
+    if (!(m_compositingTriggers & AnimationTrigger))
         return false;
 
     return shouldCompositeForActiveAnimations(*renderer);
@@ -206,7 +175,7 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* rend
 
 bool CompositingReasonFinder::requiresCompositingForTransition(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
+    if (!(m_compositingTriggers & AnimationTrigger))
         return false;
 
     if (Settings* settings = m_renderView.document().settings()) {
@@ -221,7 +190,7 @@ bool CompositingReasonFinder::requiresCompositingForTransition(RenderObject* ren
 
 bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::FilterTrigger))
+    if (!(m_compositingTriggers & FilterTrigger))
         return false;
 
     return renderer->hasFilter();

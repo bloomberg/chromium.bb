@@ -111,4 +111,16 @@ void RenderHTMLCanvas::canvasSizeChanged()
         setNeedsLayout();
 }
 
+CompositingReasons RenderHTMLCanvas::additionalCompositingReasons(CompositingTriggerFlags triggers) const
+{
+    if (!(triggers & CanvasTrigger))
+        return CompositingReasonNone;
+
+    HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
+    if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
+        return CompositingReasonCanvas;
+
+    return CompositingReasonNone;
+}
+
 } // namespace WebCore

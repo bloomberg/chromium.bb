@@ -29,6 +29,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/page/FocusType.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/compositing/CompositingTriggers.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
@@ -192,20 +193,8 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(GraphicsLayer*) = 0;
 
-    enum CompositingTrigger {
-        ThreeDTransformTrigger = 1 << 0,
-        VideoTrigger = 1 << 1,
-        PluginTrigger = 1 << 2,
-        CanvasTrigger = 1 << 3,
-        AnimationTrigger = 1 << 4,
-        FilterTrigger = 1 << 5,
-        ScrollableInnerFrameTrigger = 1 << 6,
-        AllTriggers = 0xFFFFFFFF
-    };
-    typedef unsigned CompositingTriggerFlags;
-
     // Returns a bitfield indicating conditions that can trigger the compositor.
-    virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllTriggers); }
+    virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllCompositingTriggers); }
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }

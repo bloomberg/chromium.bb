@@ -74,6 +74,8 @@ private:
     virtual LayoutUnit offsetWidth() const OVERRIDE;
     virtual LayoutUnit offsetHeight() const OVERRIDE;
 
+    virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const OVERRIDE;
+
     void updatePlayer();
 
     bool acceleratedRenderingInUse();

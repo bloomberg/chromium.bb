@@ -2784,6 +2784,11 @@ CompositingState RenderObject::compositingState() const
     return hasLayer() ? toRenderLayerModelObject(this)->layer()->compositingState() : NotComposited;
 }
 
+CompositingReasons RenderObject::additionalCompositingReasons(CompositingTriggerFlags) const
+{
+    return CompositingReasonNone;
+}
+
 bool RenderObject::acceleratedCompositingForOverflowScrollEnabled() const
 {
     const Settings* settings = document().settings();

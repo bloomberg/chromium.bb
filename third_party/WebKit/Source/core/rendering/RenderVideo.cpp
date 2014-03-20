@@ -276,4 +276,18 @@ LayoutUnit RenderVideo::offsetHeight() const
     return RenderMedia::offsetHeight();
 }
 
+CompositingReasons RenderVideo::additionalCompositingReasons(CompositingTriggerFlags triggers) const
+{
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
+        HTMLMediaElement* media = toHTMLMediaElement(node());
+        if (media->isFullscreen())
+            return CompositingReasonVideo;
+    }
+
+    if ((triggers & VideoTrigger) && shouldDisplayVideo() && supportsAcceleratedRendering())
+        return CompositingReasonVideo;
+
+    return CompositingReasonNone;
+}
+
 } // namespace WebCore
