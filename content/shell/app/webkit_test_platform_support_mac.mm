@@ -54,7 +54,7 @@ bool WebKitTestPlatformInitialize() {
 
   // Load font files in the resource folder.
   static const char* const fontFileNames[] = {
-      "AHEM____.TTF",
+      "AHEM____.TTF", "ChromiumAATTest.ttf"
   };
 
   // mainBundle is Content Shell Helper.app.  Go two levels up to find

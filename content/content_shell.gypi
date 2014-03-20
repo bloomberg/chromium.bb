@@ -408,6 +408,7 @@
           'all_dependent_settings': {
             'mac_bundle_resources': [
               'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
+              'shell/renderer/test_runner/resources/fonts/ChromiumAATTest.ttf',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
             ],
