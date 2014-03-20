@@ -778,7 +778,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 {
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
-    hb_buffer_set_unicode_funcs(harfBuzzBuffer.get(), hb_icu_get_unicode_funcs());
     HarfBuzzRunCache& runCache = harfBuzzRunCache();
 
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
@@ -808,7 +807,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
                 currentRun->applyShapeResult(cachedResults->buffer);
                 setGlyphPositionsForHarfBuzzRun(currentRun, cachedResults->buffer);
 
-                hb_buffer_reset(harfBuzzBuffer.get());
+                hb_buffer_clear_contents(harfBuzzBuffer.get());
 
                 runCache.moveToBack(cachedResults);
 
@@ -844,7 +843,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         runCache.insert(key, new CachedShapingResults(harfBuzzBuffer.get(), m_font, props.direction));
 
         harfBuzzBuffer.set(hb_buffer_create());
-        hb_buffer_set_unicode_funcs(harfBuzzBuffer.get(), hb_icu_get_unicode_funcs());
     }
 
     return true;
