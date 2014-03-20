@@ -488,9 +488,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
 
     if msg.modulus == 1:
-      keys = self.server.GetMatchingStateKeys(msg.modulus, msg.remainder)
       auto_enrollment_response.hash.extend(
-          map(lambda key : hashlib.sha256(key.decode('hex')).digest(), keys))
+          self.server.GetMatchingStateKeyHashes(msg.modulus, msg.remainder))
     elif msg.modulus == 2:
       auto_enrollment_response.expected_modulus = 4
     elif msg.modulus == 4:
@@ -1013,7 +1012,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
 
     return None
 
-  def GetMatchingStateKeys(self, modulus, remainder):
+  def GetMatchingStateKeyHashes(self, modulus, remainder):
     """Returns all clients registered with the server.
 
     Returns:
@@ -1021,7 +1020,11 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     """
     state_keys = sum([ c.get('state_keys', [])
                        for c in self._registered_tokens.values() ], [])
-    return filter(lambda key : int(key, 16) & modulus == remainder, state_keys)
+    hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
+                      set(state_keys))
+    return filter(
+        lambda hash : int(hash.encode('hex'), 16) & modulus == remainder,
+        hashed_keys)
 
   def UnregisterDevice(self, dmtoken):
     """Unregisters a device identified by the given DM token.
