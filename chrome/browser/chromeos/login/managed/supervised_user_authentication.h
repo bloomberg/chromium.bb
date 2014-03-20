@@ -32,6 +32,16 @@ class SupervisedUserAuthentication {
     SCHEMA_SALT_HASHED = 2
   };
 
+  enum SupervisedUserPasswordChangeResult {
+    PASSWORD_CHANGED_IN_MANAGER_SESSION = 0,
+    PASSWORD_CHANGED_IN_USER_SESSION = 1,
+    PASSWORD_CHANGE_FAILED_NO_MASTER_KEY = 2,
+    PASSWORD_CHANGE_FAILED_NO_SIGNATURE_KEY = 3,
+    PASSWORD_CHANGE_FAILED_NO_PASSWORD_DATA = 4,
+    PASSWORD_CHANGE_FAILED_MASTER_KEY_FAILURE = 5,
+    PASSWORD_CHANGE_RESULT_MAX_VALUE = 6
+  };
+
   explicit SupervisedUserAuthentication(SupervisedUserManager* owner);
   virtual ~SupervisedUserAuthentication();
 
@@ -66,12 +76,6 @@ class SupervisedUserAuthentication {
 
   bool NeedPasswordChange(const std::string& user_id,
                           const base::DictionaryValue* password_data);
-
-  // Called by manager.
-  void ChangeSupervisedUserPassword(const std::string& manager_id,
-                                    const std::string& master_key,
-                                    const std::string& supervised_user_id,
-                                    const base::DictionaryValue* password_data);
 
   // Creates a random string that can be used as a master key for managed
   // user's homedir.

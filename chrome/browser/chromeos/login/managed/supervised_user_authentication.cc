@@ -210,16 +210,23 @@ SupervisedUserAuthentication::GetPasswordSchema(
 bool SupervisedUserAuthentication::NeedPasswordChange(
     const std::string& user_id,
     const base::DictionaryValue* password_data) {
-  // TODO(antrim): Add actual code once cryptohome has required API.
-  return false;
-}
 
-void SupervisedUserAuthentication::ChangeSupervisedUserPassword(
-    const std::string& manager_id,
-    const std::string& master_key,
-    const std::string& supervised_user_id,
-    const base::DictionaryValue* password_data) {
-  // TODO(antrim): Add actual code once cryptohome has required API.
+  base::DictionaryValue local;
+  owner_->GetPasswordInformation(user_id, &local);
+  int local_schema = SCHEMA_PLAIN;
+  int local_revision = kMinPasswordRevision;
+  int updated_schema = SCHEMA_PLAIN;
+  int updated_revision = kMinPasswordRevision;
+  local.GetIntegerWithoutPathExpansion(kSchemaVersion, &local_schema);
+  local.GetIntegerWithoutPathExpansion(kPasswordRevision, &local_revision);
+  password_data->GetIntegerWithoutPathExpansion(kSchemaVersion,
+                                                &updated_schema);
+  password_data->GetIntegerWithoutPathExpansion(kPasswordRevision,
+                                                &updated_revision);
+  if (updated_schema > local_schema)
+    return true;
+  DCHECK_EQ(updated_schema, local_schema);
+  return updated_revision > local_revision;
 }
 
 void SupervisedUserAuthentication::ScheduleSupervisedPasswordChange(

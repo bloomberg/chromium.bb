@@ -145,10 +145,10 @@ class ManagedUserCreationControllerNew
   // ManagedUserAuthenticator::StatusConsumer overrides.
   virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error)
       OVERRIDE;
-  virtual void OnMountSuccess(const std::string& mount_hash) OVERRIDE;
-  virtual void OnPasswordHashingSuccess(int id,
-                                        const std::string& password_hash)
-      OVERRIDE;
+
+  // Authenticator success callbacks.
+  void OnMountSuccess(const std::string& mount_hash);
+  void OnPasswordHashingSuccess(const std::string& password_hash);
 
   void StartCreationImpl();
 

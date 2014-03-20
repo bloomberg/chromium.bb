@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+namespace chromeos {
+
 // static
 ManagerPasswordService*
 ManagerPasswordServiceFactory::GetForProfile(Profile* profile) {
@@ -60,3 +62,5 @@ ManagerPasswordServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
+
+}  // namespace chromeos

@@ -194,13 +194,14 @@ void ManagedUserCreationControllerNew::StartCreationImpl() {
       this,
       &ManagedUserCreationControllerNew::CreationTimedOut);
   authenticator_ = new ExtendedAuthenticator(this);
-  authenticator_->HashPasswordWithSalt(0, creation_context_->master_key);
+  authenticator_->HashPasswordWithSalt(
+      creation_context_->master_key,
+      base::Bind(&ManagedUserCreationControllerNew::OnPasswordHashingSuccess,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ManagedUserCreationControllerNew::OnPasswordHashingSuccess(
-    int id,
     const std::string& password_hash) {
-  CHECK(id == 0);
   VLOG(1) << " Phase 2.1 : Got hashed master key";
   creation_context_->salted_master_key = password_hash;
 
@@ -227,7 +228,11 @@ void ManagedUserCreationControllerNew::OnPasswordHashingSuccess(
 
   keys.push_back(password_key);
   keys.push_back(master_key);
-  authenticator_->CreateMount(creation_context_->local_user_id, keys);
+  authenticator_->CreateMount(
+      creation_context_->local_user_id,
+      keys,
+      base::Bind(&ManagedUserCreationControllerNew::OnMountSuccess,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ManagedUserCreationControllerNew::OnAuthenticationFailure(

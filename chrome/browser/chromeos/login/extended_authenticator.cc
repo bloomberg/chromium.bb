@@ -72,60 +72,31 @@ void ExtendedAuthenticator::OnSaltObtained(const std::string& system_salt) {
   hashing_queue_.clear();
 }
 
-void ExtendedAuthenticator::AuthenticateToMount(const UserContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!context.need_password_hashing) {
-    DoAuthenticateToMount(context);
-  } else {
-    DoHashWithSalt(
-        context.password,
-        base::Bind(&ExtendedAuthenticator::UpdateContextToMount, this, context),
-        system_salt_);
-  }
-}
-
-void ExtendedAuthenticator::AuthenticateToCheck(const UserContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!context.need_password_hashing) {
-    DoAuthenticateToCheck(context);
-  } else {
-    DoHashWithSalt(
-        context.password,
-        base::Bind(
-            &ExtendedAuthenticator::UpdateContextAndCheckKey, this, context),
-        system_salt_);
-  }
-}
-
-void ExtendedAuthenticator::UpdateContextToMount(
+void ExtendedAuthenticator::AuthenticateToMount(
     const UserContext& context,
-    const std::string& hashed_password) {
+    const HashSuccessCallback& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UserContext copy;
-  copy.CopyFrom(context);
-  copy.password = hashed_password;
-  copy.need_password_hashing = false;
-  DoAuthenticateToMount(copy);
+  TransformContext(context,
+                   base::Bind(&ExtendedAuthenticator::DoAuthenticateToMount,
+                              this,
+                              success_callback));
 }
 
-void ExtendedAuthenticator::UpdateContextAndCheckKey(
+void ExtendedAuthenticator::AuthenticateToCheck(
     const UserContext& context,
-    const std::string& hashed_password) {
+    const base::Closure& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UserContext copy;
-  copy.CopyFrom(context);
-  copy.password = hashed_password;
-  copy.need_password_hashing = false;
-  DoAuthenticateToCheck(copy);
+  TransformContext(context,
+                   base::Bind(&ExtendedAuthenticator::DoAuthenticateToCheck,
+                              this,
+                              success_callback));
 }
 
 void ExtendedAuthenticator::CreateMount(
     const std::string& user_id,
-    const std::vector<cryptohome::KeyDefinition>& keys) {
+    const std::vector<cryptohome::KeyDefinition>& keys,
+    const HashSuccessCallback& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RecordStartMarker("MountEx");
@@ -144,11 +115,28 @@ void ExtendedAuthenticator::CreateMount(
       id,
       auth,
       mount,
-      base::Bind(
-          &ExtendedAuthenticator::OnMountComplete, this, "MountEx", context));
+      base::Bind(&ExtendedAuthenticator::OnMountComplete,
+                 this,
+                 "MountEx",
+                 context,
+                 success_callback));
+}
+
+void ExtendedAuthenticator::AddKey(const UserContext& context,
+                                   const cryptohome::KeyDefinition& key,
+                                   bool replace_existing,
+                                   const base::Closure& success_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TransformContext(context,
+                   base::Bind(&ExtendedAuthenticator::DoAddKey,
+                              this,
+                              key,
+                              replace_existing,
+                              success_callback));
 }
 
 void ExtendedAuthenticator::DoAuthenticateToMount(
+    const HashSuccessCallback& success_callback,
     const UserContext& user_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -166,10 +154,12 @@ void ExtendedAuthenticator::DoAuthenticateToMount(
       base::Bind(&ExtendedAuthenticator::OnMountComplete,
                  this,
                  "MountEx",
-                 user_context));
+                 user_context,
+                 success_callback));
 }
 
 void ExtendedAuthenticator::DoAuthenticateToCheck(
+    const base::Closure& success_callback,
     const UserContext& user_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -185,14 +175,41 @@ void ExtendedAuthenticator::DoAuthenticateToCheck(
       base::Bind(&ExtendedAuthenticator::OnCheckKeyComplete,
                  this,
                  "CheckKeyEx",
-                 user_context));
+                 user_context,
+                 success_callback));
 }
 
-void ExtendedAuthenticator::OnMountComplete(const std::string& time_marker,
-                                            const UserContext& user_context,
-                                            bool success,
-                                            cryptohome::MountError return_code,
-                                            const std::string& mount_hash) {
+void ExtendedAuthenticator::DoAddKey(const cryptohome::KeyDefinition& key,
+                                     bool replace_existing,
+                                     const base::Closure& success_callback,
+                                     const UserContext& user_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordStartMarker("AddKeyEx");
+
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  cryptohome::Identification id(canonicalized);
+  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+
+  cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
+      id,
+      auth,
+      key,
+      replace_existing,
+      base::Bind(&ExtendedAuthenticator::OnAddKeyComplete,
+                 this,
+                 "AddKeyEx",
+                 user_context,
+                 success_callback));
+}
+
+void ExtendedAuthenticator::OnMountComplete(
+    const std::string& time_marker,
+    const UserContext& user_context,
+    const HashSuccessCallback& success_callback,
+    bool success,
+    cryptohome::MountError return_code,
+    const std::string& mount_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RecordEndMarker(time_marker);
@@ -200,8 +217,7 @@ void ExtendedAuthenticator::OnMountComplete(const std::string& time_marker,
   copy.CopyFrom(user_context);
   copy.username_hash = mount_hash;
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
-    if (consumer_)
-      consumer_->OnMountSuccess(mount_hash);
+    success_callback.Run(mount_hash);
     if (old_consumer_)
       old_consumer_->OnLoginSuccess(copy);
   } else {
@@ -226,14 +242,14 @@ void ExtendedAuthenticator::OnMountComplete(const std::string& time_marker,
 void ExtendedAuthenticator::OnCheckKeyComplete(
     const std::string& time_marker,
     const UserContext& user_context,
+    const base::Closure& success_callback,
     bool success,
     cryptohome::MountError return_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RecordEndMarker(time_marker);
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
-    if (consumer_)
-      consumer_->OnCheckSuccess();
+    success_callback.Run();
     if (old_consumer_)
       old_consumer_->OnLoginSuccess(user_context);
   } else {
@@ -252,32 +268,77 @@ void ExtendedAuthenticator::OnCheckKeyComplete(
       consumer_->OnAuthenticationFailure(state);
 
     if (old_consumer_) {
-      LoginFailure failure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME);
+      LoginFailure failure(LoginFailure::UNLOCK_FAILED);
       old_consumer_->OnLoginFailure(failure);
     }
   }
 }
 
-void ExtendedAuthenticator::HashPasswordWithSalt(int id,
-                                                 const std::string& password) {
+void ExtendedAuthenticator::OnAddKeyComplete(
+    const std::string& time_marker,
+    const UserContext& user_context,
+    const base::Closure& success_callback,
+    bool success,
+    cryptohome::MountError return_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordEndMarker(time_marker);
+  if (return_code == cryptohome::MOUNT_ERROR_NONE) {
+    success_callback.Run();
+  } else {
+    AuthState state = FAILED_MOUNT;
+
+    if (return_code && (cryptohome::MOUNT_ERROR_TPM_COMM_ERROR ||
+                        cryptohome::MOUNT_ERROR_TPM_DEFEND_LOCK ||
+                        cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT)) {
+      state = FAILED_TPM;
+    }
+
+    if (return_code && cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST)
+      state = NO_MOUNT;
+
+    if (consumer_)
+      consumer_->OnAuthenticationFailure(state);
+  }
+}
+
+void ExtendedAuthenticator::HashPasswordWithSalt(
+    const std::string& password,
+    const HashSuccessCallback& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(consumer_) << "This is a part of new API";
 
-  DoHashWithSalt(
-      password,
-      base::Bind(&ExtendedAuthenticator::DidHashPasswordWithSalt, this, id),
-      system_salt_);
+  DoHashWithSalt(password, success_callback, system_salt_);
 }
 
-void ExtendedAuthenticator::DidHashPasswordWithSalt(int id,
-                                                    const std::string& hash) {
-  DCHECK(consumer_);
+void ExtendedAuthenticator::TransformContext(const UserContext& user_context,
+                                             const ContextCallback& callback) {
+  if (!user_context.need_password_hashing) {
+    callback.Run(user_context);
+  } else {
+    DoHashWithSalt(user_context.password,
+                   base::Bind(&ExtendedAuthenticator::DidTransformContext,
+                              this,
+                              user_context,
+                              callback),
+                   system_salt_);
+  }
+}
 
-  consumer_->OnPasswordHashingSuccess(id, hash);
+void ExtendedAuthenticator::DidTransformContext(
+    const UserContext& user_context,
+    const ContextCallback& callback,
+    const std::string& hashed_password) {
+  DCHECK(user_context.need_password_hashing);
+  UserContext context;
+  context.CopyFrom(user_context);
+  context.password = hashed_password;
+  context.need_password_hashing = false;
+  callback.Run(context);
 }
 
 void ExtendedAuthenticator::DoHashWithSalt(const std::string& password,
-                                           const HashingCallback& callback,
+                                           const HashSuccessCallback& callback,
                                            const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

@@ -8009,6 +8009,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ManagedUsers.ChromeOS.PasswordChange"
+    enum="ManagedUserPasswordChange">
+  <owner>antrim@chromium.org</owner>
+  <summary>
+    Chrome OS histogram that keeps track of supervised user password change
+    result.
+  </summary>
+</histogram>
+
 <histogram name="Media.AcceleratedCompositingActive" enum="BooleanSuccess">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -33832,6 +33841,17 @@ other types of suffix sets.
   <int value="3" label="INCOGNITO_DEVELOPER">Incognito Dev</int>
   <int value="4" label="OWNER_DEVELOPER">Owner Dev</int>
   <int value="5" label="OTHER_DEVELOPER">Other Dev</int>
+</enum>
+
+<enum name="ManagedUserPasswordChange" type="int">
+  <int value="0" label="OK_MANAGER">Changed in manager session</int>
+  <int value="1" label="OK_MANGED">Changed in managed user session</int>
+  <int value="2" label="FAILED_NO_MASTER_KEY">Master key not found</int>
+  <int value="3" label="FAILED_NO_SIGNATURE_KEY">Signature key not found</int>
+  <int value="4" label="FAILED_NO_PASSWORD_DATA">Password data not found</int>
+  <int value="5" label="FAILED_MASTER_KEY_FAILURE">
+    Manager key authorization failed
+  </int>
 </enum>
 
 <enum name="MappedCSSProperties" type="int">

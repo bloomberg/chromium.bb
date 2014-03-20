@@ -247,12 +247,15 @@ void LoginPerformer::LoginAsLocallyManagedUser(
       extended_authenticator_->SetConsumer(NULL);
     }
     extended_authenticator_ = new ExtendedAuthenticator(this);
+    // TODO(antrim) : Replace empty callback with explicit method.
+    // http://crbug.com/351268
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&ExtendedAuthenticator::AuthenticateToMount,
                    extended_authenticator_.get(),
-                   user_context_copy));
+                   user_context_copy,
+                   ExtendedAuthenticator::HashSuccessCallback()));
 
   } else {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);

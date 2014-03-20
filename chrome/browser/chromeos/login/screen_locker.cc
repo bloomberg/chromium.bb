@@ -279,12 +279,15 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
               ->GetSupervisedUserManager()
               ->GetAuthentication()
               ->TransformPasswordInContext(user_context);
+      // TODO(antrim) : replace empty closure with explicit method.
+      // http://crbug.com/351268
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
           base::Bind(&ExtendedAuthenticator::AuthenticateToCheck,
                      extended_authenticator_.get(),
-                     updated_context));
+                     updated_context,
+                     base::Closure()));
     }
   }
 
