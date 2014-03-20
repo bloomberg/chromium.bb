@@ -8,11 +8,15 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#import "chrome/browser/themes/theme_properties.h"
+#import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
 using content::WebContentsObserver;
@@ -34,6 +38,10 @@ class FullscreenObserver : public WebContentsObserver {
     WebContentsObserver::Observe(new_web_contents);
   }
 
+  WebContents* web_contents() const {
+    return WebContentsObserver::web_contents();
+  }
+
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
     [controller_ toggleFullscreenWidget:YES];
   }
@@ -42,11 +50,82 @@ class FullscreenObserver : public WebContentsObserver {
     [controller_ toggleFullscreenWidget:NO];
   }
 
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE {
+    [controller_ toggleFullscreenWidget:YES];
+  }
+
  private:
   TabContentsController* const controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenObserver);
 };
+
+@interface TabContentsController (TabContentsContainerViewDelegate)
+// Computes and returns the frame to use for the contents view within the
+// container view.
+- (NSRect)frameForContentsView;
+@end
+
+// An NSView with special-case handling for when the contents view does not
+// expand to fill the entire tab contents area. See 'AutoEmbedFullscreen mode'
+// in header file comments.
+@interface TabContentsContainerView : NSView {
+ @private
+  TabContentsController* delegate_;  // weak
+}
+@end
+
+@implementation TabContentsContainerView
+
+- (id)initWithDelegate:(TabContentsController*)delegate {
+  if ((self = [super initWithFrame:NSZeroRect])) {
+    delegate_ = delegate;
+  }
+  return self;
+}
+
+// Called by the delegate during dealloc to invalidate the pointer held by this
+// view.
+- (void)delegateDestroyed {
+  delegate_ = nil;
+}
+
+// Override -drawRect to fill the view with a solid color outside of the
+// subview's frame.
+- (void)drawRect:(NSRect)dirtyRect {
+  NSView* const contentsView =
+      [[self subviews] count] > 0 ? [[self subviews] objectAtIndex:0] : nil;
+  if (!contentsView || !NSContainsRect([contentsView frame], dirtyRect)) {
+    // Fill with a dark tint of the new tab page's background color.  This is
+    // only seen when the subview is sized specially for fullscreen tab capture.
+    NSColor* bgColor = nil;
+    ThemeService* const theme =
+        static_cast<ThemeService*>([[self window] themeProvider]);
+    if (theme)
+      bgColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+    if (!bgColor)
+      bgColor = [[self window] backgroundColor];
+    const float kDarknessFraction = 0.80f;
+    [[bgColor blendedColorWithFraction:kDarknessFraction
+                               ofColor:[NSColor blackColor]] setFill];
+    NSRectFill(dirtyRect);
+  }
+  [super drawRect:dirtyRect];
+}
+
+// Override auto-resizing logic to query the delegate for the exact frame to
+// use for the contents view.
+- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
+  NSView* const contentsView =
+      [[self subviews] count] > 0 ? [[self subviews] objectAtIndex:0] : nil;
+  if (!contentsView || [contentsView autoresizingMask] == NSViewNotSizable ||
+      !delegate_) {
+    return;
+  }
+  [contentsView setFrame:[delegate_ frameForContentsView]];
+}
+
+@end  // @implementation TabContentsContainerView
 
 @implementation TabContentsController
 @synthesize webContents = contents_;
@@ -62,13 +141,16 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (void)dealloc {
-  // make sure our contents have been removed from the window
+  [static_cast<TabContentsContainerView*>([self view]) delegateDestroyed];
+  // Make sure the contents view has been removed from the container view to
+  // allow objects to be released.
   [[self view] removeFromSuperview];
   [super dealloc];
 }
 
 - (void)loadView {
-  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> view(
+      [[TabContentsContainerView alloc] initWithDelegate:self]);
   [view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
   [self setView:view];
 }
@@ -82,8 +164,6 @@ class FullscreenObserver : public WebContentsObserver {
   }
 }
 
-// Call when the tab view is properly sized and the render widget host view
-// should be put into the view hierarchy.
 - (void)ensureContentsVisible {
   if (!contents_)
     return;
@@ -99,7 +179,7 @@ class FullscreenObserver : public WebContentsObserver {
     isEmbeddingFullscreenWidget_ = NO;
     contentsNativeView = contents_->GetView()->GetNativeView();
   }
-  [contentsNativeView setFrame:[contentsContainer frame]];
+  [contentsNativeView setFrame:[self frameForContentsView]];
   if ([subviews count] == 0) {
     [contentsContainer addSubview:contentsNativeView];
   } else if ([subviews objectAtIndex:0] != contentsNativeView) {
@@ -176,6 +256,55 @@ class FullscreenObserver : public WebContentsObserver {
   isEmbeddingFullscreenWidget_ = enterFullscreen &&
       contents_ && contents_->GetFullscreenRenderWidgetHostView();
   [self ensureContentsVisible];
+}
+
+- (NSRect)frameForContentsView {
+  const NSSize containerSize = [[self view] frame].size;
+  gfx::Rect rect;
+  rect.set_width(containerSize.width);
+  rect.set_height(containerSize.height);
+
+  // In most cases, the contents view is simply sized to fill the container
+  // view's bounds. Only WebContentses that are in fullscreen mode and being
+  // screen-captured will engage the special layout/sizing behavior.
+  if (!fullscreenObserver_)
+    return NSRectFromCGRect(rect.ToCGRect());
+  // Note: Grab a known-valid WebContents pointer from |fullscreenObserver_|.
+  content::WebContents* const wc = fullscreenObserver_->web_contents();
+  if (!wc ||
+      wc->GetCapturerCount() == 0 ||
+      wc->GetPreferredSize().IsEmpty() ||
+      !(isEmbeddingFullscreenWidget_ ||
+        (wc->GetDelegate() &&
+         wc->GetDelegate()->IsFullscreenForTabOrPending(wc)))) {
+    return NSRectFromCGRect(rect.ToCGRect());
+  }
+
+  // Size the contents view to the capture video resolution and center it. If
+  // the container view is not large enough to fit it at the preferred size,
+  // scale down to fit (preserving aspect ratio).
+  const gfx::Size captureSize = wc->GetPreferredSize();
+  if (captureSize.width() <= rect.width() &&
+      captureSize.height() <= rect.height()) {
+    // No scaling, just centering.
+    rect.ClampToCenteredSize(captureSize);
+  } else {
+    // Scale down, preserving aspect ratio, and center.
+    // TODO(miu): This is basically media::ComputeLetterboxRegion(), and it
+    // looks like others have written this code elsewhere.  Let's consolidate
+    // into a shared function ui/gfx/geometry or around there.
+    const int64 x = static_cast<int64>(captureSize.width()) * rect.height();
+    const int64 y = static_cast<int64>(captureSize.height()) * rect.width();
+    if (y < x) {
+      rect.ClampToCenteredSize(gfx::Size(
+          rect.width(), static_cast<int>(y / captureSize.width())));
+    } else {
+      rect.ClampToCenteredSize(gfx::Size(
+          static_cast<int>(x / captureSize.height()), rect.height()));
+    }
+  }
+
+  return NSRectFromCGRect(rect.ToCGRect());
 }
 
 @end
