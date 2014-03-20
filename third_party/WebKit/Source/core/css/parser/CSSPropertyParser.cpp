@@ -5225,7 +5225,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c)
 // This class tracks parsing state for shadow values.  If it goes out of scope (e.g., due to an early return)
 // without the allowBreak bit being set, then it will clean up all of the objects and destroy them.
 class ShadowParseContext {
-    DISALLOW_ALLOCATION();
+    STACK_ALLOCATED();
 public:
     ShadowParseContext(CSSPropertyID prop, CSSPropertyParser* parser)
         : property(prop)
@@ -5775,7 +5775,7 @@ bool CSSPropertyParser::parseBorderImageRepeat(RefPtrWillBeRawPtr<CSSValue>& res
 }
 
 class BorderImageSliceParseContext {
-    DISALLOW_ALLOCATION();
+    STACK_ALLOCATED();
 public:
     BorderImageSliceParseContext(CSSPropertyParser* parser)
     : m_parser(parser)
@@ -5890,6 +5890,7 @@ bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBe
 }
 
 class BorderImageQuadParseContext {
+    STACK_ALLOCATED();
 public:
     BorderImageQuadParseContext(CSSPropertyParser* parser)
     : m_parser(parser)

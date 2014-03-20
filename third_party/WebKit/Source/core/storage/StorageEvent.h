@@ -35,8 +35,6 @@ namespace WebCore {
 class Storage;
 
 struct StorageEventInit : public EventInit {
-    STACK_ALLOCATED();
-public:
     StorageEventInit();
 
     String key;

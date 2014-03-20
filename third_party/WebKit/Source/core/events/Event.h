@@ -38,6 +38,8 @@ class EventDispatcher;
 class HTMLIFrameElement;
 
 struct EventInit {
+    STACK_ALLOCATED();
+public:
     EventInit();
 
     bool bubbles;
