@@ -50,6 +50,7 @@
       'layers/tiled_layer_unittest.cc',
       'layers/ui_resource_layer_impl_unittest.cc',
       'layers/ui_resource_layer_unittest.cc',
+      'layers/video_layer_impl_unittest.cc',
       'output/delegating_renderer_unittest.cc',
       'output/filter_operations_unittest.cc',
       'output/gl_renderer_unittest.cc',
