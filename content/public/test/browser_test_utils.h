@@ -210,6 +210,7 @@ RenderFrameHost* FrameMatchingPredicate(
 
 // Predicates for use with FrameMatchingPredicate.
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);
+bool FrameIsChildOfMainFrame(RenderFrameHost* frame);
 
 // Executes the WebUI resource test runner injecting each resource ID in
 // |js_resource_ids| prior to executing the tests.

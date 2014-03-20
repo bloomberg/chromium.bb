@@ -576,6 +576,10 @@ bool FrameMatchesName(const std::string& name, RenderFrameHost* frame) {
   return frame->GetFrameName() == name;
 }
 
+bool FrameIsChildOfMainFrame(RenderFrameHost* frame) {
+  return frame->GetParent() && !frame->GetParent()->GetParent();
+}
+
 bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids) {
   // Inject WebUI test runner script first prior to other scripts required to
