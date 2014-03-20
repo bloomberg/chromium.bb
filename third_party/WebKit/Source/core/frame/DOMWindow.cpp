@@ -1291,7 +1291,7 @@ StyleMedia& DOMWindow::styleMedia() const
     return *m_media;
 }
 
-PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
+PassRefPtrWillBeRawPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
 {
     if (!elt)
         return nullptr;

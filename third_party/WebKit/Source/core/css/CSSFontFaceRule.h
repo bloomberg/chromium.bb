@@ -54,7 +54,7 @@ private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
 
     RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
-    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, FONT_FACE_RULE);

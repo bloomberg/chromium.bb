@@ -37,8 +37,10 @@ CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* fontFaceRule, CSSStyleSheet*
 
 CSSFontFaceRule::~CSSFontFaceRule()
 {
+#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
+#endif
 }
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const
@@ -71,6 +73,7 @@ void CSSFontFaceRule::reattach(StyleRuleBase* rule)
 void CSSFontFaceRule::trace(Visitor* visitor)
 {
     visitor->trace(m_fontFaceRule);
+    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

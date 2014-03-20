@@ -136,7 +136,7 @@ private:
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
     OwnPtr<ActiveAnimations> m_activeAnimations;
-    OwnPtr<InlineCSSStyleDeclaration> m_cssomWrapper;
+    OwnPtrWillBePersistent<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<RenderStyle> m_computedStyle;
     RefPtr<CustomElementDefinition> m_customElementDefinition;

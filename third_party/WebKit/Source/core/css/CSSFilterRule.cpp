@@ -45,8 +45,10 @@ CSSFilterRule::CSSFilterRule(StyleRuleFilter* filterRule, CSSStyleSheet* parent)
 
 CSSFilterRule::~CSSFilterRule()
 {
+#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
+#endif
 }
 
 CSSStyleDeclaration* CSSFilterRule::style() const
@@ -85,6 +87,7 @@ void CSSFilterRule::reattach(StyleRuleBase* rule)
 void CSSFilterRule::trace(Visitor* visitor)
 {
     visitor->trace(m_filterRule);
+    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 
