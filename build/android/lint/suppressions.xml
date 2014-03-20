@@ -55,6 +55,7 @@ Still reading?
     <ignore path="media/base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java"/>
     <ignore path="net/android/java/src/org/chromium/net/X509Util.java"/>
     <ignore path="printing/android/java/src/org/chromium/printing/PrintingControllerImpl.java"/>
+    <ignore path="printing/android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java"/>
     <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
   </issue>
   <issue id="MissingRegistered" severity="ignore"/>

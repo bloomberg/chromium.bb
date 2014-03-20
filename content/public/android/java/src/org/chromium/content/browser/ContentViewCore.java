@@ -44,7 +44,6 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsoluteLayout;
 import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -524,7 +523,7 @@ public class ContentViewCore
             }
 
             @Override
-            @SuppressWarnings("deprecation")  // AbsoluteLayout.LayoutParams
+            @SuppressWarnings("deprecation")  // AbsoluteLayout
             public void setAnchorViewPosition(
                     View view, float x, float y, float width, float height) {
                 assert view.getParent() == mContainerView;
@@ -545,7 +544,7 @@ public class ContentViewCore
                     lp.leftMargin = leftMargin;
                     lp.topMargin = topMargin;
                     view.setLayoutParams(lp);
-                } else if (mContainerView instanceof AbsoluteLayout) {
+                } else if (mContainerView instanceof android.widget.AbsoluteLayout) {
                     // This fixes the offset due to a difference in
                     // scrolling model of WebView vs. Chrome.
                     // TODO(sgurun) fix this to use mContainerView.getScroll[X/Y]()

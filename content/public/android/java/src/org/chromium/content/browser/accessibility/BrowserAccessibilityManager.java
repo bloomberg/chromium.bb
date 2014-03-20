@@ -25,6 +25,7 @@ import org.chromium.content.browser.RenderCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Native accessibility for a {@link ContentViewCore}.
@@ -202,7 +203,7 @@ public class BrowserAccessibilityManager {
                     AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null)
                     return false;
-                elementType = elementType.toUpperCase();
+                elementType = elementType.toUpperCase(Locale.US);
                 return jumpToElementType(elementType, true);
             }
             case AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT: {
@@ -212,7 +213,7 @@ public class BrowserAccessibilityManager {
                     AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null)
                     return false;
-                elementType = elementType.toUpperCase();
+                elementType = elementType.toUpperCase(Locale.US);
                 return jumpToElementType(elementType, false);
             }
 
