@@ -4022,118 +4022,6 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeRectangle(CSSParserValueList* args)
-{
-    ASSERT(args);
-
-    // rect(x, y, width, height, [[rx], ry])
-    if (args->size() != 7 && args->size() != 9 && args->size() != 11)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSBasicShapeRectangle> shape = CSSBasicShapeRectangle::create();
-
-    unsigned argumentNumber = 0;
-    CSSParserValue* argument = args->current();
-    while (argument) {
-        Units unitFlags = FLength | FPercent;
-        if (argumentNumber > 1) {
-            // Arguments width, height, rx, and ry cannot be negative.
-            unitFlags = unitFlags | FNonNeg;
-        }
-        if (!validUnit(argument, unitFlags))
-            return nullptr;
-
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
-        ASSERT(argumentNumber < 6);
-        switch (argumentNumber) {
-        case 0:
-            shape->setX(length);
-            break;
-        case 1:
-            shape->setY(length);
-            break;
-        case 2:
-            shape->setWidth(length);
-            break;
-        case 3:
-            shape->setHeight(length);
-            break;
-        case 4:
-            shape->setRadiusX(length);
-            break;
-        case 5:
-            shape->setRadiusY(length);
-            break;
-        }
-        argument = args->next();
-        if (argument) {
-            if (!isComma(argument))
-                return nullptr;
-
-            argument = args->next();
-        }
-        argumentNumber++;
-    }
-
-    if (argumentNumber < 4)
-        return nullptr;
-    return shape;
-}
-
-PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInsetRectangle(CSSParserValueList* args)
-{
-    ASSERT(args);
-
-    // inset-rectangle(top, right, bottom, left, [[rx], ry])
-    if (args->size() != 7 && args->size() != 9 && args->size() != 11)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSBasicShapeInsetRectangle> shape = CSSBasicShapeInsetRectangle::create();
-
-    unsigned argumentNumber = 0;
-    CSSParserValue* argument = args->current();
-    while (argument) {
-        Units unitFlags = FLength | FPercent | FNonNeg;
-        if (!validUnit(argument, unitFlags))
-            return nullptr;
-
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
-        ASSERT(argumentNumber < 6);
-        switch (argumentNumber) {
-        case 0:
-            shape->setTop(length);
-            break;
-        case 1:
-            shape->setRight(length);
-            break;
-        case 2:
-            shape->setBottom(length);
-            break;
-        case 3:
-            shape->setLeft(length);
-            break;
-        case 4:
-            shape->setRadiusX(length);
-            break;
-        case 5:
-            shape->setRadiusY(length);
-            break;
-        }
-        argument = args->next();
-        if (argument) {
-            if (!isComma(argument))
-                return nullptr;
-
-            argument = args->next();
-        }
-        argumentNumber++;
-    }
-
-    if (argumentNumber < 4)
-        return nullptr;
-    return shape;
-}
-
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseShapeRadius(CSSParserValue* value)
 {
     if (value->id == CSSValueClosestSide || value->id == CSSValueFarthestSide)
@@ -4191,56 +4079,6 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(C
     return shape;
 }
 
-PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeCircle(CSSParserValueList* args)
-{
-    ASSERT(args);
-
-    // circle(centerX, centerY, radius)
-    if (args->size() != 5)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeCircle> shape = CSSDeprecatedBasicShapeCircle::create();
-
-    unsigned argumentNumber = 0;
-    CSSParserValue* argument = args->current();
-    while (argument) {
-        Units unitFlags = FLength | FPercent;
-        if (argumentNumber == 2) {
-            // Argument radius cannot be negative.
-            unitFlags = unitFlags | FNonNeg;
-        }
-
-        if (!validUnit(argument, unitFlags))
-            return nullptr;
-
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
-        ASSERT(argumentNumber < 3);
-        switch (argumentNumber) {
-        case 0:
-            shape->setCenterX(length);
-            break;
-        case 1:
-            shape->setCenterY(length);
-            break;
-        case 2:
-            shape->setRadius(length);
-            break;
-        }
-
-        argument = args->next();
-        if (argument) {
-            if (!isComma(argument))
-                return nullptr;
-            argument = args->next();
-        }
-        argumentNumber++;
-    }
-
-    if (argumentNumber < 3)
-        return nullptr;
-    return shape;
-}
-
 PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(CSSParserValueList* args)
 {
     ASSERT(args);
@@ -4286,57 +4124,6 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(
         shape->setCenterY(toCSSPrimitiveValue(centerY.get()));
     }
 
-    return shape;
-}
-
-PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeEllipse(CSSParserValueList* args)
-{
-    ASSERT(args);
-
-    // ellipse(centerX, centerY, radiusX, radiusY)
-    if (args->size() != 7)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeEllipse> shape = CSSDeprecatedBasicShapeEllipse::create();
-    unsigned argumentNumber = 0;
-    CSSParserValue* argument = args->current();
-    while (argument) {
-        Units unitFlags = FLength | FPercent;
-        if (argumentNumber > 1) {
-            // Arguments radiusX and radiusY cannot be negative.
-            unitFlags = unitFlags | FNonNeg;
-        }
-        if (!validUnit(argument, unitFlags))
-            return nullptr;
-
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
-        ASSERT(argumentNumber < 4);
-        switch (argumentNumber) {
-        case 0:
-            shape->setCenterX(length);
-            break;
-        case 1:
-            shape->setCenterY(length);
-            break;
-        case 2:
-            shape->setRadiusX(length);
-            break;
-        case 3:
-            shape->setRadiusY(length);
-            break;
-        }
-
-        argument = args->next();
-        if (argument) {
-            if (!isComma(argument))
-                return nullptr;
-            argument = args->next();
-        }
-        argumentNumber++;
-    }
-
-    if (argumentNumber < 4)
-        return nullptr;
     return shape;
 }
 
@@ -4401,20 +4188,6 @@ static bool isBoxValue(CSSValueID valueId)
         return true;
     default:
         break;
-    }
-
-    return false;
-}
-
-// FIXME This function is temporary to allow for an orderly transition between
-// the new CSS Shapes circle and ellipse syntax. It will be removed when the
-// old syntax is removed.
-static bool isDeprecatedBasicShape(CSSParserValueList* args)
-{
-    for (unsigned i = args->currentIndex(); i < args->size(); ++i) {
-        CSSParserValue* value = args->valueAt(i);
-        if (isComma(value))
-            return true;
     }
 
     return false;
@@ -4492,22 +4265,12 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBasicShape()
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSBasicShape> shape;
-    if (equalIgnoringCase(value->function->name, "rectangle("))
-        shape = parseBasicShapeRectangle(args);
-    else if (equalIgnoringCase(value->function->name, "circle("))
-        if (isDeprecatedBasicShape(args))
-            shape = parseDeprecatedBasicShapeCircle(args);
-        else
-            shape = parseBasicShapeCircle(args);
+    if (equalIgnoringCase(value->function->name, "circle("))
+        shape = parseBasicShapeCircle(args);
     else if (equalIgnoringCase(value->function->name, "ellipse("))
-        if (isDeprecatedBasicShape(args))
-            shape = parseDeprecatedBasicShapeEllipse(args);
-        else
-            shape = parseBasicShapeEllipse(args);
+        shape = parseBasicShapeEllipse(args);
     else if (equalIgnoringCase(value->function->name, "polygon("))
         shape = parseBasicShapePolygon(args);
-    else if (equalIgnoringCase(value->function->name, "inset-rectangle("))
-        shape = parseBasicShapeInsetRectangle(args);
     else if (equalIgnoringCase(value->function->name, "inset("))
         shape = parseBasicShapeInset(args);
 

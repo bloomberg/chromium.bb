@@ -10,10 +10,6 @@
         display: inline-block;
     }
 
-    #rectangle-box {
-      -webkit-animation: rectangle-anim 2s linear
-    }
-
     #circle-box {
       -webkit-animation: circle-anim 2s linear
     }
@@ -26,11 +22,6 @@
       -webkit-animation: polygon-anim 2s linear
     }
 
-
-    @-webkit-keyframes rectangle-anim {
-        from { shape-inside: rectangle(0%, 0%, 100%, 100%); }
-        to   { shape-inside: rectangle(20%, 20%, 60%, 60%); }
-    }
 
     @-webkit-keyframes circle-anim {
         from { shape-inside: circle(50% at 50% 50%); }
@@ -52,7 +43,8 @@
   <script type="text/javascript">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [1, "rectangle-box", "shapeInside", "rectangle(10%, 10%, 80%, 80%, 0px, 0px)", 0.05],
+   // FIXME: BasicShapeInset::blend is not implemented, when it is add an inset test.
+   //   [1, "inset-box", "shapeInside", "inset(10% 10% 10% 10% round 0px 0px 0px 0px / 0px 0px 0px 0px)", 0.05],
       [1, "circle-box", "shapeInside", "circle(35% at 35% 35%)", 0.05],
       [1, "ellipse-box", "shapeInside", "ellipse(35% 30% at 35% 35%)", 0.05],
       [1, "polygon-box", "shapeInside", "polygon(10% 10%, 90% 10%, 90% 90%, 10% 90%)", 0.05],
@@ -63,7 +55,6 @@
 </head>
 <body>
 
-<div class="box" id="rectangle-box">Moving Text</div>
 <div class="box" id="circle-box">Moving Text</div>
 <div class="box" id="ellipse-box">Moving Text</div>
 <div class="box" id="polygon-box">Moving Text</div>

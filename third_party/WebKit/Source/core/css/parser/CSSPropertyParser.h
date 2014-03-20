@@ -168,13 +168,9 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBasicShape();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
 
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeRectangle(CSSParserValueList* args);
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseDeprecatedBasicShapeCircle(CSSParserValueList* args);
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeEllipse(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseDeprecatedBasicShapeEllipse(CSSParserValueList*);
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInsetRectangle(CSSParserValueList* args);
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);

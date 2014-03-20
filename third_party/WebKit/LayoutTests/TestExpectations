@@ -276,7 +276,6 @@ crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-v.html [ Pass ImageOnl
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-inside/shape-inside-offset-block-children.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-inside/shape-inside-overflow-fixed-dimensions-block-content.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-inside/shape-inside-overflow.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/shapes/shape-inside/shape-inside-rectangle-padding.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-002.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-003.html [ Pass ImageOnlyFailure ]

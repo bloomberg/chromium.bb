@@ -52,12 +52,6 @@ static PassOwnPtr<Shape> createInsetShape(const FloatRoundedRect& bounds)
     return adoptPtr(new BoxShape(bounds));
 }
 
-static PassOwnPtr<Shape> createRectangleShape(const FloatRect& bounds, const FloatSize& radii)
-{
-    ASSERT(bounds.width() >= 0 && bounds.height() >= 0 && radii.width() >= 0 && radii.height() >= 0);
-    return adoptPtr(new RectangleShape(bounds, radii));
-}
-
 static PassOwnPtr<Shape> createCircleShape(const FloatPoint& center, float radius)
 {
     ASSERT(radius >= 0);
@@ -100,17 +94,6 @@ static inline FloatSize physicalSizeToLogical(const FloatSize& size, WritingMode
     return size.transposedSize();
 }
 
-static inline void ensureRadiiDoNotOverlap(FloatRect& bounds, FloatSize& radii)
-{
-    float widthRatio = bounds.width() / (2 * radii.width());
-    float heightRatio = bounds.height() / (2 * radii.height());
-    float reductionRatio = std::min<float>(widthRatio, heightRatio);
-    if (reductionRatio < 1) {
-        radii.setWidth(reductionRatio * radii.width());
-        radii.setHeight(reductionRatio * radii.height());
-    }
-}
-
 PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutSize& logicalBoxSize, WritingMode writingMode, Length margin, Length padding)
 {
     ASSERT(basicShape);
@@ -122,38 +105,6 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
 
     switch (basicShape->type()) {
 
-    case BasicShape::BasicShapeRectangleType: {
-        const BasicShapeRectangle* rectangle = static_cast<const BasicShapeRectangle*>(basicShape);
-        FloatRect bounds(
-            floatValueForLength(rectangle->x(), boxWidth),
-            floatValueForLength(rectangle->y(), boxHeight),
-            floatValueForLength(rectangle->width(), boxWidth),
-            floatValueForLength(rectangle->height(), boxHeight));
-        FloatSize cornerRadii(
-            floatValueForLength(rectangle->cornerRadiusX(), boxWidth),
-            floatValueForLength(rectangle->cornerRadiusY(), boxHeight));
-        ensureRadiiDoNotOverlap(bounds, cornerRadii);
-        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height().toFloat(), writingMode);
-
-        shape = createRectangleShape(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
-        break;
-    }
-
-    case BasicShape::DeprecatedBasicShapeCircleType: {
-        const DeprecatedBasicShapeCircle* circle = static_cast<const DeprecatedBasicShapeCircle*>(basicShape);
-        float centerX = floatValueForLength(circle->centerX(), boxWidth);
-        float centerY = floatValueForLength(circle->centerY(), boxHeight);
-        // This method of computing the radius is as defined in SVG
-        // (http://www.w3.org/TR/SVG/coords.html#Units). It bases the radius
-        // off of the diagonal of the box and ensures that if the box is
-        // square, the radius is equal to half the diagonal.
-        float radius = floatValueForLength(circle->radius(), sqrtf((boxWidth * boxWidth + boxHeight * boxHeight) / 2));
-        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height().toFloat(), writingMode);
-
-        shape = createCircleShape(logicalCenter, radius);
-        break;
-    }
-
     case BasicShape::BasicShapeCircleType: {
         const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
         FloatPoint center = floatPointForCenterCoordinate(circle->centerX(), circle->centerY(), FloatSize(boxWidth, boxHeight));
@@ -161,19 +112,6 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height().toFloat(), writingMode);
 
         shape = createCircleShape(logicalCenter, radius);
-        break;
-    }
-
-    case BasicShape::DeprecatedBasicShapeEllipseType: {
-        const DeprecatedBasicShapeEllipse* ellipse = static_cast<const DeprecatedBasicShapeEllipse*>(basicShape);
-        float centerX = floatValueForLength(ellipse->centerX(), boxWidth);
-        float centerY = floatValueForLength(ellipse->centerY(), boxHeight);
-        float radiusX = floatValueForLength(ellipse->radiusX(), boxWidth);
-        float radiusY = floatValueForLength(ellipse->radiusY(), boxHeight);
-        FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height().toFloat(), writingMode);
-        FloatSize logicalRadii = physicalSizeToLogical(FloatSize(radiusX, radiusY), writingMode);
-
-        shape = createEllipseShape(logicalCenter, logicalRadii);
         break;
     }
 
@@ -201,27 +139,6 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
             (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height().toFloat(), writingMode);
         }
         shape = createPolygonShape(vertices.release(), polygon->windRule());
-        break;
-    }
-
-    case BasicShape::BasicShapeInsetRectangleType: {
-        const BasicShapeInsetRectangle* rectangle = static_cast<const BasicShapeInsetRectangle*>(basicShape);
-        float left = floatValueForLength(rectangle->left(), boxWidth);
-        float top = floatValueForLength(rectangle->top(), boxHeight);
-        float right = floatValueForLength(rectangle->right(), boxWidth);
-        float bottom = floatValueForLength(rectangle->bottom(), boxHeight);
-        FloatRect bounds(
-            left,
-            top,
-            std::max<float>(boxWidth - left - right, 0),
-            std::max<float>(boxHeight - top - bottom, 0));
-        FloatSize cornerRadii(
-            floatValueForLength(rectangle->cornerRadiusX(), boxWidth),
-            floatValueForLength(rectangle->cornerRadiusY(), boxHeight));
-        ensureRadiiDoNotOverlap(bounds, cornerRadii);
-        FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height().toFloat(), writingMode);
-
-        shape = createRectangleShape(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
         break;
     }
 

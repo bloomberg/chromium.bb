@@ -11,13 +11,13 @@ el.style.setProperty('-webkit-shape-padding', '10px')
 el.style.getPropertyValue('-webkit-shape-padding') is 10px
 getComputedStyle(el).getPropertyValue('-webkit-shape-padding') is 10px
 
-el.style.setProperty('-webkit-shape-inside', 'circle(10px, 10px, 10px)')
-el.style.getPropertyValue('-webkit-shape-inside') is circle(10px, 10px, 10px)
-getComputedStyle(el).getPropertyValue('-webkit-shape-inside') is circle(10px, 10px, 10px)
+el.style.setProperty('-webkit-shape-inside', 'circle(10px at 10px 10px)')
+el.style.getPropertyValue('-webkit-shape-inside') is circle(10px at 10px 10px)
+getComputedStyle(el).getPropertyValue('-webkit-shape-inside') is circle(10px at 10px 10px)
 
-el.style.setProperty('-webkit-shape-outside', 'circle(10px, 10px, 10px)')
-el.style.getPropertyValue('-webkit-shape-outside') is circle(10px, 10px, 10px)
-getComputedStyle(el).getPropertyValue('-webkit-shape-outside') is circle(10px, 10px, 10px)
+el.style.setProperty('-webkit-shape-outside', 'circle(10px at 10px 10px)')
+el.style.getPropertyValue('-webkit-shape-outside') is circle(10px at 10px 10px)
+getComputedStyle(el).getPropertyValue('-webkit-shape-outside') is circle(10px at 10px 10px)
 
 el.style.setProperty('-webkit-wrap-flow', 'both')
 el.style.getPropertyValue('-webkit-wrap-flow') is both

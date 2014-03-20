@@ -31,28 +31,15 @@
 <script>
 assertInterpolation({
   property: 'shape-inside',
-  from: 'rectangle(0px, 0px, 100px, 100px)',
-  to: 'rectangle(25px, 25px, 50px, 50px)'
-}, [
-  {at: -0.3, is: 'rectangle(-7.5px, -7.5px, 115px, 115px)'},
-  {at: 0, is: 'rectangle(0px, 0px, 100px, 100px)'},
-  {at: 0.3, is: 'rectangle(7.5px, 7.5px, 85px, 85px)'},
-  {at: 0.6, is: 'rectangle(15px, 15px, 70px, 70px)'},
-  {at: 1, is: 'rectangle(25px, 25px, 50px, 50px)'},
-  {at: 1.5, is: 'rectangle(37.5px, 37.5px, 25px, 25px)'}
-]);
-
-assertInterpolation({
-  property: 'shape-inside',
   from: 'none',
-  to: 'ellipse(0%, 0%, 100%, 100%)',
+  to: 'ellipse(100% 100% at 0% 0%)',
 }, [
   {at: -0.3, is: 'none'},
   {at: 0, is: 'none'},
   {at: 0.3, is: 'none'},
-  {at: 0.6, is: 'ellipse(0%, 0%, 100%, 100%)'},
-  {at: 1, is: 'ellipse(0%, 0%, 100%, 100%)'},
-  {at: 1.5, is: 'ellipse(0%, 0%, 100%, 100%)'}
+  {at: 0.6, is: 'ellipse(100% 100% at 0% 0%)'},
+  {at: 1, is: 'ellipse(100% 100% at 0% 0%)'},
+  {at: 1.5, is: 'ellipse(100% 100% at 0% 0%)'}
 ]);
 </script>
 </body>

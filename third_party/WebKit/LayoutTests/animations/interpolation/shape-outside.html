@@ -3,31 +3,7 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
-assertInterpolation({
-  property: 'shape-outside',
-  from: 'rectangle(0px, 0px, 100px, 100px)',
-  to: 'rectangle(25px, 25px, 50px, 50px)'
-}, [
-  {at: -0.3, is: 'rectangle(-7.5px, -7.5px, 115px, 115px)'},
-  {at: 0, is: 'rectangle(0px, 0px, 100px, 100px)'},
-  {at: 0.3, is: 'rectangle(7.5px, 7.5px, 85px, 85px)'},
-  {at: 0.6, is: 'rectangle(15px, 15px, 70px, 70px)'},
-  {at: 1, is: 'rectangle(25px, 25px, 50px, 50px)'},
-  {at: 1.5, is: 'rectangle(37.5px, 37.5px, 25px, 25px)'}
-]);
-
-assertInterpolation({
-  property: 'shape-outside',
-  from: 'inset-rectangle(25px, 25px, 100px, 100px)',
-  to: 'inset-rectangle(50px, 50px, 50px, 50px)'
-}, [
-  {at: -0.5, is: 'inset-rectangle(12.5px, 12.5px, 125px, 125px)'},
-  {at: 0, is: 'inset-rectangle(25px, 25px, 100px, 100px)'},
-  {at: 0.3, is: 'inset-rectangle(32.5px, 32.5px, 85px, 85px)'},
-  {at: 0.6, is: 'inset-rectangle(40px, 40px, 70px, 70px)'},
-  {at: 1, is: 'inset-rectangle(50px, 50px, 50px, 50px)'},
-  {at: 1.5, is: 'inset-rectangle(62.5px, 62.5px, 25px, 25px)'}
-]);
+/* TODO: add inset test once blend() works for it */
 
 assertInterpolation({
   property: 'shape-outside',

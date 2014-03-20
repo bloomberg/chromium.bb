@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <style>
 #target {
-  -webkit-clip-path: circle(0px, 0px, 0px);
+  -webkit-clip-path: circle(0px at 0px 0px);
   transition: -webkit-clip-path 1s;
 }
 </style>
@@ -25,7 +25,7 @@ function step1() {
         'PASS - No transition started.' :
         'FAIL - Unexpected transition started.';
   }
-  target.style.webkitClipPath = 'circle(0px, 0px, 200px)';
+  target.style.webkitClipPath = 'circle(200px at 0px 0px)';
   requestAnimationFrame(step2);
 }
 function step2() {
