@@ -113,8 +113,11 @@ void StyleSheetContents::setHasSyntacticallyValidCSSHeader(bool isValidCss)
     m_hasSyntacticallyValidCSSHeader = isValidCss;
 }
 
-bool StyleSheetContents::maybeCacheable() const
+bool StyleSheetContents::isCacheable() const
 {
+    // This would require dealing with multiple clients for load callbacks.
+    if (!loadCompleted())
+        return false;
     // FIXME: StyleSheets with media queries can't be cached because their RuleSet
     // is processed differently based off the media queries, which might resolve
     // differently depending on the context of the parent CSSStyleSheet (e.g.
@@ -138,14 +141,6 @@ bool StyleSheetContents::maybeCacheable() const
     if (!m_hasSyntacticallyValidCSSHeader)
         return false;
     return true;
-}
-
-bool StyleSheetContents::isCacheable() const
-{
-    // This would require dealing with multiple clients for load callbacks.
-    if (!loadCompleted())
-        return false;
-    return maybeCacheable();
 }
 
 void StyleSheetContents::parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase> rule)
@@ -589,8 +584,6 @@ void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet)
 void StyleSheetContents::removeSheetFromCache(Document* document)
 {
     ASSERT(document);
-    if (!maybeCacheable())
-        return;
     document->styleEngine()->removeSheet(this);
 }
 

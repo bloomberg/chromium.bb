@@ -562,6 +562,21 @@ void StyleEngine::markDocumentDirty()
         m_document.import()->master()->styleEngine()->markDocumentDirty();
 }
 
+static bool isCacheableForStyleElement(const StyleSheetContents& contents)
+{
+    // FIXME: Support copying import rules.
+    if (!contents.importRules().isEmpty())
+        return false;
+    // Until import rules are supported in cached sheets it's not possible for loading to fail.
+    ASSERT(!contents.didLoadErrorOccur());
+    // It is not the original sheet anymore.
+    if (contents.isMutable())
+        return false;
+    if (!contents.hasSyntacticallyValidCSSHeader())
+        return false;
+    return true;
+}
+
 PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
     RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet;
@@ -574,14 +589,16 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
         HashMap<AtomicString, StyleSheetContents*>::AddResult result = m_textToSheetCache.add(textContent, 0);
         if (result.isNewEntry || !result.storedValue->value) {
             styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
-            if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
+            if (result.isNewEntry && isCacheableForStyleElement(*styleSheet->contents())) {
                 result.storedValue->value = styleSheet->contents();
                 m_sheetToTextCache.add(styleSheet->contents(), textContent);
             }
         } else {
-            ASSERT(result.storedValue->value->maybeCacheable());
-            ASSERT(result.storedValue->value->singleOwnerDocument() == e->document());
-            styleSheet = CSSStyleSheet::createInline(result.storedValue->value, e, startPosition);
+            StyleSheetContents* contents = result.storedValue->value;
+            ASSERT(contents);
+            ASSERT(isCacheableForStyleElement(*contents));
+            ASSERT(contents->singleOwnerDocument() == e->document());
+            styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
         }
     } else {
         // FIXME: currently we don't cache StyleSheetContents inQuirksMode.

@@ -71,7 +71,6 @@ public:
     bool parseStringAtPosition(const String&, const TextPosition&, bool);
 
     bool isCacheable() const;
-    bool maybeCacheable() const;
 
     bool isLoading() const;
 
@@ -154,7 +153,9 @@ public:
     void removedFromMemoryCache();
 
     void setHasMediaQueries();
-    bool hasMediaQueries() { return m_hasMediaQueries; }
+    bool hasMediaQueries() const { return m_hasMediaQueries; }
+
+    bool didLoadErrorOccur() const { return m_didLoadErrorOccur; }
 
     void shrinkToFit();
     RuleSet& ruleSet() { ASSERT(m_ruleSet); return *m_ruleSet.get(); }
