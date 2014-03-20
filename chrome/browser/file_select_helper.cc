@@ -367,6 +367,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents_));
+  if (!select_file_dialog_)
+    return;
 
   dialog_mode_ = params.mode;
   switch (params.mode) {
