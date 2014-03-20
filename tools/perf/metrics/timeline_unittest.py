@@ -53,7 +53,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     renderer_main.EndSlice(20, 20)
     model.FinalizeImport()
 
-    metric = timeline.LoadTimesTimelineMetric(timeline.TRACING_MODE)
+    metric = timeline.LoadTimesTimelineMetric()
     metric.renderer_process = renderer_main.parent
     results = self.GetResultsForModel(metric, model)
     results.AssertHasPageSpecificScalarValue(
@@ -74,7 +74,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     x_counter.timestamps += [0, 1]
     model.FinalizeImport()
 
-    metric = timeline.LoadTimesTimelineMetric(timeline.TRACING_MODE)
+    metric = timeline.LoadTimesTimelineMetric()
     metric.renderer_process = renderer_main.parent
     results = self.GetResultsForModel(metric, model)
     results.AssertHasPageSpecificScalarValue(

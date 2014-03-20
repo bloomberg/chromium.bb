@@ -8,8 +8,7 @@ from telemetry.page import page_measurement
 class LoadingTrace(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(LoadingTrace, self).__init__(*args, **kwargs)
-    self._timeline_metric = timeline.LoadTimesTimelineMetric(
-      timeline.TRACING_MODE)
+    self._timeline_metric = timeline.LoadTimesTimelineMetric()
 
   @property
   def results_are_the_same_on_every_page(self):

@@ -9,9 +9,6 @@ from telemetry.core.timeline.model import TimelineModel
 from telemetry.core.timeline import bounds
 from telemetry.page import page_measurement
 
-TRACING_MODE = 'tracing-mode'
-TIMELINE_MODE = 'timeline-mode'
-
 # All tracing categories not disabled-by-default
 DEFAULT_TRACE_CATEGORIES = None
 
@@ -30,13 +27,11 @@ class MissingFramesError(page_measurement.MeasurementFailure):
 
 
 class TimelineMetric(Metric):
-  def __init__(self, mode):
+  def __init__(self):
     """ Initializes a TimelineMetric object.
     """
     super(TimelineMetric, self).__init__()
-    assert mode in (TRACING_MODE, TIMELINE_MODE)
     self.trace_categories = DEFAULT_TRACE_CATEGORIES
-    self._mode = mode
     self._model = None
     self._renderer_process = None
     self._actions = []
@@ -45,36 +40,26 @@ class TimelineMetric(Metric):
   def Start(self, page, tab):
     """Starts gathering timeline data.
 
-    mode: TRACING_MODE or TIMELINE_MODE
     """
     self._model = None
-    if self._mode == TRACING_MODE:
-      if not tab.browser.supports_tracing:
-        raise Exception('Not supported')
-      if self.trace_categories:
-        categories = [self.trace_categories] + \
-            page.GetSyntheticDelayCategories()
-      else:
-        categories = page.GetSyntheticDelayCategories()
-      tab.browser.StartTracing(','.join(categories))
+    if not tab.browser.supports_tracing:
+      raise Exception('Not supported')
+    if self.trace_categories:
+      categories = [self.trace_categories] + \
+          page.GetSyntheticDelayCategories()
     else:
-      assert self._mode == TIMELINE_MODE
-      tab.StartTimelineRecording()
+      categories = page.GetSyntheticDelayCategories()
+    tab.browser.StartTracing(','.join(categories))
 
   def Stop(self, page, tab):
-    if self._mode == TRACING_MODE:
-      timeline_data = tab.browser.StopTracing()
-      self._model = TimelineModel(timeline_data)
-      self._renderer_process = self._model.GetRendererProcessFromTab(tab)
-      self._action_ranges = [ action.GetActiveRangeOnTimeline(self._model)
-                              for action in self._actions ]
-      # Make sure no action ranges overlap
-      for combo in itertools.combinations(self._action_ranges, 2):
-        assert not combo[0].Intersects(combo[1])
-    else:
-      tab.StopTimelineRecording()
-      self._model = tab.timeline_model
-      self._renderer_process = self._model.GetAllProcesses()[0]
+    timeline_data = tab.browser.StopTracing()
+    self._model = TimelineModel(timeline_data)
+    self._renderer_process = self._model.GetRendererProcessFromTab(tab)
+    self._action_ranges = [ action.GetActiveRangeOnTimeline(self._model)
+                            for action in self._actions ]
+    # Make sure no action ranges overlap
+    for combo in itertools.combinations(self._action_ranges, 2):
+      assert not combo[0].Intersects(combo[1])
 
   def AddActionToIncludeInMetric(self, action):
     self._actions.append(action)
@@ -100,17 +85,14 @@ class TimelineMetric(Metric):
 
 
 class LoadTimesTimelineMetric(TimelineMetric):
-  def __init__(self, mode):
-    super(LoadTimesTimelineMetric, self).__init__(mode)
+  def __init__(self):
+    super(LoadTimesTimelineMetric, self).__init__()
     self.report_main_thread_only = True
 
   def AddResults(self, _, results):
     assert self._model
     if self.report_main_thread_only:
-      if self._mode == TRACING_MODE:
-        thread_filter = 'CrRendererMain'
-      else:
-        thread_filter = 'thread 0'
+      thread_filter = 'CrRendererMain'
     else:
       thread_filter = None
 
@@ -294,7 +276,7 @@ class ResultsForThread(object):
 
 class ThreadTimesTimelineMetric(TimelineMetric):
   def __init__(self):
-    super(ThreadTimesTimelineMetric, self).__init__(TRACING_MODE)
+    super(ThreadTimesTimelineMetric, self).__init__()
     # Minimal traces, for minimum noise in CPU-time measurements.
     self.trace_categories = MINIMAL_TRACE_CATEGORIES
     self.results_to_report = AllThreads
