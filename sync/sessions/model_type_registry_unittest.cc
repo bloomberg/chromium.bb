@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
-#include "sync/engine/non_blocking_type_processor_core.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -110,61 +109,6 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Clear) {
 
   ModelSafeRoutingInfo routing_info2;
   registry()->SetEnabledDirectoryTypes(routing_info2);
-}
-
-TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
-  EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
-
-  registry()->InitializeNonBlockingType(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::THEMES)));
-
-  registry()->InitializeNonBlockingType(syncer::SESSIONS);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
-
-  registry()->RemoveNonBlockingType(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::SESSIONS)));
-
-  // Allow ModelTypeRegistry destruction to delete the
-  // Sessions' NonBlockingTypeProcessorCore.
-}
-
-TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
-  ModelSafeRoutingInfo routing_info1;
-  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
-  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
-  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
-
-  ModelTypeSet current_types;
-  EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
-
-  // Add the themes non-blocking type.
-  registry()->InitializeNonBlockingType(syncer::THEMES);
-  current_types.Put(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
-
-  // Add some directory types.
-  registry()->SetEnabledDirectoryTypes(routing_info1);
-  current_types.PutAll(GetRoutingInfoTypes(routing_info1));
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
-
-  // Add sessions non-blocking type.
-  registry()->InitializeNonBlockingType(syncer::SESSIONS);
-  current_types.Put(syncer::SESSIONS);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
-
-  // Remove themes non-blocking type.
-  registry()->RemoveNonBlockingType(syncer::THEMES);
-  current_types.Remove(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
-
-  // Clear all directory types.
-  ModelSafeRoutingInfo routing_info2;
-  registry()->SetEnabledDirectoryTypes(routing_info2);
-  current_types.RemoveAll(GetRoutingInfoTypes(routing_info1));
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 }
 
 }  // namespace syncer

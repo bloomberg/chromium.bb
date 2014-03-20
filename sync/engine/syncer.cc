@@ -168,7 +168,7 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
     scoped_ptr<Commit> commit(
         Commit::Init(
             requested_types,
-            session->context()->GetEnabledTypes(),
+            session->context()->enabled_types(),
             session->context()->max_commit_batch_size(),
             session->context()->account_name(),
             session->context()->directory()->cache_guid(),

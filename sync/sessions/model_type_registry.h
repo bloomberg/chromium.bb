@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -20,11 +20,8 @@ namespace syncable {
 class Directory;
 }  // namespace syncable
 
-class CommitContributor;
-class DirectoryCommitContributor;
-class DirectoryUpdateHandler;
-class NonBlockingTypeProcessorCore;
 class UpdateHandler;
+class CommitContributor;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
@@ -40,46 +37,26 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
   // Sets the set of enabled types.
   void SetEnabledDirectoryTypes(const ModelSafeRoutingInfo& routing_info);
 
-  // Enables an off-thread type for syncing.
-  //
-  // Expects that the type is not currently enabled.
-  void InitializeNonBlockingType(syncer::ModelType type);
-
-  // Disables the syncing of an off-thread type.
-  //
-  // Expects that the type is currently enabled.
-  // Deletes the processor core associated with the type.
-  void RemoveNonBlockingType(syncer::ModelType type);
-
-  // Gets the set of enabled types.
-  ModelTypeSet GetEnabledTypes() const;
-
   // Simple getters.
   UpdateHandlerMap* update_handler_map();
   CommitContributorMap* commit_contributor_map();
 
  private:
-  ModelTypeSet GetEnabledNonBlockingTypes() const;
-  ModelTypeSet GetEnabledDirectoryTypes() const;
-
-  // Sets of handlers and contributors.
-  ScopedVector<DirectoryCommitContributor> directory_commit_contributors_;
-  ScopedVector<DirectoryUpdateHandler> directory_update_handlers_;
-  ScopedVector<NonBlockingTypeProcessorCore> non_blocking_type_processor_cores_;
-
-  // Maps of UpdateHandlers and CommitContributors.
-  // They do not own any of the objects they point to.
+  // Classes to manage the types hooked up to receive and commit sync data.
   UpdateHandlerMap update_handler_map_;
   CommitContributorMap commit_contributor_map_;
+
+  // Deleter for the |update_handler_map_|.
+  STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
+
+  // Deleter for the |commit_contributor_map_|.
+  STLValueDeleter<CommitContributorMap> commit_contributor_deleter_;
 
   // The known ModelSafeWorkers.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker> > workers_map_;
 
   // The directory.  Not owned.
   syncable::Directory* directory_;
-
-  // The set of enabled directory types.
-  ModelTypeSet enabled_directory_types_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeRegistry);
 };
