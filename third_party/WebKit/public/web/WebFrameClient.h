@@ -224,6 +224,12 @@ public:
     // WARNING: This method may be called very frequently.
     virtual void didUpdateCurrentHistoryItem(WebFrame*) { }
 
+    // Editing -------------------------------------------------------------
+
+    // These methods allow the client to intercept and overrule editing
+    // operations.
+    virtual void didChangeSelection(bool isSelectionEmpty) { }
+
 
     // UI ------------------------------------------------------------------
 

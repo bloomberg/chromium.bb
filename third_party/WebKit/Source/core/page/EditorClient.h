@@ -41,7 +41,7 @@ public:
     virtual ~EditorClient() { }
 
     virtual void respondToChangedContents() = 0;
-    virtual void respondToChangedSelection(SelectionType) = 0;
+    virtual void respondToChangedSelection(LocalFrame*, SelectionType) = 0;
 
     virtual bool canCopyCut(LocalFrame*, bool defaultValue) const = 0;
     virtual bool canPaste(LocalFrame*, bool defaultValue) const = 0;

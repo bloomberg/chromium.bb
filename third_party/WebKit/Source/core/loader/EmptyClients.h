@@ -289,7 +289,7 @@ public:
     virtual ~EmptyEditorClient() { }
 
     virtual void respondToChangedContents() OVERRIDE { }
-    virtual void respondToChangedSelection(SelectionType) OVERRIDE { }
+    virtual void respondToChangedSelection(LocalFrame*, SelectionType) OVERRIDE { }
 
     virtual bool canCopyCut(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }
     virtual bool canPaste(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }

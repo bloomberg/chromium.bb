@@ -162,7 +162,6 @@ public:
     // These methods allow the client to intercept and overrule editing
     // operations.
     virtual void didCancelCompositionOnSelectionChange() { }
-    virtual void didChangeSelection(bool isSelectionEmpty) { }
     virtual void didChangeContents() { }
     virtual void didExecuteCommand(const WebString& commandName) { }
 

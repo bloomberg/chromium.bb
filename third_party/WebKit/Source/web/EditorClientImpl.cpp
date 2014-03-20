@@ -27,6 +27,7 @@
 #include "config.h"
 #include "EditorClientImpl.h"
 
+#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewClient.h"
@@ -46,10 +47,11 @@ EditorClientImpl::~EditorClientImpl()
 {
 }
 
-void EditorClientImpl::respondToChangedSelection(WebCore::SelectionType selectionType)
+void EditorClientImpl::respondToChangedSelection(LocalFrame* frame, WebCore::SelectionType selectionType)
 {
-    if (m_webView->client())
-        m_webView->client()->didChangeSelection(selectionType != WebCore::RangeSelection);
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    if (webFrame->client())
+        webFrame->client()->didChangeSelection(selectionType != WebCore::RangeSelection);
 }
 
 void EditorClientImpl::respondToChangedContents()
