@@ -505,7 +505,17 @@ CommandHandler.COMMANDS_['volume-help'] = {
     else
       util.visitURL(str('FILES_APP_HELP_URL'));
   },
-  canExecute: CommandUtil.canExecuteAlways
+  canExecute: function(event, fileManager) {
+    // Hides the help menu in modal dialog mode. It does not make much sense
+    // because after all, users cannot view the help without closing, and
+    // besides that the help page is about Files.app as an app, not about the
+    // dialog mode itself. It can also lead to hard-to-fix bug crbug.com/339089.
+    var hideHelp = DialogType.isModal(fileManager.dialogType);
+    event.canExecute = !hideHelp;
+    event.command.setHidden(hideHelp);
+    fileManager.document_.getElementById('help-separator').hidden =
+        hideHelp && !fileManager.isOnDrive();
+  },
 };
 
 /**
