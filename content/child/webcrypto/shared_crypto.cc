@@ -369,6 +369,39 @@ Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
   }
 }
 
+Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
+                  const blink::WebCryptoKey& key_to_wrap,
+                  const blink::WebCryptoAlgorithm& wrapping_algorithm,
+                  blink::WebArrayBuffer* buffer) {
+  // A raw key is always a symmetric key.
+  platform::SymKey* platform_key;
+  Status status = ToPlatformSymKey(key_to_wrap, &platform_key);
+  if (status.IsError())
+    return status;
+
+  // TODO(padolph): Handle other wrapping algorithms
+  switch (wrapping_algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      platform::SymKey* platform_wrapping_key;
+      status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
+      return platform::WrapSymKeyAesKw(
+          platform_wrapping_key, platform_key, buffer);
+    }
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5: {
+      platform::PublicKey* platform_wrapping_key;
+      status = ToPlatformPublicKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
+      return platform::WrapSymKeyRsaEs(
+          platform_wrapping_key, platform_key, buffer);
+    }
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
 Status DecryptAesKw(const blink::WebCryptoAlgorithm& algorithm,
                     const blink::WebCryptoKey& key,
                     const CryptoData& data,
@@ -403,6 +436,24 @@ Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
+                             const blink::WebCryptoKey& key,
+                             const CryptoData& data,
+                             blink::WebArrayBuffer* buffer) {
+  if (algorithm.id() != key.algorithm().id())
+    return Status::ErrorUnexpected();
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+      return EncryptDecryptAesCbc(ENCRYPT, algorithm, key, data, buffer);
+    case blink::WebCryptoAlgorithmIdAesGcm:
+      return EncryptDecryptAesGcm(ENCRYPT, algorithm, key, data, buffer);
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+      return EncryptRsaEsPkcs1v1_5(algorithm, key, data, buffer);
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
 Status UnwrapKeyDecryptAndImport(
     blink::WebCryptoKeyFormat format,
     const CryptoData& wrapped_key_data,
@@ -412,8 +463,6 @@ Status UnwrapKeyDecryptAndImport(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
-  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
-    return Status::ErrorUnexpected();
   blink::WebArrayBuffer buffer;
   Status status = DecryptDontCheckKeyUsage(
       wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
@@ -431,6 +480,20 @@ Status UnwrapKeyDecryptAndImport(
   return status.IsError() ? Status::Error() : Status::Success();
 }
 
+Status WrapKeyExportAndEncrypt(
+    blink::WebCryptoKeyFormat format,
+    const blink::WebCryptoKey& wrapping_key,
+    const blink::WebCryptoKey& key_to_wrap,
+    const blink::WebCryptoAlgorithm& wrapping_algorithm,
+    blink::WebArrayBuffer* buffer) {
+  blink::WebArrayBuffer exported_data;
+  Status status = ExportKey(format, key_to_wrap, &exported_data);
+  if (status.IsError())
+    return status;
+  return EncryptDontCheckUsage(
+      wrapping_algorithm, wrapping_key, CryptoData(exported_data), buffer);
+}
+
 }  // namespace
 
 void Init() { platform::Init(); }
@@ -441,19 +504,7 @@ Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                blink::WebArrayBuffer* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageEncrypt))
     return Status::ErrorUnexpected();
-  if (algorithm.id() != key.algorithm().id())
-    return Status::ErrorUnexpected();
-
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesCbc:
-      return EncryptDecryptAesCbc(ENCRYPT, algorithm, key, data, buffer);
-    case blink::WebCryptoAlgorithmIdAesGcm:
-      return EncryptDecryptAesGcm(ENCRYPT, algorithm, key, data, buffer);
-    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-      return EncryptRsaEsPkcs1v1_5(algorithm, key, data, buffer);
-    default:
-      return Status::ErrorUnsupported();
-  }
+  return EncryptDontCheckUsage(algorithm, key, data, buffer);
 }
 
 Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
@@ -679,42 +730,22 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& key_to_wrap,
                const blink::WebCryptoAlgorithm& wrapping_algorithm,
                blink::WebArrayBuffer* buffer) {
-  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
+  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageWrapKey))
     return Status::ErrorUnexpected();
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
 
-  // TODO (padolph): Handle formats other than raw
-  if (format != blink::WebCryptoKeyFormatRaw)
-    return Status::ErrorUnsupported();
-  // TODO (padolph): Handle key-to-wrap types other than secret/symmetric
-  if (key_to_wrap.type() != blink::WebCryptoKeyTypeSecret)
-    return Status::ErrorUnsupported();
-
-  platform::SymKey* platform_key;
-  Status status = ToPlatformSymKey(key_to_wrap, &platform_key);
-  if (status.IsError())
-    return status;
-
-  // TODO(padolph): Handle other wrapping algorithms
-  switch (wrapping_algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesKw: {
-      platform::SymKey* platform_wrapping_key;
-      status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
-      if (status.IsError())
-        return status;
-      return platform::WrapSymKeyAesKw(
-          platform_wrapping_key, platform_key, buffer);
-    }
-    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5: {
-      platform::PublicKey* platform_wrapping_key;
-      status = ToPlatformPublicKey(wrapping_key, &platform_wrapping_key);
-      if (status.IsError())
-        return status;
-      return platform::WrapSymKeyRsaEs(
-          platform_wrapping_key, platform_key, buffer);
-    }
+  switch (format) {
+    case blink::WebCryptoKeyFormatRaw:
+      return WrapKeyRaw(wrapping_key, key_to_wrap, wrapping_algorithm, buffer);
+    case blink::WebCryptoKeyFormatJwk:
+      return WrapKeyExportAndEncrypt(
+          format, wrapping_key, key_to_wrap, wrapping_algorithm, buffer);
+    case blink::WebCryptoKeyFormatSpki:
+    case blink::WebCryptoKeyFormatPkcs8:
+      return Status::ErrorUnsupported();  // TODO(padolph)
     default:
+      NOTREACHED();
       return Status::ErrorUnsupported();
   }
 }
