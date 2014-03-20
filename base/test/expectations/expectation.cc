@@ -146,8 +146,6 @@ Configuration GetCurrentConfiguration() {
 #else
   return CONFIGURATION_DEBUG;
 #endif
-  NOTREACHED();
-  return CONFIGURATION_UNSPECIFIED;
 }
 
 Expectation::Expectation()

@@ -155,7 +155,6 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
     if (consumer_thread_.Get() == NULL)
       return HRESULT_FROM_WIN32(::GetLastError());
 
-    HRESULT hr = S_OK;
     HANDLE events[] = { consumer_ready_, consumer_thread_ };
     DWORD result = ::WaitForMultipleObjects(arraysize(events), events,
                                             FALSE, INFINITE);
@@ -172,14 +171,10 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
           if (::GetExitCodeThread(consumer_thread_, &exit_code))
             return exit_code;
           return HRESULT_FROM_WIN32(::GetLastError());
-          break;
         }
       default:
         return E_UNEXPECTED;
-        break;
     }
-
-    return hr;
   }
 
   // Waits for consumer_ thread to exit, and returns its exit code.
@@ -237,8 +232,8 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
     return;
   }
 
-  ASSERT_HRESULT_SUCCEEDED(controller.EnableProvider(test_provider_,
-      TRACE_LEVEL_VERBOSE, 0xFFFFFFFF));
+  ASSERT_HRESULT_SUCCEEDED(controller.EnableProvider(
+      test_provider_, TRACE_LEVEL_VERBOSE, 0xFFFFFFFF));
 
   EtwTraceProvider provider(test_provider_);
   ASSERT_EQ(ERROR_SUCCESS, provider.Register());
