@@ -75,8 +75,8 @@ private:
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
     InspectorFrontend::Database* m_frontend;
-    typedef HashMap<String, RefPtr<InspectorDatabaseResource> > DatabaseResourcesMap;
-    DatabaseResourcesMap m_resources;
+    typedef WillBePersistentHeapHashMap<String, RefPtrWillBeMember<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
+    DatabaseResourcesHeapMap m_resources;
     bool m_enabled;
 };
 

@@ -42,9 +42,10 @@ namespace WebCore {
 class Database;
 class InspectorFrontend;
 
-class InspectorDatabaseResource : public RefCounted<InspectorDatabaseResource> {
+class InspectorDatabaseResource : public RefCountedWillBeGarbageCollectedFinalized<InspectorDatabaseResource> {
 public:
-    static PassRefPtr<InspectorDatabaseResource> create(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    static PassRefPtrWillBeRawPtr<InspectorDatabaseResource> create(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    void trace(Visitor*);
 
     void bind(InspectorFrontend::Database*);
     Database* database() { return m_database.get(); }
@@ -54,7 +55,7 @@ public:
 private:
     InspectorDatabaseResource(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
 
-    RefPtrWillBePersistent<Database> m_database;
+    RefPtrWillBeMember<Database> m_database;
     String m_id;
     String m_domain;
     String m_name;
