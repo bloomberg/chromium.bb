@@ -43,6 +43,7 @@ class Attr;
 class Attribute;
 class ClientRect;
 class ClientRectList;
+class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class ElementRareData;
@@ -520,6 +521,9 @@ public:
     void setHasPendingResources() { setElementFlag(HasPendingResources); }
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
     virtual void buildPendingResource() { };
+
+    void setCustomElementDefinition(PassRefPtr<CustomElementDefinition>);
+    CustomElementDefinition* customElementDefinition() const;
 
     enum {
         ALLOW_KEYBOARD_INPUT = 1 << 0,

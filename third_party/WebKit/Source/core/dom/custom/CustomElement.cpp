@@ -97,23 +97,16 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
         break;
 
     case Element::WaitingForUpgrade:
-        definitions().add(element, definition);
+        element->setCustomElementDefinition(definition);
         CustomElementScheduler::scheduleCreatedCallback(definition->callbacks(), element);
         break;
     }
 }
 
-CustomElementDefinition* CustomElement::definitionFor(Element* element)
-{
-    CustomElementDefinition* definition = definitions().get(element);
-    ASSERT(definition);
-    return definition;
-}
-
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementScheduler::scheduleAttributeChangedCallback(definitionFor(element)->callbacks(), element, name, oldValue, newValue);
+    CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
 void CustomElement::didEnterDocument(Element* element, const Document& document)
@@ -121,7 +114,7 @@ void CustomElement::didEnterDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementScheduler::scheduleAttachedCallback(definitionFor(element)->callbacks(), element);
+    CustomElementScheduler::scheduleAttachedCallback(element->customElementDefinition()->callbacks(), element);
 }
 
 void CustomElement::didLeaveDocument(Element* element, const Document& document)
@@ -129,7 +122,7 @@ void CustomElement::didLeaveDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementScheduler::scheduleDetachedCallback(definitionFor(element)->callbacks(), element);
+    CustomElementScheduler::scheduleDetachedCallback(element->customElementDefinition()->callbacks(), element);
 }
 
 void CustomElement::wasDestroyed(Element* element)
@@ -141,23 +134,9 @@ void CustomElement::wasDestroyed(Element* element)
 
     case Element::WaitingForUpgrade:
     case Element::Upgraded:
-        definitions().remove(element);
         CustomElementObserver::notifyElementWasDestroyed(element);
         break;
     }
-}
-
-void CustomElement::DefinitionMap::add(Element* element, PassRefPtr<CustomElementDefinition> definition)
-{
-    ASSERT(definition.get());
-    DefinitionMap::ElementDefinitionHashMap::AddResult result = m_definitions.add(element, definition);
-    ASSERT_UNUSED(result, result.isNewEntry);
-}
-
-CustomElement::DefinitionMap& CustomElement::definitions()
-{
-    DEFINE_STATIC_LOCAL(DefinitionMap, map, ());
-    return map;
 }
 
 } // namespace WebCore

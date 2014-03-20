@@ -40,7 +40,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     unsigned bitfields;
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[11];
+    void* pointers[12];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)

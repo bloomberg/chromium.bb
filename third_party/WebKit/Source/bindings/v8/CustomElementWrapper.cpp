@@ -102,7 +102,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    CustomElementBinding* binding = perContextData->customElementBinding(CustomElement::definitionFor(element.get()));
+    CustomElementBinding* binding = perContextData->customElementBinding(element->customElementDefinition());
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), element.get(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();

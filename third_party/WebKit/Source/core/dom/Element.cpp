@@ -1765,6 +1765,21 @@ void Element::setNeedsAnimationStyleRecalc()
     setAnimationStyleChange(true);
 }
 
+void Element::setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition)
+{
+    if (!hasRareData() && !definition)
+        return;
+    ASSERT(!customElementDefinition());
+    ensureElementRareData().setCustomElementDefinition(definition);
+}
+
+CustomElementDefinition* Element::customElementDefinition() const
+{
+    if (hasRareData())
+        return elementRareData()->customElementDefinition();
+    return 0;
+}
+
 PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
 {
     if (alwaysCreateUserAgentShadowRoot())

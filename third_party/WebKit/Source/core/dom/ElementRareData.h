@@ -27,6 +27,7 @@
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
@@ -123,6 +124,9 @@ public:
     bool hasPseudoElements() const;
     void clearPseudoElements();
 
+    void setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
+    CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
+
 private:
     short m_tabindex;
     unsigned short m_childIndex;
@@ -130,7 +134,6 @@ private:
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
-    RefPtr<RenderStyle> m_computedStyle;
 
     OwnPtr<DatasetDOMStringMap> m_dataset;
     OwnPtr<ClassList> m_classList;
@@ -139,6 +142,9 @@ private:
     OwnPtr<InputMethodContext> m_inputMethodContext;
     OwnPtr<ActiveAnimations> m_activeAnimations;
     OwnPtr<InlineCSSStyleDeclaration> m_cssomWrapper;
+
+    RefPtr<RenderStyle> m_computedStyle;
+    RefPtr<CustomElementDefinition> m_customElementDefinition;
 
     RefPtr<PseudoElement> m_generatedBefore;
     RefPtr<PseudoElement> m_generatedAfter;
