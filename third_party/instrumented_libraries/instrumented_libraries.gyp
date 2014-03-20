@@ -83,7 +83,6 @@
         '<(_sanitizer_type)-libfontconfig1',
         '<(_sanitizer_type)-pulseaudio',
         '<(_sanitizer_type)-libasound2',
-        '<(_sanitizer_type)-libcups2',
         '<(_sanitizer_type)-pango1.0',
         '<(_sanitizer_type)-libcap2',
         '<(_sanitizer_type)-libudev0',
@@ -93,6 +92,13 @@
         ['asan==1', {
           'dependencies': [
             '<(_sanitizer_type)-libpixman-1-0',
+          ],
+        }],
+      ],
+      'conditions': [
+        ['msan==1', {
+          'dependencies': [
+            '<(_sanitizer_type)-libcups2',
           ],
         }],
       ],
