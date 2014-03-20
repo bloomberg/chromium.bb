@@ -588,9 +588,8 @@ void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet)
 
 void StyleSheetContents::removeSheetFromCache(Document* document)
 {
+    ASSERT(document);
     if (!maybeCacheable())
-        return;
-    if (!document || !document->isActive())
         return;
     document->styleEngine()->removeSheet(this);
 }
