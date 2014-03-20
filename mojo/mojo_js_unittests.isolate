@@ -66,5 +66,25 @@
         ],
       },
     }],
+    ['OS=="mac"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libmojo_system.dylib',
+          '<(PRODUCT_DIR)/libmojo_test_support.dylib',
+        ],
+      },
+    }],
+    ['OS=="mac" and component=="shared_library"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libbase.dylib',
+          '<(PRODUCT_DIR)/libbase_i18n.dylib',
+          '<(PRODUCT_DIR)/libgin.dylib',
+          '<(PRODUCT_DIR)/libmojo_common_lib.dylib',
+          '<(PRODUCT_DIR)/libmojo_system_impl.dylib',
+          '<(PRODUCT_DIR)/libv8.dylib',
+        ],
+      },
+    }],
   ],
 }
