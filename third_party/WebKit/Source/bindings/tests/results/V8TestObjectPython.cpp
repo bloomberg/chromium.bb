@@ -78,6 +78,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/TraceEvent.h"
@@ -5365,6 +5366,24 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodEventListenerArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
+    RefPtr<EventListener> eventListenerArg = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
+    impl->voidMethodEventListenerArg(eventListenerArg);
+}
+
+static void voidMethodEventListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodEventListenerArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -7543,6 +7562,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"serializedScriptValueMethod", TestObjectPythonV8Internal::serializedScriptValueMethodMethodCallback, 0, 0},
     {"xPathNSResolverMethod", TestObjectPythonV8Internal::xPathNSResolverMethodMethodCallback, 0, 0},
     {"voidMethodDictionaryArg", TestObjectPythonV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1},
+    {"voidMethodEventListenerArg", TestObjectPythonV8Internal::voidMethodEventListenerArgMethodCallback, 0, 1},
     {"voidMethodNodeFilterArg", TestObjectPythonV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1},
     {"voidMethodPromiseArg", TestObjectPythonV8Internal::voidMethodPromiseArgMethodCallback, 0, 1},
     {"voidMethodSerializedScriptValueArg", TestObjectPythonV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1},
