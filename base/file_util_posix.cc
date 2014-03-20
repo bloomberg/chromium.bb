@@ -820,9 +820,8 @@ int GetMaximumPathComponentLength(const FilePath& path) {
   return pathconf(path.value().c_str(), _PC_NAME_MAX);
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-// This is implemented in file_util_mac.mm and file_util_android.cc for those
-// platforms.
+#if !defined(OS_ANDROID)
+// This is implemented in file_util_android.cc for that platform.
 bool GetShmemTempDir(bool executable, FilePath* path) {
 #if defined(OS_LINUX)
   bool use_dev_shm = true;
@@ -837,15 +836,7 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 #endif
   return GetTempDir(path);
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
-
-FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
-  FilePath directory;
-  if (!GetShmemTempDir(executable, &directory))
-    return NULL;
-
-  return CreateAndOpenTemporaryFileInDir(directory, path);
-}
+#endif  // !defined(OS_ANDROID)
 
 // -----------------------------------------------------------------------------
 

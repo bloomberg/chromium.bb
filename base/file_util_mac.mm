@@ -49,8 +49,4 @@ FilePath GetHomeDir() {
   return FilePath("/tmp");
 }
 
-bool GetShmemTempDir(bool executable, base::FilePath* path) {
-  return GetTempDir(path);
-}
-
 }  // namespace base

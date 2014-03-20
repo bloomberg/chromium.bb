@@ -401,12 +401,6 @@ BASE_EXPORT bool GetFileSystemType(const FilePath& path, FileSystemType* type);
 // you intend to create executable shmem segments so this function can find
 // an appropriate location.
 BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
-
-// Like above but for shmem files.  Only useful for POSIX.
-// The executable flag says the file needs to support using
-// mprotect with PROT_EXEC after mapping.
-BASE_EXPORT FILE* CreateAndOpenTemporaryShmemFile(FilePath* path,
-                                                  bool executable);
 #endif
 
 }  // namespace base
