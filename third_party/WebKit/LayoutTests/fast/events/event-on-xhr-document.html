@@ -31,16 +31,22 @@ function testEventsFiredOn(doc)
     shouldBe("window.caughtFoo", "[]");
 }
 
+window.jsTestIsAsync = true;
+
 var xhrForXML = new XMLHttpRequest();
 xhrForXML.open("GET", "resources/hello-xhr-event.xml", false);
 xhrForXML.send();
 testEventsFiredOn(xhrForXML.responseXML);
 
+// Must run asynchronous to use responseType.
 var xhrForHTML = new XMLHttpRequest();
-xhrForHTML.open("GET", "resources/hello-xhr-event.html", false);
+xhrForHTML.open("GET", "resources/hello-xhr-event.html", true);
 xhrForHTML.responseType = "document";
+xhrForHTML.onload = function() {
+    testEventsFiredOn(xhrForHTML.response);
+    finishJSTest();
+};
 xhrForHTML.send();
-testEventsFiredOn(xhrForHTML.response);
 
 </script>
 </body>

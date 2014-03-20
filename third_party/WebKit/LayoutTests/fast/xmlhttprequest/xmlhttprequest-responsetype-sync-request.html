@@ -20,8 +20,7 @@
         shouldBeEqualToString('window.location.protocol', 'file:');
         xhr = new XMLHttpRequest();
         xhr.open('GET', window.location.href, false);
-        evalAndLog("xhr.responseType = 'document';");
-        shouldBeEqualToString('xhr.responseType', 'document');
+        shouldThrow("xhr.responseType = 'document';");
 
         // DATA
         var dataUrl = 'data:text/html;charset=utf-8,%3C%21DOCTYPE%20' +
@@ -31,8 +30,7 @@
                       '%3C%2Fhtml%3E%0A%0D%0A';
         xhr = new XMLHttpRequest();
         xhr.open('GET', dataUrl, false);
-        evalAndLog("xhr.responseType = 'document';");
-        shouldBeEqualToString('xhr.responseType', 'document');
+        shouldThrow("xhr.responseType = 'document';");
     </script>
 </head>
 <body>

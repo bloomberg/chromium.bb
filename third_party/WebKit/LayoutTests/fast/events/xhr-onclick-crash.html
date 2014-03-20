@@ -3,11 +3,15 @@ This test passes if it doesn't crash.
 if (window.testRunner)
     testRunner.dumpAsText();
 
+testRunner.waitUntilDone();
 xhr = new XMLHttpRequest();
-xhr.open('GET', 'resources/onclick.html', false);
+xhr.open('GET', 'resources/onclick.html', true);
 xhr.responseType = 'document';
-xhr.onload = function () { r = this.responseXML; }
+xhr.onload = function () {
+    var r = this.responseXML;
+    var td = r.getElementById('foo');
+    td.children[0].onclick;
+    testRunner.notifyDone();
+};
 xhr.send();
-td = r.getElementById('foo');
-td.children[0].onclick;
 </script>

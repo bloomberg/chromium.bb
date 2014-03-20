@@ -8,14 +8,19 @@
 <script>
 shouldBe("importLink.import.defaultView", "document.defaultView");
 
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "resources/root.html", false);
-xhr.responseType = "document";
-xhr.send();
-shouldBeNull("xhr.response.defaultView");
+window.jsTestIsAsync = true;
 
-createdDoc = document.implementation.createHTMLDocument("Hello");
-shouldBeNull("createdDoc.defaultView");
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "resources/root.html", true);
+xhr.responseType = "document";
+xhr.onload = function() {
+  shouldBeNull("xhr.response.defaultView");
+
+  createdDoc = document.implementation.createHTMLDocument("Hello");
+  shouldBeNull("createdDoc.defaultView");
+  finishJSTest();
+};
+xhr.send();
 
 </script>
 </body>

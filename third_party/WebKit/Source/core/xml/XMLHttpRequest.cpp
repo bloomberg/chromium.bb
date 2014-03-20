@@ -346,9 +346,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
 
     // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
     // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
-    // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
-    // such as file: and data: still make sense to allow.
-    if (!m_async && executionContext()->isDocument() && m_url.protocolIsInHTTPFamily()) {
+    if (!m_async && executionContext()->isDocument()) {
         exceptionState.throwDOMException(InvalidAccessError, "The response type can only be changed for asynchronous HTTP requests made from a document.");
         return;
     }
@@ -557,10 +555,8 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
 
         // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
         // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
-        // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
-        // such as file: and data: still make sense to allow.
-        if (url.protocolIsInHTTPFamily() && m_responseTypeCode != ResponseTypeDefault) {
-            exceptionState.throwDOMException(InvalidAccessError, "Synchronous HTTP requests from a document must not set a response type.");
+        if (m_responseTypeCode != ResponseTypeDefault) {
+            exceptionState.throwDOMException(InvalidAccessError, "Synchronous requests from a document must not set a response type.");
             return;
         }
 

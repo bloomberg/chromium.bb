@@ -448,6 +448,9 @@ void ResourceLoader::requestSynchronously()
     OwnPtr<blink::WebURLLoader> loader = adoptPtr(blink::Platform::current()->createURLLoader());
     ASSERT(loader);
 
+    // downloadToFile is not supported for synchronous requests.
+    ASSERT(!m_request.downloadToFile());
+
     RefPtr<ResourceLoader> protect(this);
     RefPtr<ResourceLoaderHost> protectHost(m_host);
     ResourcePtr<Resource> protectResource(m_resource);
