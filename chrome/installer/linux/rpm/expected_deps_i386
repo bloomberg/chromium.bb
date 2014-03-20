@@ -39,6 +39,7 @@ libgio-2.0.so.0
 libglib-2.0.so.0
 libgobject-2.0.so.0
 libgtk-x11-2.0.so.0
+libmojo_system.so
 libm.so.6
 libm.so.6(GLIBC_2.0)
 libm.so.6(GLIBC_2.1)
