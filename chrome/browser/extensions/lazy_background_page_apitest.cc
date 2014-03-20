@@ -554,10 +554,13 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
 
   // Verify that extensions page shows that the lazy background page is
   // inactive.
-  bool is_inactive;
-  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractBool(
+  content::RenderFrameHost* frame = content::FrameMatchingPredicate(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      "//iframe[starts-with(@src, 'chrome://extension')]",
+      base::Bind(&content::FrameHasSourceUrl,
+                 GURL(chrome::kChromeUIExtensionsFrameURL)));
+  bool is_inactive;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      frame,
       "var ele = document.querySelectorAll('div.active-views');"
       "window.domAutomationController.send("
       "    ele[0].innerHTML.search('(Inactive)') > 0);",

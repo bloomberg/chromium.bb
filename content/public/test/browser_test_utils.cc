@@ -564,6 +564,10 @@ bool FrameIsChildOfMainFrame(RenderFrameHost* frame) {
   return frame->GetParent() && !frame->GetParent()->GetParent();
 }
 
+bool FrameHasSourceUrl(const GURL& url, RenderFrameHost* frame) {
+  return frame->GetLastCommittedURL() == url;
+}
+
 bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids) {
   // Inject WebUI test runner script first prior to other scripts required to
