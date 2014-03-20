@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include <set>
 #include <utility>
 
 #include "cc/layers/append_quads_data.h"
@@ -1688,6 +1689,99 @@ TEST_F(GpuRasterizationPictureLayerImplTest, Tiling) {
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   // Should still only have the high-res tiling.
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
+}
+
+TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupPendingTree(pending_pile);
+
+  ASSERT_TRUE(pending_layer_->CanHaveTilings());
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+
+  pending_layer_->AddTiling(low_res_factor);
+  pending_layer_->AddTiling(0.3f);
+  pending_layer_->AddTiling(0.7f);
+  PictureLayerTiling* high_res_tiling = pending_layer_->AddTiling(1.0f);
+  pending_layer_->AddTiling(2.0f);
+
+  host_impl_.SetViewportSize(gfx::Size(500, 500));
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  PictureLayerImpl::LayerRasterTileIterator it;
+  EXPECT_FALSE(it);
+
+  std::set<Tile*> unique_tiles;
+  bool reached_prepaint = false;
+  size_t non_ideal_tile_count = 0u;
+  size_t low_res_tile_count = 0u;
+  size_t high_res_tile_count = 0u;
+  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    TilePriority priority = tile->priority(PENDING_TREE);
+
+    EXPECT_TRUE(tile);
+
+    // Non-high res tiles only get visible tiles. Also, prepaint should only
+    // come at the end of the iteration.
+    if (priority.resolution != HIGH_RESOLUTION)
+      EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
+    else if (reached_prepaint)
+      EXPECT_NE(TilePriority::NOW, priority.priority_bin);
+    else
+      reached_prepaint = priority.priority_bin != TilePriority::NOW;
+
+    non_ideal_tile_count += priority.resolution == NON_IDEAL_RESOLUTION;
+    low_res_tile_count += priority.resolution == LOW_RESOLUTION;
+    high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
+
+    unique_tiles.insert(tile);
+  }
+
+  EXPECT_TRUE(reached_prepaint);
+  EXPECT_EQ(0u, non_ideal_tile_count);
+  EXPECT_EQ(1u, low_res_tile_count);
+  EXPECT_EQ(16u, high_res_tile_count);
+  EXPECT_EQ(low_res_tile_count + high_res_tile_count + non_ideal_tile_count,
+            unique_tiles.size());
+
+  std::vector<Tile*> high_res_tiles = high_res_tiling->AllTilesForTesting();
+  for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();
+       tile_it != high_res_tiles.end();
+       ++tile_it) {
+    Tile* tile = *tile_it;
+    ManagedTileState::TileVersion& tile_version =
+        tile->GetTileVersionForTesting(
+            tile->DetermineRasterModeForTree(ACTIVE_TREE));
+    tile_version.SetSolidColorForTesting(SK_ColorRED);
+  }
+
+  non_ideal_tile_count = 0;
+  low_res_tile_count = 0;
+  high_res_tile_count = 0;
+  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    TilePriority priority = tile->priority(PENDING_TREE);
+
+    EXPECT_TRUE(tile);
+
+    non_ideal_tile_count += priority.resolution == NON_IDEAL_RESOLUTION;
+    low_res_tile_count += priority.resolution == LOW_RESOLUTION;
+    high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
+  }
+
+  EXPECT_EQ(0u, non_ideal_tile_count);
+  EXPECT_EQ(1u, low_res_tile_count);
+  EXPECT_EQ(0u, high_res_tile_count);
 }
 
 }  // namespace

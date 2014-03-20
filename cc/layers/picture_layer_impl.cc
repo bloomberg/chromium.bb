@@ -1273,4 +1273,108 @@ bool PictureLayerImpl::IsOnActiveOrPendingTree() const {
   return !layer_tree_impl()->IsRecycleTree();
 }
 
+PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator()
+    : layer_(NULL) {}
+
+PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
+    PictureLayerImpl* layer,
+    bool prioritize_low_res)
+    : layer_(layer), current_stage_(0) {
+  DCHECK(layer_);
+  if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
+    return;
+
+  WhichTree tree =
+      layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+
+  // Find high and low res tilings and initialize the iterators.
+  for (size_t i = 0; i < layer_->tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
+    if (tiling->resolution() == HIGH_RESOLUTION) {
+      iterators_[HIGH_RES] =
+          PictureLayerTiling::TilingRasterTileIterator(tiling, tree);
+    }
+
+    if (tiling->resolution() == LOW_RESOLUTION) {
+      iterators_[LOW_RES] =
+          PictureLayerTiling::TilingRasterTileIterator(tiling, tree);
+    }
+  }
+
+  if (prioritize_low_res) {
+    stages_[0].iterator_type = LOW_RES;
+    stages_[0].tile_type =
+        PictureLayerTiling::TilingRasterTileIterator::VISIBLE;
+
+    stages_[1].iterator_type = HIGH_RES;
+    stages_[1].tile_type =
+        PictureLayerTiling::TilingRasterTileIterator::VISIBLE;
+  } else {
+    stages_[0].iterator_type = HIGH_RES;
+    stages_[0].tile_type =
+        PictureLayerTiling::TilingRasterTileIterator::VISIBLE;
+
+    stages_[1].iterator_type = LOW_RES;
+    stages_[1].tile_type =
+        PictureLayerTiling::TilingRasterTileIterator::VISIBLE;
+  }
+
+  stages_[2].iterator_type = HIGH_RES;
+  stages_[2].tile_type = PictureLayerTiling::TilingRasterTileIterator::SKEWPORT;
+
+  stages_[3].iterator_type = HIGH_RES;
+  stages_[3].tile_type =
+      PictureLayerTiling::TilingRasterTileIterator::EVENTUALLY;
+
+  IteratorType index = stages_[current_stage_].iterator_type;
+  PictureLayerTiling::TilingRasterTileIterator::Type tile_type =
+      stages_[current_stage_].tile_type;
+  if (!iterators_[index] || iterators_[index].get_type() != tile_type)
+    ++(*this);
+}
+
+PictureLayerImpl::LayerRasterTileIterator::~LayerRasterTileIterator() {}
+
+PictureLayerImpl::LayerRasterTileIterator::operator bool() const {
+  return layer_ && static_cast<size_t>(current_stage_) < arraysize(stages_);
+}
+
+PictureLayerImpl::LayerRasterTileIterator&
+PictureLayerImpl::LayerRasterTileIterator::
+operator++() {
+  IteratorType index = stages_[current_stage_].iterator_type;
+  PictureLayerTiling::TilingRasterTileIterator::Type tile_type =
+      stages_[current_stage_].tile_type;
+
+  // First advance the iterator.
+  if (iterators_[index])
+    ++iterators_[index];
+
+  if (iterators_[index] && iterators_[index].get_type() == tile_type)
+    return *this;
+
+  // Next, advance the stage.
+  int stage_count = arraysize(stages_);
+  ++current_stage_;
+  while (current_stage_ < stage_count) {
+    index = stages_[current_stage_].iterator_type;
+    tile_type = stages_[current_stage_].tile_type;
+
+    if (iterators_[index] && iterators_[index].get_type() == tile_type)
+      break;
+    ++current_stage_;
+  }
+  return *this;
+}
+
+Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() {
+  DCHECK(*this);
+
+  IteratorType index = stages_[current_stage_].iterator_type;
+  DCHECK(iterators_[index]);
+  DCHECK(iterators_[index].get_type() == stages_[current_stage_].tile_type);
+
+  return *iterators_[index];
+}
+
 }  // namespace cc

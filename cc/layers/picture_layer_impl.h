@@ -22,11 +22,39 @@ namespace cc {
 struct AppendQuadsData;
 class QuadSink;
 class MicroBenchmarkImpl;
+class Tile;
 
 class CC_EXPORT PictureLayerImpl
     : public LayerImpl,
       NON_EXPORTED_BASE(public PictureLayerTilingClient) {
  public:
+  class CC_EXPORT LayerRasterTileIterator {
+   public:
+    LayerRasterTileIterator();
+    LayerRasterTileIterator(PictureLayerImpl* layer, bool prioritize_low_res);
+    ~LayerRasterTileIterator();
+
+    Tile* operator*();
+    LayerRasterTileIterator& operator++();
+    operator bool() const;
+
+   private:
+    enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };
+
+    PictureLayerImpl* layer_;
+
+    struct IterationStage {
+      IteratorType iterator_type;
+      PictureLayerTiling::TilingRasterTileIterator::Type tile_type;
+    };
+
+    int current_stage_;
+
+    // One low res stage, and three high res stages.
+    IterationStage stages_[4];
+    PictureLayerTiling::TilingRasterTileIterator iterators_[NUM_ITERATORS];
+  };
+
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }
@@ -87,6 +115,8 @@ class CC_EXPORT PictureLayerImpl
   bool IsOnActiveOrPendingTree() const;
 
  protected:
+  friend class LayerRasterTileIterator;
+
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveTiling(float contents_scale);

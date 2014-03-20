@@ -78,8 +78,6 @@ class CC_EXPORT PictureLayerTiling {
       return tile->NeedsRasterForMode(mode);
     };
 
-    void UpdateCurrentTilePriority();
-
     PictureLayerTiling* tiling_;
 
     Type type_;
@@ -89,7 +87,6 @@ class CC_EXPORT PictureLayerTiling {
     WhichTree tree_;
 
     Tile* current_tile_;
-    bool current_tile_priority_updated_;
     TilingData::Iterator visible_iterator_;
     TilingData::SpiralDifferenceIterator spiral_iterator_;
   };
