@@ -431,7 +431,7 @@ int QuicHttpStream::DoSendHeaders() {
   bool has_upload_data = request_body_stream_ != NULL;
 
   next_state_ = STATE_SEND_HEADERS_COMPLETE;
-  int rv = stream_->WriteHeaders(request_headers_, !has_upload_data);
+  int rv = stream_->WriteHeaders(request_headers_, !has_upload_data, NULL);
   request_headers_.clear();
   return rv;
 }

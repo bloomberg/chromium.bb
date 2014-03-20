@@ -100,13 +100,13 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
  public:
   TestProofVerifierCallback(TestCompletionCallback* comp_callback,
                             bool* ok,
-                            std::string* error_details)
+                            string* error_details)
       : comp_callback_(comp_callback),
         ok_(ok),
         error_details_(error_details) {}
 
   virtual void Run(bool ok,
-                   const std::string& error_details,
+                   const string& error_details,
                    scoped_ptr<ProofVerifyDetails>* details) OVERRIDE {
     *ok_ = ok;
     *error_details_ = error_details;
@@ -117,21 +117,21 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
  private:
   TestCompletionCallback* const comp_callback_;
   bool* const ok_;
-  std::string* const error_details_;
+  string* const error_details_;
 };
 
 // RunVerification runs |verifier->VerifyProof| and asserts that the result
 // matches |expected_ok|.
 static void RunVerification(ProofVerifier* verifier,
-                            const std::string& hostname,
-                            const std::string& server_config,
-                            const vector<std::string>& certs,
-                            const std::string& proof,
+                            const string& hostname,
+                            const string& server_config,
+                            const vector<string>& certs,
+                            const string& proof,
                             bool expected_ok) {
   scoped_ptr<ProofVerifyDetails> details;
   TestCompletionCallback comp_callback;
   bool ok;
-  std::string error_details;
+  string error_details;
   TestProofVerifierCallback* callback =
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 

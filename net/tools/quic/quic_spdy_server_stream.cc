@@ -133,10 +133,10 @@ void QuicSpdyServerStream:: SendHeadersAndBody(
   SpdyHeaderBlock header_block =
       SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
 
-  WriteHeaders(header_block, body.empty());
+  WriteHeaders(header_block, body.empty(), NULL);
 
   if (!body.empty()) {
-    WriteOrBufferData(body, true);
+    WriteOrBufferData(body, true, NULL);
   }
 }
 

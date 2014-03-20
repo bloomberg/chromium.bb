@@ -74,12 +74,13 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   void RetransmitPacket(QuicPacketSequenceNumber old_sequence_number,
                         QuicPacketSequenceNumber new_sequence_number) {
     QuicSentPacketManagerPeer::MarkForRetransmission(
-        &manager_, old_sequence_number, NACK_RETRANSMISSION);
+        &manager_, old_sequence_number, LOSS_RETRANSMISSION);
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     QuicSentPacketManager::PendingRetransmission next_retransmission =
         manager_.NextPendingRetransmission();
     EXPECT_EQ(old_sequence_number, next_retransmission.sequence_number);
-    EXPECT_EQ(NACK_RETRANSMISSION, next_retransmission.transmission_type);
+    EXPECT_EQ(LOSS_RETRANSMISSION,
+              next_retransmission.transmission_type);
     manager_.OnRetransmittedPacket(old_sequence_number, new_sequence_number);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(
         &manager_, new_sequence_number));
@@ -90,8 +91,11 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     RetransmitPacket(old_sequence_number, new_sequence_number);
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, new_sequence_number, _, _, _))
         .WillOnce(Return(true));
-    manager_.OnPacketSent(new_sequence_number, clock_.Now(),
-                          1000, NACK_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(new_sequence_number,
+                          clock_.Now(),
+                          1000,
+                          LOSS_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
   }
 
   SerializedPacket CreateDataPacket(QuicPacketSequenceNumber sequence_number) {
@@ -218,7 +222,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   SendDataPacket(1);
   QuicSentPacketManagerPeer::MarkForRetransmission(
-      &manager_, 1, NACK_RETRANSMISSION);
+      &manager_, 1, LOSS_RETRANSMISSION);
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
   // Ack 1.
@@ -289,7 +293,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, _, _))
       .WillOnce(Return(true));
   manager_.OnPacketSent(2, clock_.ApproximateNow(), 1000,
-                        NACK_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+                        LOSS_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(15);
   clock_.AdvanceTime(rtt);
 
@@ -600,7 +604,7 @@ TEST_F(QuicSentPacketManagerTest, GetSentTime) {
   EXPECT_EQ(sent_time, QuicSentPacketManagerPeer::GetSentTime(&manager_, 2));
 }
 
-TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
+TEST_F(QuicSentPacketManagerTest, FackRetransmit17Packets) {
   const size_t kNumSentPackets = 25;
   // Transmit 25 packets.
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
@@ -628,9 +632,15 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
     EXPECT_EQ(kLargestObserved - i,
               QuicSentPacketManagerPeer::GetNackCount(&manager_, i));
   }
+
+  // Now receive the second packet, out of order, which should lose and
+  // retransmit nothing, because it does not increase the largest observed.
+  // No acks are registered, because the packet was already lost.
+  received_info.missing_packets.erase(2);
+  manager_.OnIncomingAck(received_info, clock_.Now());
 }
 
-TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
+TEST_F(QuicSentPacketManagerTest, FackRetransmit14PacketsAlternateAcks) {
   const size_t kNumSentPackets = 30;
   // Transmit 15 packets of data and 15 ack packets.  The send algorithm will
   // inform the congestion manager not to save the acks by returning false.

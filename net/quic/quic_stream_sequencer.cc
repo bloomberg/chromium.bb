@@ -233,38 +233,6 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   return num_bytes_consumed_ - initial_bytes_consumed;
 }
 
-void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
-  DCHECK(!blocked_);
-  size_t end_offset = num_bytes_consumed_ + num_bytes_consumed;
-  while (!frames_.empty() && end_offset != num_bytes_consumed_) {
-    FrameMap::iterator it = frames_.begin();
-    if (it->first != num_bytes_consumed_) {
-      LOG(DFATAL) << "Invalid argument to MarkConsumed. "
-                  << " num_bytes_consumed_: " << num_bytes_consumed_
-                  << " end_offset: " << end_offset
-                  << " offset: " << it->first
-                  << " length: " << it->second.length();
-      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
-      return;
-    }
-
-    if (it->first + it->second.length() <= end_offset) {
-      num_bytes_consumed_ += it->second.length();
-      num_bytes_buffered_ -= it->second.length();
-      // This chunk is entirely consumed.
-      frames_.erase(it);
-      continue;
-    }
-
-    // Partially consume this frame.
-    size_t delta = end_offset - it->first;
-    RecordBytesConsumed(delta);
-    frames_.insert(make_pair(end_offset, it->second.substr(delta)));
-    frames_.erase(it);
-    break;
-  }
-}
-
 bool QuicStreamSequencer::HasBytesToRead() const {
   FrameMap::const_iterator it = frames_.begin();
 

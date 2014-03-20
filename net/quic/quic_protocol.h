@@ -126,9 +126,13 @@ const uint64 kUFloat16MaxValue =  // 0x3FFC0000000
 
 enum TransmissionType {
   NOT_RETRANSMISSION,
-  NACK_RETRANSMISSION,
-  RTO_RETRANSMISSION,
-  TLP_RETRANSMISSION,
+  FIRST_TRANSMISSION_TYPE = NOT_RETRANSMISSION,
+  HANDSHAKE_RETRANSMISSION,  // Retransmits due to handshake timeouts.
+  ALL_UNACKED_RETRANSMISSION,  // Retransmits of all unacked packets.
+  LOSS_RETRANSMISSION,  // Retransmits due to loss detection.
+  RTO_RETRANSMISSION,  // Retransmits due to retransmit time out.
+  TLP_RETRANSMISSION,  // Tail loss probes.
+  LAST_TRANSMISSION_TYPE = TLP_RETRANSMISSION,
 };
 
 enum RetransmissionType {

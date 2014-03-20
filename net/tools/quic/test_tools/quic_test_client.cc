@@ -25,21 +25,23 @@ using net::test::QuicConnectionPeer;
 using std::string;
 using std::vector;
 
+namespace net {
+namespace tools {
+namespace test {
 namespace {
 
 // RecordingProofVerifier accepts any certificate chain and records the common
 // name of the leaf.
-class RecordingProofVerifier : public net::ProofVerifier {
+class RecordingProofVerifier : public ProofVerifier {
  public:
   // ProofVerifier interface.
-  virtual net::ProofVerifier::Status VerifyProof(
-      const string& hostname,
-      const string& server_config,
-      const vector<string>& certs,
-      const string& signature,
-      string* error_details,
-      scoped_ptr<net::ProofVerifyDetails>* details,
-      net::ProofVerifierCallback* callback) OVERRIDE {
+  virtual Status VerifyProof(const string& hostname,
+                             const string& server_config,
+                             const vector<string>& certs,
+                             const string& signature,
+                             string* error_details,
+                             scoped_ptr<ProofVerifyDetails>* details,
+                             ProofVerifierCallback* callback) OVERRIDE {
     delete callback;
 
     common_name_.clear();
@@ -69,10 +71,6 @@ class RecordingProofVerifier : public net::ProofVerifier {
 };
 
 }  // anonymous namespace
-
-namespace net {
-namespace tools {
-namespace test {
 
 BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
                            bool secure) {

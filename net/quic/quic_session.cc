@@ -306,10 +306,12 @@ QuicConsumedData QuicSession::WritevData(
                                      ack_notifier_delegate);
 }
 
-size_t QuicSession::WriteHeaders(QuicStreamId id,
-                               const SpdyHeaderBlock& headers,
-                               bool fin) {
-  return headers_stream_->WriteHeaders(id, headers, fin);
+size_t QuicSession::WriteHeaders(
+    QuicStreamId id,
+    const SpdyHeaderBlock& headers,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+  return headers_stream_->WriteHeaders(id, headers, fin, ack_notifier_delegate);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,

@@ -60,7 +60,7 @@ void QuicCryptoStream::SendHandshakeMessage(
   // any other frames in a single packet.
   session()->connection()->Flush();
   // TODO(wtc): check the return value.
-  WriteOrBufferData(string(data.data(), data.length()), false);
+  WriteOrBufferData(string(data.data(), data.length()), false, NULL);
   session()->connection()->Flush();
 }
 

@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/congestion_control/tcp_receiver.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,8 +121,29 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 
   // A retransmit should always return 0.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
-      NACK_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
+  for (int i = FIRST_TRANSMISSION_TYPE; i <= LAST_TRANSMISSION_TYPE; ++i) {
+    TransmissionType type = static_cast<TransmissionType>(i);
+    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                       type,
+                                       HAS_RETRANSMITTABLE_DATA,
+                                       NOT_HANDSHAKE).IsZero())
+        << QuicUtils::TransmissionTypeToString(type);
+  }
+
+  // Fill the send window with data, then verify that we can still
+  // send handshake and TLP packets.
+  SendAvailableSendWindow();
+  for (int i = FIRST_TRANSMISSION_TYPE; i <= LAST_TRANSMISSION_TYPE; ++i) {
+    TransmissionType type = static_cast<TransmissionType>(i);
+    bool expect_can_send = (type == HANDSHAKE_RETRANSMISSION ||
+                            type == TLP_RETRANSMISSION);
+    EXPECT_EQ(expect_can_send,
+              sender_->TimeUntilSend(clock_.Now(),
+                                     type,
+                                     HAS_RETRANSMITTABLE_DATA,
+                                     NOT_HANDSHAKE).IsZero())
+        << QuicUtils::TransmissionTypeToString(type);
+  }
 }
 
 TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {

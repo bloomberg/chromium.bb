@@ -1148,7 +1148,7 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
   QuicPacketSequenceNumber retransmission;
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, packet_size - kQuicVersionSize,
-                           NACK_RETRANSMISSION, _))
+                           LOSS_RETRANSMISSION, _))
       .WillOnce(DoAll(SaveArg<1>(&retransmission), Return(true)));
 
   ProcessAckPacket(&frame);
@@ -1848,7 +1848,7 @@ TEST_P(QuicConnectionTest, RetransmitOnNack) {
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _)).Times(1);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, second_packet_size - kQuicVersionSize,
-                           NACK_RETRANSMISSION, _)).Times(1);
+                           LOSS_RETRANSMISSION, _)).Times(1);
   ProcessAckPacket(&nack_two);
 }
 
@@ -1916,7 +1916,7 @@ TEST_P(QuicConnectionTest, RetransmitNackedLargestObserved) {
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, packet_size - kQuicVersionSize,
-                           NACK_RETRANSMISSION, _));
+                           LOSS_RETRANSMISSION, _));
   ProcessAckPacket(&frame);
 }
 
@@ -2408,7 +2408,7 @@ TEST_P(QuicConnectionTest, RetransmissionCountCalculation) {
   // retransmissions. (More ack packets).
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NOT_RETRANSMISSION, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NACK_RETRANSMISSION, _))
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, LOSS_RETRANSMISSION, _))
       .WillOnce(DoAll(SaveArg<1>(&nack_sequence_number), Return(true)));
   QuicAckFrame ack = InitAckFrame(rto_sequence_number, 0);
   // Nack the retransmitted packet.
@@ -2632,7 +2632,7 @@ TEST_P(QuicConnectionTest, SendSchedulerForce) {
   // Test that if we force send a packet, it is not queued.
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   EXPECT_CALL(*send_algorithm_,
-              TimeUntilSend(_, NACK_RETRANSMISSION, _, _)).Times(0);
+              TimeUntilSend(_, LOSS_RETRANSMISSION, _, _)).Times(0);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   connection_.SendPacket(
       ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
@@ -3391,7 +3391,7 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, RTO_RETRANSMISSION, _)).Times(2);
   EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, NACK_RETRANSMISSION, _));
+              OnPacketSent(_, _, _, LOSS_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
 
   // Retransmit due to RTO.
@@ -3677,6 +3677,98 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   QuicAckFrame second_ack_frame = InitAckFrame(5, 0);
   ProcessAckPacket(&second_ack_frame);
+}
+
+// AckNotifierCallback is triggered by the ack of a packet that timed
+// out and was retransmitted, even though the retransmission has a
+// different sequence number.
+TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
+  InSequence s;
+
+  // Create a delegate which we expect to be called.
+  scoped_refptr<MockAckNotifierDelegate> delegate(
+      new StrictMock<MockAckNotifierDelegate>);
+
+  QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
+      DefaultRetransmissionTime());
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, delegate.get());
+  EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
+
+  EXPECT_EQ(1u, last_header()->packet_sequence_number);
+  EXPECT_EQ(default_retransmission_time,
+            connection_.GetRetransmissionAlarm()->deadline());
+  // Simulate the retransmission alarm firing.
+  clock_.AdvanceTime(DefaultRetransmissionTime());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2u, _, _, _));
+  connection_.GetRetransmissionAlarm()->Fire();
+  EXPECT_EQ(2u, last_header()->packet_sequence_number);
+  // We do not raise the high water mark yet.
+  EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
+
+  // Ack the original packet.
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*delegate, OnAckNotification(1, _, 1, _));
+  QuicAckFrame ack_frame = InitAckFrame(1, 0);
+  ProcessAckPacket(&ack_frame);
+
+  // Delegate is not notified again when the retransmit is acked.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _));
+  QuicAckFrame second_ack_frame = InitAckFrame(2, 0);
+  ProcessAckPacket(&second_ack_frame);
+}
+
+// AckNotifierCallback is triggered by the ack of a packet that was
+// previously nacked, even though the retransmission has a different
+// sequence number.
+TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
+  InSequence s;
+
+  // Create a delegate which we expect to be called.
+  scoped_refptr<MockAckNotifierDelegate> delegate(
+      new StrictMock<MockAckNotifierDelegate>);
+
+  // Send four packets, and register to be notified on ACK of packet 2.
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, delegate.get());
+  connection_.SendStreamDataWithString(3, "baz", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "qux", 0, !kFin, NULL);
+
+  // Now we receive ACK for packets 1, 3, and 4 and lose 2.
+  QuicAckFrame frame = InitAckFrame(4, 0);
+  NackPacket(2, &frame);
+  SequenceNumberSet lost_packets;
+  lost_packets.insert(2);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(2, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
+  ProcessAckPacket(&frame);
+
+  // Now we get an ACK for packet 2, which was previously nacked.
+  SequenceNumberSet no_lost_packets;
+  EXPECT_CALL(*delegate, OnAckNotification(1, _, 1, _));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(no_lost_packets));
+  QuicAckFrame second_ack_frame = InitAckFrame(4, 0);
+  ProcessAckPacket(&second_ack_frame);
+
+  // Verify that the delegate is not notified again when the
+  // retransmit is acked.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(no_lost_packets));
+  QuicAckFrame third_ack_frame = InitAckFrame(5, 0);
+  ProcessAckPacket(&third_ack_frame);
 }
 
 // TODO(rjshade): Add a similar test that FEC recovery on peer (and resulting

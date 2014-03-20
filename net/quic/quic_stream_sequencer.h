@@ -57,10 +57,6 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // bytes read.  Any buffered data no longer in use will be released.
   int Readv(const struct iovec* iov, size_t iov_len);
 
-  // Consumes |num_bytes| data.  Used in conjunction with |GetReadableRegions|
-  // to do zero-copy reads.
-  void MarkConsumed(size_t num_bytes);
-
   // Returns true if the sequncer has bytes available for reading.
   bool HasBytesToRead() const;
 

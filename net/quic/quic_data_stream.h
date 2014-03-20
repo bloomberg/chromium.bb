@@ -86,8 +86,10 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
 
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.
-  virtual size_t WriteHeaders(const SpdyHeaderBlock& header_block,
-                              bool fin);
+  virtual size_t WriteHeaders(
+      const SpdyHeaderBlock& header_block,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has

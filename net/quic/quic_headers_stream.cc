@@ -178,9 +178,11 @@ QuicHeadersStream::QuicHeadersStream(QuicSession* session)
 
 QuicHeadersStream::~QuicHeadersStream() {}
 
-size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
-                                       const SpdyHeaderBlock& headers,
-                                       bool fin) {
+size_t QuicHeadersStream::WriteHeaders(
+    QuicStreamId stream_id,
+    const SpdyHeaderBlock& headers,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
   scoped_ptr<SpdySerializedFrame> frame;
   if (session()->is_server()) {
     SpdySynReplyIR syn_reply(stream_id);
@@ -193,7 +195,8 @@ size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
     syn_stream.set_fin(fin);
     frame.reset(spdy_framer_.SerializeFrame(syn_stream));
   }
-  WriteOrBufferData(StringPiece(frame->data(), frame->size()), false);
+  WriteOrBufferData(StringPiece(frame->data(), frame->size()), false,
+                    ack_notifier_delegate);
   return frame->size();
 }
 

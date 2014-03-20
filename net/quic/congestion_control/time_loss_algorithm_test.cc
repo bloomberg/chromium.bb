@@ -55,7 +55,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossFor500Nacks) {
     SendDataPacket(i);
   }
   unacked_packets_.SetNotPending(2);
-  for (size_t i = 0; i < 500; ++i) {
+  for (size_t i = 1; i < 500; ++i) {
     unacked_packets_.NackPacket(1, i);
     VerifyLosses(2, NULL, 0);
   }

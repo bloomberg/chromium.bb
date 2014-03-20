@@ -168,6 +168,7 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
     HasRetransmittableData has_retransmittable_data,
     IsHandshake handshake) {
   if (transmission_type == TLP_RETRANSMISSION ||
+      transmission_type == HANDSHAKE_RETRANSMISSION ||
       has_retransmittable_data == NO_RETRANSMITTABLE_DATA ||
       handshake == IS_HANDSHAKE) {
     // For TCP we can always send an ACK immediately.

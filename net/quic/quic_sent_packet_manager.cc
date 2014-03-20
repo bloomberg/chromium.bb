@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_sent_packet_manager.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/pacing_sender.h"
@@ -177,9 +179,6 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     it = MarkPacketHandled(sequence_number, RECEIVED_BY_PEER);
-
-    // The AckNotifierManager is informed of every ACKed sequence number.
-    ack_notifier_manager_.OnPacketAcked(sequence_number);
   }
 
   // Discard any retransmittable frames associated with revived packets.
@@ -231,7 +230,7 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
     if (frames != NULL && (retransmission_type == ALL_PACKETS ||
                            frames->encryption_level() == ENCRYPTION_INITIAL)) {
       OnPacketAbandoned(unacked_it->first);
-      MarkForRetransmission(unacked_it->first, NACK_RETRANSMISSION);
+      MarkForRetransmission(unacked_it->first, ALL_UNACKED_RETRANSMISSION);
     }
     ++unacked_it;
   }
@@ -303,6 +302,10 @@ QuicSentPacketManager::MarkPacketHandled(
   if (newest_transmission != sequence_number) {
     ++stats_->packets_spuriously_retransmitted;
   }
+
+  // The AckNotifierManager needs to be notified about the most recent
+  // transmission, since that's the one only one it tracks.
+  ack_notifier_manager_.OnPacketAcked(newest_transmission);
 
   bool has_crypto_handshake = HasCryptoHandshake(
       unacked_packets_.GetTransmissionInfo(newest_transmission));
@@ -431,7 +434,7 @@ void QuicSentPacketManager::RetransmitCryptoPackets() {
       continue;
     }
     packet_retransmitted = true;
-    MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
+    MarkForRetransmission(sequence_number, HANDSHAKE_RETRANSMISSION);
     // Abandon all the crypto retransmissions now so they're not lost later.
     OnPacketAbandoned(sequence_number);
   }
@@ -538,7 +541,12 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     // Consider it multiple nacks when there is a gap between the missing packet
     // and the largest observed, since the purpose of a nack threshold is to
     // tolerate re-ordering.  This handles both StretchAcks and Forward Acks.
+    // The nack count only increases when the largest observed increases.
     size_t min_nacks = received_info.largest_observed - sequence_number;
+    // Truncated acks can nack the largest observed, so set the nack count to 1.
+    if (min_nacks == 0) {
+      min_nacks = 1;
+    }
     unacked_packets_.NackPacket(sequence_number, min_nacks);
   }
 
@@ -562,7 +570,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     OnPacketAbandoned(sequence_number);
 
     if (unacked_packets_.HasRetransmittableFrames(sequence_number)) {
-      MarkForRetransmission(sequence_number, NACK_RETRANSMISSION);
+      MarkForRetransmission(sequence_number, LOSS_RETRANSMISSION);
     } else {
       // Since we will not retransmit this, we need to remove it from
       // unacked_packets_.   This is either the current transmission of

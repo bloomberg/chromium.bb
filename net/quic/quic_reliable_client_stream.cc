@@ -69,7 +69,7 @@ int QuicReliableClientStream::WriteStreamData(
   // We should not have data buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
-  WriteOrBufferData(data, fin);
+  WriteOrBufferData(data, fin, NULL);
   if (!HasBufferedData()) {
     return OK;
   }

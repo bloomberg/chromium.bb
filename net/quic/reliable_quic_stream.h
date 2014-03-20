@@ -12,6 +12,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"
@@ -94,7 +95,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
-  void WriteOrBufferData(base::StringPiece data, bool fin);
+  void WriteOrBufferData(
+      base::StringPiece data,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
@@ -126,8 +130,20 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
  private:
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
+  class ProxyAckNotifierDelegate;
 
-  std::list<string> queued_data_;
+  struct PendingData {
+    PendingData(string data_in,
+                scoped_refptr<ProxyAckNotifierDelegate> delegate_in);
+    ~PendingData();
+
+    string data;
+    // Delegate that should be notified when the pending data is acked.
+    // Can be nullptr.
+    scoped_refptr<ProxyAckNotifierDelegate> delegate;
+  };
+
+  std::list<PendingData> queued_data_;
 
   QuicStreamSequencer sequencer_;
   QuicStreamId id_;

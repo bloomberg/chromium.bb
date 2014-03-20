@@ -95,8 +95,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
   // If provided, |ack_notifier_delegate| will be registered to be notified when
-  // we have seen ACKs for all packets resulting from this call. Not owned by
-  // this class.
+  // we have seen ACKs for all packets resulting from this call.
   virtual QuicConsumedData WritevData(
       QuicStreamId id,
       const IOVector& data,
@@ -106,9 +105,13 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.
   // If |fin| is true, then no more data will be sent for the stream |id|.
-  size_t WriteHeaders(QuicStreamId id,
-                      const SpdyHeaderBlock& headers,
-                      bool fin);
+  // If provided, |ack_notifier_delegate| will be registered to be notified when
+  // we have seen ACKs for all packets resulting from this call.
+  size_t WriteHeaders(
+      QuicStreamId id,
+      const SpdyHeaderBlock& headers,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // Called by streams when they want to close the stream in both directions.
   virtual void SendRstStream(QuicStreamId id,

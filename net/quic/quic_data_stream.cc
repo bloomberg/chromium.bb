@@ -43,9 +43,12 @@ QuicDataStream::QuicDataStream(QuicStreamId id,
 QuicDataStream::~QuicDataStream() {
 }
 
-size_t QuicDataStream::WriteHeaders(const SpdyHeaderBlock& header_block,
-                                    bool fin) {
-  size_t bytes_written = session()->WriteHeaders(id(), header_block, fin);
+size_t QuicDataStream::WriteHeaders(
+    const SpdyHeaderBlock& header_block,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+  size_t bytes_written = session()->WriteHeaders(
+      id(), header_block, fin, ack_notifier_delegate);
   if (fin) {
     // TODO(rch): Add test to ensure fin_sent_ is set whenever a fin is sent.
     set_fin_sent(true);

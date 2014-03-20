@@ -154,7 +154,7 @@ void QuicUnackedPacketMap::NackPacket(QuicPacketSequenceNumber sequence_number,
     return;
   }
 
-  it->second.nack_count = max(min_nacks, it->second.nack_count + 1);
+  it->second.nack_count = max(min_nacks, it->second.nack_count);
 }
 
 void QuicUnackedPacketMap::RemovePacket(

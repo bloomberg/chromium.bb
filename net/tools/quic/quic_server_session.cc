@@ -12,10 +12,6 @@
 namespace net {
 namespace tools {
 
-// If true, cancel any asynchronous client hello validation when the connection
-// is closed.
-bool FLAGS_cancel_crypto_callbacks_on_close = false;
-
 QuicServerSession::QuicServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
@@ -40,8 +36,7 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
   QuicSession::OnConnectionClosed(error, from_peer);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
-  if (FLAGS_cancel_crypto_callbacks_on_close &&
-      crypto_stream_.get() != NULL) {
+  if (crypto_stream_.get() != NULL) {
     crypto_stream_->CancelOutstandingCallbacks();
   }
   visitor_->OnConnectionClosed(connection()->connection_id(), error);

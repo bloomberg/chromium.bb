@@ -121,7 +121,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
     // Write the headers and capture the outgoing data
     EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, NULL))
         .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
-    headers_stream_->WriteHeaders(stream_id, headers_, fin);
+    headers_stream_->WriteHeaders(stream_id, headers_, fin, NULL);
 
     // Parse the outgoing data and check that it matches was was written.
     if (type == SYN_STREAM) {
