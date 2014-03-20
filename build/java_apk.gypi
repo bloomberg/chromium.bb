@@ -471,6 +471,11 @@
           }
         }],
       ],
+      'variables': {
+        # Write the inputs list to a file, so that its mtime is updated when
+        # the list of inputs changes.
+        'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(additional_input_paths) >@(resource_input_paths))'
+      },
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-codegen.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -478,6 +483,7 @@
         '<(android_manifest_path)',
         '>@(additional_input_paths)',
         '>@(resource_input_paths)',
+        '>(inputs_list_file)',
       ],
       'outputs': [
         '<(codegen_stamp)',
@@ -500,11 +506,6 @@
         '-Dbasedir=.',
         '-buildfile',
         '<(DEPTH)/build/android/ant/apk-codegen.xml',
-
-        # Add list of inputs to the command line, so if inputs change
-        # (e.g. if a Java file is removed), the command will be re-run.
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ],
     },
     {
@@ -728,6 +729,11 @@
     {
       'action_name': 'ant_package_<(_target_name)',
       'message': 'Packaging <(_target_name)',
+      'variables': {
+        # Write the inputs list to a file, so that its mtime is updated when
+        # the list of inputs changes.
+        'inputs_list_file': '>|(apk_package.<(_target_name).gypcmd >@(package_input_paths))'
+      },
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -737,6 +743,7 @@
         '<(obfuscate_stamp)',
         '<(package_resources_stamp)',
         '>@(package_input_paths)',
+        '>(inputs_list_file)',
       ],
       'outputs': [
         '<(unsigned_apk_path)',
@@ -758,11 +765,6 @@
         '-Dbasedir=.',
         '-buildfile',
         '<(DEPTH)/build/android/ant/apk-package.xml',
-
-        # Add list of inputs to the command line, so if inputs change
-        # (e.g. if a Java file is removed), the command will be re-run.
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
   ],

@@ -185,7 +185,7 @@
                              '>@(dependencies_res_input_dirs)',],
             # Write the inputs list to a file, so that its mtime is updated when
             # the list of inputs changes.
-            'inputs_list_file': '>|(inputs_list.<(_target_name).gypcmd >@(resource_input_paths) @>(dependencies_res_files))'
+            'inputs_list_file': '>|(java_resources.<(_target_name).gypcmd >@(resource_input_paths) >@(dependencies_res_files))'
           },
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
