@@ -61,6 +61,11 @@ public:
     int offsetForPosition(float targetX);
     FloatRect selectionRect(const FloatPoint&, int height, int from, int to);
 
+    float minGlyphBoundingBoxX() const { return m_minGlyphBoundingBoxX; }
+    float maxGlyphBoundingBoxX() const { return m_maxGlyphBoundingBoxX; }
+    float minGlyphBoundingBoxY() const { return m_minGlyphBoundingBoxY; }
+    float maxGlyphBoundingBoxY() const { return m_maxGlyphBoundingBoxY; }
+
 private:
     class HarfBuzzRun {
     public:
@@ -158,6 +163,10 @@ private:
     ForTextEmphasisOrNot m_forTextEmphasis;
 
     float m_totalWidth;
+    float m_minGlyphBoundingBoxX;
+    float m_maxGlyphBoundingBoxX;
+    float m_minGlyphBoundingBoxY;
+    float m_maxGlyphBoundingBoxY;
 
     friend struct CachedShapingResults;
 };

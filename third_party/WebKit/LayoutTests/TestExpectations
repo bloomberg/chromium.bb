@@ -594,6 +594,7 @@ crbug.com/327698 [ Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
+crbug.com/354165 fast/text/complex-text-opacity.html [ NeedsRebaseline ] 
 
 crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
 crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass Slow ]

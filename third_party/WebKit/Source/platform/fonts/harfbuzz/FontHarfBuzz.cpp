@@ -206,11 +206,18 @@ float Font::getGlyphsAndAdvancesForComplexText(const TextRun& run, int from, int
     return 0;
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* /* fallbackFonts */, GlyphOverflow* /* glyphOverflow */) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* /* fallbackFonts */, GlyphOverflow* glyphOverflow) const
 {
     HarfBuzzShaper shaper(this, run);
     if (!shaper.shape())
         return 0;
+
+    if (glyphOverflow) {
+        glyphOverflow->top = std::max<int>(glyphOverflow->top, ceilf(-shaper.minGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));
+        glyphOverflow->bottom = std::max<int>(glyphOverflow->bottom, ceilf(shaper.maxGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().descent()));
+        glyphOverflow->left = std::max<int>(0, ceilf(-shaper.minGlyphBoundingBoxX()));
+        glyphOverflow->right = std::max<int>(0, ceilf(shaper.maxGlyphBoundingBoxX() - shaper.totalWidth()));
+    }
     return shaper.totalWidth();
 }
 
