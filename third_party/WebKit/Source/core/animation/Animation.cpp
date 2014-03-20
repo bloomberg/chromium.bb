@@ -32,6 +32,7 @@
 #include "core/animation/Animation.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationPlayer.h"
@@ -64,20 +65,20 @@ PassRefPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     return create(element, effect, Timing());
 }
-PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, EffectInput::convert(element, keyframeDictionaryVector), TimingInput::convert(timingInputDictionary));
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInputDictionary));
 }
-PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, EffectInput::convert(element, keyframeDictionaryVector), TimingInput::convert(duration));
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), TimingInput::convert(duration));
 }
-PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-    return create(element, EffectInput::convert(element, keyframeDictionaryVector), Timing());
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), Timing());
 }
 
 Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)

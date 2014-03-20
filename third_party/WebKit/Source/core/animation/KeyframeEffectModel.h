@@ -109,6 +109,8 @@ public:
 
     virtual bool isKeyframeEffectModel() const OVERRIDE { return true; }
 
+    bool isReplaceOnly();
+
     PropertySet properties() const;
 
     class PropertySpecificKeyframe {
@@ -117,13 +119,15 @@ public:
         double offset() const { return m_offset; }
         TimingFunction* easing() const { return m_easing.get(); }
         const AnimatableValue* value() const { return m_value.get(); }
+        AnimationEffect::CompositeOperation composite() const { return m_composite; }
         PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
     private:
         // Used by cloneWithOffset().
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>, CompositeOperation);
         double m_offset;
         RefPtr<TimingFunction> m_easing;
         RefPtr<AnimatableValue> m_value;
+        AnimationEffect::CompositeOperation m_composite;
     };
 
     class PropertySpecificKeyframeGroup {

@@ -51,10 +51,8 @@ test(function() {
 }, 'Calling animate() should start an animation. CamelCase property names should be parsed.');
 
 var keyframesWithInvalid = [
-        {offset: 0.1},
-        {width: '0px', backgroundColor: 'octarine', offset: 0.2},
-        {width: '1000px', foo: 'bar', offset: 1}
-        ];
+        {width: '0px', backgroundColor: 'octarine', offset: 0},
+        {width: '1000px', foo: 'bar', offset: 1}];
 
 test(function() {
     var player = e3.animate(keyframesWithInvalid, {duration: durationValue, fill: 'forwards'});

@@ -13,10 +13,11 @@ namespace WebCore {
 class AnimationEffect;
 class Dictionary;
 class Element;
+class ExceptionState;
 
 class EffectInput {
 public:
-    static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, bool unsafe = false);
+    static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&, bool unsafe = false);
 };
 
 } // namespace WebCore

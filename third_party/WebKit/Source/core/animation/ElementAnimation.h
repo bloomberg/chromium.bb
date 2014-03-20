@@ -59,19 +59,19 @@ public:
         return animateInternal(element, effect, Timing());
     }
 
-    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), TimingInput::convert(timingInputDictionary));
+        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInputDictionary));
     }
 
-    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, double duration)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), TimingInput::convert(duration));
+        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), TimingInput::convert(duration));
     }
 
-    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), Timing());
+        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), Timing());
     }
 
 private:

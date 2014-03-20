@@ -40,8 +40,9 @@
 
 namespace WebCore {
 
-class Element;
 class Dictionary;
+class Element;
+class ExceptionState;
 
 class Animation FINAL : public TimedItem {
 
@@ -53,9 +54,9 @@ public:
     static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Dictionary& timingInputDictionary);
     static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, double duration);
     static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector);
+    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState&);
+    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
+    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
     // FIXME: Move all of these setter methods out of Animation,
     // possibly into a new class (TimingInput?).
