@@ -834,16 +834,22 @@ PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& pa
         return nullptr;
 
     RenderStyle* parentStyle = parentRenderer->style();
+    if (RenderStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
+        if (!pseudoElementRendererIsNeeded(cachedStyle))
+            return nullptr;
+        return PseudoElement::create(&parent, pseudoId);
+    }
+
     StyleResolverState state(document(), &parent, parentStyle);
     if (!pseudoStyleForElementInternal(parent, pseudoId, parentStyle, state))
         return nullptr;
     RefPtr<RenderStyle> style = state.takeStyle();
     ASSERT(style);
+    parentStyle->addCachedPseudoStyle(style);
 
     if (!pseudoElementRendererIsNeeded(style.get()))
         return nullptr;
 
-    parentStyle->addCachedPseudoStyle(style.release());
     RefPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
