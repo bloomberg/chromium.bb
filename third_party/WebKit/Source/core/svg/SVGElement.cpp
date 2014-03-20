@@ -753,11 +753,9 @@ void SVGElement::collectStyleForPresentationAttribute(const QualifiedName& name,
 
 bool SVGElement::haveLoadedRequiredResources()
 {
-    Node* child = firstChild();
-    while (child) {
-        if (child->isSVGElement() && !toSVGElement(child)->haveLoadedRequiredResources())
+    for (SVGElement* child = Traversal<SVGElement>::firstChild(*this); child; child = Traversal<SVGElement>::nextSibling(*child)) {
+        if (!child->haveLoadedRequiredResources())
             return false;
-        child = child->nextSibling();
     }
     return true;
 }

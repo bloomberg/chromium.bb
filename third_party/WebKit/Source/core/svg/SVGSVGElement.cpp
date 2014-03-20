@@ -30,7 +30,6 @@
 #include "core/css/CSSHelper.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/EventListener.h"
@@ -825,11 +824,7 @@ Element* SVGSVGElement::getElementById(const AtomicString& id) const
 
     // Fall back to traversing our subtree. Duplicate ids are allowed, the first found will
     // be returned.
-    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node, this)) {
-        if (!node->isElementNode())
-            continue;
-
-        Element* element = toElement(node);
+    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
         if (element->getIdAttribute() == id)
             return element;
     }

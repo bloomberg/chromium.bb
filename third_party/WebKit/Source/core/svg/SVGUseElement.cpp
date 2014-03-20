@@ -580,13 +580,9 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
     // is the SVGGElement object for the 'g', and then two child SVGElementInstance objects, each of which has
     // its correspondingElement that is an SVGRectElement object.
 
-    for (Node* node = target->firstChild(); node; node = node->nextSibling()) {
-        SVGElement* element = 0;
-        if (node->isSVGElement())
-            element = toSVGElement(node);
-
-        // Skip any non-svg nodes or any disallowed element.
-        if (!element || isDisallowedElement(element))
+    for (SVGElement* element = Traversal<SVGElement>::firstChild(*target); element; element = Traversal<SVGElement>::nextSibling(*element)) {
+        // Skip any disallowed element.
+        if (isDisallowedElement(element))
             continue;
 
         // Create SVGElementInstance object, for both container/non-container nodes.
@@ -820,17 +816,10 @@ void SVGUseElement::associateInstancesWithShadowTreeElements(Node* target, SVGEl
     targetInstance->setShadowTreeElement(element);
     element->setCorrespondingElement(originalElement);
 
-    Node* node = target->firstChild();
-    for (SVGElementInstance* instance = targetInstance->firstChild(); node && instance; instance = instance->nextSibling()) {
-        // Skip any non-svg elements in shadow tree
-        while (node && !node->isSVGElement())
-           node = node->nextSibling();
-
-        if (!node)
-            break;
-
-        associateInstancesWithShadowTreeElements(node, instance);
-        node = node->nextSibling();
+    SVGElement* child = Traversal<SVGElement>::firstChild(*target);
+    for (SVGElementInstance* instance = targetInstance->firstChild(); child && instance; instance = instance->nextSibling()) {
+        associateInstancesWithShadowTreeElements(child, instance);
+        child = Traversal<SVGElement>::nextSibling(*child);
     }
 }
 
