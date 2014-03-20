@@ -281,8 +281,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
+#if !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
+#endif
   if (url.host() == chrome::kChromeUIOmniboxHost)
     return &NewWebUI<OmniboxUI>;
   if (url.host() == chrome::kChromeUIPasswordManagerInternalsHost &&
