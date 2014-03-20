@@ -13,6 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/media/webrtc_log_upload_list.h"
@@ -298,10 +299,10 @@ void WebRtcLoggingHandlerHost::DoStartLogging() {
                               false));
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::LogMachineInfoOnFileThread, this));
+      &WebRtcLoggingHandlerHost::LogInitialInfoOnFileThread, this));
 }
 
-void WebRtcLoggingHandlerHost::LogMachineInfoOnFileThread() {
+void WebRtcLoggingHandlerHost::LogInitialInfoOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   net::NetworkInterfaceList network_list;
@@ -309,12 +310,20 @@ void WebRtcLoggingHandlerHost::LogMachineInfoOnFileThread() {
                       net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::LogMachineInfoOnIOThread, this, network_list));
+      &WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread, this, network_list));
 }
 
-void WebRtcLoggingHandlerHost::LogMachineInfoOnIOThread(
+void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
     const net::NetworkInterfaceList& network_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Log start time (current time). We don't use base/i18n/time_formatting.h
+  // here because we don't want the format of the current locale.
+  base::Time::Exploded now = {0};
+  base::Time::Now().LocalExplode(&now);
+  LogToCircularBuffer(base::StringPrintf(
+      "Start %d-%02d-%02d %02d:%02d:%02d", now.year, now.month,
+      now.day_of_month, now.hour, now.minute, now.second));
 
   // Write metadata if received before logging started.
   if (!meta_data_.empty()) {

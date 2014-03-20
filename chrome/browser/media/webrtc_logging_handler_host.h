@@ -112,8 +112,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   void StartLoggingIfAllowed();
   void DoStartLogging();
-  void LogMachineInfoOnFileThread();
-  void LogMachineInfoOnIOThread(const net::NetworkInterfaceList& network_list);
+  void LogInitialInfoOnFileThread();
+  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list);
   void NotifyLoggingStarted();
 
   // Writes a formatted log |message| to the |circular_buffer_|.
