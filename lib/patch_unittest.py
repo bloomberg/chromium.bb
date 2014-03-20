@@ -51,6 +51,49 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '2'
 
 
+class TestChangeNumberOrID(cros_test_lib.TestCase):
+  """Tests that we can determine distinguish change number/ID."""
+  def TestGerritNumber(self):
+    """Tests that we can tell a Gerrit number."""
+    text = '12345'
+    self.assertTrue(cros_patch.IsGerritNumber(text))
+    self.assertFalse(cros_patch.IsChangeID(text))
+    self.assertFalse(cros_patch.IsFullChangeID(text))
+
+    text = '12345678'
+    self.assertFalse(cros_patch.IsGerritNumber(text))
+    self.assertFalse(cros_patch.IsChangeID(text))
+    self.assertFalse(cros_patch.IsFullChangeID(text))
+
+  def TestChangeID(self):
+    """Tests that we can tell a change-ID."""
+    text = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+    self.assertFalse(cros_patch.IsGerritNumber(text))
+    self.assertTrue(cros_patch.IsChangeID(text))
+    self.assertFalse(cros_patch.IsFullChangeID(text))
+
+    text = 'i47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+    self.assertFalse(cros_patch.IsGerritNumber(text))
+    self.assertTrue(cros_patch.IsChangeID(text))
+    self.assertFalse(cros_patch.IsChangeID(text, strict=True))
+    self.assertFalse(cros_patch.IsFullChangeID(text))
+
+    # Change-ID too short.
+    text = 'I47ea30385af60ae4cc2acc5d1a2'
+    self.assertFalse(cros_patch.IsGerritNumber(text))
+    self.assertFalse(cros_patch.IsChangeID(text))
+    self.assertFalse(cros_patch.IsChangeID(text, strict=True))
+    self.assertFalse(cros_patch.IsFullChangeID(text))
+
+  def TestFullChangeID(self):
+    """Tests that we can tell a full change-ID."""
+    text = ('chromiumos/chromite~master~'
+            'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1')
+    self.assertFalse(cros_patch.IsGerritNumber(text))
+    self.assertFalse(cros_patch.IsChangeID(text))
+    self.assertTrue(cros_patch.IsFullChangeID(text))
+
+
 class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
   """Unittests for git patch related methods."""
 

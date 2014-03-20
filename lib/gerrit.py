@@ -197,7 +197,7 @@ class GerritHelper(object):
     if current_patch:
       o_params.extend(['CURRENT_COMMIT', 'CURRENT_REVISION'])
 
-    if change and change.isdigit() and not query_kwds:
+    if change and cros_patch.IsGerritNumber(change) and not query_kwds:
       if dryrun:
         cros_build_lib.Info('Would have run gob_util.GetChangeDetail(%s, %s)',
                             self.host, change)

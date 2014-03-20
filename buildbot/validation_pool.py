@@ -502,7 +502,7 @@ class PatchSeries(object):
     existing = self._lookup_cache[
         cros_patch.FormatChangeId(
             change.change_id, force_internal=change.internal, strict=False)]
-    if query.isdigit() and existing is not None:
+    if cros_patch.IsGerritNumber(query) and existing is not None:
       if (not parent_lookup or existing.project == change.project and
           existing.tracking_branch == change.tracking_branch):
         key = cros_patch.FormatGerritNumber(

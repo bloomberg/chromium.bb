@@ -26,8 +26,56 @@ except ImportError:
 
 
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
+_GERRIT_CHANGE_ID_PREFIX = 'I'
+_GERRIT_CHANGE_ID_LENGTH = 40
+_GERRIT_CHANGE_ID_TOTAL_LENGTH = (_GERRIT_CHANGE_ID_LENGTH +
+                                  len(_GERRIT_CHANGE_ID_PREFIX))
 REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
 BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
+
+
+def IsGerritNumber(text):
+  """Returns True if |text| conforms to the Gerrit change number format.
+
+  Args:
+    text: The string to check.
+  """
+  return text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH
+
+
+def IsChangeID(text, strict=False):
+  """Returns True if |text| conforms to the change-ID format.
+
+  Change-ID is a string that starts with I/i. E.g.
+    I47ea30385af60ae4cc2acc5d1a283a46423bc6e1
+
+  Args:
+    text: The string to check.
+    strict: If True, then it's an error if the text holds an internally
+      formatted ChangeId.  Generally this is only useful if you're working w/
+      a direct git commit message and are trying to ensure the message is
+      gerrit compatible.
+  """
+  if strict and (not text.startswith(_GERRIT_CHANGE_ID_PREFIX) or
+                 len(text) != _GERRIT_CHANGE_ID_TOTAL_LENGTH):
+    return False
+
+  return ((text.startswith(_GERRIT_CHANGE_ID_PREFIX) or
+           text.startswith(_GERRIT_CHANGE_ID_PREFIX.lower())) and
+          git.IsSHA1(text[len(_GERRIT_CHANGE_ID_PREFIX):].lower()))
+
+
+def IsFullChangeID(text):
+  """Returns True if |text| conforms to the full change-ID format.
+
+  Full change-ID format: project~branch~change-id. E.g.
+    chromiumos/chromite~master~I47ea30385af60ae4cc2acc5d1a283a46423bc6e1
+
+  Args:
+    text: The string to check.
+  """
+  fields = text.split('~')
+  return len(fields) == 3 and IsChangeID(fields[2])
 
 
 class PatchException(Exception):
@@ -195,10 +243,10 @@ def MakeChangeId(unusable=False):
       as a fallback when a Change-Id could not be parsed.
   """
   s = "%x" % (random.randint(0, 2 ** 160),)
-  s = s.rjust(40, '0')
+  s = s.rjust(_GERRIT_CHANGE_ID_LENGTH, '0')
   if unusable:
     return 'Fake-ID %s' % s
-  return 'I%s' % s
+  return '%s%s' % (_GERRIT_CHANGE_ID_PREFIX, s)
 
 
 class PatchCache(object):
@@ -297,24 +345,12 @@ def FormatChangeId(text, force_internal=False, force_external=False,
   """
   original_text = text
   prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  if text[0] not in 'iI' or len(text) > 41:
+  if not IsChangeID(text, strict=strict):
     raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r" %
                      (original_text,))
-  elif strict:
-    if text[0] == 'i':
-      raise ValueError("FormatChangeId invoked w/ a malformed Change-Id, "
-                       "leading 'i' char needs to be I: %r" % (original_text,))
-    elif len(text) != 41:
-      raise ValueError("FormatChangeId invoked w/ a malformed Change-Id, "
-                       "value isn't 41 characters: %r" % (original_text,))
 
-  # Drop the leading I/i.
-  text = text[1:].lower()
-  if not git.IsSHA1(text, False):
-    raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
-                     % original_text)
-
-  return '%sI%s' % (prefix, text)
+  return '%s%s%s' % (prefix, _GERRIT_CHANGE_ID_PREFIX,
+                     text[len(_GERRIT_CHANGE_ID_PREFIX):].lower())
 
 
 def FormatSha1(text, force_internal=False, force_external=False, strict=False):
@@ -366,15 +402,12 @@ def FormatGerritNumber(text, force_internal=False, force_external=False,
   """
   original_text = text
   prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  if not text.isdigit():
-    raise ValueError("FormatSha1 invoked w/ a value that isn't a number: %r" %
-                     (original_text,))
+  if not IsGerritNumber(text):
+    raise ValueError(
+        "FormatGerritNumber invoked w/ a value that isn't a number or longer "
+        "than %i digits: %r" % (_MAXIMUM_GERRIT_NUMBER_LENGTH, original_text,))
   # Force an int conversion to strip any leading zeroes.
   text = str(int(text))
-  if len(text) > _MAXIMUM_GERRIT_NUMBER_LENGTH:
-    raise ValueError("FormatSha1 invoked w/ a value longer than %i digits: %r" %
-                     (_MAXIMUM_GERRIT_NUMBER_LENGTH, original_text,))
-
   return '%s%s' % (prefix, text)
 
 
@@ -452,19 +485,19 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
   if text.startswith(constants.INTERNAL_CHANGE_PREFIX):
     text = text[len(constants.INTERNAL_CHANGE_PREFIX):]
 
-  if len(text.split('~')) == 3:
+  if IsFullChangeID(text):
     if not full_changeid:
       raise ValueError(
           "FormatPatchDep: Fully-qualified change-id is not allowed in this "
           "context: %r" % (original_text,))
     target = FormatFullChangeId
-  elif text[0:1] in 'Ii':
+  elif IsChangeID(text):
     if not changeId:
       raise ValueError(
           "FormatPatchDep: ChangeId isn't allowed in this context: %r"
           % (original_text,))
     target = FormatChangeId
-  elif text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH:
+  elif IsGerritNumber(text):
     if not gerrit_number:
       raise ValueError(
           "FormatPatchDep: Gerrit number isn't allowed in this context: %r"
@@ -507,7 +540,9 @@ class GitRepoPatch(object):
   # ensuring CQ's internals can do the translation (almost can now,
   # but will fail in the case of a CQ-DEPEND on a change w/in the
   # same pool).
-  _STRICT_VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
+  pattern = (r'^'+ re.escape(_GERRIT_CHANGE_ID_PREFIX) + 'r[0-9a-fA-F]{' +
+             re.escape(str(_GERRIT_CHANGE_ID_LENGTH)) + r'}$')
+  _STRICT_VALID_CHANGE_ID_RE = re.compile(pattern)
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
                                  re.I | re.MULTILINE)
 
