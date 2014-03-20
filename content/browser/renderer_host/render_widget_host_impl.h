@@ -38,7 +38,6 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
-class WebCursor;
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -84,6 +83,7 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SyntheticGestureController;
 class TimeoutMonitor;
+class WebCursor;
 struct EditCommand;
 
 // This implements the RenderWidgetHost interface that is exposed to

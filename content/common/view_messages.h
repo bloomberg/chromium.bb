@@ -1326,8 +1326,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeChanged,
     bool /* is_editable_node */)
 
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor,
-                    WebCursor)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, content::WebCursor)
 
 // Used to set a cookie. The cookie is set asynchronously, but will be
 // available to a subsequent ViewHostMsg_GetCookies request.

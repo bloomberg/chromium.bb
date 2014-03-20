@@ -5,8 +5,8 @@
 #include "content/renderer/cursor_utils.h"
 
 #include "build/build_config.h"
+#include "content/common/cursors/webcursor.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "webkit/common/cursors/webcursor.h"
 
 using blink::WebCursorInfo;
 

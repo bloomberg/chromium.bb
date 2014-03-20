@@ -24,7 +24,6 @@
 #include "ui/surface/transport_dib.h"
 
 class SkBitmap;
-class WebCursor;
 
 struct AccessibilityHostMsg_EventParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
@@ -45,6 +44,7 @@ class BackingStore;
 class RenderWidgetHostViewFrameSubscriber;
 class SyntheticGesture;
 class SyntheticGestureTarget;
+class WebCursor;
 struct WebPluginGeometry;
 struct NativeWebKeyboardEvent;
 

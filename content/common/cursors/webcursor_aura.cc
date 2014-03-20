@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 
 using blink::WebCursorInfo;
+
+namespace content {
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
   switch (type_) {
@@ -108,3 +110,5 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return gfx::kNullCursor;
   }
 }
+
+}  // namespace content

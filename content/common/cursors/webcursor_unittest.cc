@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/pickle.h"
+#include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "webkit/common/cursors/webcursor.h"
 
 using blink::WebCursorInfo;
+
+namespace content {
 
 TEST(WebCursorTest, OKCursorSerialization) {
   WebCursor custom_cursor;
@@ -228,3 +230,5 @@ TEST(WebCursorTest, Scale2) {
   EXPECT_TRUE(custom_cursor.GetCustomCursor());
 #endif
 }
+
+}  // namespace content

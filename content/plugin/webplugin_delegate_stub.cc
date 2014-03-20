@@ -13,6 +13,7 @@
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/plugin/webplugin_proxy.h"
@@ -24,7 +25,6 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "webkit/common/cursors/webcursor.h"
 
 using blink::WebBindings;
 using blink::WebCursorInfo;

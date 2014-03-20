@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -11,6 +11,8 @@
 using blink::WebCursorInfo;
 
 static const int kMaxCursorDimension = 1024;
+
+namespace content {
 
 WebCursor::WebCursor()
     : type_(WebCursorInfo::TypePointer),
@@ -259,3 +261,5 @@ void WebCursor::ClampHotspot() {
   hotspot_.set_y(std::max(0,
                           std::min(custom_size_.height() - 1, hotspot_.y())));
 }
+
+}  // namespace content

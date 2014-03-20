@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
@@ -16,7 +16,7 @@ using blink::WebCursorInfo;
 namespace {
 
 // webcursor_gtk_data.h is taken directly from WebKit's CursorGtk.h.
-#include "webkit/common/cursors/webcursor_gtk_data.h"
+#include "content/common/cursors/webcursor_gtk_data.h"
 
 // This helper function is taken directly from WebKit's CursorGtk.cpp.
 // It attempts to create a custom cursor from the data inlined in
@@ -44,7 +44,9 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
   return cursor;
 }
 
-}  // end anonymous namespace
+}  // namespace
+
+namespace content {
 
 int WebCursor::GetCursorType() const {
   // http://library.gnome.org/devel/gdk/2.12/gdk-Cursors.html has images
@@ -220,3 +222,5 @@ void WebCursor::CopyPlatformData(const WebCursor& other) {
     unref_ = gdk_cursor_ref(other.unref_);
   return;
 }
+
+}  // namespace content

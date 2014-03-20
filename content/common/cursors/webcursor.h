@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
-#define WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
+#ifndef CONTENT_COMMON_CURSORS_WEBCURSOR_H_
+#define CONTENT_COMMON_CURSORS_WEBCURSOR_H_
+
+#include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/webkit_common_export.h"
-
-#include <vector>
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
@@ -36,11 +36,13 @@ class NSCursor;
 class Pickle;
 class PickleIterator;
 
+namespace content {
+
 // This class encapsulates a cross-platform description of a cursor.  Platform
 // specific methods are provided to translate the cross-platform cursor into a
 // platform specific cursor.  It is also possible to serialize / de-serialize a
 // WebCursor.
-class WEBKIT_COMMON_EXPORT WebCursor {
+class CONTENT_EXPORT WebCursor {
  public:
   struct CursorInfo {
     explicit CursorInfo(blink::WebCursorInfo::Type cursor_type)
@@ -192,4 +194,6 @@ class WEBKIT_COMMON_EXPORT WebCursor {
 #endif
 };
 
-#endif  // WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
+}  // namespace content
+
+#endif  // CONTENT_COMMON_CURSORS_WEBCURSOR_H_

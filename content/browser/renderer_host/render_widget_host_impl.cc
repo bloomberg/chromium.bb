@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -66,7 +67,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/vector2d_conversions.h"
 #include "ui/snapshot/snapshot.h"
-#include "webkit/common/cursors/webcursor.h"
 #include "webkit/common/webpreferences.h"
 
 #if defined(TOOLKIT_GTK)

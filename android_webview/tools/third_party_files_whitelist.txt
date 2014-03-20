@@ -184,6 +184,6 @@ webkit/browser/appcache/manifest_parser.h
 webkit/child/multipart_response_delegate.h
 # Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
 # Android.
-webkit/common/cursors/webcursor_gtk_data.h
+content/common/cursors/webcursor_gtk_data.h
 # False positive. This is a generated file which includes polymer code.
 chrome/browser/resources/pdf/index.js

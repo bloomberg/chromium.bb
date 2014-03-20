@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/input/web_input_event_builders_gtk.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/cursors/webcursor_gtk_data.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -48,7 +49,6 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
 #include "ui/gfx/text_elider.h"
-#include "webkit/common/cursors/webcursor_gtk_data.h"
 
 using blink::WebMouseWheelEvent;
 using blink::WebScreenInfo;

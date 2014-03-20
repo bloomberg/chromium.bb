@@ -4,11 +4,11 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "content/common/cursors/webcursor.h"
 #include "grit/ui_unscaled_resources.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
-#include "webkit/common/cursors/webcursor.h"
 
 using blink::WebCursorInfo;
 
@@ -109,6 +109,8 @@ static bool IsSystemCursorID(LPCWSTR cursor_id) {
   return cursor_id >= IDC_ARROW;  // See WinUser.h
 }
 
+namespace content {
+
 HCURSOR WebCursor::GetCursor(HINSTANCE module_handle){
   if (!IsCustom()) {
     const wchar_t* cursor_id =
@@ -179,3 +181,5 @@ void WebCursor::CleanupPlatformData() {
     custom_cursor_ = NULL;
   }
 }
+
+}  // namespace content

@@ -53,7 +53,6 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_ShowPopup_Params;
 #endif
 struct ViewHostMsg_UpdateRect_Params;
-class WebCursor;
 
 namespace cc {
 class CompositorFrameAck;
@@ -79,6 +78,7 @@ class BrowserPluginGuestManager;
 class RenderProcessHost;
 class RenderWidgetHostView;
 class SiteInstance;
+class WebCursor;
 struct DropData;
 struct MediaStreamRequest;
 

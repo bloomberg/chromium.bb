@@ -5,7 +5,7 @@
 #include "content/child/npapi/webplugin_delegate_impl.h"
 
 #include "content/child/npapi/plugin_instance.h"
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
 using blink::WebInputEvent;
 

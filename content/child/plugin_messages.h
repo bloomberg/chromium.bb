@@ -8,12 +8,12 @@
 #include "content/child/plugin_param_traits.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "webkit/common/cursors/webcursor.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -133,7 +133,7 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_SetFocus,
 IPC_SYNC_MESSAGE_ROUTED1_2(PluginMsg_HandleInputEvent,
                            IPC::WebInputEventPointer /* event */,
                            bool /* handled */,
-                           WebCursor /* cursor type*/)
+                           content::WebCursor /* cursor type*/)
 
 IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
                     bool /* has_focus */)

@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
-#include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+namespace content {
+
+const ui::PlatformCursor WebCursor::GetPlatformCursor() {
+  return NULL;
+}
+
+void WebCursor::SetDisplayInfo(const gfx::Display& display) {
+  return;
+}
 
 void WebCursor::InitPlatformData() {
 }
@@ -27,3 +34,5 @@ void WebCursor::CleanupPlatformData() {
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {
 }
+
+}  // namespace content

@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -40,7 +41,6 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
-#include "webkit/common/cursors/webcursor.h"
 
 namespace aura {
 class WindowTracker;

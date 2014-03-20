@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "content/public/common/content_client.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
@@ -116,7 +117,7 @@ namespace {
 
 NSCursor* LoadCursor(int resource_id, int hotspot_x, int hotspot_y) {
   const gfx::Image& cursor_image =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+      content::GetContentClient()->GetNativeImageNamed(resource_id);
   DCHECK(!cursor_image.IsEmpty());
   return [[[NSCursor alloc] initWithImage:cursor_image.ToNSImage()
                                   hotSpot:NSMakePoint(hotspot_x,
@@ -189,6 +190,8 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
 }
 
 }  // namespace
+
+namespace content {
 
 // Match Safari's cursor choices; see platform/mac/CursorMac.mm .
 gfx::NativeCursor WebCursor::GetNativeCursor() {
@@ -393,3 +396,5 @@ void WebCursor::CleanupPlatformData() {
 void WebCursor::CopyPlatformData(const WebCursor& other) {
   return;
 }
+
+}  // namespace content

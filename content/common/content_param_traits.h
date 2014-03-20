@@ -15,8 +15,8 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_H_
 
 #include "content/common/content_param_traits_macros.h"
+#include "content/common/cursors/webcursor.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "webkit/common/cursors/webcursor.h"
 
 namespace gfx {
 class Range;
@@ -37,8 +37,8 @@ struct ParamTraits<gfx::Range> {
 };
 
 template <>
-struct ParamTraits<WebCursor> {
-  typedef WebCursor param_type;
+struct ParamTraits<content::WebCursor> {
+  typedef content::WebCursor param_type;
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }

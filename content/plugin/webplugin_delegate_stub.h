@@ -21,7 +21,6 @@ struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
 struct PluginMsg_FetchURL_Params;
 struct PluginMsg_UpdateGeometry_Param;
-class WebCursor;
 
 namespace blink {
 class WebInputEvent;
@@ -29,6 +28,7 @@ class WebInputEvent;
 
 namespace content {
 class PluginChannel;
+class WebCursor;
 class WebPluginDelegateImpl;
 class WebPluginProxy;
 

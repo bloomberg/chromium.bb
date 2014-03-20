@@ -10,9 +10,9 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "content/common/cursors/webcursor.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/common/cursors/webcursor.h"
 
 class GURL;
 class SkCanvas;

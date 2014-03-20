@@ -39,17 +39,6 @@
       ],
 
       'sources': [
-        'cursors/webcursor.cc',
-        'cursors/webcursor.h',
-        'cursors/webcursor_android.cc',
-        'cursors/webcursor_aura.cc',
-        'cursors/webcursor_aurawin.cc',
-        'cursors/webcursor_aurax11.cc',
-        'cursors/webcursor_gtk.cc',
-        'cursors/webcursor_gtk_data.h',
-        'cursors/webcursor_mac.mm',
-        'cursors/webcursor_null.cc',
-        'cursors/webcursor_win.cc',
         'data_element.cc',
         'data_element.h',
         'resource_devtools_info.cc',
@@ -70,20 +59,9 @@
           ],
           'sources/': [['exclude', '_x11\\.cc$']],
         }],
-        ['use_aura==1', {
-          'sources!': [
-            'cursors/webcursor_mac.mm',
-            'cursors/webcursor_win.cc',
-          ],
-        }],
         ['use_aura==1 and use_x11==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:xcursor',
-          ],
-        }],
-        ['use_ozone==0', {
-          'sources!': [
-            'cursors/webcursor_null.cc',
           ],
         }],
         ['OS=="mac"', {

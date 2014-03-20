@@ -6,10 +6,10 @@
 
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ui/gfx/point.h"
-#include "webkit/common/cursors/webcursor.h"
 
 namespace content {
 

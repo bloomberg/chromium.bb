@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/cursors/webcursor.h"
+#include "content/common/cursors/webcursor.h"
 
+#include <X11/cursorfont.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
-#include <X11/cursorfont.h>
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_util.h"
+
+namespace content {
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
@@ -83,3 +85,5 @@ void WebCursor::CopyPlatformData(const WebCursor& other) {
 
   device_scale_factor_ = other.device_scale_factor_;
 }
+
+}  // namespace content

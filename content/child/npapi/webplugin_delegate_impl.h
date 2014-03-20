@@ -15,10 +15,10 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/child/npapi/webplugin_delegate.h"
+#include "content/common/cursors/webcursor.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "webkit/common/cursors/webcursor.h"
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"

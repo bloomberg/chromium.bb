@@ -27,13 +27,13 @@
 #include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_ime_win.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/plugin_constants_win.h"
 #include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
-#include "webkit/common/cursors/webcursor.h"
 
 using blink::WebKeyboardEvent;
 using blink::WebInputEvent;

@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "content/common/content_export.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/renderer/paint_aggregator.h"
@@ -40,7 +41,6 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/common/cursors/webcursor.h"
 
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewMsg_Resize_Params;

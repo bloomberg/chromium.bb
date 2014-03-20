@@ -10,13 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_export.h"
+#include "content/common/cursors/webcursor.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
-#include "webkit/common/cursors/webcursor.h"
 
 #if defined(TOOLKIT_GTK)
 #include "content/browser/renderer_host/gtk_plugin_container_manager.h"

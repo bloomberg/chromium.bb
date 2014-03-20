@@ -4,8 +4,8 @@
 
 #include "content/child/npapi/webplugin_delegate_impl.h"
 
-#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 #include <string>
 #include <vector>
@@ -13,12 +13,12 @@
 #include "base/metrics/stats_counters.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/gtk_compat.h"
-#include "webkit/common/cursors/webcursor.h"
 
 #include "third_party/npapi/bindings/npapi_x11.h"
 
