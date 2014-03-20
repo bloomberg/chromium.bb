@@ -16,6 +16,7 @@
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -57,67 +58,6 @@ class MockObserver : public NetworkPortalDetector::Observer {
   MOCK_METHOD2(OnPortalDetectionCompleted,
                void(const NetworkState* network,
                     const NetworkPortalDetector::CaptivePortalState& state));
-};
-
-class ResultHistogramChecker {
- public:
-  explicit ResultHistogramChecker(base::HistogramSamples* base)
-      : base_(base),
-        count_(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT) {}
-  virtual ~ResultHistogramChecker() {}
-
-  ResultHistogramChecker* Expect(
-      NetworkPortalDetector::CaptivePortalStatus status,
-      int count) {
-    count_[status] = count;
-    return this;
-  }
-
-  bool Check() const {
-    base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
-        NetworkPortalDetectorImpl::kDetectionResultHistogram);
-    bool empty = false;
-    if (static_cast<size_t>(std::count(count_.begin(), count_.end(), 0)) ==
-        count_.size()) {
-      empty = true;
-    }
-
-    if (!histogram) {
-      if (empty)
-        return true;
-      LOG(ERROR) << "Can't get histogram for "
-                 << NetworkPortalDetectorImpl::kDetectionResultHistogram;
-      return false;
-    }
-    scoped_ptr<base::HistogramSamples> samples = histogram->SnapshotSamples();
-    if (!samples.get()) {
-      if (empty)
-        return true;
-      LOG(ERROR) << "Can't get samples for "
-                 << NetworkPortalDetectorImpl::kDetectionResultHistogram;
-      return false;
-    }
-    bool ok = true;
-    for (size_t i = 0; i < count_.size(); ++i) {
-      const int base = base_ ? base_->GetCount(i) : 0;
-      const int actual = samples->GetCount(i) - base;
-      const NetworkPortalDetector::CaptivePortalStatus status =
-          static_cast<NetworkPortalDetector::CaptivePortalStatus>(i);
-      if (actual != count_[i]) {
-        LOG(ERROR) << "Expected: " << count_[i] << ", "
-                   << "actual: " << actual << " for "
-                   << NetworkPortalDetector::CaptivePortalStatusString(status);
-        ok = false;
-      }
-    }
-    return ok;
-  }
-
- private:
-  base::HistogramSamples* base_;
-  std::vector<int> count_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultHistogramChecker);
 };
 
 }  // namespace
@@ -229,8 +169,6 @@ class NetworkPortalDetectorImplTest
     return (NetworkPortalDetectorImpl::STATE_CHECKING_FOR_PORTAL == state());
   }
 
-
-
   const base::TimeDelta& next_attempt_delay() {
     return network_portal_detector()->next_attempt_delay_for_testing();
   }
@@ -285,9 +223,12 @@ class NetworkPortalDetectorImplTest
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<ResultHistogramChecker> MakeResultHistogramChecker() {
-    return scoped_ptr<ResultHistogramChecker>(
-        new ResultHistogramChecker(original_samples_.get())).Pass();
+  scoped_ptr<EnumHistogramChecker> MakeResultHistogramChecker() {
+    return scoped_ptr<EnumHistogramChecker>(
+        new EnumHistogramChecker(
+            NetworkPortalDetectorImpl::kDetectionResultHistogram,
+            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT,
+            original_samples_.get())).Pass();
   }
 
  private:

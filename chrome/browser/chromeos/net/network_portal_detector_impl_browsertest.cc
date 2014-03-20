@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -89,6 +90,10 @@ class NetworkPortalDetectorImplBrowserTest
     return network_portal_detector_->strategy_.get();
   }
 
+  message_center::MessageCenter* message_center() {
+    return message_center::MessageCenter::Get();
+  }
+
  private:
   NetworkPortalDetectorImpl* network_portal_detector_;
 
@@ -104,24 +109,45 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        InSessionDetection) {
+  typedef NetworkPortalNotificationController Controller;
+  const char* kNotificationId = Controller::kNotificationId;
+  const char* kNotificationMetric = Controller::kNotificationMetric;
+  const char* kUserActionMetric = Controller::kUserActionMetric;
+
+  EnumHistogramChecker ui_checker(
+      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, NULL);
+  EnumHistogramChecker action_checker(
+      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, NULL);
+
   LoginUser(kTestUser);
   content::RunAllPendingInMessageLoop();
+
+  // User connects to wifi.
   SetConnected(kWifi);
 
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
 
   // No notification until portal detection is completed.
-  ASSERT_FALSE(message_center::MessageCenter::Get()->HasNotification(
-      NetworkPortalNotificationController::kNotificationId));
+  ASSERT_FALSE(message_center()->HasNotification(kNotificationId));
   RestartDetection();
   CompleteURLFetch(net::OK, 200, NULL);
 
   // Check that wifi is marked as behind the portal and that notification
   // is displayed.
+  ASSERT_TRUE(message_center()->HasNotification(kNotificationId));
   ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
             NetworkPortalDetector::Get()->GetCaptivePortalState(kWifi).status);
-  ASSERT_TRUE(message_center::MessageCenter::Get()->HasNotification(
-      NetworkPortalNotificationController::kNotificationId));
+
+  ASSERT_TRUE(
+      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
+  ASSERT_TRUE(action_checker.Check());
+
+  // User explicitly closes the notification.
+  message_center()->RemoveNotification(kNotificationId, true /* by_user */);
+
+  ASSERT_TRUE(ui_checker.Check());
+  ASSERT_TRUE(
+      action_checker.Expect(Controller::USER_ACTION_METRIC_CLOSED, 1)->Check());
 }
 
 }  // namespace chromeos
