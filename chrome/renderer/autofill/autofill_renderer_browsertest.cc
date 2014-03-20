@@ -2,22 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 using base::ASCIIToUTF16;
 using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebString;
+using blink::WebURLRequest;
+using blink::WebVector;
 
 namespace autofill {
 
@@ -27,12 +38,26 @@ typedef Tuple5<int,
                gfx::RectF,
                bool> AutofillQueryParam;
 
-TEST_F(ChromeRenderViewTest, SendForms) {
-  // Don't want any delay for form state sync changes. This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
-  SendContentStateImmediately();
+class AutofillRendererTest : public ChromeRenderViewTest {
+ public:
+  AutofillRendererTest() {}
+  virtual ~AutofillRendererTest() {}
 
+ protected:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewTest::SetUp();
+
+    // Don't want any delay for form state sync changes. This will still post a
+    // message so updates will get coalesced, but as soon as we spin the message
+    // loop, it will generate an update.
+    SendContentStateImmediately();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutofillRendererTest);
+};
+
+TEST_F(AutofillRendererTest, SendForms) {
   LoadHTML("<form method=\"POST\">"
            "  <input type=\"text\" id=\"firstname\"/>"
            "  <input type=\"text\" id=\"middlename\"/>"
@@ -84,12 +109,7 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[3]);
 }
 
-TEST_F(ChromeRenderViewTest, EnsureNoFormSeenIfTooFewFields) {
-  // Don't want any delay for form state sync changes. This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
-  SendContentStateImmediately();
-
+TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   LoadHTML("<form method=\"POST\">"
            "  <input type=\"text\" id=\"firstname\"/>"
            "  <input type=\"text\" id=\"middlename\"/>"
@@ -105,12 +125,7 @@ TEST_F(ChromeRenderViewTest, EnsureNoFormSeenIfTooFewFields) {
   ASSERT_EQ(0UL, forms.size());
 }
 
-TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
-  // Don't want any delay for form state sync changes.  This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
-  SendContentStateImmediately();
-
+TEST_F(AutofillRendererTest, ShowAutofillWarning) {
   LoadHTML("<form method=\"POST\" autocomplete=\"Off\">"
            "  <input id=\"firstname\" autocomplete=\"OFF\"/>"
            "  <input id=\"middlename\"/>"
@@ -157,12 +172,7 @@ TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
 }
 
 // Regression test for [ http://crbug.com/346010 ].
-TEST_F(ChromeRenderViewTest, DontCrashWhileAssociatingForms) {
-  // Don't want any delay for form state sync changes. This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
-  SendContentStateImmediately();
-
+TEST_F(AutofillRendererTest, DontCrashWhileAssociatingForms) {
   LoadHTML("<form id='form'>"
            "<foo id='foo'>"
            "<script id='script'>"
@@ -174,6 +184,125 @@ TEST_F(ChromeRenderViewTest, DontCrashWhileAssociatingForms) {
            "</script>");
 
   // Shouldn't crash.
+}
+
+class RequestAutocompleteRendererTest : public AutofillRendererTest {
+ public:
+  RequestAutocompleteRendererTest()
+      : invoking_frame_(NULL), sibling_frame_(NULL) {}
+  virtual ~RequestAutocompleteRendererTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    AutofillRendererTest::SetUp();
+
+    // Bypass the HTTPS-only restriction to show requestAutocomplete.
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
+
+    GURL url("data:text/html;charset=utf-8,"
+             "<form><input autocomplete=cc-number></form>");
+    const char kDoubleIframeHtml[] = "<iframe id=subframe src=\"%s\"></iframe>"
+                                     "<iframe id=sibling></iframe>";
+    LoadHTML(base::StringPrintf(kDoubleIframeHtml, url.spec().c_str()).c_str());
+
+    WebElement subframe = GetMainFrame()->document().getElementById("subframe");
+    ASSERT_FALSE(subframe.isNull());
+    invoking_frame_ = WebFrame::fromFrameOwnerElement(subframe);
+    ASSERT_TRUE(invoking_frame());
+    ASSERT_EQ(GetMainFrame(), invoking_frame()->parent());
+
+    WebElement sibling = GetMainFrame()->document().getElementById("sibling");
+    ASSERT_FALSE(sibling.isNull());
+    sibling_frame_ = WebFrame::fromFrameOwnerElement(sibling);
+    ASSERT_TRUE(sibling_frame());
+
+    WebVector<WebFormElement> forms;
+    invoking_frame()->document().forms(forms);
+    ASSERT_EQ(1U, forms.size());
+    invoking_form_ = forms[0];
+    ASSERT_FALSE(invoking_form().isNull());
+
+    render_thread_->sink().ClearMessages();
+
+    // Invoke requestAutocomplete to show the dialog.
+    autofill_agent_->didRequestAutocomplete(invoking_frame(), invoking_form());
+    ASSERT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+        AutofillHostMsg_RequestAutocomplete::ID));
+
+    render_thread_->sink().ClearMessages();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    invoking_form_.reset();
+    AutofillRendererTest::TearDown();
+  }
+
+  void NavigateFrame(WebFrame* frame) {
+    frame->loadRequest(WebURLRequest(GURL("about:blank")));
+    ProcessPendingMessages();
+  }
+
+  const WebFormElement& invoking_form() const { return invoking_form_; }
+  WebFrame* invoking_frame() { return invoking_frame_; }
+  WebFrame* sibling_frame() { return sibling_frame_; }
+
+ private:
+  WebFormElement invoking_form_;
+  WebFrame* invoking_frame_;
+  WebFrame* sibling_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteRendererTest);
+};
+
+TEST_F(RequestAutocompleteRendererTest, SiblingNavigateIgnored) {
+  // Pretend that a sibling frame navigated. No cancel should be sent.
+  NavigateFrame(sibling_frame());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_CancelRequestAutocomplete::ID));
+}
+
+TEST_F(RequestAutocompleteRendererTest, SubframeNavigateCancels) {
+  // Pretend that the invoking frame navigated. A cancel should be sent.
+  NavigateFrame(invoking_frame());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_CancelRequestAutocomplete::ID));
+}
+
+TEST_F(RequestAutocompleteRendererTest, MainFrameNavigateCancels) {
+  // Pretend that the top-level frame navigated. A cancel should be sent.
+  NavigateFrame(GetMainFrame());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_CancelRequestAutocomplete::ID));
+}
+
+TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
+  // Pretend that the dialog was cancelled.
+  autofill_agent_->OnRequestAutocompleteResult(
+      WebFormElement::AutocompleteResultErrorCancel, FormData());
+
+  // Additional navigations should not crash nor send cancels.
+  NavigateFrame(invoking_frame());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_CancelRequestAutocomplete::ID));
+}
+
+TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
+  // Pretend that the dialog was cancelled.
+  autofill_agent_->OnRequestAutocompleteResult(
+      WebFormElement::AutocompleteResultErrorCancel, FormData());
+
+  // Additional navigations should not crash nor send cancels.
+  NavigateFrame(GetMainFrame());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_CancelRequestAutocomplete::ID));
+}
+
+TEST_F(RequestAutocompleteRendererTest, InvokingTwiceOnlyShowsOnce) {
+  // Attempting to show the requestAutocomplete dialog again should be ignored.
+  autofill_agent_->didRequestAutocomplete(invoking_frame(), invoking_form());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RequestAutocomplete::ID));
 }
 
 }  // namespace autofill

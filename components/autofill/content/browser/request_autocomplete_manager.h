@@ -27,6 +27,9 @@ class RequestAutocompleteManager {
   // |form|.
   void OnRequestAutocomplete(const FormData& form, const GURL& frame_url);
 
+  // Requests that any running interactive autocomplete be cancelled.
+  void OnCancelRequestAutocomplete();
+
  private:
   // Tells the renderer that the current interactive autocomplete dialog
   // finished with the |result| saying if it was successfull or not, and

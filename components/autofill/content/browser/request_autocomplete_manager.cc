@@ -35,6 +35,11 @@ void RequestAutocompleteManager::OnRequestAutocomplete(
   ShowRequestAutocompleteDialog(form, frame_url, callback);
 }
 
+void RequestAutocompleteManager::OnCancelRequestAutocomplete() {
+  autofill_driver_->autofill_manager()->delegate()->
+      HideRequestAutocompleteDialog();
+}
+
 void RequestAutocompleteManager::ReturnAutocompleteResult(
     blink::WebFormElement::AutocompleteResult result,
     const FormData& form_data) {

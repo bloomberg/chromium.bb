@@ -216,6 +216,10 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
                     autofill::FormData /* form_data */,
                     GURL /* frame_url */)
 
+// Sent when interactive autocomplete is cancelled (e.g. because the invoking
+// frame was navigated to a different URL).
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_CancelRequestAutocomplete);
+
 // Send when a text field is done editing.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 

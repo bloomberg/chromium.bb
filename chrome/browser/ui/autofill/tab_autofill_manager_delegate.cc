@@ -167,15 +167,6 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
     dialog_controller_->Hide();
 }
 
-void TabAutofillManagerDelegate::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (!dialog_controller_.get())
-    return;
-
-  HideRequestAutocompleteDialog();
-}
-
 void TabAutofillManagerDelegate::WebContentsDestroyed(
     content::WebContents* web_contents) {
   HideAutofillPopup();

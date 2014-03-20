@@ -46,15 +46,17 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using blink::WebAutofillClient;
+using blink::WebElement;
+using blink::WebElementCollection;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebKeyboardEvent;
 using blink::WebNode;
-using blink::WebElementCollection;
 using blink::WebOptionElement;
 using blink::WebString;
+using blink::WebVector;
 
 namespace autofill {
 
@@ -62,7 +64,7 @@ namespace {
 
 // Gets all the data list values (with corresponding label) for the given
 // element.
-void GetDataListSuggestions(const blink::WebInputElement& element,
+void GetDataListSuggestions(const WebInputElement& element,
                             bool ignore_current_value,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
@@ -194,6 +196,19 @@ void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.ResetFrame(*frame);
 }
 
+void AutofillAgent::FrameWillClose(WebFrame* frame) {
+  if (in_flight_request_form_.isNull())
+    return;
+
+  for (WebFrame* temp = in_flight_request_form_.document().frame();
+       temp; temp = temp->parent()) {
+    if (temp == frame) {
+      Send(new AutofillHostMsg_CancelRequestAutocomplete(routing_id()));
+      break;
+    }
+  }
+}
+
 void AutofillAgent::WillSubmitForm(WebFrame* frame,
                                    const WebFormElement& form) {
   FormData form_data;
@@ -216,11 +231,11 @@ void AutofillAgent::ZoomLevelChanged() {
   HidePopup();
 }
 
-void AutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
+void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   if (node.isNull() || !node.isElementNode())
     return;
 
-  blink::WebElement web_element = node.toConst<blink::WebElement>();
+  WebElement web_element = node.toConst<WebElement>();
 
   if (!web_element.document().frame())
       return;
@@ -238,11 +253,11 @@ void AutofillAgent::OrientationChangeEvent(int orientation) {
   HidePopup();
 }
 
-void AutofillAgent::DidChangeScrollOffset(blink::WebFrame*) {
+void AutofillAgent::DidChangeScrollOffset(WebFrame*) {
   HidePopup();
 }
 
-void AutofillAgent::didRequestAutocomplete(blink::WebFrame* frame,
+void AutofillAgent::didRequestAutocomplete(WebFrame* frame,
                                            const WebFormElement& form) {
   // Disallow the dialog over non-https or broken https, except when the
   // ignore SSL flag is passed. See http://crbug.com/272512.
@@ -459,7 +474,8 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
 }
 
 void AutofillAgent::OnRequestAutocompleteResult(
-    WebFormElement::AutocompleteResult result, const FormData& form_data) {
+    WebFormElement::AutocompleteResult result,
+    const FormData& form_data) {
   if (in_flight_request_form_.isNull())
     return;
 
@@ -574,14 +590,14 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,
-                                       blink::WebInputElement* node) {
+                                       WebInputElement* node) {
   did_set_node_text_ = true;
   node->setEditingValue(value.substr(0, node->maxLength()));
   node->setAutofilled(true);
 }
 
 void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
-                                          blink::WebInputElement* node) {
+                                          WebInputElement* node) {
   was_query_node_autofilled_ = element_.isAutofilled();
   node->setSuggestedValue(value.substr(0, node->maxLength()));
   node->setAutofilled(true);
@@ -599,10 +615,9 @@ void AutofillAgent::HidePopup() {
 }
 
 // TODO(isherman): Decide if we want to support non-password autofill with AJAX.
-void AutofillAgent::didAssociateFormControls(
-    const blink::WebVector<blink::WebNode>& nodes) {
+void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
   for (size_t i = 0; i < nodes.size(); ++i) {
-    blink::WebFrame* frame = nodes[i].document().frame();
+    WebFrame* frame = nodes[i].document().frame();
     // Only monitors dynamic forms created in the top frame. Dynamic forms
     // inserted in iframes are not captured yet.
     if (frame && !frame->parent()) {

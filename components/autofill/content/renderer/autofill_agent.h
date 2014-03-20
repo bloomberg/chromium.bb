@@ -55,11 +55,11 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual ~AutofillAgent();
 
  private:
-
-  // RenderView::Observer:
+  // content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
+  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
   virtual void WillSubmitForm(blink::WebFrame* frame,
                               const blink::WebFormElement& form) OVERRIDE;
   virtual void ZoomLevelChanged() OVERRIDE;
@@ -218,15 +218,22 @@ class AutofillAgent : public content::RenderViewObserver,
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
   friend class PasswordAutofillAgentTest;
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendDynamicForms);
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, ShowAutofillWarning);
+  friend class RequestAutocompleteRendererTest;
+  FRIEND_TEST_ALL_PREFIXES(AutofillRendererTest, FillFormElement);
+  FRIEND_TEST_ALL_PREFIXES(AutofillRendererTest, SendDynamicForms);
+  FRIEND_TEST_ALL_PREFIXES(AutofillRendererTest, ShowAutofillWarning);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, WaitUsername);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionAccept);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionSelect);
   FRIEND_TEST_ALL_PREFIXES(
       PasswordAutofillAgentTest,
       PasswordAutofillTriggersOnChangeEventsWaitForUsername);
+  FRIEND_TEST_ALL_PREFIXES(RequestAutocompleteRendererTest,
+                           NoCancelOnMainFrameNavigateAfterDone);
+  FRIEND_TEST_ALL_PREFIXES(RequestAutocompleteRendererTest,
+                           NoCancelOnSubframeNavigateAfterDone);
+  FRIEND_TEST_ALL_PREFIXES(RequestAutocompleteRendererTest,
+                           InvokingTwiceOnlyShowsOnce);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };
