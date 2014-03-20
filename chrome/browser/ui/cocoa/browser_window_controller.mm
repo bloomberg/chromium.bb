@@ -1205,6 +1205,8 @@ enum {
   if ([sender respondsToSelector:@selector(window)])
     targetController = [[sender window] windowController];
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
+  DCHECK(targetController->browser_.get());
+
   NSInteger command = [sender tag];
   NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
   if ((command == IDC_RELOAD) &&
@@ -1218,24 +1220,10 @@ enum {
     // the background" in this case.
     modifierFlags &= ~NSCommandKeyMask;
   }
-  WindowOpenDisposition disposition =
+  chrome::ExecuteCommandWithDisposition(
+      targetController->browser_.get(), command,
       ui::WindowOpenDispositionFromNSEventWithFlags(
-          [NSApp currentEvent], modifierFlags);
-  switch (command) {
-    case IDC_BACK:
-    case IDC_FORWARD:
-    case IDC_RELOAD:
-    case IDC_RELOAD_IGNORING_CACHE:
-      if (disposition == CURRENT_TAB) {
-        // Forcibly reset the location bar, since otherwise it won't discard any
-        // ongoing user edits, since it doesn't realize this is a user-initiated
-        // action.
-        [targetController locationBarBridge]->Revert();
-      }
-  }
-  DCHECK(targetController->browser_.get());
-  chrome::ExecuteCommandWithDisposition(targetController->browser_.get(),
-                                        command, disposition);
+          [NSApp currentEvent], modifierFlags));
 }
 
 // Called when another part of the internal codebase needs to execute a

@@ -495,17 +495,8 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 
 void ToolbarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
-  int command = sender->tag();
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event.flags());
-  if ((disposition == CURRENT_TAB) &&
-      ((command == IDC_BACK) || (command == IDC_FORWARD))) {
-    // Forcibly reset the location bar, since otherwise it won't discard any
-    // ongoing user edits, since it doesn't realize this is a user-initiated
-    // action.
-    location_bar_->Revert();
-  }
-  chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
+  chrome::ExecuteCommandWithDisposition(
+      browser_, sender->tag(), ui::DispositionFromEventFlags(event.flags()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

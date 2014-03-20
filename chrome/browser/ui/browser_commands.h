@@ -64,7 +64,7 @@ bool CanGoForward(const Browser* browser);
 void GoForward(Browser* browser, WindowOpenDisposition disposition);
 bool NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
-                                    WindowOpenDisposition disp);
+                                    WindowOpenDisposition disposition);
 void Reload(Browser* browser, WindowOpenDisposition disposition);
 void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition);
 bool CanReload(const Browser* browser);

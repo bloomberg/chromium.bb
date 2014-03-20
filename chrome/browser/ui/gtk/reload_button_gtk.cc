@@ -411,32 +411,6 @@ void ReloadButtonGtk::ShowReloadMenu(int button, guint32 event_time) {
 }
 
 void ReloadButtonGtk::DoReload(int command) {
-  // Shift-clicking or Ctrl-clicking the reload button means we should ignore
-  // any cached content.
-  GdkModifierType modifier_state;
-  gtk_get_current_event_state(&modifier_state);
-  guint modifier_state_uint = modifier_state;
-
-  // Default reload behaviour.
-  if (command == 0) {
-    if (modifier_state_uint & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
-      command = IDC_RELOAD_IGNORING_CACHE;
-      // Mask off Shift and Control so they don't affect the disposition below.
-      modifier_state_uint &= ~(GDK_SHIFT_MASK | GDK_CONTROL_MASK);
-    } else {
-      command = IDC_RELOAD;
-    }
-  }
-
-  WindowOpenDisposition disposition =
-      event_utils::DispositionFromGdkState(modifier_state_uint);
-  if ((disposition == CURRENT_TAB) && location_bar_) {
-    // Forcibly reset the location bar, since otherwise it won't discard any
-    // ongoing user edits, since it doesn't realize this is a user-initiated
-    // action.
-    location_bar_->Revert();
-  }
-
   // Start a timer - while this timer is running, the reload button cannot be
   // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
   // here as the browser will do that when it actually starts loading (which
@@ -445,15 +419,34 @@ void ReloadButtonGtk::DoReload(int command) {
   double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
                             &ReloadButtonGtk::OnDoubleClickTimer);
 
-  if (browser_)
-    chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
+  if (browser_) {
+    // Shift-clicking or Ctrl-clicking the reload button means we should ignore
+    // any cached content.
+    GdkModifierType modifier_state;
+    gtk_get_current_event_state(&modifier_state);
+    guint modifier_state_uint = modifier_state;
+
+    // Default reload behaviour.
+    if (command == 0) {
+      if (modifier_state_uint & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
+        command = IDC_RELOAD_IGNORING_CACHE;
+        // Mask off Shift and Control so they don't affect the disposition
+        // below.
+        modifier_state_uint &= ~(GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+      } else {
+        command = IDC_RELOAD;
+      }
+    }
+
+    chrome::ExecuteCommandWithDisposition(
+        browser_, command,
+        event_utils::DispositionFromGdkState(modifier_state_uint));
+  }
   ++testing_reload_count_;
 }
 
 bool ReloadButtonGtk::ReloadMenuEnabled() {
-  if (!browser_)
-    return false;
-  return chrome::IsDebuggerAttachedToCurrentTab(browser_);
+  return browser_ && chrome::IsDebuggerAttachedToCurrentTab(browser_);
 }
 
 void ReloadButtonGtk::ClearCache() {

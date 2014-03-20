@@ -769,11 +769,6 @@ class Browser : public TabStripModelObserver,
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
-  // Depending on the disposition, return the current tab or a clone of the
-  // current tab.
-  content::WebContents* GetOrCloneTabForDisposition(
-      WindowOpenDisposition disposition);
-
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of

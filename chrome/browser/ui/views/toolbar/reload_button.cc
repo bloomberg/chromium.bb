@@ -220,16 +220,8 @@ ui::SimpleMenuModel* ReloadButton::CreateMenuModel() {
 void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
   if (!command_updater_)
     return;
-
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event_flags);
-  if ((disposition == CURRENT_TAB) && location_bar_) {
-    // Forcibly reset the location bar, since otherwise it won't discard any
-    // ongoing user edits, since it doesn't realize this is a user-initiated
-    // action.
-    location_bar_->Revert();
-  }
-  command_updater_->ExecuteCommandWithDisposition(command, disposition);
+  command_updater_->ExecuteCommandWithDisposition(
+      command, ui::DispositionFromEventFlags(event_flags));
 }
 
 void ReloadButton::ChangeModeInternal(Mode mode) {

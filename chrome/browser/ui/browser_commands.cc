@@ -196,33 +196,37 @@ void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
   }
 }
 
-WebContents* GetOrCloneTabForDisposition(Browser* browser,
-                                         WindowOpenDisposition disposition) {
+// Based on |disposition|, creates a new tab as necessary, and returns the
+// appropriate tab to navigate.  If that tab is the current tab, reverts the
+// location bar contents, since all browser-UI-triggered navigations should
+// revert any omnibox edits in the current tab.
+WebContents* GetTabAndRevertIfNecessary(Browser* browser,
+                                        WindowOpenDisposition disposition) {
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
-      current_tab = current_tab->Clone();
+      WebContents* new_tab = current_tab->Clone();
       browser->tab_strip_model()->AddWebContents(
-          current_tab, -1, content::PAGE_TRANSITION_LINK,
-          disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_ACTIVE :
-                                              TabStripModel::ADD_NONE);
-      break;
+          new_tab, -1, content::PAGE_TRANSITION_LINK,
+          (disposition == NEW_FOREGROUND_TAB) ?
+              TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE);
+      return new_tab;
     }
     case NEW_WINDOW: {
-      current_tab = current_tab->Clone();
-      Browser* b = new Browser(Browser::CreateParams(
+      WebContents* new_tab = current_tab->Clone();
+      Browser* new_browser = new Browser(Browser::CreateParams(
           browser->profile(), browser->host_desktop_type()));
-      b->tab_strip_model()->AddWebContents(
-          current_tab, -1, content::PAGE_TRANSITION_LINK,
+      new_browser->tab_strip_model()->AddWebContents(
+          new_tab, -1, content::PAGE_TRANSITION_LINK,
           TabStripModel::ADD_ACTIVE);
-      b->window()->Show();
-      break;
+      new_browser->window()->Show();
+      return new_tab;
     }
     default:
-      break;
+      browser->window()->GetLocationBar()->Revert();
+      return current_tab;
   }
-  return current_tab;
 }
 
 void ReloadInternal(Browser* browser,
@@ -232,14 +236,14 @@ void ReloadInternal(Browser* browser,
   //
   // Also notify RenderViewHostDelegate of the user gesture; this is
   // normally done in Browser::Navigate, but a reload bypasses Navigate.
-  WebContents* web_contents = GetOrCloneTabForDisposition(browser, disposition);
-  web_contents->UserGestureDone();
-  if (!web_contents->FocusLocationBarByDefault())
-    web_contents->GetView()->Focus();
+  WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
+  new_tab->UserGestureDone();
+  if (!new_tab->FocusLocationBarByDefault())
+    new_tab->GetView()->Focus();
   if (ignore_cache)
-    web_contents->GetController().ReloadIgnoringCache(true);
+    new_tab->GetController().ReloadIgnoringCache(true);
   else
-    web_contents->GetController().Reload(true);
+    new_tab->GetController().Reload(true);
 }
 
 bool IsShowingWebContentsModalDialog(const Browser* browser) {
@@ -391,13 +395,15 @@ bool CanGoBack(const Browser* browser) {
 void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Back"));
 
-  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   if (CanGoBack(browser)) {
-    WebContents* new_tab = GetOrCloneTabForDisposition(browser, disposition);
-    // If we are on an interstitial page and clone the tab, it won't be copied
-    // to the new tab, so we don't need to go back.
-    if (current_tab->ShowingInterstitialPage() && new_tab != current_tab)
+    WebContents* current_tab =
+        browser->tab_strip_model()->GetActiveWebContents();
+    WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
+    if ((new_tab != current_tab) && current_tab->ShowingInterstitialPage()) {
+      // If we are on an interstitial page and clone the tab, it won't be copied
+      // to the new tab, so we don't need to go back.
       return;
+    }
     new_tab->GetController().GoBack();
   }
 }
@@ -410,19 +416,19 @@ bool CanGoForward(const Browser* browser) {
 void GoForward(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Forward"));
   if (CanGoForward(browser)) {
-    GetOrCloneTabForDisposition(browser, disposition)->
+    GetTabAndRevertIfNecessary(browser, disposition)->
         GetController().GoForward();
   }
 }
 
 bool NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
-                                    WindowOpenDisposition disp) {
-  NavigationController& controller =
-      GetOrCloneTabForDisposition(browser, disp)->GetController();
-  if (index < 0 || index >= controller.GetEntryCount())
+                                    WindowOpenDisposition disposition) {
+  NavigationController* controller =
+      &GetTabAndRevertIfNecessary(browser, disposition)->GetController();
+  if (index < 0 || index >= controller->GetEntryCount())
     return false;
-  controller.GoToIndex(index);
+  controller->GoToIndex(index);
   return true;
 }
 

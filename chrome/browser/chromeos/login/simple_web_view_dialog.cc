@@ -346,6 +346,7 @@ void SimpleWebViewDialog::ExecuteCommandWithDisposition(
       // Always reload ignoring cache.
     case IDC_RELOAD_IGNORING_CACHE:
     case IDC_RELOAD_CLEARING_CACHE:
+      location_bar_->Revert();
       web_contents->GetController().ReloadIgnoringCache(true);
       break;
     default:
