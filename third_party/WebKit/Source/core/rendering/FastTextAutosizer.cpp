@@ -535,11 +535,6 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const Rende
         return 0;
 
     FingerprintSourceData data;
-
-    // FIXME: Instead of computing and caching parent fingerprints on demand,
-    // consider maintaining a fingerprint stack during the style recalc
-    // tree walk (similar to the cluster stack used during layout).
-
     if (const RenderObject* parent = parentElementRenderer(renderer))
         data.m_parentHash = getFingerprint(parent);
 
