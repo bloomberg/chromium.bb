@@ -58,8 +58,6 @@ typedef int GC3Dint;
 
 class MediaPlayerClient {
 public:
-    enum CORSMode { Unspecified, Anonymous, UseCredentials };
-
     virtual ~MediaPlayerClient() { }
 
     // the network state has changed
@@ -92,8 +90,6 @@ public:
     // the movie size has changed
     virtual void mediaPlayerSizeChanged() = 0;
 
-    virtual CORSMode mediaPlayerCORSMode() const = 0;
-
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) = 0;
     virtual void mediaPlayerSetOpaque(bool) = 0;
 
@@ -116,9 +112,7 @@ public:
     MediaPlayer() { }
     virtual ~MediaPlayer() { }
 
-    virtual void load(blink::WebMediaPlayer::LoadType, const String& url) = 0;
-
-    virtual void prepareToPlay() = 0;
+    virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
 
     virtual void play() = 0;
     virtual void pause() = 0;

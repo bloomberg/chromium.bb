@@ -178,27 +178,9 @@ void WebMediaPlayerClientImpl::requestSeek(double time)
 }
 
 // MediaPlayer -------------------------------------------------
-
-void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF::String& url)
+void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF::String& url, WebMediaPlayer::CORSMode corsMode)
 {
-    m_url = KURL(ParsedURLString, url);
-    m_loadType = loadType;
-
-    if (m_preload == MediaPlayer::None) {
-#if ENABLE(WEB_AUDIO)
-        m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
-#endif
-        m_webMediaPlayer.clear();
-        m_delayingLoad = true;
-    } else
-        loadInternal();
-}
-
-void WebMediaPlayerClientImpl::loadInternal()
-{
-#if ENABLE(WEB_AUDIO)
-    m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
-#endif
+    ASSERT(!m_webMediaPlayer);
 
     // FIXME: Remove this cast
     LocalFrame* frame = mediaElement().document().frame();
@@ -211,24 +193,27 @@ void WebMediaPlayerClientImpl::loadInternal()
     // if necessary.
     m_needsWebLayerForVideo = frame->contentRenderer()->compositor()->hasAcceleratedCompositing();
 
-    m_webMediaPlayer = createWebMediaPlayer(this, m_url, frame);
-    if (m_webMediaPlayer) {
+    KURL kurl(ParsedURLString, url);
+    m_webMediaPlayer = createWebMediaPlayer(this, kurl, frame);
+    if (!m_webMediaPlayer)
+        return;
+
 #if ENABLE(WEB_AUDIO)
-        // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
-        m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
+    // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
+    m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
-        m_webMediaPlayer->setVolume(mediaElement().playerVolume());
+    m_webMediaPlayer->setVolume(mediaElement().playerVolume());
 
-        // Tell WebMediaPlayer about the poster image URL.
-        m_webMediaPlayer->setPoster(poster);
+    m_webMediaPlayer->setPoster(poster);
 
-        // Tell WebMediaPlayer about any connected CDM (may be null).
-        m_webMediaPlayer->setContentDecryptionModule(HTMLMediaElementEncryptedMedia::contentDecryptionModule(mediaElement()));
+#if OS(ANDROID)
+    m_usePaintOnAndroid = (loadType != WebMediaPlayer::LoadTypeMediaStream);
+#endif
 
-        WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
-        m_webMediaPlayer->load(m_loadType, m_url, corsMode);
-    }
+    // Tell WebMediaPlayer about any connected CDM (may be null).
+    m_webMediaPlayer->setContentDecryptionModule(HTMLMediaElementEncryptedMedia::contentDecryptionModule(mediaElement()));
+    m_webMediaPlayer->load(loadType, kurl, corsMode);
 }
 
 void WebMediaPlayerClientImpl::play()
@@ -258,12 +243,6 @@ void WebMediaPlayerClientImpl::hideFullscreenOverlay()
 bool WebMediaPlayerClientImpl::canShowFullscreenOverlay() const
 {
     return m_webMediaPlayer && m_webMediaPlayer->canEnterFullscreen();
-}
-
-void WebMediaPlayerClientImpl::prepareToPlay()
-{
-    if (m_delayingLoad)
-        startDelayedLoad();
 }
 
 IntSize WebMediaPlayerClientImpl::naturalSize() const
@@ -388,7 +367,7 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
         // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
         // paint the video frame into the context.
 #if OS(ANDROID)
-        if (m_loadType != WebMediaPlayer::LoadTypeMediaStream) {
+        if (m_usePaintOnAndroid) {
             paintOnAndroid(context, rect, context->getNormalizedAlpha());
             return;
         }
@@ -414,9 +393,6 @@ void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)
 
     if (m_webMediaPlayer)
         m_webMediaPlayer->setPreload(static_cast<WebMediaPlayer::Preload>(preload));
-
-    if (m_delayingLoad && m_preload != MediaPlayer::None)
-        startDelayedLoad();
 }
 
 bool WebMediaPlayerClientImpl::hasSingleSecurityOrigin() const
@@ -529,23 +505,14 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
 }
 #endif
 
-void WebMediaPlayerClientImpl::startDelayedLoad()
-{
-    ASSERT(m_delayingLoad);
-    ASSERT(!m_webMediaPlayer);
-
-    m_delayingLoad = false;
-
-    loadInternal();
-}
-
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
-    , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
     , m_needsWebLayerForVideo(false)
     , m_rate(1.0)
-    , m_loadType(WebMediaPlayer::LoadTypeURL)
+#if OS(ANDROID)
+    , m_usePaintOnAndroid(false)
+#endif
 {
     ASSERT(m_client);
 }

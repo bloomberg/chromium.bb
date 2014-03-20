@@ -326,9 +326,6 @@ private:
     virtual void mediaPlayerRequestSeek(double) OVERRIDE FINAL;
     virtual void mediaPlayerRepaint() OVERRIDE FINAL;
     virtual void mediaPlayerSizeChanged() OVERRIDE FINAL;
-
-    virtual CORSMode mediaPlayerCORSMode() const OVERRIDE FINAL;
-
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE FINAL;
     virtual void mediaPlayerSetOpaque(bool) OVERRIDE FINAL;
     virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) OVERRIDE FINAL;
@@ -353,6 +350,9 @@ private:
     void loadInternal();
     void selectMediaResource();
     void loadResource(const KURL&, ContentType&, const String& keySystem);
+    void setPlayerPreload();
+    void startDelayedLoad();
+    blink::WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
     void loadNextSourceChild();
     void userCancelledLoad();
@@ -413,6 +413,8 @@ private:
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
     bool isAutoplaying() const { return m_autoplaying; }
+
+    blink::WebMediaPlayer::CORSMode corsMode() const;
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;
@@ -492,6 +494,7 @@ private:
 
     bool m_completelyLoaded : 1;
     bool m_havePreparedToPlay : 1;
+    bool m_delayingLoadForPreloadNone : 1;
 
     bool m_tracksAreReady : 1;
     bool m_haveVisibleTextTrack : 1;
