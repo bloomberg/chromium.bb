@@ -28852,7 +28852,7 @@ other types of suffix sets.
 </enum>
 
 <enum name="ExtensionFunctions" type="int">
-<!-- Generated from ../../../chrome/browser/extensions/extension_function_histogram_value.h -->
+<!-- Generated from ../../../extensions/browser/extension_function_histogram_value.h -->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="WEBNAVIGATION_GETALLFRAMES"/>
@@ -29561,6 +29561,9 @@ other types of suffix sets.
   <int value="698" label="WEBVIEW_CONTEXTMENUSREMOVEALL"/>
   <int value="699" label="AUTOMATIONINTERNAL_ENABLECURRENTTAB"/>
   <int value="700" label="APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS"/>
+  <int value="701" label="BLUETOOTH_GETDEVICE"/>
+  <int value="702" label="GCM_UNREGISTER"/>
+  <int value="703" label="FILEBROWSERPRIVATE_REQUESTDRIVESHARE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

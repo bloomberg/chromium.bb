@@ -57,6 +57,12 @@ var FileManagerUI = function(element, dialogType) {
   this.shareDialog = null;
 
   /**
+   * Multi-profile share dialog.
+   * @type {MultiProfileShareDialog}
+   */
+  this.multiProfileShareDialog = null;
+
+  /**
    * Default task picker.
    * @type {DefaultActionDialog}
    */
@@ -175,6 +181,7 @@ FileManagerUI.prototype.initDialogs = function() {
   this.confirmDialog = new dialogs.ConfirmDialog(this.element_);
   this.promptDialog = new dialogs.PromptDialog(this.element_);
   this.shareDialog = new ShareDialog(this.element_);
+  this.multiProfileShareDialog = new MultiProfileShareDialog(this.element_);
   this.defaultTaskPicker =
       new cr.filebrowser.DefaultActionDialog(this.element_);
   this.suggestAppsDialog = new SuggestAppsDialog(

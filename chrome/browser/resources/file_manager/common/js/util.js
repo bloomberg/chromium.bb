@@ -1164,26 +1164,52 @@ util.entriesToURLs = function(entries) {
  * Converts array of URLs to an array of corresponding Entries.
  *
  * @param {Array.<string>} urls Input array of URLs.
- * @param {function(Array.<Entry>, Array.<URL>)} callback Completion callback
- *     with array of success Entries and failure URLs.
+ * @param {function(Array.<Entry>, Array.<URL>)=} opt_callback Completion
+ *     callback with array of success Entries and failure URLs.
+ * @return {Promise} Promise fulfilled with the object that has entries property
+ *     and failureUrls property. The promise is never rejected.
  */
-util.URLsToEntries = function(urls, callback) {
-  var result = [];
-  var failureUrl = [];
-  AsyncUtil.forEach(
-      urls,
-      function(forEachCallback, url) {
-        webkitResolveLocalFileSystemURL(url, function(entry) {
-          result.push(entry);
-          forEachCallback();
-        }, function() {
+util.URLsToEntries = function(urls, opt_callback) {
+  var promises = urls.map(function(url) {
+    return new Promise(webkitResolveLocalFileSystemURL.bind(null, url)).
+        then(function(entry) {
+          return {entry: entry};
+        }, function(failureUrl) {
           // Not an error. Possibly, the file is not accessible anymore.
           console.warn('Failed to resolve the file with url: ' + url + '.');
-          failureUrl.push(url);
-          forEachCallback();
+          return {failureUrl: url};
         });
-      },
-      callback.bind(null, result, failureUrl));
+  });
+  var resultPromise = Promise.all(promises).then(function(results) {
+    var entries = [];
+    var failureUrls = [];
+    for (var i = 0; i < results.length; i++) {
+      if ('entry' in results[i])
+        entries.push(results[i].entry);
+      if ('failureUrl' in results[i]) {
+        failureUrls.push(results[i].failureUrl);
+      }
+    }
+    return {
+      entries: entries,
+      failureUrls: failureUrls
+    };
+  });
+
+  // Invoke the callback. If opt_callback is specified, resultPromise is still
+  // returned and fulfilled with a result.
+  if (opt_callback) {
+    resultPromise.then(function(result) {
+      opt_callback(result.entries, result.failureUrls);
+    }).
+    catch(function(error) {
+      console.error(
+          'util.URLsToEntries is failed.',
+          error.stack ? error.stack : error);
+    });
+  }
+
+  return resultPromise;
 };
 
 /**

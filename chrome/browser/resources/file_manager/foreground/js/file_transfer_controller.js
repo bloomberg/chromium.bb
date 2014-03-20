@@ -19,18 +19,22 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
  * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {DirectoryModel} directoryModel Directory model instance.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {MultiProfileShareDialog} multiProfileShareDialog Share dialog to be
+ *     used to share files from another profile.
  * @constructor
  */
 function FileTransferController(doc,
                                 fileOperationManager,
                                 metadataCache,
                                 directoryModel,
-                                volumeManager) {
+                                volumeManager,
+                                multiProfileShareDialog) {
   this.document_ = doc;
   this.fileOperationManager_ = fileOperationManager;
   this.metadataCache_ = metadataCache;
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
+  this.multiProfileShareDialog_ = multiProfileShareDialog;
 
   this.directoryModel_.getFileList().addEventListener(
       'change', function(event) {
@@ -235,6 +239,75 @@ FileTransferController.prototype = {
   },
 
   /**
+   * Obtains entries that need to share with me.
+   * The method also observers child entries of the given entries.
+   * @param {Array.<Entries>} entries Entries.
+   * @return {Promise} Promise to be fulfilled with the entries that need to
+   *     share.
+   */
+  getMultiProfileShareEntries_: function(entries) {
+    // Utility funciton to concat arrays.
+    var concatArrays = function(arrays) {
+      return Array.prototype.concat.apply([], arrays);
+    };
+
+    // Call processEntry for each item of entries.
+    var processEntries = function(entries) {
+      return Promise.all(entries.map(processEntry)).then(concatArrays);
+    };
+
+    // Check entry type and do particular instructions.
+    var processEntry = function(entry) {
+      if (entry.isFile) {
+        // The entry is file. Obtain metadata.
+        return new Promise(function(callback) {
+          chrome.fileBrowserPrivate.getDriveEntryProperties(entry.toURL(),
+                                                            callback);
+        }).
+        then(function(metadata) {
+          if (metadata &&
+              metadata.isHosted &&
+              !metadata.sharedWithMe) {
+            return [entry];
+          } else {
+            return [];
+          }
+        });
+      } else {
+        // The entry is directory. Check child entries.
+        return readEntries(entry.createReader());
+      }
+    }.bind(this);
+
+    // Read entries from DirectoryReader and call processEntries for the chunk
+    // of entries.
+    var readEntries = function(reader) {
+      return new Promise(reader.readEntries.bind(reader)).then(
+          function(entries) {
+            if (entries.length > 0) {
+              return Promise.all(
+                  [processEntries(entries), readEntries(reader)]).
+                  then(concatArrays);
+            } else {
+              return [];
+            }
+          },
+          function(error) {
+            console.warn(
+                'Error happens while reading driectory.', error);
+            return [];
+          });
+    }.bind(this);
+
+    // Filter entries that is owned by the current user, and call
+    // processEntries.
+    return processEntries(entries.filter(function(entry) {
+      // If the volumeInfo is found, the entry belongs to the current user.
+      return !this.volumeManager_.getVolumeInfo(entry);
+    }.bind(this)));
+  },
+
+  /**
    * Queue up a file copy operation based on the current system clipboard.
    *
    * @this {FileTransferController}
@@ -254,23 +327,63 @@ FileTransferController.prototype = {
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
     var toMove = effectAllowed === 'move' ||
         (effectAllowed === 'copyMove' && opt_effect === 'move');
+    var destinationEntry =
+        opt_destinationEntry || this.currentDirectoryContentEntry;
+    var entries;
+    var failureUrls;
 
-    util.URLsToEntries(sourceURLs, function(sourceEntries, failureUrls) {
-      var destinationEntry =
-          opt_destinationEntry || this.currentDirectoryContentEntry;
+    util.URLsToEntries(sourceURLs).
+    then(function(result) {
+      entries = result.entries;
+      failureUrls = result.failureUrls;
+      // Check if cross share is needed or not.
+      return this.getMultiProfileShareEntries_(entries);
+    }.bind(this)).
+    then(function(shareEntries) {
+      if (shareEntries.length === 0)
+        return;
+      return this.multiProfileShareDialog_.show(shareEntries.length > 1).
+          then(function(dialogResult) {
+            if (dialogResult === 'cancel')
+              return Promise.reject('ABORT');
+            // Do cross share.
+            // TODO(hirono): Make the loop cancellable.
+            var requestDriveShare = function(index) {
+              if (index >= shareEntries.length)
+                return Promise.cast();
+              return new Promise(function(fulfill) {
+                chrome.fileBrowserPrivate.requestDriveShare(
+                    shareEntries[index].toURL(),
+                    dialogResult,
+                    function() {
+                      // TODO(hirono): Check chrome.runtime.lastError here.
+                      fulfill();
+                    });
+              }).then(requestDriveShare.bind(null, index + 1));
+            };
+            return requestDriveShare(0);
+          });
+    }.bind(this)).
+    then(function() {
       // Start the pasting operation.
-      this.fileOperationManager_.paste(sourceEntries, destinationEntry, toMove);
+      this.fileOperationManager_.paste(
+          entries, destinationEntry, toMove);
 
       // Publish events for failureUrls.
       for (var i = 0; i < failureUrls.length; i++) {
-        var fileName = decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
+        var fileName =
+            decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
         var event = new Event('source-not-found');
         event.fileName = fileName;
         event.progressType =
             toMove ? ProgressItemType.MOVE : ProgressItemType.COPY;
         this.dispatchEvent(event);
       }
-    }.bind(this));
+    }.bind(this)).
+    catch(function(error) {
+      if (error !== 'ABORT')
+        console.error(error.stack ? error.stack : error);
+    });
     return toMove ? 'move' : 'copy';
   },
 

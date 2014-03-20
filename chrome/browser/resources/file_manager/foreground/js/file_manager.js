@@ -378,7 +378,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                    this.fileOperationManager_,
                                    this.metadataCache_,
                                    this.directoryModel_,
-                                   this.volumeManager_);
+                                   this.volumeManager_,
+                                   this.ui_.multiProfileShareDialog);
     controller.attachDragSource(this.table_.list);
     controller.attachFileListDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);

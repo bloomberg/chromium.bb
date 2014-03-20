@@ -54,6 +54,14 @@ body {
   width: 100%;
 }
 
+button:focus,
+input[type='button']:focus,
+input[type='submit']:focus,
+select:focus,
+a:focus {
+  outline-color: rgb(77, 144, 254);
+}
+
 /* Drop opacity of selected rows to give a visual feedback on copy/cut
  * operation. */
 .blink {
@@ -532,11 +540,6 @@ div.splitter {
   -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
-}
-
-select.file-type:hover {
-  /* Original value is '5 fill', which hides the dropdown triangle. */
-  border-image-slice: 5;
 }
 
 /* The container for breadcrumb elements. */
@@ -1577,10 +1580,6 @@ body[drive='error'] #unmounted-panel > .error,
   -webkit-padding-start: 8px;
 }
 
-button:focus {
-  outline-color: rgb(77, 144, 254);
-}
-
 #new-folder-button {
   margin-right: 30px;
 }
@@ -1822,6 +1821,18 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 .share-dialog-frame .cr-dialog-text,
 .share-dialog-frame .cr-dialog-buttons {
   display: none;
+}
+
+#multi-profile-share-dialog .mail-label {
+  padding-right: 16px;
+}
+
+#multi-profile-share-dialog .mail-label::after {
+  content: ':';
+}
+
+#multi-profile-share-dialog .share-line {
+  margin: 8px 16px;
 }
 
 #conflict-confirm-dialog .cr-dialog-buttons {

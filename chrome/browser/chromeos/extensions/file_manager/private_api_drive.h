@@ -53,8 +53,9 @@ class FileBrowserPrivateGetDriveEntryPropertiesFunction
   void CompleteGetFileProperties(drive::FileError error);
 
   base::FilePath file_path_;
-  scoped_ptr<extensions::api::file_browser_private::
-             DriveEntryProperties> properties_;
+  Profile* file_owner_profile_;
+  const scoped_ptr<extensions::api::file_browser_private::DriveEntryProperties>
+      properties_;
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
@@ -228,6 +229,18 @@ class FileBrowserPrivateGetShareUrlFunction
   // Callback with an url to the sharing dialog as |share_url|, called by
   // FileSystem::GetShareUrl.
   void OnGetShareUrl(drive::FileError error, const GURL& share_url);
+};
+
+// Implements the chrome.fileBrowserPrivate.requestDriveShare method.
+class FileBrowserPrivateRequestDriveShareFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestDriveShare",
+                             FILEBROWSERPRIVATE_REQUESTDRIVESHARE);
+
+ protected:
+  virtual ~FileBrowserPrivateRequestDriveShareFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

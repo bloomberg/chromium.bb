@@ -124,6 +124,13 @@ enum TaskResult {
   empty
 };
 
+// Drive share type.
+enum DriveShareType {
+  can_edit,
+  can_comment,
+  can_view
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -697,6 +704,13 @@ interface Functions {
   // |url| Url for the file.
   // |callback|
   static void getShareUrl(DOMString url, GetShareUrlCallback callback);
+
+  // Requests to share drive files.
+  // |url| URL of a file to be shared.
+  // |shareType| Type of access that is getting granted.
+  static void requestDriveShare(DOMString url,
+                                DriveShareType shareType,
+                                SimpleCallback callback);
 
   // Requests to install a webstore item.
   // |item_id| The id of the item to install.
