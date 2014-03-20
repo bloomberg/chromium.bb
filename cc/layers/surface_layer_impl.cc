@@ -46,9 +46,12 @@ void SurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   scoped_ptr<SurfaceDrawQuad> quad = SurfaceDrawQuad::Create();
   gfx::Rect quad_rect(content_bounds());
-  gfx::Rect visible_quad_rect(quad_rect);
+  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+      quad_rect, draw_properties().target_space_transform);
+  if (visible_quad_rect.IsEmpty())
+    return;
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, surface_id_);
-  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
