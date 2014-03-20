@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
@@ -50,56 +49,21 @@ void CloseNotification() {
 class NetworkPortalNotificationControllerDelegate
     : public message_center::NotificationDelegate {
  public:
-  NetworkPortalNotificationControllerDelegate(): clicked_(false) {}
+  NetworkPortalNotificationControllerDelegate() {}
 
   // Overridden from message_center::NotificationDelegate:
-  virtual void Display() OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
+  virtual void Display() OVERRIDE {}
+  virtual void Error() OVERRIDE {}
+  virtual void Close(bool /* by_user */) OVERRIDE {}
   virtual void Click() OVERRIDE;
 
  private:
   virtual ~NetworkPortalNotificationControllerDelegate() {}
 
-  bool clicked_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationControllerDelegate);
 };
 
-void NetworkPortalNotificationControllerDelegate::Display() {
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kNotificationMetric,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
-}
-
-void NetworkPortalNotificationControllerDelegate::Error() {
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kNotificationMetric,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_ERROR,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
-}
-
-void NetworkPortalNotificationControllerDelegate::Close(bool by_user) {
-  if (clicked_)
-    return;
-  NetworkPortalNotificationController::UserActionMetric metric =
-      by_user
-      ? NetworkPortalNotificationController::USER_ACTION_METRIC_CLOSED
-      : NetworkPortalNotificationController::USER_ACTION_METRIC_IGNORED;
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kUserActionMetric,
-      metric,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
-}
-
 void NetworkPortalNotificationControllerDelegate::Click() {
-  clicked_ = true;
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kUserActionMetric,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_CLICKED,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;
@@ -113,17 +77,8 @@ void NetworkPortalNotificationControllerDelegate::Click() {
 
 }  // namespace
 
-// static
 const char NetworkPortalNotificationController::kNotificationId[] =
     "chrome://net/network_portal_detector";
-
-// static
-const char NetworkPortalNotificationController::kNotificationMetric[] =
-    "CaptivePortal.Notification.Status";
-
-// static
-const char NetworkPortalNotificationController::kUserActionMetric[] =
-    "CaptivePortal.Notification.UserAction";
 
 NetworkPortalNotificationController::NetworkPortalNotificationController() {}
 
