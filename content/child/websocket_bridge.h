@@ -13,9 +13,13 @@
 #include "content/common/websocket.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+
+namespace blink {
+class WebSerializedOrigin;
+class WebString;
+class WebURL;
+}  // namespace blink
 
 namespace content {
 
@@ -29,7 +33,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
   // WebSocketHandle functions.
   virtual void connect(const blink::WebURL& url,
                        const blink::WebVector<blink::WebString>& protocols,
-                       const blink::WebString& origin,
+                       const blink::WebSerializedOrigin& origin,
                        blink::WebSocketHandleClient* client) OVERRIDE;
   virtual void send(bool fin,
                     WebSocketHandle::MessageType type,
