@@ -2413,7 +2413,7 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
       views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser_.get());
 }
 
-void BrowserView::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
+void BrowserView::ShowAvatarBubbleFromAvatarButton() {
   if (switches::IsNewProfileManagement()) {
     NewAvatarButton* button = frame_->GetNewAvatarMenuButton();
     if (button) {
@@ -2421,12 +2421,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
       views::View::ConvertPointToScreen(button, &origin);
       gfx::Rect bounds(origin, size());
 
-      ProfileChooserView::BubbleViewMode view_mode =
-          mode == BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT ?
-          ProfileChooserView::BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
-          ProfileChooserView::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
       ProfileChooserView::ShowBubble(
-          view_mode, button, views::BubbleBorder::TOP_RIGHT,
+          button, views::BubbleBorder::TOP_RIGHT,
           views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser());
     }
   } else {

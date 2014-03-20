@@ -104,8 +104,7 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
   if (!LabelButton::OnMousePressed(event))
     return false;
 
-  browser_view_->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
+  browser_view_->ShowAvatarBubbleFromAvatarButton();
   return true;
 }
 

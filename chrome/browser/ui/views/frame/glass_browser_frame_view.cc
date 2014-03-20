@@ -285,10 +285,8 @@ bool GlassBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
 // GlassBrowserFrameView, views::ButtonListener overrides:
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (sender == new_avatar_button()) {
-    browser_view()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
-  }
+  if (sender == new_avatar_button())
+    browser_view()->ShowAvatarBubbleFromAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

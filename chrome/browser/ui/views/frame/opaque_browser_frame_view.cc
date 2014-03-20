@@ -362,18 +362,16 @@ void OpaqueBrowserFrameView::GetAccessibleState(
 
 void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  if (sender == minimize_button_) {
+  if (sender == minimize_button_)
     frame()->Minimize();
-  } else if (sender == maximize_button_) {
+  else if (sender == maximize_button_)
     frame()->Maximize();
-  } else if (sender == restore_button_) {
+  else if (sender == restore_button_)
     frame()->Restore();
-  } else if (sender == close_button_) {
+  else if (sender == close_button_)
     frame()->Close();
-  } else if (sender == new_avatar_button()) {
-    browser_view()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
-  }
+  else if (sender == new_avatar_button())
+    browser_view()->ShowAvatarBubbleFromAvatarButton();
 }
 
 void OpaqueBrowserFrameView::OnMenuButtonClicked(views::View* source,

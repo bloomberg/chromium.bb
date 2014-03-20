@@ -32,10 +32,8 @@ bool PrincipalsPrivateSignOutFunction::RunImplSafe() {
 
 bool PrincipalsPrivateShowAvatarBubbleFunction::RunImplSafe() {
   Browser* browser = GetCurrentBrowser();
-  if (browser) {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT);
-  }
+  if (browser)
+    browser->window()->ShowAvatarBubbleFromAvatarButton();
   return true;
 }
 

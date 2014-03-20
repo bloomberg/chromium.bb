@@ -292,12 +292,15 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 
 // static
 void ProfileChooserView::ShowBubble(
-    BubbleViewMode view_mode,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
     const gfx::Rect& anchor_rect,
     Browser* browser) {
+  if (IsShowing())
+    // TODO(bcwhite): handle case where we should show on different window
+    return;
+
   profile_bubble_ = new ProfileChooserView(
       anchor_view, arrow, anchor_rect, browser);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
@@ -305,9 +308,6 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_->SetAlignment(border_alignment);
   profile_bubble_->GetWidget()->Show();
   profile_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
-
-  if (view_mode != BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
-    profile_bubble_->ShowView(view_mode, profile_bubble_->avatar_menu_.get());
 }
 
 // static
@@ -327,7 +327,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        Browser* browser)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
-      view_mode_(BUBBLE_VIEW_MODE_PROFILE_CHOOSER),
+      view_mode_(PROFILE_CHOOSER_VIEW),
       tutorial_showing_(false) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
@@ -372,7 +372,7 @@ void ProfileChooserView::ResetView() {
 }
 
 void ProfileChooserView::Init() {
-  ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_.get());
 }
 
 void ProfileChooserView::OnAvatarMenuChanged(
@@ -380,32 +380,32 @@ void ProfileChooserView::OnAvatarMenuChanged(
   // Refresh the view with the new menu. We can't just update the local copy
   // as this may have been triggered by a sign out action, in which case
   // the view is being destroyed.
-  ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu);
+  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu);
 }
 
 void ProfileChooserView::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // Refresh the account management view when a new account is added to the
   // profile.
-  if (view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  if (view_mode_ == ACCOUNT_MANAGEMENT_VIEW ||
+      view_mode_ == GAIA_SIGNIN_VIEW ||
+      view_mode_ == GAIA_ADD_ACCOUNT_VIEW) {
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
   }
 }
 
 void ProfileChooserView::OnRefreshTokenRevoked(const std::string& account_id) {
   // Refresh the account management view when an account is removed from the
   // profile.
-  if (view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  if (view_mode_ == ACCOUNT_MANAGEMENT_VIEW)
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
 }
 
 void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
   // is signed in.
-  if (view_to_display == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+  if (view_to_display == ACCOUNT_MANAGEMENT_VIEW) {
     const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
         avatar_menu->GetActiveProfileIndex());
     DCHECK(active_item.signed_in);
@@ -417,14 +417,14 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
-  if (view_to_display == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_to_display == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
+  if (view_to_display == GAIA_SIGNIN_VIEW ||
+      view_to_display == GAIA_ADD_ACCOUNT_VIEW) {
     // Minimum size for embedded sign in pages as defined in Gaia.
     const int kMinGaiaViewWidth = 320;
     const int kMinGaiaViewHeight = 440;
     Profile* profile = browser_->profile();
     views::WebView* web_view = new views::WebView(profile);
-    signin::Source source = (view_to_display == BUBBLE_VIEW_MODE_GAIA_SIGNIN) ?
+    signin::Source source = (view_to_display == GAIA_SIGNIN_VIEW) ?
         signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
         signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
     GURL url(signin::GetPromoURL(
@@ -452,7 +452,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
-      if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+      if (view_to_display == PROFILE_CHOOSER_VIEW) {
         tutorial_view = CreateTutorialView(item, tutorial_shown);
         current_profile_view = CreateCurrentProfileView(item, false);
       } else {
@@ -478,7 +478,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
-  if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+  if (view_to_display == PROFILE_CHOOSER_VIEW) {
     layout->StartRow(1, 0);
     layout->AddView(CreateOtherProfilesView(other_profiles));
   } else {
@@ -534,7 +534,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         profiles::ProfileSwitchingDoneCallback(),
         ProfileMetrics::ADD_NEW_USER_ICON);
   } else if (sender == add_account_button_) {
-    ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
+    ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
   } else if (sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
   } else if (sender == tutorial_ok_button_) {
@@ -544,7 +544,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // is indeed shown for the maximum number of times.
     browser_->profile()->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
-    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_.get());
   } else {
     // One of the "other profiles" buttons was pressed.
     ButtonIndexes::const_iterator match =
@@ -573,7 +573,7 @@ void ProfileChooserView::OnMenuButtonClicked(views::View* source,
 void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   if (sender == manage_accounts_link_) {
     // ShowView() will DCHECK if this view is displayed for non signed-in users.
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
   } else if (sender == signout_current_profile_link_) {
     profiles::LockProfile(browser_->profile());
   } else if (sender == tutorial_learn_more_link_) {
@@ -587,7 +587,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     chrome::Navigate(&params);
   } else {
     DCHECK(sender == signin_current_profile_link_);
-    ShowView(BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
+    ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
   }
 }
 
