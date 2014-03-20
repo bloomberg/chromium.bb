@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellActivity.AppMenuHandlerFactory;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -82,9 +81,10 @@ public class AppMenuTest extends ChromeShellTestBase {
     /**
      * Test bounds when accessing the menu through the keyboard.
      * Make sure that the menu stays open when trying to move past the first and last items.
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardMenuBoundaries() throws InterruptedException {
         moveToBoundary(false, true);
         assertEquals(mAppMenu.getCount() - 1, mAppMenu.getCurrentFocusedPosition());
@@ -96,18 +96,20 @@ public class AppMenuTest extends ChromeShellTestBase {
 
     /**
      * Test that typing ENTER immediately opening the menu works.
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardMenuEnterOnOpen() throws InterruptedException {
         hitEnterAndAssertItemSelected();
     }
 
     /**
      * Test that hitting ENTER past the top item doesn't crash Chrome.
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardEnterAfterMovePastTopItem() throws InterruptedException {
         moveToBoundary(true, true);
         assertEquals(0, mAppMenu.getCurrentFocusedPosition());
@@ -117,9 +119,10 @@ public class AppMenuTest extends ChromeShellTestBase {
     /**
      * Test that hitting ENTER past the bottom item doesn't crash Chrome.
      * Catches regressions for http://crbug.com/181067
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardEnterAfterMovePastBottomItem() throws InterruptedException {
         moveToBoundary(false, true);
         assertEquals(mAppMenu.getCount() - 1, mAppMenu.getCurrentFocusedPosition());
@@ -129,9 +132,10 @@ public class AppMenuTest extends ChromeShellTestBase {
     /**
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardMenuEnterOnTopItemLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         moveToBoundary(true, false);
@@ -141,9 +145,10 @@ public class AppMenuTest extends ChromeShellTestBase {
 
     /**
      * Test that hitting ENTER on the top item doesn't crash Chrome.
+     * @SmallTest
+     * @Feature({"Browser", "Main"})
      */
-    @SmallTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testKeyboardMenuEnterOnTopItemPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         moveToBoundary(true, false);
