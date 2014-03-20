@@ -11,7 +11,6 @@
 import optparse
 import os
 import re
-import subprocess
 import sys
 
 from util import build_device
@@ -55,7 +54,7 @@ def RecordInstallMetadata(device, apk_package, metadata_path):
     outfile.write(metadata)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--apk-path',
       help='Path to .apk to install.')
@@ -103,4 +102,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

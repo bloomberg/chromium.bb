@@ -6,7 +6,6 @@
 
 import optparse
 import os
-import subprocess
 import sys
 
 from util import build_utils
@@ -30,7 +29,7 @@ def DoGcc(options):
   build_utils.CheckOutput(gcc_cmd)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--include-path', help='Include path for gcc.')
   parser.add_option('--template', help='Path to template.')
@@ -50,4 +49,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

@@ -74,7 +74,7 @@ def DoJavac(options, args):
       input_strings=javac_cmd)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--src-gendirs',
       help='Directories containing generated java files.')
@@ -100,6 +100,6 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 
 

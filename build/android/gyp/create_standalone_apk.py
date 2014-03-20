@@ -36,7 +36,7 @@ def CreateStandaloneApk(options):
       input_paths=input_paths)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--libraries-top-dir',
       help='Top directory that contains libraries '
@@ -57,4 +57,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

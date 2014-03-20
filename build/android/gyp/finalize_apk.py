@@ -39,7 +39,7 @@ def AlignApk(android_sdk_root, unaligned_path, final_path):
   build_utils.CheckOutput(align_cmd)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
 
   parser.add_option('--android-sdk-root', help='Android sdk root directory.')
@@ -61,6 +61,6 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 
 

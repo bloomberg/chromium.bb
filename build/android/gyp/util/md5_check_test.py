@@ -5,10 +5,13 @@
 import tempfile
 import unittest
 
-import md5_check
+import md5_check # pylint: disable=W0403
 
 
 class TestMd5Check(unittest.TestCase):
+  def setUp(self):
+    self.called = False
+
   def testCallAndRecordIfStale(self):
     input_strings = ['string1', 'string2']
     input_file1 = tempfile.NamedTemporaryFile()

@@ -18,7 +18,6 @@ rebuild, will have a corresponding change in the TOC file.
 """
 
 import optparse
-import os
 import re
 import sys
 import zipfile
@@ -91,7 +90,7 @@ def DoJarToc(options):
   build_utils.Touch(toc_path)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--jar-path', help='Input .jar path.')
   parser.add_option('--toc-path', help='Output .jar.TOC path.')
@@ -106,4 +105,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

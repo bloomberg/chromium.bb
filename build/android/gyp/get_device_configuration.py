@@ -10,19 +10,11 @@ This configuration is used by later build steps to determine which devices to
 install to and what needs to be installed to those devices.
 """
 
-import logging
 import optparse
-import os
-import subprocess
 import sys
 
 from util import build_utils
 from util import build_device
-
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
-
-from pylib.utils import apk_helper
 
 
 def main(argv):

@@ -7,7 +7,8 @@ import os
 
 
 def CallAndRecordIfStale(
-    function, record_path=None, input_paths=[], input_strings=[], force=False):
+    function, record_path=None, input_paths=None, input_strings=None,
+    force=False):
   """Calls function if the md5sum of the input paths/strings has changed.
 
   The md5sum of the inputs is compared with the one stored in record_path. If
@@ -17,6 +18,10 @@ def CallAndRecordIfStale(
   If force is True, the function will be called regardless of whether the
   md5sum is out of date.
   """
+  if not input_paths:
+    input_paths = []
+  if not input_strings:
+    input_strings = []
   md5_checker = _Md5Checker(
       record_path=record_path,
       input_paths=input_paths,
@@ -49,7 +54,12 @@ def _UpdateMd5ForPath(md5, path):
 
 
 class _Md5Checker(object):
-  def __init__(self, record_path=None, input_paths=[], input_strings=[]):
+  def __init__(self, record_path=None, input_paths=None, input_strings=None):
+    if not input_paths:
+      input_paths = []
+    if not input_strings:
+      input_strings = []
+
     assert record_path.endswith('.stamp'), (
         'record paths must end in \'.stamp\' so that they are easy to find '
         'and delete')

@@ -38,7 +38,7 @@ def DoJar(options):
   build_utils.Touch(options.jar_path)
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--classes-dir', help='Directory containing .class files.')
   parser.add_option('--jar-path', help='Jar output path.')
@@ -55,5 +55,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
 

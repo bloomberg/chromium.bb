@@ -8,7 +8,6 @@
 
 """
 
-import json
 import optparse
 import os
 import sys
@@ -51,7 +50,7 @@ def DoPush(options):
         input_strings=[device_path])
 
 
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option('--libraries-dir',
       help='Directory that contains stripped libraries.')
@@ -77,4 +76,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
