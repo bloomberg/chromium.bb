@@ -16,6 +16,7 @@
 #include "base/process/process_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 
 UITestSuite::UITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {
 #if defined(OS_WIN)
@@ -25,6 +26,8 @@ UITestSuite::UITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {
 
 void UITestSuite::Initialize() {
   ChromeTestSuite::Initialize();
+  ChromeUnitTestSuite::InitializeProviders();
+  ChromeUnitTestSuite::InitializeResourceBundle();
 #if defined(OS_WIN)
   LoadCrashService();
 #endif
