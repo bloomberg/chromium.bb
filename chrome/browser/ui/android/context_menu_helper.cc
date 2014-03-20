@@ -66,8 +66,8 @@ void ContextMenuHelper::SetPopulator(jobject jpopulator) {
 base::android::ScopedJavaLocalRef<jobject>
 ContextMenuHelper::CreateJavaContextMenuParams(
     const content::ContextMenuParams& params) {
-  GURL sanitizedReferrer = SanitizeReferrer(
-      params.frame_url.is_empty() ? params.page_url : params.frame_url);
+  GURL sanitizedReferrer = (params.frame_url.is_empty() ?
+      params.page_url : params.frame_url).GetAsReferrer();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
@@ -93,19 +93,6 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   }
 
   return jmenu_info;
-}
-
-GURL ContextMenuHelper::SanitizeReferrer(const GURL& referring_url) {
-  // This mirrors sanitization done on Desktop in RenderViewContextMenu.
-  if (referring_url.is_valid() && (referring_url.has_ref() ||
-      referring_url.has_username() || referring_url.has_password())) {
-    GURL::Replacements referrer_mods;
-    referrer_mods.ClearRef();
-    referrer_mods.ClearUsername();
-    referrer_mods.ClearPassword();
-    return referring_url.ReplaceComponents(referrer_mods);
-  }
-  return referring_url;
 }
 
 void ContextMenuHelper::OnCustomItemSelected(JNIEnv* env,

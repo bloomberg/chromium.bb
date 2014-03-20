@@ -320,6 +320,18 @@ GURL GURL::GetOrigin() const {
   return ReplaceComponents(replacements);
 }
 
+GURL GURL::GetAsReferrer() const {
+  if (!is_valid_ ||
+      (!has_ref() && !has_username() && !has_password()))
+    return GURL(*this);
+
+  url_canon::Replacements<char> replacements;
+  replacements.ClearRef();
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  return ReplaceComponents(replacements);
+}
+
 GURL GURL::GetWithEmptyPath() const {
   // This doesn't make sense for invalid or nonstandard URLs, so return
   // the empty URL.

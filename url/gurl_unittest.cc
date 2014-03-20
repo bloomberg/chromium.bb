@@ -287,6 +287,25 @@ TEST(GURLTest, GetOrigin) {
   }
 }
 
+TEST(GURLTest, GetAsReferrer) {
+  struct TestCase {
+    const char* input;
+    const char* expected;
+  } cases[] = {
+    {"http://www.google.com", "http://www.google.com/"},
+    {"http://user:pass@www.google.com:21/blah#baz", "http://www.google.com:21/blah"},
+    {"http://user@www.google.com", "http://www.google.com/"},
+    {"http://:pass@www.google.com", "http://www.google.com/"},
+    {"http://:@www.google.com", "http://www.google.com/"},
+    {"http://www.google.com/temp/foo?q#b", "http://www.google.com/temp/foo?q"},
+  };
+  for (size_t i = 0; i < ARRAYSIZE(cases); i++) {
+    GURL url(cases[i].input);
+    GURL origin = url.GetAsReferrer();
+    EXPECT_EQ(cases[i].expected, origin.spec());
+  }
+}
+
 TEST(GURLTest, GetWithEmptyPath) {
   struct TestCase {
     const char* input;

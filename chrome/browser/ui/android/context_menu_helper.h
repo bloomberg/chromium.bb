@@ -41,9 +41,6 @@ class ContextMenuHelper
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaContextMenuParams(
       const content::ContextMenuParams& params);
 
-  // Strips the referring url of the username, password and ref fields.
-  static GURL SanitizeReferrer(const GURL& referrer);
-
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;
 

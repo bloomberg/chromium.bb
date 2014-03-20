@@ -608,20 +608,13 @@ std::string URLRequest::ComputeMethodForRedirect(
 
 void URLRequest::SetReferrer(const std::string& referrer) {
   DCHECK(!is_pending_);
-  referrer_ = referrer;
-  // Ensure that we do not send URL fragment, username and password
-  // fields in the referrer.
   GURL referrer_url(referrer);
   UMA_HISTOGRAM_BOOLEAN("Net.URLRequest_SetReferrer_IsEmptyOrValid",
                         referrer_url.is_empty() || referrer_url.is_valid());
-  if (referrer_url.is_valid() && (referrer_url.has_ref() ||
-      referrer_url.has_username() ||  referrer_url.has_password())) {
-    GURL::Replacements referrer_mods;
-    referrer_mods.ClearRef();
-    referrer_mods.ClearUsername();
-    referrer_mods.ClearPassword();
-    referrer_url = referrer_url.ReplaceComponents(referrer_mods);
-    referrer_ = referrer_url.spec();
+  if (referrer_url.is_valid()) {
+    referrer_ = referrer_url.GetAsReferrer().spec();
+  } else {
+    referrer_ = referrer;
   }
 }
 

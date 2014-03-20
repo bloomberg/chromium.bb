@@ -195,6 +195,11 @@ class URL_EXPORT GURL {
   // will be the empty URL.
   GURL GetOrigin() const;
 
+  // A helper function to return a GURL stripped from the elements that are not
+  // supposed to be sent as HTTP referrer: username, password and ref fragment.
+  // For invalid URLs the original URL will be returned.
+  GURL GetAsReferrer() const;
+
   // Returns true if the scheme for the current URL is a known "standard"
   // scheme. Standard schemes have an authority and a path section. This
   // includes file: and filesystem:, which some callers may want to filter out
