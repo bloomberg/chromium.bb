@@ -157,8 +157,6 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
             gradient->addColorStop(offset, stop.m_resolvedColor);
         }
 
-        // The back end already sorted the stops.
-        gradient->setStopsSorted(true);
         return;
     }
 
@@ -389,8 +387,6 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
 
     for (unsigned i = 0; i < numStops; i++)
         gradient->addColorStop(stops[i].offset, stops[i].color);
-
-    gradient->setStopsSorted(true);
 }
 
 static float positionFromValue(CSSPrimitiveValue* value, const CSSToLengthConversionData& conversionData, const IntSize& size, bool isHorizontal)

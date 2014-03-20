@@ -65,7 +65,7 @@ public:
         ColorStop(float s, const Color& c) : stop(s), color(c) { }
     };
     void addColorStop(const ColorStop&);
-    void addColorStop(float, const Color&);
+    void addColorStop(float value, const Color& color) { addColorStop(ColorStop(value, color)); }
 
     bool hasAlpha() const;
     bool shaderChanged() const { return !m_gradient; }
@@ -114,8 +114,6 @@ public:
     float aspectRatio() const { return m_aspectRatio; }
 
     SkShader* shader();
-
-    void setStopsSorted(bool s) { m_stopsSorted = s; }
 
     void setDrawsInPMColorSpace(bool drawInPMColorSpace);
 

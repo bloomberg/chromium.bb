@@ -68,25 +68,21 @@ Gradient::~Gradient()
 {
 }
 
-void Gradient::addColorStop(float value, const Color& color)
+static inline bool compareStops(const Gradient::ColorStop& a, const Gradient::ColorStop& b)
 {
-    m_stops.append(ColorStop(value, color));
-
-    m_stopsSorted = false;
-    m_gradient.clear();
+    return a.stop < b.stop;
 }
 
 void Gradient::addColorStop(const Gradient::ColorStop& stop)
 {
+    if (m_stops.isEmpty()) {
+        m_stopsSorted = true;
+    } else {
+        m_stopsSorted = m_stopsSorted && compareStops(m_stops.last(), stop);
+    }
+
     m_stops.append(stop);
-
-    m_stopsSorted = false;
     m_gradient.clear();
-}
-
-static inline bool compareStops(const Gradient::ColorStop& a, const Gradient::ColorStop& b)
-{
-    return a.stop < b.stop;
 }
 
 void Gradient::sortStopsIfNecessary()
