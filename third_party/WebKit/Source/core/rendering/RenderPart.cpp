@@ -142,4 +142,11 @@ bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
     return RenderWidget::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 }
 
+CompositingReasons RenderPart::additionalCompositingReasons(CompositingTriggerFlags) const
+{
+    if (requiresAcceleratedCompositing())
+        return CompositingReasonIFrame;
+    return CompositingReasonNone;
+}
+
 }

@@ -75,6 +75,8 @@ private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
+    virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const OVERRIDE;
+
     bool m_hasFallbackContent; // FIXME: This belongs on HTMLObjectElement.
 
     bool m_showsUnavailablePluginIndicator;

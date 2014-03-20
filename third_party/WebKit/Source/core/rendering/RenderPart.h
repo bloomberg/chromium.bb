@@ -48,6 +48,8 @@ protected:
 private:
     virtual bool isRenderPart() const OVERRIDE FINAL { return true; }
     virtual const char* renderName() const OVERRIDE { return "RenderPart"; }
+
+    virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const OVERRIDE;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());

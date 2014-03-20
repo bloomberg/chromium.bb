@@ -67,13 +67,6 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForTransform(renderer))
         directReasons |= CompositingReason3DTransform;
 
-    // Only zero or one of the following conditions will be true for a given RenderLayer.
-    // FIXME: These should be handled by overrides of RenderObject::additionalCompositingReasons.
-    if (requiresCompositingForPlugin(renderer))
-        directReasons |= CompositingReasonPlugin;
-    else if (requiresCompositingForFrame(renderer))
-        directReasons |= CompositingReasonIFrame;
-
     if (requiresCompositingForBackfaceVisibilityHidden(renderer))
         directReasons |= CompositingReasonBackfaceVisibilityHidden;
 
@@ -129,19 +122,6 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
     // Note that we ask the renderer if it has a transform, because the style may have transforms,
     // but the renderer may be an inline that doesn't suppport them.
     return renderer->hasTransform() && style->transform().has3DOperation();
-}
-
-bool CompositingReasonFinder::requiresCompositingForPlugin(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & PluginTrigger))
-        return false;
-
-    return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing();
-}
-
-bool CompositingReasonFinder::requiresCompositingForFrame(RenderObject* renderer) const
-{
-    return renderer->isRenderPart() && toRenderPart(renderer)->requiresAcceleratedCompositing();
 }
 
 bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const

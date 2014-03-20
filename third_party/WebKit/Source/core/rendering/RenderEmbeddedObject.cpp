@@ -246,4 +246,11 @@ bool RenderEmbeddedObject::canHaveChildren() const
     return false;
 }
 
+CompositingReasons RenderEmbeddedObject::additionalCompositingReasons(CompositingTriggerFlags triggers) const
+{
+    if ((triggers & PluginTrigger) && requiresAcceleratedCompositing())
+        return CompositingReasonPlugin;
+    return CompositingReasonNone;
+}
+
 }
