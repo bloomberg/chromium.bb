@@ -322,10 +322,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     } else {
       [iconView_ setFrame:originalIconFrame_];
     }
-    // Ensure that the icon is suppressed if no icon is set or if the tab is too
-    // narrow to display one.
-    [self updateVisibility];
   }
+  // Ensure that the icon is suppressed if no icon is set or if the tab is too
+  // narrow to display one.
+  [self updateVisibility];
 }
 
 - (void)updateVisibility {
