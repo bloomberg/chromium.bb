@@ -9,6 +9,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"
@@ -64,8 +65,14 @@ bool QuadCuller::MaybeAppend(scoped_ptr<DrawQuad> draw_quad) {
 
   gfx::Rect culled_rect;
   if (for_surface_) {
+    RenderSurfaceImpl* surface = layer_->render_surface();
+    const RenderPassDrawQuad* rpdq =
+        RenderPassDrawQuad::MaterialCast(draw_quad.get());
+    gfx::Transform draw_transform = rpdq->is_replica
+                                        ? surface->replica_draw_transform()
+                                        : surface->draw_transform();
     culled_rect = occlusion_tracker_.UnoccludedContributingSurfaceContentRect(
-        layer_, false, draw_quad->visible_rect);
+        layer_, draw_quad->visible_rect, draw_transform);
   } else {
     culled_rect =
         occlusion_tracker_.UnoccludedContentRect(layer_->render_target(),

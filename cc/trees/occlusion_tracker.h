@@ -62,8 +62,8 @@ class CC_EXPORT OcclusionTracker {
   // contributing surface that is rendering into another target.
   gfx::Rect UnoccludedContributingSurfaceContentRect(
       const LayerType* layer,
-      bool for_replica,
-      const gfx::Rect& content_rect) const;
+      const gfx::Rect& content_rect,
+      const gfx::Transform& draw_transform) const;
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen() const {

@@ -27,6 +27,21 @@ class TestOcclusionTracker : public OcclusionTracker<LayerType> {
         .occlusion_from_outside_target;
   }
 
+  Region occlusion_on_contributing_surface_from_inside_target() const {
+    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    if (stack_size < 2)
+      return Region();
+    return OcclusionTracker<LayerType>::stack_[stack_size - 2]
+        .occlusion_from_inside_target;
+  }
+  Region occlusion_on_contributing_surface_from_outside_target() const {
+    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    if (stack_size < 2)
+      return Region();
+    return OcclusionTracker<LayerType>::stack_[stack_size - 2]
+        .occlusion_from_outside_target;
+  }
+
   void set_occlusion_from_outside_target(const Region& region) {
     OcclusionTracker<LayerType>::stack_.back().occlusion_from_outside_target =
         region;
