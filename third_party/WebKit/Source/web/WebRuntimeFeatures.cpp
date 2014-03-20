@@ -38,12 +38,6 @@ using namespace WebCore;
 
 namespace blink {
 
-void WebRuntimeFeatures::enableStableFeatures(bool enable)
-{
-    // FIXME: This entire method should be removed once it is no longer called by Chromium.
-    ASSERT(enable);
-}
-
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setExperimentalFeaturesEnabled(enable);
