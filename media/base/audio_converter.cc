@@ -25,7 +25,8 @@ namespace media {
 AudioConverter::AudioConverter(const AudioParameters& input_params,
                                const AudioParameters& output_params,
                                bool disable_fifo)
-    : downmix_early_(false),
+    : chunk_size_(output_params.frames_per_buffer()),
+      downmix_early_(false),
       resampler_frame_delay_(0),
       input_channel_count_(input_params.channels()) {
   CHECK(input_params.IsValid());
@@ -76,12 +77,11 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
   if (input_params.frames_per_buffer() != output_params.frames_per_buffer()) {
     DVLOG(1) << "Rebuffering from " << input_params.frames_per_buffer()
              << " to " << output_params.frames_per_buffer();
+    chunk_size_ = input_params.frames_per_buffer();
     audio_fifo_.reset(new AudioPullFifo(
-        downmix_early_ ? output_params.channels() :
-            input_params.channels(),
-        input_params.frames_per_buffer(), base::Bind(
-            &AudioConverter::SourceCallback,
-            base::Unretained(this))));
+        downmix_early_ ? output_params.channels() : input_params.channels(),
+        chunk_size_,
+        base::Bind(&AudioConverter::SourceCallback, base::Unretained(this))));
   }
 }
 
@@ -107,6 +107,12 @@ void AudioConverter::Reset() {
     audio_fifo_->Clear();
   if (resampler_)
     resampler_->Flush();
+}
+
+int AudioConverter::ChunkSize() const {
+  if (!resampler_)
+    return chunk_size_;
+  return resampler_->ChunkSize();
 }
 
 void AudioConverter::ConvertWithDelay(const base::TimeDelta& initial_delay,

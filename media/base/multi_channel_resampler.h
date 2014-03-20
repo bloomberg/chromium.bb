@@ -47,6 +47,10 @@ class MEDIA_EXPORT MultiChannelResampler {
   // Resample() is in progress.
   void SetRatio(double io_sample_rate_ratio);
 
+  // The maximum size in frames that guarantees Resample() will only make a
+  // single call to |read_cb_| for more data.
+  int ChunkSize() const;
+
  private:
   // SincResampler::ReadCB implementation.  ProvideInput() will be called for
   // each channel (in channel order) as SincResampler needs more data.

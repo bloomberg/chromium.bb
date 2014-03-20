@@ -108,4 +108,9 @@ void MultiChannelResampler::SetRatio(double io_sample_rate_ratio) {
     resamplers_[i]->SetRatio(io_sample_rate_ratio);
 }
 
+int MultiChannelResampler::ChunkSize() const {
+  DCHECK(!resamplers_.empty());
+  return resamplers_[0]->ChunkSize();
+}
+
 }  // namespace media

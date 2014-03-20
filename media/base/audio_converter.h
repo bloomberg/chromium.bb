@@ -86,6 +86,10 @@ class MEDIA_EXPORT AudioConverter {
   // Flushes all buffered data.
   void Reset();
 
+  // The maximum size in frames that guarantees we will only make a single call
+  // to each input's ProvideInput for more data.
+  int ChunkSize() const;
+
  private:
   // Provides input to the MultiChannelResampler.  Called by the resampler when
   // more data is necessary.
@@ -105,6 +109,7 @@ class MEDIA_EXPORT AudioConverter {
   // Used to buffer data between the client and the output device in cases where
   // the client buffer size is not the same as the output device buffer size.
   scoped_ptr<AudioPullFifo> audio_fifo_;
+  int chunk_size_;
 
   // Handles resampling.
   scoped_ptr<MultiChannelResampler> resampler_;
