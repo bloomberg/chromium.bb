@@ -54,20 +54,6 @@ int XIButtonEventType(ui::EventType type) {
   }
 }
 
-// Converts EventType to XButtonEvent type.
-int XButtonEventType(ui::EventType type) {
-  switch (type) {
-    case ui::ET_MOUSEWHEEL:
-    case ui::ET_MOUSE_PRESSED:
-      // The button release X events for mouse wheels are dropped by Aura.
-      return ButtonPress;
-    case ui::ET_MOUSE_RELEASED:
-      return ButtonRelease;
-    default:
-      return 0;
-  }
-}
-
 // Converts KeyboardCode to XKeyEvent keycode.
 unsigned int XKeyEventKeyCode(ui::KeyboardCode key_code,
                               int flags,
@@ -180,43 +166,26 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
 
 void ScopedXI2Event::InitGenericButtonEvent(int deviceid,
                                             EventType type,
+                                            const gfx::Point& location,
                                             int flags) {
   event_.reset(CreateXInput2Event(deviceid,
                                   XIButtonEventType(type), 0, gfx::Point()));
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   xievent->mods.effective = XEventState(flags);
   xievent->detail = XButtonEventButton(type, flags);
+  xievent->event_x = location.x();
+  xievent->event_y = location.y();
   XISetMask(xievent->buttons.mask, xievent->detail);
+  // Setup an empty valuator list for generic button events.
+  SetUpValuators(std::vector<Valuator>());
 }
 
-void ScopedXI2Event::InitButtonEvent(EventType type,
-                                     int flags) {
-  event_.reset(new XEvent);
-  memset(event_.get(), 0, sizeof(XEvent));
-  event_->type = XButtonEventType(type);
-  CHECK_NE(0, event_->type);
-  event_->xbutton.serial = 0;
-  event_->xbutton.send_event = 0;
-  event_->xbutton.display = gfx::GetXDisplay();
-  event_->xbutton.time = 0;
-  event_->xbutton.window = 0;
-  event_->xbutton.root = 0;
-  event_->xbutton.subwindow = 0;
-  event_->xbutton.x = 0;
-  event_->xbutton.y = 0;
-  event_->xbutton.x_root = 0;
-  event_->xbutton.y_root = 0;
-  event_->xbutton.state = XEventState(flags);
-  event_->xbutton.button = XButtonEventButton(type, flags);
-  event_->xbutton.same_screen = 1;
-}
-
-void ScopedXI2Event::InitMouseWheelEvent(int wheel_delta,
-                                         int flags) {
-  InitButtonEvent(ui::ET_MOUSEWHEEL, flags);
-  // MouseWheelEvents are not taking horizontal scrolls into account
-  // at the moment.
-  event_->xbutton.button = wheel_delta > 0 ? Button4 : Button5;
+void ScopedXI2Event::InitGenericMouseWheelEvent(int deviceid,
+                                                int wheel_delta,
+                                                int flags) {
+  InitGenericButtonEvent(deviceid, ui::ET_MOUSEWHEEL, gfx::Point(), flags);
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
+  xievent->detail = wheel_delta > 0 ? Button4 : Button5;
 }
 
 void ScopedXI2Event::InitScrollEvent(int deviceid,
@@ -279,7 +248,7 @@ void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   }
 }
 
-void SetUpScrollDeviceForTest(unsigned int deviceid) {
+void SetUpTouchPadForTest(unsigned int deviceid) {
   std::vector<unsigned int> device_list;
   device_list.push_back(deviceid);
 

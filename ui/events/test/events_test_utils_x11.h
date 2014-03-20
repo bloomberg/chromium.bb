@@ -42,15 +42,14 @@ class ScopedXI2Event {
                     KeyboardCode key_code,
                     int flags);
 
-  void InitButtonEvent(EventType type,
-                       int flags);
-
   void InitGenericButtonEvent(int deviceid,
                               EventType type,
+                              const gfx::Point& location,
                               int flags);
 
-  void InitMouseWheelEvent(int wheel_delta,
-                           int flags);
+  void InitGenericMouseWheelEvent(int deviceid,
+                                  int wheel_delta,
+                                  int flags);
 
   void InitScrollEvent(int deviceid,
                        int x_offset,
@@ -83,7 +82,7 @@ class ScopedXI2Event {
 };
 
 // Initializes a test touchpad device for scroll events.
-void SetUpScrollDeviceForTest(unsigned int deviceid);
+void SetUpTouchPadForTest(unsigned int deviceid);
 
 // Initializes a list of touchscreen devices for touch events.
 void SetUpTouchDevicesForTest(const std::vector<unsigned int>& devices);

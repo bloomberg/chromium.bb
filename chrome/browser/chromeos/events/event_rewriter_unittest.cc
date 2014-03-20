@@ -2401,7 +2401,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        10, ui::ET_MOUSE_PRESSED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent press(xev);
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
@@ -2413,7 +2414,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   }
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     RewriteMouseEvent(&rewriter, &release);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
@@ -2423,14 +2425,15 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
-        10, ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON);
+        10, ui::ET_MOUSE_PRESSED, gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON);
     ui::MouseEvent press(xev);
     RewriteMouseEvent(&rewriter, &press);
     EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & press.flags());
   }
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     RewriteMouseEvent(&rewriter, &release);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
@@ -2440,14 +2443,16 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   // ALT on different device.
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        11, ui::ET_MOUSE_PRESSED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent press(xev);
     RewriteMouseEvent(&rewriter, &press);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
   }
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     RewriteMouseEvent(&rewriter, &release);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
@@ -2455,7 +2460,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   }
   {
     ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    xev.InitGenericButtonEvent(
+        11, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     RewriteMouseEvent(&rewriter, &release);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
