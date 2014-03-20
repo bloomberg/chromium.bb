@@ -100,6 +100,9 @@ void HTMLOListElement::setStart(int start)
 
 void HTMLOListElement::updateItemValues()
 {
+    if (!renderer())
+        return;
+    document().updateDistributionForNodeIfNeeded(this);
     RenderListItem::updateItemValuesForOrderedList(this);
 }
 
