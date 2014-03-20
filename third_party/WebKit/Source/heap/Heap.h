@@ -1025,20 +1025,36 @@ T* adoptRefCountedGarbageCollected(T* ptr)
 }
 
 #if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
-#define DISALLOW_ALLOCATION() \
-    private: \
-        void* operator new(size_t) = delete;
-#else
-#define DISALLOW_ALLOCATION() \
-    private: \
-        void* operator new(size_t);
-#endif
+#define DISALLOW_ALLOCATION()                                   \
+    private:                                                    \
+        void* operator new(size_t) = delete;                    \
+        void* operator new(size_t, NotNullTag, void*) = delete; \
+        void* operator new(size_t, void*) = delete;
 
 #define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
     public:                                                                         \
         void* operator new(size_t, NotNullTag, void* location) { return location; } \
         void* operator new(size_t, void* location) { return location; }             \
-    DISALLOW_ALLOCATION()
+    private:                                                                        \
+        void* operator new(size_t) = delete;
+
+#else
+
+#define DISALLOW_ALLOCATION()                          \
+    private:                                           \
+        void* operator new(size_t);                    \
+        void* operator new(size_t, NotNullTag, void*); \
+        void* operator new(size_t, void*)
+
+#define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
+    public:                                                                         \
+        void* operator new(size_t, NotNullTag, void* location) { return location; } \
+        void* operator new(size_t, void* location) { return location; }             \
+    private:                                                                        \
+        void* operator new(size_t);
+
+#endif
+
 
 // These macros insert annotations that the Blink GC plugin for clang uses for
 // verification. STACK_ALLOCATED is used to declare that objects of this type
@@ -1047,10 +1063,13 @@ T* adoptRefCountedGarbageCollected(T* ptr)
 // GC_PLUGIN_IGNORE a bug-number should be provided as an argument where the
 // bug describes what needs to happen to remove the GC_PLUGIN_IGNORE again.
 #if COMPILER(CLANG) && !defined(ADDRESS_SANITIZER)
-#define STACK_ALLOCATED()                                  \
-    private:                                               \
-        __attribute__((annotate("blink_stack_allocated"))) \
-        void* operator new(size_t) = delete;
+#define STACK_ALLOCATED()                                       \
+    private:                                                    \
+        __attribute__((annotate("blink_stack_allocated")))      \
+        void* operator new(size_t) = delete;                    \
+        void* operator new(size_t, NotNullTag, void*) = delete; \
+        void* operator new(size_t, void*) = delete;
+
 #define GC_PLUGIN_IGNORE(bug)                           \
     __attribute__((annotate("blink_gc_plugin_ignore")))
 #else
