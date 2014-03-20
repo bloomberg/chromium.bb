@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<title>SVG-in-&lt;img&gt;: Animation resets when all references are removed.</title>
+<div style="width: 100px; height: 100px;"></div>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+var div = document.querySelector('div');
+var imgurl = "url('../as-image/resources/animated-rect-color.svg')";
+div.style.background = imgurl;
+setTimeout(function() {
+    div.style.background = "";
+    setTimeout(function() {
+        div.style.background = imgurl;
+        setTimeout(function() {
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }, 10);
+    }, 0);
+}, 100);
+</script>
+

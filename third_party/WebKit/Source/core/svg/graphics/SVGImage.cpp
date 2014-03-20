@@ -282,6 +282,11 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     if (imageObserver())
         imageObserver()->didDraw(this);
+
+    // Start any (SMIL) animations if needed. This will restart or continue
+    // animations if preceded by calls to resetAnimation or stopAnimation
+    // respectively.
+    startAnimation();
 }
 
 RenderBox* SVGImage::embeddedContentBox() const
@@ -351,10 +356,9 @@ void SVGImage::startAnimation(bool /* catchUpIfNecessary */)
         return;
     LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
-    if (!rootElement)
+    if (!rootElement || !rootElement->animationsPaused())
         return;
     rootElement->unpauseAnimations();
-    rootElement->setCurrentTime(0);
 }
 
 void SVGImage::stopAnimation()
@@ -370,7 +374,14 @@ void SVGImage::stopAnimation()
 
 void SVGImage::resetAnimation()
 {
-    stopAnimation();
+    if (!m_page)
+        return;
+    LocalFrame* frame = m_page->mainFrame();
+    SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
+    if (!rootElement)
+        return;
+    rootElement->pauseAnimations();
+    rootElement->setCurrentTime(0);
 }
 
 bool SVGImage::hasAnimations() const
