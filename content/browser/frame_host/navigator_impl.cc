@@ -251,7 +251,8 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   if (controller_->GetPendingEntry() != controller_->GetVisibleEntry())
     controller_->DiscardPendingEntry();
 
-  delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);
+  if (delegate_)
+    delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);
 }
 
 void NavigatorImpl::DidFailLoadWithError(
@@ -260,9 +261,11 @@ void NavigatorImpl::DidFailLoadWithError(
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
-  delegate_->DidFailLoadWithError(
-      render_frame_host, url, is_main_frame, error_code,
-      error_description);
+  if (delegate_) {
+    delegate_->DidFailLoadWithError(
+        render_frame_host, url, is_main_frame, error_code,
+        error_description);
+  }
 }
 
 void NavigatorImpl::DidRedirectProvisionalLoad(
@@ -288,8 +291,10 @@ void NavigatorImpl::DidRedirectProvisionalLoad(
   if (!entry || entry->GetURL() != validated_source_url)
     return;
 
-  delegate_->DidRedirectProvisionalLoad(
-      render_frame_host, validated_target_url);
+  if (delegate_) {
+    delegate_->DidRedirectProvisionalLoad(
+        render_frame_host, validated_target_url);
+  }
 }
 
 bool NavigatorImpl::NavigateToEntry(
