@@ -258,44 +258,46 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         return;
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (updateRegionsAndShapesLogicalSize(flowThread))
-        relayoutChildren = true;
+    {
+        // LayoutStateMaintainer needs this deliberate scope to pop before repaint
+        LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    LayoutSize previousSize = size();
+        RenderFlowThread* flowThread = flowThreadContainingBlock();
+        if (updateRegionsAndShapesLogicalSize(flowThread))
+            relayoutChildren = true;
 
-    updateLogicalWidth();
-    updateLogicalHeight();
+        LayoutSize previousSize = size();
 
-    if (previousSize != size()
-        || (parent()->isDeprecatedFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL
-        && parent()->style()->boxAlign() == BSTRETCH))
-        relayoutChildren = true;
+        updateLogicalWidth();
+        updateLogicalHeight();
 
-    setHeight(0);
+        if (previousSize != size()
+            || (parent()->isDeprecatedFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL
+            && parent()->style()->boxAlign() == BSTRETCH))
+            relayoutChildren = true;
 
-    m_stretchingChildren = false;
+        setHeight(0);
 
-    if (isHorizontal())
-        layoutHorizontalBox(relayoutChildren);
-    else
-        layoutVerticalBox(relayoutChildren);
+        m_stretchingChildren = false;
 
-    LayoutUnit oldClientAfterEdge = clientLogicalBottom();
-    updateLogicalHeight();
+        if (isHorizontal())
+            layoutHorizontalBox(relayoutChildren);
+        else
+            layoutVerticalBox(relayoutChildren);
 
-    if (previousSize.height() != height())
-        relayoutChildren = true;
+        LayoutUnit oldClientAfterEdge = clientLogicalBottom();
+        updateLogicalHeight();
 
-    layoutPositionedObjects(relayoutChildren || isRoot());
+        if (previousSize.height() != height())
+            relayoutChildren = true;
 
-    computeRegionRangeForBlock(flowThread);
+        layoutPositionedObjects(relayoutChildren || isRoot());
 
-    computeOverflow(oldClientAfterEdge);
+        computeRegionRangeForBlock(flowThread);
 
-    statePusher.pop();
+        computeOverflow(oldClientAfterEdge);
+    }
 
     updateLayerTransform();
 

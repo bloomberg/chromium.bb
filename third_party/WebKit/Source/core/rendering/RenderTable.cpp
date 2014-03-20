@@ -428,152 +428,150 @@ void RenderTable::layout()
     recalcBordersInRowDirection();
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(*this, locationOffset());
-
-    setLogicalHeight(0);
-
-    LayoutUnit oldLogicalWidth = logicalWidth();
-    updateLogicalWidth();
-
     SubtreeLayoutScope layouter(this);
 
-    if (logicalWidth() != oldLogicalWidth) {
-        for (unsigned i = 0; i < m_captions.size(); i++)
-            layouter.setNeedsLayout(m_captions[i]);
-    }
-    // FIXME: The optimisation below doesn't work since the internal table
-    // layout could have changed.  we need to add a flag to the table
-    // layout that tells us if something has changed in the min max
-    // calculations to do it correctly.
-//     if ( oldWidth != width() || columns.size() + 1 != columnPos.size() )
-    m_tableLayout->layout();
-
-    LayoutUnit totalSectionLogicalHeight = 0;
-    LayoutUnit oldTableLogicalTop = 0;
-    for (unsigned i = 0; i < m_captions.size(); i++)
-        oldTableLogicalTop += m_captions[i]->logicalHeight() + m_captions[i]->marginBefore() + m_captions[i]->marginAfter();
-
-    bool collapsing = collapseBorders();
-
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (!child->needsLayout() && child->isBox())
-            toRenderBox(child)->markForPaginationRelayoutIfNeeded(layouter);
-        if (child->isTableSection()) {
-            RenderTableSection* section = toRenderTableSection(child);
-            if (m_columnLogicalWidthChanged)
-                layouter.setChildNeedsLayout(section);
-            section->layoutIfNeeded();
-            totalSectionLogicalHeight += section->calcRowLogicalHeight();
-            if (collapsing)
-                section->recalcOuterBorder();
-            ASSERT(!section->needsLayout());
-        } else if (child->isRenderTableCol()) {
-            child->layoutIfNeeded();
-            ASSERT(!child->needsLayout());
-        } else {
-            // FIXME: We should never have other type of children (they should be wrapped in an
-            // anonymous table section) but our code is too crazy and this can happen in practice.
-            // Until this is fixed, let's make sure we don't leave non laid out children in the tree.
-            child->layoutIfNeeded();
-        }
-    }
 
     // If any table section moved vertically, we will just repaint everything from that
     // section down (it is quite unlikely that any of the following sections
     // did not shift).
     bool sectionMoved = false;
     LayoutUnit movedSectionLogicalTop = 0;
+    {
+        LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    // FIXME: Collapse caption margin.
-    if (!m_captions.isEmpty()) {
+        setLogicalHeight(0);
+
+        LayoutUnit oldLogicalWidth = logicalWidth();
+        updateLogicalWidth();
+
+        if (logicalWidth() != oldLogicalWidth) {
+            for (unsigned i = 0; i < m_captions.size(); i++)
+                layouter.setNeedsLayout(m_captions[i]);
+        }
+        // FIXME: The optimisation below doesn't work since the internal table
+        // layout could have changed. We need to add a flag to the table
+        // layout that tells us if something has changed in the min max
+        // calculations to do it correctly.
+        // if ( oldWidth != width() || columns.size() + 1 != columnPos.size() )
+        m_tableLayout->layout();
+
+        LayoutUnit totalSectionLogicalHeight = 0;
+        LayoutUnit oldTableLogicalTop = 0;
+        for (unsigned i = 0; i < m_captions.size(); i++)
+            oldTableLogicalTop += m_captions[i]->logicalHeight() + m_captions[i]->marginBefore() + m_captions[i]->marginAfter();
+
+        bool collapsing = collapseBorders();
+
+        for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+            if (child->isTableSection()) {
+                RenderTableSection* section = toRenderTableSection(child);
+                if (m_columnLogicalWidthChanged)
+                    layouter.setChildNeedsLayout(section);
+                section->layoutIfNeeded();
+                totalSectionLogicalHeight += section->calcRowLogicalHeight();
+                if (collapsing)
+                    section->recalcOuterBorder();
+                ASSERT(!section->needsLayout());
+            } else if (child->isRenderTableCol()) {
+                child->layoutIfNeeded();
+                ASSERT(!child->needsLayout());
+            } else {
+                // FIXME: We should never have other type of children (they should be wrapped in an
+                // anonymous table section) but our code is too crazy and this can happen in practice.
+                // Until this is fixed, let's make sure we don't leave non laid out children in the tree.
+                child->layoutIfNeeded();
+            }
+        }
+
+        // FIXME: Collapse caption margin.
+        if (!m_captions.isEmpty()) {
+            for (unsigned i = 0; i < m_captions.size(); i++) {
+                if (m_captions[i]->style()->captionSide() == CAPBOTTOM)
+                    continue;
+                layoutCaption(m_captions[i]);
+            }
+            if (logicalHeight() != oldTableLogicalTop) {
+                sectionMoved = true;
+                movedSectionLogicalTop = min(logicalHeight(), oldTableLogicalTop);
+            }
+        }
+
+        LayoutUnit borderAndPaddingBefore = borderBefore() + (collapsing ? LayoutUnit() : paddingBefore());
+        LayoutUnit borderAndPaddingAfter = borderAfter() + (collapsing ? LayoutUnit() : paddingAfter());
+
+        setLogicalHeight(logicalHeight() + borderAndPaddingBefore);
+
+        if (!isOutOfFlowPositioned())
+            updateLogicalHeight();
+
+        LayoutUnit computedLogicalHeight = 0;
+
+        Length logicalHeightLength = style()->logicalHeight();
+        if (logicalHeightLength.isIntrinsic() || (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive()))
+            computedLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
+
+        Length logicalMaxHeightLength = style()->logicalMaxHeight();
+        if (logicalMaxHeightLength.isIntrinsic() || (logicalMaxHeightLength.isSpecified() && !logicalMaxHeightLength.isNegative())) {
+            LayoutUnit computedMaxLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMaxHeightLength);
+            computedLogicalHeight = min(computedLogicalHeight, computedMaxLogicalHeight);
+        }
+
+        Length logicalMinHeightLength = style()->logicalMinHeight();
+        if (logicalMinHeightLength.isIntrinsic() || (logicalMinHeightLength.isSpecified() && !logicalMinHeightLength.isNegative())) {
+            LayoutUnit computedMinLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMinHeightLength);
+            computedLogicalHeight = max(computedLogicalHeight, computedMinLogicalHeight);
+        }
+
+        distributeExtraLogicalHeight(floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
+
+        for (RenderTableSection* section = topSection(); section; section = sectionBelow(section))
+            section->layoutRows();
+
+        if (!topSection() && computedLogicalHeight > totalSectionLogicalHeight && !document().inQuirksMode()) {
+            // Completely empty tables (with no sections or anything) should at least honor specified height
+            // in strict mode.
+            setLogicalHeight(logicalHeight() + computedLogicalHeight);
+        }
+
+        LayoutUnit sectionLogicalLeft = style()->isLeftToRightDirection() ? borderStart() : borderEnd();
+        if (!collapsing)
+            sectionLogicalLeft += style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
+
+        // position the table sections
+        RenderTableSection* section = topSection();
+        while (section) {
+            if (!sectionMoved && section->logicalTop() != logicalHeight()) {
+                sectionMoved = true;
+                movedSectionLogicalTop = min(logicalHeight(), section->logicalTop()) + (style()->isHorizontalWritingMode() ? section->visualOverflowRect().y() : section->visualOverflowRect().x());
+            }
+            section->setLogicalLocation(LayoutPoint(sectionLogicalLeft, logicalHeight()));
+
+            setLogicalHeight(logicalHeight() + section->logicalHeight());
+            section = sectionBelow(section);
+        }
+
+        setLogicalHeight(logicalHeight() + borderAndPaddingAfter);
+
         for (unsigned i = 0; i < m_captions.size(); i++) {
-            if (m_captions[i]->style()->captionSide() == CAPBOTTOM)
+            if (m_captions[i]->style()->captionSide() != CAPBOTTOM)
                 continue;
             layoutCaption(m_captions[i]);
         }
-        if (logicalHeight() != oldTableLogicalTop) {
-            sectionMoved = true;
-            movedSectionLogicalTop = min(logicalHeight(), oldTableLogicalTop);
-        }
+
+        if (isOutOfFlowPositioned())
+            updateLogicalHeight();
+
+        // table can be containing block of positioned elements.
+        // FIXME: Only pass true if width or height changed.
+        layoutPositionedObjects(true);
+
+        updateLayerTransform();
+
+        // Layout was changed, so probably borders too.
+        invalidateCollapsedBorders();
+
+        computeOverflow(clientLogicalBottom());
     }
-
-    LayoutUnit borderAndPaddingBefore = borderBefore() + (collapsing ? LayoutUnit() : paddingBefore());
-    LayoutUnit borderAndPaddingAfter = borderAfter() + (collapsing ? LayoutUnit() : paddingAfter());
-
-    setLogicalHeight(logicalHeight() + borderAndPaddingBefore);
-
-    if (!isOutOfFlowPositioned())
-        updateLogicalHeight();
-
-    LayoutUnit computedLogicalHeight = 0;
-
-    Length logicalHeightLength = style()->logicalHeight();
-    if (logicalHeightLength.isIntrinsic() || (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive()))
-        computedLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
-
-    Length logicalMaxHeightLength = style()->logicalMaxHeight();
-    if (logicalMaxHeightLength.isIntrinsic() || (logicalMaxHeightLength.isSpecified() && !logicalMaxHeightLength.isNegative())) {
-        LayoutUnit computedMaxLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMaxHeightLength);
-        computedLogicalHeight = min(computedLogicalHeight, computedMaxLogicalHeight);
-    }
-
-    Length logicalMinHeightLength = style()->logicalMinHeight();
-    if (logicalMinHeightLength.isIntrinsic() || (logicalMinHeightLength.isSpecified() && !logicalMinHeightLength.isNegative())) {
-        LayoutUnit computedMinLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMinHeightLength);
-        computedLogicalHeight = max(computedLogicalHeight, computedMinLogicalHeight);
-    }
-
-    distributeExtraLogicalHeight(floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
-
-    for (RenderTableSection* section = topSection(); section; section = sectionBelow(section))
-        section->layoutRows();
-
-    if (!topSection() && computedLogicalHeight > totalSectionLogicalHeight && !document().inQuirksMode()) {
-        // Completely empty tables (with no sections or anything) should at least honor specified height
-        // in strict mode.
-        setLogicalHeight(logicalHeight() + computedLogicalHeight);
-    }
-
-    LayoutUnit sectionLogicalLeft = style()->isLeftToRightDirection() ? borderStart() : borderEnd();
-    if (!collapsing)
-        sectionLogicalLeft += style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
-
-    // position the table sections
-    RenderTableSection* section = topSection();
-    while (section) {
-        if (!sectionMoved && section->logicalTop() != logicalHeight()) {
-            sectionMoved = true;
-            movedSectionLogicalTop = min(logicalHeight(), section->logicalTop()) + (style()->isHorizontalWritingMode() ? section->visualOverflowRect().y() : section->visualOverflowRect().x());
-        }
-        section->setLogicalLocation(LayoutPoint(sectionLogicalLeft, logicalHeight()));
-
-        setLogicalHeight(logicalHeight() + section->logicalHeight());
-        section = sectionBelow(section);
-    }
-
-    setLogicalHeight(logicalHeight() + borderAndPaddingAfter);
-
-    for (unsigned i = 0; i < m_captions.size(); i++) {
-        if (m_captions[i]->style()->captionSide() != CAPBOTTOM)
-            continue;
-        layoutCaption(m_captions[i]);
-    }
-
-    if (isOutOfFlowPositioned())
-        updateLogicalHeight();
-
-    // table can be containing block of positioned elements.
-    // FIXME: Only pass true if width or height changed.
-    layoutPositionedObjects(true);
-
-    updateLayerTransform();
-
-    // Layout was changed, so probably borders too.
-    invalidateCollapsedBorders();
-
-    computeOverflow(clientLogicalBottom());
-
-    statePusher.pop();
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));

@@ -282,7 +282,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     computeRegionRangeForBlock(flowThread);
 
     computeOverflow(oldClientAfterEdge);
-    statePusher.pop();
 
     updateLayerTransform();
 

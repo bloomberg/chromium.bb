@@ -301,14 +301,35 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // number of columns.
     bool done = false;
     LayoutUnit pageLogicalHeight = 0;
+    LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
     while (!done)
         done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
+
+    fitBorderToLinesIfNeeded();
+
+    RenderView* renderView = view();
+    if (renderView->layoutState()->m_pageLogicalHeight)
+        setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
+
+    updateLayerTransform();
+
+    // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
+    // we overflow or not.
+    updateScrollInfoAfterLayout();
+
+    // Repaint with our new bounds if they are different from our old bounds.
+    bool didFullRepaint = repainter.repaintAfterLayout();
+    if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            setShouldRepaintOverflow(true);
+        else
+            repaintOverflow();
+    }
+    clearNeedsLayout();
 }
 
 inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &pageLogicalHeight, SubtreeLayoutScope& layoutScope)
 {
-    LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-
     LayoutUnit oldLeft = logicalLeft();
     if (updateLogicalWidthAndColumnWidth())
         relayoutChildren = true;
@@ -368,7 +389,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (flowThread->recalculateColumnHeights()) {
             setChildNeedsLayout(MarkOnlyThis);
-            statePusher.pop();
             return false;
         }
     } else if (hasColumns()) {
@@ -381,7 +401,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         m_overflow = savedOverflow.release();
 
         if (!hasSpecifiedPageLogicalHeight && shouldRelayoutForPagination(pageLogicalHeight, layoutOverflowLogicalBottom)) {
-            statePusher.pop();
             setEverHadLayout(true);
             return false;
         }
@@ -390,7 +409,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     }
 
     if (shouldBreakAtLineToAvoidWidow()) {
-        statePusher.pop();
         setEverHadLayout(true);
         return false;
     }
@@ -428,30 +446,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);
 
-    statePusher.pop();
-
-    fitBorderToLinesIfNeeded();
-
-    RenderView* renderView = view();
-    if (renderView->layoutState()->m_pageLogicalHeight)
-        setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
-
-    updateLayerTransform();
-
-    // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
-    // we overflow or not.
-    updateScrollInfoAfterLayout();
-
-    // Repaint with our new bounds if they are different from our old bounds.
-    bool didFullRepaint = repainter.repaintAfterLayout();
-    if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            setShouldRepaintOverflow(true);
-        else
-            repaintOverflow();
-    }
-
-    clearNeedsLayout();
     return true;
 }
 

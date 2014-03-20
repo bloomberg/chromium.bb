@@ -71,8 +71,6 @@ void RenderMedia::layout()
     controlsRenderer->style()->setWidth(Length(newSize.width(), Fixed));
     controlsRenderer->forceLayout();
     clearNeedsLayout();
-
-    statePusher.pop();
 }
 
 void RenderMedia::paintReplaced(PaintInfo&, const LayoutPoint&)

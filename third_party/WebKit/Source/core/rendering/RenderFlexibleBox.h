@@ -122,7 +122,7 @@ private:
     LayoutUnit preferredMainAxisContentExtentForChild(RenderBox* child, bool hasInfiniteLineLength, bool relayoutChildren = false);
     bool childPreferredMainAxisContentExtentRequiresLayout(RenderBox* child, bool hasInfiniteLineLength) const;
 
-    void layoutFlexItems(bool relayoutChildren, Vector<LineContext>&);
+    void layoutFlexItems(bool relayoutChildren);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);
     void updateAutoMarginsInMainAxis(RenderBox* child, LayoutUnit autoMarginOffset);
     bool hasAutoMarginsInCrossAxis(RenderBox* child) const;

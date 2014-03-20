@@ -1635,42 +1635,44 @@ bool RenderBlock::simplifiedLayout()
     if ((!posChildNeedsLayout() && !needsSimplifiedNormalFlowLayout()) || normalChildNeedsLayout() || selfNeedsLayout())
         return false;
 
-    LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
-        return false;
+    {
+        // LayoutStateMaintainer needs this deliberate scope to pop before repaint
+        LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+        if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
+            return false;
 
-    // Lay out positioned descendants or objects that just need to recompute overflow.
-    if (needsSimplifiedNormalFlowLayout())
-        simplifiedNormalFlowLayout();
+        FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
 
-    // Make sure a forced break is applied after the content if we are a flow thread in a simplified layout.
-    // This ensures the size information is correctly computed for the last auto-height region receiving content.
-    if (isRenderFlowThread())
-        toRenderFlowThread(this)->applyBreakAfterContent(clientLogicalBottom());
+        // Lay out positioned descendants or objects that just need to recompute overflow.
+        if (needsSimplifiedNormalFlowLayout())
+            simplifiedNormalFlowLayout();
 
-    // Lay out our positioned objects if our positioned child bit is set.
-    // Also, if an absolute position element inside a relative positioned container moves, and the absolute element has a fixed position
-    // child, neither the fixed element nor its container learn of the movement since posChildNeedsLayout() is only marked as far as the
-    // relative positioned container. So if we can have fixed pos objects in our positioned objects list check if any of them
-    // are statically positioned and thus need to move with their absolute ancestors.
-    bool canContainFixedPosObjects = canContainFixedPositionObjects();
-    if (posChildNeedsLayout() || canContainFixedPosObjects)
-        layoutPositionedObjects(false, !posChildNeedsLayout() && canContainFixedPosObjects ? LayoutOnlyFixedPositionedObjects : DefaultLayout);
+        // Make sure a forced break is applied after the content if we are a flow thread in a simplified layout.
+        // This ensures the size information is correctly computed for the last auto-height region receiving content.
+        if (isRenderFlowThread())
+            toRenderFlowThread(this)->applyBreakAfterContent(clientLogicalBottom());
 
-    // Recompute our overflow information.
-    // FIXME: We could do better here by computing a temporary overflow object from layoutPositionedObjects and only
-    // updating our overflow if we either used to have overflow or if the new temporary object has overflow.
-    // For now just always recompute overflow.  This is no worse performance-wise than the old code that called rightmostPosition and
-    // lowestPosition on every relayout so it's not a regression.
-    // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
-    // simplifiedLayout, we cache the value in m_overflow.
-    LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
-    computeOverflow(oldClientAfterEdge, true);
+        // Lay out our positioned objects if our positioned child bit is set.
+        // Also, if an absolute position element inside a relative positioned container moves, and the absolute element has a fixed position
+        // child, neither the fixed element nor its container learn of the movement since posChildNeedsLayout() is only marked as far as the
+        // relative positioned container. So if we can have fixed pos objects in our positioned objects list check if any of them
+        // are statically positioned and thus need to move with their absolute ancestors.
+        bool canContainFixedPosObjects = canContainFixedPositionObjects();
+        if (posChildNeedsLayout() || canContainFixedPosObjects)
+            layoutPositionedObjects(false, !posChildNeedsLayout() && canContainFixedPosObjects ? LayoutOnlyFixedPositionedObjects : DefaultLayout);
 
-    statePusher.pop();
+        // Recompute our overflow information.
+        // FIXME: We could do better here by computing a temporary overflow object from layoutPositionedObjects and only
+        // updating our overflow if we either used to have overflow or if the new temporary object has overflow.
+        // For now just always recompute overflow. This is no worse performance-wise than the old code that called rightmostPosition and
+        // lowestPosition on every relayout so it's not a regression.
+        // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
+        // simplifiedLayout, we cache the value in m_overflow.
+        LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
+        computeOverflow(oldClientAfterEdge, true);
+    }
 
     updateLayerTransform();
 

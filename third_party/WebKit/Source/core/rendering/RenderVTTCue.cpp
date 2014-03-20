@@ -56,8 +56,6 @@ void RenderVTTCue::layout()
         repositionCueSnapToLinesSet();
     else
         repositionCueSnapToLinesNotSet();
-
-    statePusher.pop();
 }
 
 bool RenderVTTCue::findFirstLineBox(InlineFlowBox*& firstLineBox)

@@ -314,11 +314,6 @@ void RenderBox::layout()
         ASSERT(!child->needsLayout());
         child = child->nextSibling();
     }
-
-    m_overflow.clear();
-    addVisualEffectOverflow();
-
-    statePusher.pop();
     invalidateBackgroundObscurationStatus();
     clearNeedsLayout();
 }

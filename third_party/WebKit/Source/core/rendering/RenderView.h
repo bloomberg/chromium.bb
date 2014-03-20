@@ -226,9 +226,9 @@ private:
         return false;
     }
 
-    void layoutContent(const LayoutState&);
+    void layoutContent();
 #ifndef NDEBUG
-    void checkLayoutState(const LayoutState&);
+    void checkLayoutState();
 #endif
 
     void positionDialog(RenderBox*);
@@ -239,6 +239,7 @@ private:
 
     friend class LayoutStateMaintainer;
     friend class LayoutStateDisabler;
+    friend class RootLayoutStateScope;
 
     bool shouldUsePrintingLayout() const;
 
@@ -263,6 +264,27 @@ private:
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());
+
+class RootLayoutStateScope {
+public:
+    explicit RootLayoutStateScope(RenderView& view)
+        : m_view(view)
+    {
+        ASSERT(!m_view.m_layoutState);
+        initializeLayoutState();
+        m_view.m_layoutState = &m_rootLayoutState;
+    }
+
+    ~RootLayoutStateScope()
+    {
+        ASSERT(m_view.m_layoutState == &m_rootLayoutState);
+        m_view.m_layoutState = 0;
+    }
+private:
+    void initializeLayoutState();
+    RenderView& m_view;
+    LayoutState m_rootLayoutState;
+};
 
 // Stack-based class to assist with LayoutState push/pop
 class LayoutStateMaintainer {
@@ -291,6 +313,8 @@ public:
 
     ~LayoutStateMaintainer()
     {
+        if (m_didStart)
+            pop();
         ASSERT(m_didStart == m_didEnd);   // if this fires, it means that someone did a push(), but forgot to pop().
     }
 
@@ -304,23 +328,21 @@ public:
         m_didStart = true;
     }
 
-    void pop()
-    {
-        if (m_didStart) {
-            ASSERT(!m_didEnd);
-            if (m_didCreateLayoutState) {
-                m_view.popLayoutState();
-                if (m_disabled)
-                    m_view.enableLayoutState();
-            }
-
-            m_didEnd = true;
-        }
-    }
-
     bool didPush() const { return m_didStart; }
 
 private:
+    void pop()
+    {
+        ASSERT(m_didStart && !m_didEnd);
+        if (m_didCreateLayoutState) {
+            m_view.popLayoutState();
+            if (m_disabled)
+                m_view.enableLayoutState();
+        }
+
+        m_didEnd = true;
+    }
+
     RenderView& m_view;
     bool m_disabled : 1;        // true if the offset and clip part of layoutState is disabled
     bool m_didStart : 1;        // true if we did a push or disable

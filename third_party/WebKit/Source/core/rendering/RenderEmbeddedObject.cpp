@@ -239,8 +239,6 @@ void RenderEmbeddedObject::layout()
     childBox->style()->setWidth(Length(newSize.width(), Fixed));
     childBox->forceLayout();
     clearNeedsLayout();
-
-    statePusher.pop();
 }
 
 bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float)

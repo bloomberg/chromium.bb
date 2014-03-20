@@ -161,7 +161,7 @@ void RenderView::positionDialogs()
     }
 }
 
-void RenderView::layoutContent(const LayoutState& state)
+void RenderView::layoutContent()
 {
     ASSERT(needsLayout());
 
@@ -172,27 +172,27 @@ void RenderView::layoutContent(const LayoutState& state)
         positionDialogs();
 
 #ifndef NDEBUG
-    checkLayoutState(state);
+    checkLayoutState();
 #endif
 }
 
 #ifndef NDEBUG
-void RenderView::checkLayoutState(const LayoutState& state)
+void RenderView::checkLayoutState()
 {
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         ASSERT(layoutDeltaMatches(LayoutSize()));
     }
     ASSERT(!m_layoutStateDisableCount);
-    ASSERT(m_layoutState == &state);
+    ASSERT(!m_layoutState->m_next);
 }
 #endif
 
-void RenderView::initializeLayoutState(LayoutState& state)
+void RootLayoutStateScope::initializeLayoutState()
 {
-    state.m_clipped = false;
-    state.m_pageLogicalHeight = m_pageLogicalHeight;
-    state.m_pageLogicalHeightChanged = m_pageLogicalHeightChanged;
-    state.m_isPaginated = state.m_pageLogicalHeight;
+    m_rootLayoutState.m_clipped = false;
+    m_rootLayoutState.m_pageLogicalHeight = m_view.m_pageLogicalHeight;
+    m_rootLayoutState.m_pageLogicalHeightChanged = m_view.m_pageLogicalHeightChanged;
+    m_rootLayoutState.m_isPaginated = m_rootLayoutState.m_pageLogicalHeight;
 }
 
 void RenderView::layout()
@@ -228,18 +228,15 @@ void RenderView::layout()
     if (!needsLayout())
         return;
 
-    LayoutState state;
-    initializeLayoutState(state);
+    RootLayoutStateScope rootLayoutStateScope(*this);
 
     m_pageLogicalHeightChanged = false;
-    m_layoutState = &state;
 
-    layoutContent(state);
+    layoutContent();
 
 #ifndef NDEBUG
-    checkLayoutState(state);
+    checkLayoutState();
 #endif
-    m_layoutState = 0;
     clearNeedsLayout();
 }
 
