@@ -285,8 +285,7 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild()
     // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
     if (inCompositingMode())
         m_compositingLayersNeedRebuild = true;
-
-    m_renderView.frameView()->scheduleAnimation();
+    page()->animator().scheduleVisualUpdate();
 }
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
@@ -385,7 +384,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     }
 
-    m_renderView.frameView()->scheduleAnimation();
+    page()->animator().scheduleVisualUpdate();
 }
 
 void RenderLayerCompositor::updateCompositingLayers()
@@ -409,6 +408,25 @@ void RenderLayerCompositor::updateCompositingLayers()
 
     DocumentAnimations::startPendingAnimations(m_renderView.document());
     ASSERT(m_renderView.document().lifecycle().state() == DocumentLifecycle::CompositingClean);
+}
+
+void RenderLayerCompositor::scheduleAnimationIfNeeded()
+{
+    LocalFrame* localFrame = &m_renderView.frameView()->frame();
+    for (LocalFrame* currentFrame = localFrame; currentFrame; currentFrame = currentFrame->tree().traverseNext(localFrame)) {
+        if (currentFrame->contentRenderer()) {
+            RenderLayerCompositor* childCompositor = currentFrame->contentRenderer()->compositor();
+            if (childCompositor && childCompositor->hasUnresolvedDirtyBits()) {
+                m_renderView.frameView()->scheduleAnimation();
+                return;
+            }
+        }
+    }
+}
+
+bool RenderLayerCompositor::hasUnresolvedDirtyBits()
+{
+    return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsToUpdateLayerTreeGeometry || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType != GraphicsLayerUpdater::DoNotForceUpdate;
 }
 
 void RenderLayerCompositor::updateCompositingLayersInternal()

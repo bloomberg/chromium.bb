@@ -2780,8 +2780,15 @@ void FrameView::updateLayoutAndStyleForPainting()
     RefPtr<FrameView> protector(this);
 
     updateLayoutAndStyleIfNeededRecursive();
-    if (RenderView* view = renderView())
+    if (RenderView* view = renderView()) {
+        ASSERT(!view->needsLayout());
         view->compositor()->updateCompositingLayers();
+
+        // FIXME: we should not have any dirty bits left at this point. Unfortunately, this is not yet the case because
+        // the code in updateCompositingLayers sometimes creates new dirty bits when updating direct compositing reasons.
+        // See crbug.com/354100.
+        view->compositor()->scheduleAnimationIfNeeded();
+    }
 }
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()

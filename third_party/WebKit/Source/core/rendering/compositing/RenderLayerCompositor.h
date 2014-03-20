@@ -199,6 +199,8 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
+    void scheduleAnimationIfNeeded();
+
 private:
     class OverlapMap;
 
@@ -232,6 +234,8 @@ private:
 
         RenderLayer* clippingAncestorForMostRecentMapping;
     };
+
+    bool hasUnresolvedDirtyBits();
 
     bool canSquashIntoCurrentSquashingOwner(const RenderLayer* candidate, const SquashingState&, const RenderLayer* clippingAncestor);
 
