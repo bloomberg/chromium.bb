@@ -191,7 +191,12 @@ def datetime_from_gerrit(date_string):
 
 
 def datetime_from_rietveld(date_string):
-  return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
+  try:
+    return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
+  except ValueError:
+    # Sometimes rietveld returns a value without the milliseconds part, so we
+    # attempt to parse those cases as well.
+    return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
 
 
 def datetime_from_google_code(date_string):
