@@ -1,39 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Crash issue 344280</title>
+    <title>Issue 344280</title>
     <script src="../../resources/js-test.js"></script>
 </head>
-
 <body>
     <script>
         description('Should not crash if we load a test case from crbug.com/344280.');
+
         window.jsTestIsAsync = true;
 
-        document.addEventListener("DOMContentLoaded", function () {
-            document.execCommand("SelectAll", false);
-            window.getSelection().deleteFromDocument();
-        }, true);
+        window.addEventListener('message', didReceiveMessage, false);
 
-        var count = 0;
-        document.addEventListener("DOMSubtreeModified", function () {
-            count++;
-            if (count < 3) {
-                var src = event.srcElement;
-                src.contentEditable = "true";
-                src.innerHTML = '<div></div>';
-                document.execCommand('InsertOrderedList', false, false);
-            } else if (count == 3) {
-                window.finishJSTest();
-            }
-        }, false);
+        var iframe = document.createElement('iframe');
+        iframe.src = 'resources/insert-ordered-list-crash-iframe.html';
+        document.body.appendChild(iframe);
+
+        function didReceiveMessage(event) {
+            shouldBeEqualToString('event.data', 'FINISH');
+            document.body.removeChild(iframe);
+            testPassed('Did not crash.');
+            window.finishJSTest();
+        }
     </script>
-    <h5>
-        aa
-        <textarea></textarea>
-    </h5>
-    <dl>
-        aa
-    </dl>
 </body>
 </html>
