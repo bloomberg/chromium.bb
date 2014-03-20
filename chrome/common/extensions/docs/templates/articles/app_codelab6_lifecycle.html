@@ -8,11 +8,11 @@
 For example, if your app is an instant messenger, you might want your event page to only show a UI when there is a new notification.</p>
 
 <p>For simpler apps, the event page listens to the app lifecycle events and reacts appropriately.
-There are two important lifecycle events, $ref:app.runtime.onLaunched and $ref:app.runtime.onRestarted.</p>
+There are two important lifecycle events, $(ref:app.runtime.onLaunched) and $(ref:app.runtime.onRestarted).</p>
 
 <h2 id="the_onlaunched">The onLaunched event</h2>
 
-<p>The $ref:app.runtime.onLaunched event is the most important event.
+<p>The $(ref:app.runtime.onLaunched) event is the most important event.
 It fires when the user clicks on your app&#39;s icon with the intent of launching it.
 For most simpler apps,
 the event page will listen for this event and open a window when it fires.
@@ -23,7 +23,7 @@ for the most common usage.</p>
 
 <h3 id="windows_with_ids">Windows with IDs</h3>
 
-<p>The $ref:app.window.create method can associate an ID to the window being opened. Currently, the most interesting use for this is to restore a window&#39;s width, height and location and its associated Developer Tools window, if opened, when the app is launched. </p>
+<p>The $(ref:app.window.create) method can associate an ID to the window being opened. Currently, the most interesting use for this is to restore a window&#39;s width, height and location and its associated Developer Tools window, if opened, when the app is launched. </p>
 
 <p>Execute your app as it is now, move and resize the window,
 close and restart it.
@@ -44,7 +44,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 <h2 id="the_onrestarted_event">The onRestarted event</h2>
 
-<p>The $ref:app.runtime.onRestarted event is not as essential as <code>onLaunched</code>,
+<p>The $(ref:app.runtime.onRestarted) event is not as essential as <code>onLaunched</code>,
 but it might be relevant to certain types of apps.
 This event is executed when the app is restarted, for example,
 when Chrome quits, restarts, and the app is launched again.
@@ -56,7 +56,7 @@ If the user quits the app on purpose, she might not be interested keeping the pa
 If the Chrome runtime restarted for some reason other than by a user&#39;s intention,
 the user will want that data when the app is restarted.</p>
 
-<p>Let&#39;s change our code to save the Todo input field in $ref:storage as the user types,
+<p>Let&#39;s change our code to save the Todo input field in $(ref:storage) as the user types,
 only restoring it if the <code>onRestarted</code> event is triggered.</p>
 
 <p class="note"><b>Note:</b>
@@ -92,7 +92,7 @@ chrome.app.runtime.onRestarted.addListener(function() {
 function runApp(readInitialState) {
   chrome.app.window.create(&#39;index.html&#39;,
     {id: &#39;mainwindow&#39;, bounds: {width: 500, height: 309} },
-    // the create callback gets a reference to the AppWindow obj 
+    // the create callback gets a reference to the AppWindow obj
     function(win) {
       // when the callback is executed, the DOM is loaded but no script was
       // loaded yet. So, let&#39;s attach to the load event.
@@ -118,7 +118,7 @@ function runApp(readInitialState) {
 
   <header tabindex="0" data-value="angular">Angular</header>
   <header tabindex="0" data-value="js">JavaScript</header>
-  
+
   <content>
     <pre data-filename="controller.js">
 var newTodoInput = null;
@@ -154,7 +154,7 @@ window.addEventListener(&#39;load&#39;, function() {
   window.clearInitialState = function() {
     chrome.storage.local.set({'newtodo': null});
   }
-   
+
   window.setInitialState = function() {
     chrome.storage.local.get('newtodo', function(data) {
       if (newTodoInput && data && data.newtodo) {
@@ -163,13 +163,13 @@ window.addEventListener(&#39;load&#39;, function() {
       }
     });
   };
-     
+
   var saveTransientState = function() {
     chrome.storage.local.set({'newtodo': newTodoInput.value});
   };
 
   newTodoInput.addEventListener('keypress' , function() {
-    saveTransientState();    
+    saveTransientState();
   })
     </pre>
 

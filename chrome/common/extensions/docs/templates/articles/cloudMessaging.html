@@ -41,7 +41,7 @@ At a glance, push messaging works like this:
   to all instances of Chrome where the user is signed in.</li>
   <li>When the app or extension starts,
   it needs to register a handler to receive the
-  $ref:pushMessaging.onMessage event.</li>
+  $(ref:pushMessaging.onMessage) event.</li>
   <li>When the message arrives on the client,
   Chrome starts the app or extension, if it is not already running,
   and calls the registered handler.</li>
@@ -52,7 +52,7 @@ Diving in a bit more,
 the Chrome Web Store assigns your newly published app
 or extension a unique app ID.
 When a user installs your app or extension,
-the client needs to call $ref:pushMessaging.getChannelId.
+the client needs to call $(ref:pushMessaging.getChannelId).
 The push messaging service returns a channel ID to the client;
 this ID is specifically linked to your app ID and to the user.
 Whatever method your client uses to send the channel ID to the server,
@@ -83,7 +83,7 @@ the channel ID identifies the user and app to receive the message.
 
 <p>
 Any messages sent are delivered
-to all instances of that application installed 
+to all instances of that application installed
 in a Chrome profile signed in as that user.
 The most recent message sent on each subchannel is automatically queued
 for delivery to instances of Chrome which are not connected to the push
@@ -242,7 +242,7 @@ Your app or extension needs to send this value
 to its application server so that the server
 can trigger push messages back.
 To get the user's channel ID,
-call $ref:pushMessaging.getChannelId.
+call $(ref:pushMessaging.getChannelId).
 Use the callback function
 to send the channel ID back to your app or extension.
 </p>
@@ -255,7 +255,7 @@ chrome.pushMessaging.getChannelId(boolean interactive, function ChannelIdCallbac
 When the <code>interactive</code> flag is set to true,
 the user is asked to log in if they haven't already done so
 with a warning dialog that looks something like this:
-"You must log into Chrome for the Calendar extension to receive push messages. 
+"You must log into Chrome for the Calendar extension to receive push messages.
 Log in now?"
 </p>
 
@@ -423,7 +423,7 @@ to use text notifications
 <h2 id="six">Error reference</h2>
 
 <p>
-Push messaging error codes indicate whether the push request was accepted or rejected. 
+Push messaging error codes indicate whether the push request was accepted or rejected.
 Rejection reasons include sender errors (for example, malformed message),
 permission errors (for example, revoked push messaging token),
 and operational errors (for example, push messaging service is currently down).
@@ -462,8 +462,8 @@ To test push messaging locally:
   to be installed.</li>
 
   <li>Get the channel ID at install time using
-  {{?is_apps}}$ref:app.runtime.onLaunched.{{/is_apps}}
-  {{^is_apps}}$ref:runtime.onInstalled.{{/is_apps}}</li>
+  {{?is_apps}}$(ref:app.runtime.onLaunched).{{/is_apps}}
+  {{^is_apps}}$(ref:runtime.onInstalled).{{/is_apps}}</li>
 
   <li>Use that channel ID on the server to send a test
   push message through the system.
@@ -519,7 +519,7 @@ To test push messaging in the cloud:
 
 
   <li>Install your app or extension from the Chrome Web Store.</li>
-  
+
   <li>Get the key from the installed app or extension:
 
     <ol style="list-style-type: lower-alpha;">
@@ -553,5 +553,5 @@ with keys.
 
 <p>You can provide feedback about Google Cloud Messaging
 and the pushMessaging API through the Google Group
-<a target="_blank" href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome feedback</a>. 
+<a target="_blank" href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome feedback</a>.
 Use this group to ask for help, file bug reports, and request features.</p>

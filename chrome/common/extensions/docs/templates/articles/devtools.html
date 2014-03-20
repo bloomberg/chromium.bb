@@ -8,9 +8,9 @@ network requests, and more. DevTools extensions have access to an additional set
 of DevTools-specific extension APIs:</p>
 
 <ul>
-<li><code>$ref:devtools.inspectedWindow</code></li>
-<li><code>$ref:devtools.network</code></a></li>
-<li><code>$ref:devtools.panels</code></a></li>
+<li><code>$(ref:devtools.inspectedWindow)</code></li>
+<li><code>$(ref:devtools.network)</code></a></li>
+<li><code>$(ref:devtools.panels)</code></a></li>
 </ul>
 
 <p>A DevTools extension is structured like any other extension: it can have a
@@ -32,20 +32,20 @@ APIs. Specifically, the DevTools page can:</p>
 
 <ul>
 
-<li>Create and interact with panels using the <code>$ref:devtools.panels</code>
+<li>Create and interact with panels using the <code>$(ref:devtools.panels)</code>
 APIs.</li>
 
 <li>Get information about the inspected window and evaluate code in the inspected
-window using the <code>$ref:devtools.inspectedWindow</code> APIs.</li>
+window using the <code>$(ref:devtools.inspectedWindow)</code> APIs.</li>
 
-<li>Get information about network requests using the <code>$ref:devtools.network</code>
+<li>Get information about network requests using the <code>$(ref:devtools.network)</code>
 APIs.</li>
 
 </ul>
 
 <p>The DevTools page cannot use most of the extensions APIs directly.  It has
-access to the same subset of the <code>$ref:extension</code> 
-and <code>$ref:runtime</code>
+access to the same subset of the <code>$(ref:extension)</code>
+and <code>$(ref:runtime)</code>
 APIs that a content script has access to. Like a content script, a DevTools page
 can communicate with the background page using <a href="messaging.html">Message Passing</a>.
 For an example, see <a href="#injecting">Injecting a Content Script</a>.</p>
@@ -68,10 +68,10 @@ field in the extension manifest:</p>
 <p>An instance of the <code>devtools_page</code> specified in your extension's
 manifest is created for every DevTools window opened. The page may add other
 extension pages as panels and sidebars to the DevTools window using the
-<code>$ref:devtools.panels</code> API.</p>
+<code>$(ref:devtools.panels)</code> API.</p>
 
 <p class="note">The <code>devtools_page</code> field must point to an HTML page.
-This differs from the <code>background</code> field, used for specifying a background page, 
+This differs from the <code>background</code> field, used for specifying a background page,
 which lets you specify JavaScript files directly.</p>
 
 <p>The <code>chrome.devtools.*</code> API modules are available only to the pages
@@ -126,9 +126,9 @@ as the DevTools page.</p>
 
 <p>Creating a basic sidebar pane for the Elements panel looks like this:</p>
 <pre>
-chrome.devtools.panels.elements.createSidebarPane("My Sidebar",  
+chrome.devtools.panels.elements.createSidebarPane("My Sidebar",
     function(sidebar) {
-        // sidebar initialization code here   
+        // sidebar initialization code here
         sidebar.setObject({ some_data: "Some data to show" });
 });</pre>
 <p>There are several ways to display content in a sidebar pane:</p>
@@ -136,16 +136,16 @@ chrome.devtools.panels.elements.createSidebarPane("My Sidebar",
 <ul>
 
 <li><p>HTML content. Call
-<code>$ref:[devtools.panels.ExtensionSidebarPane.setPage setPage]</code> to specify
+<code>$(ref:devtools.panels.ExtensionSidebarPane.setPage setPage)</code> to specify
 an HTML page to display in the pane.</p></li>
 
 
 <li><p>JSON data. Pass a JSON object to
-<code>$ref:[devtools.panels.ExtensionSidebarPane.setObject setObject]</code>.
+<code>$(ref:devtools.panels.ExtensionSidebarPane.setObject setObject)</code>.
 </p></li>
 
 <li><p>JavaScript expression.  Pass an expression to
-<code>$ref:[devtools.panels.ExtensionSidebarPane.setExpression setExpression]</code>.
+<code>$(ref:devtools.panels.ExtensionSidebarPane.setExpression setExpression)</code>.
 DevTools evaluates the expression in the context of the inspected page, and
 displays the return value.</p></li>
 
@@ -162,11 +162,11 @@ the different components of a DevTools extension.</p>
 
 <h3 id="injecting">Injecting a Content Script</h3>
 
-<p>The DevTools page can't call <code>$ref:tabs.executeScript</code> directly.
+<p>The DevTools page can't call <code>$(ref:tabs.executeScript)</code> directly.
 To inject a content script from the DevTools page, you must retrieve the ID
-of the inspected window's tab using the <code>$ref:inspectedWindow.tabId</code>
+of the inspected window's tab using the <code>$(ref:inspectedWindow.tabId)</code>
 property and send a message to the background page. From the background page,
-call <code>$ref:tabs.executeScript</code> to inject the script.</p>
+call <code>$(ref:tabs.executeScript)</code> to inject the script.</p>
 
 <p class="note">If a content script has already been injected, you can add
 additional context scripts using the <code>eval</code> method. See
@@ -217,7 +217,7 @@ chrome.runtime.onConnect.addListener(function(devToolsConnection) {
 
 <h3 id="evaluating-js">Evaluating JavaScript in the Inspected Window</h3>
 
-<p>You can use the <code>$ref:inspectedWindow.eval</code> method to execute
+<p>You can use the <code>$(ref:inspectedWindow.eval)</code> method to execute
 JavaScript code in the context of the inspected page. You can invoke the
 <code>eval</code> method from a DevTools page, panel or sidebar pane.</p>
 
@@ -235,15 +235,15 @@ additional content scripts.</p>
 
 <p class="warning">The <code>eval</code> method is powerful when used in the right
 context and dangerous when used inappropriately. Use the
-<code>$ref:tabs.executeScript</code> method if you don't need access to the
+<code>$(ref:tabs.executeScript)</code> method if you don't need access to the
 JavaScript context of the inspected page. For detailed cautions and a comparison
-of the two methods, see <code>$ref:inspectedWindow</code>.</p>
+of the two methods, see <code>$(ref:inspectedWindow)</code>.</p>
 
 <h3 id="selected-element">Passing the Selected Element to a Content Script</h3>
 
 <p>The content script doesn't have direct access to the current selected element.
-However, any code you execute using <code>$ref:inspectedWindow.eval</code> has
-access to the DevTools console and command-line APIs. For example, in evaluated code 
+However, any code you execute using <code>$(ref:inspectedWindow.eval)</code> has
+access to the DevTools console and command-line APIs. For example, in evaluated code
 you can use <code>$0</code> to access the selected element.</p>
 
 <p>To pass the selected element to a content script:</p>
@@ -253,7 +253,7 @@ you can use <code>$0</code> to access the selected element.</p>
 <li>Create a method in the content script that takes the selected element as
 an argument.</li>
 
-<li>Call the method from the DevTools page using <code>$ref:inspectedWindow.eval</code>
+<li>Call the method from the DevTools page using <code>$(ref:inspectedWindow.eval)</code>
 with the <code>useContentScriptContext: true</code> option. </li>
 
 </ul>
@@ -284,7 +284,7 @@ access the <code>setSelectedElement</code> method.</p>
 the background page. </p>
 
 <p>When sending a message <em>to</em> a content script, the background page can use
-the <code>$ref:tabs.sendMessage</code> method, which directs a message to the
+the <code>$(ref:tabs.sendMessage)</code> method, which directs a message to the
 content scripts in a specific tab, as shown in
 <a href="#injecting">Injecting a Content Script</a>.</p>
 
@@ -308,7 +308,7 @@ chrome.runtime.onConnect.addListener(function (port) {
           connections[message.tabId] = port;
           return;
         }
-	
+
 	// other message handling
     }
 
@@ -364,8 +364,8 @@ backgroundPageConnection.postMessage({
 <h3 id="detecting-open-close">Detecting When DevTools Opens and Closes</h3>
 
 <p>If your extension needs to track whether the DevTools window is open, you can
-add an $ref:[runtime.onConnect onConnect] listener to the background page, and call
-$ref:[runtime.connect connect] from the DevTools page. Since each tab can have its
+add an $(ref:runtime.onConnect onConnect) listener to the background page, and call
+$(ref:runtime.connect connect) from the DevTools page. Since each tab can have its
 own DevTools window open, you may receive multiple connect events. To track whether
 any DevTools window is open, you need to count the connect and disconnect events as
 shown below:</p>

@@ -77,7 +77,7 @@ With Chrome's Sync Filesystem API,
 apps can save and synchronize data
 on a user's Google Drive
 so that the same data can be available across different clients.
-For example, a 
+For example, a
 <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/syncfs-editor">cloud-backed text editor</a>
 app can automatically sync new text files to a user's Google Drive account.
 When the user opens the text editor in a new client,
@@ -118,7 +118,7 @@ they expect a 'choose file' button
 and standard file-chooser.
 If your app makes heavy use of file-handing,
 you should also implement drag-and-drop
-(see below and also check out 
+(see below and also check out
 <a href="http://www.html5rocks.com/tutorials/dnd/basics/">Native HTML5 Drag and Drop</a>).
 </p>
 
@@ -209,7 +209,7 @@ writes the selected file to it.
 
     chosenFileEntry.file(function(file) {
       writer.write(file);
-    });   
+    });
   }, errorHandler);
 });
 </pre>
@@ -228,7 +228,7 @@ chrome.fileSystem.chooseEntry({type: 'saveFile'}, function(writableFileEntry) {
       writer.onwriteend = function(e) {
         console.log('write complete');
       };
-      writer.write(new Blob(['1234567890'], {type: 'text/plain'}));  
+      writer.write(new Blob(['1234567890'], {type: 'text/plain'}));
     }, errorHandler);
 });
 </pre>
@@ -264,7 +264,7 @@ to store and sync persistent data.
 
 <p>
 To initiate syncable file storage in your app,
-simply call $ref:[syncFileSystem.requestFileSystem].
+simply call $(ref:syncFileSystem.requestFileSystem).
 This method returns a syncable filesystem backed by Google Drive,
 for example:
 </p>
@@ -279,7 +279,7 @@ chrome.syncFileSystem.requestFileSystem(function (fs) {
 <h3 id="file-status">About file sync status</h3>
 
 <p>
-Use $ref:[syncFileSystem.getFileStatus] to get the sync status
+Use $(ref:syncFileSystem.getFileStatus) to get the sync status
 for a current file:
 </p>
 
@@ -302,13 +302,13 @@ that haven't been fetched yet.
 not yet synchronized to Google Drive.
 If the app is running online,
 local changes are (almost) immediately synchronized to Google Drive, and the
-$ref:[syncFileSystem.onFileStatusChanged]
+$(ref:syncFileSystem.onFileStatusChanged)
 event is fired with the <code>'synced'</code> status
 (see below for more details).
 </p>
 
 <p>
-The $ref:[syncFileSystem.onFileStatusChanged]
+The $(ref:syncFileSystem.onFileStatusChanged)
 is fired when a file's status changes to <code>'conflicting'</code>.
 'Conflicting' means there are conflicting changes
 on both the local storage and Google Drive.
@@ -316,7 +316,7 @@ A file can be in this state only if the conflict resolution policy
 is set to <code>'manual'</code>.  The default policy is
 <code>'last_write_win'</code> and conflicts are automatically resolved
 by simple last-write-win policy.  The system's conflict resolution policy
-can be changed by $ref:[syncFileSystem.setConflictResolutionPolicy].
+can be changed by $(ref:syncFileSystem.setConflictResolutionPolicy).
 </p>
 
 <p>
@@ -336,7 +336,7 @@ with the <code>'synced'</code> status.
 
 <p>
 The
-$ref:[syncFileSystem.onFileStatusChanged]
+$(ref:syncFileSystem.onFileStatusChanged)
 event is fired when the sync status of a file changes.
 For example,
 assume a file has pending changes and is in the 'pending' state.
@@ -384,7 +384,7 @@ Any music found gets synced to that client:
 <pre>
 chrome.syncFileSystem.onFileStatusChanged.addListener(function(fileInfo) {
   if (fileInfo.status === 'synced') {
-    if (fileInfo.direction === 'remote_to_local') { 
+    if (fileInfo.direction === 'remote_to_local') {
       if (fileInfo.action === 'added') {
         db.add(fileInfo.fileEntry);
       } else if (fileInfo.action === 'deleted') {
@@ -401,7 +401,7 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(fileInfo) {
 To check the amount of data being used by the API,
 query the app's local sandboxed directory
 or the usage bytes returned by
-$ref:[syncFileSystem.getUsageAndQuota]:
+$(ref:syncFileSystem.getUsageAndQuota):
 </p>
 
 <pre>

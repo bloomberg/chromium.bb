@@ -48,9 +48,9 @@ def _Replace(matches, filename):
   else:
     padding = matches.group(1)
   if link in title:
-    return '%s$ref:%s%s' % (padding, page, link)
+    return '%s$(ref:%s%s)' % (padding, page, link)
   else:
-    return '%s$ref:[%s%s %s]' % (padding, page, link, title)
+    return '%s$(ref:%s%s %s)' % (padding, page, link, title)
 
 def _ConvertFile(filename, use_stdout):
   regex = re.compile(r'<a(.*?)href=(.*?)>(.*?)</a>', flags=re.DOTALL)
@@ -58,8 +58,8 @@ def _ConvertFile(filename, use_stdout):
   contents  = re.sub(regex,
                      lambda m: _Replace(m, filename),
                      contents)
-  contents = contents.replace('$ref:extension.lastError',
-                              '$ref:runtime.lastError')
+  contents = contents.replace('$(ref:extension.lastError)',
+                              '$(ref:runtime.lastError)')
   if use_stdout:
     print contents
   else:

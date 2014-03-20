@@ -44,7 +44,7 @@
   };
 
   dictionary ProgressInfo {
-    // The $ref:Stage that the write process is currently in.
+    // The $(ref:Stage) that the write process is currently in.
     Stage stage;
     // Current progress within the stage.
     long percentComplete;
@@ -95,7 +95,7 @@
     // Cancel a current write operation.
     //
     // |callback|: The callback which is triggered with the write is
-    // successfully cancelled, passing the $ref:ProgressInfo of the operation at
+    // successfully cancelled, passing the $(ref:ProgressInfo) of the operation at
     // the time it was cancelled.
     static boolean cancelWrite(WriteCancelCallback callback);
 
@@ -124,7 +124,7 @@
     // devices being finalized and resources released.
     static void onWriteComplete();
 
-    // Fires when an error occured during writing, passing the $ref:ProgressInfo
+    // Fires when an error occured during writing, passing the $(ref:ProgressInfo)
     // of the operation at the time the error occured.
     static void onWriteError(ProgressInfo info, DOMString error);
 

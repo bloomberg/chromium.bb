@@ -29,7 +29,7 @@ users on the dev channel.</p>
 <li>Upload your app or extension client to the <a href="https://developers.google.com/chrome/web-store/docs/publish">Chrome Web
 Store</a>.</li>
 <li>A user installs your app or extension.</li>
-<li>Your app or extension client requests a registration ID using $ref:gcm.register
+<li>Your app or extension client requests a registration ID using $(ref:gcm.register)
 function and sends this ID to your server together with information
 identifying the user. For more details, please see <a href="#obtain_registration_id">Obtain registration
 ID</a>.</li>
@@ -41,7 +41,7 @@ ID</a>.</li>
 
 <ol>
 <li>Your app or extension client should register a handler to receive the
-$ref:gcm.onMessage event.</li>
+$(ref:gcm.onMessage) event.</li>
 <li>When your server sends a message to the user, it specifies all of the
 registration IDs that are related to that user and passes the message to the
 GCM service.</li>
@@ -61,17 +61,17 @@ message.</li>
 <ol>
 <li>Your app or extension generates a unique message ID, so that it is possible
 to find out which message failed to be queued or delivered.</li>
-<li>Your app or extension calls $ref:gcm.send function with an object containing
+<li>Your app or extension calls $(ref:gcm.send) function with an object containing
 message ID, destination ID that identifies the server, and data that consist
 of a list of key value pairs. In this step you can also provide an optional
 time-to-live for the message.</li>
-<li>The callback passed to $ref:gcm.send function will be called to notify the
-result. Your app or extension should check $ref:runtime.lastError to find out if
+<li>The callback passed to $(ref:gcm.send) function will be called to notify the
+result. Your app or extension should check $(ref:runtime.lastError) to find out if
 the message has been successfully queued for delivery. Please refer to <a href="#error_reference">Error
 reference</a> for possible error codes that could be
 returned.</li>
 <li>In cases that the queued message could not be delivered to the GCM server,
-like network error, a $ref:gcm.onSendError event will be fired. Your app or
+like network error, a $(ref:gcm.onSendError) event will be fired. Your app or
 extension can listen to this event and react to it, e.g. by trying to resend
 the message. Please refer to <a href="#error_reference">Error reference</a> for
 possible error codes that could be returned.</li>
@@ -125,7 +125,7 @@ sample codes below needs to persist some data via the
 
 <p>Your app or extension needs to register with GCM servers before it can receive
 messages. When an app or extension registers, it receives a registration ID.
-This is achieved by calling $ref:gcm.register and specifying a list of senders
+This is achieved by calling $(ref:gcm.register) and specifying a list of senders
 identified by project numbers from Google Developers Console. Your app or
 extension should pass a callback function to verify that the registration was
 successful. If successful, the received registration ID should be sent back to
@@ -134,7 +134,7 @@ app or extension should handle the error identified by
 <code>chrome.runtime.lastError</code> and retry later.</p>
 
 <p>If your app or extension wishes to receive messages from the different senders,
-it can call $ref:gcm.register again with the new sender list and the new
+it can call $(ref:gcm.register) again with the new sender list and the new
 registration ID will be returned.</p>
 
 <pre data-filename="background.js"><code>
@@ -188,7 +188,7 @@ or extensions with one of the registration IDs. If your app or extension has
 been installed in more than one profiles in a single Chrome instance, all of
 them can receive messages independently based on their unique registration IDs.</p>
 
-<p>Messages from the server are delivered via the $ref:gcm.onMessage event. Your app
+<p>Messages from the server are delivered via the $(ref:gcm.onMessage) event. Your app
 or extension must register a handler to receive this event.</p>
 
 <pre data-filename="background.js"><code>
@@ -203,7 +203,7 @@ woken up to deliver a message.</p>
 
 <h3 id="send_messages">Send messages</h3>
 
-<p>To send messages upstream, your app or extension should call $ref:gcm.send with an
+<p>To send messages upstream, your app or extension should call $(ref:gcm.send) with an
 object containing:</p>
 
 <ul>
@@ -227,11 +227,11 @@ try to deliver the message immediately. If the immediate effort fails, the
 message will be discarded.</li>
 </ul>
 
-<p>When the callback passed in $ref:gcm.send is called without runtime error, it does
+<p>When the callback passed in $(ref:gcm.send) is called without runtime error, it does
 not mean that the message was already delivered to the GCM server. Rather, it
 means that it was queued for delivery. If the message fails to reach the
 destination within the specified TTL period, for example due to network error,
-the $ref:gcm.onSendError will be fired.</p>
+the $(ref:gcm.onSendError) will be fired.</p>
 
 <pre data-filename="background.js"><code>
 // Substitute your own sender ID here. This is the project
@@ -294,7 +294,7 @@ function sendError(error) {
 <h3 id="messages_deleted_event">Messages deleted event</h3>
 
 <p>GCM will store up to 100 non-collapsible messages. After that, all messages are
-discarded from GCM, and an event $ref:gcm.onMessagesDeleted will be fired, which
+discarded from GCM, and an event $(ref:gcm.onMessagesDeleted) will be fired, which
 tells the client that it falls behind. Your app or extension should respond by
 syncing with your application server to recover the discarded messages.</p>
 
@@ -314,7 +314,7 @@ server for fresh data. In GCM, it's possible to create collapsible messages for
 this situation, wherein new messages replace older ones. When a collapse key is
 provided and multiple messages are queued up in the GCM servers for the same
 user, only the last one with any given collapse key is delivered to your app or
-extension. As a result the <code>message</code> object passed to the $ref:gcm.onMessage event
+extension. As a result the <code>message</code> object passed to the $(ref:gcm.onMessage) event
 will contain a <code>collapseKey</code>field. For more details about sending collapsible
 messages, please refer to <a href="http://developer.android.com/google/gcm/adv.html#collapsible">GCM Advance
 Topics</a>.</p>
@@ -327,8 +327,8 @@ Store</a>.</p>
 <h2 id="error_reference">Error reference</h2>
 
 <p>An error could occur when a gcm API function is called. Your app or extension
-should check $ref:runtime.lastError for more information in your callback. The
-error code will also be passed as a parameter to $ref:gcm.onSendError event.</p>
+should check $(ref:runtime.lastError) for more information in your callback. The
+error code will also be passed as a parameter to $(ref:gcm.onSendError) event.</p>
 
 <p>Here's a brief summary of the gcm errors:</p>
 

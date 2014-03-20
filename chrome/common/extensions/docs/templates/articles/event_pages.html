@@ -80,7 +80,7 @@ that will cause the event page to load:
 <li>A content script or other extension
 <a href="messaging.html">sends a message.</a>
 <li>Another view in the extension (for example, a popup) calls
-<code>$ref:runtime.getBackgroundPage</code>.
+<code>$(ref:runtime.getBackgroundPage)</code>.
 </ul>
 
 <p>
@@ -105,11 +105,11 @@ extension appears in the list of processes.
 <p>
 Once the event page has been idle a short time
 (a few seconds), the
-<code>$ref:runtime.onSuspend</code>
+<code>$(ref:runtime.onSuspend)</code>
 event is dispatched. The event page has a few more seconds to handle this
 event before it is forcibly unloaded. If during this time an event occurs which
 would normally cause the event page to be loaded, the suspend is canceled
-and the <code>$ref:runtime.onSuspendCanceled</code> event is dispatched.
+and the <code>$(ref:runtime.onSuspendCanceled)</code> event is dispatched.
 </p>
 
 <h2 id="registration">Event registration</h2>
@@ -126,7 +126,7 @@ load its event page for that event.
 Because the listeners themselves only exist in the context of the
 event page, you must use <code>addListener</code> each time the event
 page loads; only doing so at
-<code>$ref:runtime.onInstalled</code>
+<code>$(ref:runtime.onInstalled)</code>
 by itself is insufficient.
 </p>
 
@@ -155,9 +155,9 @@ Follow this checklist to convert your extension's
   <a href="notifications.html">notifications</a>.
 
   <li>If your extension uses,
-  <code>$ref:extension.getBackgroundPage</code>,
+  <code>$(ref:extension.getBackgroundPage)</code>,
   switch to
-  <code>$ref:runtime.getBackgroundPage</code>
+  <code>$(ref:runtime.getBackgroundPage)</code>
   instead. The newer method is asynchronous so that it can start the event
   page if necessary before returning it.
 </ol>
@@ -177,7 +177,7 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
 
   <li>If you need to do some initialization when your extension is
   installed or upgraded, listen to the
-  <code>$ref:runtime.onInstalled</code>
+  <code>$(ref:runtime.onInstalled)</code>
   event. This is a good place to register for
   <a href="declarativeWebRequest.html">declarativeWebRequest</a> rules,
   <a href="contextMenus.html">contextMenu</a> entries, and other such
@@ -190,15 +190,15 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
 
   <li>Use <a href="events.html#filtered">event filters</a> to restrict
   your event notifications to the cases you care about. For example, if
-  you listen to the <code>$ref:tabs.onUpdated</code>
+  you listen to the <code>$(ref:tabs.onUpdated)</code>
   event, try using the
-  <code>$ref:webNavigation.onCompleted</code>
+  <code>$(ref:webNavigation.onCompleted)</code>
   event with filters instead (the tabs API does not support filters).
   That way, your event page will only be loaded for events that
   interest you.
 
   <li>Listen to the
-  <code>$ref:runtime.onSuspend</code>
+  <code>$(ref:runtime.onSuspend)</code>
   event if you need to do last second cleanup before your event page
   is shut down. However, we recommend persisting periodically instead.
   That way if your extension crashes without receiving
@@ -210,14 +210,14 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
 
   <li>If you're using the <a href="contextMenus.html">context menus</a> API,
   pass a string <code>id</code> parameter to
-  <code>$ref:contextMenus.create</code>,
+  <code>$(ref:contextMenus.create)</code>,
   and use the
-  <code>$ref:contextMenus.onClicked</code>
+  <code>$(ref:contextMenus.onClicked)</code>
   callback instead of an <code>onclick</code> parameter to
-  <code>$ref:contextMenus.create</code>.
+  <code>$(ref:contextMenus.create)</code>.
 
   <li>Remember to test that your event page works properly when it is unloaded
-  and then reloaded, which only happens after several seconds of inactivity. 
+  and then reloaded, which only happens after several seconds of inactivity.
   Common mistakes include doing unnecessary work at page load time (when it
   should only be done when the extension is installed); setting an alarm at
   page load time (which resets any previous alarm); or not adding event

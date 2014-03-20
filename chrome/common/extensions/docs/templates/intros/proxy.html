@@ -18,10 +18,10 @@ For example:</p>
 
 <p>
 Proxy settings are defined in a
-$ref:proxy.ProxyConfig object. Depending on
+$(ref:proxy.ProxyConfig) object. Depending on
 Chrome's proxy settings, the settings may contain
-$ref:proxy.ProxyRules or a 
-  $ref:proxy.PacScript.
+$(ref:proxy.ProxyRules) or a
+  $(ref:proxy.PacScript).
 </p>
 
 <h3 id="proxy_modes">Proxy modes</h3>
@@ -46,15 +46,15 @@ values:
   <dt><code>pac_script</code></dt>
   <dd>In <code>pac_script</code> mode the proxy configuration is determined by
   a PAC script that is either retrieved from the URL specified in the
-  $ref:proxy.PacScript object or
+  $(ref:proxy.PacScript) object or
   taken literally from the <code>data</code> element specified in the
-  $ref:proxy.PacScript object.
+  $(ref:proxy.PacScript) object.
   Besides this, this mode allows no further parameters in the
   <code>ProxyConfig</code> object.</dd>
 
   <dt><code>fixed_servers</code></dt>
   <dd>In <code>fixed_servers</code> mode the proxy configuration is codified in
-  a $ref:proxy.ProxyRules
+  a $(ref:proxy.ProxyRules)
   object. Its structure is described in <a href="#proxy_rules">Proxy rules</a>.
   Besides this, the <code>fixed_servers</code> mode allows no further parameters
   in the <code>ProxyConfig</code> object.</dd>
@@ -72,7 +72,7 @@ values:
 <h3 id="proxy_rules">Proxy rules</h3>
 
 <p>
-The $ref:proxy.ProxyRules object can contain
+The $(ref:proxy.ProxyRules) object can contain
 either a <code>singleProxy</code> attribute or a subset of
 <code>proxyForHttp</code>, <code>proxyForHttps</code>, <code>proxyForFtp</code>,
 and <code>fallbackProxy</code>.
@@ -93,7 +93,7 @@ proxy server.
 
 <p>
 A proxy server is configured in a
-$ref:proxy.ProxyServer object. The connection
+$(ref:proxy.ProxyServer) object. The connection
 to the proxy server (defined by the <code>host</code> attribute) uses the
 protocol defined in the <code>scheme</code> attribute. If no <code>scheme</code>
 is specified, the proxy connection defaults to <code>http</code>.
@@ -101,7 +101,7 @@ is specified, the proxy connection defaults to <code>http</code>.
 
 <p>
 If no <code>port</code> is defined in a
-$ref:proxy.ProxyServer object, the port is
+$(ref:proxy.ProxyServer) object, the port is
 derived from the scheme. The default ports are:
 <table>
   <tr><th>Scheme</th><th>Port</th></tr>

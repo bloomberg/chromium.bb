@@ -50,20 +50,20 @@ namespace notifications {
 
   dictionary NotificationOptions {
     // Which type of notification to display.
-    // <em>Required for $ref:notifications.create</em> method.
+    // <em>Required for $(ref:notifications.create)</em> method.
     TemplateType? type;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
-    // <em>Required for $ref:notifications.create</em> method.
+    // <em>Required for $(ref:notifications.create)</em> method.
     DOMString? iconUrl;
     [nodoc] NotificationBitmap? iconBitmap;
 
     // Title of the notification (e.g. sender name for email).
-    // <em>Required for $ref:notifications.create</em> method.
+    // <em>Required for $(ref:notifications.create)</em> method.
     DOMString? title;
 
     // Main notification content.
-    // <em>Required for $ref:notifications.create</em> method.
+    // <em>Required for $(ref:notifications.create)</em> method.
     DOMString? message;
 
     // Alternate notification content with a lower-weight font.
@@ -123,7 +123,7 @@ namespace notifications {
 
     // Updates an existing notification.
     // |notificationId|: The id of the notification to be updated. This is
-    // returned by $ref:notifications.create method.
+    // returned by $(ref:notifications.create) method.
     // |options|: Contents of the notification to update to.
     // |callback|: Called to indicate whether a matching notification existed.
     static void update(DOMString notificationId,
@@ -132,7 +132,7 @@ namespace notifications {
 
     // Clears the specified notification.
     // |notificationId|: The id of the notification to be cleared. This is
-    // returned by $ref:notifications.create method.
+    // returned by $(ref:notifications.create) method.
     // |callback|: Called to indicate whether a matching notification existed.
     static void clear(DOMString notificationId, ClearCallback callback);
 

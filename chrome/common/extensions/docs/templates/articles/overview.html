@@ -281,7 +281,7 @@ Any extension can have an options page,
 which lets users customize how the extension works.
 Another type of special page is the override page.
 And finally, you can
-use $ref:tabs.create
+use $(ref:tabs.create)
 or <code>window.open()</code>
 to display any other HTML files that are in the extension.
 </p>
@@ -390,8 +390,8 @@ that allow tight integration with the browser.
 For example, any extension or web app can use the
 standard <code>window.open()</code> method to open a URL.
 But if you want to specify which window that URL should be displayed in,
-your extension can use the Chrome-only 
-$ref:tabs.create
+your extension can use the Chrome-only
+$(ref:tabs.create)
 method instead.
 </p>
 
@@ -418,7 +418,7 @@ Synchronous methods never have a callback
 because they don't return until they've completed all their work.
 Often, synchronous methods have a return type.
 Consider the
-$ref:runtime.getURL method:
+$(ref:runtime.getURL) method:
 </p>
 
 <p>
@@ -440,9 +440,9 @@ and performs no other, asynchronous work.
 Say you want to navigate
 the user's currently selected tab to a new URL.
 To do this, you need to get the current tab's ID
-(using $ref:tabs.query)
+(using $(ref:tabs.query))
 and then make that tab go to the new URL
-(using $ref:tabs.update).
+(using $(ref:tabs.update)).
 </p>
 
 <p>
@@ -538,7 +538,7 @@ and it can manipulate their DOMs.
 <h2 id="incognito"> Saving data and incognito mode </h2>
 
 <p>
-Extensions can save data using the $ref:storage API,
+Extensions can save data using the $(ref:storage) API,
 the HTML5 <a href="http://dev.w3.org/html5/webstorage/">web storage API</a>
 (such as <code>localStorage</code>)
 or by making server requests that result in saving data.
@@ -573,8 +573,8 @@ don't store it if it's from an incognito window.
 <p>
 To detect whether a window is in incognito mode,
 check the <code>incognito</code> property of the relevant
-$ref:tabs.Tab or
-$ref:windows.Window object.
+$(ref:tabs.Tab) or
+$(ref:windows.Window) object.
 For example:
 </p>
 

@@ -27,9 +27,9 @@ section.
 <p>
 If you only need to send a single message to another part of your extension
 (and optionally get a response back), you should use the simplified
-$ref:runtime.sendMessage
+$(ref:runtime.sendMessage)
 or
-$ref:tabs.sendMessage
+$(ref:tabs.sendMessage)
 methods. This lets you send a one-time JSON-serializable message from a
 content script to extension, or vice versa, respectively. An optional
 callback parameter allows you handle the response from the other side, if
@@ -57,7 +57,7 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 
 <p>
 On the receiving end, you need to set up an
-$ref:runtime.onMessage
+$(ref:runtime.onMessage)
 event listener to handle the message. This looks the same from a content
 script or extension page.
 <pre>
@@ -83,9 +83,9 @@ response. All other responses to that event will be ignored.
 Sometimes it's useful to have a conversation that lasts longer than a single
 request and response. In this case, you can open a long-lived channel from
 your content script to an extension page, or vice versa, using
-$ref:runtime.connect
+$(ref:runtime.connect)
 or
-$ref:tabs.connect respectively. The
+$(ref:tabs.connect) respectively. The
 channel can optionally have a name, allowing you to distinguish between
 different types of connections.
 
@@ -98,7 +98,7 @@ shared state linking the several messages coming from the content script.
 
 <p>
 When establishing a connection, each end is given a
-$ref:runtime.Port
+$(ref:runtime.Port)
 object which is used for sending and receiving messages through that
 connection.
 
@@ -120,15 +120,15 @@ port.onMessage.addListener(function(msg) {
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to connect to. Simply replace the
 call to connect in the above example with
-$ref:tabs.connect.
+$(ref:tabs.connect).
 
 <p>
 In order to handle incoming connections, you need to set up a
-$ref:runtime.onConnect
+$(ref:runtime.onConnect)
 event listener. This looks the same from a content script or an extension
 page. When another part of your extension calls "connect()", this event is
 fired, along with the
-$ref:runtime.Port
+$(ref:runtime.Port)
 object you can use to send and receive messages through the connection. Here's
 what it looks like to respond to incoming connections:
 <pre>
@@ -148,10 +148,10 @@ chrome.runtime.onConnect.addListener(function(port) {
 <p>
 You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
-$ref:runtime.Port.onDisconnect
+$(ref:runtime.Port.onDisconnect)
 event. This event is fired either when the other side of the channel manually
 calls
-$ref:runtime.Port.disconnect, or when the page
+$(ref:runtime.Port.disconnect), or when the page
 containing the port is unloaded (for example if the tab is navigated).
 onDisconnect is guaranteed to be fired only once for any given port.
 
@@ -165,9 +165,9 @@ This lets you expose a public API that other extensions can take advantage of.
 <p>
 Listening for incoming requests and connections is similar to the internal
 case, except you use the
-$ref:runtime.onMessageExternal
+$(ref:runtime.onMessageExternal)
 or
-$ref:runtime.onConnectExternal
+$(ref:runtime.onConnectExternal)
 methods. Here's an example of each:
 <pre>
 // For simple requests:
@@ -234,9 +234,9 @@ you specify. The URL pattern must contain at least a
 - that is, hostname
 patterns like "*", "*.com", "*.co.uk", and "*.appspot.com" are prohibited.
 From the web page, use the
-$ref:runtime.sendMessage
+$(ref:runtime.sendMessage)
 or
-$ref:runtime.connect
+$(ref:runtime.connect)
 APIs to send a message to a specific app or extension. For example:
 <pre>
 // The ID of the extension we want to talk to.
@@ -252,9 +252,9 @@ chrome.runtime.sendMessage(editorExtensionId, {openUrlInEditor: url},
 
 <p>
 From your app or extension, you may listen to messages from web pages via the
-$ref:runtime.onMessageExternal
+$(ref:runtime.onMessageExternal)
 or
-$ref:runtime.onConnectExternal
+$(ref:runtime.onConnectExternal)
 APIs, similar to <a href="#external">cross-extension messaging</a>.
 Only the web page can initiate a connection.
 Here is an example:
@@ -304,7 +304,7 @@ example of the manifest file:
   <tr>
     <td><code>name</code></td>
     <td>Name of the native messaging host. Clients pass this string to
-    $ref:runtime.connectNative or $ref:runtime.sendNativeMessage.</td>
+    $(ref:runtime.connectNative) or $(ref:runtime.sendNativeMessage).</td>
   </tr>
   <tr>
     <td><code>description</code></td>
@@ -364,25 +364,25 @@ directions: each message is serialized using JSON, UTF-8 encoded
 and is preceded with 32-bit message length in native byte order.
 
 <p>
-When a messaging port is created using $ref:runtime.connectNative Chrome
+When a messaging port is created using $(ref:runtime.connectNative) Chrome
 starts native messaging host process and keeps it running until the port is
 destroyed. On the other hand, when a message is sent using
-$ref:runtime.sendNativeMessage, without creating a messaging port, Chrome starts
+$(ref:runtime.sendNativeMessage), without creating a messaging port, Chrome starts
 a new native messaging host process for each message. In that case the first
 message generated by the host process is handled as a response to the original
 request, i.e. Chrome will pass it to the response callback specified when
-$ref:runtime.sendNativeMessage is called. All other messages generated by the
+$(ref:runtime.sendNativeMessage) is called. All other messages generated by the
 native messaging host in that case are ignored.
 
 <h3 id="native-messaging-client">Connecting to a native application</h3>
 <p>
 Sending and receiving messages to and from a native application is very similar
 to cross-extension messaging. The main difference is that
-$ref:runtime.connectNative is used instead of $ref:runtime.connect,
-and $ref:runtime.sendNativeMessage is used instead of $ref:runtime.sendMessage.
+$(ref:runtime.connectNative) is used instead of $(ref:runtime.connect),
+and $(ref:runtime.sendNativeMessage) is used instead of $(ref:runtime.sendMessage).
 
 <p>
-The Following example creates a $ref:runtime.Port object that's connected to native
+The Following example creates a $(ref:runtime.Port) object that's connected to native
 messaging host <code>com.my_company.my_application</code>, starts listening for
 messages from that port and sends one outgoing message:
 <pre>
@@ -397,7 +397,7 @@ port.postMessage({ text: "Hello, my_application" });
 </pre>
 
 <p>
-$ref:runtime.sendNativeMessage can be used to send a message to native
+$(ref:runtime.sendNativeMessage) can be used to send a message to native
 application without creating a port, e.g.:
 <pre>
 chrome.runtime.sendNativeMessage('com.my_company.my_application',

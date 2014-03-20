@@ -12,7 +12,7 @@ general introduction to using Developer Tools APIs.
 
 <h2 id="overview">Overview</h2>
 <p>
-The <code>$ref:[devtools.inspectedWindow.tabId tabId]</code> property
+The <code>$(ref:devtools.inspectedWindow.tabId tabId)</code> property
 provides the tab identifier that you can use with the
 <a href="tabs.html"><code>chrome.tabs.*</code></a> API calls.
 However, please note that <code>chrome.tabs.*</code> API is not
@@ -39,7 +39,7 @@ The <code>eval</code> method provides the ability for extensions to execute
 JavaScript code in the context of the inspected page.
 This method is powerful when used in the right context
 and dangerous when used inappropriately.
-Use the <code>$ref:tabs.executeScript</code> method
+Use the <code>$(ref:tabs.executeScript)</code> method
 unless you need the specific functionality
 that the <code>eval</code> method provides.
 </p>
@@ -71,31 +71,31 @@ extension.</em>
 <p class="caution">
 <strong>Important:</strong>
 Due to the security considerations explained above, the
-<code>$ref:tabs.executeScript</code> method is the preferred way for an
+<code>$(ref:tabs.executeScript)</code> method is the preferred way for an
 extension to access DOM data of the inspected page in cases where the access to
 JavaScript state of the inspected page is not required.
 </p>
 
 <p>Note that a page can include multiple different JavaScript execution contexts. Each frame has
-its own context, plus an additional context for each extension that has content scripts running 
+its own context, plus an additional context for each extension that has content scripts running
 in that frame.</p>
 <p>
-By default, the <code>eval</code> method executes in the context of the main frame of the 
+By default, the <code>eval</code> method executes in the context of the main frame of the
 inspected page. </p>
 
-<p>The <code>eval</code> method takes an optional second argument that you can use to specify 
-the context in which the code is evaluated. This <em>options</em> object can contain one or more of the 
+<p>The <code>eval</code> method takes an optional second argument that you can use to specify
+the context in which the code is evaluated. This <em>options</em> object can contain one or more of the
 following keys:</p>
 
 <dl>
 <dt><code>frameURL</code></dt>
 <dd>Use to specify a frame other than the inspected page's main frame.</dd>
 <dt><code>contextSecurityOrigin</code></dt>
-<dd>Use to select a context within the specified frame 
+<dd>Use to select a context within the specified frame
 according to its <a href="http://www.ietf.org/rfc/rfc6454.txt">web origin</a>.</dd>
 <dt><code>useContentScriptContext</code></dt>
 <dd>If true, execute the script in the same context
-as the extensions's content scripts. (Equivalent to specifying the extensions's own web orgin 
+as the extensions's content scripts. (Equivalent to specifying the extensions's own web orgin
 as the context security origin.)
 This can be used to exchange data with the content script.</dd>
 </dl>

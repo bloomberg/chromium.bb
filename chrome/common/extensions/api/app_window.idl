@@ -155,28 +155,28 @@ namespace app.window {
     BoundsSpecification? outerBounds;
 
     // Default width of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? defaultWidth;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? defaultWidth;
 
     // Default height of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? defaultHeight;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? defaultHeight;
 
     // Default X coordinate of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? defaultLeft;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? defaultLeft;
 
     // Default Y coordinate of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? defaultTop;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? defaultTop;
 
     // Width of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? width;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? width;
 
     // Height of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? height;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? height;
 
     // X coordinate of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? left;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? left;
 
     // Y coordinate of the window.
-    [nodoc, deprecated="Use $ref:BoundsSpecification."] long? top;
+    [nodoc, deprecated="Use $(ref:BoundsSpecification)."] long? top;
 
     // Minimum width of the window.
     long? minWidth;
@@ -305,7 +305,7 @@ namespace app.window {
     // Hide the window. Does nothing if the window is already hidden.
     static void hide();
 
-    // Get the window's inner bounds as a $ref:ContentBounds object.
+    // Get the window's inner bounds as a $(ref:ContentBounds) object.
     [nocompile] static ContentBounds getBounds();
 
     // Set the window's inner bounds.
@@ -375,7 +375,7 @@ namespace app.window {
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
 
-    // Returns an $ref:AppWindow object for the
+    // Returns an $(ref:AppWindow) object for the
     // current script context (ie JavaScript 'window' object). This can also be
     // called on a handle to a script context for another page, for example:
     // otherWindow.chrome.app.window.current().
@@ -386,7 +386,7 @@ namespace app.window {
     // Chrome 33.
     [nocompile] static AppWindow[] getAll();
 
-    // Gets an $ref:AppWindow with the given id. If no window with the given id
+    // Gets an $(ref:AppWindow) with the given id. If no window with the given id
     // exists null is returned. This method is new in Chrome 33.
     [nocompile] static AppWindow get(DOMString id);
   };

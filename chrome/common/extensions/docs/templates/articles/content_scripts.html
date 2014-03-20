@@ -256,9 +256,9 @@ using the manifest file's
 <p>
 Once you have permissions set up,
 you can inject JavaScript into a page by calling
-$ref:tabs.executeScript.
+$(ref:tabs.executeScript).
 To inject CSS, use
-$ref:tabs.insertCSS.
+$(ref:tabs.insertCSS).
 </p>
 
 <p>
@@ -274,7 +274,7 @@ and executing the script.
 chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({
     code: 'document.body.style.backgroundColor="red"'
-  }); 
+  });
 });
 </pre>
 <pre data-filename="manifest.json">

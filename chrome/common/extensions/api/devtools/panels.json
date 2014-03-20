@@ -308,7 +308,7 @@
               {
                 "name": "resource",
                 "$ref": "devtools.inspectedWindow.Resource",
-                "description": "A $ref:devtools.inspectedWindow.Resource object for the resource that was clicked."
+                "description": "A $(ref:devtools.inspectedWindow.Resource) object for the resource that was clicked."
               }
             ]
           }

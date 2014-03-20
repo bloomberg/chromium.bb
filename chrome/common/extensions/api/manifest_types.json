@@ -17,7 +17,7 @@
         "type": "object",
         // Note: description commented out because externally_connectable.html
         // already describes it, and the repetition looks odd.
-        // "description": "The <code>externally_connectable</code> manifest property declares which extensions, apps, and web pages can connect to your extension via $ref:runtime.connect and $ref:runtime.sendMessage.",
+        // "description": "The <code>externally_connectable</code> manifest property declares which extensions, apps, and web pages can connect to your extension via $(ref:runtime.connect) and $(ref:runtime.sendMessage).",
         "properties": {
           "ids": {
             "description": "<p>The IDs of extensions or apps that are allowed to connect. If left empty or unspecified, no extensions or apps can connect.</p><p>The wildcard <code>\"*\"</code> will allow all extensions and apps to connect.</p>",
@@ -240,7 +240,7 @@
       {
         "id": "bluetooth",
         "type": "object",
-        "description": "The <code>bluetooth</code> manifest property give permission to an app to use the $ref:bluetooth API. A list of UUIDs can be optionally specified to enable communication with devices.",
+        "description": "The <code>bluetooth</code> manifest property give permission to an app to use the $(ref:bluetooth) API. A list of UUIDs can be optionally specified to enable communication with devices.",
         "properties": {
           "uuids": {
             "description": "The <code>uuids</code> manifest property declares the list of protocols, profiles and services that an app can communicate using.",

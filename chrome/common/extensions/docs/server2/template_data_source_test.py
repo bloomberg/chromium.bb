@@ -4,54 +4,63 @@
 # found in the LICENSE file.
 
 import json
-import os
-import sys
 import unittest
 
 from extensions_paths import SERVER2
 from server_instance import ServerInstance
 from template_data_source import TemplateDataSource
-from test_util import DisableLogging, ReadFile, Server2Path
+from test_util import DisableLogging, ReadFile
 from third_party.handlebar import Handlebar
+
+def _ReadFile(*path):
+  return ReadFile(SERVER2, 'test_data', 'template_data_source', *path)
+
+def _CreateTestDataSource(base_dir):
+  '''TemplateDataSource is not instantiated directly, rather, its methods
+  are invoked through a subclass of it, which has as its only data the
+  directory in which TemplateDataSource methods should act on. Thus, we test
+  TemplateDataSource indirectly through the TestDataSource class
+  '''
+  return TestDataSource(ServerInstance.ForLocal(),
+                        '%stest_data/template_data_source/%s/' %
+                        (SERVER2, base_dir))
+
+
+class TestDataSource(TemplateDataSource):
+  '''Provides a subclass we can use to test the TemplateDataSource methods
+  '''
+  def __init__(self, server_instance, base_dir):
+    type(self)._BASE = base_dir
+    TemplateDataSource.__init__(self, server_instance)
 
 
 class TemplateDataSourceTest(unittest.TestCase):
 
-  def _ReadFile(self, *path):
-    return ReadFile(SERVER2, 'test_data', 'template_data_source', *path)
-
-  def _CreateTemplateDataSource(self, partial_dir):
-    return TemplateDataSource(
-        ServerInstance.ForLocal(),
-        None,  # Request
-        partial_dir='%stest_data/template_data_source/%s/' %
-                    (SERVER2, partial_dir))
-
   def testSimple(self):
-    template_data_source = self._CreateTemplateDataSource('simple')
-    template_a1 = Handlebar(self._ReadFile('simple', 'test1.html'))
+    test_data_source = _CreateTestDataSource('simple')
+    template_a1 = Handlebar(_ReadFile('simple', 'test1.html'))
     context = [{}, {'templates': {}}]
     self.assertEqual(
         template_a1.Render(*context).text,
-        template_data_source.get('test1').Render(*context).text)
-    template_a2 = Handlebar(self._ReadFile('simple', 'test2.html'))
+        test_data_source.get('test1').Render(*context).text)
+    template_a2 = Handlebar(_ReadFile('simple', 'test2.html'))
     self.assertEqual(
         template_a2.Render(*context).text,
-        template_data_source.get('test2').Render(*context).text)
+        test_data_source.get('test2').Render(*context).text)
 
   @DisableLogging('warning')
   def testNotFound(self):
-    template_data_source = self._CreateTemplateDataSource('simple')
-    self.assertEqual(None, template_data_source.get('junk'))
+    test_data_source = _CreateTestDataSource('simple')
+    self.assertEqual(None, test_data_source.get('junk'))
 
   @DisableLogging('warning')
   def testPartials(self):
-    template_data_source = self._CreateTemplateDataSource('partials')
-    context = json.loads(self._ReadFile('partials', 'input.json'))
+    test_data_source = _CreateTestDataSource('partials')
+    context = json.loads(_ReadFile('partials', 'input.json'))
     self.assertEqual(
-        self._ReadFile('partials', 'test_expected.html'),
-        template_data_source.get('test_tmpl').Render(
-            context, template_data_source).text)
+        _ReadFile('partials', 'test_expected.html'),
+        test_data_source.get('test_tmpl').Render(
+            context, test_data_source).text)
 
 
 if __name__ == '__main__':

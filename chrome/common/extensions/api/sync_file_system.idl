@@ -66,18 +66,18 @@ namespace syncFileSystem {
     // but file will no longer exist.
     [instanceOf=Entry] object fileEntry;
 
-    // Resulting file status after $ref:onFileStatusChanged event.
+    // Resulting file status after $(ref:onFileStatusChanged) event.
     // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.
     FileStatus status;
 
-    // Sync action taken to fire $ref:onFileStatusChanged event.
+    // Sync action taken to fire $(ref:onFileStatusChanged) event.
     // The action value can be
     // <code>'added'</code>, <code>'updated'</code> or <code>'deleted'</code>.
     // Only applies if status is <code>'synced'</code>.
     SyncAction? action;
 
-    // Sync direction for the $ref:onFileStatusChanged event.
+    // Sync direction for the $(ref:onFileStatusChanged) event.
     // Sync direction value can be
     // <code>'local_to_remote'</code> or <code>'remote_to_local'</code>.
     // Only applies if status is <code>'synced'</code>.
@@ -169,7 +169,7 @@ namespace syncFileSystem {
     static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,
                                  QuotaAndUsageCallback callback);
 
-    // Returns the $ref:FileStatus for the given <code>fileEntry</code>.
+    // Returns the $(ref:FileStatus) for the given <code>fileEntry</code>.
     // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.
     // Note that <code>'conflicting'</code> state only happens when
@@ -177,7 +177,7 @@ namespace syncFileSystem {
     static void getFileStatus([instanceOf=Entry] object fileEntry,
                               GetFileStatusCallback callback);
 
-    // Returns each $ref:FileStatus for the given <code>fileEntry</code> array.
+    // Returns each $(ref:FileStatus) for the given <code>fileEntry</code> array.
     // Typically called with the result from dirReader.readEntries().
     static void getFileStatuses(object[] fileEntries,
                                 GetFileStatusesCallback callback);

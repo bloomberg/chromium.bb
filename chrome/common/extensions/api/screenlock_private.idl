@@ -7,12 +7,12 @@
 namespace screenlockPrivate {
   // Supported authentication types shown on the user pod.
   // |offlinePassword|: The standard password field, which authenticates using
-  //                   the user's regular password. The $ref:onAuthAttempted()
+  //                   the user's regular password. The $(ref:onAuthAttempted)()
   //                   event will not be fired for this authentication type.
   // |numericPin|: An input field for a 4 digit numeric pin code.
   // |userClick|: Makes the user pod clickable when it is focused, and
   //                 clicking on it attempts the authentication. If |value| is
-  //                 specified with $ref:setAuthType(), the text is displayed
+  //                 specified with $(ref:setAuthType)(), the text is displayed
   //                 in the password field.
   enum AuthType {offlinePassword, numericPin, userClick};
 
@@ -34,7 +34,7 @@ namespace screenlockPrivate {
     // |icon|: An extension resource of the icon image.
     static void showButton(DOMString icon);
 
-    // Hides the button added by $ref:showButton().
+    // Hides the button added by $(ref:showButton)().
     static void hideButton();
 
     // Returns the current auth type used for the user pod.
@@ -54,12 +54,12 @@ namespace screenlockPrivate {
     // Fires whenever the screen is locked or unlocked.
     static void onChanged(boolean locked);
 
-    // Fires when the user clicks on the Button shown by $ref:showButton().
+    // Fires when the user clicks on the Button shown by $(ref:showButton)().
     static void onButtonClicked();
 
     // Fires when the user attempts to authenticate with the user's input.
     // There will be at most one auth attempt active at any time.
-    // Call $ref:acceptAuthAttempt() to accept or reject this attempt. 
+    // Call $(ref:acceptAuthAttempt)() to accept or reject this attempt.
     // Note: Some authentication types will not have an input.
     static void onAuthAttempted(AuthType type, DOMString input);
   };

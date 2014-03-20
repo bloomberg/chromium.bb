@@ -13,7 +13,7 @@ see the
 </p>
 
 <p class="note">
-<b>Note: </b>The previous version of the networking APIs ($ref:socket) has been
+<b>Note: </b>The previous version of the networking APIs ($(ref:socket)) has been
 deprecated.
 </p>
 <p></p>
@@ -98,7 +98,7 @@ Chrome Apps can make connections to any service that supports TCP.
 
 <p>
 Here's a sample showing how to connect
-($ref:sockets.tcp.connect) to a socket:
+($(ref:sockets.tcp.connect)) to a socket:
 </p>
 
 <pre>
@@ -111,13 +111,13 @@ chrome.sockets.tcp.create({}, function(createInfo) {
 <p>
 Keep a handle to the <code>socketId</code> so that
 you can later received and send data
-($ref:sockets.tcp.send) to this socket.
+($(ref:sockets.tcp.send)) to this socket.
 </p>
 
 <h3 id="reading">Receiving from and sending to a socket</h3>
 
 <p>
-Receiving from ($ref:sockets.tcp.onReceive) and sending to a socket uses
+Receiving from ($(ref:sockets.tcp.onReceive)) and sending to a socket uses
 ArrayBuffer objects. To learn about ArrayBuffers, check out the overview,
 <a href="https://developer.mozilla.org/en-US/docs/JavaScript_typed_arrays">JavaScript typed arrays</a>,
 and the tutorial,
@@ -138,7 +138,7 @@ chrome.sockets.tcp.onReceive.addListener(function(info) {
 
 <h3 id="disconnecting">Disconnecting from a socket</h3>
 
-<p>Here's how to disconnect ($ref:sockets.tcp.disconnect):</p>
+<p>Here's how to disconnect ($(ref:sockets.tcp.disconnect)):</p>
 
 <pre>chrome.sockets.tcp.disconnect(socketId);</pre>
 
@@ -151,7 +151,7 @@ Chrome Apps can make connections to any service that supports UDP.
 <h3 id="sending">Sending data</h3>
 
 <p>
-Here's a sample showing how to send data ($ref:sockets.udp.send)
+Here's a sample showing how to send data ($(ref:sockets.udp.send))
 over the network using UDP:
 </p>
 
@@ -206,13 +206,13 @@ chrome.sockets.udp.create({}, function(socketInfo) {
 <h2 id="tcpServer">Using TCP Server</h2>
 
 <p>
-Chrome Apps can act as TCP servers using the $ref:sockets.tcpServer API.
+Chrome Apps can act as TCP servers using the $(ref:sockets.tcpServer) API.
 </p>
 
 <h3 id="creating-server">Creating a TCP server socket</h3>
 
 <p>
-Create a TCP server socket with $ref:sockets.tcpServer.create.
+Create a TCP server socket with $(ref:sockets.tcpServer.create).
 </p>
 
 <pre>
@@ -225,7 +225,7 @@ chrome.sockets.tcpServer.create({}, function(createInfo) {
 
 <p>
 Here's a sample showing how to accept connections
-($ref:sockets.tcpServer.listen) on a TCP server socket:
+($(ref:sockets.tcpServer.listen)) on a TCP server socket:
 </p>
 
 <pre>
@@ -240,7 +240,7 @@ function listenAndAccept(socketId) {
 <p>
 Keep a handle to the <code>socketId</code> so that
 you can later accept new connections
-($ref:sockets.tcpServer.onAccept) .
+($(ref:sockets.tcpServer.onAccept)) .
 </p>
 
 <pre>
@@ -259,9 +259,9 @@ function onListenCallback(socketId, resultCode) {
 <p>
 When a new connection is established, <code>onAccept</code> is invoked with
 the <code>clientSocketId</code> of the new TCP connection. The client socket ID
-must be used with the $ref:sockets.tcp API.
+must be used with the $(ref:sockets.tcp) API.
 The socket of the new connection is paused by default. Un-pause it with
-$ref:sockets.tcp.setPaused to start receiving data.
+$(ref:sockets.tcp.setPaused) to start receiving data.
 </p>
 
 <pre>
@@ -283,7 +283,7 @@ function onAccept(info) {
 <h3 id="stop-accepting">Stop accepting client connections</h3>
 
 <p>
-Call $ref:sockets.tcp.disconnect on the server socket ID to stop accepting
+Call $(ref:sockets.tcp.disconnect) on the server socket ID to stop accepting
 new connections.
 </p>
 

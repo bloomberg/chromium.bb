@@ -169,6 +169,8 @@ class ReferenceResolver(object):
       'name': ref
     }
 
+  # TODO(ahernandez.miralles): This function is no longer needed,
+  # and uses a deprecated style of ref
   def ResolveAllLinks(self, text, relative_to='', namespace=None):
     """This method will resolve all $ref links in |text| using namespace
     |namespace| if not None. Any links that cannot be resolved will be replaced

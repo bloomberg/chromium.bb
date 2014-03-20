@@ -39,7 +39,7 @@ Bluetooth</a> samples.
   <a href="http://en.wikipedia.org/wiki/Device_fingerprint">finger-printing</a>,
   you must declare all the device types you want to access in the manifest file.
   Each type of USB device corresponds to a vendor id/product id (VID/PID) pair.
-  You can use $ref:usb.getDevices to enumerate devices by their VID/PID
+  You can use $(ref:usb.getDevices) to enumerate devices by their VID/PID
   pair.
 </p>
 <p>
@@ -65,7 +65,7 @@ Bluetooth</a> samples.
 
 <p>
   To determine whether one or more specific devices are connected to a user's
-  system, use the $ref:usb.getDevices method:
+  system, use the $(ref:usb.getDevices) method:
 </p>
 
 <pre>
@@ -81,7 +81,7 @@ chrome.usb.getDevices(enumerateDevicesOptions, callback);
   </tr>
   <tr>
     <td>EnumerateDevicesOptions (object)</td>
-    <td>An object specifying both a <code>vendorId</code> (long) and 
+    <td>An object specifying both a <code>vendorId</code> (long) and
       <code>productId</code> (long) used to find the correct type of device on
       the bus. Your manifest must declare the <code>usbDevices</code> permission
       section listing all the <code>vendorId</code> and <code>deviceId</code>
@@ -135,7 +135,7 @@ communicate with USB devices using connection handles.
   </tr>
   <tr>
     <td>device</td>
-    <td>Object received in $ref:usb.getDevices callback.</td>
+    <td>Object received in $(ref:usb.getDevices) callback.</td>
   </tr>
   <tr>
     <td>data (arraybuffer)</td>
@@ -167,12 +167,12 @@ On Linux (other than Chrome OS), once an interface of a device is locked down by
 the OS, the whole device is locked down (because all the interfaces shares the
 same device file), even if the other interfaces of the device can be used in
 theory. On Chrome OS, you can request access to unlocked interfaces using the
-$ref:usb.requestAccess method. If permitted, the permission broker will
+$(ref:usb.requestAccess) method. If permitted, the permission broker will
 unlock the device file for you.
 </p>
 
 <p>
-To simplify the opening process, you can use the $ref:usb.findDevices
+To simplify the opening process, you can use the $(ref:usb.findDevices)
 method, which enumerates, requests access, and opens devices in one call:
 </p>
 
@@ -289,7 +289,7 @@ chrome.usb.controlTransfer(connectionHandle, transferInfo, transferCallback)
   </tr>
   <tr>
     <td>connectionHandle</td>
-    <td>Object received in $ref:usb.openDevice callback.
+    <td>Object received in $(ref:usb.openDevice) callback.
     </td>
   </tr>
   <tr>
@@ -378,7 +378,7 @@ chrome.usb.controlTransfer(connectionHandle, transferInfo, optionalCallback);
 <p>Isochronous transfers are the most complex type of USB transfer. They are
   commonly used for streams of data, like video and sound. To initiate an
   isochronous transfer (either inbound or outbound), you must use
-  the $ref:usb.isochronousTransfer method:</p>
+  the $(ref:usb.isochronousTransfer) method:</p>
 
 <pre>
 chrome.usb.isochronousTransfer(connectionHandle, isochronousTransferInfo, transferCallback)
@@ -393,7 +393,7 @@ chrome.usb.isochronousTransfer(connectionHandle, isochronousTransferInfo, transf
   </tr>
   <tr>
     <td>connectionHandle</td>
-    <td>Object received in $ref:usb.openDevice callback.
+    <td>Object received in $(ref:usb.openDevice) callback.
     </td>
   </tr>
   <tr>
@@ -420,13 +420,13 @@ chrome.usb.isochronousTransfer(connectionHandle, isochronousTransferInfo, transf
   <tr>
     <td>transferInfo (object)</td>
     <td>An object with the following attributes:<br/>
-      <b>direction (string): </b>"in" or "out".<br/> 
+      <b>direction (string): </b>"in" or "out".<br/>
       <b>endpoint (integer): </b>defined by your device. Usually can be found by
       looking at an USB instrospection tool, like <code>lsusb -v</code><br/>
       <b>length (integer): </b>only
       used when direction is "in". Notifies the device that this is the amount
       of data the host is expecting in response. <br/>
-      
+
       Should be AT LEAST <code>packets</code> &times; <code>packetLength</code>.
       <br/>
       <b>data (arraybuffer): </b>defined by your device's protocol;
@@ -481,7 +481,7 @@ chrome.usb.isochronousTransfer(connectionHandle, isoTransferInfo, optionalCallba
 
 <p>Bulk transfers are commonly used to transfer a large amount of
   non-time-sensitive data in a reliable way.
-  $ref:usb.bulkTransfer has three parameters:</p>
+  $(ref:usb.bulkTransfer) has three parameters:</p>
 
 <pre>
 chrome.usb.bulkTransfer(connectionHandle, transferInfo, transferCallback);
@@ -496,7 +496,7 @@ chrome.usb.bulkTransfer(connectionHandle, transferInfo, transferCallback);
   </tr>
   <tr>
     <td>connectionHandle</td>
-    <td>Object received in $ref:usb.openDevice callback.
+    <td>Object received in $(ref:usb.openDevice) callback.
     </td>
   </tr>
   <tr>
@@ -559,7 +559,7 @@ var transferInfo = {
   the device periodically, sending interrupt IN transfers that will make the
   device send data back if there is anything in the interrupt queue (maintained
   by the device).
-  $ref:usb.interruptTransfer has three parameters:</p>
+  $(ref:usb.interruptTransfer) has three parameters:</p>
 
 <pre>
 chrome.usb.interruptTransfer(connectionHandle, transferInfo, transferCallback);
@@ -574,7 +574,7 @@ chrome.usb.interruptTransfer(connectionHandle, transferInfo, transferCallback);
   </tr>
   <tr>
     <td>connectionHandle</td>
-    <td>Object received in $ref:usb.openDevice callback.
+    <td>Object received in $(ref:usb.openDevice) callback.
     </td>
   </tr>
   <tr>
@@ -670,5 +670,5 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="[yourdevicevendor]", MODE="0664", GROUP="plug
 access. We recommend that you provide instructions to end-users and link to the
 <a href="#caveats">Caveats</a> section on this page for an explanation.</p>
 
-<p>On Chrome OS, simply call $ref:usb.requestAccess. The permission
+<p>On Chrome OS, simply call $(ref:usb.requestAccess). The permission
   broker does this for you.</p>

@@ -7,7 +7,7 @@ This API is currently available on ChromeOS, Windows, and Mac.
 
 <p>
 To use this API,
-call the $ref:notifications.create method,
+call the $(ref:notifications.create) method,
 passing in the notification details
 via the <code>options</code> parameter:
 </p>
@@ -17,8 +17,8 @@ chrome.notifications.create(id, options, creationCallback);
 </pre>
 
 <p>
-The $ref:notifications.NotificationOptions must include a
-$ref:notifications.TemplateType,
+The $(ref:notifications.NotificationOptions) must include a
+$(ref:notifications.TemplateType),
 which defines available notification details
 and how those details are displayed.
 </p>
@@ -78,7 +78,7 @@ All notifications can include event listeners and event handlers
 that respond to user actions.
 For example,
 you can write an event handler to respond to an
-$ref:notifications.onButtonClicked event.
+$(ref:notifications.onButtonClicked) event.
 </p>
 
 <p>Consider including event listeners and handlers within the

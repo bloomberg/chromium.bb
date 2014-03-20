@@ -31,7 +31,7 @@ namespace sockets.tcp {
   dictionary CreateInfo {
     // The ID of the newly created socket. Note that socket IDs created from
     // this API are not compatible with socket IDs created from other APIs, such
-    // as the deprecated <code>$ref:socket</code> API.
+    // as the deprecated <code>$(ref:socket)</code> API.
     long socketId;
   };
 

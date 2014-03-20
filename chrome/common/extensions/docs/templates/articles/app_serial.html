@@ -31,7 +31,7 @@ You must add the "serial" permission to the manifest file:
 
 <p>
 To get a list of paths associated with available serial ports,
-use the <code>$ref:serial.getDevices</code> method. <b>Note:</b> not all serial ports are available. The API uses heuristics to only expose serial devices that are expected to be safe.
+use the <code>$(ref:serial.getDevices)</code> method. <b>Note:</b> not all serial ports are available. The API uses heuristics to only expose serial devices that are expected to be safe.
 </p>
 
 <pre>
@@ -46,7 +46,7 @@ chrome.serial.getDevices(onGetDevices);
 <h2 id="opening">Connecting to a serial device</h2>
 
 <p>
-If you know the path associated with the serial port, you can connect to it using the <code>$ref:serial.connect</code> method:
+If you know the path associated with the serial port, you can connect to it using the <code>$(ref:serial.connect)</code> method:
 </p>
 
 <pre>
@@ -60,15 +60,15 @@ chrome.serial.connect(path, options, callback)
   </tr>
   <tr>
     <td>path&nbsp;(string)</td>
-    <td>If the path associated with your device's port is unknown, you can use the <code>$ref:serial.getDevices</code> method.</td>
+    <td>If the path associated with your device's port is unknown, you can use the <code>$(ref:serial.getDevices)</code> method.</td>
   </tr>
   <tr>
     <td>options&nbsp;(object)</td>
-    <td>Parameter object with several configuration values. See details at $ref:serial.ConnectionOptions</td>
+    <td>Parameter object with several configuration values. See details at $(ref:serial.ConnectionOptions)</td>
   </tr>
   <tr>
     <td>callback</td>
-    <td>Invoked when the port has been successfully opened. The callback will be called with one parameter, <code>connectionInfo</code>, that has several important values. See details at $ref:serial.ConnectionInfo.
+    <td>Invoked when the port has been successfully opened. The callback will be called with one parameter, <code>connectionInfo</code>, that has several important values. See details at $(ref:serial.ConnectionInfo).
     </td>
   </tr>
 </table>
@@ -90,7 +90,7 @@ chrome.serial.connect("/dev/ttyS01", {bitrate: 115200}, onConnect);
 <p>
 When an app terminates, connections to serial ports that are not persistent
 are automatically closed by the platform. However, if you want to disconnect
-while your app is still running, you can use the $ref:serial.disconnect method:
+while your app is still running, you can use the $(ref:serial.disconnect) method:
 </p>
 
 <pre>
@@ -112,7 +112,7 @@ The serial API reads from the serial port and delivers the read bytes as an Arra
 Every port that your application is connected to will generate read events to all listeners added through
 <code>chrome.serial.onReceive.addListener(onReceiveCallback)</code>. If you are connected to more than one port at the
 same time, you may find the corresponding <code>connectionId</code> of an incoming read event in the callback parameter
-of $ref:serial.onReceive.
+of $(ref:serial.onReceive).
 </p>
 <p>
 The following example can accumulate read bytes until a new line is read, converting the received ArrayBuffer to String and
@@ -180,5 +180,5 @@ You can flush your serial port buffer by issuing the flush command:
 <p>
 The Serial API has several other features. You can, for example, set a connection to persistent, so it can receive data
 even when your app is not running, or you can update connection parameters on the fly, like bitrate, timeouts, control signals, and many others
- with the $ref:serial.update method. See the full reference of the $ref:serial API for more information.
+ with the $(ref:serial.update) method. See the full reference of the $(ref:serial) API for more information.
 </p>
