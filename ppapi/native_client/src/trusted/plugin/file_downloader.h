@@ -28,7 +28,7 @@ class Plugin;
 typedef enum {
   DOWNLOAD_TO_FILE = 0,
   DOWNLOAD_TO_BUFFER,
-  DOWNLOAD_STREAM,
+  DOWNLOAD_TO_BUFFER_AND_STREAM,
   DOWNLOAD_NONE
 } DownloadMode;
 
@@ -163,10 +163,6 @@ class FileDownloader {
 
   // Returns the buffer used for DOWNLOAD_TO_BUFFER mode.
   const std::deque<char>& buffer() const { return buffer_; }
-
-  bool streaming_to_file() const;
-  bool streaming_to_buffer() const;
-  bool streaming_to_user() const;
 
   int status_code() const { return status_code_; }
   nacl::string GetResponseHeaders() const;

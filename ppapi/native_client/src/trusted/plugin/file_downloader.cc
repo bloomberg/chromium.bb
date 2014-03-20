@@ -109,7 +109,7 @@ bool FileDownloader::OpenStream(
     const pp::CompletionCallback& callback,
     StreamCallbackSource* stream_callback_source) {
   data_stream_callback_source_ = stream_callback_source;
-  return Open(url, DOWNLOAD_STREAM, callback, true, NULL);
+  return Open(url, DOWNLOAD_TO_BUFFER_AND_STREAM, callback, true, NULL);
 }
 
 bool FileDownloader::Open(
@@ -156,7 +156,7 @@ bool FileDownloader::Open(
     // TODO(elijahtaylor) Remove this when data URIs can be read without
     // universal access.
     // https://bugs.webkit.org/show_bug.cgi?id=17352
-    if (streaming_to_buffer()) {
+    if (mode_ == DOWNLOAD_TO_BUFFER) {
       grant_universal_access = true;
     } else {
       // Open is to invoke a callback on success or failure. Schedule
@@ -186,7 +186,7 @@ bool FileDownloader::Open(
   // Prepare the url request.
   url_request.SetURL(url_);
 
-  if (streaming_to_file()) {
+  if (mode_ == DOWNLOAD_TO_FILE) {
     file_reader_ = pp::FileIO(instance_);
     url_request.SetStreamToFile(true);
   }
@@ -301,7 +301,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
     return;
   }
 
-  if (!streaming_to_user()) {
+  if (mode_ != DOWNLOAD_TO_BUFFER_AND_STREAM) {
     FinishStreaming(file_open_notify_callback_);
     return;
   }
@@ -314,7 +314,7 @@ void FileDownloader::FinishStreaming(
   stream_finish_callback_ = callback;
 
   // Finish streaming the body providing an optional callback.
-  if (streaming_to_file()) {
+  if (mode_ == DOWNLOAD_TO_FILE) {
     pp::CompletionCallback onload_callback =
         callback_factory_.NewOptionalCallback(
             &FileDownloader::URLLoadFinishNotify);
@@ -398,14 +398,14 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
   if (pp_error < PP_OK) {
     stream_finish_callback_.RunAndClear(pp_error);
   } else if (pp_error == PP_OK) {
-    if (streaming_to_user()) {
+    if (mode_ == DOWNLOAD_TO_BUFFER_AND_STREAM) {
       data_stream_callback_source_->GetCallback().RunAndClear(PP_OK);
     }
     StreamFinishNotify(PP_OK);
   } else {
-    if (streaming_to_buffer()) {
+    if (mode_ == DOWNLOAD_TO_BUFFER) {
       buffer_.insert(buffer_.end(), &temp_buffer_[0], &temp_buffer_[pp_error]);
-    } else if (streaming_to_user()) {
+    } else if (mode_ == DOWNLOAD_TO_BUFFER_AND_STREAM) {
       PLUGIN_PRINTF(("Running data_stream_callback, temp_buffer_=%p\n",
                      &temp_buffer_[0]));
       StreamCallback cb = data_stream_callback_source_->GetCallback();
@@ -460,18 +460,6 @@ void FileDownloader::StreamFinishNotify(int32_t pp_error) {
           &FileDownloader::GotFileHandleNotify);
   file_io_private_interface_->RequestOSFileHandle(
       file_reader_.pp_resource(), cb.output(), cb.pp_completion_callback());
-}
-
-bool FileDownloader::streaming_to_file() const {
-  return mode_ == DOWNLOAD_TO_FILE;
-}
-
-bool FileDownloader::streaming_to_buffer() const {
-  return mode_ == DOWNLOAD_TO_BUFFER;
-}
-
-bool FileDownloader::streaming_to_user() const {
-  return mode_ == DOWNLOAD_STREAM;
 }
 
 void FileDownloader::GotFileHandleNotify(int32_t pp_error,
