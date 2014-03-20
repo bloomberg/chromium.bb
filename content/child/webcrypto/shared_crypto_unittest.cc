@@ -676,9 +676,7 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
         blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify);
 
     EXPECT_EQ(test_hash.id(), key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
     EXPECT_EQ(test_key.size() * 8, key.algorithm().hmacParams()->lengthBits());
-#endif
 
     // Verify exported raw key is identical to the imported data
     blink::WebArrayBuffer raw_key;
@@ -959,9 +957,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmac)) {
     EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
     EXPECT_EQ(blink::WebCryptoAlgorithmIdSha1,
               key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
     EXPECT_EQ(512u, key.algorithm().hmacParams()->lengthBits());
-#endif
 
     blink::WebArrayBuffer raw_key;
     ASSERT_STATUS_SUCCESS(
@@ -985,9 +981,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmacNoLength)) {
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha1,
             key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
-    EXPECT_EQ(512u, key.algorithm().hmacParams()->lengthBits());
-#endif
+  EXPECT_EQ(512u, key.algorithm().hmacParams()->lengthBits());
   blink::WebArrayBuffer raw_key;
   ASSERT_STATUS_SUCCESS(ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   EXPECT_EQ(64U, raw_key.byteLength());
@@ -998,9 +992,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmacNoLength)) {
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha512,
             key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
-    EXPECT_EQ(1024u, key.algorithm().hmacParams()->lengthBits());
-#endif
+  EXPECT_EQ(1024u, key.algorithm().hmacParams()->lengthBits());
   ASSERT_STATUS_SUCCESS(ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   EXPECT_EQ(128U, raw_key.byteLength());
 }
@@ -1377,9 +1369,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha256,
             key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
-    EXPECT_EQ(320u, key.algorithm().hmacParams()->lengthBits());
-#endif
+  EXPECT_EQ(320u, key.algorithm().hmacParams()->lengthBits());
   EXPECT_EQ(blink::WebCryptoKeyUsageVerify, key.usages());
   key = blink::WebCryptoKey::createNull();
 
@@ -2638,9 +2628,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, unwrapped_key.algorithm().id());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha256,
             unwrapped_key.algorithm().hmacParams()->hash().id());
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
   EXPECT_EQ(256u, unwrapped_key.algorithm().hmacParams()->lengthBits());
-#endif
   EXPECT_EQ(true, unwrapped_key.extractable());
   EXPECT_EQ(blink::WebCryptoKeyUsageVerify, unwrapped_key.usages());
 

@@ -203,17 +203,11 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
       blink::WebCryptoAlgorithm hash = GetInnerHashAlgorithm(algorithm);
       if (hash.isNull())
         return false;
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
       if (keylen_bytes > UINT_MAX / 8)
         return false;
-#endif
       *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
           algorithm.id(),
-#if defined(WEBCRYPTO_HMAC_KEY_HAS_LENGTH)
           new blink::WebCryptoHmacKeyAlgorithmParams(hash, keylen_bytes * 8));
-#else
-          new blink::WebCryptoHmacKeyAlgorithmParams(hash));
-#endif
       return true;
     }
     case blink::WebCryptoAlgorithmIdAesKw:
