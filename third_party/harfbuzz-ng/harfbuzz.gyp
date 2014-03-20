@@ -132,6 +132,15 @@
           # TODO(eae): C4267 on amd64. size_t -> int, size_t -> unsigned int
           'msvs_disabled_warnings': [4267, 4334],
         }],
+        ['OS=="mac"', {
+          'defines': [
+            'HAVE_CORETEXT',
+          ],
+          'sources': [
+            'src/hb-coretext.cc',
+            'src/hb-coretext.h',
+          ],
+        }],
       ],
     },
   ],
