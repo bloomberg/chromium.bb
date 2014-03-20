@@ -666,8 +666,8 @@ class NinjaWriter:
       if prebuild:
         num_inputs += 1
       if num_inputs > 2 and len(sources) > 2:
-        inputs = [
-            self.WriteCollapsedDependencies(name, inputs, order_only=prebuild)]
+        inputs = [self.WriteCollapsedDependencies(
+          rule['rule_name'], inputs, order_only=prebuild)]
         prebuild = []
 
       # For each source file, write an edge that generates all the outputs.
@@ -718,8 +718,10 @@ class NinjaWriter:
             assert var == None, repr(var)
 
         outputs = [self.GypPathToNinja(o, env) for o in outputs]
-        extra_bindings.append(('unique_name',
-            hashlib.md5(outputs[0]).hexdigest()))
+        if self.flavor == 'win':
+          # WriteNewNinjaRule uses unique_name for creating an rsp file on win.
+          extra_bindings.append(('unique_name',
+              hashlib.md5(outputs[0]).hexdigest()))
         self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
                          implicit=inputs,
                          order_only=prebuild,
