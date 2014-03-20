@@ -52,7 +52,7 @@ void ContentPasswordManagerDriver::AccountCreationFormsFound(
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
   DCHECK(web_contents());
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   if (!entry) {
     NOTREACHED();
     return false;
