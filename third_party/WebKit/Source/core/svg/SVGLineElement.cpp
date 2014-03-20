@@ -30,10 +30,10 @@ namespace WebCore {
 
 inline SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document)
-    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth)))
-    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight)))
-    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth)))
-    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight)))
+    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
 {
     ScriptWrappable::init(this);
 
@@ -67,13 +67,13 @@ void SVGLineElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     if (!isSupportedAttribute(name))
         SVGGeometryElement::parseAttribute(name, value);
     else if (name == SVGNames::x1Attr)
-        m_x1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_x1->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::y1Attr)
-        m_y1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_y1->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::x2Attr)
-        m_x2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_x2->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::y2Attr)
-        m_y2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_y2->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 

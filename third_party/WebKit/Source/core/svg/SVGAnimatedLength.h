@@ -38,19 +38,23 @@ namespace WebCore {
 
 class SVGAnimatedLength : public NewSVGAnimatedProperty<SVGLength> {
 public:
-    static PassRefPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue)
+    static PassRefPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
     {
-        return adoptRef(new SVGAnimatedLength(contextElement, attributeName, initialValue));
+        return adoptRef(new SVGAnimatedLength(contextElement, attributeName, initialValue, negativeValuesMode));
     }
 
     void setDefaultValueAsString(const String&);
-    void setBaseValueAsString(const String&, SVGLengthNegativeValuesMode, SVGParsingError&);
+    void setBaseValueAsString(const String&, SVGParsingError&);
 
 protected:
-    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue)
+    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
         : NewSVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
+        , m_negativeValuesMode(negativeValuesMode)
     {
     }
+
+private:
+    SVGLengthNegativeValuesMode m_negativeValuesMode;
 };
 
 } // namespace WebCore

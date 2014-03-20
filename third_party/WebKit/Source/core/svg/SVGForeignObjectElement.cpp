@@ -32,10 +32,10 @@ namespace WebCore {
 
 inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
-    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
-    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
 {
     ScriptWrappable::init(this);
 
@@ -69,13 +69,13 @@ void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const At
     if (!isSupportedAttribute(name))
         SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::xAttr)
-        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_x->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::yAttr)
-        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_y->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::widthAttr)
-        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_width->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::heightAttr)
-        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_height->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 

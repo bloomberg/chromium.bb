@@ -39,7 +39,7 @@ void SVGAnimatedLength::setDefaultValueAsString(const String& value)
     baseValue()->setValueAsString(value, ASSERT_NO_EXCEPTION);
 }
 
-void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGLengthNegativeValuesMode mode, SVGParsingError& parseError)
+void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGParsingError& parseError)
 {
     TrackExceptionState es;
 
@@ -48,7 +48,7 @@ void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGLengthNegat
     if (es.hadException()) {
         parseError = ParsingAttributeFailedError;
         baseValue()->newValueSpecifiedUnits(LengthTypeNumber, 0);
-    } else if (mode == ForbidNegativeLengths && baseValue()->valueInSpecifiedUnits() < 0) {
+    } else if (m_negativeValuesMode == ForbidNegativeLengths && baseValue()->valueInSpecifiedUnits() < 0) {
         parseError = NegativeValueForbiddenError;
     }
 }

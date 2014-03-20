@@ -33,8 +33,8 @@ inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
     , SVGTests(this)
     , SVGURIReference(this)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
 {
     ScriptWrappable::init(this);
 
@@ -73,9 +73,9 @@ void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
     } else if (name == SVGNames::xAttr) {
-        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_x->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::yAttr) {
-        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_y->setBaseValueAsString(value, parseError);
     } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else if (SVGTests::parseAttribute(name, value)) {
     } else {

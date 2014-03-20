@@ -54,7 +54,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
     , SVGURIReference(this)
-    , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(LengthModeOther)))
+    , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(LengthModeOther), AllowNegativeLengths))
     , m_method(SVGAnimatedEnumeration<SVGTextPathMethodType>::create(this, SVGNames::methodAttr, SVGTextPathMethodAlign))
     , m_spacing(SVGAnimatedEnumeration<SVGTextPathSpacingType>::create(this, SVGNames::spacingAttr, SVGTextPathSpacingExact))
 {
@@ -99,7 +99,7 @@ void SVGTextPathElement::parseAttribute(const QualifiedName& name, const AtomicS
     if (!isSupportedAttribute(name))
         SVGTextContentElement::parseAttribute(name, value);
     else if (name == SVGNames::startOffsetAttr)
-        m_startOffset->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_startOffset->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::methodAttr)
         m_method->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::spacingAttr)

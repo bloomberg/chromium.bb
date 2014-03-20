@@ -68,7 +68,7 @@ public:
 
 private:
     SVGAnimatedTextLength(SVGTextContentElement* contextElement)
-        : SVGAnimatedLength(contextElement, SVGNames::textLengthAttr, SVGLength::create(LengthModeOther))
+        : SVGAnimatedLength(contextElement, SVGNames::textLengthAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths)
     {
     }
 };
@@ -238,7 +238,7 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
     else if (name == SVGNames::lengthAdjustAttr) {
         m_lengthAdjust->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::textLengthAttr) {
-        m_textLength->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_textLength->setBaseValueAsString(value, parseError);
     } else if (name.matches(XMLNames::spaceAttr)) {
     } else
         ASSERT_NOT_REACHED();

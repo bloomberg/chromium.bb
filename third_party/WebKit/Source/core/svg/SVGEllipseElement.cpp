@@ -31,10 +31,10 @@ namespace WebCore {
 
 inline SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(SVGNames::ellipseTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight)))
-    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth)))
-    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight)))
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
+    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
 {
     ScriptWrappable::init(this);
 
@@ -68,13 +68,13 @@ void SVGEllipseElement::parseAttribute(const QualifiedName& name, const AtomicSt
     if (!isSupportedAttribute(name))
         SVGGeometryElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
-        m_cx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_cx->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::cyAttr)
-        m_cy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_cy->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::rxAttr)
-        m_rx->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_rx->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::ryAttr)
-        m_ry->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_ry->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 

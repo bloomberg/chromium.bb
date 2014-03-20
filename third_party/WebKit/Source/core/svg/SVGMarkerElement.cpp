@@ -45,10 +45,10 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
     , SVGFitToViewBox(this)
-    , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
-    , m_refY(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
-    , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth)))
-    , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight)))
+    , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_refY(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
+    , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
     , m_orientAngle(SVGAnimatedAngle::create(this))
     , m_markerUnits(SVGAnimatedEnumeration<SVGMarkerUnitsType>::create(this, SVGNames::markerUnitsAttr, SVGMarkerUnitsStrokeWidth))
 {
@@ -100,13 +100,13 @@ void SVGMarkerElement::parseAttribute(const QualifiedName& name, const AtomicStr
     else if (name == SVGNames::markerUnitsAttr)
         m_markerUnits->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::refXAttr)
-        m_refX->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_refX->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::refYAttr)
-        m_refY->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_refY->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::markerWidthAttr)
-        m_markerWidth->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_markerWidth->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::markerHeightAttr)
-        m_markerHeight->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_markerHeight->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::orientAttr)
         m_orientAngle->setBaseValueAsString(value, parseError);
     else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {

@@ -34,12 +34,12 @@ namespace WebCore {
 
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight)))
-    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(LengthModeOther)))
-    , m_fx(SVGAnimatedLength::create(this, SVGNames::fxAttr, SVGLength::create(LengthModeWidth)))
-    , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(LengthModeHeight)))
-    , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(LengthModeOther)))
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths))
+    , m_fx(SVGAnimatedLength::create(this, SVGNames::fxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
+    , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths))
 {
     ScriptWrappable::init(this);
 
@@ -85,17 +85,17 @@ void SVGRadialGradientElement::parseAttribute(const QualifiedName& name, const A
     if (!isSupportedAttribute(name))
         SVGGradientElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
-        m_cx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_cx->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::cyAttr)
-        m_cy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_cy->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::rAttr)
-        m_r->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_r->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::fxAttr)
-        m_fx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_fx->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::fyAttr)
-        m_fy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+        m_fy->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::frAttr)
-        m_fr->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+        m_fr->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 
