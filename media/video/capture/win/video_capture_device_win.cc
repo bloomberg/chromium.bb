@@ -371,7 +371,7 @@ void VideoCaptureDeviceWin::GetDeviceSupportedFormats(const Name& device,
       return;
     }
 
-    int count, size;
+    int count = 0, size = 0;
     hr = stream_config->GetNumberOfCapabilities(&count, &size);
     if (FAILED(hr)) {
       DVLOG(2) << "Failed to GetNumberOfCapabilities";
@@ -379,10 +379,9 @@ void VideoCaptureDeviceWin::GetDeviceSupportedFormats(const Name& device,
     }
 
     AM_MEDIA_TYPE* media_type = NULL;
-    VIDEO_STREAM_CONFIG_CAPS caps;
+    scoped_ptr<BYTE[]> caps(new BYTE[size]);
     for (int i = 0; i < count; ++i) {
-      hr = stream_config->GetStreamCaps(i, &media_type,
-                                        reinterpret_cast<BYTE*>(&caps));
+      hr = stream_config->GetStreamCaps(i, &media_type, caps.get());
       // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
       // macros here since they'll trigger incorrectly.
       if (hr != S_OK) {
@@ -511,9 +510,6 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   if (format.frame_rate > params.requested_format.frame_rate)
     format.frame_rate = params.requested_format.frame_rate;
 
-  AM_MEDIA_TYPE* pmt = NULL;
-  VIDEO_STREAM_CONFIG_CAPS caps;
-
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
   if (FAILED(hr)) {
@@ -521,9 +517,19 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    DVLOG(2) << "Failed to GetNumberOfCapabilities";
+    return;
+  }
+
+  AM_MEDIA_TYPE* pmt = NULL;
+  scoped_ptr<BYTE[]> caps(new BYTE[size]);
+
   // Get the windows capability from the capture device.
-  hr = stream_config->GetStreamCaps(found_capability.stream_index, &pmt,
-                                    reinterpret_cast<BYTE*>(&caps));
+  hr = stream_config->GetStreamCaps(
+      found_capability.stream_index, &pmt, caps.get());
   if (SUCCEEDED(hr)) {
     if (pmt->formattype == FORMAT_VideoInfo) {
       VIDEOINFOHEADER* h = reinterpret_cast<VIDEOINFOHEADER*>(pmt->pbFormat);
@@ -645,19 +651,17 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   hr = capture_filter_.QueryInterface(video_control.Receive());
   DVLOG_IF(2, FAILED(hr)) << "IAMVideoControl Interface NOT SUPPORTED";
 
-  AM_MEDIA_TYPE* media_type = NULL;
-  VIDEO_STREAM_CONFIG_CAPS caps;
-  int count, size;
-
+  int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
     DVLOG(2) << "Failed to GetNumberOfCapabilities";
     return false;
   }
 
+  AM_MEDIA_TYPE* media_type = NULL;
+  scoped_ptr<BYTE[]> caps(new BYTE[size]);
   for (int i = 0; i < count; ++i) {
-    hr = stream_config->GetStreamCaps(i, &media_type,
-                                      reinterpret_cast<BYTE*>(&caps));
+    hr = stream_config->GetStreamCaps(i, &media_type, caps.get());
     // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
     // macros here since they'll trigger incorrectly.
     if (hr != S_OK) {
