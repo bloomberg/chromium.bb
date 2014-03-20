@@ -544,15 +544,15 @@ void FrameLoader::scheduleCheckCompleted()
 
 LocalFrame* FrameLoader::opener()
 {
-    ASSERT(m_client);
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_client->opener());
+    return m_client ? toLocalFrame(m_client->opener()) : 0;
 }
 
 void FrameLoader::setOpener(LocalFrame* opener)
 {
-    ASSERT(m_client);
-    m_client->setOpener(opener);
+    // If the frame is already detached, the opener has already been cleared.
+    if (m_client)
+        m_client->setOpener(opener);
 }
 
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)

@@ -1189,7 +1189,7 @@ unsigned DOMWindow::length() const
 
 const AtomicString& DOMWindow::name() const
 {
-    if (!m_frame)
+    if (!isCurrentlyDisplayedInFrame())
         return nullAtom;
 
     return m_frame->tree().name();
@@ -1197,10 +1197,11 @@ const AtomicString& DOMWindow::name() const
 
 void DOMWindow::setName(const AtomicString& name)
 {
-    if (!m_frame)
+    if (!isCurrentlyDisplayedInFrame())
         return;
 
     m_frame->tree().setName(name);
+    ASSERT(m_frame->loader().client());
     m_frame->loader().client()->didChangeName(name);
 }
 
