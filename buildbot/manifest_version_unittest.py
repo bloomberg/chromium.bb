@@ -156,13 +156,13 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.manifest_repo = 'ssh://manifest/repo'
     self.version_file = 'version-file.sh'
     self.branch = 'master'
-    self.build_name = 'x86-generic'
+    self.build_names = ['x86-generic']
     self.incr_type = 'branch'
 
     repo = repository.RepoRepository(
       self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_repo, self.build_name, self.incr_type, False,
+      repo, self.manifest_repo, self.build_names, self.incr_type, False,
       branch=self.branch, dry_run=True)
 
     # Change default to something we clean up.
@@ -178,7 +178,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     m1, m2, m3, m4 = [os.path.join(mpath, '1.2.%d.xml' % x)
                       for x in [2,3,4,5]]
     for_build = os.path.join(self.manager.manifest_dir, 'build-name',
-                             self.build_name)
+                             self.build_names[0])
 
     # Create fake buildspecs.
     osutils.SafeMakedirs(os.path.join(mpath))
@@ -195,7 +195,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
     self.mox.StubOutWithMock(self.manager, 'GetBuildStatus')
-    self.manager.GetBuildStatus(self.build_name, '1.2.5').AndReturn(missing)
+    self.manager.GetBuildStatus(self.build_names[0], '1.2.5').AndReturn(missing)
     self.mox.ReplayAll()
     self.manager.InitializeManifestVariables(info)
     self.mox.VerifyAll()
@@ -246,7 +246,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
                                         incr_type='branch')
     info.UpdateVersionFile(
         'Automatic: %s - Updating to a new version number from %s' % (
-            self.build_name, FAKE_VERSION_STRING), dry_run=True)
+            self.build_names[0], FAKE_VERSION_STRING), dry_run=True)
 
     self.manager.latest = FAKE_VERSION_STRING
     self.mox.ReplayAll()

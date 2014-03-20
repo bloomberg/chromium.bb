@@ -801,6 +801,13 @@ class _RealBuilderRun(object):
     """
     return self._GetChildren() or [self]
 
+  def GetBuilderIds(self):
+    """Return a list of builder names for this config and the child configs."""
+    bot_ids = [self.config.name]
+    for config in self.config.child_configs:
+      if config.name:
+        bot_ids.append(config.name)
+    return bot_ids
 
 class BuilderRun(_RealBuilderRun):
   """A standard BuilderRun for a top-level build config."""

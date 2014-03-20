@@ -129,7 +129,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
 
-  def __init__(self, source_repo, manifest_repo, build_name, build_type,
+  def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
                dry_run=True, master=False):
     """Initialize an LKGM Manager.
@@ -137,7 +137,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     Args:
       source_repo: Repository object for the source code.
       manifest_repo: Manifest repository for manifest versions/buildspecs.
-      build_name: Identifier for the build. Must much cbuildbot_config.
+      build_names: Identifiers for the build. Must match cbuildbot_config
+          entries. If multiple identifiers are provided, the first item in the
+          list must be an identifier for the group.
       build_type: Type of build.  Must be a pfq type.
       incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.
@@ -148,7 +150,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
-        manifest=manifest, build_name=build_name, incr_type=incr_type,
+        manifest=manifest, build_names=build_names, incr_type=incr_type,
         force=force, branch=branch, dry_run=dry_run, master=master)
 
     self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
@@ -522,7 +524,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
         git.RunGit(self.manifest_dir, ['add', self.LKGM_PATH])
         self.PushSpecChanges(
-            'Automatic: %s promoting %s to LKGM' % (self.build_name,
+            'Automatic: %s promoting %s to LKGM' % (self.build_names[0],
                                                     self.current_version))
         return
       except cros_build_lib.RunCommandError as e:

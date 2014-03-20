@@ -837,7 +837,7 @@ class ChromeLKGMSyncStage(SyncStage):
     manifest_manager = manifest_version.BuildSpecsManager(
       source_repo=self.repo,
       manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
-      build_name=self._bot_id,
+      build_names=self._run.GetBuilderIds(),
       incr_type='build',
       force=False,
       branch=self._run.manifest_branch)
@@ -911,7 +911,7 @@ class ManifestVersionedSyncStage(SyncStage):
         source_repo=self.repo,
         manifest_repo=self.manifest_repo,
         manifest=self._run.config.manifest,
-        build_name=self._bot_id,
+        build_names=self._run.GetBuilderIds(),
         incr_type=self.VersionIncrementType(),
         force=self._force,
         branch=self._run.manifest_branch,
@@ -1018,7 +1018,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
         manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
             internal, read_only=False),
         manifest=self._run.config.manifest,
-        build_name=self._bot_id,
+        build_names=self._run.GetBuilderIds(),
         build_type=self._run.config.build_type,
         incr_type=increment,
         force=self._force,

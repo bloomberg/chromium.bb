@@ -377,7 +377,7 @@ class BuilderStatus(object):
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
-  def __init__(self, source_repo, manifest_repo, build_name, incr_type, force,
+  def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
                master=False):
     """Initializes a build specs manager.
@@ -385,7 +385,9 @@ class BuildSpecsManager(object):
     Args:
       source_repo: Repository object for the source code.
       manifest_repo: Manifest repository for manifest versions / buildspecs.
-      build_name: Identifier for the build.  Must match cbuildbot_config.
+      build_names: Identifiers for the build. Must match cbuildbot_config
+          entries. If multiple identifiers are provided, the first item in the
+          list must be an identifier for the group.
       incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.
       branch: Branch this builder is running on.
@@ -401,7 +403,7 @@ class BuildSpecsManager(object):
       self.manifest_dir = os.path.join(buildroot, 'manifest-versions')
 
     self.manifest_repo = manifest_repo
-    self.build_name = build_name
+    self.build_names = build_names
     self.incr_type = incr_type
     self.force = force
     self.branch = branch
@@ -411,11 +413,8 @@ class BuildSpecsManager(object):
 
     # Directories and specifications are set once we load the specs.
     self.all_specs_dir = None
-    self.pass_dir = None
-    self.fail_dir = None
-
-    # Path to specs for builder.  Requires passing %(builder)s.
-    self.specs_for_builder = None
+    self.pass_dirs = None
+    self.fail_dirs = None
 
     # Specs.
     self.latest = None
@@ -469,9 +468,7 @@ class BuildSpecsManager(object):
     """
     assert version_info or version, 'version or version_info must be specified'
     working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
-    self.specs_for_builder = os.path.join(working_dir, 'build-name',
-                                          '%(builder)s')
-    specs_for_build = self.specs_for_builder % {'builder': self.build_name}
+    specs_for_builder = os.path.join(working_dir, 'build-name', '%(builder)s')
     buildspecs = os.path.join(working_dir, 'buildspecs')
 
     # If version is specified, find out what Chrome branch it is on.
@@ -486,17 +483,21 @@ class BuildSpecsManager(object):
       dir_pfx = version_info.chrome_branch
 
     self.all_specs_dir = os.path.join(buildspecs, dir_pfx)
-    self.pass_dir = os.path.join(specs_for_build,
-                                 BuilderStatus.STATUS_PASSED, dir_pfx)
-    self.fail_dir = os.path.join(specs_for_build,
-                                 BuilderStatus.STATUS_FAILED, dir_pfx)
+    self.pass_dirs, self.fail_dirs = [], []
+    for build_name in self.build_names:
+      specs_for_build = specs_for_builder % {'builder': build_name}
+      self.pass_dirs.append(os.path.join(specs_for_build,
+                                         BuilderStatus.STATUS_PASSED, dir_pfx))
+      self.fail_dirs.append(os.path.join(specs_for_build,
+                                         BuilderStatus.STATUS_FAILED, dir_pfx))
 
     # Calculate the status of the latest build, and whether the build was
     # processed.
     if version is None:
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
-        self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
+        self._latest_status = self.GetBuildStatus(self.build_names[0],
+                                                  self.latest)
         if self._latest_status.Missing():
           self.latest_unprocessed = self.latest
 
@@ -533,7 +534,7 @@ class BuildSpecsManager(object):
     version = version_info.VersionString()
     if self.latest == version:
       message = ('Automatic: %s - Updating to a new version number from %s' % (
-                 self.build_name, version))
+                 self.build_names[0], version))
       version = version_info.IncrementVersion()
       version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest
@@ -548,7 +549,7 @@ class BuildSpecsManager(object):
 
     # Note: This commit message is used by master.cfg for figuring out when to
     #       trigger slave builders.
-    commit_message = 'Automatic: Start %s %s %s' % (self.build_name,
+    commit_message = 'Automatic: Start %s %s %s' % (self.build_names[0],
                                                     self.branch, version)
 
     # Copy the manifest into the manifest repository.
@@ -592,7 +593,7 @@ class BuildSpecsManager(object):
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
     version_info = self.GetCurrentVersionInfo()
-    return self._LatestSpecFromDir(version_info, self.pass_dir)
+    return self._LatestSpecFromDir(version_info, self.pass_dirs[0])
 
   def GetLocalManifest(self, version=None):
     """Return path to local copy of manifest given by version.
@@ -695,8 +696,6 @@ class BuildSpecsManager(object):
       fail_if_exists: If set, fail if the status already exists.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
-    url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
-
     # Pickle the dictionary needed to recreate a BuilderStatus object.
     # NOTE: It's important here not to use BuilderStatus.AsFlatDict to create
     # the pickle dictionary, because that would flatten non-flat fields (like
@@ -708,9 +707,12 @@ class BuildSpecsManager(object):
     # error message if the file already exists.
     gs_version = 0 if fail_if_exists else None
 
-    # Do the actual upload.
-    ctx = gs.GSContext(dry_run=self.dry_run)
-    ctx.Copy('-', url, input=data, version=gs_version)
+    for build_name in self.build_names:
+      url = BuildSpecsManager._GetStatusUrl(build_name, version)
+
+      # Do the actual upload.
+      ctx = gs.GSContext(dry_run=self.dry_run)
+      ctx.Copy('-', url, input=data, version=gs_version)
 
   def UploadStatus(self, success, message=None, dashboard_url=None):
     """Uploads the status of the build for the current build spec.
@@ -739,17 +741,19 @@ class BuildSpecsManager(object):
   def _SetFailed(self):
     """Marks the buildspec as failed by creating a symlink in fail dir."""
     filename = '%s.xml' % self.current_version
-    dest_file = os.path.join(self.fail_dir, filename)
     src_file = os.path.join(self.all_specs_dir, filename)
-    logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
-    CreateSymlink(src_file, dest_file)
+    for fail_dir in self.fail_dirs:
+      dest_file = os.path.join(fail_dir, filename)
+      logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
+      CreateSymlink(src_file, dest_file)
 
   def _SetPassed(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
-    dest_file = '%s.xml' % os.path.join(self.pass_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
-    logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
-    CreateSymlink(src_file, dest_file)
+    for pass_dir in self.pass_dirs:
+      dest_file = '%s.xml' % os.path.join(pass_dir, self.current_version)
+      logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
+      CreateSymlink(src_file, dest_file)
 
   def PushSpecChanges(self, commit_message):
     """Pushes any changes you have in the manifest directory."""
@@ -775,7 +779,7 @@ class BuildSpecsManager(object):
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (BuilderStatus.GetCompletedStatus(success),
                                   self.current_version,
-                                  self.build_name))
+                                  self.build_names[0]))
         if success:
           self._SetPassed()
         else:
@@ -784,7 +788,7 @@ class BuildSpecsManager(object):
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:
         last_error = ('Failed to update the status for %s with the '
-                      'following error %s' % (self.build_name,
+                      'following error %s' % (self.build_names[0],
                                               e.message))
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
