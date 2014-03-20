@@ -64,6 +64,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/HitTestingTransformState.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
@@ -499,6 +500,10 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
 
     if (flags & HasSeenViewportConstrainedAncestor
         || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip && !m_canSkipRepaintRectsUpdateOnScroll)) {
+        // FIXME: This may not be needed. Once repaint-after-layout isn't
+        // under-painting for layer's we should see if this can be removed.
+        LayoutRectRecorder recorder(*m_renderer);
+
         // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
         // https://code.google.com/p/chromium/issues/detail?id=343756
         DisableCompositingQueryAsserts disabler;
@@ -944,6 +949,9 @@ bool RenderLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
     LayoutSize inlineBoundingBoxOffset; // We don't put this into the RenderLayer x/y for inlines, so we need to subtract it out when done.
+
+    LayoutRectRecorder recorder(*m_renderer);
+
     if (renderer()->isInline() && renderer()->isRenderInline()) {
         RenderInline* inlineFlow = toRenderInline(renderer());
         IntRect lineBox = inlineFlow->linesBoundingBox();
@@ -1492,7 +1500,11 @@ void RenderLayer::removeOnlyThisLayer()
         RenderLayer* next = current->nextSibling();
         removeChild(current);
         m_parent->addChild(current, nextSib);
-        current->repainter().setRepaintStatus(NeedsFullRepaint);
+
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            current->renderer()->setShouldDoFullRepaintAfterLayout(true);
+        else
+            current->repainter().setRepaintStatus(NeedsFullRepaint);
 
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;

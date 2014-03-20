@@ -1045,26 +1045,35 @@ void FrameView::repaintTree(RenderObject* root)
         const LayoutRect& oldRepaintRect = renderer->oldRepaintRect();
         const LayoutRect& newRepaintRect = renderer->newRepaintRect();
 
-        LayoutRect oldOutlineRect = oldRepaintRect;
-
-        LayoutRect newOutlineRect = newRepaintRect;
+        if ((renderer->onlyNeededPositionedMovementLayout() && renderer->compositingState() != PaintsIntoOwnBacking)
+            || (renderer->shouldDoFullRepaintIfSelfPaintingLayer()
+                && renderer->hasLayer()
+                && toRenderLayerModelObject(renderer)->layer()->isSelfPaintingLayer())) {
+            renderer->setShouldDoFullRepaintAfterLayout(true);
+        }
 
         // FIXME: Currently renderers with layers will get repainted when we call updateLayerPositionsAfterLayout.
         // That call should be broken apart to position the layers be done before
         // the repaintTree call so this will repaint everything.
         bool didFullRepaint = false;
-        if (!renderer->hasLayer()) {
-            if (!renderer->layoutDidGetCalled()) {
-                if (renderer->shouldDoFullRepaintAfterLayout()) {
-                    renderer->repaint();
-                    didFullRepaint = true;
-                }
-
-            } else {
-                didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
-                    renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldOutlineRect,
-                    &newRepaintRect, &newOutlineRect);
+        if (!renderer->layoutDidGetCalled()) {
+            if (renderer->shouldDoFullRepaintAfterLayout()) {
+                renderer->repaint();
+                didFullRepaint = true;
             }
+
+        } else {
+            LayoutRect oldOutlineRect;
+            LayoutRect newOutlineRect;
+
+            if (renderer->hasOutline()) {
+                newOutlineRect = renderer->newOutlineRect();
+                oldOutlineRect = renderer->oldOutlineRect();
+            }
+
+            didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
+                renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldOutlineRect,
+                &newRepaintRect, &newOutlineRect);
         }
 
         if (!didFullRepaint)
@@ -1086,7 +1095,7 @@ void FrameView::repaintTree(RenderObject* root)
             listBox->repaintScrollbarIfNeeded();
         }
 
-        renderer->clearRepaintRects();
+        renderer->clearRepaintState();
     }
 
     // Repaint the frameviews scrollbars if needed

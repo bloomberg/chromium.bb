@@ -51,12 +51,19 @@ LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool skipRecording)
     if (m_skipRecording)
         return;
 
-    if (!m_object.layoutDidGetCalled())
-        m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(m_object.containerForRepaint()));
+    if (!m_object.layoutDidGetCalled()) {
+        RenderLayerModelObject* containerForRepaint = m_object.containerForRepaint();
+        m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(containerForRepaint));
+
+        if (m_object.hasOutline())
+            m_object.setOldOutlineRect(m_object.outlineBoundsForRepaint(containerForRepaint));
+    }
 
     // If should do repaint was set previously make sure we don't accidentally unset it.
     if (!m_object.shouldDoFullRepaintAfterLayout())
         m_object.setShouldDoFullRepaintAfterLayout(m_object.selfNeedsLayout());
+    if (m_object.needsPositionedMovementLayoutOnly())
+        m_object.setOnlyNeededPositionedMovementLayout(true);
 
     m_object.setLayoutDidGetCalled(true);
 }
@@ -69,7 +76,11 @@ LayoutRectRecorder::~LayoutRectRecorder()
         return;
 
     // Note, we don't store the repaint container because it can change during layout.
-    m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(m_object.containerForRepaint()));
+    RenderLayerModelObject* containerForRepaint = m_object.containerForRepaint();
+    m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(containerForRepaint));
+
+    if (m_object.hasOutline())
+        m_object.setNewOutlineRect(m_object.outlineBoundsForRepaint(containerForRepaint));
 }
 
 } // namespace WebCore

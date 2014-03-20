@@ -1742,6 +1742,8 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         r = *it;
 
+        LayoutRectRecorder recorder(*r);
+
         SubtreeLayoutScope layoutScope(r);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So
         // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.

@@ -971,19 +971,23 @@ public:
     const LayoutRect& oldRepaintRect() const { return m_oldRepaintRect; }
     void setOldRepaintRect(const LayoutRect& rect) { m_oldRepaintRect = rect; }
 
+    LayoutRect newOutlineRect();
+    void setNewOutlineRect(const LayoutRect&);
+
+    LayoutRect oldOutlineRect();
+    void setOldOutlineRect(const LayoutRect&);
+
     bool shouldDoFullRepaintAfterLayout() const { return m_bitfields.shouldDoFullRepaintAfterLayout(); }
     void setShouldDoFullRepaintAfterLayout(bool b) { m_bitfields.setShouldDoFullRepaintAfterLayout(b); }
     bool shouldRepaintOverflow() const { return m_bitfields.shouldRepaintOverflow(); }
 
-    void clearRepaintRects()
-    {
-        setNewRepaintRect(LayoutRect());
-        setOldRepaintRect(LayoutRect());
+    bool shouldDoFullRepaintIfSelfPaintingLayer() const { return m_bitfields.shouldDoFullRepaintIfSelfPaintingLayer(); }
+    void setShouldDoFullRepaintIfSelfPaintingLayer(bool b) { m_bitfields.setShouldDoFullRepaintIfSelfPaintingLayer(b); }
 
-        setShouldDoFullRepaintAfterLayout(false);
-        setShouldRepaintOverflow(false);
-        setLayoutDidGetCalled(false);
-    }
+    bool onlyNeededPositionedMovementLayout() const { return m_bitfields.onlyNeededPositionedMovementLayout(); }
+    void setOnlyNeededPositionedMovementLayout(bool b) { m_bitfields.setOnlyNeededPositionedMovementLayout(b); }
+
+    void clearRepaintState();
 
     // layoutDidGetCalled indicates whether this render object was re-laid-out
     // since the last call to setLayoutDidGetCalled(false) on this object.
@@ -1101,6 +1105,8 @@ private:
             // for this flag.
             , m_shouldDoFullRepaintAfterLayout(false)
             , m_shouldRepaintOverflow(false)
+            , m_shouldDoFullRepaintIfSelfPaintingLayer(false)
+            , m_onlyNeededPositionedMovementLayout(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1132,10 +1138,12 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 3 in the second.
+        // 32 bits have been used in the first word, and 5 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
         ADD_BOOLEAN_BITFIELD(shouldRepaintOverflow, ShouldRepaintOverflow);
+        ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintIfSelfPaintingLayer, ShouldDoFullRepaintIfSelfPaintingLayer);
+        ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);

@@ -151,7 +151,12 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 setChildNeedsLayout();
             createLayer(type);
             if (parent() && !needsLayout() && containingBlock()) {
-                layer()->repainter().setRepaintStatus(NeedsFullRepaint);
+                // FIXME: This invalidation is overly broad. We should update to
+                // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
+                if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                    layer()->renderer()->setShouldDoFullRepaintAfterLayout(true);
+                else
+                    layer()->repainter().setRepaintStatus(NeedsFullRepaint);
                 // There is only one layer to update, it is not worth using |cachedOffset| since
                 // we are not sure the value will be used.
                 layer()->updateLayerPositions(0);

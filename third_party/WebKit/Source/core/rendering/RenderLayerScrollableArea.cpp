@@ -341,6 +341,8 @@ int RenderLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) cons
 
 void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 {
+    LayoutRectRecorder recorder(*m_box);
+
     if (!m_box->isMarquee()) {
         // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
         if (m_scrollDimensionsDirty)
@@ -377,7 +379,12 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
-    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
+    FloatQuad quadForFakeMouseMoveEvent;
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->newRepaintRect());
+    else
+        quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
+
     if (repaintContainer)
         quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
@@ -397,10 +404,14 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Just schedule a full repaint of our object.
     if (requiresRepaint) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && m_box->frameView()->isInPerformLayout())
-            m_box->setShouldDoFullRepaintAfterLayout(true);
-        else
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+            if (m_box->frameView()->isInPerformLayout())
+                m_box->setShouldDoFullRepaintAfterLayout(true);
+            else
+                m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->newRepaintRect()));
+        } else {
             m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()));
+        }
     }
 
     // Schedule the scroll DOM event.

@@ -741,7 +741,10 @@ void RenderObject::invalidateContainerPreferredLogicalWidths()
 void RenderObject::setLayerNeedsFullRepaint()
 {
     ASSERT(hasLayer());
-    toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaint);
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        setShouldDoFullRepaintAfterLayout(true);
+    else
+        toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaint);
 }
 
 void RenderObject::setLayerNeedsFullRepaintForPositionedMovementLayout()
@@ -1622,6 +1625,9 @@ void RenderObject::repaintOverflowIfNeeded()
 
 bool RenderObject::checkForRepaint() const
 {
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        return !document().view()->needsFullRepaint() && everHadLayout();
+
     return !document().view()->needsFullRepaint() && !hasLayer() && everHadLayout();
 }
 
@@ -3312,6 +3318,64 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
 bool RenderObject::isRelayoutBoundaryForInspector() const
 {
     return objectIsRelayoutBoundary(this);
+}
+
+LayoutRect RenderObject::newOutlineRect()
+{
+    ASSERT(hasOutline());
+
+    OutlineRects& outlineRects = view()->outlineRects();
+    OutlineRects::iterator it = outlineRects.find(this);
+    if (it == outlineRects.end())
+        return outlineBoundsForRepaint(containerForRepaint());
+    return it->value->newOutlineRect;
+}
+
+void RenderObject::setNewOutlineRect(const LayoutRect& rect)
+{
+    ASSERT(hasOutline());
+
+    OutlineRects& outlineRects = view()->outlineRects();
+    OutlineRects::iterator it = outlineRects.find(this);
+    if (it == outlineRects.end())
+        outlineRects.set(this, adoptPtr(new OutlineRectInfo()));
+
+    outlineRects.get(this)->newOutlineRect = rect;
+}
+
+LayoutRect RenderObject::oldOutlineRect()
+{
+    ASSERT(hasOutline());
+
+    OutlineRects& outlineRects = view()->outlineRects();
+    OutlineRects::iterator it = outlineRects.find(this);
+    if (it == outlineRects.end())
+        return LayoutRect();
+    return it->value->oldOutlineRect;
+}
+
+void RenderObject::setOldOutlineRect(const LayoutRect& rect)
+{
+    ASSERT(hasOutline());
+
+    OutlineRects& outlineRects = view()->outlineRects();
+    OutlineRects::iterator it = outlineRects.find(this);
+    if (it == outlineRects.end())
+        outlineRects.set(this, adoptPtr(new OutlineRectInfo()));
+    outlineRects.get(this)->oldOutlineRect = rect;
+}
+
+void RenderObject::clearRepaintState()
+{
+    setShouldDoFullRepaintAfterLayout(false);
+    setShouldDoFullRepaintIfSelfPaintingLayer(false);
+    setShouldRepaintOverflow(false);
+    setLayoutDidGetCalled(false);
+
+    OutlineRects& outlineRects = view()->outlineRects();
+    OutlineRects::iterator it = outlineRects.find(this);
+    if (it != outlineRects.end())
+        outlineRects.remove(it);
 }
 
 } // namespace WebCore
