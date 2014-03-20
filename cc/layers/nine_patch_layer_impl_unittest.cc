@@ -44,7 +44,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                                layer_size.height() - border.height());
 
   FakeImplProxy proxy;
-  FakeUIResourceLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   scoped_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;

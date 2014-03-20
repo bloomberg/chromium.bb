@@ -14,6 +14,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,7 +60,7 @@ class MockLayerPainter : public LayerPainter {
 class LayerTest : public testing::Test {
  public:
   LayerTest()
-      : host_impl_(&proxy_),
+      : host_impl_(&proxy_, &shared_bitmap_manager_),
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
@@ -129,6 +130,7 @@ class LayerTest : public testing::Test {
   }
 
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
 
   FakeLayerTreeHostClient fake_client_;
@@ -804,24 +806,25 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
 class LayerTreeHostFactory {
  public:
   LayerTreeHostFactory()
-      : client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+      : client_(FakeLayerTreeHostClient::DIRECT_3D),
+        shared_bitmap_manager_(new TestSharedBitmapManager()) {}
 
   scoped_ptr<LayerTreeHost> Create() {
     return LayerTreeHost::CreateSingleThreaded(&client_,
                                                &client_,
-                                               NULL,
+                                               shared_bitmap_manager_.get(),
                                                LayerTreeSettings()).Pass();
   }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
-    return LayerTreeHost::CreateSingleThreaded(&client_,
-                                               &client_,
-                                               NULL,
-                                               settings).Pass();
+    return LayerTreeHost::CreateSingleThreaded(
+               &client_, &client_, shared_bitmap_manager_.get(), settings)
+        .Pass();
   }
 
  private:
   FakeLayerTreeHostClient client_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {

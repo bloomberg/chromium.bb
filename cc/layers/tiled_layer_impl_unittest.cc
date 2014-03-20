@@ -20,7 +20,7 @@ namespace {
 
 class TiledLayerImplTest : public testing::Test {
  public:
-  TiledLayerImplTest() : host_impl_(&proxy_) {}
+  TiledLayerImplTest() : host_impl_(&proxy_, &shared_bitmap_manager_) {}
 
   scoped_ptr<TiledLayerImpl> CreateLayerNoTiles(
       const gfx::Size& tile_size,
@@ -85,6 +85,7 @@ class TiledLayerImplTest : public testing::Test {
 
  protected:
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

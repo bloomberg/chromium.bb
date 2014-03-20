@@ -18,6 +18,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -53,9 +54,15 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
       Proxy* proxy,
+      SharedBitmapManager* manager,
       RenderingStatsInstrumentation* stats_instrumentation) {
-    return make_scoped_ptr(new LayerTreeHostImplForTesting(
-        test_hooks, settings, host_impl_client, proxy, stats_instrumentation));
+    return make_scoped_ptr(
+        new LayerTreeHostImplForTesting(test_hooks,
+                                        settings,
+                                        host_impl_client,
+                                        proxy,
+                                        manager,
+                                        stats_instrumentation));
   }
 
  protected:
@@ -64,12 +71,13 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
       Proxy* proxy,
+      SharedBitmapManager* manager,
       RenderingStatsInstrumentation* stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           host_impl_client,
                           proxy,
                           stats_instrumentation,
-                          NULL,
+                          manager,
                           0),
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
@@ -295,11 +303,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* host_impl_client) OVERRIDE {
     return LayerTreeHostImplForTesting::Create(
-        test_hooks_,
-        settings(),
-        host_impl_client,
-        proxy(),
-        rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
+               test_hooks_,
+               settings(),
+               host_impl_client,
+               proxy(),
+               shared_bitmap_manager_.get(),
+               rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
   }
 
   virtual void SetNeedsCommit() OVERRIDE {
@@ -317,9 +326,11 @@ class LayerTreeHostForTesting : public LayerTreeHost {
                           LayerTreeHostClient* client,
                           const LayerTreeSettings& settings)
       : LayerTreeHost(client, NULL, settings),
+        shared_bitmap_manager_(new TestSharedBitmapManager()),
         test_hooks_(test_hooks),
         test_started_(false) {}
 
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   TestHooks* test_hooks_;
   bool test_started_;
 };

@@ -10,6 +10,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +83,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // The constructor on this will fake that we are on the correct thread.
   // Create a simple LayerImpl tree:
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   EXPECT_TRUE(host_impl.InitializeRenderer(
       FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   scoped_ptr<LayerImpl> root_clip =
@@ -241,7 +243,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   EXPECT_TRUE(host_impl.InitializeRenderer(
       FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   host_impl.active_tree()->SetRootLayer(
@@ -353,7 +356,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   EXPECT_TRUE(host_impl.InitializeRenderer(
       FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
@@ -384,9 +388,10 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
 
 class LayerImplScrollTest : public testing::Test {
  public:
-  LayerImplScrollTest() : host_impl_(&proxy_), root_id_(7) {
-    host_impl_.active_tree()
-        ->SetRootLayer(LayerImpl::Create(host_impl_.active_tree(), root_id_));
+  LayerImplScrollTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_), root_id_(7) {
+    host_impl_.active_tree()->SetRootLayer(
+        LayerImpl::Create(host_impl_.active_tree(), root_id_));
     host_impl_.active_tree()->root_layer()->AddChild(
         LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
     layer()->SetScrollClipLayer(root_id_);
@@ -404,6 +409,7 @@ class LayerImplScrollTest : public testing::Test {
 
  private:
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
 };

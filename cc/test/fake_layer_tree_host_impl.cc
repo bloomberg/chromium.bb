@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
-FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy)
+FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
+                                             SharedBitmapManager* manager)
     : LayerTreeHostImpl(LayerTreeSettings(),
                         &client_,
                         proxy,
                         &stats_instrumentation_,
-                        NULL,
+                        manager,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
@@ -20,12 +22,13 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy)
 }
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
-                                             Proxy* proxy)
+                                             Proxy* proxy,
+                                             SharedBitmapManager* manager)
     : LayerTreeHostImpl(settings,
                         &client_,
                         proxy,
                         &stats_instrumentation_,
-                        NULL,
+                        manager,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());

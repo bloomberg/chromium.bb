@@ -12,6 +12,7 @@
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/mock_quad_culler.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,9 @@ class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(ImplSidePaintingSettings(), &proxy_) {
+        host_impl_(ImplSidePaintingSettings(),
+                   &proxy_,
+                   &shared_bitmap_manager_) {
     tiling_client_.SetTileSize(ImplSidePaintingSettings().default_tile_size);
     host_impl_.CreatePendingTree();
     host_impl_.InitializeRenderer(
@@ -70,6 +73,7 @@ class PictureImageLayerImplTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakePictureLayerTilingClient tiling_client_;
 };
 

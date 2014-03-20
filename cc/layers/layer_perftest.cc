@@ -32,7 +32,7 @@ class MockLayerPainter : public LayerPainter {
 class LayerPerfTest : public testing::Test {
  public:
   LayerPerfTest()
-      : host_impl_(&proxy_),
+      : host_impl_(&proxy_, &shared_bitmap_manager_),
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
@@ -50,6 +50,7 @@ class LayerPerfTest : public testing::Test {
   }
 
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
 
   FakeLayerTreeHostClient fake_client_;

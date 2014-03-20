@@ -19,6 +19,7 @@
 #include "cc/test/hybrid_rasterization_settings.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/mock_quad_culler.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,12 +44,14 @@ class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(ImplSidePaintingSettings(), &proxy_),
+        host_impl_(ImplSidePaintingSettings(),
+                   &proxy_,
+                   &shared_bitmap_manager_),
         id_(7) {}
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(settings, &proxy_),
+        host_impl_(settings, &proxy_, &shared_bitmap_manager_),
         id_(7) {}
 
   virtual ~PictureLayerImplTest() {
@@ -242,6 +245,7 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
   int id_;
   FakePictureLayerImpl* pending_layer_;

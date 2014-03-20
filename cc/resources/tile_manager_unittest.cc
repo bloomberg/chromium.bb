@@ -11,6 +11,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_tile_priorities.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,8 +36,9 @@ class TileManagerTest : public testing::TestWithParam<bool>,
     output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
     tile_manager_ = make_scoped_ptr(new FakeTileManager(
         this, resource_provider_.get(), allow_on_demand_raster));
 
@@ -144,6 +146,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
   scoped_refptr<FakePicturePileImpl> picture_pile_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
@@ -628,7 +631,8 @@ TEST_P(TileManagerTest, PairedPictureLayers) {
   Initialize(10, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
 
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   host_impl.CreatePendingTree();
   host_impl.ActivatePendingTree();
   host_impl.CreatePendingTree();

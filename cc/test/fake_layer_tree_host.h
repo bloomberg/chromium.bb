@@ -9,6 +9,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -51,12 +52,10 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
  private:
   FakeLayerTreeHost(LayerTreeHostClient* client,
-                    const LayerTreeSettings& settings)
-      : LayerTreeHost(client, NULL, settings),
-        host_impl_(settings, &proxy_),
-        needs_commit_(false) {}
+                    const LayerTreeSettings& settings);
 
   FakeImplProxy proxy_;
+  TestSharedBitmapManager manager_;
   FakeLayerTreeHostImpl host_impl_;
   bool needs_commit_;
 };

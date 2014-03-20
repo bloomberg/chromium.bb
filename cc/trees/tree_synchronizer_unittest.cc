@@ -16,6 +16,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -557,8 +558,15 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
   FakeProxy proxy;
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<LayerTreeHostImpl> host_impl =
+      LayerTreeHostImpl::Create(settings,
+                                NULL,
+                                &proxy,
+                                &stats_instrumentation,
+                                shared_bitmap_manager.get(),
+                                0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   host_->SetRootLayer(layer_tree_root);
@@ -589,8 +597,15 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   FakeProxy proxy;
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<LayerTreeHostImpl> host_impl =
+      LayerTreeHostImpl::Create(settings,
+                                NULL,
+                                &proxy,
+                                &stats_instrumentation,
+                                shared_bitmap_manager.get(),
+                                0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_parent = Layer::Create();
@@ -655,8 +670,15 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   FakeProxy proxy;
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<LayerTreeHostImpl> host_impl =
+      LayerTreeHostImpl::Create(settings,
+                                NULL,
+                                &proxy,
+                                &stats_instrumentation,
+                                shared_bitmap_manager.get(),
+                                0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> clip_parent = Layer::Create();

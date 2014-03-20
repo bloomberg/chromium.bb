@@ -10,6 +10,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/frame_time.h"
@@ -24,7 +25,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
  public:
   MockTopControlsManagerClient(float top_controls_show_threshold,
                                float top_controls_hide_threshold)
-      : host_impl_(&proxy_),
+      : host_impl_(&proxy_, &shared_bitmap_manager_),
         redraw_needed_(false),
         update_draw_properties_needed_(false),
         top_controls_show_threshold_(top_controls_show_threshold),
@@ -60,6 +61,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
 
  private:
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<LayerTreeImpl> active_tree_;
   scoped_ptr<LayerImpl> root_scroll_layer_;

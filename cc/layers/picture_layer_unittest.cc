@@ -49,7 +49,9 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   {
     DebugScopedSetImplThread impl_thread(&proxy);
 
-    FakeLayerTreeHostImpl host_impl(ImplSidePaintingSettings(), &proxy);
+    TestSharedBitmapManager shared_bitmap_manager;
+    FakeLayerTreeHostImpl host_impl(
+        ImplSidePaintingSettings(), &proxy, &shared_bitmap_manager);
     host_impl.CreatePendingTree();
     scoped_ptr<FakePictureLayerImpl> layer_impl =
         FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);

@@ -12,7 +12,8 @@ namespace cc {
 
 class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
  public:
-  explicit FakeUIResourceLayerTreeHostImpl(Proxy* proxy);
+  explicit FakeUIResourceLayerTreeHostImpl(Proxy* proxy,
+                                           SharedBitmapManager* manager);
   virtual ~FakeUIResourceLayerTreeHostImpl();
 
   virtual void CreateUIResource(UIResourceId uid,

@@ -17,6 +17,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_occlusion_tracker.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,8 +32,7 @@ typedef LayerIterator<LayerImpl> LayerIteratorType;
 class QuadCullerTest : public testing::Test {
  public:
   QuadCullerTest()
-      : host_impl_(&proxy_),
-        layer_id_(1) {}
+      : host_impl_(&proxy_, &shared_bitmap_manager_), layer_id_(1) {}
 
   scoped_ptr<TiledLayerImpl> MakeLayer(TiledLayerImpl* parent,
                                        const gfx::Transform& draw_transform,
@@ -103,6 +103,7 @@ class QuadCullerTest : public testing::Test {
 
  protected:
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
   int layer_id_;
 

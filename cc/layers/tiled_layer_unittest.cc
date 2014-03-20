@@ -20,6 +20,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -106,9 +107,10 @@ class TiledLayerTest : public testing::Test {
 
   virtual void SetUp() {
     impl_thread_.Start();
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     layer_tree_host_ = SynchronousOutputSurfaceLayerTreeHost::Create(
         &fake_layer_tree_host_client_,
-        NULL,
+        shared_bitmap_manager_.get(),
         settings_,
         impl_thread_.message_loop_proxy());
     proxy_ = layer_tree_host_->proxy();
@@ -121,9 +123,10 @@ class TiledLayerTest : public testing::Test {
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         impl_thread_and_main_thread_blocked(proxy_);
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
-    host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(proxy_));
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+    host_impl_ = make_scoped_ptr(
+        new FakeLayerTreeHostImpl(proxy_, shared_bitmap_manager_.get()));
   }
 
   virtual ~TiledLayerTest() {
@@ -241,6 +244,7 @@ class TiledLayerTest : public testing::Test {
   LayerTreeSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceUpdateQueue> queue_;
   PriorityCalculator priority_calculator_;

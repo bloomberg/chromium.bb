@@ -212,6 +212,8 @@
       'test/test_gles2_interface.cc',
       'test/test_gles2_interface.h',
       'test/test_occlusion_tracker.h',
+      'test/test_shared_bitmap_manager.cc',
+      'test/test_shared_bitmap_manager.h',
       'test/test_texture.cc',
       'test/test_texture.h',
       'test/test_tile_priorities.cc',

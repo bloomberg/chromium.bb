@@ -8,8 +8,10 @@
 
 namespace cc {
 
-FakeUIResourceLayerTreeHostImpl::FakeUIResourceLayerTreeHostImpl(Proxy* proxy)
-    : FakeLayerTreeHostImpl(proxy), fake_next_resource_id_(1) {}
+FakeUIResourceLayerTreeHostImpl::FakeUIResourceLayerTreeHostImpl(
+    Proxy* proxy,
+    SharedBitmapManager* manager)
+    : FakeLayerTreeHostImpl(proxy, manager), fake_next_resource_id_(1) {}
 
 FakeUIResourceLayerTreeHostImpl::~FakeUIResourceLayerTreeHostImpl() {}
 

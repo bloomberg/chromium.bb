@@ -11,6 +11,7 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/lap_timer.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_tile_priorities.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,8 +40,9 @@ class TileManagerPerfTest : public testing::Test {
     output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
     size_t raster_task_limit_bytes = 32 * 1024 * 1024;  // 16-64MB in practice.
     tile_manager_ =
         make_scoped_ptr(new FakeTileManager(&tile_manager_client_,
@@ -170,6 +172,7 @@ class TileManagerPerfTest : public testing::Test {
   scoped_refptr<FakePicturePileImpl> picture_pile_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   LapTimer timer_;
 };

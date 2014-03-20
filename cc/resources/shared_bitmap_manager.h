@@ -15,6 +15,7 @@ namespace cc {
 class CC_EXPORT SharedBitmapManager {
  public:
   SharedBitmapManager() {}
+  virtual ~SharedBitmapManager() {}
 
   virtual scoped_ptr<SharedBitmap> AllocateSharedBitmap(const gfx::Size&) = 0;
   virtual scoped_ptr<SharedBitmap> GetSharedBitmapFromId(

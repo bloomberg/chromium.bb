@@ -8,6 +8,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
@@ -210,7 +211,8 @@ TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {
   //    - 3 and 4 should be re-sorted so they are in front of 1, 2, and 5.
 
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
 
   scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
   scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);
@@ -275,7 +277,8 @@ TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {
 
 TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
 
   scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
   scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);

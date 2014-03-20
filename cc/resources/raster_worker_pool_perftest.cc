@@ -15,6 +15,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/lap_timer.h"
 #include "cc/test/test_context_support.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -164,8 +165,11 @@ class RasterWorkerPoolPerfTestBase {
     output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ = ResourceProvider::Create(
-                             output_surface_.get(), NULL, 0, false, 1).Pass();
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    resource_provider_ =
+        ResourceProvider::Create(
+            output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
+            .Pass();
   }
   virtual ~RasterWorkerPoolPerfTestBase() { resource_provider_.reset(); }
 
@@ -207,6 +211,7 @@ class RasterWorkerPoolPerfTestBase {
   scoped_refptr<ContextProvider> context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   LapTimer timer_;
 };

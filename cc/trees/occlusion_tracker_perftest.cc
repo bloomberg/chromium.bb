@@ -12,6 +12,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/lap_timer.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -34,8 +35,9 @@ class OcclusionTrackerPerfTest : public testing::Test {
         impl_(&proxy_) {}
   void CreateHost() {
     LayerTreeSettings settings;
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     host_impl_ = LayerTreeHostImpl::Create(
-        settings, &client_, &proxy_, &stats_, NULL, 1);
+        settings, &client_, &proxy_, &stats_, shared_bitmap_manager_.get(), 1);
     host_impl_->InitializeRenderer(
         FakeOutputSurface::Create3d().PassAs<OutputSurface>());
 
@@ -64,6 +66,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
   FakeProxy proxy_;
   DebugScopedSetImplThread impl_;
   FakeRenderingStatsInstrumentation stats_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 

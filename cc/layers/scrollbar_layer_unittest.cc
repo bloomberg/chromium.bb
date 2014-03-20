@@ -390,7 +390,8 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    host_impl_.reset(new FakeLayerTreeHostImpl(layer_tree_settings, &proxy_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(
+        layer_tree_settings, &proxy_, &shared_bitmap_manager_));
 
     const int kThumbThickness = 3;
     const bool kIsLeftSideVerticalScrollbar = false;
@@ -414,6 +415,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
 
  protected:
   FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
   scoped_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer_;
   scoped_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer_;

@@ -20,8 +20,9 @@ class MicroBenchmarkControllerTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     impl_proxy_ = make_scoped_ptr(new FakeImplProxy);
-    layer_tree_host_impl_ =
-        make_scoped_ptr(new FakeLayerTreeHostImpl(impl_proxy_.get()));
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    layer_tree_host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
+        impl_proxy_.get(), shared_bitmap_manager_.get()));
 
     layer_tree_host_ = FakeLayerTreeHost::Create();
     layer_tree_host_->SetRootLayer(Layer::Create());
@@ -35,6 +36,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
   }
 
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
   scoped_ptr<FakeImplProxy> impl_proxy_;
 };

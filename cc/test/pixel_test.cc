@@ -23,6 +23,7 @@
 #include "cc/test/pixel_test_software_output_device.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -121,8 +122,9 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
       new PixelTestOutputSurface(new TestInProcessContextProvider));
   output_surface_->BindToClient(output_surface_client_.get());
 
-  resource_provider_ =
-      ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+  shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+  resource_provider_ = ResourceProvider::Create(
+      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
 
   texture_mailbox_deleter_ = make_scoped_ptr(
       new TextureMailboxDeleter(base::MessageLoopProxy::current()));
@@ -162,11 +164,13 @@ void PixelTest::SetUpSoftwareRenderer() {
   scoped_ptr<SoftwareOutputDevice> device(new PixelTestSoftwareOutputDevice());
   output_surface_.reset(new PixelTestOutputSurface(device.Pass()));
   output_surface_->BindToClient(output_surface_client_.get());
-  resource_provider_ =
-      ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
-  renderer_ = SoftwareRenderer::Create(
-      this, &settings_, output_surface_.get(), resource_provider_.get())
-                  .PassAs<DirectRenderer>();
+  shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+  resource_provider_ = ResourceProvider::Create(
+      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+  renderer_ =
+      SoftwareRenderer::Create(
+          this, &settings_, output_surface_.get(), resource_provider_.get())
+          .PassAs<DirectRenderer>();
 }
 
 }  // namespace cc

@@ -7,6 +7,7 @@
 #include "cc/output/renderer.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,8 +19,10 @@ TEST(ScopedResourceTest, NewScopedResource) {
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
 
@@ -36,8 +39,10 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
   texture->Allocate(gfx::Size(30, 30),
@@ -58,8 +63,10 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());
@@ -92,8 +99,10 @@ TEST(ScopedResourceTest, LeakScopedResource) {
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());

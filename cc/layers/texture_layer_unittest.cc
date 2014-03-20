@@ -65,8 +65,8 @@ class TextureLayerTest : public testing::Test {
  public:
   TextureLayerTest()
       : fake_client_(
-          FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
-        host_impl_(&proxy_) {}
+            FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
+        host_impl_(&proxy_, &shared_bitmap_manager_) {}
 
  protected:
   virtual void SetUp() {
@@ -85,6 +85,7 @@ class TextureLayerTest : public testing::Test {
   scoped_ptr<MockLayerTreeHost> layer_tree_host_;
   FakeImplProxy proxy_;
   FakeLayerTreeHostClient fake_client_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

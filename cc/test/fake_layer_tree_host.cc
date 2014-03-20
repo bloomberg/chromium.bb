@@ -5,6 +5,11 @@
 #include "cc/test/fake_layer_tree_host.h"
 
 namespace cc {
+FakeLayerTreeHost::FakeLayerTreeHost(LayerTreeHostClient* client,
+                                     const LayerTreeSettings& settings)
+    : LayerTreeHost(client, NULL, settings),
+      host_impl_(settings, &proxy_, &manager_),
+      needs_commit_(false) {}
 
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create() {
   static FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
