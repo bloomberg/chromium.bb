@@ -86,11 +86,6 @@ class WebCryptoKeyHandle;
 //
 // If WebCryptoKey "isNull()" then it is invalid to call any of the other
 // methods on it (other than destruction, assignment, or isNull()).
-//
-// FIXME: Define the interface to use for structured clone.
-//        Cloning across a process boundary will need serialization,
-//        however cloning for in-process workers could just share the same
-//        (threadsafe) handle.
 class WebCryptoKey {
 public:
     ~WebCryptoKey() { reset(); }

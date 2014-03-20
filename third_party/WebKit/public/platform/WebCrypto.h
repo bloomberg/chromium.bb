@@ -35,6 +35,7 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebCryptoKey.h"
 #include "WebPrivatePtr.h"
+#include "WebVector.h"
 
 namespace WebCore { class CryptoResult; }
 
@@ -181,6 +182,54 @@ public:
     // digest and |false| otherwise. This is useful for Blink internal crypto
     // and is not part of the WebCrypto standard.
     virtual bool digestSynchronous(const WebCryptoAlgorithmId algorithmId, const unsigned char* data, unsigned dataSize, WebArrayBuffer& result) { return false; }
+
+    // -----------------------
+    // Structured clone
+    // -----------------------
+    //
+    // deserializeKeyForClone() and serializeKeyForClone() are used for
+    // implementing structured cloning of WebCryptoKey.
+    //
+    // Blink is responsible for saving and restoring all of the attributes of
+    // WebCryptoKey EXCEPT for the actual key data:
+    //
+    // In other words, Blink takes care of serializing:
+    //   * Key usages
+    //   * Key extractability
+    //   * Key algorithm
+    //   * Key type (public, private, secret)
+    //
+    // The embedder is responsible for saving the key data itself.
+    //
+    // Visibility of the serialized key data:
+    //
+    // The serialized key data will NOT be visible to web pages. So if the
+    // serialized format were to include key bytes as plain text, this wouldn't
+    // make it available to web pages.
+    //
+    // Longevity of the key data:
+    //
+    // The serialized key data is intended to be long lived (years) and MUST
+    // be using a stable format. For instance a key might be persisted to
+    // IndexedDB and should be able to be deserialized correctly in the
+    // future.
+    //
+    // Error handling and asynchronous completion:
+    //
+    // Serialization/deserialization must complete synchronously, and will
+    // block the JavaScript thread.
+    //
+    // The only reasons to fail serialization/deserialization are:
+    //   * Key serialization not yet implemented
+    //   * The bytes to deserialize were corrupted
+
+    // Creates a new key given key data which was written using
+    // serializeKeyForClone(). Returns true on success.
+    virtual bool deserializeKeyForClone(const WebCryptoKeyAlgorithm&, WebCryptoKeyType, bool extractable, WebCryptoKeyUsageMask, const unsigned char* keyData, unsigned keyDataSize, WebCryptoKey&) { return false; }
+
+    // Writes the key data into the given WebVector.
+    // Returns true on success.
+    virtual bool serializeKeyForClone(const WebCryptoKey&, WebVector<unsigned char>&) { return false; }
 
 protected:
     virtual ~WebCrypto() { }

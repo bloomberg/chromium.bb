@@ -54,7 +54,7 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCtr,
     WebCryptoAlgorithmIdAesKw,
 #if INSIDE_BLINK
-    NumberOfWebCryptoAlgorithmId,
+    WebCryptoAlgorithmIdLast = WebCryptoAlgorithmIdAesKw,
 #endif
 };
 
@@ -130,6 +130,9 @@ public:
     BLINK_PLATFORM_EXPORT const WebCryptoAesCtrParams* aesCtrParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoRsaHashedImportParams* rsaHashedImportParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoRsaHashedKeyGenParams* rsaHashedKeyGenParams() const;
+
+    // Returns true if the provided algorithm ID is for a hash (in other words, SHA-*)
+    BLINK_PLATFORM_EXPORT static bool isHash(WebCryptoAlgorithmId);
 
 private:
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoAlgorithm& other);

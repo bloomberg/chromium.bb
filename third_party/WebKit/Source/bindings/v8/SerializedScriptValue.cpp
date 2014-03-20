@@ -36,6 +36,7 @@
 #include "V8File.h"
 #include "V8FileList.h"
 #include "V8ImageData.h"
+#include "V8Key.h"
 #include "V8MessagePort.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
@@ -63,6 +64,10 @@
 #include "core/html/canvas/DataView.h"
 #include "heap/Handle.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCrypto.h"
+#include "public/platform/WebCryptoKey.h"
+#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/ArrayBufferView.h"
@@ -209,6 +214,15 @@ enum SerializationTag {
     ArrayBufferTag = 'B', // byteLength:uint32_t, data:byte[byteLength] -> ArrayBuffer (ref)
     ArrayBufferTransferTag = 't', // index:uint32_t -> ArrayBuffer. For ArrayBuffer transfer
     ArrayBufferViewTag = 'V', // subtag:byte, byteOffset:uint32_t, byteLength:uint32_t -> ArrayBufferView (ref). Consumes an ArrayBuffer from the top of the deserialization stack.
+    CryptoKeyTag = 'K', // subtag:byte, props, usages:uint32_t, keyDataLength:uint32_t, keyData:byte[keyDataLength]
+                        //   If subtag=AesKeyTag:
+                        //       props = keyLengthBytes:uint32_t, algorithmId:uint32_t
+                        //   If subtag=HmacKeyTag:
+                        //       props = keyLengthBytes:uint32_t, hashId:uint32_t
+                        //   If subtag=RsaKeyTag:
+                        //       props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength]
+                        //   If subtag=RsaHashedKeyTag:
+                        //       props = <same as for RsaKeyTag>, hashId:uint32_t
     ObjectReferenceTag = '^', // ref:uint32_t -> reference table[ref]
     GenerateFreshObjectTag = 'o', // -> empty object allocated an object ID and pushed onto the open stack (ref)
     GenerateFreshSparseArrayTag = 'a', // length:uint32_t -> empty array[length] allocated an object ID and pushed onto the open stack (ref)
@@ -232,6 +246,51 @@ enum ArrayBufferViewSubTag {
     FloatArrayTag = 'f',
     DoubleArrayTag = 'F',
     DataViewTag = '?'
+};
+
+enum CryptoKeySubTag {
+    AesKeyTag = 1,
+    HmacKeyTag = 2,
+    RsaKeyTag = 3,
+    RsaHashedKeyTag = 4,
+    // Maximum allowed value is 255
+};
+
+enum AssymetricCryptoKeyType {
+    PublicKeyType = 1,
+    PrivateKeyType = 2,
+    // Maximum allowed value is 2^32-1
+};
+
+enum CryptoKeyAlgorithmTag {
+    AesCbcTag = 1,
+    HmacTag = 2,
+    RsaSsaPkcs1v1_5Tag = 3,
+    RsaEsPkcs1v1_5Tag = 4,
+    Sha1Tag = 5,
+    Sha256Tag = 6,
+    Sha384Tag = 7,
+    Sha512Tag = 8,
+    AesGcmTag = 9,
+    RsaOaepTag = 10,
+    AesCtrTag = 11,
+    AesKwTag = 12,
+    // Maximum allowed value is 2^32-1
+};
+
+enum CryptoKeyUsage {
+    // Extractability is not a "usage" in the WebCryptoKeyUsages sense, however
+    // it fits conveniently into this bitfield.
+    ExtractableUsage = 1 << 0,
+
+    EncryptUsage = 1 << 1,
+    DecryptUsage = 1 << 2,
+    SignUsage = 1 << 3,
+    VerifyUsage = 1 << 4,
+    DeriveKeyUsage = 1 << 5,
+    WrapKeyUsage = 1 << 6,
+    UnwrapKeyUsage = 1 << 7,
+    // Maximum allowed value is 1 << 31
 };
 
 static bool shouldCheckForCycles(int depth)
@@ -422,6 +481,37 @@ public:
             doWriteFile(*fileList.item(i));
     }
 
+    bool writeCryptoKey(const blink::WebCryptoKey& key)
+    {
+        append(static_cast<uint8_t>(CryptoKeyTag));
+
+        switch (key.algorithm().paramsType()) {
+        case blink::WebCryptoKeyAlgorithmParamsTypeAes:
+            doWriteAesKey(key);
+            break;
+        case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
+            doWriteHmacKey(key);
+            break;
+        case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
+        case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
+            doWriteRsaKey(key);
+            break;
+        case blink::WebCryptoKeyAlgorithmParamsTypeNone:
+            ASSERT_NOT_REACHED();
+            return false;
+        }
+
+        doWriteKeyUsages(key.usages(), key.extractable());
+
+        blink::WebVector<uint8_t> keyData;
+        if (!blink::Platform::current()->crypto()->serializeKeyForClone(key, keyData))
+            return false;
+
+        doWriteUint32(keyData.size());
+        append(keyData.data(), keyData.size());
+        return true;
+    }
+
     void writeArrayBuffer(const ArrayBuffer& arrayBuffer)
     {
         append(ArrayBufferTag);
@@ -591,6 +681,116 @@ private:
     {
         StringUTF8Adaptor stringUTF8(string);
         doWriteString(stringUTF8.data(), stringUTF8.length());
+    }
+
+    void doWriteHmacKey(const blink::WebCryptoKey& key)
+    {
+        ASSERT(key.algorithm().paramsType() == blink::WebCryptoKeyAlgorithmParamsTypeHmac);
+
+        append(static_cast<uint8_t>(HmacKeyTag));
+        ASSERT(!(key.algorithm().hmacParams()->lengthBits() % 8));
+        doWriteUint32(key.algorithm().hmacParams()->lengthBits() / 8);
+        doWriteAlgorithmId(key.algorithm().hmacParams()->hash().id());
+    }
+
+    void doWriteAesKey(const blink::WebCryptoKey& key)
+    {
+        ASSERT(key.algorithm().paramsType() == blink::WebCryptoKeyAlgorithmParamsTypeAes);
+
+        append(static_cast<uint8_t>(AesKeyTag));
+        doWriteAlgorithmId(key.algorithm().id());
+        // Converting the key length from bits to bytes is lossless and makes
+        // it fit in 1 byte.
+        ASSERT(!(key.algorithm().aesParams()->lengthBits() % 8));
+        doWriteUint32(key.algorithm().aesParams()->lengthBits() / 8);
+    }
+
+    void doWriteRsaKey(const blink::WebCryptoKey& key)
+    {
+        if (key.algorithm().rsaHashedParams())
+            append(static_cast<uint8_t>(RsaHashedKeyTag));
+        else
+            append(static_cast<uint8_t>(RsaKeyTag));
+
+        doWriteAlgorithmId(key.algorithm().id());
+
+        switch (key.type()) {
+        case blink::WebCryptoKeyTypePublic:
+            doWriteUint32(PublicKeyType);
+            break;
+        case blink::WebCryptoKeyTypePrivate:
+            doWriteUint32(PrivateKeyType);
+            break;
+        case blink::WebCryptoKeyTypeSecret:
+            ASSERT_NOT_REACHED();
+        }
+
+        const blink::WebCryptoRsaKeyAlgorithmParams* params = key.algorithm().rsaParams();
+        doWriteUint32(params->modulusLengthBits());
+        doWriteUint32(params->publicExponent().size());
+        append(params->publicExponent().data(), params->publicExponent().size());
+
+        if (key.algorithm().rsaHashedParams())
+            doWriteAlgorithmId(key.algorithm().rsaHashedParams()->hash().id());
+    }
+
+    void doWriteAlgorithmId(blink::WebCryptoAlgorithmId id)
+    {
+        switch (id) {
+        case blink::WebCryptoAlgorithmIdAesCbc:
+            return doWriteUint32(AesCbcTag);
+        case blink::WebCryptoAlgorithmIdHmac:
+            return doWriteUint32(HmacTag);
+        case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+            return doWriteUint32(RsaSsaPkcs1v1_5Tag);
+        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+            return doWriteUint32(RsaEsPkcs1v1_5Tag);
+        case blink::WebCryptoAlgorithmIdSha1:
+            return doWriteUint32(Sha1Tag);
+        case blink::WebCryptoAlgorithmIdSha256:
+            return doWriteUint32(Sha256Tag);
+        case blink::WebCryptoAlgorithmIdSha384:
+            return doWriteUint32(Sha384Tag);
+        case blink::WebCryptoAlgorithmIdSha512:
+            return doWriteUint32(Sha512Tag);
+        case blink::WebCryptoAlgorithmIdAesGcm:
+            return doWriteUint32(AesGcmTag);
+        case blink::WebCryptoAlgorithmIdRsaOaep:
+            return doWriteUint32(RsaOaepTag);
+        case blink::WebCryptoAlgorithmIdAesCtr:
+            return doWriteUint32(AesCtrTag);
+        case blink::WebCryptoAlgorithmIdAesKw:
+            return doWriteUint32(AesKwTag);
+        }
+        ASSERT_NOT_REACHED();
+    }
+
+    void doWriteKeyUsages(const blink::WebCryptoKeyUsageMask usages, bool extractable)
+    {
+        // Reminder to update this when adding new key usages.
+        COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 6) + 1, UpdateMe);
+
+        uint32_t value = 0;
+
+        if (extractable)
+            value |= ExtractableUsage;
+
+        if (usages & blink::WebCryptoKeyUsageEncrypt)
+            value |= EncryptUsage;
+        if (usages & blink::WebCryptoKeyUsageDecrypt)
+            value |= DecryptUsage;
+        if (usages & blink::WebCryptoKeyUsageSign)
+            value |= SignUsage;
+        if (usages & blink::WebCryptoKeyUsageVerify)
+            value |= VerifyUsage;
+        if (usages & blink::WebCryptoKeyUsageDeriveKey)
+            value |= DeriveKeyUsage;
+        if (usages & blink::WebCryptoKeyUsageWrapKey)
+            value |= WrapKeyUsage;
+        if (usages & blink::WebCryptoKeyUsageUnwrapKey)
+            value |= UnwrapKeyUsage;
+
+        doWriteUint32(value);
     }
 
     int bytesNeededToWireEncode(uint32_t value)
@@ -1098,6 +1298,14 @@ private:
             m_blobDataHandles.add(fileList->item(i)->uuid(), fileList->item(i)->blobDataHandle());
     }
 
+    bool writeCryptoKey(v8::Handle<v8::Value> value)
+    {
+        Key* key = V8Key::toNative(value.As<v8::Object>());
+        if (!key)
+            return 0;
+        return m_writer.writeCryptoKey(key->key());
+    }
+
     void writeImageData(v8::Handle<v8::Value> value)
     {
         ImageData* imageData = V8ImageData::toNative(value.As<v8::Object>());
@@ -1293,7 +1501,10 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
             return writeDOMFileSystem(value, next);
         else if (V8FileList::hasInstance(value, m_isolate))
             writeFileList(value);
-        else if (V8ImageData::hasInstance(value, m_isolate))
+        else if (V8Key::hasInstance(value, m_isolate)) {
+            if (!writeCryptoKey(value))
+                return handleError(DataCloneError, "Couldn't serialize key data", next);
+        } else if (V8ImageData::hasInstance(value, m_isolate))
             writeImageData(value);
         else if (value->IsRegExp())
             writeRegExp(value);
@@ -1443,6 +1654,11 @@ public:
             break;
         case FileListTag:
             if (!readFileList(value))
+                return false;
+            creator.pushObjectReference(*value);
+            break;
+        case CryptoKeyTag:
+            if (!readCryptoKey(value))
                 return false;
             creator.pushObjectReference(*value);
             break;
@@ -1909,6 +2125,62 @@ private:
         return true;
     }
 
+    bool readCryptoKey(v8::Handle<v8::Value>* value)
+    {
+        uint32_t rawKeyType;
+        if (!doReadUint32(&rawKeyType))
+            return false;
+
+        blink::WebCryptoKeyAlgorithm algorithm;
+        blink::WebCryptoKeyType type;
+
+        switch (static_cast<CryptoKeySubTag>(rawKeyType)) {
+        case AesKeyTag:
+            if (!doReadAesKey(algorithm, type))
+                return false;
+            break;
+        case HmacKeyTag:
+            if (!doReadHmacKey(algorithm, type))
+                return false;
+            break;
+        case RsaKeyTag:
+            if (!doReadRsaKey(false, algorithm, type))
+                return false;
+            break;
+        case RsaHashedKeyTag:
+            if (!doReadRsaKey(true, algorithm, type))
+                return false;
+            break;
+        default:
+            return false;
+        }
+
+        blink::WebCryptoKeyUsageMask usages;
+        bool extractable;
+        if (!doReadKeyUsages(usages, extractable))
+            return false;
+
+        uint32_t keyDataLength;
+        if (!doReadUint32(&keyDataLength))
+            return false;
+
+        if (m_position + keyDataLength > m_length)
+            return false;
+
+        const uint8_t* keyData = m_buffer + m_position;
+        m_position += keyDataLength;
+
+        blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+        if (!blink::Platform::current()->crypto()->deserializeKeyForClone(
+            algorithm, type, extractable, usages, keyData, keyDataLength, key)) {
+            return false;
+        }
+
+        RefPtrWillBeRawPtr<Key> k = Key::create(key);
+        *value = toV8(k.release(), v8::Handle<v8::Object>(), m_isolate);
+        return true;
+    }
+
     PassRefPtrWillBeRawPtr<File> doReadFileHelper()
     {
         if (m_version < 3)
@@ -1996,6 +2268,163 @@ private:
             return it->value;
         }
         return BlobDataHandle::create(uuid, type, size);
+    }
+
+    bool doReadHmacKey(blink::WebCryptoKeyAlgorithm& algorithm, blink::WebCryptoKeyType& type)
+    {
+        uint32_t lengthBytes;
+        if (!doReadUint32(&lengthBytes))
+            return false;
+        blink::WebCryptoAlgorithmId hash;
+        if (!doReadAlgorithmId(hash))
+            return false;
+        algorithm = blink::WebCryptoKeyAlgorithm::createHmac(hash, lengthBytes * 8);
+        type = blink::WebCryptoKeyTypeSecret;
+        return !algorithm.isNull();
+    }
+
+    bool doReadAesKey(blink::WebCryptoKeyAlgorithm& algorithm, blink::WebCryptoKeyType& type)
+    {
+        blink::WebCryptoAlgorithmId id;
+        if (!doReadAlgorithmId(id))
+            return false;
+        uint32_t lengthBytes;
+        if (!doReadUint32(&lengthBytes))
+            return false;
+        algorithm = blink::WebCryptoKeyAlgorithm::createAes(id, lengthBytes * 8);
+        type = blink::WebCryptoKeyTypeSecret;
+        return !algorithm.isNull();
+    }
+
+    bool doReadRsaKey(bool hasHash, blink::WebCryptoKeyAlgorithm& algorithm, blink::WebCryptoKeyType& type)
+    {
+        blink::WebCryptoAlgorithmId id;
+        if (!doReadAlgorithmId(id))
+            return false;
+
+        uint32_t rawType;
+        if (!doReadUint32(&rawType))
+            return false;
+
+        switch (static_cast<AssymetricCryptoKeyType>(rawType)) {
+        case PublicKeyType:
+            type = blink::WebCryptoKeyTypePublic;
+            break;
+        case PrivateKeyType:
+            type = blink::WebCryptoKeyTypePrivate;
+            break;
+        default:
+            return false;
+        }
+
+        uint32_t modulusLengthBits;
+        if (!doReadUint32(&modulusLengthBits))
+            return false;
+
+        uint32_t publicExponentSize;
+        if (!doReadUint32(&publicExponentSize))
+            return false;
+
+        if (m_position + publicExponentSize > m_length)
+            return false;
+
+        const uint8_t* publicExponent = m_buffer + m_position;
+        m_position += publicExponentSize;
+
+        if (hasHash) {
+            blink::WebCryptoAlgorithmId hash;
+            if (!doReadAlgorithmId(hash))
+                return false;
+            algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(id, modulusLengthBits, publicExponent, publicExponentSize, hash);
+        } else {
+            algorithm = blink::WebCryptoKeyAlgorithm::createRsa(id, modulusLengthBits, publicExponent, publicExponentSize);
+        }
+
+        return !algorithm.isNull();
+    }
+
+    bool doReadAlgorithmId(blink::WebCryptoAlgorithmId& id)
+    {
+        uint32_t rawId;
+        if (!doReadUint32(&rawId))
+            return false;
+
+        switch (static_cast<CryptoKeyAlgorithmTag>(rawId)) {
+        case AesCbcTag:
+            id = blink::WebCryptoAlgorithmIdAesCbc;
+            return true;
+        case HmacTag:
+            id = blink::WebCryptoAlgorithmIdHmac;
+            return true;
+        case RsaSsaPkcs1v1_5Tag:
+            id = blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+            return true;
+        case RsaEsPkcs1v1_5Tag:
+            id = blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5;
+            return true;
+        case Sha1Tag:
+            id = blink::WebCryptoAlgorithmIdSha1;
+            return true;
+        case Sha256Tag:
+            id = blink::WebCryptoAlgorithmIdSha256;
+            return true;
+        case Sha384Tag:
+            id = blink::WebCryptoAlgorithmIdSha384;
+            return true;
+        case Sha512Tag:
+            id = blink::WebCryptoAlgorithmIdSha512;
+            return true;
+        case AesGcmTag:
+            id = blink::WebCryptoAlgorithmIdAesGcm;
+            return true;
+        case RsaOaepTag:
+            id = blink::WebCryptoAlgorithmIdRsaOaep;
+            return true;
+        case AesCtrTag:
+            id = blink::WebCryptoAlgorithmIdAesCtr;
+            return true;
+        case AesKwTag:
+            id = blink::WebCryptoAlgorithmIdAesKw;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool doReadKeyUsages(blink::WebCryptoKeyUsageMask& usages, bool& extractable)
+    {
+        // Reminder to update this when adding new key usages.
+        COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 6) + 1, UpdateMe);
+        const uint32_t allPossibleUsages = ExtractableUsage | EncryptUsage | DecryptUsage | SignUsage | VerifyUsage | DeriveKeyUsage | WrapKeyUsage | UnwrapKeyUsage;
+
+        uint32_t rawUsages;
+        if (!doReadUint32(&rawUsages))
+            return false;
+
+        // Make sure it doesn't contain an unrecognized usage value.
+        if (rawUsages & ~allPossibleUsages)
+            return false;
+
+        usages = 0;
+
+        extractable = rawUsages & ExtractableUsage;
+
+        if (rawUsages & EncryptUsage)
+            usages |= blink::WebCryptoKeyUsageEncrypt;
+        if (rawUsages & DecryptUsage)
+            usages |= blink::WebCryptoKeyUsageDecrypt;
+        if (rawUsages & SignUsage)
+            usages |= blink::WebCryptoKeyUsageSign;
+        if (rawUsages & VerifyUsage)
+            usages |= blink::WebCryptoKeyUsageVerify;
+        if (rawUsages & DeriveKeyUsage)
+            usages |= blink::WebCryptoKeyUsageDeriveKey;
+        if (rawUsages & WrapKeyUsage)
+            usages |= blink::WebCryptoKeyUsageWrapKey;
+        if (rawUsages & UnwrapKeyUsage)
+            usages |= blink::WebCryptoKeyUsageUnwrapKey;
+
+        return true;
     }
 
     const uint8_t* m_buffer;

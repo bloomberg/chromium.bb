@@ -158,3 +158,39 @@ function shouldAcceptPromise(code)
 
     addTask(promise.then(acceptCallback, rejectCallback));
 }
+
+// Returns a Promise for the cloned key.
+function cloneKey(key)
+{
+    // Sending an object through a MessagePort implicitly clones it.
+    // Use a single MessageChannel so requests complete in FIFO order.
+    var self = cloneKey;
+    if (!self.channel) {
+        self.channel = new MessageChannel();
+        self.callbacks = [];
+        self.channel.port1.addEventListener('message', function(e) {
+            var callback = self.callbacks.shift();
+            callback(e.data);
+        }, false);
+        self.channel.port1.start();
+    }
+
+    return new Promise(function(resolve, reject) {
+        self.callbacks.push(resolve);
+        self.channel.port2.postMessage(key);
+    });
+}
+
+// Logging the serialized format ensures that if it changes it will break tests.
+function logSerializedKey(o)
+{
+    if (internals)
+        debug("Serialized key bytes: " + bytesToHexString(internals.serializeObject(o)));
+}
+
+function shouldEvaluateAs(actual, expectedValue)
+{
+    if (typeof expectedValue == "string")
+        return shouldBeEqualToString(actual, expectedValue);
+    return shouldEvaluateTo(actual, expectedValue);
+}

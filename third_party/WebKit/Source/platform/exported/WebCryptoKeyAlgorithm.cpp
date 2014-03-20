@@ -36,6 +36,12 @@
 
 namespace blink {
 
+// FIXME: Remove the need for this.
+WebCryptoAlgorithm createHash(WebCryptoAlgorithmId hash)
+{
+    return WebCryptoAlgorithm::adoptParamsAndCreate(hash, 0);
+}
+
 class WebCryptoKeyAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoKeyAlgorithmPrivate> {
 public:
     WebCryptoKeyAlgorithmPrivate(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoKeyAlgorithmParams> params)
@@ -56,6 +62,36 @@ WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoKeyAlgorithmParams* params)
 {
     return WebCryptoKeyAlgorithm(id, adoptPtr(params));
+}
+
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(WebCryptoAlgorithmId id, unsigned short keyLengthBits)
+{
+    // FIXME: Verify that id is an AES algorithm.
+    // FIXME: Move this somewhere more general.
+    if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
+        return WebCryptoKeyAlgorithm();
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
+}
+
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits)
+{
+    if (!WebCryptoAlgorithm::isHash(hash))
+        return WebCryptoKeyAlgorithm();
+    return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac, adoptPtr(new WebCryptoHmacKeyAlgorithmParams(createHash(hash), keyLengthBits)));
+}
+
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsa(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
+{
+    // FIXME: Verify that id is an RSA algorithm without a hash
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoRsaKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize)));
+}
+
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash)
+{
+    // FIXME: Verify that id is an RSA algorithm which expects a hash
+    if (!WebCryptoAlgorithm::isHash(hash))
+        return WebCryptoKeyAlgorithm();
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoRsaHashedKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize, createHash(hash))));
 }
 
 bool WebCryptoKeyAlgorithm::isNull() const

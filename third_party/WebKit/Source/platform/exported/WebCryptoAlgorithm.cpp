@@ -163,6 +163,27 @@ const WebCryptoRsaHashedKeyGenParams* WebCryptoAlgorithm::rsaHashedKeyGenParams(
     return 0;
 }
 
+bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
+{
+    switch (id) {
+    case WebCryptoAlgorithmIdSha1:
+    case WebCryptoAlgorithmIdSha256:
+    case WebCryptoAlgorithmIdSha384:
+    case WebCryptoAlgorithmIdSha512:
+        return true;
+    case WebCryptoAlgorithmIdAesCbc:
+    case WebCryptoAlgorithmIdHmac:
+    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+    case WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+    case WebCryptoAlgorithmIdAesGcm:
+    case WebCryptoAlgorithmIdRsaOaep:
+    case WebCryptoAlgorithmIdAesCtr:
+    case WebCryptoAlgorithmIdAesKw:
+        break;
+    }
+    return false;
+}
+
 void WebCryptoAlgorithm::assign(const WebCryptoAlgorithm& other)
 {
     m_private = other.m_private;

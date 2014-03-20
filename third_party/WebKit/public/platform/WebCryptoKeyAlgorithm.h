@@ -56,7 +56,13 @@ public:
     BLINK_PLATFORM_EXPORT WebCryptoKeyAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoKeyAlgorithmParams>);
 #endif
 
+    // FIXME: Delete this in favor of the create*() functions.
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoKeyAlgorithmParams*);
+
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createAes(WebCryptoAlgorithmId, unsigned short keyLengthBits);
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits);
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createRsa(WebCryptoAlgorithmId, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize);
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createRsaHashed(WebCryptoAlgorithmId, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash);
 
     ~WebCryptoKeyAlgorithm() { reset(); }
 

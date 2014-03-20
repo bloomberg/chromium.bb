@@ -60,7 +60,8 @@ public:
     // Version 2: Added StringUCharTag for UChar v8 strings.
     // Version 3: Switched to using uuids as blob data identifiers.
     // Version 4: Extended File serialization to be complete.
-    static const uint32_t wireFormatVersion = 4;
+    // Version 5: Added CryptoKeyTag for Key objects.
+    static const uint32_t wireFormatVersion = 5;
 
     ~SerializedScriptValue();
 

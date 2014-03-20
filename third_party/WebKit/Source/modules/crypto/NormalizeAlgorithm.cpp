@@ -171,7 +171,7 @@ private:
     AlgorithmNameToIdMap m_algorithmNameToId;
 
     // Algorithm ID to information.
-    AlgorithmInfo m_algorithms[blink::NumberOfWebCryptoAlgorithmId];
+    AlgorithmInfo m_algorithms[blink::WebCryptoAlgorithmIdLast + 1];
 };
 
 AlgorithmRegistry& AlgorithmRegistry::instance()
