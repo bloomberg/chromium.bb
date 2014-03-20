@@ -114,9 +114,6 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
 
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     ash::ShelfModel* model) {
-  // TODO(oshima): This is currently broken with multiple launchers.
-  // Refactor so that there is just one launcher delegate in the
-  // shell.
   if (!shelf_delegate_) {
     shelf_delegate_ = ChromeLauncherController::CreateInstance(NULL, model);
     shelf_delegate_->Init();
