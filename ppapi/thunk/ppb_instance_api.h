@@ -78,6 +78,7 @@ class PPB_Instance_API {
                              PP_Var value) = 0;
 
   // Find.
+  virtual void SetPluginToHandleFindRequests(PP_Instance instance) = 0;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
                                           PP_Bool final_result) = 0;

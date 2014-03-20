@@ -158,6 +158,8 @@
           'proxy/ppp_class_proxy.h',
           'proxy/ppp_content_decryptor_private_proxy.cc',
           'proxy/ppp_content_decryptor_private_proxy.h',
+          'proxy/ppp_find_proxy.cc',
+          'proxy/ppp_find_proxy.h',
           'proxy/ppp_graphics_3d_proxy.cc',
           'proxy/ppp_graphics_3d_proxy.h',
           'proxy/ppp_input_event_proxy.cc',

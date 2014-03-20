@@ -274,6 +274,14 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
+  // Get/set the plugin which will be used as to handle document find requests.
+  void set_plugin_find_handler(PepperPluginInstanceImpl* plugin) {
+    plugin_find_handler_ = plugin;
+  }
+  PepperPluginInstanceImpl* plugin_find_handler() {
+    return plugin_find_handler_;
+  }
+
   PepperPluginInstanceImpl* focused_pepper_plugin() {
     return focused_pepper_plugin_;
   }
@@ -1000,8 +1008,9 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns the URL being loaded by the given frame's request.
   GURL GetLoadingUrl(blink::WebFrame* frame) const;
 
-  // Should only be called if this object wraps a PluginDocument.
-  blink::WebPlugin* GetWebPluginFromPluginDocument();
+  // Called to get the WebPlugin to handle find requests in the document.
+  // Returns NULL if there is no such WebPlugin.
+  blink::WebPlugin* GetWebPluginForFind();
 
   // Returns true if the |params| navigation is to an entry that has been
   // cropped due to a recent navigation the browser did not know about.
@@ -1361,6 +1370,8 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
 #if defined(ENABLE_PLUGINS)
+  PepperPluginInstanceImpl* plugin_find_handler_;
+
   typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
   PepperPluginSet active_pepper_instances_;
 

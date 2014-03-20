@@ -50,6 +50,7 @@ enum ApiID {
   // TODO(tomfinegan): Remove this after we refactor things to load the PPP
   // interface struct from the PPB interface.
   API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+  API_ID_PPP_FIND_DEV,
   API_ID_PPP_GRAPHICS_3D,
   API_ID_PPP_INPUT_EVENT,
   API_ID_PPP_INSTANCE,

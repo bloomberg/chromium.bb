@@ -631,6 +631,11 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 void PepperPluginInstanceImpl::Delete() {
   is_deleted_ = true;
 
+  if (render_frame_ &&
+      render_frame_->render_view()->plugin_find_handler() == this) {
+    render_frame_->render_view()->set_plugin_find_handler(NULL);
+  }
+
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   // Force the MessageChannel to release its "passthrough object" which should
@@ -1385,6 +1390,8 @@ void PepperPluginInstanceImpl::StopFind() {
 }
 
 bool PepperPluginInstanceImpl::LoadFindInterface() {
+  if (!module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
+    return false;
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
         static_cast<const PPP_Find_Dev*>(module_->GetPluginInterface(
@@ -2380,6 +2387,17 @@ void PepperPluginInstanceImpl::DeliverSamples(
     PP_Resource audio_frames,
     const PP_DecryptedSampleInfo* sample_info) {
   content_decryptor_delegate_->DeliverSamples(audio_frames, sample_info);
+}
+
+void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
+    PP_Instance instance) {
+  if (!LoadFindInterface())
+    return;
+  bool is_main_frame = render_frame_ &&
+      render_frame_->GetRenderView()->GetMainRenderFrame() == render_frame_;
+  if (!is_main_frame)
+    return;
+  render_frame_->render_view()->set_plugin_find_handler(this);
 }
 
 void PepperPluginInstanceImpl::NumberOfFindResultsChanged(

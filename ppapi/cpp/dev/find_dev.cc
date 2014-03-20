@@ -60,6 +60,13 @@ Find_Dev::~Find_Dev() {
                                     kPPPFindInterface, this);
 }
 
+void Find_Dev::SetPluginToHandleFindRequests() {
+  if (has_interface<PPB_Find_Dev>()) {
+    get_interface<PPB_Find_Dev>()->SetPluginToHandleFindRequests(
+        associated_instance_.pp_instance());
+  }
+}
+
 void Find_Dev::NumberOfFindResultsChanged(int32_t total, bool final_result) {
   if (has_interface<PPB_Find_Dev>()) {
     get_interface<PPB_Find_Dev>()->NumberOfFindResultsChanged(

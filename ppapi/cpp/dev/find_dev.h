@@ -49,7 +49,8 @@ class Find_Dev {
   virtual void SelectFindResult(bool forward) = 0;
   virtual void StopFind() = 0;
 
-  // PPB_Find_Def functions for you to call to report find results.
+  // PPB_Find_Dev functions for you to call to report find results.
+  void SetPluginToHandleFindRequests();
   void NumberOfFindResultsChanged(int32_t total, bool final_result);
   void SelectedFindResultChanged(int32_t index);
 

@@ -127,6 +127,12 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgExecuteScript)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
                         OnHostMsgGetDefaultCharSet)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetPluginToHandleFindRequests,
+                        OnHostMsgSetPluginToHandleFindRequests);
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_NumberOfFindResultsChanged,
+                        OnHostMsgNumberOfFindResultsChanged)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SelectFindResultChanged,
+                        OnHostMsgSelectFindResultChanged)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnHostMsgPostMessage)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
@@ -311,15 +317,22 @@ PP_Var PPB_Instance_Proxy::GetDefaultCharSet(PP_Instance instance) {
   return result.Return(dispatcher);
 }
 
+void PPB_Instance_Proxy::SetPluginToHandleFindRequests(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetPluginToHandleFindRequests(
+      API_ID_PPB_INSTANCE, instance));
+}
+
 void PPB_Instance_Proxy::NumberOfFindResultsChanged(PP_Instance instance,
                                                     int32_t total,
                                                     PP_Bool final_result) {
-  NOTIMPLEMENTED();  // Not proxied yet.
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_NumberOfFindResultsChanged(
+      API_ID_PPB_INSTANCE, instance, total, final_result));
 }
 
 void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
                                                    int32_t index) {
-  NOTIMPLEMENTED();  // Not proxied yet.
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SelectFindResultChanged(
+      API_ID_PPB_INSTANCE, instance, index));
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
@@ -897,6 +910,38 @@ void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetDefaultCharSet(instance));
+}
+
+void PPB_Instance_Proxy::OnHostMsgSetPluginToHandleFindRequests(
+    PP_Instance instance) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->SetPluginToHandleFindRequests(instance);
+}
+
+void PPB_Instance_Proxy::OnHostMsgNumberOfFindResultsChanged(
+    PP_Instance instance,
+    int32_t total,
+    PP_Bool final_result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->NumberOfFindResultsChanged(
+        instance, total, final_result);
+  }
+}
+
+void PPB_Instance_Proxy::OnHostMsgSelectFindResultChanged(
+    PP_Instance instance,
+    int32_t index) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->SelectedFindResultChanged(instance, index);
 }
 
 void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,

@@ -2402,6 +2402,8 @@ static void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 
 /* Not generating wrapper methods for PPB_Zoom_Dev_0_2 */
 
+/* Not generating wrapper methods for PPP_Find_Dev_0_3 */
+
 /* Not generating wrapper methods for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_Printing_Dev_0_6 */
@@ -4852,6 +4854,8 @@ static const struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_De
 /* Not generating wrapper interface for PPB_Widget_Dev_0_4 */
 
 /* Not generating wrapper interface for PPB_Zoom_Dev_0_2 */
+
+/* Not generating wrapper interface for PPP_Find_Dev_0_3 */
 
 /* Not generating wrapper interface for PPP_NetworkState_Dev_0_1 */
 

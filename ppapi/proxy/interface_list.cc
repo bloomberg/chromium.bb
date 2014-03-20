@@ -125,6 +125,7 @@
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_content_decryptor_private_proxy.h"
+#include "ppapi/proxy/ppp_find_proxy.h"
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppp_input_event_proxy.h"
 #include "ppapi/proxy/ppp_instance_private_proxy.h"
@@ -299,9 +300,11 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_PRINTING_DEV_INTERFACE, PPP_Printing_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_TEXT_INPUT, &ProxyFactory<PPP_TextInput_Proxy>);
   AddPPP(PPP_TEXTINPUT_DEV_INTERFACE, PPP_TextInput_Proxy::GetProxyInterface());
+#if !defined(OS_NACL)
   AddProxy(API_ID_PPP_PDF, &ProxyFactory<PPP_Pdf_Proxy>);
   AddPPP(PPP_PDF_INTERFACE, PPP_Pdf_Proxy::GetProxyInterface());
-#if !defined(OS_NACL)
+  AddProxy(API_ID_PPP_FIND_DEV, &ProxyFactory<PPP_Find_Proxy>);
+  AddPPP(PPP_FIND_DEV_INTERFACE, PPP_Find_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_VIDEO_DECODER_DEV, &ProxyFactory<PPP_VideoDecoder_Proxy>);
   AddPPP(PPP_VIDEODECODER_DEV_INTERFACE,
          PPP_VideoDecoder_Proxy::GetProxyInterface());

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_find_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_find_dev.idl modified Thu Mar 13 11:05:53 2014.
 
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -14,6 +14,14 @@ namespace ppapi {
 namespace thunk {
 
 namespace {
+
+void SetPluginToHandleFindRequests(PP_Instance instance) {
+  VLOG(4) << "PPB_Find_Dev::SetPluginToHandleFindRequests()";
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetPluginToHandleFindRequests(instance);
+}
 
 void NumberOfFindResultsChanged(PP_Instance instance,
                                 int32_t total,
@@ -34,6 +42,7 @@ void SelectedFindResultChanged(PP_Instance instance, int32_t index) {
 }
 
 const PPB_Find_Dev_0_3 g_ppb_find_dev_thunk_0_3 = {
+  &SetPluginToHandleFindRequests,
   &NumberOfFindResultsChanged,
   &SelectedFindResultChanged
 };
