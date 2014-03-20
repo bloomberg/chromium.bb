@@ -32,6 +32,16 @@ static size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
   return size;
 }
 
+template<typename T>
+int Compare(const T& a, const T& b) {
+  // Using '<' for both comparisons here is as generic as possible (for e.g.
+  // objects which only define operator<() and not operator>() or operator==())
+  // and also allows e.g. floating point NaNs to compare equal.
+  if (a < b)
+    return -1;
+  return (b < a) ? 1 : 0;
+}
+
 template <typename T>
 static IndexedDBKey::KeyArray CopyKeyArray(const T& array) {
   IndexedDBKey::KeyArray result;
@@ -50,29 +60,6 @@ IndexedDBKey::IndexedDBKey()
       number_(0),
       size_estimate_(kOverheadSize) {}
 
-IndexedDBKey::IndexedDBKey(const IndexedDBKey& other)
-    : type_(other.type_),
-      array_(other.array_),
-      binary_(other.binary_),
-      string_(other.string_),
-      date_(other.date_),
-      number_(other.number_),
-      size_estimate_(other.size_estimate_) {
-  DCHECK((!IsValid() && !other.IsValid()) || Compare(other) == 0);
-}
-
-IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) {
-  type_ = other.type_;
-  array_ = other.array_;
-  binary_ = other.binary_;
-  string_ = other.string_;
-  date_ = other.date_;
-  number_ = other.number_;
-  size_estimate_ = other.size_estimate_;
-  DCHECK((!IsValid() && !other.IsValid()) || Compare(other) == 0);
-  return *this;
-}
-
 IndexedDBKey::IndexedDBKey(WebIDBKeyType type)
     : type_(type), date_(0), number_(0), size_estimate_(kOverheadSize) {
   DCHECK(type == WebIDBKeyTypeNull || type == WebIDBKeyTypeInvalid);
@@ -86,67 +73,48 @@ IndexedDBKey::IndexedDBKey(double number, WebIDBKeyType type)
   DCHECK(type == WebIDBKeyTypeNumber || type == WebIDBKeyTypeDate);
 }
 
-IndexedDBKey::IndexedDBKey(const KeyArray& keys)
+IndexedDBKey::IndexedDBKey(const KeyArray& array)
     : type_(WebIDBKeyTypeArray),
-      array_(CopyKeyArray(keys)),
+      array_(CopyKeyArray(array)),
       date_(0),
       number_(0),
-      size_estimate_(kOverheadSize + CalculateArraySize(keys)) {}
+      size_estimate_(kOverheadSize + CalculateArraySize(array)) {}
 
-IndexedDBKey::IndexedDBKey(const std::string& key)
+IndexedDBKey::IndexedDBKey(const std::string& binary)
     : type_(WebIDBKeyTypeBinary),
-      binary_(key),
+      binary_(binary),
       size_estimate_(kOverheadSize +
-                     (key.length() * sizeof(std::string::value_type))) {}
+                     (binary.length() * sizeof(std::string::value_type))) {}
 
-IndexedDBKey::IndexedDBKey(const base::string16& key)
+IndexedDBKey::IndexedDBKey(const base::string16& string)
     : type_(WebIDBKeyTypeString),
-      string_(key),
+      string_(string),
       size_estimate_(kOverheadSize +
-                     (key.length() * sizeof(base::string16::value_type))) {}
+                     (string.length() * sizeof(base::string16::value_type))) {}
 
 IndexedDBKey::~IndexedDBKey() {}
 
-int IndexedDBKey::Compare(const IndexedDBKey& other) const {
-  DCHECK(IsValid());
-  DCHECK(other.IsValid());
-  if (type_ != other.type_)
-    return type_ > other.type_ ? -1 : 1;
-
-  switch (type_) {
-    case WebIDBKeyTypeArray:
-      for (size_t i = 0; i < array_.size() && i < other.array_.size(); ++i) {
-        if (int result = array_[i].Compare(other.array_[i]))
-          return result;
-      }
-      if (array_.size() < other.array_.size())
-        return -1;
-      if (array_.size() > other.array_.size())
-        return 1;
-      return 0;
-    case WebIDBKeyTypeBinary:
-      return binary_.compare(other.binary_);
-    case WebIDBKeyTypeString:
-      return string_.compare(other.string_);
-    case WebIDBKeyTypeDate:
-      return (date_ < other.date_) ? -1 : (date_ > other.date_) ? 1 : 0;
-    case WebIDBKeyTypeNumber:
-      return (number_ < other.number_) ? -1 : (number_ > other.number_) ? 1 : 0;
-    case WebIDBKeyTypeInvalid:
-    case WebIDBKeyTypeNull:
-    case WebIDBKeyTypeMin:
-    default:
-      NOTREACHED();
-      return 0;
-  }
+IndexedDBKey::IndexedDBKey(const IndexedDBKey& other)
+    : type_(other.type_),
+      array_(other.array_),
+      binary_(other.binary_),
+      string_(other.string_),
+      date_(other.date_),
+      number_(other.number_),
+      size_estimate_(other.size_estimate_) {
+  DCHECK((!IsValid() && !other.IsValid()) || CompareTo(other) == 0);
 }
 
-bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {
-  return Compare(other) < 0;
-}
-
-bool IndexedDBKey::IsEqual(const IndexedDBKey& other) const {
-  return !Compare(other);
+IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) {
+  type_ = other.type_;
+  array_ = other.array_;
+  binary_ = other.binary_;
+  string_ = other.string_;
+  date_ = other.date_;
+  number_ = other.number_;
+  size_estimate_ = other.size_estimate_;
+  DCHECK((!IsValid() && !other.IsValid()) || CompareTo(other) == 0);
+  return *this;
 }
 
 bool IndexedDBKey::IsValid() const {
@@ -161,6 +129,45 @@ bool IndexedDBKey::IsValid() const {
   }
 
   return true;
+}
+
+bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {
+  return CompareTo(other) < 0;
+}
+
+bool IndexedDBKey::Equals(const IndexedDBKey& other) const {
+  return !CompareTo(other);
+}
+
+int IndexedDBKey::CompareTo(const IndexedDBKey& other) const {
+  DCHECK(IsValid());
+  DCHECK(other.IsValid());
+  if (type_ != other.type_)
+    return type_ > other.type_ ? -1 : 1;
+
+  switch (type_) {
+    case WebIDBKeyTypeArray:
+      for (size_t i = 0; i < array_.size() && i < other.array_.size(); ++i) {
+        int result = array_[i].CompareTo(other.array_[i]);
+        if (result != 0)
+          return result;
+      }
+      return Compare(array_.size(), other.array_.size());
+    case WebIDBKeyTypeBinary:
+      return binary_.compare(other.binary_);
+    case WebIDBKeyTypeString:
+      return string_.compare(other.string_);
+    case WebIDBKeyTypeDate:
+      return Compare(date_, other.date_);
+    case WebIDBKeyTypeNumber:
+      return Compare(number_, other.number_);
+    case WebIDBKeyTypeInvalid:
+    case WebIDBKeyTypeNull:
+    case WebIDBKeyTypeMin:
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 }  // namespace content

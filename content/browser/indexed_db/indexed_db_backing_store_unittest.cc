@@ -142,7 +142,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
                                               index_key,
                                               &new_primary_key);
     EXPECT_TRUE(s.ok());
-    EXPECT_TRUE(new_primary_key->IsEqual(m_key1));
+    EXPECT_TRUE(new_primary_key->Equals(m_key1));
 
     s = transaction2.Commit();
     EXPECT_TRUE(s.ok());

@@ -596,7 +596,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
     EncodeIDBKey(expected_key, &v);
     slice = StringPiece(&*v.begin(), v.size());
     EXPECT_TRUE(DecodeIDBKey(&slice, &decoded_key));
-    EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+    EXPECT_TRUE(decoded_key->Equals(expected_key));
     EXPECT_TRUE(slice.empty());
 
     slice = StringPiece(&*v.begin(), v.size() - 1);

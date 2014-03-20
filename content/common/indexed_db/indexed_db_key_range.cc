@@ -33,7 +33,7 @@ bool IndexedDBKeyRange::IsOnlyKey() const {
   if (lower_open_ || upper_open_)
     return false;
 
-  return lower_.IsEqual(upper_);
+  return lower_.Equals(upper_);
 }
 
 }  // namespace content

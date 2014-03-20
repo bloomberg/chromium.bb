@@ -1965,13 +1965,13 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
 
     if (key) {
       if (forward) {
-        if (primary_key && current_key_->IsEqual(*key) &&
+        if (primary_key && current_key_->Equals(*key) &&
             this->primary_key().IsLessThan(*primary_key))
           continue;
         if (current_key_->IsLessThan(*key))
           continue;
       } else {
-        if (primary_key && key->IsEqual(*current_key_) &&
+        if (primary_key && key->Equals(*current_key_) &&
             primary_key->IsLessThan(this->primary_key()))
           continue;
         if (key->IsLessThan(*current_key_))
@@ -1980,7 +1980,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
     }
 
     if (cursor_options_.unique) {
-      if (previous_key.IsValid() && current_key_->IsEqual(previous_key)) {
+      if (previous_key.IsValid() && current_key_->Equals(previous_key)) {
         // We should never be able to walk forward all the way
         // to the previous key.
         DCHECK(!last_duplicate_key.IsValid());
@@ -1995,7 +1995,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
 
         // We need to walk forward because we hit the boundary
         // between key ranges.
-        if (!last_duplicate_key.IsEqual(*current_key_)) {
+        if (!last_duplicate_key.Equals(*current_key_)) {
           forward = true;
           continue;
         }
@@ -2007,7 +2007,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
   }
 
   DCHECK(!last_duplicate_key.IsValid() ||
-         (forward && last_duplicate_key.IsEqual(*current_key_)));
+         (forward && last_duplicate_key.Equals(*current_key_)));
   return true;
 }
 

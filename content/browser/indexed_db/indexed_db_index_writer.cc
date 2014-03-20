@@ -113,7 +113,7 @@ bool IndexWriter::AddingKeyAllowed(
   if (!s.ok())
     return false;
   if (!found ||
-      (primary_key.IsValid() && found_primary_key->IsEqual(primary_key)))
+      (primary_key.IsValid() && found_primary_key->Equals(primary_key)))
     *allowed = true;
   return true;
 }
