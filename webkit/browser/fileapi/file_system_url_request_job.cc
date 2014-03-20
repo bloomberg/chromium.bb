@@ -57,10 +57,8 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
 FileSystemURLRequestJob::FileSystemURLRequestJob(
     URLRequest* request,
     NetworkDelegate* network_delegate,
-    const std::string& storage_domain,
     FileSystemContext* file_system_context)
     : URLRequestJob(request, network_delegate),
-      storage_domain_(storage_domain),
       file_system_context_(file_system_context),
       is_directory_(false),
       remaining_bytes_(0),
@@ -159,14 +157,6 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   url_ = file_system_context_->CrackURL(request_->url());
-  if (!url_.is_valid()) {
-    file_system_context_->AttemptAutoMountForURLRequest(
-        request_,
-        storage_domain_,
-        base::Bind(&FileSystemURLRequestJob::DidAttemptAutoMount,
-                   weak_factory_.GetWeakPtr()));
-    return;
-  }
   if (!file_system_context_->CanServeURLRequest(url_)) {
     // In incognito mode the API is not usable and there should be no data.
     NotifyFailed(net::ERR_FILE_NOT_FOUND);
@@ -176,15 +166,6 @@ void FileSystemURLRequestJob::StartAsync() {
       url_,
       base::Bind(&FileSystemURLRequestJob::DidGetMetadata,
                  weak_factory_.GetWeakPtr()));
-}
-
-void FileSystemURLRequestJob::DidAttemptAutoMount(base::File::Error result) {
-  if (result >= 0 &&
-      file_system_context_->CrackURL(request_->url()).is_valid()) {
-    StartAsync();
-  } else {
-    NotifyFailed(net::ERR_FILE_NOT_FOUND);
-  }
 }
 
 void FileSystemURLRequestJob::DidGetMetadata(

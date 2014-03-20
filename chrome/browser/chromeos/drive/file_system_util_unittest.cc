@@ -153,7 +153,6 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
           ScopedVector<fileapi::FileSystemBackend>(),
-          std::vector<fileapi::URLRequestAutoMountHandler>(),
           temp_dir_.path(),  // partition_path
           content::CreateAllowFileAccessOptions()));
 

@@ -384,8 +384,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                                   partition->GetFileSystemContext()));
   protocol_handlers[kFileSystemScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateFileSystemProtocolHandler(partition_domain,
-                                          partition->GetFileSystemContext()));
+          CreateFileSystemProtocolHandler(partition->GetFileSystemContext()));
   protocol_handlers[kChromeUIScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           URLDataManagerBackend::CreateProtocolHandler(

@@ -13,10 +13,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequest;
-}
-
 class MediaPathFilter;
 
 class DeviceMediaAsyncFileUtil;
@@ -32,12 +28,6 @@ class MediaFileSystemBackend : public fileapi::FileSystemBackend {
 
   static bool CurrentlyOnMediaTaskRunnerThread();
   static scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner();
-
-  static bool AttemptAutoMountForURLRequest(
-      const net::URLRequest* url_request,
-      const fileapi::FileSystemURL& filesystem_url,
-      const std::string& storage_domain,
-      const base::Callback<void(base::File::Error result)>& callback);
 
   // FileSystemBackend implementation.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;

@@ -19,8 +19,7 @@ namespace {
 class FileSystemProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  FileSystemProtocolHandler(const std::string& storage_domain,
-                            FileSystemContext* context);
+  explicit FileSystemProtocolHandler(FileSystemContext* context);
   virtual ~FileSystemProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
@@ -28,8 +27,6 @@ class FileSystemProtocolHandler
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
-  const std::string storage_domain_;
-
   // No scoped_refptr because |file_system_context_| is owned by the
   // ProfileIOData, which also owns this ProtocolHandler.
   FileSystemContext* const file_system_context_;
@@ -38,10 +35,8 @@ class FileSystemProtocolHandler
 };
 
 FileSystemProtocolHandler::FileSystemProtocolHandler(
-    const std::string& storage_domain,
     FileSystemContext* context)
-    : storage_domain_(storage_domain),
-      file_system_context_(context) {
+    : file_system_context_(context) {
   DCHECK(file_system_context_);
 }
 
@@ -56,18 +51,18 @@ net::URLRequestJob* FileSystemProtocolHandler::MaybeCreateJob(
   // redirects back here, by adding a / to the URL.
   if (!path.empty() && path[path.size() - 1] == '/') {
     return new FileSystemDirURLRequestJob(
-        request, network_delegate, storage_domain_, file_system_context_);
+        request, network_delegate, file_system_context_);
   }
   return new FileSystemURLRequestJob(
-      request, network_delegate, storage_domain_, file_system_context_);
+      request, network_delegate, file_system_context_);
 }
 
 }  // anonymous namespace
 
-net::URLRequestJobFactory::ProtocolHandler* CreateFileSystemProtocolHandler(
-    const std::string& storage_domain, FileSystemContext* context) {
+net::URLRequestJobFactory::ProtocolHandler*
+CreateFileSystemProtocolHandler(FileSystemContext* context) {
   DCHECK(context);
-  return new FileSystemProtocolHandler(storage_domain, context);
+  return new FileSystemProtocolHandler(context);
 }
 
 }  // namespace fileapi

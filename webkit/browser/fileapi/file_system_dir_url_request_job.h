@@ -28,7 +28,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemDirURLRequestJob
   FileSystemDirURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      const std::string& storage_domain,
       FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
@@ -50,14 +49,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemDirURLRequestJob
   virtual ~FileSystemDirURLRequestJob();
 
   void StartAsync();
-  void DidAttemptAutoMount(base::File::Error result);
   void DidReadDirectory(base::File::Error result,
                         const std::vector<DirectoryEntry>& entries,
                         bool has_more);
 
   std::string data_;
   FileSystemURL url_;
-  const std::string storage_domain_;
   FileSystemContext* file_system_context_;
   base::WeakPtrFactory<FileSystemDirURLRequestJob> weak_factory_;
 

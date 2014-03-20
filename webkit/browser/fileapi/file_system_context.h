@@ -38,10 +38,6 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace webkit_blob {
 class BlobURLRequestJobTest;
 class FileStreamReader;
@@ -68,18 +64,6 @@ class SandboxFileSystemBackend;
 
 struct DefaultContextDeleter;
 struct FileSystemInfo;
-
-// An auto mount handler will attempt to mount the file system requested in
-// |url_request|. If the URL is for this auto mount handler, it returns true
-// and calls |callback| when the attempt is complete. If the auto mounter
-// does not recognize the URL, it returns false and does not call |callback|.
-// Called on the IO thread.
-typedef base::Callback<bool(
-    const net::URLRequest* url_request,
-    const FileSystemURL& filesystem_url,
-    const std::string& storage_domain,
-    const base::Callback<void(base::File::Error result)>& callback)>
-        URLRequestAutoMountHandler;
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
@@ -111,10 +95,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // to serve filesystem requests for non-regular types.
   // If none is given, this context only handles HTML5 Sandbox FileSystem
   // and Drag-and-drop Isolated FileSystem requests.
-  //
-  // |auto_mount_handlers| are used to resolve calls to
-  // AttemptAutoMountForURLRequest. Only external filesystems are auto mounted
-  // when a filesystem: URL request is made.
   FileSystemContext(
       base::SingleThreadTaskRunner* io_task_runner,
       base::SequencedTaskRunner* file_task_runner,
@@ -122,7 +102,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
       ScopedVector<FileSystemBackend> additional_backends,
-      const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
       const base::FilePath& partition_path,
       const FileSystemOptions& options);
 
@@ -213,13 +192,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   void ResolveURL(
       const FileSystemURL& url,
       const ResolveURLCallback& callback);
-
-  // Attempts to mount the filesystem needed to satisfy |url_request| made
-  // from |storage_domain|. If an appropriate file system is not found,
-  // callback will return an error.
-  void AttemptAutoMountForURLRequest(const net::URLRequest* url_request,
-                                     const std::string& storage_domain,
-                                     const StatusCallback& callback);
 
   // Deletes the filesystem for the given |origin_url| and |type|. This should
   // be called on the IO thread.
@@ -370,8 +342,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // Additional file system backends.
   scoped_ptr<PluginPrivateFileSystemBackend> plugin_private_backend_;
   ScopedVector<FileSystemBackend> additional_backends_;
-
-  std::vector<URLRequestAutoMountHandler> auto_mount_handlers_;
 
   // Registered file system backends.
   // The map must be constructed in the constructor since it can be accessed

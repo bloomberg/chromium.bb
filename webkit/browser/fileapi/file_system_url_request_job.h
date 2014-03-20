@@ -36,7 +36,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
   FileSystemURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      const std::string& storage_domain,
       FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
@@ -61,13 +60,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
   virtual ~FileSystemURLRequestJob();
 
   void StartAsync();
-  void DidAttemptAutoMount(base::File::Error result);
-  void DidGetMetadata(base::File::Error error_code,
-                      const base::File::Info& file_info);
+  void DidGetMetadata(
+      base::File::Error error_code,
+      const base::File::Info& file_info);
   void DidRead(int result);
   void NotifyFailed(int rv);
 
-  const std::string storage_domain_;
   FileSystemContext* file_system_context_;
   scoped_ptr<webkit_blob::FileStreamReader> reader_;
   FileSystemURL url_;
