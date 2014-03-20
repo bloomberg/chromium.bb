@@ -47,5 +47,24 @@
         ],
       },
     }],
+    ['OS=="linux"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/lib/libmojo_system.so',
+          '<(PRODUCT_DIR)/lib/libmojo_test_support.so',
+        ],
+      },
+    }],
+    ['OS=="linux" and component=="shared_library"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/lib/libbase.so',
+          '<(PRODUCT_DIR)/lib/libbase_i18n.so',
+          '<(PRODUCT_DIR)/lib/libgin.so',
+          '<(PRODUCT_DIR)/lib/libmojo_system_impl.so',
+          '<(PRODUCT_DIR)/lib/libv8.so',
+        ],
+      },
+    }],
   ],
 }
