@@ -1359,8 +1359,9 @@ void SigninScreenHandler::SendUserList(bool animated) {
     bool is_public_account =
         ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
 
-    if (is_public_account || non_owner_count < max_non_owner_users ||
-        is_owner) {
+    if ((is_public_account && !is_signin_to_add) ||
+        is_owner ||
+        (!is_public_account && non_owner_count < max_non_owner_users)) {
       LoginDisplay::AuthType initial_auth_type =
           ShouldForceOnlineSignIn(*it) ? LoginDisplay::ONLINE_SIGN_IN
                                        : LoginDisplay::OFFLINE_PASSWORD;
@@ -1378,10 +1379,12 @@ void SigninScreenHandler::SendUserList(bool animated) {
           !signed_in && !is_signin_to_add);
       user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
-      if (!is_owner)
+      if (is_owner) {
+        users_list.Insert(0, user_dict);
+      } else {
         ++non_owner_count;
-
-      users_list.Append(user_dict);
+        users_list.Append(user_dict);
+      }
     }
   }
   while (users_list.GetSize() > kMaxUsers)
