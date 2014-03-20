@@ -232,6 +232,7 @@ ResourceProvider::Resource::Resource()
       type(InvalidType),
       format(RGBA_8888),
       has_shared_bitmap_id(false),
+      allow_overlay(false),
       shared_bitmap(NULL) {}
 
 ResourceProvider::Resource::~Resource() {}
@@ -610,6 +611,11 @@ bool ResourceProvider::IsLost(ResourceId id) {
   return resource->lost;
 }
 
+bool ResourceProvider::AllowOverlay(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->allow_overlay;
+}
+
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
     const gfx::Size& size,
     GLint wrap_mode,
@@ -784,6 +790,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource.release_callback =
       base::Bind(&SingleReleaseCallback::Run,
                  base::Owned(release_callback.release()));
+  resource.allow_overlay = mailbox.allow_overlay();
   return id;
 }
 

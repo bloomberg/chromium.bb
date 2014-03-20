@@ -285,6 +285,7 @@ void ParamTraits<gfx::Transform>::Log(
 
 void ParamTraits<cc::RenderPass>::Write(
     Message* m, const param_type& p) {
+  DCHECK(p.overlay_state == cc::RenderPass::NO_OVERLAY);
   WriteParam(m, p.id);
   WriteParam(m, p.output_rect);
   WriteParam(m, p.damage_rect);
@@ -421,7 +422,8 @@ bool ParamTraits<cc::RenderPass>::Read(
             output_rect,
             damage_rect,
             transform_to_root_target,
-            has_transparent_background);
+            has_transparent_background,
+            cc::RenderPass::NO_OVERLAY);
 
   size_t last_shared_quad_state_index = kuint32max;
   for (size_t i = 0; i < quad_list_size; ++i) {

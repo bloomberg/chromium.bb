@@ -97,7 +97,8 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                       source.output_rect,
                       source.damage_rect,
                       source.transform_to_root_target,
-                      source.has_transparent_background);
+                      source.has_transparent_background,
+                      source.overlay_state);
 
     // Contributing passes aggregated in to the pass list need to take the
     // transform of the surface quad into account to update their transform to
@@ -203,7 +204,8 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
                       source.output_rect,
                       source.damage_rect,
                       source.transform_to_root_target,
-                      source.has_transparent_background);
+                      source.has_transparent_background,
+                      source.overlay_state);
 
     CopyQuadsToPass(source.quad_list,
                     source.shared_quad_state_list,

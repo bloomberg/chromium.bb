@@ -62,6 +62,11 @@ class CC_EXPORT RenderPass {
     }
   };
 
+  // Specifies whether the pass is going into an overlay, needs to be rendered
+  // into a buffer before it can be presented to overlay hardware or a quad
+  // inside it is presented as is.
+  enum OverlayState { NO_OVERLAY, RENDER_AND_OVERLAY, SIMPLE_OVERLAY, };
+
   ~RenderPass();
 
   static scoped_ptr<RenderPass> Create();
@@ -84,7 +89,8 @@ class CC_EXPORT RenderPass {
               const gfx::Rect& output_rect,
               const gfx::RectF& damage_rect,
               const gfx::Transform& transform_to_root_target,
-              bool has_transparent_background);
+              bool has_transparent_background,
+              OverlayState overlay_state);
 
   scoped_ptr<base::Value> AsValue() const;
 
@@ -110,6 +116,8 @@ class CC_EXPORT RenderPass {
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
+
+  OverlayState overlay_state;
 
  protected:
   explicit RenderPass(size_t num_layers);

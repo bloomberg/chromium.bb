@@ -53,6 +53,7 @@
       'output/filter_operations_unittest.cc',
       'output/gl_renderer_unittest.cc',
       'output/output_surface_unittest.cc',
+      'output/overlay_unittest.cc',
       'output/renderer_pixeltest.cc',
       'output/shader_unittest.cc',
       'output/software_renderer_unittest.cc',

@@ -31,6 +31,7 @@ struct RenderPassSize {
   gfx::RectF damage_rect;
   bool has_transparent_background;
   ScopedPtrVector<CopyOutputRequest> copy_callbacks;
+  RenderPass::OverlayState overlay_state;
 };
 
 static void CompareRenderPassLists(const RenderPassList& expected_list,
@@ -47,6 +48,7 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
     EXPECT_RECT_EQ(expected->damage_rect, actual->damage_rect);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
+    EXPECT_EQ(expected->overlay_state, actual->overlay_state);
 
     EXPECT_EQ(expected->shared_quad_state_list.size(),
               actual->shared_quad_state_list.size());
@@ -69,13 +71,15 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
+  RenderPass::OverlayState overlay_state = RenderPass::SIMPLE_OVERLAY;
 
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
                transform_to_root,
-               has_transparent_background);
+               has_transparent_background,
+               overlay_state);
   pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
@@ -103,6 +107,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
   EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
+  EXPECT_EQ(pass->overlay_state, copy->overlay_state);
   EXPECT_EQ(0u, copy->quad_list.size());
 
   // The copy request should not be copied/duplicated.
@@ -121,13 +126,15 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
+  RenderPass::OverlayState overlay_state = RenderPass::SIMPLE_OVERLAY;
 
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
                transform_to_root,
-               has_transparent_background);
+               has_transparent_background,
+               overlay_state);
 
   // Two quads using one shared state.
   scoped_ptr<SharedQuadState> shared_state1 = SharedQuadState::Create();
@@ -190,13 +197,15 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
   bool contrib_has_transparent_background = true;
+  RenderPass::OverlayState contrib_overlay_state = RenderPass::SIMPLE_OVERLAY;
 
   scoped_ptr<TestRenderPass> contrib = TestRenderPass::Create();
   contrib->SetAll(contrib_id,
                   contrib_output_rect,
                   contrib_damage_rect,
                   contrib_transform_to_root,
-                  contrib_has_transparent_background);
+                  contrib_has_transparent_background,
+                  contrib_overlay_state);
 
   scoped_ptr<SharedQuadState> contrib_shared_state = SharedQuadState::Create();
   contrib_shared_state->SetAll(gfx::Transform(),
@@ -249,13 +258,15 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
+  RenderPass::OverlayState overlay_state = RenderPass::SIMPLE_OVERLAY;
 
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
                transform_to_root,
-               has_transparent_background);
+               has_transparent_background,
+               overlay_state);
 
   // A shared state with a quad.
   scoped_ptr<SharedQuadState> shared_state1 = SharedQuadState::Create();

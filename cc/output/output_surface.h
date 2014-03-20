@@ -14,6 +14,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
 #include "cc/scheduler/frame_rate_controller.h"
 
@@ -139,6 +140,11 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // device is present, returns 0.
   base::TimeDelta GpuLatencyEstimate();
 
+  // Get the class capable of informing cc of hardware overlay capability.
+  OverlayCandidateValidator* overlay_candidate_validator() const {
+    return overlay_candidate_validator_.get();
+  }
+
  protected:
   // Synchronously initialize context3d and enter hardware mode.
   // This can only supported in threaded compositing mode.
@@ -154,6 +160,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_ptr<SoftwareOutputDevice> software_device_;
+  scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   gfx::Size surface_size_;
   float device_scale_factor_;
 

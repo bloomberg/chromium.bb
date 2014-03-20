@@ -94,6 +94,7 @@ class CC_EXPORT ResourceProvider {
   bool InUseByConsumer(ResourceId id);
 
   bool IsLost(ResourceId id);
+  bool AllowOverlay(ResourceId id);
 
   // Producer interface.
 
@@ -438,6 +439,7 @@ class CC_EXPORT ResourceProvider {
     ResourceType type;
     ResourceFormat format;
     bool has_shared_bitmap_id;
+    bool allow_overlay;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
     linked_ptr<DirectRasterBuffer> direct_raster_buffer;

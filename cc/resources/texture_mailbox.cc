@@ -12,16 +12,22 @@ namespace cc {
 TextureMailbox::TextureMailbox() : shared_memory_(NULL) {}
 
 TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
-    : mailbox_holder_(mailbox_holder), shared_memory_(NULL) {}
+    : mailbox_holder_(mailbox_holder),
+      shared_memory_(NULL),
+      allow_overlay_(false) {}
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
                                uint32 target,
                                uint32 sync_point)
-    : mailbox_holder_(mailbox, target, sync_point), shared_memory_(NULL) {}
+    : mailbox_holder_(mailbox, target, sync_point),
+      shared_memory_(NULL),
+      allow_overlay_(false) {}
 
 TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
                                const gfx::Size& size)
-    : shared_memory_(shared_memory), shared_memory_size_(size) {}
+    : shared_memory_(shared_memory),
+      shared_memory_size_(size),
+      allow_overlay_(false) {}
 
 TextureMailbox::~TextureMailbox() {}
 

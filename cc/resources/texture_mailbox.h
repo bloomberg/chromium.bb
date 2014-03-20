@@ -40,6 +40,9 @@ class CC_EXPORT TextureMailbox {
     mailbox_holder_.sync_point = sync_point;
   }
 
+  bool allow_overlay() const { return allow_overlay_; }
+  void set_allow_overlay(bool allow_overlay) { allow_overlay_ = allow_overlay; }
+
   base::SharedMemory* shared_memory() const { return shared_memory_; }
   gfx::Size shared_memory_size() const { return shared_memory_size_; }
   size_t shared_memory_size_in_bytes() const;
@@ -48,6 +51,7 @@ class CC_EXPORT TextureMailbox {
   gpu::MailboxHolder mailbox_holder_;
   base::SharedMemory* shared_memory_;
   gfx::Size shared_memory_size_;
+  bool allow_overlay_;
 };
 
 }  // namespace cc

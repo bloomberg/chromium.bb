@@ -35,14 +35,16 @@ scoped_ptr<RenderPass> RenderPass::Create(size_t num_layers) {
 
 RenderPass::RenderPass()
     : id(Id(-1, -1)),
-      has_transparent_background(true) {
+      has_transparent_background(true),
+      overlay_state(NO_OVERLAY) {
   shared_quad_state_list.reserve(kDefaultNumSharedQuadStatesToReserve);
   quad_list.reserve(kDefaultNumQuadsToReserve);
 }
 
 RenderPass::RenderPass(size_t num_layers)
     : id(Id(-1, -1)),
-      has_transparent_background(true) {
+      has_transparent_background(true),
+      overlay_state(NO_OVERLAY) {
   // Each layer usually produces one shared quad state, so the number of layers
   // is a good hint for what to reserve here.
   shared_quad_state_list.reserve(num_layers);
@@ -61,7 +63,8 @@ scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
                     output_rect,
                     damage_rect,
                     transform_to_root_target,
-                    has_transparent_background);
+                    has_transparent_background,
+                    overlay_state);
   return copy_pass.Pass();
 }
 
@@ -80,7 +83,8 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
                       source->output_rect,
                       source->damage_rect,
                       source->transform_to_root_target,
-                      source->has_transparent_background);
+                      source->has_transparent_background,
+                      source->overlay_state);
     for (size_t i = 0; i < source->shared_quad_state_list.size(); ++i) {
       copy_pass->shared_quad_state_list.push_back(
           source->shared_quad_state_list[i]->Copy());
@@ -131,7 +135,8 @@ void RenderPass::SetAll(Id id,
                         const gfx::Rect& output_rect,
                         const gfx::RectF& damage_rect,
                         const gfx::Transform& transform_to_root_target,
-                        bool has_transparent_background) {
+                        bool has_transparent_background,
+                        OverlayState overlay_state) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
 
@@ -140,6 +145,7 @@ void RenderPass::SetAll(Id id,
   this->damage_rect = damage_rect;
   this->transform_to_root_target = transform_to_root_target;
   this->has_transparent_background = has_transparent_background;
+  this->overlay_state = overlay_state;
 
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
