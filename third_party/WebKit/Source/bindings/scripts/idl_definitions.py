@@ -148,6 +148,22 @@ class IdlDefinitions(object):
         for interface in self.interfaces.itervalues():
             interface.resolve_typedefs(typedefs)
 
+    def update(self, other):
+        """Update with additional IdlDefinitions."""
+        for interface_name, new_interface in other.interfaces.iteritems():
+            if not new_interface.is_partial:
+                # Add as new interface
+                self.interfaces[interface_name] = new_interface
+                continue
+
+            # Merge partial to existing interface
+            try:
+                self.interfaces[interface_name].merge(new_interface)
+            except KeyError:
+                raise Exception('Tried to merge partial interface for {0}, '
+                                'but no existing interface by that name'
+                                .format(interface_name))
+
 
 ################################################################################
 # Callback Functions
@@ -240,6 +256,12 @@ class IdlInterface(object):
             custom_constructor.resolve_typedefs(typedefs)
         for operation in self.operations:
             operation.resolve_typedefs(typedefs)
+
+    def merge(self, other):
+        """Merge in another interface's members (e.g., partial interface)"""
+        self.attributes.extend(other.attributes)
+        self.constants.extend(other.constants)
+        self.operations.extend(other.operations)
 
 
 class IdlException(IdlInterface):

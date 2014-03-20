@@ -60,18 +60,39 @@ class IdlReader(object):
         definitions = self.read_idl_file(idl_filename)
         if not self.interface_dependency_resolver:
             return definitions
-
-        interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
-        self.interface_dependency_resolver.resolve_dependencies(
-            definitions, interface_name)
+        self.interface_dependency_resolver.resolve_dependencies(definitions)
         return definitions
 
     def read_idl_file(self, idl_filename):
-        """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
+        """Returns an IdlDefinitions object for an IDL file, without any dependencies.
+
+        The IdlDefinitions object is guaranteed to contain a single
+        IdlInterface; it may also contain other definitions, such as
+        callback functions and enumerations."""
         ast = blink_idl_parser.parse_file(self.parser, idl_filename)
         if not ast:
             raise Exception('Failed to parse %s' % idl_filename)
         definitions = IdlDefinitions(ast)
+
+        # Validate file contents with filename convention
+        # The Blink IDL filenaming convention is that the file
+        # <interface_name>.idl MUST contain exactly 1 interface (or exception),
+        # and the interface name must agree with the file's basename,
+        # unless it is a partial interface.
+        # (e.g., 'partial interface Foo' can be in FooBar.idl).
+        number_of_interfaces = len(definitions.interfaces)
+        if number_of_interfaces != 1:
+            raise Exception(
+                'Expected exactly 1 interface in file {0}, but found {1}'
+                .format(idl_filename, number_of_interfaces))
+        interface = next(definitions.interfaces.itervalues())
+        idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
+        if not interface.is_partial and interface.name != idl_file_basename:
+            raise Exception(
+                'Interface name "{0}" disagrees with IDL file basename "{1}".'
+                .format(interface.name, idl_file_basename))
+
+        # Validate extended attributes
         if not self.extended_attribute_validator:
             return definitions
 
