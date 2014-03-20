@@ -293,6 +293,9 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
   <message name="IDS_CHROMEOS_NETWORK_ERROR_CONFIGURE_FAILED" desc="Network error details in notifications: Configuration error">
     Failed to configure network
   </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED" desc="Network error details in notifications: Certificates not loaded">
+    Certificates not loaded
+  </message>
   <message name="IDS_CHROMEOS_NETWORK_ERROR_UNRECOGNIZED" desc="Network error details in notifications: Unrecognized">
     Unrecognized error
   </message>

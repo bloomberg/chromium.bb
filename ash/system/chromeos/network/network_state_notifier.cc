@@ -49,12 +49,18 @@ bool ShillErrorIsIgnored(const std::string& shill_error) {
 base::string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == NetworkConnectionHandler::kErrorNotFound)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
-  if (error_name == NetworkConnectionHandler::kErrorConfigureFailed)
+  if (error_name == NetworkConnectionHandler::kErrorConfigureFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CONFIGURE_FAILED);
-  if (error_name == ash::network_connect::kErrorActivateFailed)
+  }
+  if (error_name == NetworkConnectionHandler::kErrorCertLoadTimeout) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED);
+  }
+  if (error_name == ash::network_connect::kErrorActivateFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
+  }
   return base::string16();
 }
 

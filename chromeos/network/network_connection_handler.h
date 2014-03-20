@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
@@ -86,6 +87,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Constants for |error_name| from |error_callback| for Disconnect.
   static const char kErrorNotConnected[];
 
+  // Certificate load timed out.
+  static const char kErrorCertLoadTimeout[];
+
   virtual ~NetworkConnectionHandler();
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
@@ -154,16 +158,27 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                                   const std::string& service_path,
                                   const base::DictionaryValue& properties);
 
+  // Queues a connect request until certificates have loaded.
+  void QueueConnectRequest(const std::string& service_path);
+
+  // Checks to see if certificates have loaded and if not, cancels any queued
+  // connect request and notifies the user.
+  void CheckCertificatesLoaded();
+
+  // Handles connecting to a queued network after certificates are loaded or
+  // handle cert load timeout.
+  void ConnectToQueuedNetwork();
+
   // Calls Shill.Manager.Connect asynchronously.
   void CallShillConnect(const std::string& service_path);
 
-  // Handle failure from ConfigurationHandler calls.
+  // Handles failure from ConfigurationHandler calls.
   void HandleConfigurationFailure(
       const std::string& service_path,
       const std::string& error_name,
       scoped_ptr<base::DictionaryValue> error_data);
 
-  // Handle success or failure from Shill.Service.Connect.
+  // Handles success or failure from Shill.Service.Connect.
   void HandleShillConnectSuccess(const std::string& service_path);
   void HandleShillConnectFailure(const std::string& service_path,
                                  const std::string& error_name,
@@ -202,6 +217,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Track certificate loading state.
   bool logged_in_;
   bool certificates_loaded_;
+  base::TimeTicks logged_in_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

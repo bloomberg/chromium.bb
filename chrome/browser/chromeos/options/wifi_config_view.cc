@@ -315,7 +315,7 @@ UserCertComboboxModel::~UserCertComboboxModel() {
 
 int UserCertComboboxModel::GetItemCount() const {
   if (!owner_->UserCertActive())
-    return 0;
+    return 1;  // "None installed" (combobox must have at least 1 entry)
   if (CertLibrary::Get()->CertificatesLoading())
     return 1;  // "Loading"
   int num_certs =
@@ -327,7 +327,8 @@ int UserCertComboboxModel::GetItemCount() const {
 
 base::string16 UserCertComboboxModel::GetItemAt(int index) {
   if (!owner_->UserCertActive())
-    return base::string16();
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
   if (CertLibrary::Get()->CertificatesLoading())
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
