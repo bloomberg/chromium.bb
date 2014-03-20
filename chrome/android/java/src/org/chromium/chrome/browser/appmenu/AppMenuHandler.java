@@ -5,11 +5,15 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
+import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.chrome.browser.UmaBridge;
 
@@ -70,20 +74,27 @@ public class AppMenuHandler {
         mDelegate.prepareMenu(mMenu);
 
         if (mAppMenu == null) {
-            mAppMenu = new AppMenu(mActivity, mMenu, mDelegate.getItemRowHeight(), this);
-            mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu);
+            TypedArray a = mActivity.obtainStyledAttributes(
+                    new int[] {android.R.attr.listPreferredItemHeightSmall});
+            int itemRowHeight = a.getDimensionPixelSize(0, 0);
+            a.recycle();
+            mAppMenu = new AppMenu(mMenu, itemRowHeight, this, mActivity.getResources());
+            mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu, itemRowHeight);
         }
 
         ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity,
                 mDelegate.getMenuThemeResourceId());
-        boolean showIcons = mDelegate.shouldShowIconRow();
-        mAppMenu.show(wrapper, anchorView, showIcons, isByHardwareButton);
+        // Get the height and width of the display.
+        Rect appRect = new Rect();
+        mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        mAppMenu.show(wrapper, anchorView, isByHardwareButton, rotation, appRect);
         mAppMenuDragHelper.onShow(isByHardwareButton, startDragging);
         UmaBridge.menuShow();
         return true;
     }
 
-    void appMenudismiss() {
+    void appMenuDismissed() {
         mAppMenuDragHelper.onDismiss();
     }
 
@@ -97,6 +108,7 @@ public class AppMenuHandler {
     /**
      * @return The App Menu that the menu handler is interacting with.
      */
+    @VisibleForTesting
     AppMenu getAppMenu() {
         return mAppMenu;
     }
@@ -110,14 +122,6 @@ public class AppMenuHandler {
      */
     public void hideAppMenu() {
         if (mAppMenu != null && mAppMenu.isShowing()) mAppMenu.dismiss();
-    }
-
-    /**
-     * @return The number of items in the AppMenu.
-     */
-    public int getItemCount() {
-        if (mAppMenu == null) return -1;
-        return mAppMenu.getCount();
     }
 
     /**

@@ -8,24 +8,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/MAIN_MENU"
            android:visible="false">
+        <item>
+            <menu>
+              <item android:id="@+id/back_menu_id"
+                android:title="@string/accessibility_menu_back"
+                android:icon="@drawable/back_button_selector"/>
+              <item android:id="@+id/forward_menu_id"
+                android:title="@string/accessibility_menu_forward"
+                android:icon="@drawable/forward_button_selector"/>
+              <item android:id="@+id/bookmark_this_page_id"
+                android:title="@string/accessibility_menu_bookmark"
+                android:icon="@drawable/star"/>
+            </menu>
+        </item>
         <item android:id="@+id/signin"
               android:title="@string/signin_sign_in" />
         <item android:id="@+id/print"
               android:title="@string/print_menu" />
         <item android:id="@+id/distill_page"
               android:title="@string/distill_page_menu" />
-    </group>
-
-    <group android:id="@+id/PHONE_ICON_MENU_ITEMS"
-        android:visible="false">
-        <!-- These items are never made visible in the default list. They are only used
-             to pass through the clicks from the icon row in the custom menu. -->
-        <item android:id="@+id/back_menu_id"
-            android:title="@null" />
-        <item android:id="@+id/forward_menu_id"
-            android:title="@null" />
-        <item android:id="@+id/bookmark_this_page_id"
-            android:title="@null" />
     </group>
 </menu>
 

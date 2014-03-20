@@ -6,12 +6,15 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListPopupWindow;
+import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellActivity.AppMenuHandlerFactory;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -75,111 +78,117 @@ public class AppMenuTest extends ChromeShellTestBase {
             }
         }));
         mAppMenu = getActivity().getAppMenuHandler().getAppMenu();
-        pressKey(KeyEvent.KEYCODE_SPACE);
-
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAppMenu.getPopup().getListView().setSelection(0);
+            }
+        });
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getCurrentFocusedRow() == 0;
+            }
+        }));
+        getInstrumentation().waitForIdleSync();
     }
+
     /**
      * Test bounds when accessing the menu through the keyboard.
      * Make sure that the menu stays open when trying to move past the first and last items.
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardMenuBoundaries() throws InterruptedException {
         moveToBoundary(false, true);
-        assertEquals(mAppMenu.getCount() - 1, mAppMenu.getCurrentFocusedPosition());
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
         moveToBoundary(true, true);
-        assertEquals(0, mAppMenu.getCurrentFocusedPosition());
+        assertEquals(0, getCurrentFocusedRow());
         moveToBoundary(false, true);
-        assertEquals(mAppMenu.getCount() - 1, mAppMenu.getCurrentFocusedPosition());
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
     }
 
     /**
      * Test that typing ENTER immediately opening the menu works.
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnOpen() throws InterruptedException {
-        hitEnterAndAssertItemSelected();
+        hitEnterAndAssertAppMenuDismissed();
     }
 
     /**
      * Test that hitting ENTER past the top item doesn't crash Chrome.
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardEnterAfterMovePastTopItem() throws InterruptedException {
         moveToBoundary(true, true);
-        assertEquals(0, mAppMenu.getCurrentFocusedPosition());
-        hitEnterAndAssertItemSelected();
+        assertEquals(0, getCurrentFocusedRow());
+        hitEnterAndAssertAppMenuDismissed();
     }
 
     /**
      * Test that hitting ENTER past the bottom item doesn't crash Chrome.
      * Catches regressions for http://crbug.com/181067
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardEnterAfterMovePastBottomItem() throws InterruptedException {
         moveToBoundary(false, true);
-        assertEquals(mAppMenu.getCount() - 1, mAppMenu.getCurrentFocusedPosition());
-        hitEnterAndAssertItemSelected();
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
+        hitEnterAndAssertAppMenuDismissed();
     }
 
     /**
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         moveToBoundary(true, false);
-        assertEquals(0, mAppMenu.getCurrentFocusedPosition());
-        hitEnterAndAssertItemSelected();
+        assertEquals(0, getCurrentFocusedRow());
+        hitEnterAndAssertAppMenuDismissed();
     }
 
     /**
      * Test that hitting ENTER on the top item doesn't crash Chrome.
-     * @SmallTest
-     * @Feature({"Browser", "Main"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         moveToBoundary(true, false);
-        assertEquals(0, mAppMenu.getCurrentFocusedPosition());
-        hitEnterAndAssertItemSelected();
+        assertEquals(0, getCurrentFocusedRow());
+        hitEnterAndAssertAppMenuDismissed();
     }
 
-    private void hitEnterAndAssertItemSelected() throws InterruptedException {
-        final int expectedItemId = mAppMenu.getCurrentFocusedItemId();
+    private void hitEnterAndAssertAppMenuDismissed() throws InterruptedException {
+        getInstrumentation().waitForIdleSync();
         pressKey(KeyEvent.KEYCODE_ENTER);
-        assertTrue("Did not select a correct menu item",
+        assertTrue("AppMenu did not dismiss",
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return mAppMenuHandler.mLastSelectedItemId == expectedItemId;
+                        return !mAppMenuHandler.isAppMenuShowing();
                     }
                 }));
     }
 
     private void moveToBoundary(boolean towardsTop, boolean movePast) throws InterruptedException {
         // Move to the boundary.
-        final int end = towardsTop ? 0 : mAppMenu.getCount() - 1;
+        final int end = towardsTop ? 0 : getCount() - 1;
         int increment = towardsTop ? -1 : 1;
-        for (int index = mAppMenu.getCurrentFocusedPosition(); index != end; index += increment) {
+        for (int index = getCurrentFocusedRow(); index != end; index += increment) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
             final int expectedPosition = index + increment;
             assertTrue("Focus did not move to the next menu item",
                     CriteriaHelper.pollForCriteria(new Criteria() {
                         @Override
                         public boolean isSatisfied() {
-                            return mAppMenu.getCurrentFocusedPosition() == expectedPosition;
+                            return getCurrentFocusedRow() == expectedPosition;
                         }
                     }));
         }
@@ -191,7 +200,7 @@ public class AppMenuTest extends ChromeShellTestBase {
                     CriteriaHelper.pollForCriteria(new Criteria() {
                         @Override
                         public boolean isSatisfied() {
-                            return mAppMenu.getCurrentFocusedPosition() == end;
+                            return getCurrentFocusedRow() == end;
                         }
                     }));
         }
@@ -203,5 +212,18 @@ public class AppMenuTest extends ChromeShellTestBase {
     private void pressKey(int keycode) {
         getInstrumentation().sendKeyDownUpSync(keycode);
         getInstrumentation().waitForIdleSync();
+    }
+
+    private int getCurrentFocusedRow() {
+        ListPopupWindow popup = mAppMenu.getPopup();
+        if (popup == null || popup.getListView() == null) return ListView.INVALID_POSITION;
+        ListView listView = popup.getListView();
+        return listView.getSelectedItemPosition();
+    }
+
+    private int getCount() {
+        ListPopupWindow popup = mAppMenu.getPopup();
+        if (popup == null || popup.getListView() == null) return 0;
+        return popup.getListView().getCount();
     }
 }

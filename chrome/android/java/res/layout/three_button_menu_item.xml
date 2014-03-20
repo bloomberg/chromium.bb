@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top|start"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/button_one"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?android:attr/selectableItemBackground"
+        android:scaleType="center" />
+
+    <View
+        android:layout_width="@dimen/menu_item_divider_width"
+        android:layout_height="?android:attr/listPreferredItemHeightSmall"
+        android:layout_marginBottom="@dimen/menu_item_divider_width"
+        android:background="?android:attr/listDivider" />
+
+    <ImageButton
+        android:id="@+id/button_two"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?android:attr/selectableItemBackground"
+        android:scaleType="center" />
+
+    <View
+        android:layout_width="@dimen/menu_item_divider_width"
+        android:layout_height="?android:attr/listPreferredItemHeightSmall"
+        android:layout_marginBottom="@dimen/menu_item_divider_width"
+        android:background="?android:attr/listDivider" />
+
+    <ImageButton
+        android:id="@+id/button_three"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?android:attr/selectableItemBackground"
+        android:scaleType="center" />
+
+</LinearLayout>

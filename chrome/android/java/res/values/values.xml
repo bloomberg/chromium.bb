@@ -10,9 +10,4 @@
     <item type="id" name="button_primary" />
     <item type="id" name="button_secondary" />
     <item type="id" name="infobar_extra_check" />
-
-    <!-- AppMenu IDs for the icon row items -->
-    <item type="id" name="back_menu_id" />
-    <item type="id" name="forward_menu_id" />
-    <item type="id" name="bookmark_this_page_id" />
 </resources>

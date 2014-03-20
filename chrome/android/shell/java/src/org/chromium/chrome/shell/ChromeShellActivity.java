@@ -6,7 +6,6 @@ package org.chromium.chrome.shell;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -325,7 +324,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         forwardMenuItem.setEnabled(getActiveTab().canGoForward());
 
         // ChromeShell does not know about bookmarks yet
-        menu.findItem(R.id.bookmark_this_page_id).setEnabled(false);
+        menu.findItem(R.id.bookmark_this_page_id).setEnabled(true);
 
         MenuItem signinItem = menu.findItem(R.id.signin);
         if (ChromeSigninController.get(this).isSignedIn()) {
@@ -348,22 +347,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     }
 
     @Override
-    public boolean shouldShowIconRow() {
-        return true;
-    }
-
-    @Override
     public int getMenuThemeResourceId() {
         return android.R.style.Theme_Holo_Light;
-    }
-
-    @Override
-    public int getItemRowHeight() {
-        TypedArray a = obtainStyledAttributes(
-                new int[] {android.R.attr.listPreferredItemHeightSmall});
-        int itemRowHeight = a.getDimensionPixelSize(0, 0);
-        a.recycle();
-        return itemRowHeight;
     }
 
     @VisibleForTesting

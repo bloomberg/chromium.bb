@@ -19,6 +19,8 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewConfiguration;
 import android.view.ViewParent;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
@@ -68,6 +70,7 @@ class AppMenuDragHelper {
     private boolean mIsUpScrollable;
     private boolean mIsByHardwareButton;
     private int mCurrentScreenRotation = -1;
+    private final int mItemRowHeight;
 
     // These are used in a function locally, but defined here to avoid heap allocation on every
     // touch event.
@@ -84,9 +87,10 @@ class AppMenuDragHelper {
         }
     };
 
-    AppMenuDragHelper(Activity activity, AppMenu appMenu) {
+    AppMenuDragHelper(Activity activity, AppMenu appMenu, int itemRowHeight) {
         mActivity = activity;
         mAppMenu = appMenu;
+        mItemRowHeight = itemRowHeight;
         mScaledTouchSlop = ViewConfiguration.get(
                 mActivity.getApplicationContext()).getScaledTouchSlop();
         Resources res = mActivity.getResources();
@@ -162,16 +166,7 @@ class AppMenuDragHelper {
             assert false;
         }
 
-        if (mAppMenu.isShowingIconRow()) {
-            View iconRowView = mAppMenu.getIconRowView();
-            iconRowView.findViewById(R.id.menu_item_back).setOnTouchListener(
-                    mDragScrollTouchEventForwarder);
-            iconRowView.findViewById(R.id.menu_item_forward).setOnTouchListener(
-                    mDragScrollTouchEventForwarder);
-            iconRowView.findViewById(R.id.menu_item_bookmark).setOnTouchListener(
-                    mDragScrollTouchEventForwarder);
 
-        }
 
         if (!isByHardwareButton && startDragging) mDragScrolling.start();
     }
@@ -280,7 +275,7 @@ class AppMenuDragHelper {
             // Auto scrolling on the top or the bottom of the listView.
             if (listView.getHeight() > 0) {
                 float autoScrollAreaRatio = Math.min(AUTO_SCROLL_AREA_MAX_RATIO,
-                        mAppMenu.getItemRowHeight() * 1.2f / listView.getHeight());
+                        mItemRowHeight * 1.2f / listView.getHeight());
                 float normalizedY =
                         (rawY - getScreenVisibleRect(listView).top) / listView.getHeight();
                 if (mIsUpScrollable && normalizedY < autoScrollAreaRatio) {
@@ -340,24 +335,20 @@ class AppMenuDragHelper {
 
         ArrayList<View> itemViews = new ArrayList<View>();
         for (int i = 0; i < listView.getChildCount(); ++i) {
-            itemViews.add(listView.getChildAt(i));
-        }
-
-        View iconRowView = mAppMenu.getIconRowView();
-        if (iconRowView != null && mAppMenu.isShowingIconRow()) {
-            itemViews.add(iconRowView.findViewById(R.id.menu_item_back));
-            itemViews.add(iconRowView.findViewById(R.id.menu_item_forward));
-            itemViews.add(iconRowView.findViewById(R.id.menu_item_bookmark));
+            boolean hasImageButtons = false;
+            if (listView.getChildAt(i) instanceof LinearLayout) {
+                LinearLayout layout = (LinearLayout) listView.getChildAt(i);
+                for (int j = 0; j < layout.getChildCount(); ++j) {
+                    itemViews.add(layout.getChildAt(j));
+                    if (layout.getChildAt(j) instanceof ImageButton) hasImageButtons = true;
+                }
+            }
+            if (!hasImageButtons) itemViews.add(listView.getChildAt(i));
         }
 
         boolean didPerformClick = false;
         for (int i = 0; i < itemViews.size(); ++i) {
             View itemView = itemViews.get(i);
-
-            // Skip the icon row that belongs to the listView because that doesn't really
-            // exist as an item.
-            int listViewPositionIndex = listView.getFirstVisiblePosition() + i;
-            if (mAppMenu.isShowingIconRow() && listViewPositionIndex == 0) continue;
 
             boolean shouldPerform = itemView.isEnabled() && itemView.isShown() &&
                     getScreenVisibleRect(itemView).contains(screenX, screenY);
@@ -368,11 +359,7 @@ class AppMenuDragHelper {
                     break;
                 case ITEM_ACTION_PERFORM:
                     if (shouldPerform) {
-                        if (itemView.getParent() == listView) {
-                            listView.performItemClick(itemView, listViewPositionIndex, 0);
-                        } else {
-                            itemView.performClick();
-                        }
+                        itemView.performClick();
                         didPerformClick = true;
                     }
                     break;

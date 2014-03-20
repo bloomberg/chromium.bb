@@ -23,17 +23,7 @@ public interface AppMenuPropertiesDelegate {
     void prepareMenu(Menu mMenu);
 
     /**
-     * @return Whether the App Menu should contain the icon row.
-     */
-    boolean shouldShowIconRow();
-
-    /**
      * @return The theme resource to use for displaying the App Menu.
      */
     int getMenuThemeResourceId();
-
-    /**
-     * @return The height of each row in the App Menu.
-     */
-    int getItemRowHeight();
 }
