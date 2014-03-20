@@ -304,20 +304,14 @@ bool InputImeEventRouter::RegisterIme(
     const extensions::InputComponentInfo& component) {
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
-  std::map<std::string, InputMethodEngineInterface*>& engine_map =
-      engines_[extension_id];
-
-  std::map<std::string, InputMethodEngineInterface*>::iterator engine_ix =
-      engine_map.find(component.id);
-  if (engine_ix != engine_map.end())
-    return false;
-
-  std::map<std::string, chromeos::ImeObserver*>::const_iterator it =
-      observers_.find(extension_id);
-  chromeos::ImeObserver* observer =
-      (it == observers_.end())
-          ? new chromeos::ImeObserver(profile, extension_id)
-          : it->second;
+  // If the engine exists already, it may be registered with an old profile.
+  // So overwrite it with the new engine instance.
+  EngineMap& engine_map = engines_[extension_id];
+  EngineMap::iterator engine_ix = engine_map.find(component.id);
+  if (engine_ix != engine_map.end()) {
+    delete engine_ix->second;
+    engine_map.erase(engine_ix);
+  }
 
   std::vector<std::string> layouts;
   layouts.assign(component.layouts.begin(), component.layouts.end());
@@ -325,34 +319,35 @@ bool InputImeEventRouter::RegisterIme(
   std::vector<std::string> languages;
   languages.assign(component.languages.begin(), component.languages.end());
 
+  // Ideally Observer should be per (extension_id + Profile), and multiple
+  // InputMethodEngine can share one Observer. But it would become tricky
+  // to maintain an internal map for observers which does nearly nothing
+  // but just make sure they can properly deleted.
+  // Making Obesrver per InputMethodEngine can make things cleaner.
+  scoped_ptr<chromeos::InputMethodEngineInterface::Observer> observer(
+      new chromeos::ImeObserver(profile, extension_id));
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
-  engine->Initialize(observer, component.name.c_str(), extension_id.c_str(),
-                     component.id.c_str(), languages, layouts,
-                     component.options_page_url, component.input_view_url);
+  engine->Initialize(observer.Pass(),
+                     component.name.c_str(),
+                     extension_id.c_str(),
+                     component.id.c_str(),
+                     languages,
+                     layouts,
+                     component.options_page_url,
+                     component.input_view_url);
   engine_map[component.id] = engine;
-
-  observers_[extension_id] = observer;
 
   return true;
 }
 
 void InputImeEventRouter::UnregisterAllImes(
     Profile* profile, const std::string& extension_id) {
-  std::map<std::string,
-           std::map<std::string,
-                    InputMethodEngineInterface*> >::iterator engine_map =
+  std::map<std::string, EngineMap>::iterator engine_map =
       engines_.find(extension_id);
   if (engine_map != engines_.end()) {
     STLDeleteContainerPairSecondPointers(engine_map->second.begin(),
                                          engine_map->second.end());
     engines_.erase(engine_map);
-  }
-
-  std::map<std::string, chromeos::ImeObserver*>::iterator observer =
-      observers_.find(extension_id);
-  if (observer != observers_.end()) {
-    delete observer->second;
-    observers_.erase(observer);
   }
 }
 #endif
