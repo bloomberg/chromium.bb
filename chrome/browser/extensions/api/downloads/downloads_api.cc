@@ -114,6 +114,7 @@ const char kTooManyListeners[] = "Each extension may have at most one "
   "onDeterminingFilename listener between all of its renderer execution "
   "contexts.";
 const char kUnexpectedDeterminer[] = "Unexpected determineFilename call";
+const char kUserGesture[] = "User gesture required";
 
 }  // namespace download_extension_errors
 
@@ -1355,6 +1356,7 @@ bool DownloadsOpenFunction::RunImpl() {
   DownloadItem* download_item =
       GetDownload(GetProfile(), include_incognito(), params->download_id);
   if (InvalidId(download_item, &error_) ||
+      Fault(!user_gesture(), errors::kUserGesture, &error_) ||
       Fault(download_item->GetState() != DownloadItem::COMPLETE,
             errors::kNotComplete, &error_) ||
       Fault(!GetExtension()->HasAPIPermission(

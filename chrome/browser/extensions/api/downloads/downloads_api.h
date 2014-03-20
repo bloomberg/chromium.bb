@@ -62,6 +62,7 @@ extern const char kShelfDisabled[];
 extern const char kShelfPermission[];
 extern const char kTooManyListeners[];
 extern const char kUnexpectedDeterminer[];
+extern const char kUserGesture[];
 
 }  // namespace download_extension_errors
 

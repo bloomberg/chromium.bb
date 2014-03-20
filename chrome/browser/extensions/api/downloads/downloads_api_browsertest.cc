@@ -810,9 +810,11 @@ api::InterruptReason InterruptReasonContentToExtension(
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Open) {
   LoadExtension("downloads_split");
+  DownloadsOpenFunction* open_function = new DownloadsOpenFunction();
+  open_function->set_user_gesture(true);
   EXPECT_STREQ(errors::kInvalidId,
                RunFunctionAndReturnError(
-                   new DownloadsOpenFunction(),
+                   open_function,
                    "[-42]").c_str());
 
   DownloadItem* download_item = CreateSlowTestDownload();
@@ -826,14 +828,26 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
                          download_item->GetURL().spec().c_str())));
+  open_function = new DownloadsOpenFunction();
+  open_function->set_user_gesture(true);
   EXPECT_STREQ(errors::kNotComplete,
                RunFunctionAndReturnError(
-                   new DownloadsOpenFunction(),
+                   open_function,
                    DownloadItemIdAsArgList(download_item)).c_str());
 
   FinishPendingSlowDownloads();
   EXPECT_FALSE(download_item->GetOpened());
-  EXPECT_TRUE(RunFunction(new DownloadsOpenFunction(),
+
+  open_function = new DownloadsOpenFunction();
+  EXPECT_STREQ(errors::kUserGesture,
+               RunFunctionAndReturnError(
+                  open_function,
+                  DownloadItemIdAsArgList(download_item)).c_str());
+  EXPECT_FALSE(download_item->GetOpened());
+
+  open_function = new DownloadsOpenFunction();
+  open_function->set_user_gesture(true);
+  EXPECT_TRUE(RunFunction(open_function,
                           DownloadItemIdAsArgList(download_item)));
   EXPECT_TRUE(download_item->GetOpened());
 }
