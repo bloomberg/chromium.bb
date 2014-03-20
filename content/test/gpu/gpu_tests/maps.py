@@ -19,9 +19,9 @@ from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.page import page_set
 
-class MapsValidator(cloud_storage_test_base.ValidatorBase):
+class _MapsValidator(cloud_storage_test_base.ValidatorBase):
   def __init__(self):
-    super(MapsValidator, self).__init__('ValidatePage')
+    super(_MapsValidator, self).__init__('ValidatePage')
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -30,7 +30,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
     # TODO: This should not be necessary, but it's not clear if the test is
     # failing on the bots in it's absence. Remove once we can verify that it's
     # safe to do so.
-    MapsValidator.SpinWaitOnRAF(tab, 3)
+    _MapsValidator.SpinWaitOnRAF(tab, 3)
 
     if not tab.screenshot_supported:
       raise page_test.Failure('Browser does not support screenshot capture')
@@ -74,7 +74,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
 
 class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
-  test = MapsValidator
+  test = _MapsValidator
 
   def CreateExpectations(self, page_set):
     return maps_expectations.MapsExpectations()

@@ -51,9 +51,9 @@ test_harness_script = r"""
   }, false);
 """ % MEMORY_LIMIT_MB
 
-class MemoryValidator(page_test.PageTest):
+class _MemoryValidator(page_test.PageTest):
   def __init__(self):
-    super(MemoryValidator, self).__init__('ValidatePage')
+    super(_MemoryValidator, self).__init__('ValidatePage')
 
   def ValidatePage(self, page, tab, results):
     timeline_data = tab.browser.StopTracing()
@@ -80,7 +80,7 @@ class MemoryValidator(page_test.PageTest):
 
 class Memory(test.Test):
   """Tests GPU memory limits"""
-  test = MemoryValidator
+  test = _MemoryValidator
   page_set = 'page_sets/memory_tests.json'
 
   def CreatePageSet(self, options):

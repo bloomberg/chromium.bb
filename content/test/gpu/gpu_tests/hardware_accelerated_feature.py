@@ -24,9 +24,9 @@ test_harness_script = r"""
   };
 """;
 
-class HardwareAcceleratedFeatureValidator(page_test.PageTest):
+class _HardwareAcceleratedFeatureValidator(page_test.PageTest):
   def __init__(self):
-    super(HardwareAcceleratedFeatureValidator, self).__init__('ValidatePage')
+    super(_HardwareAcceleratedFeatureValidator, self).__init__('ValidatePage')
 
   def ValidatePage(self, page, tab, results):
     feature = page.feature
@@ -38,7 +38,7 @@ def safe_feature_name(feature):
 
 class HardwareAcceleratedFeature(test.Test):
   """Tests GPU acceleration is reported as active for various features"""
-  test = HardwareAcceleratedFeatureValidator
+  test = _HardwareAcceleratedFeatureValidator
 
   def CreateExpectations(self, page_set):
     return expectations.HardwareAcceleratedFeatureExpectations()

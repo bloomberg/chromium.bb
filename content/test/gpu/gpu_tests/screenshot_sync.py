@@ -13,9 +13,9 @@ from telemetry.page import page_test
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
-class ScreenshotSyncValidator(page_test.PageTest):
+class _ScreenshotSyncValidator(page_test.PageTest):
   def __init__(self):
-    super(ScreenshotSyncValidator, self).__init__('ValidatePage')
+    super(_ScreenshotSyncValidator, self).__init__('ValidatePage')
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -29,7 +29,7 @@ class ScreenshotSyncValidator(page_test.PageTest):
 class ScreenshotSyncProcess(test.Test):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""
-  test = ScreenshotSyncValidator
+  test = _ScreenshotSyncValidator
 
   def CreateExpectations(self, page_set):
     return expectations.ScreenshotSyncExpectations()
