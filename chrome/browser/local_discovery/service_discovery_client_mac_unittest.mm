@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -67,6 +68,7 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
   scoped_refptr<ServiceDiscoveryClientMac> client_mac_;
   ServiceDiscoveryClient* client_;  // weak
 
+  base::MessageLoop message_loop_;
   ServiceWatcher::UpdateType last_update_;
   std::string last_service_name_;
   int num_updates_;
@@ -105,7 +107,6 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
       test_service_name,
       base::Bind(&ServiceDiscoveryClientMacTest::OnResolveComplete,
                  base::Unretained(this)));
-  resolver->StartResolving();
 
   const uint8 record_bytes[] = { 2, 'a', 'b', 3, 'd', '=', 'e' };
   base::scoped_nsobject<NSNetService> test_service(
@@ -113,14 +114,18 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
           [[NSData alloc] initWithBytes:record_bytes
                           length:arraysize(record_bytes)]]);
 
-  // Weak pointer to implementation class.
   ServiceResolverImplMac* resolver_impl =
       static_cast<ServiceResolverImplMac*>(resolver.get());
-  resolver_impl->SetServiceForTesting(test_service);
-  resolver_impl->OnResolveUpdate(ServiceResolver::STATUS_SUCCESS);
+  resolver_impl->GetContainerForTesting()->SetServiceForTesting(test_service);
+  resolver->StartResolving();
 
-  EXPECT_EQ(num_resolves_, 1);
-  EXPECT_EQ(last_service_description_.metadata.size(), 2u);
+  resolver_impl->GetContainerForTesting()->OnResolveUpdate(
+      ServiceResolver::STATUS_SUCCESS);
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(1, num_resolves_);
+  EXPECT_EQ(2u, last_service_description_.metadata.size());
 }
 
 }  // namespace local_discovery
