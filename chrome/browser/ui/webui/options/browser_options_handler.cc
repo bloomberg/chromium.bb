@@ -101,6 +101,7 @@
 #include "ash/ash_switches.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -232,6 +233,12 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON },
     { "downloadLocationGroupName", IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
     { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
+#if !defined(OS_CHROMEOS)
+    { "easyUnlockCheckboxLabel", IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL },
+#endif
+    { "easyUnlockSectionTitle", IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE },
+    { "easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON },
+    { "easyUnlockManagement", IDS_OPTIONS_EASY_UNLOCK_MANAGEMENT },
     { "fontSettingsCustomizeFontsButton",
       IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON },
     { "fontSizeLabelCustom", IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM },
@@ -567,6 +574,19 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetString("languagesLearnMoreURL",
                     chrome::kLanguageSettingsLearnMoreUrl);
+
+  values->SetBoolean(
+      "easyUnlockEnabled",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableEasyUnlock));
+  values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
+  values->SetString("easyUnlockManagementURL",
+                    chrome::kEasyUnlockManagementUrl);
+#if defined(OS_CHROMEOS)
+  values->SetString("easyUnlockCheckboxLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL_CHROMEOS,
+          chromeos::GetChromeDeviceType()));
+#endif
 }
 
 #if defined(ENABLE_FULL_PRINTING)
@@ -709,6 +729,11 @@ void BrowserOptionsHandler::RegisterMessages() {
       "requestHotwordSetupRetry",
       base::Bind(&BrowserOptionsHandler::HandleRequestHotwordSetupRetry,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "launchEasyUnlockSetup",
+      base::Bind(&BrowserOptionsHandler::HandleLaunchEasyUnlockSetup,
+               base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Uninitialize() {
@@ -803,6 +828,10 @@ void BrowserOptionsHandler::InitializeHandler() {
       prefs::kSigninAllowed,
       base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
                  base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kEasyUnlockPairing,
+      base::Bind(&BrowserOptionsHandler::SetupEasyUnlock,
+                 base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
   if (!policy_registrar_) {
@@ -843,6 +872,7 @@ void BrowserOptionsHandler::InitializePage() {
   SetupProxySettingsSection();
   SetupManageCertificatesSection();
   SetupManagingSupervisedUsers();
+  SetupEasyUnlock();
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   if (!cloud_print_mdns_ui_enabled_) {
@@ -1579,6 +1609,11 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   }
 }
 
+void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(
+    const base::ListValue* args) {
+  // TODO(tengs): launch Easy Unlock setup flow.
+}
+
 void BrowserOptionsHandler::HandleRequestHotwordSetupRetry(
     const base::ListValue* args) {
   // TODO(joshtrask): invoke BrowserOptions.showHotwordSection again, passing
@@ -1762,6 +1797,15 @@ void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateManagesSupervisedUsers",
       has_users_value);
+}
+
+void BrowserOptionsHandler::SetupEasyUnlock() {
+  bool has_pairing = !Profile::FromWebUI(web_ui())->GetPrefs()
+      ->GetDictionary(prefs::kEasyUnlockPairing)->empty();
+  base::FundamentalValue has_pairing_value(has_pairing);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.updateEasyUnlock",
+      has_pairing_value);
 }
 
 }  // namespace options

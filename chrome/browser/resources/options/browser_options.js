@@ -396,6 +396,14 @@ cr.define('options', function() {
         };
       }
 
+      // Easy Unlock section.
+      if (loadTimeData.getBoolean('easyUnlockEnabled')) {
+        $('easy-unlock-section').hidden = false;
+        $('easy-unlock-setup-button').onclick = function(event) {
+          chrome.send('launchEasyUnlockSetup');
+        };
+      }
+
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
         OptionsPage.navigateToPage('fonts');
@@ -908,6 +916,16 @@ cr.define('options', function() {
                                        $('enable-auto-login-checkbox'));
       }
       $('enable-auto-login-checkbox').hidden = !syncData.autoLoginVisible;
+    },
+
+    /**
+     * Update the UI depending on whether the current profile has a pairing for
+     * Easy Unlock.
+     * @param {boolean} hasPairing True if the current profile has a pairing.
+     */
+    updateEasyUnlock_: function(hasPairing) {
+      $('easy-unlock-setup').hidden = hasPairing;
+      $('easy-unlock-enable').hidden = !hasPairing;
     },
 
     /**
@@ -1691,6 +1709,7 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
+    'updateEasyUnlock',
     'updateManagesSupervisedUsers',
     'updateSearchEngines',
     'updateStartupPages',

@@ -877,6 +877,8 @@
         'browser/chromeos/ui/idle_logout_dialog_view.h',
         'browser/chromeos/ui/screen_capture_notification_ui_chromeos.cc',
         'browser/chromeos/ui/screen_capture_notification_ui_chromeos.h',
+        'browser/chromeos/chromeos_utils.cc',
+        'browser/chromeos/chromeos_utils.h',
         'browser/chromeos/ui_proxy_config.cc',
         'browser/chromeos/ui_proxy_config.h',
         'browser/chromeos/ui_proxy_config_service.cc',

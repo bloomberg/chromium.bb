@@ -10082,6 +10082,18 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION" desc="The 'Ask for save location before downloading' checkbox label">
           Ask where to save each file before downloading
         </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
+          Easy Unlock
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to setup Easy Unlock section on the settings page.">
+          Setup Easy Unlock
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL" desc="The label beside the checkbox to enable or disable easy unlock.">
+          Enable Easy Unlock for this device.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGEMENT" desc="The text of the link to the Easy Unlock management webpage.">
+          Manage Easy Unlock devices on your account settings.
+        </message>
         <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
           You have chosen to open certain file types automatically after downloading.
         </message>

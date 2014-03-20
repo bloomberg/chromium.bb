@@ -1301,6 +1301,15 @@ const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 // Registered GCM application ids.
 const char kGCMRegisteredAppIDs[] = "gcm.register_app_ids";
 
+// Whether Easy Unlock is enabled.
+extern const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
+
+// Whether to show the Easy Unlock first run tutorial.
+extern const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
+
+// Preference storing Easy Unlock pairing data.
+extern const char kEasyUnlockPairing[] = "easy_unlock.pairing";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -2672,4 +2681,5 @@ const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 
 // Whether DNS Quick Check is disabled in proxy resolution.
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
+
 }  // namespace prefs

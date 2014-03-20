@@ -708,4 +708,9 @@ const char kMac32BitDeprecationURL[] =
 #endif
 #endif
 
+// TODO(tengs): Replace with real URL when ready.
+const char kEasyUnlockLearnMoreUrl[] =
+    "https://support.google.com/chromebook/?p=easy_unlock";
+const char kEasyUnlockManagementUrl[] = "https://chrome.com";
+
 }  // namespace chrome

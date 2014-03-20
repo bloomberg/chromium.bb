@@ -458,6 +458,42 @@
     </div>
 </if>
   </section>
+  <section id="easy-unlock-section" guest-visibility="hidden" hidden>
+    <h3 i18n-content="easyUnlockSectionTitle"></h3>
+    <!-- Options shown when the user has not set up Easy Unlock -->
+    <div id='easy-unlock-setup' hidden>
+      <button id="easy-unlock-setup-button"
+          i18n-content="easyUnlockSetupButton"></button>
+      <div>
+        <a target="_blank" i18n-content="learnMore"
+            i18n-values="href:easyUnlockLearnMoreURL"></a>
+      </div>
+    </div>
+    <!-- Options shown when the user has set up Easy Unlock -->
+    <div id='easy-unlock-enable' hidden>
+      <div class="checkbox">
+        <span class="controlled-setting-with-label">
+          <input id="easy-unlock-check" type="checkbox"
+              pref="easy_unlock.enabled"
+              metric="EasyUnlock_Enabled">
+          <span>
+            <label for="easy-unlock-checkbox">
+              <span i18n-content="easyUnlockCheckboxLabel"></span>
+              <a target="_blank" i18n-content="learnMore"
+                  i18n-values="href:easyUnlockLearnMoreURL"></a>
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="easy_unlock.enabled">
+            </span>
+          </span>
+        </span>
+      </div>
+      <div>
+        <a target="_blank" i18n-content="easyUnlockManagement"
+            i18n-values="href:easyUnlockManagementURL"></a>
+      </div>
+    </div>
+  </section>
   <section id="web-content-section">
     <h3 i18n-content="advancedSectionTitleContent"></h3>
     <div>

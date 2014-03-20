@@ -4,6 +4,12 @@
 <grit-part>
   <message name="IDS_EMPTY_STRING" desc="Empty string, exist only to make code generic. No translation required.">
   </message>
+  <message name="IDS_CHROMEBOOK" desc="The localized name for Chromebook.">
+    Chromebook
+  </message>
+  <message name="IDS_CHROMEBOX" desc="The localized name for Chromebox">
+    Chromebox
+  </message>
   <!-- Idle logout dialog for retail mode -->
   <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog. Used in retail mode only.">
     Are you still there?
@@ -1604,6 +1610,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
     Type the characters you see in the picture below.
+  </message>
+  <message name="IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL_CHROMEOS" desc="The label beside the checkbox to enable or disable easy unlock. This is the ChromeOS specific label.">
+    Enable Easy Unlock for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
     Some settings belonging to <ph name="PRIMARY_EMAIL">$1<ex>john@google.com</ex></ph> are being shared with you. These settings only affect your account when using multiple sign-in.

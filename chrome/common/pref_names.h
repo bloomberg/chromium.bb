@@ -408,6 +408,10 @@ extern const char kProfileResetPromptMemento[];
 extern const char kGCMChannelEnabled[];
 extern const char kGCMRegisteredAppIDs[];
 
+extern const char kEasyUnlockEnabled[];
+extern const char kEasyUnlockShowTutorial[];
+extern const char kEasyUnlockPairing[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
