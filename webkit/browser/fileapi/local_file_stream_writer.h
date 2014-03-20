@@ -41,7 +41,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamWriter
   friend class LocalFileStreamWriterTest;
   LocalFileStreamWriter(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
-                        int64 initial_offset);
+                        int64 initial_offset,
+                        OpenOrCreate open_or_create);
 
   // Opens |file_path_| and if it succeeds, proceeds to InitiateSeek().
   // If failed, the error code is returned by calling |error_callback|.
@@ -78,6 +79,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamWriter
 
   // Initialization parameters.
   const base::FilePath file_path_;
+  OpenOrCreate open_or_create_;
   const int64 initial_offset_;
   scoped_refptr<base::TaskRunner> task_runner_;
 

@@ -138,8 +138,10 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
   }
   DCHECK(!local_file_writer_.get());
   local_file_writer_.reset(FileStreamWriter::CreateForLocalFile(
-      file_system_context_->default_file_task_runner(), platform_path,
-      initial_offset_));
+      file_system_context_->default_file_task_runner(),
+      platform_path,
+      initial_offset_,
+      FileStreamWriter::OPEN_EXISTING_FILE));
 
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();

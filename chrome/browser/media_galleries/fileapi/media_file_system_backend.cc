@@ -216,7 +216,9 @@ MediaFileSystemBackend::CreateFileStreamWriter(
   return scoped_ptr<fileapi::FileStreamWriter>(
       fileapi::FileStreamWriter::CreateForLocalFile(
           context->default_file_task_runner(),
-          url.path(), offset));
+          url.path(),
+          offset,
+          fileapi::FileStreamWriter::OPEN_EXISTING_FILE));
 }
 
 fileapi::FileSystemQuotaUtil*
