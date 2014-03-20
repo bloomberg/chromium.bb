@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 // A specialization of ProfileOAuth2TokenService that will be returned by

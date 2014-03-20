@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/mutable_profile_oauth2_token_service.h"
+#include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/signin/core/signin_error_controller.h"
 #include "components/signin/core/webdata/token_web_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
