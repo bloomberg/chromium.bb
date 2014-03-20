@@ -164,7 +164,7 @@ function test()
                     node = newNode;
                 }
 
-                var snapshot = new WebInspector.JSHeapSnapshot(builder.generateSnapshot(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = builder.createJSHeapSnapshot();
                 InspectorTest.assertEquals(
                     iterations * nodeSize, snapshot.rootNode().retainedSize(),
                     "Ensure that root node retained size supports values exceeding 2^32 bytes.");
@@ -205,7 +205,7 @@ function test()
                 var debuggerOwnedNode = new InspectorTest.HeapNode("debuggerOwnedNode");
                 debuggerNode.linkNode(debuggerOwnedNode, InspectorTest.HeapEdge.Type.element);
 
-                var snapshot = new WebInspector.JSHeapSnapshot(builder.generateSnapshot(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = builder.createJSHeapSnapshot();
                 snapshot._flags = new Array(snapshot.nodeCount);
                 for (var i = 0; i < snapshot.nodeCount; ++i)
                     snapshot._flags[i] = 0;
@@ -299,11 +299,11 @@ function test()
                 var root = snapshot.rootNode();
                 var rawEdges = root.rawEdges();
                 InspectorTest.assertEquals(6, rawEdges.length);
-                InspectorTest.assertEquals(6, rawEdges.slice(0).length);
-                InspectorTest.assertEquals(3, rawEdges.slice(3).length);
-                InspectorTest.assertEquals(3, rawEdges.slice(3, 6).length);
-                InspectorTest.assertEquals(3, rawEdges.slice(0, 3).length);
-                InspectorTest.assertEquals(0, rawEdges.slice(3, 3).length);
+                InspectorTest.assertEquals(6, rawEdges.subarray(0).length);
+                InspectorTest.assertEquals(3, rawEdges.subarray(3).length);
+                InspectorTest.assertEquals(3, rawEdges.subarray(3, 6).length);
+                InspectorTest.assertEquals(3, rawEdges.subarray(0, 3).length);
+                InspectorTest.assertEquals(0, rawEdges.subarray(3, 3).length);
             },
 
             function heapSnapshotNodesProviderTest()

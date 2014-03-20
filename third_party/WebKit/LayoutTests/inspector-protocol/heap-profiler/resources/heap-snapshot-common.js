@@ -34,6 +34,8 @@ InspectorTest.takeHeapSnapshot = function(callback)
     {
         var serializedSnapshot = chunks.join("");
         var parsed = JSON.parse(serializedSnapshot);
+        parsed.nodes = new Uint32Array(parsed.nodes);
+        parsed.edges = new Uint32Array(parsed.edges);
         var snapshot = new WebInspector.JSHeapSnapshot(parsed, new WebInspector.HeapSnapshotProgress());
         callback(snapshot);
         InspectorTest.log("SUCCESS: didGetHeapSnapshot");
