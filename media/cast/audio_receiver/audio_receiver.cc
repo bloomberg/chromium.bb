@@ -179,10 +179,8 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       cast_environment_->PostTask(
           CastEnvironment::AUDIO_DECODER, FROM_HERE,
           base::Bind(&AudioReceiver::DecodeAudioFrameThread,
-                     weak_factory_.GetWeakPtr(),
-                     decoded_data.number_of_10ms_blocks,
-                     decoded_data.desired_frequency,
-                     decoded_data.callback));
+                     base::Unretained(this), decoded_data.number_of_10ms_blocks,
+                     decoded_data.desired_frequency, decoded_data.callback));
     }
     return;
   }
@@ -218,11 +216,8 @@ void AudioReceiver::GetRawAudioFrame(
   // TODO(pwestin): we can skip this function by posting direct to the decoder.
   cast_environment_->PostTask(
       CastEnvironment::AUDIO_DECODER, FROM_HERE,
-      base::Bind(&AudioReceiver::DecodeAudioFrameThread,
-                 weak_factory_.GetWeakPtr(),
-                 number_of_10ms_blocks,
-                 desired_frequency,
-                 callback));
+      base::Bind(&AudioReceiver::DecodeAudioFrameThread, base::Unretained(this),
+                 number_of_10ms_blocks, desired_frequency, callback));
 }
 
 void AudioReceiver::DecodeAudioFrameThread(
@@ -247,7 +242,7 @@ void AudioReceiver::DecodeAudioFrameThread(
   cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&AudioReceiver::ReturnDecodedFrameWithPlayoutDelay,
-                 weak_factory_.GetWeakPtr(), base::Passed(&audio_frame),
+                 base::Unretained(this), base::Passed(&audio_frame),
                  rtp_timestamp, callback));
 }
 

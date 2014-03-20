@@ -160,7 +160,7 @@ void VideoReceiver::GetRawVideoFrame(
     const VideoFrameDecodedCallback& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   GetEncodedVideoFrame(base::Bind(
-      &VideoReceiver::DecodeVideoFrame, weak_factory_.GetWeakPtr(), callback));
+      &VideoReceiver::DecodeVideoFrame, base::Unretained(this), callback));
 }
 
 // Called when we have a frame to decode.
@@ -173,7 +173,7 @@ void VideoReceiver::DecodeVideoFrame(
   cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER,
                               FROM_HERE,
                               base::Bind(&VideoReceiver::DecodeVideoFrameThread,
-                                         weak_factory_.GetWeakPtr(),
+                                         base::Unretained(this),
                                          base::Passed(&encoded_frame),
                                          render_time,
                                          callback));
@@ -193,7 +193,7 @@ void VideoReceiver::DecodeVideoFrameThread(
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&VideoReceiver::GetRawVideoFrame,
-                                           weak_factory_.GetWeakPtr(),
+                                           base::Unretained(this),
                                            frame_decoded_callback));
   }
 }

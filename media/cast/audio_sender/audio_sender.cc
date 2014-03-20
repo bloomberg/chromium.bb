@@ -95,7 +95,7 @@ void AudioSender::SendEncodedAudioFrame(
       CastEnvironment::TRANSPORT,
       FROM_HERE,
       base::Bind(&AudioSender::SendEncodedAudioFrameToTransport,
-                 weak_factory_.GetWeakPtr(),
+                 base::Unretained(this),
                  base::Passed(&audio_frame),
                  recorded_time));
 }
@@ -114,7 +114,7 @@ void AudioSender::ResendPackets(
       CastEnvironment::TRANSPORT,
       FROM_HERE,
       base::Bind(&AudioSender::ResendPacketsOnTransportThread,
-                 weak_factory_.GetWeakPtr(),
+                 base::Unretained(this),
                  missing_frames_and_packets));
 }
 
