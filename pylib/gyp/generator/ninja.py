@@ -344,7 +344,7 @@ class NinjaWriter:
     return os.path.normpath(os.path.join(obj, self.base_dir, path_dir,
                                          path_basename))
 
-  def WriteCollapsedDependencies(self, name, targets):
+  def WriteCollapsedDependencies(self, name, targets, order_only=None):
     """Given a list of targets, return a path for a single file
     representing the result of building all the targets or None.
 
@@ -352,10 +352,11 @@ class NinjaWriter:
 
     assert targets == filter(None, targets), targets
     if len(targets) == 0:
+      assert not order_only
       return None
-    if len(targets) > 1:
+    if len(targets) > 1 or order_only:
       stamp = self.GypPathToUniqueOutput(name + '.stamp')
-      targets = self.ninja.build(stamp, 'stamp', targets)
+      targets = self.ninja.build(stamp, 'stamp', targets, order_only=order_only)
       self.ninja.newline()
     return targets[0]
 
@@ -657,8 +658,20 @@ class NinjaWriter:
 
       inputs = [self.GypPathToNinja(i, env) for i in rule.get('inputs', [])]
 
+      # If there are n source files matching the rule, and m additional rule
+      # inputs, then adding 'inputs' to each build edge written below will
+      # write m * n inputs. Collapsing reduces this to m + n.
+      sources = rule.get('rule_sources', [])
+      num_inputs = len(inputs)
+      if prebuild:
+        num_inputs += 1
+      if num_inputs > 2 and len(sources) > 2:
+        inputs = [
+            self.WriteCollapsedDependencies(name, inputs, order_only=prebuild)]
+        prebuild = []
+
       # For each source file, write an edge that generates all the outputs.
-      for source in rule.get('rule_sources', []):
+      for source in sources:
         source = os.path.normpath(source)
         dirname, basename = os.path.split(source)
         root, ext = os.path.splitext(basename)
