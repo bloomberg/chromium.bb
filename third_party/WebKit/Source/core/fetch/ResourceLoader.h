@@ -93,6 +93,8 @@ private:
 
     bool responseNeedsAccessControlCheck() const;
 
+    ResourceRequest& applyOptions(ResourceRequest&) const;
+
     OwnPtr<blink::WebURLLoader> m_loader;
     RefPtr<ResourceLoaderHost> m_host;
 

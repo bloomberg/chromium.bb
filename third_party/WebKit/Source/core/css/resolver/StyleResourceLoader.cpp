@@ -109,6 +109,7 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
 
     ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
     options.allowCredentials = DoNotAllowStoredCredentials;
+    options.credentialsRequested  = ClientDidNotRequestCredentials;
     options.corsEnabled = IsCORSEnabled;
 
     shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options));

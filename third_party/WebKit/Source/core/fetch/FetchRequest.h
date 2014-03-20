@@ -59,6 +59,7 @@ public:
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
     void setContentSecurityCheck(ContentSecurityPolicyCheck contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
+    void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials);
     void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
     OriginRestriction originRestriction() const { return m_originRestriction; }
