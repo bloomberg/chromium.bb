@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -931,7 +932,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetKeepEverythingSynced(false);
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
@@ -953,7 +954,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
         .WillRepeatedly(Return(false));
     SetupInitializedProfileSyncService();
-    browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+    sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
     syncer::ModelTypeSet types;

@@ -23,7 +23,7 @@
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions2/tab_node_pool2.h"
-#include "chrome/browser/sync/sync_prefs.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "sync/api/syncable_service.h"
 
 class Profile;
@@ -347,7 +347,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // proves that we are still relevant.
   bool local_tab_pool_out_of_sync_;
 
-  SyncPrefs sync_prefs_;
+  sync_driver::SyncPrefs sync_prefs_;
 
   const Profile* const profile_;
 

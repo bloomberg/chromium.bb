@@ -39,6 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "components/signin/core/signin_error_controller.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -352,7 +353,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
                     registered_types.Has(sync_type));
     args.SetBoolean(key_name + "Synced", preferred_types.Has(sync_type));
   }
-  browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
   args.SetBoolean("passphraseFailed", passphrase_failed);
   args.SetBoolean("showSyncEverythingPage", !show_advanced);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());

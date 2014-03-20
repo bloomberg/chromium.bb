@@ -2,24 +2,82 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_prefs.h"
+#include "components/sync_driver/sync_prefs.h"
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_notifier_impl.h"
+#include "base/prefs/pref_value_store.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/sync_driver/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+template <>
+TestingPrefServiceBase<PrefService, user_prefs::PrefRegistrySyncable>::
+    TestingPrefServiceBase(TestingPrefStore* managed_prefs,
+                           TestingPrefStore* user_prefs,
+                           TestingPrefStore* recommended_prefs,
+                           user_prefs::PrefRegistrySyncable* pref_registry,
+                           PrefNotifierImpl* pref_notifier)
+    : PrefService(
+          pref_notifier,
+          new PrefValueStore(managed_prefs,
+                             NULL,  // supervised_user_prefs
+                             NULL,  // extension_prefs
+                             NULL,  // command_line_prefs
+                             user_prefs,
+                             recommended_prefs,
+                             pref_registry->defaults().get(),
+                             pref_notifier),
+          user_prefs,
+          pref_registry,
+          base::Bind(&TestingPrefServiceBase<
+                         PrefService,
+                         user_prefs::PrefRegistrySyncable>::HandleReadError),
+          false),
+      managed_prefs_(managed_prefs),
+      user_prefs_(user_prefs),
+      recommended_prefs_(recommended_prefs) {}
+
+namespace sync_driver {
 
 namespace {
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
+
+// Test version of PrefServiceSyncable.
+class TestingPrefServiceSyncable
+    : public TestingPrefServiceBase<PrefService,
+                                    user_prefs::PrefRegistrySyncable> {
+ public:
+  TestingPrefServiceSyncable();
+  virtual ~TestingPrefServiceSyncable();
+
+  user_prefs::PrefRegistrySyncable* registry();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
+};
+
+TestingPrefServiceSyncable::TestingPrefServiceSyncable()
+    : TestingPrefServiceBase<PrefService, user_prefs::PrefRegistrySyncable>(
+          new TestingPrefStore(),
+          new TestingPrefStore(),
+          new TestingPrefStore(),
+          new user_prefs::PrefRegistrySyncable(),
+          new PrefNotifierImpl()) {}
+
+TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {}
+
+user_prefs::PrefRegistrySyncable* TestingPrefServiceSyncable::registry() {
+  return static_cast<user_prefs::PrefRegistrySyncable*>(
+      DeprecatedGetPrefRegistry());
+}
 
 class SyncPrefsTest : public testing::Test {
  protected:
@@ -67,8 +125,8 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   sync_prefs.SetKeepEverythingSynced(false);
 
   // Only bookmarks are enabled by default.
-  syncer::ModelTypeSet preferred_types = sync_prefs.GetPreferredDataTypes(
-      syncer::UserTypes());
+  syncer::ModelTypeSet preferred_types =
+      sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
   EXPECT_TRUE(preferred_types.Equals(syncer::ModelTypeSet(syncer::BOOKMARKS)));
 
   // Simulate an upgrade to delete directives + proxy tabs support. None of the
@@ -81,16 +139,14 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   registered_types.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
 
   // Enable all other types.
-  sync_prefs.SetPreferredDataTypes(registered_types,
-                                   registered_types);
+  sync_prefs.SetPreferredDataTypes(registered_types, registered_types);
 
   // Manually enable typed urls (to simulate the old world).
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, true);
 
   // Proxy tabs should not be enabled (since sessions wasn't), but history
   // delete directives should (since typed urls was).
-  preferred_types =
-      sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
+  preferred_types = sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
   EXPECT_FALSE(preferred_types.Has(syncer::PROXY_TABS));
   EXPECT_TRUE(preferred_types.Has(syncer::HISTORY_DELETE_DIRECTIVES));
 
@@ -99,8 +155,7 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   // delete directives are not enabled.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
   pref_service_.SetBoolean(prefs::kSyncSessions, true);
-  preferred_types =
-      sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
+  preferred_types = sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
   EXPECT_TRUE(preferred_types.Has(syncer::PROXY_TABS));
   EXPECT_FALSE(preferred_types.Has(syncer::HISTORY_DELETE_DIRECTIVES));
 }
@@ -111,16 +166,16 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
   const syncer::ModelTypeSet user_types = syncer::UserTypes();
-  EXPECT_TRUE(user_types.Equals(
-      sync_prefs.GetPreferredDataTypes(user_types)));
+  EXPECT_TRUE(user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
   const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
   for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
-       it.Good(); it.Inc()) {
+       it.Good();
+       it.Inc()) {
     syncer::ModelTypeSet preferred_types;
     preferred_types.Put(it.Get());
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
-    EXPECT_TRUE(user_types.Equals(
-        sync_prefs.GetPreferredDataTypes(user_types)));
+    EXPECT_TRUE(
+        user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
   }
 }
 
@@ -130,11 +185,11 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
   sync_prefs.SetKeepEverythingSynced(false);
 
   const syncer::ModelTypeSet user_types = syncer::UserTypes();
-  EXPECT_FALSE(user_types.Equals(
-      sync_prefs.GetPreferredDataTypes(user_types)));
+  EXPECT_FALSE(user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
   const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
   for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
-       it.Good(); it.Inc()) {
+       it.Good();
+       it.Inc()) {
     syncer::ModelTypeSet preferred_types;
     preferred_types.Put(it.Get());
     syncer::ModelTypeSet expected_preferred_types(preferred_types);

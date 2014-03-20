@@ -9,9 +9,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/sync_driver/sync_prefs.h"
 
 namespace browser_sync {
 
@@ -37,7 +37,7 @@ enum DeferredInitTrigger {
 StartupController::StartupController(
     ProfileSyncServiceStartBehavior start_behavior,
     const ProfileOAuth2TokenService* token_service,
-    const browser_sync::SyncPrefs* sync_prefs,
+    const sync_driver::SyncPrefs* sync_prefs,
     const ManagedUserSigninManagerWrapper* signin,
     base::Closure start_backend)
     : received_start_request_(false),
@@ -47,8 +47,8 @@ StartupController::StartupController(
       token_service_(token_service),
       signin_(signin),
       start_backend_(start_backend),
-      fallback_timeout_(base::TimeDelta::FromSeconds(
-          kDeferredInitFallbackSeconds)),
+      fallback_timeout_(
+          base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
       weak_factory_(this) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

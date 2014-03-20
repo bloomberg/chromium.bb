@@ -6,8 +6,8 @@
 
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/sync_driver/pref_names.h"
 #include "policy/policy_constants.h"
 
 namespace browser_sync {
@@ -24,7 +24,7 @@ void SyncPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy_name());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(prefs::kSyncManaged, value->DeepCopy());
+    prefs->SetValue(sync_driver::prefs::kSyncManaged, value->DeepCopy());
 }
 
 }  // namespace browser_sync

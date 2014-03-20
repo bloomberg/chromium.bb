@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SYNC_PREFS_H_
-#define CHROME_BROWSER_SYNC_SYNC_PREFS_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -22,7 +22,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 class SyncPrefObserver {
  public:
@@ -75,8 +75,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool IsStartSuppressed() const;
   void SetStartSuppressed(bool is_suppressed);
 
-  std::string GetGoogleServicesUsername() const;
-
   base::Time GetLastSyncedTime() const;
   void SetLastSyncedTime(base::Time time);
 
@@ -94,9 +92,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Changes are still made to the prefs even if
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
-  void SetPreferredDataTypes(
-    syncer::ModelTypeSet registered_types,
-    syncer::ModelTypeSet preferred_types);
+  void SetPreferredDataTypes(syncer::ModelTypeSet registered_types,
+                             syncer::ModelTypeSet preferred_types);
 
   // This pref is set outside of sync.
   bool IsManaged() const;
@@ -144,9 +141,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
-  syncer::ModelTypeSet ResolvePrefGroups(
-      syncer::ModelTypeSet registered_types,
-      syncer::ModelTypeSet types) const;
+  syncer::ModelTypeSet ResolvePrefGroups(syncer::ModelTypeSet registered_types,
+                                         syncer::ModelTypeSet types) const;
 
   void OnSyncManagedPrefChanged();
 
@@ -174,4 +170,4 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SYNC_PREFS_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_

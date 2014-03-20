@@ -2,5 +2,6 @@ include_rules = [
   # SyncDriver is used by iOS, which does not use content.
   "-content",
   "+components/os_crypt",
+  "+components/user_prefs/pref_registry_syncable.h",
   "+sync",
 ]

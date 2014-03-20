@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_prefs.h"
+#include "components/sync_driver/sync_prefs.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -11,33 +11,25 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 SyncPrefObserver::~SyncPrefObserver() {}
 
-SyncPrefs::SyncPrefs(PrefService* pref_service)
-    : pref_service_(pref_service) {
+SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
   DCHECK(pref_service);
   RegisterPrefGroups();
   // Watch the preference that indicates sync is managed so we can take
   // appropriate action.
-  pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_,
-                           base::Bind(&SyncPrefs::OnSyncManagedPrefChanged,
-                                      base::Unretained(this)));
+  pref_sync_managed_.Init(
+      prefs::kSyncManaged,
+      pref_service_,
+      base::Bind(&SyncPrefs::OnSyncManagedPrefChanged, base::Unretained(this)));
 }
 
-SyncPrefs::~SyncPrefs() {
-  DCHECK(CalledOnValidThread());
-}
+SyncPrefs::~SyncPrefs() { DCHECK(CalledOnValidThread()); }
 
 // static
 void SyncPrefs::RegisterProfilePrefs(
@@ -88,8 +80,8 @@ void SyncPrefs::RegisterProfilePrefs(
   // explicitly enable them. GetPreferredTypes() will ensure that any new
   // implicit types are enabled when their pref group is, or via
   // KeepEverythingSynced.
-  for (syncer::ModelTypeSet::Iterator it = user_types.First();
-       it.Good(); it.Inc()) {
+  for (syncer::ModelTypeSet::Iterator it = user_types.First(); it.Good();
+       it.Inc()) {
     RegisterDataTypePreferredPref(registry, it.Get(), false);
   }
 
@@ -197,16 +189,10 @@ void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, is_suppressed);
 }
 
-std::string SyncPrefs::GetGoogleServicesUsername() const {
-  DCHECK(CalledOnValidThread());
-  return pref_service_->GetString(prefs::kGoogleServicesUsername);
-}
-
 base::Time SyncPrefs::GetLastSyncedTime() const {
   DCHECK(CalledOnValidThread());
-  return
-      base::Time::FromInternalValue(
-          pref_service_->GetInt64(prefs::kSyncLastSyncedTime));
+  return base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kSyncLastSyncedTime));
 }
 
 void SyncPrefs::SetLastSyncedTime(base::Time time) {
@@ -229,20 +215,13 @@ syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     syncer::ModelTypeSet registered_types) const {
   DCHECK(CalledOnValidThread());
 
-  // First remove any datatypes that are inconsistent with the current policies
-  // on the client (so that "keep everything synced" doesn't include them).
-  if (pref_service_->HasPrefPath(prefs::kSavingBrowserHistoryDisabled) &&
-      pref_service_->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
-    registered_types.Remove(syncer::TYPED_URLS);
-  }
-
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
     return registered_types;
   }
 
   syncer::ModelTypeSet preferred_types;
-  for (syncer::ModelTypeSet::Iterator it = registered_types.First();
-       it.Good(); it.Inc()) {
+  for (syncer::ModelTypeSet::Iterator it = registered_types.First(); it.Good();
+       it.Inc()) {
     if (GetDataTypePreferred(it.Get())) {
       preferred_types.Put(it.Get());
     }
@@ -250,14 +229,13 @@ syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   return ResolvePrefGroups(registered_types, preferred_types);
 }
 
-void SyncPrefs::SetPreferredDataTypes(
-    syncer::ModelTypeSet registered_types,
-    syncer::ModelTypeSet preferred_types) {
+void SyncPrefs::SetPreferredDataTypes(syncer::ModelTypeSet registered_types,
+                                      syncer::ModelTypeSet preferred_types) {
   DCHECK(CalledOnValidThread());
   DCHECK(registered_types.HasAll(preferred_types));
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
-  for (syncer::ModelTypeSet::Iterator i = registered_types.First();
-       i.Good(); i.Inc()) {
+  for (syncer::ModelTypeSet::Iterator i = registered_types.First(); i.Good();
+       i.Inc()) {
     SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
   }
 }
@@ -279,8 +257,7 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
 
 std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_->GetString(
-      prefs::kSyncKeystoreEncryptionBootstrapToken);
+  return pref_service_->GetString(prefs::kSyncKeystoreEncryptionBootstrapToken);
 }
 
 void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
@@ -390,7 +367,8 @@ void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
+  FOR_EACH_OBSERVER(SyncPrefObserver,
+                    sync_pref_observers_,
                     OnSyncManagedPrefChange(*pref_sync_managed_));
 }
 
@@ -467,8 +445,8 @@ bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {
   return pref_service_->GetBoolean(pref_name);
 }
 
-void SyncPrefs::SetDataTypePreferred(
-    syncer::ModelType type, bool is_preferred) {
+void SyncPrefs::SetDataTypePreferred(syncer::ModelType type,
+                                     bool is_preferred) {
   DCHECK(CalledOnValidThread());
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
@@ -484,7 +462,8 @@ syncer::ModelTypeSet SyncPrefs::ResolvePrefGroups(
   DCHECK(registered_types.HasAll(types));
   syncer::ModelTypeSet types_with_groups = types;
   for (PrefGroupsMap::const_iterator i = pref_groups_.begin();
-      i != pref_groups_.end(); ++i) {
+       i != pref_groups_.end();
+       ++i) {
     if (types.Has(i->first))
       types_with_groups.PutAll(i->second);
   }

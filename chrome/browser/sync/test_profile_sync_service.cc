@@ -30,11 +30,12 @@ namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
-    const base::WeakPtr<SyncPrefs>& sync_prefs,
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     base::Closure callback)
-    : browser_sync::SyncBackendHostImpl(
-        profile->GetDebugName(), profile, sync_prefs),
-    callback_(callback) {}
+    : browser_sync::SyncBackendHostImpl(profile->GetDebugName(),
+                                        profile,
+                                        sync_prefs),
+      callback_(callback) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 

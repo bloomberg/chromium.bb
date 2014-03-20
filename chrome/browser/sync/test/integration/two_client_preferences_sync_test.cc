@@ -9,6 +9,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 
@@ -75,11 +76,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncKeepEverythingSynced));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncThemes));
+  ASSERT_TRUE(
+      BooleanPrefMatches(sync_driver::prefs::kSyncKeepEverythingSynced));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncThemes));
 
   GetClient(0)->DisableSyncForDatatype(syncer::THEMES);
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncKeepEverythingSynced));
+  ASSERT_FALSE(
+      BooleanPrefMatches(sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
 // TCM ID - 3661290.
@@ -87,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisablePreferences) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncPreferences));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncPreferences));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   GetClient(1)->DisableSyncForDatatype(syncer::PREFERENCES);
@@ -105,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncPreferences));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncPreferences));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 
@@ -128,12 +131,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, SignInDialog) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncPreferences));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncBookmarks));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncThemes));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncExtensions));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncAutofill));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncKeepEverythingSynced));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncPreferences));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncBookmarks));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncThemes));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncExtensions));
+  ASSERT_TRUE(BooleanPrefMatches(sync_driver::prefs::kSyncAutofill));
+  ASSERT_TRUE(
+      BooleanPrefMatches(sync_driver::prefs::kSyncKeepEverythingSynced));
 
   GetClient(0)->DisableSyncForDatatype(syncer::PREFERENCES);
   GetClient(1)->EnableSyncForDatatype(syncer::PREFERENCES);
@@ -148,12 +152,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, SignInDialog) {
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncPreferences));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncBookmarks));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncThemes));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncExtensions));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncAutofill));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncKeepEverythingSynced));
+  ASSERT_FALSE(BooleanPrefMatches(sync_driver::prefs::kSyncPreferences));
+  ASSERT_FALSE(BooleanPrefMatches(sync_driver::prefs::kSyncBookmarks));
+  ASSERT_FALSE(BooleanPrefMatches(sync_driver::prefs::kSyncThemes));
+  ASSERT_FALSE(BooleanPrefMatches(sync_driver::prefs::kSyncExtensions));
+  ASSERT_FALSE(BooleanPrefMatches(sync_driver::prefs::kSyncAutofill));
+  ASSERT_FALSE(
+      BooleanPrefMatches(sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
 // TCM ID - 3666296.

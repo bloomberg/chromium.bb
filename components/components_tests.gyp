@@ -109,6 +109,7 @@
             'storage_monitor/storage_monitor_unittest.cc',
             'storage_monitor/storage_monitor_win_unittest.cc',
             'sync_driver/model_association_manager_unittest.cc',
+            'sync_driver/sync_prefs_unittest.cc',
             'sync_driver/system_encryptor_unittest.cc',
             'test/run_all_unittests.cc',
             'translate/core/browser/language_state_unittest.cc',

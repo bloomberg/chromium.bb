@@ -15,7 +15,7 @@
 class ExtensionService;
 class ProfileSyncService;
 
-namespace browser_sync {
+namespace sync_driver {
 class SyncPrefs;
 }
 
@@ -29,7 +29,7 @@ class SyncBundle;
 // server when sync does start.
 class PendingEnables {
  public:
-  PendingEnables(scoped_ptr<browser_sync::SyncPrefs> sync_prefs,
+  PendingEnables(scoped_ptr<sync_driver::SyncPrefs> sync_prefs,
                  SyncBundle* sync_bundle,
                  syncer::ModelType enable_type);
   ~PendingEnables();
@@ -51,7 +51,7 @@ class PendingEnables {
   bool IsSyncEnabled();
   bool IsWaitingForSync();
 
-  scoped_ptr<browser_sync::SyncPrefs> sync_prefs_;
+  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   SyncBundle* sync_bundle_;
   syncer::ModelType enable_type_;
   std::set<std::string> ids_;

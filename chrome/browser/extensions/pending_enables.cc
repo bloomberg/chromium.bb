@@ -6,18 +6,17 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sync_bundle.h"
-#include "chrome/browser/sync/sync_prefs.h"
+#include "components/sync_driver/sync_prefs.h"
 
 namespace extensions {
 
-PendingEnables::PendingEnables(scoped_ptr<browser_sync::SyncPrefs> sync_prefs,
+PendingEnables::PendingEnables(scoped_ptr<sync_driver::SyncPrefs> sync_prefs,
                                SyncBundle* sync_bundle,
                                syncer::ModelType enable_type)
     : sync_prefs_(sync_prefs.Pass()),
       sync_bundle_(sync_bundle),
       enable_type_(enable_type),
-      is_sync_enabled_for_test_(false) {
-}
+      is_sync_enabled_for_test_(false) {}
 
 PendingEnables::~PendingEnables() {
 }

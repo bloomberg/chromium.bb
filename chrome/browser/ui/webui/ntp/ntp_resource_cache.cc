@@ -175,8 +175,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
-  profile_pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes,
-                                     callback);
   profile_pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
   profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,

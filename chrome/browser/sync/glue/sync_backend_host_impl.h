@@ -46,12 +46,15 @@ class NetworkResources;
 class SyncManagerFactory;
 }
 
+namespace sync_driver {
+class SyncPrefs;
+}
+
 namespace browser_sync {
 
 class ChangeProcessor;
 class SyncBackendHostCore;
 class SyncBackendRegistrar;
-class SyncPrefs;
 class SyncedDeviceTracker;
 struct DoInitializeOptions;
 
@@ -68,10 +71,9 @@ class SyncBackendHostImpl
   // it serves and communicates to via the SyncFrontend interface (on
   // the same thread it used to call the constructor).  Must outlive
   // |sync_prefs|.
-  SyncBackendHostImpl(
-      const std::string& name,
-      Profile* profile,
-      const base::WeakPtr<SyncPrefs>& sync_prefs);
+  SyncBackendHostImpl(const std::string& name,
+                      Profile* profile,
+                      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs);
   virtual ~SyncBackendHostImpl();
 
   // SyncBackendHost implementation.
@@ -280,7 +282,7 @@ class SyncBackendHostImpl
 
   bool initialized_;
 
-  const base::WeakPtr<SyncPrefs> sync_prefs_;
+  const base::WeakPtr<sync_driver::SyncPrefs> sync_prefs_;
 
   ExtensionsActivityMonitor extensions_activity_monitor_;
 

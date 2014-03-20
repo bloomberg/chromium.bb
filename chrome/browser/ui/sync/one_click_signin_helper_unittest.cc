@@ -36,6 +36,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/sync_driver/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -83,7 +84,7 @@ class TestProfileIOData : public ProfileIOData {
     google_services_username_pattern()->Init(
         prefs::kGoogleServicesUsernamePattern, local_state);
 
-    sync_disabled()->Init(prefs::kSyncManaged, pref_service);
+    sync_disabled()->Init(sync_driver::prefs::kSyncManaged, pref_service);
 
     signin_allowed()->Init(prefs::kSigninAllowed, pref_service);
 
@@ -639,7 +640,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
 
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
 
   // Should still offer even if sync is disabled by policy.
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
@@ -859,7 +860,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   // We should still offer to sign in the browser.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, &request_, io_data.get()));

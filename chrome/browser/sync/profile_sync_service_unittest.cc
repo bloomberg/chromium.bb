@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_driver/pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -192,8 +193,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 // Verify a successful initialization.
 TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSyncManaged,
-      base::Value::CreateBooleanValue(false));
+      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(false));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation();
@@ -224,8 +224,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 // Verify that disable by enterprise policy works.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSyncManaged,
-      base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   Initialize();
@@ -246,8 +245,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   EXPECT_TRUE(service()->sync_initialized());
 
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSyncManaged,
-      base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
 
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->sync_initialized());
@@ -272,7 +270,8 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
   IssueTestTokens();
 
   service()->StopAndSuppress();
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 
   // Because of supression, this should fail.
   Initialize();
@@ -283,8 +282,8 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
   ExpectSyncBackendHostCreation();
   service()->UnsuppressAndStart();
   EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_FALSE(
-      profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 }
 
 // Test StopAndSuppress() after we've initialized the backend.
@@ -296,21 +295,23 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   Initialize();
 
   EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 
   testing::Mock::VerifyAndClearExpectations(components_factory());
 
   service()->StopAndSuppress();
   EXPECT_FALSE(service()->sync_initialized());
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
 
   service()->UnsuppressAndStart();
   EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_FALSE(
-      profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 }
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
@@ -325,7 +326,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   Initialize();
 
   EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
 
   SigninManagerFactory::GetForProfile(profile())->SignOut();
   EXPECT_FALSE(service()->sync_initialized());

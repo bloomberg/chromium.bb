@@ -5,8 +5,8 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/sync_driver/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ TEST_F(SyncPolicyHandlerTest, Default) {
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
-  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, NULL));
+  EXPECT_FALSE(prefs.GetValue(sync_driver::prefs::kSyncManaged, NULL));
 }
 
 TEST_F(SyncPolicyHandlerTest, Enabled) {
@@ -35,7 +35,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Enabling Sync should not set the pref.
-  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, NULL));
+  EXPECT_FALSE(prefs.GetValue(sync_driver::prefs::kSyncManaged, NULL));
 }
 
 TEST_F(SyncPolicyHandlerTest, Disabled) {
@@ -51,7 +51,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
 
   // Sync should be flagged as managed.
   const base::Value* value = NULL;
-  EXPECT_TRUE(prefs.GetValue(prefs::kSyncManaged, &value));
+  EXPECT_TRUE(prefs.GetValue(sync_driver::prefs::kSyncManaged, &value));
   ASSERT_TRUE(value);
   bool sync_managed = false;
   bool result = value->GetAsBoolean(&sync_managed);

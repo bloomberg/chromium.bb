@@ -2370,8 +2370,6 @@
         'browser/sync/sync_global_error.h',
         'browser/sync/sync_policy_handler.cc',
         'browser/sync/sync_policy_handler.h',
-        'browser/sync/sync_prefs.cc',
-        'browser/sync/sync_prefs.h',
         'browser/sync/sync_startup_tracker.cc',
         'browser/sync/sync_startup_tracker.h',
         'browser/sync/sync_ui_util.cc',

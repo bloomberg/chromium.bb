@@ -64,6 +64,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -310,7 +311,8 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
     return;
 
   const PrefService::Preference* keep_everything_synced =
-      pref_service->FindPreference(prefs::kSyncKeepEverythingSynced);
+      pref_service->FindPreference(
+          sync_driver::prefs::kSyncKeepEverythingSynced);
   // This will be false if the preference was properly set or if it's controlled
   // by policy.
   if (!keep_everything_synced->IsDefaultValue())
@@ -1010,35 +1012,38 @@ void ProfileSyncService::OnExperimentsChanged(
   }
 
   int bookmarks_experiment_state_before = profile_->GetPrefs()->GetInteger(
-      prefs::kEnhancedBookmarksExperimentEnabled);
+      sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
   // "" and "1" means experiment is enabled.
   if ((CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
            switches::kEnhancedBookmarksExperiment) != "0")) {
-    profile_->GetPrefs()->SetInteger(prefs::kEnhancedBookmarksExperimentEnabled,
-                                     experiments.enhanced_bookmarks_enabled ?
-                                         kBookmarksExperimentEnabled :
-                                         kNoBookmarksExperiment);
-    profile_->GetPrefs()->SetString(prefs::kEnhancedBookmarksExtensionId,
-                                    experiments.enhanced_bookmarks_ext_id);
+    profile_->GetPrefs()->SetInteger(
+        sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
+        experiments.enhanced_bookmarks_enabled ? kBookmarksExperimentEnabled
+                                               : kNoBookmarksExperiment);
+    profile_->GetPrefs()->SetString(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId,
+        experiments.enhanced_bookmarks_ext_id);
   } else {
     // User opt-out from chrome://flags
     if (experiments.enhanced_bookmarks_enabled) {
       profile_->GetPrefs()->SetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled,
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
           kBookmarksExperimentEnabledUserOptOut);
       // Keep extension id up-to-date in case will opt-in later.
-      profile_->GetPrefs()->SetString(prefs::kEnhancedBookmarksExtensionId,
-                                      experiments.enhanced_bookmarks_ext_id);
+      profile_->GetPrefs()->SetString(
+          sync_driver::prefs::kEnhancedBookmarksExtensionId,
+          experiments.enhanced_bookmarks_ext_id);
     } else {
       profile_->GetPrefs()->ClearPref(
-          prefs::kEnhancedBookmarksExperimentEnabled);
-      profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
+      profile_->GetPrefs()->ClearPref(
+          sync_driver::prefs::kEnhancedBookmarksExtensionId);
     }
   }
   BookmarksExperimentState bookmarks_experiment_state =
       static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled));
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   // If bookmark experiment state was changed update about flags experiment.
   if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
     UpdateBookmarksExperiment(g_browser_process->local_state(),
@@ -2126,7 +2131,7 @@ void ProfileSyncService::UnsuppressAndStart() {
   if (signin_.get() &&
       signin_->GetOriginal()->GetAuthenticatedUsername().empty()) {
     signin_->GetOriginal()->SetAuthenticatedUsername(
-        sync_prefs_.GetGoogleServicesUsername());
+        profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   }
   startup_controller_.TryStart();
 }

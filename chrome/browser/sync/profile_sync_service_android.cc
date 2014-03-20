@@ -22,9 +22,9 @@
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/common/pref_names.h"
+#include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -70,7 +70,7 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     return;
   }
 
-  sync_prefs_.reset(new browser_sync::SyncPrefs(profile_->GetPrefs()));
+  sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
 
   sync_service_ =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
@@ -472,7 +472,7 @@ jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
   // conversion, since SyncPrefs::GetLastSyncedTime() converts the stored value
   // to to base::Time.
   return static_cast<jlong>(
-      profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
+      profile_->GetPrefs()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
 }
 
 void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,

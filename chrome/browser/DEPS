@@ -28,6 +28,7 @@ include_rules = [
   "+components/rappor",
   "+components/sessions",
   "+components/signin",
+  "+components/sync_driver",
   "+components/startup_metric_utils",
   "+components/storage_monitor",
   "+components/translate/content/browser",

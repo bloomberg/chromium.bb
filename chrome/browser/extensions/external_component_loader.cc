@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -57,7 +58,7 @@ void ExternalComponentLoader::StartLoading() {
 
   BookmarksExperimentState bookmarks_experiment_state_before =
       static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled));
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
     // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
     // "0" - user opted out.
@@ -65,7 +66,7 @@ void ExternalComponentLoader::StartLoading() {
             switches::kEnhancedBookmarksExperiment) != "0") {
       // Experiment enabled.
       std::string ext_id = profile_->GetPrefs()->GetString(
-          prefs::kEnhancedBookmarksExtensionId);
+          sync_driver::prefs::kEnhancedBookmarksExtensionId);
       if (!ext_id.empty()) {
         prefs_->SetString(ext_id + ".external_update_url",
                           extension_urls::GetWebstoreUpdateUrl().spec());
@@ -73,7 +74,7 @@ void ExternalComponentLoader::StartLoading() {
     } else {
       // Experiment enabled but user opted out.
       profile_->GetPrefs()->SetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled,
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
           kBookmarksExperimentEnabledUserOptOut);
     }
   } else if (bookmarks_experiment_state_before ==
@@ -82,10 +83,10 @@ void ExternalComponentLoader::StartLoading() {
             switches::kEnhancedBookmarksExperiment) != "0") {
       // User opted in again.
       profile_->GetPrefs()->SetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled,
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
           kBookmarksExperimentEnabled);
       std::string ext_id = profile_->GetPrefs()->GetString(
-          prefs::kEnhancedBookmarksExtensionId);
+          sync_driver::prefs::kEnhancedBookmarksExtensionId);
       if (!ext_id.empty()) {
         prefs_->SetString(ext_id + ".external_update_url",
                           extension_urls::GetWebstoreUpdateUrl().spec());
@@ -93,12 +94,14 @@ void ExternalComponentLoader::StartLoading() {
     }
   } else {
     // Experiment disabled.
-    profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExperimentEnabled);
-    profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
+    profile_->GetPrefs()->ClearPref(
+        sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
+    profile_->GetPrefs()->ClearPref(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId);
   }
   BookmarksExperimentState bookmarks_experiment_state =
       static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          prefs::kEnhancedBookmarksExperimentEnabled));
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
     UpdateBookmarksExperiment(g_browser_process->local_state(),
                               bookmarks_experiment_state);

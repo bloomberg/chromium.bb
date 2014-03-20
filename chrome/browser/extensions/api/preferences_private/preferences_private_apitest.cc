@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 using extensions::PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction;
@@ -116,7 +117,7 @@ class PreferencesPrivateApiTest : public ExtensionApiTest {
 
     Profile* profile =
         Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
-    browser_sync::SyncPrefs sync_prefs(profile->GetPrefs());
+    sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
     sync_prefs.SetKeepEverythingSynced(false);
 
     ProfileManager* profile_manager = g_browser_process->profile_manager();

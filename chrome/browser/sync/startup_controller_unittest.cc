@@ -13,9 +13,9 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -56,7 +56,7 @@ class StartupControllerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
-    sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
+    sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(
         static_cast<FakeProfileOAuth2TokenServiceWrapper*>(
             FakeProfileOAuth2TokenServiceWrapper::Build(profile_.get())));
@@ -94,7 +94,7 @@ class StartupControllerTest : public testing::Test {
     return static_cast<FakeProfileOAuth2TokenService*>(
         token_service_->GetProfileOAuth2TokenService());
   }
-  SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
+  sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   Profile* profile() { return profile_.get(); }
 
  private:
@@ -103,7 +103,7 @@ class StartupControllerTest : public testing::Test {
   scoped_ptr<StartupController> controller_;
   scoped_ptr<FakeManagedUserSigninManagerWrapper> signin_;
   scoped_ptr<FakeProfileOAuth2TokenServiceWrapper> token_service_;
-  scoped_ptr<SyncPrefs> sync_prefs_;
+  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<TestingProfile> profile_;
 };
 

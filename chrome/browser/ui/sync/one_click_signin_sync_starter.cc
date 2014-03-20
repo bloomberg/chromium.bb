@@ -22,7 +22,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,7 +104,7 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
 
   // Make sure the syncing is not suppressed, otherwise the SigninManager
   // will not be able to complete sucessfully.
-  browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetStartSuppressed(false);
 }
 

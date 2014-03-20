@@ -27,7 +27,6 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
@@ -35,6 +34,7 @@
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/failed_data_types_handler.h"
 #include "components/sync_driver/sync_frontend.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -169,7 +169,7 @@ using browser_sync::SessionsSyncManager;
 //
 class ProfileSyncService : public ProfileSyncServiceBase,
                            public browser_sync::SyncFrontend,
-                           public browser_sync::SyncPrefObserver,
+                           public sync_driver::SyncPrefObserver,
                            public browser_sync::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
@@ -864,7 +864,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // The class that handles getting, setting, and persisting sync
   // preferences.
-  browser_sync::SyncPrefs sync_prefs_;
+  sync_driver::SyncPrefs sync_prefs_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.

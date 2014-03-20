@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -578,7 +579,7 @@ bool BaseSearchProvider::CanSendURL(
   // Check field trials and settings allow sending the URL on suggest requests.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  browser_sync::SyncPrefs sync_prefs(profile->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
   if (service == NULL ||
       !service->IsSyncEnabledAndLoggedIn() ||
       !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(

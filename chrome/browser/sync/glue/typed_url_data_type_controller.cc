@@ -92,6 +92,22 @@ syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
   return syncer::GROUP_HISTORY;
 }
 
+void TypedUrlDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
+  if (profile()->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
+    model_load_callback.Run(
+        type(),
+        syncer::SyncError(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "History sync disabled by policy.",
+                          type()));
+    return;
+  }
+
+  set_state(MODEL_LOADED);
+  model_load_callback.Run(type(), syncer::SyncError());
+}
+
 void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   backend_ = backend;

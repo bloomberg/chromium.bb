@@ -43,7 +43,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       Profile* profile,
-      const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs) OVERRIDE;
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs) OVERRIDE;
 
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,

@@ -71,7 +71,6 @@
 #include "chrome/browser/signin/easy_unlock_controller.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
@@ -95,6 +94,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/rappor/rappor_service.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
@@ -340,7 +340,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   BookmarkPromptPrefs::RegisterProfilePrefs(registry);
   bookmark_utils::RegisterProfilePrefs(registry);
-  browser_sync::SyncPrefs::RegisterProfilePrefs(registry);
+  sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(

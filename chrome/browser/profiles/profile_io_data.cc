@@ -50,6 +50,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/sync_driver/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -408,7 +409,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         prefs::kReverseAutologinRejectedEmailList, pref_service);
     one_click_signin_rejected_email_list_.MoveToThread(io_message_loop_proxy);
 
-    sync_disabled_.Init(prefs::kSyncManaged, pref_service);
+    sync_disabled_.Init(sync_driver::prefs::kSyncManaged, pref_service);
     sync_disabled_.MoveToThread(io_message_loop_proxy);
 
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);

@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_frontend.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -46,7 +46,7 @@ namespace browser_sync {
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
     Profile* profile,
-    const base::WeakPtr<SyncPrefs>& sync_prefs)
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs)
     : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),

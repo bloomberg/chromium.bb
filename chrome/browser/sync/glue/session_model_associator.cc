@@ -29,9 +29,9 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/serialized_navigation_entry.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -58,7 +58,6 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
-using prefs::kSyncSessionsGUID;
 using sessions::SerializedNavigationEntry;
 using syncer::SESSIONS;
 
@@ -692,7 +691,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   DCHECK(CalledOnValidThread());
   DCHECK(current_machine_tag_.empty());
   std::string persisted_guid;
-  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
+  sync_driver::SyncPrefs prefs(profile_->GetPrefs());
   persisted_guid = prefs.GetSyncSessionsGUID();
   if (!persisted_guid.empty()) {
     current_machine_tag_ = persisted_guid;

@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/sync_prefs.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -222,7 +222,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   ProfileSyncService* sync_service_;
   // The class that handles getting, setting, and persisting sync
   // preferences.
-  scoped_ptr<browser_sync::SyncPrefs> sync_prefs_;
+  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
 
   // Java-side ProfileSyncService object.
   JavaObjectWeakGlobalRef weak_java_profile_sync_service_;

@@ -430,10 +430,10 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
 }
 
 browser_sync::SyncBackendHost*
-    ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
-      const std::string& name,
-      Profile* profile,
-      const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs) {
+ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
+    const std::string& name,
+    Profile* profile,
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs) {
   return new browser_sync::SyncBackendHostImpl(name, profile, sync_prefs);
 }
 
