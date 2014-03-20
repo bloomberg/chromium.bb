@@ -35,6 +35,14 @@ static const char kGetUserMediaAndAnalyseAndStop[] =
     "getUserMediaAndAnalyseAndStop";
 static const char kGetUserMediaAndExpectFailure[] =
     "getUserMediaAndExpectFailure";
+static const char kRenderSameTrackMediastreamAndStop[] =
+    "renderSameTrackMediastreamAndStop";
+static const char kRenderClonedMediastreamAndStop[] =
+    "renderClonedMediastreamAndStop";
+static const char kRenderClonedTrackMediastreamAndStop[] =
+    "renderClonedTrackMediastreamAndStop";
+static const char kRenderDuplicatedMediastreamAndStop[] =
+    "renderDuplicatedMediastreamAndStop";
 
 // Results returned by JS.
 static const char kOK[] = "OK";
@@ -123,10 +131,9 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest,
 
     // Put getUserMedia to work and let it run for a couple of seconds.
     DCHECK(time_to_sample_secs);
-    ASSERT_EQ("ok-stream-running",
-        ExecuteJavascriptAndReturnResult(
-            base::StringPrintf("%s({video: true});",
-                               kGetUserMediaAndGetStreamUp)));
+    ExecuteJavascriptAndWaitForOk(
+        base::StringPrintf("%s({video: true});",
+                           kGetUserMediaAndGetStreamUp));
 
     // Now the stream is up and running, start collecting traces.
     StartTracing();
@@ -235,6 +242,55 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest, GetVideoStreamAndStop) {
 
   ExecuteJavascriptAndWaitForOk(
       base::StringPrintf("%s({video: true});", kGetUserMediaAndStop));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       RenderSameTrackMediastreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});",
+                         kRenderSameTrackMediastreamAndStop));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       RenderClonedMediastreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});",
+                         kRenderClonedMediastreamAndStop));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       kRenderClonedTrackMediastreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});",
+                         kRenderClonedTrackMediastreamAndStop));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       kRenderDuplicatedMediastreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});",
+                          kRenderDuplicatedMediastreamAndStop));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
