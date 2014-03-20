@@ -1356,8 +1356,10 @@ bool Heap::isConsistentForGC()
 {
     ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        return (*it)->isConsistentForGC();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if (!(*it)->isConsistentForGC())
+            return false;
+    }
     return true;
 }
 
