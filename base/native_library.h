@@ -52,8 +52,7 @@ typedef void* NativeLibrary;
 
 // Loads a native library from disk.  Release it with UnloadNativeLibrary when
 // you're done.  Returns NULL on failure.
-// If |err| is not NULL, it may be filled in with an error message on
-// error.
+// If |error| is not NULL, it may be filled in with an error message on error.
 BASE_EXPORT NativeLibrary LoadNativeLibrary(const FilePath& library_path,
                                             std::string* error);
 
