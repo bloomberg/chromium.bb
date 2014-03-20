@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/auto_login_prompter.h"
+#include "chrome/browser/ui/android/infobars/auto_login_prompter.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,30 +26,6 @@
 using content::BrowserThread;
 using content::WebContents;
 
-namespace {
-
-#if !defined(OS_ANDROID)
-bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
-  // In an incognito window these services are not available.
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetInstance()->GetForProfile(profile);
-  if (!signin_manager)
-    return false;
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (!token_service || !token_service->RefreshTokenIsAvailable(
-      signin_manager->GetAuthenticatedAccountId())) {
-    return false;
-  }
-
-  *output = signin_manager->GetAuthenticatedUsername();
-  return true;
-}
-#endif  // !defined(OS_ANDROID)
-
-}  // namespace
-
 AutoLoginPrompter::AutoLoginPrompter(WebContents* web_contents,
                                      const Params& params,
                                      const GURL& url)
@@ -71,9 +47,6 @@ AutoLoginPrompter::~AutoLoginPrompter() {
 void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
                                               int child_id,
                                               int route_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin))
-      return;
-
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
@@ -105,13 +78,6 @@ void AutoLoginPrompter::ShowInfoBarUIThread(Params params,
 
   if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
     return;
-
-#if !defined(OS_ANDROID)
-  // On Android, the username is fetched on the Java side from the
-  // AccountManager provided by the platform.
-  if (!FetchUsernameThroughSigninManager(profile, &params.username))
-    return;
-#endif
 
   // Make sure that |account|, if specified, matches the logged in user.
   // However, |account| is usually empty.

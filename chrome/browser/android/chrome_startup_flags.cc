@@ -35,9 +35,6 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
 }  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
-  // Turn on autologin.
-  SetCommandLineSwitch(switches::kEnableAutologin);
-
   // Enable prerender for the omnibox.
   SetCommandLineSwitchASCII(switches::kPrerenderMode,
                             switches::kPrerenderModeSwitchValueEnabled);

@@ -762,13 +762,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kSavePageAsMHTML)
   },
   {
-    "enable-autologin",
-    IDS_FLAGS_ENABLE_AUTOLOGIN_NAME,
-    IDS_FLAGS_ENABLE_AUTOLOGIN_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableAutologin)
-  },
-  {
     "enable-quic",
     IDS_FLAGS_ENABLE_QUIC_NAME,
     IDS_FLAGS_ENABLE_QUIC_DESCRIPTION,

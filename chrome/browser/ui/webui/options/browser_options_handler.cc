@@ -1351,11 +1351,6 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
                           !signin->GetAuthenticatedUsername().empty());
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
-  sync_status->SetBoolean(
-      "autoLoginVisible",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
-      service && service->IsSyncEnabledAndLoggedIn() &&
-      service->IsOAuthRefreshTokenAvailable());
 
   return sync_status.Pass();
 }

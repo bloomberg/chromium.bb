@@ -10,7 +10,7 @@ import android.util.Pair;
 import org.chromium.base.CalledByNative;
 
 /**
- * Java equivalent of the C++ AutoLoginDelegateAndroid.
+ * Java equivalent of the C++ AutoLoginDelegate.
  *
  * Offers functionality to log in using the account in the system and keeps track
  * of all the native autologin infobars and their respective accounts.
@@ -95,8 +95,8 @@ public class AutoLoginDelegate {
         }
     }
 
-    private native void nativeLoginSuccess(long nativeAutoLoginInfoBarDelegateAndroid,
+    private native void nativeLoginSuccess(long nativeAutoLoginInfoBarDelegate,
             String result);
-    private native void nativeLoginFailed(long nativeAutoLoginInfoBarDelegateAndroid);
-    private native void nativeLoginDismiss(long nativeAutoLoginInfoBarDelegateAndroid);
+    private native void nativeLoginFailed(long nativeAutoLoginInfoBarDelegate);
+    private native void nativeLoginDismiss(long nativeAutoLoginInfoBarDelegate);
 }

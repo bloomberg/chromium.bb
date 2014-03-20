@@ -10,7 +10,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InfoBarContainer_jni.h"
@@ -48,8 +48,8 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(InfoBar* infobar,
   }
 
   if (infobar->delegate()->AsAutoLoginInfoBarDelegate()) {
-    AutoLoginInfoBarDelegateAndroid* auto_login_delegate =
-        static_cast<AutoLoginInfoBarDelegateAndroid*>(
+    AutoLoginInfoBarDelegate* auto_login_delegate =
+        static_cast<AutoLoginInfoBarDelegate*>(
             infobar->delegate()->AsAutoLoginInfoBarDelegate());
     if (!auto_login_delegate->AttachAccount(weak_java_auto_login_delegate_))
       return;

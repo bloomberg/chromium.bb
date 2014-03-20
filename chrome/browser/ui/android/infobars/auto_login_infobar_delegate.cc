@@ -1,9 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/auto_login_infobar_delegate.h"
+#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_helper.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -14,6 +17,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -33,13 +37,13 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "jni/AutoLoginDelegate_jni.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
-#endif
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 
 // AutoLoginRedirector --------------------------------------------------------
@@ -142,13 +146,9 @@ bool AutoLoginInfoBarDelegate::Create(content::WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-#if defined(OS_ANDROID)
-  typedef AutoLoginInfoBarDelegateAndroid Delegate;
-#else
-  typedef AutoLoginInfoBarDelegate Delegate;
-#endif
   return !!infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new Delegate(params, profile))));
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new AutoLoginInfoBarDelegate(params, profile))));
 }
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(const Params& params,
@@ -174,6 +174,67 @@ AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
     RecordHistogramAction(IGNORED);
 }
 
+bool AutoLoginInfoBarDelegate::AttachAccount(
+    JavaObjectWeakGlobalRef weak_java_auto_login_delegate) {
+  weak_java_auto_login_delegate_ = weak_java_auto_login_delegate;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm());
+  ScopedJavaLocalRef<jstring> jaccount =
+      ConvertUTF8ToJavaString(env, account());
+  ScopedJavaLocalRef<jstring> jargs = ConvertUTF8ToJavaString(env, args());
+  DCHECK(!jrealm.is_null());
+  DCHECK(!jaccount.is_null());
+  DCHECK(!jargs.is_null());
+
+  ScopedJavaLocalRef<jobject> delegate =
+      weak_java_auto_login_delegate_.get(env);
+  DCHECK(delegate.obj());
+  user_ = base::android::ConvertJavaStringToUTF8(
+      Java_AutoLoginDelegate_initializeAccount(
+          env, delegate.obj(), reinterpret_cast<intptr_t>(this), jrealm.obj(),
+          jaccount.obj(), jargs.obj()));
+  return !user_.empty();
+}
+
+void AutoLoginInfoBarDelegate::LoginSuccess(JNIEnv* env,
+                                                   jobject obj,
+                                                   jstring result) {
+  if (!infobar()->owner())
+     return;  // We're closing; don't call anything, it might access the owner.
+
+  // TODO(miguelg): Test whether the Stop() and RemoveInfoBar() calls here are
+  // necessary, or whether OpenURL() will do this for us.
+  content::WebContents* contents = web_contents();
+  contents->Stop();
+  infobar()->RemoveSelf();
+  // WARNING: |this| may be deleted at this point!  Do not access any members!
+  contents->OpenURL(content::OpenURLParams(
+      GURL(base::android::ConvertJavaStringToUTF8(env, result)),
+      content::Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      false));
+}
+
+void AutoLoginInfoBarDelegate::LoginFailed(JNIEnv* env, jobject obj) {
+  if (!infobar()->owner())
+     return;  // We're closing; don't call anything, it might access the owner.
+
+  // TODO(miguelg): Using SimpleAlertInfoBarDelegate::Create() animates in a new
+  // infobar while we animate the current one closed.  It would be better to use
+  // ReplaceInfoBar().
+  SimpleAlertInfoBarDelegate::Create(
+      infobar()->owner(), IDR_INFOBAR_WARNING,
+      l10n_util::GetStringUTF16(IDS_AUTO_LOGIN_FAILED), false);
+  infobar()->RemoveSelf();
+}
+
+void AutoLoginInfoBarDelegate::LoginDismiss(JNIEnv* env, jobject obj) {
+  infobar()->RemoveSelf();
+}
+
+bool AutoLoginInfoBarDelegate::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
 void AutoLoginInfoBarDelegate::InfoBarDismissed() {
   RecordHistogramAction(DISMISSED);
   button_pressed_ = true;
@@ -194,7 +255,7 @@ AutoLoginInfoBarDelegate*
 
 base::string16 AutoLoginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    base::UTF8ToUTF16(params_.username));
+                                    base::UTF8ToUTF16(user_));
 }
 
 base::string16 AutoLoginInfoBarDelegate::GetButtonLabel(
@@ -204,19 +265,24 @@ base::string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool AutoLoginInfoBarDelegate::Accept() {
-  // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(web_contents(), params_.header.args);
-  RecordHistogramAction(ACCEPTED);
-  button_pressed_ = true;
-  return true;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> delegate =
+      weak_java_auto_login_delegate_.get(env);
+  DCHECK(delegate.obj());
+  Java_AutoLoginDelegate_logIn(env, delegate.obj(),
+                               reinterpret_cast<intptr_t>(this));
+  // Do not close the infobar on accept, it will be closed as part
+  // of the log in callback.
+  return false;
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
-  PrefService* pref_service = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext())->GetPrefs();
-  pref_service->SetBoolean(prefs::kAutologinEnabled, false);
-  RecordHistogramAction(REJECTED);
-  button_pressed_ = true;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> delegate =
+      weak_java_auto_login_delegate_.get(env);
+  DCHECK(delegate.obj());
+  Java_AutoLoginDelegate_cancelLogIn(env, delegate.obj(),
+                                     reinterpret_cast<intptr_t>(this));
   return true;
 }
 

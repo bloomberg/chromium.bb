@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTO_LOGIN_PROMPTER_H_
-#define CHROME_BROWSER_UI_AUTO_LOGIN_PROMPTER_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_PROMPTER_H_
+#define CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_PROMPTER_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/auto_login_infobar_delegate.h"
+#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -66,4 +66,4 @@ class AutoLoginPrompter : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);
 };
 
-#endif  // CHROME_BROWSER_UI_AUTO_LOGIN_PROMPTER_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_PROMPTER_H_

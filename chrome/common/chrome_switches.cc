@@ -486,11 +486,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// Enables the pre- and auto-login features. When a user signs in to sync, the
-// browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
-// GAIA login page, an info bar can help the user login.
-const char kEnableAutologin[]               = "enable-autologin";
-
 // Enables the Automation extension API.
 // TODO(dtseng): Remove once API enabled for stable channel.
 const char kEnableAutomationAPI[]           = "enable-automation-api";
