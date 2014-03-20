@@ -14,12 +14,15 @@
 
 namespace cc {
 
-Scheduler::Scheduler(SchedulerClient* client,
-                     const SchedulerSettings& scheduler_settings,
-                     int layer_tree_host_id)
+Scheduler::Scheduler(
+    SchedulerClient* client,
+    const SchedulerSettings& scheduler_settings,
+    int layer_tree_host_id,
+    const scoped_refptr<base::SequencedTaskRunner>& impl_task_runner)
     : settings_(scheduler_settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
+      impl_task_runner_(impl_task_runner),
       last_set_needs_begin_impl_frame_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
@@ -178,7 +181,7 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
       poll_for_draw_triggers_closure_.Reset(
           base::Bind(&Scheduler::PollForAnticipatedDrawTriggers,
                      weak_factory_.GetWeakPtr()));
-      base::MessageLoop::current()->PostDelayedTask(
+      impl_task_runner_->PostDelayedTask(
           FROM_HERE,
           poll_for_draw_triggers_closure_.callback(),
           last_begin_impl_frame_args_.interval);
@@ -202,8 +205,8 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
       advance_commit_state_timer_.IsRunning()) {
     if (needs_advance_commit_state_timer &&
         last_begin_impl_frame_args_.IsValid()) {
-    // Since we'd rather get a BeginImplFrame by the normally mechanism, we set
-    // the interval to twice the interval from the previous frame.
+      // Since we'd rather get a BeginImplFrame by the normal mechanism, we
+      // set the interval to twice the interval from the previous frame.
       advance_commit_state_timer_.Start(
           FROM_HERE,
           last_begin_impl_frame_args_.interval * 2,
@@ -281,8 +284,12 @@ void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
   begin_impl_frame_deadline_closure_.Reset(
       base::Bind(&Scheduler::OnBeginImplFrameDeadline,
                  weak_factory_.GetWeakPtr()));
-  client_->PostBeginImplFrameDeadline(
-      begin_impl_frame_deadline_closure_.callback(), deadline);
+
+  base::TimeDelta delta = deadline - gfx::FrameTime::Now();
+  if (delta <= base::TimeDelta())
+    delta = base::TimeDelta();
+  impl_task_runner_->PostDelayedTask(
+      FROM_HERE, begin_impl_frame_deadline_closure_.callback(), delta);
 }
 
 void Scheduler::OnBeginImplFrameDeadline() {

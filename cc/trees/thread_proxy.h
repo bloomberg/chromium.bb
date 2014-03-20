@@ -116,8 +116,6 @@ class ThreadProxy : public Proxy,
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() OVERRIDE;
   virtual base::TimeDelta CommitToActivateDurationEstimate() OVERRIDE;
-  virtual void PostBeginImplFrameDeadline(const base::Closure& closure,
-                                          base::TimeTicks deadline) OVERRIDE;
   virtual void DidBeginImplFrameDeadline() OVERRIDE;
 
   // ResourceUpdateControllerClient implementation

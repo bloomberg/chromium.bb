@@ -1383,14 +1383,6 @@ base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
   return impl().timing_history.CommitToActivateDurationEstimate();
 }
 
-void ThreadProxy::PostBeginImplFrameDeadline(const base::Closure& closure,
-                                             base::TimeTicks deadline) {
-  base::TimeDelta delta = deadline - gfx::FrameTime::Now();
-  if (delta <= base::TimeDelta())
-    delta = base::TimeDelta();
-  Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, closure, delta);
-}
-
 void ThreadProxy::DidBeginImplFrameDeadline() {
   impl().layer_tree_host_impl->ResetCurrentFrameTimeForNextFrame();
 }
@@ -1478,8 +1470,10 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       settings.using_synchronous_renderer_compositor;
   scheduler_settings.throttle_frame_production =
       settings.throttle_frame_production;
-  impl().scheduler =
-      Scheduler::Create(this, scheduler_settings, impl().layer_tree_host_id);
+  impl().scheduler = Scheduler::Create(this,
+                                       scheduler_settings,
+                                       impl().layer_tree_host_id,
+                                       ImplThreadTaskRunner());
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
 
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();
