@@ -12,6 +12,10 @@
 
 namespace media {
 
+std::string DecoderStreamTraits<DemuxerStream::AUDIO>::ToString() {
+  return "Audio";
+}
+
 bool DecoderStreamTraits<DemuxerStream::AUDIO>::FinishInitialization(
     const StreamInitCB& init_cb,
     DecoderType* decoder,
@@ -37,6 +41,10 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
     DecoderStreamTraits<DemuxerStream::AUDIO>::GetDecoderConfig(
         DemuxerStream& stream) {
   return stream.audio_decoder_config();
+}
+
+std::string DecoderStreamTraits<DemuxerStream::VIDEO>::ToString() {
+  return "Video";
 }
 
 bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(

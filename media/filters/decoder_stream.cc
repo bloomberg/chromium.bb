@@ -24,6 +24,10 @@ namespace media {
 template <DemuxerStream::Type StreamType>
 static const char* GetTraceString();
 
+#define FUNCTION_DVLOG(level) \
+  DVLOG(level) << __FUNCTION__ << \
+  "<" << DecoderStreamTraits<StreamType>::ToString() << ">"
+
 template <>
 const char* GetTraceString<DemuxerStream::VIDEO>() {
   return "DecoderStream<VIDEO>::Decode";
@@ -57,7 +61,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
                                            const StatisticsCB& statistics_cb,
                                            const InitCB& init_cb) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED) << state_;
   DCHECK(init_cb_.is_null());
@@ -77,7 +81,7 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
@@ -114,7 +118,7 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
   DCHECK(reset_cb_.is_null());
@@ -150,7 +154,7 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Stop(const base::Closure& closure) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, STATE_STOPPED) << state_;
   DCHECK(stop_cb_.is_null());
@@ -209,7 +213,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderSelected(
     scoped_ptr<Decoder> selected_decoder,
     scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -261,7 +265,7 @@ void DecoderStream<StreamType>::AbortRead() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Decode(
     const scoped_refptr<DecoderBuffer>& buffer) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(reset_cb_.is_null());
@@ -287,7 +291,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
     int buffer_size,
     typename Decoder::Status status,
     const scoped_refptr<Output>& output) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(stop_cb_.is_null());
@@ -345,7 +349,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ReadFromDemuxerStream() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK_EQ(state_, STATE_NORMAL) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(reset_cb_.is_null());
@@ -360,7 +364,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2) << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PENDING_DEMUXER_READ) << state_;
   DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
@@ -370,6 +374,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   state_ = STATE_NORMAL;
 
   if (status == DemuxerStream::kConfigChanged) {
+    FUNCTION_DVLOG(2) << ": " << "ConfigChanged";
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {
       AbortRead();
@@ -404,7 +409,7 @@ void DecoderStream<StreamType>::OnBufferReady(
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ReinitializeDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_FLUSHING_DECODER) << state_;
 
@@ -418,7 +423,7 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER) << state_;
   DCHECK(stop_cb_.is_null());
@@ -450,7 +455,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ResetDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
@@ -462,7 +467,7 @@ void DecoderStream<StreamType>::ResetDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderReset() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
@@ -483,7 +488,7 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::StopDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
   DCHECK(!stop_cb_.is_null());
@@ -494,7 +499,7 @@ void DecoderStream<StreamType>::StopDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderStopped() {
-  DVLOG(2) << __FUNCTION__;
+  FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
   // If Stop() was called during pending read/reset, read/reset callback should

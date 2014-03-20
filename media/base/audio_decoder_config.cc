@@ -105,4 +105,19 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
           (codec_delay() == config.codec_delay()));
 }
 
+std::string AudioDecoderConfig::AsHumanReadableString() const {
+  std::ostringstream s;
+  s << "codec: " << codec()
+    << " bytes_per_channel: " << bytes_per_channel()
+    << " channel_layout: " << channel_layout()
+    << " samples_per_second: " << samples_per_second()
+    << " sample_format: " << sample_format()
+    << " bytes_per_frame: " << bytes_per_frame()
+    << " seek_preroll: " << seek_preroll().InMilliseconds() << "ms"
+    << " codec_delay: " << codec_delay().InMilliseconds() << "ms"
+    << " has extra data? " << (extra_data() ? "true" : "false")
+    << " encrypted? " << (is_encrypted() ? "true" : "false");
+  return s.str();
+}
+
 }  // namespace media

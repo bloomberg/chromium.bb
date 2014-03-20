@@ -248,8 +248,7 @@ void DecryptingAudioDecoder::InitializeDecoder() {
 void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DVLOG(2) << "FinishInitialization()";
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == kPendingDecoderInit)
-      << state_;
+  DCHECK(state_ == kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.

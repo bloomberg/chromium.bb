@@ -29,6 +29,7 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef DecryptingAudioDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> StreamInitCB;
 
+  static std::string ToString();
   static bool FinishInitialization(const StreamInitCB& init_cb,
                                    DecoderType* decoder,
                                    DemuxerStream* stream);
@@ -45,6 +46,7 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef DecryptingVideoDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success, bool has_alpha)> StreamInitCB;
 
+  static std::string ToString();
   static bool FinishInitialization(const StreamInitCB& init_cb,
                                    DecoderType* decoder,
                                    DemuxerStream* stream);
