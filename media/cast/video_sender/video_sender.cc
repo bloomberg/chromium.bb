@@ -169,7 +169,7 @@ void VideoSender::SendEncodedVideoFrameMainThread(
       CastEnvironment::TRANSPORT,
       FROM_HERE,
       base::Bind(&VideoSender::SendEncodedVideoFrameToTransport,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  base::Passed(&encoded_frame),
                  capture_time));
   UpdateFramesInFlight();
@@ -394,7 +394,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
         CastEnvironment::TRANSPORT,
         FROM_HERE,
         base::Bind(&VideoSender::ResendPacketsOnTransportThread,
-                   base::Unretained(this),
+                   weak_factory_.GetWeakPtr(),
                    cast_feedback.missing_frames_and_packets_));
 
     uint32 new_bitrate = 0;
@@ -459,7 +459,7 @@ void VideoSender::ResendFrame(uint32 resend_frame_id) {
       CastEnvironment::TRANSPORT,
       FROM_HERE,
       base::Bind(&VideoSender::ResendPacketsOnTransportThread,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  missing_frames_and_packets));
 }
 
