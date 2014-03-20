@@ -208,7 +208,7 @@ enum PageshowEventPersistence {
 
         // DOM Level 2 Style Interface
 
-        PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const;
+        PassRefPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const;
 
         // WebKit extensions
 

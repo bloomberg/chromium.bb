@@ -146,10 +146,8 @@ CSSKeyframeRule::CSSKeyframeRule(StyleKeyframe* keyframe, CSSKeyframesRule* pare
 
 CSSKeyframeRule::~CSSKeyframeRule()
 {
-#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
-#endif
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const
@@ -163,12 +161,6 @@ void CSSKeyframeRule::reattach(StyleRuleBase*)
 {
     // No need to reattach, the underlying data is shareable on mutation.
     ASSERT_NOT_REACHED();
-}
-
-void CSSKeyframeRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_propertiesCSSOMWrapper);
-    CSSRule::trace(visitor);
 }
 
 } // namespace WebCore

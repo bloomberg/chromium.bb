@@ -1120,7 +1120,6 @@ CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration()
 {
 }
 
-#if !ENABLE(OILPAN)
 void CSSComputedStyleDeclaration::ref()
 {
     ++m_refCount;
@@ -1132,7 +1131,6 @@ void CSSComputedStyleDeclaration::deref()
     if (!--m_refCount)
         delete this;
 }
-#endif
 
 String CSSComputedStyleDeclaration::cssText() const
 {

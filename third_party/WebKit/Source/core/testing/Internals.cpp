@@ -601,7 +601,7 @@ size_t Internals::numberOfScopedHTMLStyleChildren(const Node* scope, ExceptionSt
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node, ExceptionState& exceptionState) const
+PassRefPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node, ExceptionState& exceptionState) const
 {
     if (!node) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));

@@ -46,10 +46,8 @@ CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule, CSSStyleSheet*
 
 CSSViewportRule::~CSSViewportRule()
 {
-#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
-#endif
 }
 
 CSSStyleDeclaration* CSSViewportRule::style() const
@@ -86,7 +84,6 @@ void CSSViewportRule::reattach(StyleRuleBase* rule)
 void CSSViewportRule::trace(Visitor* visitor)
 {
     visitor->trace(m_viewportRule);
-    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

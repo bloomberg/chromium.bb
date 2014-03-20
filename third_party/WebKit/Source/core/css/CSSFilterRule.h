@@ -60,7 +60,7 @@ private:
     CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
 
     RefPtrWillBeMember<StyleRuleFilter> m_filterRule;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSFilterRule, WEBKIT_FILTER_RULE);

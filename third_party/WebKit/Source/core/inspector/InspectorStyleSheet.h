@@ -132,7 +132,7 @@ struct InspectorStyleProperty {
 
 class InspectorStyle FINAL : public RefCounted<InspectorStyle> {
 public:
-    static PassRefPtr<InspectorStyle> create(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
+    static PassRefPtr<InspectorStyle> create(const InspectorCSSId&, PassRefPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
 
     CSSStyleDeclaration* cssStyle() const { return m_style.get(); }
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
@@ -141,7 +141,7 @@ public:
     bool styleText(String* result) const;
 
 private:
-    InspectorStyle(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
+    InspectorStyle(const InspectorCSSId&, PassRefPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
 
     bool verifyPropertyText(const String& propertyText, bool canOmitSemicolon);
     void populateAllProperties(Vector<InspectorStyleProperty>& result) const;
@@ -153,7 +153,7 @@ private:
     inline Document* ownerDocument() const;
 
     InspectorCSSId m_styleId;
-    RefPtrWillBePersistent<CSSStyleDeclaration> m_style;
+    RefPtr<CSSStyleDeclaration> m_style;
     InspectorStyleSheetBase* m_parentStyleSheet;
     mutable std::pair<String, String> m_format;
     mutable bool m_formatAcquired;

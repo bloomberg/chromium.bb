@@ -40,10 +40,8 @@ CSSPageRule::CSSPageRule(StyleRulePage* pageRule, CSSStyleSheet* parent)
 
 CSSPageRule::~CSSPageRule()
 {
-#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
-#endif
 }
 
 CSSStyleDeclaration* CSSPageRule::style() const
@@ -106,7 +104,6 @@ void CSSPageRule::reattach(StyleRuleBase* rule)
 void CSSPageRule::trace(Visitor* visitor)
 {
     visitor->trace(m_pageRule);
-    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

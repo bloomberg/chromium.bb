@@ -49,16 +49,14 @@ enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 
 class CSSComputedStyleDeclaration FINAL : public CSSStyleDeclaration {
 public:
-    static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> create(PassRefPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
+    static PassRefPtr<CSSComputedStyleDeclaration> create(PassRefPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {
-        return adoptRefWillBeNoop(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
+        return adoptRef(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
     }
     virtual ~CSSComputedStyleDeclaration();
 
-#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
-#endif
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
@@ -72,8 +70,6 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
-
-    virtual void trace(Visitor* visitor) { }
 
 private:
     CSSComputedStyleDeclaration(PassRefPtr<Node>, bool allowVisitedStyle, const String&);

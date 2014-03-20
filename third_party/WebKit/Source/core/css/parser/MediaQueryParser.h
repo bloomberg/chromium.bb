@@ -18,7 +18,7 @@ namespace WebCore {
 class MediaQuerySet;
 
 class MediaQueryData {
-    STACK_ALLOCATED();
+    ALLOW_ONLY_INLINE_ALLOCATION();
 private:
     MediaQuery::Restrictor m_restrictor;
     String m_mediaType;

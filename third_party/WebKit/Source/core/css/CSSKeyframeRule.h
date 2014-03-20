@@ -85,13 +85,13 @@ public:
 
     CSSStyleDeclaration* style() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
 
     RefPtr<StyleKeyframe> m_keyframe;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 
     friend class CSSKeyframesRule;
 };

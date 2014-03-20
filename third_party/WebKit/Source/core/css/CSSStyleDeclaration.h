@@ -35,15 +35,13 @@ class CSSValue;
 class ExceptionState;
 class MutableStylePropertySet;
 
-class CSSStyleDeclaration : public NoBaseWillBeGarbageCollectedFinalized<CSSStyleDeclaration>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+class CSSStyleDeclaration : public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED;
 public:
     virtual ~CSSStyleDeclaration() { }
 
-#if !ENABLE(OILPAN)
     virtual void ref() = 0;
     virtual void deref() = 0;
-#endif
 
     virtual CSSRule* parentRule() const = 0;
     virtual String cssText() const = 0;
@@ -69,8 +67,6 @@ public:
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
-
-    virtual void trace(Visitor*) = 0;
 
 protected:
     CSSStyleDeclaration()
