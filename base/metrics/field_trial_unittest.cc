@@ -972,4 +972,15 @@ TEST_F(FieldTrialTest, CreateSimulatedFieldTrial) {
   }
 }
 
+#if GTEST_HAS_DEATH_TEST
+TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
+  // Trying to instantiate a one-time randomized field trial before the
+  // FieldTrialList is created should crash.
+  EXPECT_DEATH(FieldTrialList::FactoryGetFieldTrial(
+      "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
+      base::FieldTrialList::kNoExpirationYear, 1, 1,
+      base::FieldTrial::ONE_TIME_RANDOMIZED, NULL), "");
+}
+#endif
+
 }  // namespace base
