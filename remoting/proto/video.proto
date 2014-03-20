@@ -42,9 +42,6 @@ message Rect {
 }
 
 message VideoPacket {
-  // Deprecated. Must be set to 7 for backward compatibility.
-  optional int32 deprecated_flags = 1 [default = 7];
-
   optional VideoPacketFormat format = 4;
 
   optional bytes data = 5;
