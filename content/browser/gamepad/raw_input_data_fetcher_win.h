@@ -30,6 +30,7 @@ namespace content {
 struct RawGamepadAxis {
   HIDP_VALUE_CAPS caps;
   float value;
+  bool active;
 };
 
 struct RawGamepadInfo {
@@ -42,9 +43,6 @@ struct RawGamepadInfo {
   uint32_t product_id;
 
   wchar_t id[blink::WebGamepad::idLengthCap];
-
-  uint32_t button_caps_length;
-  scoped_ptr<HIDP_BUTTON_CAPS[]> button_caps;
 
   uint32_t buttons_length;
   bool buttons[blink::WebGamepad::buttonsLengthCap];
@@ -92,10 +90,14 @@ class RawInputDataFetcher
   typedef NTSTATUS (__stdcall *HidPGetValueCapsFunc)(
       HIDP_REPORT_TYPE ReportType, PHIDP_VALUE_CAPS ValueCaps,
       PUSHORT ValueCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
-  typedef NTSTATUS (__stdcall *HidPGetUsagesFunc)(
-      HIDP_REPORT_TYPE ReportType, USAGE UsagePage, USHORT LinkCollection,
-      PUSAGE UsageList, PULONG UsageLength, PHIDP_PREPARSED_DATA PreparsedData,
-      PCHAR Report, ULONG ReportLength);
+  typedef NTSTATUS(__stdcall* HidPGetUsagesExFunc)(
+      HIDP_REPORT_TYPE ReportType,
+      USHORT LinkCollection,
+      PUSAGE_AND_PAGE ButtonList,
+      ULONG* UsageLength,
+      PHIDP_PREPARSED_DATA PreparsedData,
+      PCHAR Report,
+      ULONG ReportLength);
   typedef NTSTATUS (__stdcall *HidPGetUsageValueFunc)(
       HIDP_REPORT_TYPE ReportType, USAGE UsagePage, USHORT LinkCollection,
       USAGE Usage, PULONG UsageValue, PHIDP_PREPARSED_DATA PreparsedData,
@@ -124,7 +126,7 @@ class RawInputDataFetcher
   HidPGetCapsFunc hidp_get_caps_;
   HidPGetButtonCapsFunc hidp_get_button_caps_;
   HidPGetValueCapsFunc hidp_get_value_caps_;
-  HidPGetUsagesFunc hidp_get_usages_;
+  HidPGetUsagesExFunc hidp_get_usages_ex_;
   HidPGetUsageValueFunc hidp_get_usage_value_;
   HidPGetScaledUsageValueFunc hidp_get_scaled_usage_value_;
   HidDGetStringFunc hidd_get_product_string_;

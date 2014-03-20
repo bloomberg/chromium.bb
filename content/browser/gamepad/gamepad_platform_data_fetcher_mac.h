@@ -83,7 +83,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
       struct {
         IOHIDDeviceRef device_ref;
         IOHIDElementRef button_elements[blink::WebGamepad::buttonsLengthCap];
-        IOHIDElementRef axis_elements[blink::WebGamepad::buttonsLengthCap];
+        IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
         CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
         CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
         // Function to map from device data to standard layout, if available.

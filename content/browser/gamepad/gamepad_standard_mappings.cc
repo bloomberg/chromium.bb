@@ -24,6 +24,12 @@ blink::WebGamepadButton AxisPositiveAsButton(float input) {
     value > kDefaultButtonPressedThreshold, value);
 }
 
+blink::WebGamepadButton ButtonFromButtonAndAxis(
+    blink::WebGamepadButton button, float axis) {
+  float value = (axis + 1.f) / 2.f;
+  return blink::WebGamepadButton(button.pressed, value);
+}
+
 void DpadFromAxis(blink::WebGamepad* mapped, float dir) {
   bool up = false;
   bool right = false;

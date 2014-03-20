@@ -60,6 +60,8 @@ const float kDefaultButtonPressedThreshold = 30.f/255.f;
 blink::WebGamepadButton AxisToButton(float input);
 blink::WebGamepadButton AxisNegativeAsButton(float input);
 blink::WebGamepadButton AxisPositiveAsButton(float input);
+blink::WebGamepadButton ButtonFromButtonAndAxis(
+    blink::WebGamepadButton button, float axis);
 void DpadFromAxis(blink::WebGamepad* mapped, float dir);
 
 }  // namespace content

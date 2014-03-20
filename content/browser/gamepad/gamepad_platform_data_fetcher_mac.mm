@@ -43,6 +43,7 @@ float NormalizeAxis(CFIndex value, CFIndex min, CFIndex max) {
 
 // http://www.usb.org/developers/hidpage
 const uint32_t kGenericDesktopUsagePage = 0x01;
+const uint32_t kGameControlsUsagePage = 0x05;
 const uint32_t kButtonUsagePage = 0x09;
 const uint32_t kJoystickUsageNumber = 0x04;
 const uint32_t kGameUsageNumber = 0x05;
@@ -166,12 +167,14 @@ void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
   memset(pad.axes, 0, sizeof(pad.axes));
   memset(pad.buttons, 0, sizeof(pad.buttons));
 
+  bool mapped_all_axes = true;
+
   for (id elem in elements) {
     IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
-    uint32_t usagePage = IOHIDElementGetUsagePage(element);
+    uint32_t usage_page = IOHIDElementGetUsagePage(element);
     uint32_t usage = IOHIDElementGetUsage(element);
     if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Button &&
-        usagePage == kButtonUsagePage) {
+        usage_page == kButtonUsagePage) {
       uint32_t button_index = usage - 1;
       if (button_index < WebGamepad::buttonsLengthCap) {
         associated.hid.button_elements[button_index] = element;
@@ -187,7 +190,38 @@ void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
             IOHIDElementGetLogicalMax(element);
         associated.hid.axis_elements[axis_index] = element;
         pad.axesLength = std::max(pad.axesLength, axis_index + 1);
+      } else {
+        mapped_all_axes = false;
       }
+    }
+  }
+
+  if (!mapped_all_axes) {
+    // For axes who's usage puts them outside the standard axesLengthCap range.
+    uint32_t next_index = 0;
+    for (id elem in elements) {
+      IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
+      uint32_t usage_page = IOHIDElementGetUsagePage(element);
+      uint32_t usage = IOHIDElementGetUsage(element);
+      if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc &&
+          usage - kAxisMinimumUsageNumber >= WebGamepad::axesLengthCap &&
+          usage_page <= kGameControlsUsagePage) {
+        for (; next_index < WebGamepad::axesLengthCap; ++next_index) {
+          if (associated.hid.axis_elements[next_index] == NULL)
+            break;
+        }
+        if (next_index < WebGamepad::axesLengthCap) {
+          associated.hid.axis_minimums[next_index] =
+              IOHIDElementGetLogicalMin(element);
+          associated.hid.axis_maximums[next_index] =
+              IOHIDElementGetLogicalMax(element);
+          associated.hid.axis_elements[next_index] = element;
+          pad.axesLength = std::max(pad.axesLength, next_index + 1);
+        }
+      }
+
+      if (next_index >= WebGamepad::axesLengthCap)
+        break;
     }
   }
 }
@@ -330,6 +364,13 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
 
   WebGamepad& pad = data_.items[slot];
   AssociatedData& associated = associated_[slot];
+
+  uint32_t value_length = IOHIDValueGetLength(value);
+  if (value_length > 4) {
+    // Workaround for bizarre issue with PS3 controllers that try to return
+    // massive (30+ byte) values and crash IOHIDValueGetIntegerValue
+    return;
+  }
 
   // Find and fill in the associated button event, if any.
   for (size_t i = 0; i < pad.buttonsLength; ++i) {
