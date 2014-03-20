@@ -138,6 +138,8 @@ ppapi/lib/gl/include/EGL/eglplatform.h
 ppapi/lib/gl/include/KHR/khrplatform.h
 # Copyright The Android Open Source Project; ASL v2 license.
 skia/config/SkUserConfig.h
+# Generates copyright headers for Chromium.
+tools/boilerplate.py
 # Contains word 'copyright' in comments.
 tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
 # This third-party code is taken from Mozilla, but is copyright Google and has
