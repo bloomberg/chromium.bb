@@ -165,6 +165,7 @@ RenderLayer::~RenderLayer()
     removeFilterInfoIfNeeded();
 
     if (groupedMapping()) {
+        DisableCompositingQueryAsserts disabler;
         groupedMapping()->removeRenderLayerFromSquashingGraphicsLayer(this);
         setGroupedMapping(0);
     }
@@ -3554,6 +3555,15 @@ void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 
     if (!layerBeingDestroyed)
         updateOrRemoveFilterEffectRenderer();
+}
+
+void RenderLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, bool layerBeingDestroyed)
+{
+    if (!layerBeingDestroyed && m_groupedMapping)
+        m_groupedMapping->setNeedsGeometryUpdate();
+    m_groupedMapping = groupedMapping;
+    if (!layerBeingDestroyed && m_groupedMapping)
+        m_groupedMapping->setNeedsGeometryUpdate();
 }
 
 bool RenderLayer::hasCompositedMask() const
