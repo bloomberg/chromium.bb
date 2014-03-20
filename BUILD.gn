@@ -10,11 +10,6 @@
 
 # In GN, a "group" is a dummy target that just lists other targets.
 group("root") {
-  # Declares that this target should be treated as "external" in the GN-GYP
-  # hybrid build, and GN will not generate a GYP file for it. This flag is
-  # ignored in the pure GN build.
-  external = true
-
   # Note that some dependencies are commented out. These are things that are
   # currently written but not hooked up to the build yet. They may need to be
   # completed or possibly just tested and then re-enabled.
@@ -35,6 +30,7 @@ group("root") {
     #"//net",
     #"//net/third_party/nss:ssl",
     #"//sdch",
+    "//third_party/re2",
     #"//third_party/WebKit/Source/platform",
     #"//third_party/icu:icudata",
     #"//third_party/leveldatabase",

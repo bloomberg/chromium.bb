@@ -2,15 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(brettw) use this value when we remove external=true below.
-#gyp_file = "//$gyp_output_dir/gn_gyp/third_party/re2/re2.gyp"
-
 config("re2_config") {
   include_dirs = [ "." ]
 }
 
 static_library("re2") {
-  external = true
   sources = [
     "mswin/stdint.h",
     "re2/bitstate.cc",
