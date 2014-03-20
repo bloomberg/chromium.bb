@@ -118,21 +118,20 @@ void AppShortcutManager::Observe(int type,
           content::Details<const extensions::InstalledExtensionInfo>(details)
               .ptr();
       const Extension* extension = installed_info->extension;
-      if (ShouldCreateShortcutFor(extension)) {
-        // If the app is being updated, update any existing shortcuts but do not
-        // create new ones. If it is being installed, automatically create a
-        // shortcut in the applications menu (e.g., Start Menu).
-        base::Callback<void(const ShellIntegration::ShortcutInfo&)>
-            create_or_update;
-        if (installed_info->is_update) {
-          base::string16 old_title =
-              base::UTF8ToUTF16(installed_info->old_name);
-          create_or_update = base::Bind(&web_app::UpdateAllShortcuts,
-                                        old_title);
-        } else {
-          create_or_update = base::Bind(&CreateShortcutsInApplicationsMenu);
-        }
-
+      // If the app is being updated, update any existing shortcuts but do not
+      // create new ones. If it is being installed, automatically create a
+      // shortcut in the applications menu (e.g., Start Menu).
+      base::Callback<void(const ShellIntegration::ShortcutInfo&)>
+          create_or_update;
+      if (installed_info->is_update) {
+        base::string16 old_title =
+            base::UTF8ToUTF16(installed_info->old_name);
+        create_or_update = base::Bind(&web_app::UpdateAllShortcuts,
+                                      old_title);
+      } else if (ShouldCreateShortcutFor(extension)) {
+        create_or_update = base::Bind(&CreateShortcutsInApplicationsMenu);
+      }
+      if (!create_or_update.is_null()) {
         web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,
                                                  create_or_update);
       }
