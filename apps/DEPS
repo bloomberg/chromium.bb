@@ -29,7 +29,6 @@ include_rules = [
   "+chrome/browser/extensions/api/file_handlers/app_file_handler_util.h",
   "+chrome/browser/extensions/api/file_system/file_system_api.h",
   "+chrome/browser/extensions/chrome_extension_web_contents_observer.h",
-  "+chrome/browser/extensions/extension_function_dispatcher.h",
   "+chrome/browser/extensions/extension_icon_image.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/suggest_permission_util.h",

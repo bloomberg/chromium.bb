@@ -24,5 +24,11 @@ specific_include_rules = {
     # Temporarily allowed testing includes.  See above.
     # TODO(benwells): Remove these. http://crbug.com/162530
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
-  ]
+  ],
+  "^permissions_data_unittest\.cc$": [
+    "+chrome/common/chrome_version_info.h",
+    "+chrome/common/extensions/extension_test_util.h",
+    "+chrome/common/extensions/features/feature_channel.h",
+    "+chrome/common/extensions/permissions/socket_permission.h",
+  ],
 }
