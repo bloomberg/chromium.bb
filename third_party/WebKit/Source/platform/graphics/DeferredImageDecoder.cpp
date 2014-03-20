@@ -227,6 +227,11 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
     const size_t previousSize = m_lazyDecodedFrames.size();
     m_lazyDecodedFrames.resize(m_actualDecoder->frameCount());
+
+    // We have encountered a broken image file. Simply bail.
+    if (m_lazyDecodedFrames.size() < previousSize)
+        return;
+
     for (size_t i = previousSize; i < m_lazyDecodedFrames.size(); ++i) {
         OwnPtr<ImageFrame> frame(adoptPtr(new ImageFrame()));
         frame->setSkBitmap(createBitmap(i));

@@ -325,4 +325,17 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     EXPECT_EQ(1, m_frameBufferRequestCount);
 }
 
+TEST_F(DeferredImageDecoderTest, smallerFrameCount)
+{
+    m_frameCount = 1;
+    m_lazyDecoder->setData(m_data.get(), false);
+    EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
+    m_frameCount = 2;
+    m_lazyDecoder->setData(m_data.get(), false);
+    EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
+    m_frameCount = 0;
+    m_lazyDecoder->setData(m_data.get(), true);
+    EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
+}
+
 } // namespace WebCore
