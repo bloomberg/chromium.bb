@@ -269,6 +269,16 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
     default:
       break;
   }
+#elif defined(USE_X11)
+  // Renderer only supports standard mouse buttons, so ignore programmable
+  // buttons.
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+      return event->IsAnyButton();
+    default:
+      break;
+  }
 #endif
   return true;
 }
