@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"

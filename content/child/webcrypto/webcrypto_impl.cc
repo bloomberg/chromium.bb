@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/shared_crypto.h"
+#include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebString.h"

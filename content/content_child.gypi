@@ -181,6 +181,8 @@
     'child/webcrypto/platform_crypto_openssl.cc',
     'child/webcrypto/shared_crypto.cc',
     'child/webcrypto/shared_crypto.h',
+    'child/webcrypto/status.cc',
+    'child/webcrypto/status.h',
     'child/webcrypto/webcrypto_impl.cc',
     'child/webcrypto/webcrypto_impl.h',
     'child/webcrypto/webcrypto_util.cc',

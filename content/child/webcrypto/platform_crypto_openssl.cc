@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
