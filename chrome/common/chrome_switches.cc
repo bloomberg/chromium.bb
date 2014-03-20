@@ -486,10 +486,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// Enable using a public suffix based domain matching for autofill of passwords.
-const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
-    "enable-password-autofill-public-suffix-domain-matching";
-
 // Enables the pre- and auto-login features. When a user signs in to sync, the
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
 // GAIA login page, an info bar can help the user login.

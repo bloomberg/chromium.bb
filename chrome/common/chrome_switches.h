@@ -179,7 +179,6 @@ extern const char kEnableOriginChipV2[];
 extern const char kEnableOriginChipV2HideOnMouseRelease[];
 extern const char kEnableOriginChipV2HideOnUserInput[];
 extern const char kEnablePanels[];
-extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnablePermissionsBubbles[];
 extern const char kEnableQueryExtraction[];
 extern const char kEnablePrintPreviewRegisterPromos[];
