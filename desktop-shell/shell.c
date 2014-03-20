@@ -3040,7 +3040,9 @@ handle_resource_destroy(struct wl_listener *listener, void *data)
 	pixman_region32_init(&shsurf->surface->pending.input);
 	pixman_region32_fini(&shsurf->surface->input);
 	pixman_region32_init(&shsurf->surface->input);
-	weston_fade_run(shsurf->view, 1.0, 0.0, 300.0, fade_out_done, shsurf);
+	if (weston_surface_is_mapped(shsurf->surface))
+		weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
+				fade_out_done, shsurf);
 }
 
 static void
