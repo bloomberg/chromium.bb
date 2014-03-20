@@ -262,6 +262,13 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   if (first_frame_timestamp_.is_null())
     first_frame_timestamp_ = timestamp;
 
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT2(
+      "cast_perf_test", "OnBufferReceived",
+      TRACE_EVENT_SCOPE_THREAD,
+      "timestamp", timestamp.ToInternalValue(),
+      "time_delta", (timestamp - first_frame_timestamp_).ToInternalValue());
+
   ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
   DCHECK(iter != client_buffers_.end());
   scoped_refptr<ClientBuffer> buffer = iter->second;

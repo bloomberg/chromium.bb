@@ -15,8 +15,7 @@ namespace cast {
 
 CastLoggingConfig::CastLoggingConfig()
     : enable_raw_data_collection(false),
-      enable_stats_data_collection(false),
-      enable_tracing(false) {}
+      enable_stats_data_collection(false) {}
 
 CastLoggingConfig::~CastLoggingConfig() {}
 
@@ -35,7 +34,7 @@ CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled() {
   return config;
 }
 
-std::string CastLoggingToString(CastLoggingEvent event) {
+const char* CastLoggingToString(CastLoggingEvent event) {
   switch (event) {
     // Can happen if the sender and receiver of RTCP log messages are not
     // aligned.
@@ -147,4 +146,3 @@ GenericLogStats::GenericLogStats()
 GenericLogStats::~GenericLogStats() {}
 }  // namespace cast
 }  // namespace media
-

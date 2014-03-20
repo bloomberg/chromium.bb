@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/renderer/media/cast_session.h"
@@ -152,7 +153,16 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     // capture and delivery here for the first frame. We do not account
     // for this delay.
     if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = base::TimeTicks::Now();
+      first_frame_timestamp_ = base::TimeTicks::Now() - frame->GetTimestamp();;
+
+    // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+    TRACE_EVENT_INSTANT2(
+        "mirroring", "MediaStreamVideoSink::OnVideoFrame",
+        TRACE_EVENT_SCOPE_THREAD,
+        "timestamp",
+        (first_frame_timestamp_ + frame->GetTimestamp()).ToInternalValue(),
+        "time_delta", frame->GetTimestamp().ToInternalValue());
+
     frame_input_->InsertRawVideoFrame(
         frame, first_frame_timestamp_ + frame->GetTimestamp());
   }

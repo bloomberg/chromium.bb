@@ -106,7 +106,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(media::cast::CastLoggingConfig)
   IPC_STRUCT_TRAITS_MEMBER(enable_raw_data_collection)
   IPC_STRUCT_TRAITS_MEMBER(enable_stats_data_collection)
-  IPC_STRUCT_TRAITS_MEMBER(enable_tracing)
 IPC_STRUCT_TRAITS_END()
 
 // Cast messages sent from the browser to the renderer.

@@ -11,8 +11,8 @@ namespace cast {
 
 AudioReceiverConfig GetDefaultAudioReceiverConfig() {
   AudioReceiverConfig config;
-  config.feedback_ssrc = 1;
-  config.incoming_ssrc = 2;
+  config.feedback_ssrc = 2;
+  config.incoming_ssrc = 1;
   config.rtp_payload_type = 127;
   config.rtcp_c_name = "audio_receiver@a.b.c.d";
   config.use_external_decoder = false;

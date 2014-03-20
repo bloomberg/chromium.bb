@@ -25,7 +25,6 @@ struct CastLoggingConfig {
 
   bool enable_raw_data_collection;
   bool enable_stats_data_collection;
-  bool enable_tracing;
 };
 
 // Currently these are the same as the default config.
@@ -77,7 +76,7 @@ enum CastLoggingEvent {
   kNumOfLoggingEvents = kDuplicateVideoPacketReceived
 };
 
-std::string CastLoggingToString(CastLoggingEvent event);
+const char* CastLoggingToString(CastLoggingEvent event);
 
 // CastLoggingEvent are classified into one of three following types.
 enum EventMediaType { AUDIO_EVENT, VIDEO_EVENT, OTHER_EVENT };

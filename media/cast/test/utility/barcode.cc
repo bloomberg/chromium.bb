@@ -32,8 +32,8 @@ namespace media {
 namespace cast {
 namespace test {
 
-const int kBlackThreshold = 256 / 3;
-const int kWhiteThreshold = 256 * 2 / 3;
+const int kBlackThreshold = 256 * 2 / 3;
+const int kWhiteThreshold = 256 / 3;
 
 bool EncodeBarcode(const std::vector<bool>& bits,
                    scoped_refptr<VideoFrame> output_frame) {

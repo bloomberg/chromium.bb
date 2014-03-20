@@ -28,11 +28,6 @@ void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
   if (config_.enable_stats_data_collection) {
     stats_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
   }
-  if (config_.enable_tracing) {
-    std::string event_string = CastLoggingToString(event);
-    TRACE_EVENT_INSTANT2(event_string.c_str(), "FE", TRACE_EVENT_SCOPE_THREAD,
-                         "rtp_timestamp", rtp_timestamp, "frame_id", frame_id);
-  }
 }
 
 void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
@@ -48,13 +43,6 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
     stats_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp,
                                     frame_id, frame_size);
   }
-
-  if (config_.enable_tracing) {
-    std::string event_string = CastLoggingToString(event);
-    TRACE_EVENT_INSTANT2(event_string.c_str(), "FES", TRACE_EVENT_SCOPE_THREAD,
-                         "rtp_timestamp", rtp_timestamp, "frame_size",
-                         frame_size);
-  }
 }
 
 void LoggingImpl::InsertFrameEventWithDelay(
@@ -68,13 +56,6 @@ void LoggingImpl::InsertFrameEventWithDelay(
   if (config_.enable_stats_data_collection) {
     stats_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
                                      frame_id, delay);
-  }
-
-  if (config_.enable_tracing) {
-    std::string event_string = CastLoggingToString(event);
-    TRACE_EVENT_INSTANT2(event_string.c_str(), "FED", TRACE_EVENT_SCOPE_THREAD,
-                         "rtp_timestamp", rtp_timestamp, "delay",
-                         delay.InMilliseconds());
   }
 }
 
@@ -129,12 +110,6 @@ void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
     stats_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
                              packet_id, max_packet_id, size);
   }
-  if (config_.enable_tracing) {
-    std::string event_string = CastLoggingToString(event);
-    TRACE_EVENT_INSTANT2(event_string.c_str(), "PE", TRACE_EVENT_SCOPE_THREAD,
-                         "rtp_timestamp", rtp_timestamp, "packet_id",
-                         packet_id);
-  }
 }
 
 void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
@@ -145,12 +120,6 @@ void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
   }
   if (config_.enable_stats_data_collection) {
     stats_.InsertGenericEvent(time_of_event, event, value);
-  }
-
-  if (config_.enable_tracing) {
-    std::string event_string = CastLoggingToString(event);
-    TRACE_EVENT_INSTANT1(event_string.c_str(), "GE", TRACE_EVENT_SCOPE_THREAD,
-                         "value", value);
   }
 }
 

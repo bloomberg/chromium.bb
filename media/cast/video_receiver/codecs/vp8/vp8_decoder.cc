@@ -5,6 +5,7 @@
 #include "media/cast/video_receiver/codecs/vp8/vp8_decoder.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
@@ -126,6 +127,13 @@ bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
                                          cast_environment_,
                                          encoded_frame->rtp_timestamp,
                                          encoded_frame->frame_id));
+
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT1(
+      "cast_perf_test", "FrameDecoded",
+      TRACE_EVENT_SCOPE_THREAD,
+      "rtp_timestamp", encoded_frame->rtp_timestamp);
+
   // Frame decoded - return frame to the user via callback.
   cast_environment_->PostTask(
       CastEnvironment::MAIN,

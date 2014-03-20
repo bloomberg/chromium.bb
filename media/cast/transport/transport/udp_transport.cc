@@ -121,6 +121,7 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
     // ignore it.  If this is the first packet being received and no remote
     // address has been set, set the remote address and expect all future
     // packets to come from the same one.
+    // TODO(hubbe): We should only do this if the caller used a valid ssrc.
     if (IsEmpty(remote_addr_)) {
       remote_addr_ = recv_addr_;
       VLOG(1) << "Setting remote address from first received packet: "

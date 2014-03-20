@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_defines.h"
@@ -169,6 +170,7 @@ void VideoReceiver::DecodeVideoFrame(
     scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
     const base::TimeTicks& render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
   // Hand the ownership of the encoded frame to the decode thread.
   cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER,
                               FROM_HERE,
@@ -309,6 +311,14 @@ bool VideoReceiver::PullEncodedVideoFrame(
   // We have a copy of the frame, release this one.
   framer_->ReleaseFrame((*encoded_frame)->frame_id);
   (*encoded_frame)->codec = codec_;
+
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT2(
+      "cast_perf_test", "PullEncodedVideoFrame",
+      TRACE_EVENT_SCOPE_THREAD,
+      "rtp_timestamp", (*encoded_frame)->rtp_timestamp,
+      "render_time", render_time->ToInternalValue());
+
   return true;
 }
 
@@ -363,8 +373,8 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   if (time_offset_counter_ == 0) {
     // Check for received RTCP to sync the stream play it out asap.
     if (rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
-                                         incoming_rtp_timestamp_,
-                                         &rtp_timestamp_in_ticks)) {
+                                        incoming_rtp_timestamp_,
+                                        &rtp_timestamp_in_ticks)) {
 
        ++time_offset_counter_;
     }

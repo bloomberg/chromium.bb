@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_defines.h"
@@ -137,6 +138,13 @@ void VideoSender::InsertRawVideoFrame(
       GetVideoRtpTimestamp(capture_time),
       kFrameIdUnknown);
 
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT2(
+      "cast_perf_test", "InsertRawVideoFrame",
+      TRACE_EVENT_SCOPE_THREAD,
+      "timestamp", capture_time.ToInternalValue(),
+      "rtp_timestamp", GetVideoRtpTimestamp(capture_time));
+
   if (!video_encoder_->EncodeVideoFrame(
           video_frame,
           capture_time,
@@ -160,6 +168,12 @@ void VideoSender::SendEncodedVideoFrameMainThread(
                                                  kVideoFrameEncoded,
                                                  encoded_frame->rtp_timestamp,
                                                  frame_id);
+
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT1(
+      "cast_perf_test", "VideoFrameEncoded",
+      TRACE_EVENT_SCOPE_THREAD,
+      "rtp_timestamp", GetVideoRtpTimestamp(capture_time));
 
   // Only use lowest 8 bits as key.
   frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
