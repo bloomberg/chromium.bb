@@ -970,6 +970,7 @@
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
           'sources': [
+            'app/mojo/mojo_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
@@ -1145,6 +1146,16 @@
             ['use_aura!=1 and OS!="mac"', {
               'sources/': [
                 ['exclude', '^browser/compositor/'],
+              ],
+            }],
+            ['use_mojo==1', {
+              'dependencies': [
+                '../mojo/mojo.gyp:mojo_environment_chromium',
+                '../mojo/mojo.gyp:mojo_service_manager',
+              ],
+            },{
+              'sources!': [
+                'app/mojo/mojo_browsertest.cc',
               ],
             }],
             ['OS!="android" and OS!="ios"', {

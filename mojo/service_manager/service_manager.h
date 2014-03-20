@@ -9,20 +9,30 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "mojo/public/shell/shell.mojom.h"
+#include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
+
+namespace content {
+  class MojoTest;
+}
 
 namespace mojo {
 
 class ServiceLoader;
 
-class ServiceManager {
+class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
  public:
   // API for testing.
-  class TestAPI {
+  class MOJO_SERVICE_MANAGER_EXPORT TestAPI {
    private:
     friend class ServiceManagerTest;
+    friend class content::MojoTest;
+
     explicit TestAPI(ServiceManager* manager) : manager_(manager) {}
+    // Returns true if the shared instance has been created.
+    static bool HasCreatedInstance();
     // Returns true if there is a ServiceFactory for this URL.
     bool HasFactoryForURL(const GURL& url) const;
 
