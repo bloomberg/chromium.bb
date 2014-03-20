@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_native_library.h"
+#include "mojo/public/bindings/allocation_scope.h"
 
 namespace mojo {
 namespace shell {
@@ -42,10 +43,20 @@ void OutOfProcessDynamicServiceRunner::Start(
 
   app_child_process_host_.reset(new AppChildProcessHost(context_, this));
   app_child_process_host_->Start();
-//FIXME  app_child_process_host_->StartApp();
+
+  // TODO(vtl): Where should my allocation scope be?
+  AllocationScope scope;
+  // TODO(vtl): |app_path.AsUTF8Unsafe()| is unsafe.
+  app_child_process_host_->controller()->StartApp(
+      app_path.AsUTF8Unsafe(),
+      ScopedMessagePipeHandle(MessagePipeHandle(
+          service_handle.release().value())));
 }
 
-void OutOfProcessDynamicServiceRunner::DidTerminate() {
+void OutOfProcessDynamicServiceRunner::AppCompleted(int32_t result) {
+  DVLOG(2) << "OutOfProcessDynamicServiceRunner::AppCompleted(" << result
+           << ")";
+
   app_completed_callback_.Run();
   app_completed_callback_.Reset();
   app_child_process_host_.reset();

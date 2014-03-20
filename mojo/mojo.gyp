@@ -368,9 +368,11 @@
         'mojo_system_impl',
         'mojo_native_viewport_service',
       ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'shell/app_child_process.cc',
         'shell/app_child_process.h',
+        'shell/app_child_process.mojom',
         'shell/app_child_process_host.cc',
         'shell/app_child_process_host.h',
         'shell/child_process.cc',

@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/switches.h"
 
@@ -30,6 +29,8 @@ ChildProcessHost::ChildProcessHost(Context* context,
       type_(type),
       child_process_handle_(base::kNullProcessHandle) {
   DCHECK(delegate);
+  platform_channel_ = platform_channel_pair_.PassServerHandle();
+  CHECK(platform_channel_.is_valid());
 }
 
 ChildProcessHost::~ChildProcessHost() {
@@ -42,13 +43,14 @@ ChildProcessHost::~ChildProcessHost() {
 
 void ChildProcessHost::Start() {
   DCHECK_EQ(child_process_handle_, base::kNullProcessHandle);
+
+  delegate_->WillStart();
+
   CHECK(base::PostTaskAndReplyWithResult(
       context_->task_runners()->blocking_pool(),
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
       base::Bind(&ChildProcessHost::DidLaunch, base::Unretained(this))));
-//FIXME move the platform channel pair to here, so we get the server channel
-// immediately
 }
 
 int ChildProcessHost::Join() {
@@ -75,9 +77,8 @@ bool ChildProcessHost::DoLaunch() {
   child_command_line.AppendSwitchASCII(
       switches::kChildProcessType, base::IntToString(static_cast<int>(type_)));
 
-  embedder::PlatformChannelPair platform_channel_pair;
   embedder::HandlePassingInformation handle_passing_info;
-  platform_channel_pair.PrepareToPassClientHandleToChildProcess(
+  platform_channel_pair_.PrepareToPassClientHandleToChildProcess(
       &child_command_line, &handle_passing_info);
 
   base::LaunchOptions options;
@@ -91,9 +92,7 @@ bool ChildProcessHost::DoLaunch() {
   if (!base::LaunchProcess(child_command_line, options, &child_process_handle_))
     return false;
 
-  platform_channel_pair.ChildProcessLaunched();
-  platform_channel_ = platform_channel_pair.PassServerHandle();
-  CHECK(platform_channel_.is_valid());
+  platform_channel_pair_.ChildProcessLaunched();
   return true;
 }
 

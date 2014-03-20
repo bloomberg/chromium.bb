@@ -23,8 +23,11 @@ class TestChildProcessHostDelegate
  public:
   TestChildProcessHostDelegate() {}
   virtual ~TestChildProcessHostDelegate() {}
+  virtual void WillStart() OVERRIDE {
+    VLOG(2) << "TestChildProcessHostDelegate::WillStart()";
+  }
   virtual void DidStart(bool success) OVERRIDE {
-    VLOG(2) << "TestChildProcessHostDelegate::DidStart: success = " << success;
+    VLOG(2) << "TestChildProcessHostDelegate::DidStart(" << success << ")";
     base::MessageLoop::current()->QuitWhenIdle();
   }
 };

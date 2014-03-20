@@ -15,7 +15,9 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojo/shell/app_child_process.mojom.h"
 
 namespace mojo {
 namespace shell {
@@ -86,10 +88,9 @@ class AppContext {
 
 // AppChildControllerImpl ------------------------------------------------------
 
-// TODO(vtl): This will inherit from an |AppChildController| interface.
-class AppChildControllerImpl {
+class AppChildControllerImpl : public mojo_shell::AppChildController {
  public:
-  ~AppChildControllerImpl() {
+  virtual ~AppChildControllerImpl() {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
@@ -108,6 +109,14 @@ class AppChildControllerImpl {
         make_scoped_ptr(new AppChildControllerImpl(app_context)));
     app_context->controller()->CreateChannel(platform_channel.Pass(),
                                              main_thread_runner);
+
+  }
+
+  // |AppChildController| method:
+  virtual void StartApp(const String& app_path,
+                        ScopedMessagePipeHandle service) OVERRIDE {
+    DVLOG(2) << "AppChildControllerImpl::StartApp("
+             << app_path.To<std::string>() << ", ...)";
   }
 
  private:
@@ -128,8 +137,10 @@ class AppChildControllerImpl {
         base::Bind(&AppChildControllerImpl::DidCreateChannel,
                    base::Unretained(this), main_thread_runner),
         base::MessageLoopProxy::current()));
-
-    // TODO(vtl): Set up RemotePtr here.
+    controller_client_.reset(
+        mojo_shell::ScopedAppChildControllerClientHandle(
+            mojo_shell::AppChildControllerClientHandle(
+                host_message_pipe.release().value())), this);
   }
 
   // Callback for |embedder::CreateChannel()|.
@@ -143,6 +154,8 @@ class AppChildControllerImpl {
 
   base::ThreadChecker thread_checker_;
   AppContext* const app_context_;
+
+  RemotePtr<mojo_shell::AppChildControllerClient> controller_client_;
   embedder::ChannelInfo* channel_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AppChildControllerImpl);

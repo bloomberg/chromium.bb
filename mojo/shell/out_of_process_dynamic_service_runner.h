@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "mojo/shell/app_child_process.mojom.h"
 #include "mojo/shell/app_child_process_host.h"
 #include "mojo/shell/dynamic_service_runner.h"
 
@@ -16,7 +17,7 @@ namespace shell {
 
 class OutOfProcessDynamicServiceRunner
     : public DynamicServiceRunner,
-      public AppChildProcessHost::AppDelegate {
+      public mojo_shell::AppChildControllerClient {
  public:
   explicit OutOfProcessDynamicServiceRunner(Context* context);
   virtual ~OutOfProcessDynamicServiceRunner();
@@ -27,8 +28,8 @@ class OutOfProcessDynamicServiceRunner
                      const base::Closure& app_completed_callback) OVERRIDE;
 
  private:
-  // |AppChildProcessHost::AppDelegate| method:
-  virtual void DidTerminate() OVERRIDE;
+  // |mojo_shell::AppChildControllerClient| method:
+  virtual void AppCompleted(int32_t result) OVERRIDE;
 
   Context* const context_;
 

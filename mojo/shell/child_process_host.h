@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/shell/child_process.h"  // For |ChildProcess::Type|.
 
@@ -28,6 +29,7 @@ class ChildProcessHost {
  public:
   class Delegate {
    public:
+    virtual void WillStart() = 0;
     virtual void DidStart(bool success) = 0;
   };
 
@@ -67,7 +69,10 @@ class ChildProcessHost {
 
   base::ProcessHandle child_process_handle_;
 
-  // Platform-specific "pipe" to the child process. Valid after |Start()|.
+  embedder::PlatformChannelPair platform_channel_pair_;
+
+  // Platform-specific "pipe" to the child process. Valid immediately after
+  // creation.
   embedder::ScopedPlatformHandle platform_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
