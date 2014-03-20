@@ -399,12 +399,10 @@ void GoBack(Browser* browser, WindowOpenDisposition disposition) {
     WebContents* current_tab =
         browser->tab_strip_model()->GetActiveWebContents();
     WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
-    if ((new_tab != current_tab) && current_tab->ShowingInterstitialPage()) {
-      // If we are on an interstitial page and clone the tab, it won't be copied
-      // to the new tab, so we don't need to go back.
-      return;
-    }
-    new_tab->GetController().GoBack();
+    // If we are on an interstitial page and clone the tab, it won't be copied
+    // to the new tab, so we don't need to go back.
+    if ((new_tab == current_tab) || !current_tab->ShowingInterstitialPage())
+      new_tab->GetController().GoBack();
   }
 }
 
