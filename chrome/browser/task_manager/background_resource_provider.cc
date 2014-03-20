@@ -46,7 +46,6 @@ class BackgroundContentsResource : public RendererResource {
 
   // Resource methods:
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
 
   const base::string16& application_name() const { return application_name_; }
@@ -104,10 +103,6 @@ base::string16 BackgroundContentsResource::GetTitle() const {
         base::UTF8ToUTF16(background_contents_->GetURL().spec()));
   }
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
-}
-
-base::string16 BackgroundContentsResource::GetProfileName() const {
-  return base::string16();
 }
 
 gfx::ImageSkia BackgroundContentsResource::GetIcon() const {

@@ -76,7 +76,6 @@ class TabContentsResource : public RendererResource {
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
@@ -136,10 +135,6 @@ base::string16 TabContentsResource::GetTitle() const {
       IsContentsPrerendering(web_contents_),
       false);  // is_background
   return l10n_util::GetStringFUTF16(message_id, tab_title);
-}
-
-base::string16 TabContentsResource::GetProfileName() const {
-  return util::GetProfileNameFromInfoCache(profile_);
 }
 
 gfx::ImageSkia TabContentsResource::GetIcon() const {

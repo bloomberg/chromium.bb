@@ -38,7 +38,6 @@ class PanelResource : public RendererResource {
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
@@ -85,10 +84,6 @@ base::string16 PanelResource::GetTitle() const {
   base::i18n::AdjustStringForLocaleDirection(&title);
 
   return l10n_util::GetStringFUTF16(message_prefix_id_, title);
-}
-
-base::string16 PanelResource::GetProfileName() const {
-  return util::GetProfileNameFromInfoCache(panel_->profile());
 }
 
 gfx::ImageSkia PanelResource::GetIcon() const {

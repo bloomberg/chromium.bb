@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/renderer_resource.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
@@ -20,7 +20,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
@@ -36,26 +35,15 @@ using extensions::Extension;
 
 namespace task_manager {
 
-class ExtensionProcessResource : public Resource {
+class ExtensionProcessResource : public RendererResource {
  public:
-  explicit ExtensionProcessResource(
-      content::RenderViewHost* render_view_host);
+  explicit ExtensionProcessResource(content::RenderViewHost* render_view_host);
   virtual ~ExtensionProcessResource();
 
   // Resource methods:
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual base::ProcessHandle GetProcess() const OVERRIDE;
-  virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual bool CanInspect() const OVERRIDE;
-  virtual void Inspect() const OVERRIDE;
-  virtual bool SupportNetworkUsage() const OVERRIDE;
-  virtual void SetSupportNetworkUsage() OVERRIDE;
-
-  // Returns the pid of the extension process.
-  int process_id() const { return pid_; }
 
  private:
   const extensions::Extension* GetExtension() const;
@@ -66,12 +54,7 @@ class ExtensionProcessResource : public Resource {
   // The icon painted for the extension process.
   static gfx::ImageSkia* default_icon_;
 
-  content::RenderViewHost* render_view_host_;
-
   // Cached data about the extension.
-  base::ProcessHandle process_handle_;
-  int pid_;
-  int unique_process_id_;
   base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessResource);
@@ -81,25 +64,22 @@ gfx::ImageSkia* ExtensionProcessResource::default_icon_ = NULL;
 
 ExtensionProcessResource::ExtensionProcessResource(
     content::RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host) {
+    : RendererResource(render_view_host->GetProcess()->GetHandle(),
+                       render_view_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
   }
-  process_handle_ = render_view_host_->GetProcess()->GetHandle();
-  unique_process_id_ = render_view_host->GetProcess()->GetID();
-  pid_ = base::GetProcId(process_handle_);
   base::string16 extension_name = base::UTF8ToUTF16(GetExtension()->name());
   DCHECK(!extension_name.empty());
 
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->GetProcess()->GetBrowserContext());
-  int message_id = util::GetMessagePrefixID(
-      GetExtension()->is_app(),
-      true,  // is_extension
-      profile->IsOffTheRecord(),
-      false,  // is_prerender
-      IsBackground());
+  int message_id = util::GetMessagePrefixID(GetExtension()->is_app(),
+                                            true,  // is_extension
+                                            profile->IsOffTheRecord(),
+                                            false,  // is_prerender
+                                            IsBackground());
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
@@ -110,55 +90,25 @@ base::string16 ExtensionProcessResource::GetTitle() const {
   return title_;
 }
 
-base::string16 ExtensionProcessResource::GetProfileName() const {
-  return util::GetProfileNameFromInfoCache(
-      Profile::FromBrowserContext(
-          render_view_host_->GetProcess()->GetBrowserContext()));
-}
-
 gfx::ImageSkia ExtensionProcessResource::GetIcon() const {
   return *default_icon_;
-}
-
-base::ProcessHandle ExtensionProcessResource::GetProcess() const {
-  return process_handle_;
-}
-
-int ExtensionProcessResource::GetUniqueChildProcessId() const {
-  return unique_process_id_;
 }
 
 Resource::Type ExtensionProcessResource::GetType() const {
   return EXTENSION;
 }
 
-bool ExtensionProcessResource::CanInspect() const {
-  return true;
-}
-
-void ExtensionProcessResource::Inspect() const {
-  DevToolsWindow::OpenDevToolsWindow(render_view_host_);
-}
-
-bool ExtensionProcessResource::SupportNetworkUsage() const {
-  return true;
-}
-
-void ExtensionProcessResource::SetSupportNetworkUsage() {
-  NOTREACHED();
-}
-
 const Extension* ExtensionProcessResource::GetExtension() const {
   Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->GetProcess()->GetBrowserContext());
+      render_view_host()->GetProcess()->GetBrowserContext());
   extensions::ProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
-  return process_manager->GetExtensionForRenderViewHost(render_view_host_);
+  return process_manager->GetExtensionForRenderViewHost(render_view_host());
 }
 
 bool ExtensionProcessResource::IsBackground() const {
   WebContents* web_contents =
-      WebContents::FromRenderViewHost(render_view_host_);
+      WebContents::FromRenderViewHost(render_view_host());
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }

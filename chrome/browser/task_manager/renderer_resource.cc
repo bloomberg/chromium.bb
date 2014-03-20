@@ -6,7 +6,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -82,6 +84,11 @@ void RendererResource::NotifyV8HeapStats(
   v8_memory_allocated_ = v8_memory_allocated;
   v8_memory_used_ = v8_memory_used;
   pending_v8_memory_allocated_update_ = false;
+}
+
+base::string16 RendererResource::GetProfileName() const {
+  return util::GetProfileNameFromInfoCache(Profile::FromBrowserContext(
+      render_view_host_->GetProcess()->GetBrowserContext()));
 }
 
 base::ProcessHandle RendererResource::GetProcess() const {

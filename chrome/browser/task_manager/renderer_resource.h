@@ -23,6 +23,7 @@ class RendererResource : public Resource {
   virtual ~RendererResource();
 
   // Resource methods:
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
