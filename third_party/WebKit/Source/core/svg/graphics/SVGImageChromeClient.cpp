@@ -83,7 +83,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // In principle, we should call requestAnimationFrame callbacks here, but
     // we know there aren't any because script is forbidden inside SVGImages.
     if (m_image) {
-        m_image->frameView()->page()->animator().serviceScriptedAnimations(currentTime());
+        m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
         m_image->frameView()->updateLayoutAndStyleForPainting();
     }
 }
