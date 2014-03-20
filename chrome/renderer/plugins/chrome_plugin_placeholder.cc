@@ -70,7 +70,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   RenderThread::Get()->RemoveObserver(this);
-  if (context_menu_request_id_)
+  if (context_menu_request_id_ && render_frame())
     render_frame()->CancelContextMenu(context_menu_request_id_);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
