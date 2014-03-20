@@ -59,7 +59,7 @@ class PresubmitTest(unittest.TestCase):
     success_file_hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
 
     self._stubs = system_stub.Override(
-        PRESUBMIT, ['cloud_storage', 'open', 'os', 'raw_input'])
+        PRESUBMIT, ['cloud_storage', 'os', 'raw_input'])
     self._stubs.raw_input.input = 'public'
     # Files in Cloud Storage.
     self._stubs.cloud_storage.remote_paths = [
@@ -75,7 +75,7 @@ class PresubmitTest(unittest.TestCase):
     self._stubs.os.path.files = (
         self._stubs.cloud_storage.local_file_hashes.keys())
     # Local hash files and their contents.
-    self._stubs.open.files = {
+    self._stubs.cloud_storage.local_hash_files = {
         '/path/to/invalid_hash.wpr.sha1': 'invalid_hash',
         '/path/to/missing.wpr.sha1': 'missing'.zfill(40),
         '/path/to/success.wpr.sha1': success_file_hash,

@@ -49,8 +49,7 @@ def _GetFilesNotInCloud(input_api):
 
   files = []
   for hash_path in hash_paths:
-    with open(hash_path, 'rb') as f:
-      file_hash = f.read(1024).rstrip()
+    file_hash = cloud_storage.ReadHash(hash_path)
     if file_hash not in hashes_in_cloud_storage:
       files.append((hash_path, file_hash))
 
@@ -77,7 +76,7 @@ def _SyncFilesToCloud(input_api, output_api):
       results.append(output_api.PresubmitError(
           'Hash file exists, but file not found: %s' % hash_path))
       continue
-    if cloud_storage.GetHash(file_path) != file_hash:
+    if cloud_storage.CalculateHash(file_path) != file_hash:
       results.append(output_api.PresubmitError(
           'Hash file does not match file\'s actual hash: %s' % hash_path))
       continue
