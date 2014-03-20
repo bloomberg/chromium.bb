@@ -1691,11 +1691,13 @@ TEST_F(FileUtilTest, CreateNewTemporaryDirInDirTest) {
   EXPECT_TRUE(DeleteFile(new_dir, false));
 }
 
+#if defined(OS_POSIX)
 TEST_F(FileUtilTest, GetShmemTempDirTest) {
   FilePath dir;
   EXPECT_TRUE(GetShmemTempDir(false, &dir));
   EXPECT_TRUE(DirectoryExists(dir));
 }
+#endif
 
 TEST_F(FileUtilTest, GetHomeDirTest) {
 #if !defined(OS_ANDROID)  // Not implemented on Android.

@@ -211,15 +211,6 @@ BASE_EXPORT bool IsDirectoryEmpty(const FilePath& dir_path);
 // they're open (which can lead to security issues).
 BASE_EXPORT bool GetTempDir(FilePath* path);
 
-// Get a temporary directory for shared memory files. The directory may depend
-// on whether the destination is intended for executable files, which in turn
-// depends on how /dev/shmem was mounted. As a result, you must supply whether
-// you intend to create executable shmem segments so this function can find
-// an appropriate location.
-//
-// Only useful on POSIX; redirects to GetTempDir() on Windows.
-BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
-
 // Get the home directory. This is more complicated than just getenv("HOME")
 // as it knows to fall back on getpwent() etc.
 //
@@ -240,12 +231,6 @@ BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
 // The full path is placed in |path|.
 // Returns a handle to the opened file or NULL if an error occurred.
 BASE_EXPORT FILE* CreateAndOpenTemporaryFile(FilePath* path);
-
-// Like above but for shmem files.  Only useful for POSIX.
-// The executable flag says the file needs to support using
-// mprotect with PROT_EXEC after mapping.
-BASE_EXPORT FILE* CreateAndOpenTemporaryShmemFile(FilePath* path,
-                                                  bool executable);
 
 // Similar to CreateAndOpenTemporaryFile, but the file is created in |dir|.
 BASE_EXPORT FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir,
@@ -407,6 +392,21 @@ enum FileSystemType {
 // Attempts determine the FileSystemType for |path|.
 // Returns false if |path| doesn't exist.
 BASE_EXPORT bool GetFileSystemType(const FilePath& path, FileSystemType* type);
+#endif
+
+#if defined(OS_POSIX)
+// Get a temporary directory for shared memory files. The directory may depend
+// on whether the destination is intended for executable files, which in turn
+// depends on how /dev/shmem was mounted. As a result, you must supply whether
+// you intend to create executable shmem segments so this function can find
+// an appropriate location.
+BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
+
+// Like above but for shmem files.  Only useful for POSIX.
+// The executable flag says the file needs to support using
+// mprotect with PROT_EXEC after mapping.
+BASE_EXPORT FILE* CreateAndOpenTemporaryShmemFile(FilePath* path,
+                                                  bool executable);
 #endif
 
 }  // namespace base

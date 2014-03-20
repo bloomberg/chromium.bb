@@ -463,25 +463,6 @@ bool GetTempDir(FilePath* path) {
 }
 #endif  // !defined(OS_MACOSX)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-// This is implemented in file_util_mac.mm and file_util_android.cc for those
-// platforms.
-bool GetShmemTempDir(bool executable, FilePath* path) {
-#if defined(OS_LINUX)
-  bool use_dev_shm = true;
-  if (executable) {
-    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
-    use_dev_shm = s_dev_shm_executable;
-  }
-  if (use_dev_shm) {
-    *path = FilePath("/dev/shm");
-    return true;
-  }
-#endif
-  return GetTempDir(path);
-}
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
-
 #if !defined(OS_MACOSX)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
@@ -526,14 +507,6 @@ bool CreateTemporaryFile(FilePath* path) {
     return false;
   close(fd);
   return true;
-}
-
-FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
-  FilePath directory;
-  if (!GetShmemTempDir(executable, &directory))
-    return NULL;
-
-  return CreateAndOpenTemporaryFileInDir(directory, path);
 }
 
 FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
@@ -845,6 +818,33 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 int GetMaximumPathComponentLength(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
   return pathconf(path.value().c_str(), _PC_NAME_MAX);
+}
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// This is implemented in file_util_mac.mm and file_util_android.cc for those
+// platforms.
+bool GetShmemTempDir(bool executable, FilePath* path) {
+#if defined(OS_LINUX)
+  bool use_dev_shm = true;
+  if (executable) {
+    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
+    use_dev_shm = s_dev_shm_executable;
+  }
+  if (use_dev_shm) {
+    *path = FilePath("/dev/shm");
+    return true;
+  }
+#endif
+  return GetTempDir(path);
+}
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+
+FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
+  FilePath directory;
+  if (!GetShmemTempDir(executable, &directory))
+    return NULL;
+
+  return CreateAndOpenTemporaryFileInDir(directory, path);
 }
 
 // -----------------------------------------------------------------------------

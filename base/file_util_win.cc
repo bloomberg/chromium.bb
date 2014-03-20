@@ -254,10 +254,6 @@ bool GetTempDir(FilePath* path) {
   return true;
 }
 
-bool GetShmemTempDir(bool executable, FilePath* path) {
-  return GetTempDir(path);
-}
-
 FilePath GetHomeDir() {
   char16 result[MAX_PATH];
   if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT,
@@ -289,11 +285,6 @@ bool CreateTemporaryFile(FilePath* path) {
   }
 
   return false;
-}
-
-FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
-  ThreadRestrictions::AssertIOAllowed();
-  return CreateAndOpenTemporaryFile(path);
 }
 
 // On POSIX we have semantics to create and open a temporary file
