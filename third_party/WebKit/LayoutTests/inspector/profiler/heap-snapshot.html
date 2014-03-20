@@ -315,14 +315,20 @@ function test()
                     return node.type() === "object" && node.name() !== "B" && node.name() !== "D";
                 }
 
-                var provider = new WebInspector.HeapSnapshotNodesProvider(snapshot, nodeFilter);
+                var allNodeIndexes = [];
+                for (var i = 0; i < snapshot._nodes.length; i += snapshot._nodeFieldCount)
+                    allNodeIndexes.push(i);
+                var provider = new WebInspector.HeapSnapshotNodesProvider(snapshot, nodeFilter, allNodeIndexes);
                 // Sort by names in reverse order.
-                InspectorTest.assertEquals(3, provider.length, "nodes provider length");
-                provider.sort({fieldName1: "name", ascending1: false, fieldName2: "id", ascending2: false}, 0, 2, 3);
-                InspectorTest.assertEquals(3, provider.length, "nodes provider length");
-                var names = [];
-                for (provider.rewind(); provider.hasNext(); provider.next())
-                    names.push(provider.item().name());
+                provider.sortAndRewind({fieldName1: "name", ascending1: false, fieldName2: "id", ascending2: false});
+                var range = provider.serializeItemsRange(0, 3);
+                InspectorTest.assertEquals(3, range.totalLength, "Node range total length");
+                InspectorTest.assertEquals(0, range.startPosition, "Node range start position");
+                InspectorTest.assertEquals(3, range.endPosition, "Node range end position");
+                var names = range.items.map(function(item)
+                {
+                    return item.name;
+                });
                 InspectorTest.assertEquals("E,C,A", names.join(","), "nodes provider names");
             },
 
@@ -336,12 +342,15 @@ function test()
                 }
 
                 var provider = snapshot.createEdgesProviderForTest(snapshot.rootNodeIndex, edgeFilter);
-                InspectorTest.assertEquals(1, provider.length, "edges provider length");
-                provider.sort({fieldName1: "!edgeName", ascending1: false, fieldName2: "id", ascending2: false}, 0, 0, 1);
-                InspectorTest.assertEquals(1, provider.length, "edges provider length");
-                var names = [];
-                for (provider.rewind(); provider.hasNext(); provider.next())
-                    names.push(provider.item().name());
+                provider.sortAndRewind({fieldName1: "!edgeName", ascending1: false, fieldName2: "id", ascending2: false});
+                var range = provider.serializeItemsRange(0, 10);
+                InspectorTest.assertEquals(1, range.totalLength, "Edge range total length");
+                InspectorTest.assertEquals(0, range.startPosition, "Edge range start position");
+                InspectorTest.assertEquals(1, range.endPosition, "Edge range end position");
+                var names = range.items.map(function(item)
+                {
+                    return item.name;
+                });
                 InspectorTest.assertEquals("b", names.join(","), "edges provider names");
             },
 
