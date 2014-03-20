@@ -34,6 +34,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   virtual void Start() OVERRIDE;
   virtual int WaitForDataReady(const CompletionCallback& callback) OVERRIDE;
   virtual bool IsDataReady() OVERRIDE;
+  virtual bool IsReadyToPersist() OVERRIDE;
   virtual void Persist() OVERRIDE;
 
  private:

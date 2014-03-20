@@ -49,6 +49,10 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // doesn't have a pending callback).
   virtual bool IsDataReady() = 0;
 
+  // Returns true if the object is ready to persist data, in other words, if
+  // data is loaded from disk cache and ready and there are no pending writes.
+  virtual bool IsReadyToPersist() = 0;
+
   // Persist allows for the server information to be updated for future users.
   // This is a fire and forget operation: the caller may drop its reference
   // from this object and the store operation will still complete. This can

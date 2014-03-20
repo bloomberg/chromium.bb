@@ -118,9 +118,9 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
 
   const net::QuicServerInfo::State& state1 = quic_server_info->state();
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
@@ -192,9 +192,9 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
 
   const net::QuicServerInfo::State& state_a = quic_server_info->state();
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   EXPECT_EQ(server_config_a, state_a.server_config);
   EXPECT_EQ(source_address_token_a, state_a.source_address_token);
   EXPECT_EQ(server_config_sig_a, state_a.server_config_sig);
@@ -207,9 +207,9 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
 
   const net::QuicServerInfo::State& state_b = quic_server_info->state();
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   EXPECT_EQ(server_config_b, state_b.server_config);
   EXPECT_EQ(source_address_token_b, state_b.source_address_token);
   EXPECT_EQ(server_config_sig_b, state_b.server_config_sig);
@@ -220,8 +220,8 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   RemoveMockTransaction(&kHostInfoTransaction1);
 }
 
-// Test IsDataReady when there is a pending write.
-TEST(DiskCacheBasedQuicServerInfo, IsDataReady) {
+// Test IsReadyToPersist when there is a pending write.
+TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   MockHttpCache cache;
   AddMockTransaction(&kHostInfoTransaction1);
   net::TestCompletionCallback callback;
@@ -229,11 +229,11 @@ TEST(DiskCacheBasedQuicServerInfo, IsDataReady) {
   net::QuicSessionKey server_key("www.google.com", 443, true);
   scoped_ptr<net::QuicServerInfo> quic_server_info(
       new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   int rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
 
   net::QuicServerInfo::State* state = quic_server_info->mutable_state();
   EXPECT_TRUE(state->certs.empty());
@@ -246,17 +246,17 @@ TEST(DiskCacheBasedQuicServerInfo, IsDataReady) {
   state->source_address_token = source_address_token_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
-  EXPECT_TRUE(quic_server_info->IsDataReady());
+  EXPECT_TRUE(quic_server_info->IsReadyToPersist());
   quic_server_info->Persist();
 
-  // Once we call Persist, IsDataReady should return false until Persist has
-  // completed.
-  EXPECT_FALSE(quic_server_info->IsDataReady());
+  // Once we call Persist, IsReadyToPersist should return false until Persist
+  // has completed.
+  EXPECT_FALSE(quic_server_info->IsReadyToPersist());
 
   // Wait until Persist() does the work.
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(quic_server_info->IsDataReady());
+  EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 
   // Verify that the state was updated.
   quic_server_info.reset(
@@ -267,7 +267,6 @@ TEST(DiskCacheBasedQuicServerInfo, IsDataReady) {
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
   const net::QuicServerInfo::State& state1 = quic_server_info->state();
-  EXPECT_TRUE(quic_server_info->IsDataReady());
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);

@@ -88,7 +88,13 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
 }
 
 bool DiskCacheBasedQuicServerInfo::IsDataReady() {
-  return ready_ && state_ == NONE;
+  return ready_;
+}
+
+bool DiskCacheBasedQuicServerInfo::IsReadyToPersist() {
+  // The data can be persisted if it has been loaded from the disk cache
+  // and there are no pending writes.
+  return ready_ && new_data_.empty();
 }
 
 void DiskCacheBasedQuicServerInfo::Persist() {
