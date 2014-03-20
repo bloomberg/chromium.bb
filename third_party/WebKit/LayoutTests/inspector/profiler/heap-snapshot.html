@@ -49,7 +49,7 @@ function test()
                 var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
                 var iterator = new WebInspector.HeapSnapshotNodeIterator(nodeRoot);
                 var names = [];
-                for (iterator.rewind(); iterator.hasNext(); iterator.next())
+                for (; iterator.hasNext(); iterator.next())
                     names.push(iterator.item().name());
                 InspectorTest.assertEquals(",A,B,C,D,E", names.join(","), "node iterator");
             },
@@ -71,8 +71,7 @@ function test()
                 var snapshot = InspectorTest.createJSHeapSnapshotMockObject();
                 var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
                 var names = [];
-                var iterator = nodeRoot.edges();
-                for (iterator.rewind(); iterator.hasNext(); iterator.next())
+                for (var iterator = nodeRoot.edges(); iterator.hasNext(); iterator.next())
                     names.push(iterator.item().name());
                 InspectorTest.assertEquals("a,b", names.join(","), "edge iterator");
                 var nodeE = snapshot.createNode(15);
