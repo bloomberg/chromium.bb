@@ -328,7 +328,7 @@ void SessionService::WindowClosing(const SessionID& window_id) {
     // false to true, so only update it if already true.
     has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
   }
-  if (should_record_close_as_pending())
+  if (!has_open_trackable_browsers_)
     pending_window_close_ids_.insert(window_id.id());
   else
     window_closing_ids_.insert(window_id.id());
@@ -350,7 +350,7 @@ void SessionService::WindowClosed(const SessionID& window_id) {
              pending_window_close_ids_.end()) {
     // We'll hit this if user closed the last tab in a window.
     has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
-    if (should_record_close_as_pending())
+    if (!has_open_trackable_browsers_)
       pending_window_close_ids_.insert(window_id.id());
     else
       ScheduleCommand(CreateWindowClosedCommand(window_id.id()));

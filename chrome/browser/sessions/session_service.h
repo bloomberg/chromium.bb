@@ -414,19 +414,6 @@ class SessionService : public BaseSessionService,
       Browser::Type type,
       AppType app_type);
 
-  // Returns true if we should record a window close as pending.
-  // |has_open_trackable_browsers_| must be up-to-date before calling this.
-  bool should_record_close_as_pending() const {
-    // When this is called, the browser window being closed is still open, hence
-    // still in the browser list. If there is a browser window other than the
-    // one being closed but no trackable windows, then the others must be App
-    // windows or similar. In this case, we record the close as pending.
-    return !has_open_trackable_browsers_ &&
-        (!browser_defaults::kBrowserAliveWithNoWindows ||
-         force_browser_not_alive_with_no_windows_ ||
-         chrome::GetTotalBrowserCount() > 1);
-  }
-
   // Call when certain session relevant notifications
   // (tab_closed, nav_list_pruned) occur.  In addition, this is
   // currently called when Save() is called to compare how often the
