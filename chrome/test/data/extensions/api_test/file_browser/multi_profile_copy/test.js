@@ -1,0 +1,136 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+var kSecondaryDriveMountPointName = "drive-fileBrowserApiTestProfile2";
+
+/**
+ * Copies an entry using chrome.fileBrowserPrivate.startCopy().
+ *
+ * @param {Entry} fromRoot Root entry of the copy source file system.
+ * @param {string} fromPath Relative path from fromRoot of the source entry.
+ * @param {Entry} toRoot Root entry of the copy destination file system.
+ * @param {string} toPath Relative path from toRoot of the target directory.
+ * @param {string} newName Name of the new copied entry.
+ * @param {function()} successCallback Callback invoked when copy succeed.
+ * @param {function(string)} errorCallback Callback invoked in error case.
+ */
+function fileCopy(fromRoot, fromPath, toRoot, toPath, newName,
+                  successCallback, errorCallback) {
+  fromRoot.getFile(fromPath, {create: false}, function(from) {
+    toRoot.getDirectory(toPath, {create: false}, function(to) {
+      var copyId = null;
+      var onProgress = function(id, status) {
+        if (id != copyId) {
+          errorCallback('Unknown copy id.');
+          return;
+        }
+        if (status.type == 'error') {
+          chrome.fileBrowserPrivate.onCopyProgress.removeListener(onProgress);
+          errorCallback('Copy failed.');
+          return;
+        }
+        if (status.type == 'success') {
+          chrome.fileBrowserPrivate.onCopyProgress.removeListener(onProgress);
+          successCallback();
+        }
+      };
+      chrome.fileBrowserPrivate.onCopyProgress.addListener(onProgress);
+      chrome.fileBrowserPrivate.startCopy(
+        from.toURL(), to.toURL(), newName, function(startCopyId) {
+          if (chrome.runtime.lastError) {
+            errorCallback('Error starting to copy.');
+            return;
+          }
+          copyId = startCopyId;
+        });
+    }, errorCallback.bind(null, 'Error getting destination entry'));
+  }, errorCallback.bind(null, 'Error getting source entry'));
+}
+
+/**
+ * Verifies that a file exists on the specified location.
+ *
+ * @param {Entry} root Root entry of the file system.
+ * @param {string} path Relative path of the file from the root entry,
+ * @param {function()} successCallback Callback invoked when the file exists.
+ * @param {function(string)} errorCallback Callback invoked in error case.
+ */
+function verifyFileExists(root, path, successCallback, errorCallback) {
+  root.getFile(path, {create: false},
+               successCallback,
+               errorCallback.bind(null, path + ' does not exist.'));
+}
+
+/**
+ * Collects all tests that should be run for the test volume.
+ *
+ * @param {Entry} firstRoot Root entry of the first volume.
+ * @param {Entry} secondRoot Root entry of the second volume.
+ * @return {Array.<function()>} The list of tests that should be run.
+ */
+function collectTests(firstRoot, secondRoot) {
+  var testsToRun = [];
+
+  testsToRun.push(function crossProfileNormalFileCopyTest() {
+    fileCopy(secondRoot, 'root/test_dir/test_file.tiff',
+             firstRoot, 'root/',
+             'newname.tiff',
+             verifyFileExists.bind(null, firstRoot, 'root/newname.tiff',
+                                   chrome.test.succeed, chrome.test.fail),
+             function(msg) {chrome.test.fail(msg);});
+  });
+
+  return testsToRun;
+}
+
+/**
+ * Initializes testParams.
+ * Gets test volume and creates list of tests that should be run for it.
+ *
+ * @param {function(Array, string)} callback. Called with an array containing
+ *     the list of the tests to run and an error message. On error list of tests
+ *     to run will be null.
+ */
+function initTests(callback) {
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+    var driveVolumes = volumeMetadataList.filter(function(volume) {
+      return volume.volumeType == 'drive';
+    });
+
+    if (driveVolumes.length != 1) {
+      callback(null, 'Unexpected number of Drive volumes.');
+      return;
+    }
+
+    chrome.fileBrowserPrivate.requestFileSystem(
+        driveVolumes[0].volumeId,
+        function(primaryFileSystem) {
+          if (!primaryFileSystem) {
+            callback(null, 'Failed to acquire the testing volume.');
+            return;
+          }
+
+          var url = primaryFileSystem.root.toURL().replace(
+              /[^\/]*\/?$/, kSecondaryDriveMountPointName);
+
+          webkitResolveLocalFileSystemURL(url, function(entry) {
+            if (!entry) {
+              callback(null, 'Failed to acquire secondary profile\'s volume.');
+              return;
+            }
+
+            callback(collectTests(primaryFileSystem.root, entry), 'Success.');
+          });
+        });
+  });
+}
+
+// Trigger the tests.
+initTests(function(testsToRun, errorMessage) {
+  if (!testsToRun) {
+    chrome.test.notifyFail('Failed to initialize tests: ' + errorMessage);
+    return;
+  }
+  chrome.test.runTests(testsToRun);
+});

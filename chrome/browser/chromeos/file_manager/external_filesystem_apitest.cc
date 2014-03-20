@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
@@ -13,7 +14,9 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -345,6 +348,65 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
       service_factory_for_test_;
 };
 
+// Tests for Drive file systems in multi-profile setting.
+class MultiProfileDriveFileSystemExtensionApiTest :
+    public FileSystemExtensionApiTestBase {
+ public:
+  MultiProfileDriveFileSystemExtensionApiTest() : second_profile(NULL) {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Set up the secondary profile.
+    base::FilePath profile_dir;
+    base::CreateNewTempDirectory(base::FilePath::StringType(), &profile_dir);
+    profile_dir = profile_dir.AppendASCII(
+        std::string(chrome::kProfileDirPrefix) + "fileBrowserApiTestProfile2");
+    second_profile =
+        g_browser_process->profile_manager()->GetProfile(profile_dir);
+
+    FileSystemExtensionApiTestBase::SetUpOnMainThread();
+  }
+
+  virtual void InitTestFileSystem() OVERRIDE {
+    // This callback will get called during Profile creation.
+    create_drive_integration_service_ = base::Bind(
+        &MultiProfileDriveFileSystemExtensionApiTest::
+            CreateDriveIntegrationService,
+        base::Unretained(this));
+    service_factory_for_test_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
+  }
+
+  virtual void AddTestMountPoint() OVERRIDE {
+    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    test_util::WaitUntilDriveMountPointIsAdded(second_profile);
+  }
+
+ protected:
+  // DriveIntegrationService factory function for this test.
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile) {
+    base::FilePath cache_dir;
+    base::CreateNewTempDirectory(base::FilePath::StringType(), &cache_dir);
+
+    drive::FakeDriveService* const fake_drive_service =
+        new drive::FakeDriveService;
+    fake_drive_service->LoadResourceListForWapi(kTestRootFeed);
+    fake_drive_service->LoadAccountMetadataForWapi(
+        "gdata/account_metadata.json");
+    fake_drive_service->LoadAppListForDriveApi("drive/applist.json");
+
+    return new drive::DriveIntegrationService(
+        profile, NULL, fake_drive_service, std::string(), cache_dir, NULL);
+  }
+
+  DriveIntegrationServiceFactory::FactoryCallback
+      create_drive_integration_service_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      service_factory_for_test_;
+  Profile* second_profile;
+};
+
 //
 // LocalFileSystemExtensionApiTests.
 //
@@ -447,6 +509,15 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
       FILE_PATH_LITERAL("manifest.json"),
       "file_browser/app_file_handler",
       FLAGS_USE_FILE_HANDLER)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
+                       CrossProfileCopy) {
+  EXPECT_TRUE(RunFileSystemExtensionApiTest(
+      "file_browser/multi_profile_copy",
+      FILE_PATH_LITERAL("manifest.json"),
+      "",
+      FLAGS_NONE)) << message_;
 }
 
 }  // namespace
