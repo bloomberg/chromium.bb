@@ -62,7 +62,7 @@ class MEDIA_EXPORT DemuxerAndroidClient {
   // For regular demuxer seeks, |actual_browser_seek_time| is kNoTimestamp() and
   // should be ignored by browser player.
   virtual void OnDemuxerSeekDone(
-      const base::TimeDelta& actual_browser_seek_time) = 0;
+      base::TimeDelta actual_browser_seek_time) = 0;
 
   // Called whenever the demuxer has detected a duration change.
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) = 0;

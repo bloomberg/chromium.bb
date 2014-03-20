@@ -19,6 +19,9 @@ namespace media {
 
 // Class for managing all the decoding tasks. Each decoding task will be posted
 // onto the same thread. The thread will be stopped once Stop() is called.
+// Data is stored in 2 chunks. When new data arrives, it is always stored in
+// an inactive chunk. And when the current active chunk becomes empty, a new
+// data request will be sent to the renderer.
 class MediaDecoderJob {
  public:
   struct Deleter {
@@ -30,7 +33,7 @@ class MediaDecoderJob {
   // If the presentation time is equal to kNoTimestamp(), the decoder job
   // skipped rendering of the decoded output and the callback target should
   // update its clock to avoid introducing extra delays to the next frame.
-  typedef base::Callback<void(MediaCodecStatus, const base::TimeDelta&,
+  typedef base::Callback<void(MediaCodecStatus, base::TimeDelta,
                               size_t)> DecoderCallback;
   // Callback when a decoder job finishes releasing the output buffer.
   // Args: audio output bytes, must be 0 for video.
@@ -52,8 +55,8 @@ class MediaDecoderJob {
   // called when the decode operation is complete.
   // Returns false if a config change is needed. |callback| is ignored
   // and will not be called.
-  bool Decode(const base::TimeTicks& start_time_ticks,
-              const base::TimeDelta& start_presentation_timestamp,
+  bool Decode(base::TimeTicks start_time_ticks,
+              base::TimeDelta start_presentation_timestamp,
               const DecoderCallback& callback);
 
   // Called to stop the last Decode() early.
@@ -70,11 +73,15 @@ class MediaDecoderJob {
   void Flush();
 
   // Enter prerolling state. The job must not currently be decoding.
-  void BeginPrerolling(const base::TimeDelta& preroll_timestamp);
+  void BeginPrerolling(base::TimeDelta preroll_timestamp);
 
   bool prerolling() const { return prerolling_; }
 
   bool is_decoding() const { return !decode_cb_.is_null(); }
+
+  bool is_requesting_demuxer_data() const {
+    return is_requesting_demuxer_data_;
+  }
 
  protected:
   MediaDecoderJob(
@@ -95,6 +102,8 @@ class MediaDecoderJob {
   virtual bool ComputeTimeToRender() const = 0;
 
  private:
+  friend class MediaSourcePlayerTest;
+
   // Causes this instance to be deleted on the thread it is bound to.
   void Release();
 
@@ -107,10 +116,10 @@ class MediaDecoderJob {
   // |done_cb| is called when more data is available in |received_data_|.
   void RequestData(const base::Closure& done_cb);
 
-  // Posts a task to start decoding the next access unit in |received_data_|.
-  void DecodeNextAccessUnit(
-      const base::TimeTicks& start_time_ticks,
-      const base::TimeDelta& start_presentation_timestamp);
+  // Posts a task to start decoding the current access unit in |received_data_|.
+  void DecodeCurrentAccessUnit(
+      base::TimeTicks start_time_ticks,
+      base::TimeDelta start_presentation_timestamp);
 
   // Helper function to decoder data on |thread_|. |unit| contains all the data
   // to be decoded. |start_time_ticks| and |start_presentation_timestamp|
@@ -119,8 +128,8 @@ class MediaDecoderJob {
   // frame should be rendered. If |needs_flush| is true, codec needs to be
   // flushed at the beginning of this call.
   void DecodeInternal(const AccessUnit& unit,
-                      const base::TimeTicks& start_time_ticks,
-                      const base::TimeDelta& start_presentation_timestamp,
+                      base::TimeTicks start_time_ticks,
+                      base::TimeDelta start_presentation_timestamp,
                       bool needs_flush,
                       const DecoderCallback& callback);
 
@@ -128,8 +137,32 @@ class MediaDecoderJob {
   // Completes any pending job destruction or any pending decode stop. If
   // destruction was not pending, passes its arguments to |decode_cb_|.
   void OnDecodeCompleted(MediaCodecStatus status,
-                         const base::TimeDelta& presentation_timestamp,
+                         base::TimeDelta presentation_timestamp,
                          size_t audio_output_bytes);
+
+  // Helper function to get the current access unit that is being decoded.
+  const AccessUnit& CurrentAccessUnit() const;
+
+  // Check whether a chunk has no remaining access units to decode. If
+  // |is_active_chunk| is true, this function returns whether decoder has
+  // consumed all data in |received_data_[current_demuxer_data_index_]|.
+  // Otherwise, it returns whether decoder has consumed all data in the inactive
+  // chunk.
+  bool NoAccessUnitsRemainingInChunk(bool is_active_chunk) const;
+
+  // Clearn all the received data.
+  void ClearData();
+
+  // Request new data for the current chunk if it runs out of data.
+  void RequestCurrentChunkIfEmpty();
+
+  // Initialize |received_data_| and |access_unit_index_|.
+  void InitializeReceivedData();
+
+  // Return the index to |received_data_| that is not currently being decoded.
+  size_t inactive_demuxer_data_index() const {
+    return 1 - current_demuxer_data_index_;
+  }
 
   // The UI message loop where callbacks should be dispatched.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
@@ -179,11 +212,19 @@ class MediaDecoderJob {
   // Callback to run when the current Decode() operation completes.
   DecoderCallback decode_cb_;
 
-  // The current access unit being processed.
-  size_t access_unit_index_;
-
   // Data received over IPC from last RequestData() operation.
-  DemuxerData received_data_;
+  // We keep 2 chunks at the same time to reduce the IPC latency between chunks.
+  // If data inside the current chunk are all decoded, we will request a new
+  // chunk from the demuxer and swap the current chunk with the other one.
+  // New data will always be stored in the other chunk since the current
+  // one may be still in use.
+  DemuxerData received_data_[2];
+
+  // Index to the current data chunk that is being decoded.
+  size_t current_demuxer_data_index_;
+
+  // Index to the access unit inside each data chunk that is being decoded.
+  size_t access_unit_index_[2];
 
   // The index of input buffer that can be used by QueueInputBuffer().
   // If the index is uninitialized or invalid, it must be -1.
@@ -195,6 +236,12 @@ class MediaDecoderJob {
   // Decode() has completed. This gets set when Release() gets called
   // while there is a decode in progress.
   bool destroy_pending_;
+
+  // Indicates whether the decoder is in the middle of requesting new data.
+  bool is_requesting_demuxer_data_;
+
+  // Indicates whether the incoming data should be ignored.
+  bool is_incoming_data_invalid_;
 
   // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
   // the decoder thread.

@@ -52,7 +52,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Seek to a particular position, based on renderer signaling actual seek
   // with MediaPlayerHostMsg_Seek. If eventual success, OnSeekComplete() will be
   // called.
-  virtual void SeekTo(const base::TimeDelta& timestamp) = 0;
+  virtual void SeekTo(base::TimeDelta timestamp) = 0;
 
   // Release the player resources.
   virtual void Release() = 0;

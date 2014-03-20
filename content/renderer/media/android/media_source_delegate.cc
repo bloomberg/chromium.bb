@@ -31,8 +31,8 @@ using blink::WebString;
 namespace {
 
 // The size of the access unit to transfer in an IPC in case of MediaSource.
-// 16: approximately 250ms of content in 60 fps movies.
-const size_t kAccessUnitSizeForMediaSource = 16;
+// 4: approximately 64ms of content in 60 fps movies.
+const size_t kAccessUnitSizeForMediaSource = 4;
 
 const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 

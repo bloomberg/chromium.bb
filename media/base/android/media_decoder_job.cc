@@ -32,34 +32,53 @@ MediaDecoderJob::MediaDecoderJob(
       skip_eos_enqueue_(true),
       prerolling_(true),
       request_data_cb_(request_data_cb),
-      access_unit_index_(0),
+      current_demuxer_data_index_(0),
       input_buf_index_(-1),
       stop_decode_pending_(false),
       destroy_pending_(false),
-      weak_factory_(this) {}
+      is_requesting_demuxer_data_(false),
+      is_incoming_data_invalid_(false),
+      weak_factory_(this) {
+  InitializeReceivedData();
+}
 
 MediaDecoderJob::~MediaDecoderJob() {}
 
 void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
   DVLOG(1) << __FUNCTION__ << ": " << data.access_units.size() << " units";
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  DCHECK(!on_data_received_cb_.is_null());
+  DCHECK(NoAccessUnitsRemainingInChunk(false));
 
   TRACE_EVENT_ASYNC_END2(
       "media", "MediaDecoderJob::RequestData", this,
       "Data type", data.type == media::DemuxerStream::AUDIO ? "AUDIO" : "VIDEO",
       "Units read", data.access_units.size());
 
-  base::Closure done_cb = base::ResetAndReturn(&on_data_received_cb_);
+  if (is_incoming_data_invalid_) {
+    is_incoming_data_invalid_ = false;
 
+    // If there is a pending callback, need to request the data again to get
+    // valid data.
+    if (!on_data_received_cb_.is_null())
+      request_data_cb_.Run();
+    else
+      is_requesting_demuxer_data_ = false;
+    return;
+  }
+
+  size_t next_demuxer_data_index = inactive_demuxer_data_index();
+  received_data_[next_demuxer_data_index] = data;
+  access_unit_index_[next_demuxer_data_index] = 0;
+  is_requesting_demuxer_data_ = false;
+
+  base::Closure done_cb = base::ResetAndReturn(&on_data_received_cb_);
   if (stop_decode_pending_) {
     OnDecodeCompleted(MEDIA_CODEC_STOPPED, kNoTimestamp(), 0);
     return;
   }
 
-  access_unit_index_ = 0;
-  received_data_ = data;
-  done_cb.Run();
+  if (!done_cb.is_null())
+    done_cb.Run();
 }
 
 void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
@@ -78,8 +97,8 @@ void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
 }
 
 bool MediaDecoderJob::Decode(
-    const base::TimeTicks& start_time_ticks,
-    const base::TimeDelta& start_presentation_timestamp,
+    base::TimeTicks start_time_ticks,
+    base::TimeDelta start_presentation_timestamp,
     const DecoderCallback& callback) {
   DCHECK(decode_cb_.is_null());
   DCHECK(on_data_received_cb_.is_null());
@@ -88,23 +107,21 @@ bool MediaDecoderJob::Decode(
   decode_cb_ = callback;
 
   if (!HasData()) {
-    RequestData(base::Bind(&MediaDecoderJob::DecodeNextAccessUnit,
+    RequestData(base::Bind(&MediaDecoderJob::DecodeCurrentAccessUnit,
                            base::Unretained(this),
                            start_time_ticks,
                            start_presentation_timestamp));
     return true;
   }
 
-  if (DemuxerStream::kConfigChanged ==
-      received_data_.access_units[access_unit_index_].status) {
+  if (DemuxerStream::kConfigChanged == CurrentAccessUnit().status) {
     // Clear received data because we need to handle a config change.
     decode_cb_.Reset();
-    received_data_ = DemuxerData();
-    access_unit_index_ = 0;
+    ClearData();
     return false;
   }
 
-  DecodeNextAccessUnit(start_time_ticks, start_presentation_timestamp);
+  DecodeCurrentAccessUnit(start_time_ticks, start_presentation_timestamp);
   return true;
 }
 
@@ -119,14 +136,10 @@ void MediaDecoderJob::Flush() {
 
   // Do nothing, flush when the next Decode() happens.
   needs_flush_ = true;
-  received_data_ = DemuxerData();
-  input_eos_encountered_ = false;
-  access_unit_index_ = 0;
-  on_data_received_cb_.Reset();
+  ClearData();
 }
 
-void MediaDecoderJob::BeginPrerolling(
-    const base::TimeDelta& preroll_timestamp) {
+void MediaDecoderJob::BeginPrerolling(base::TimeDelta preroll_timestamp) {
   DVLOG(1) << __FUNCTION__ << "(" << preroll_timestamp.InSecondsF() << ")";
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_decoding());
@@ -207,15 +220,12 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
 
 bool MediaDecoderJob::HasData() const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  // When |input_eos_encountered_| is set, |access_units| must not be empty and
-  // |access_unit_index_| must be pointing to an EOS unit. We'll reuse this
-  // unit to flush the decoder until we hit output EOS.
-  DCHECK(!input_eos_encountered_ ||
-         (received_data_.access_units.size() > 0 &&
-          access_unit_index_ < received_data_.access_units.size()))
-      << " (access_units.size(): " << received_data_.access_units.size()
-      << ", access_unit_index_: " << access_unit_index_ << ")";
-  return access_unit_index_ < received_data_.access_units.size();
+  // When |input_eos_encountered_| is set, |access_unit_index_| and
+  // |current_demuxer_data_index_| must be pointing to an EOS unit.
+  // We'll reuse this unit to flush the decoder until we hit output EOS.
+  DCHECK(!input_eos_encountered_ || !NoAccessUnitsRemainingInChunk(true));
+  return !NoAccessUnitsRemainingInChunk(true) ||
+      !NoAccessUnitsRemainingInChunk(false);
 }
 
 void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
@@ -223,26 +233,38 @@ void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(on_data_received_cb_.is_null());
   DCHECK(!input_eos_encountered_);
+  DCHECK(NoAccessUnitsRemainingInChunk(false));
 
   TRACE_EVENT_ASYNC_BEGIN0("media", "MediaDecoderJob::RequestData", this);
 
-  received_data_ = DemuxerData();
-  access_unit_index_ = 0;
   on_data_received_cb_ = done_cb;
+
+  // If we are already expecting new data, just set the callback and do
+  // nothing.
+  if (is_requesting_demuxer_data_)
+    return;
+
+  // The new incoming data will be stored as the next demuxer data chunk, since
+  // the decoder might still be decoding the current one.
+  size_t next_demuxer_data_index = inactive_demuxer_data_index();
+  received_data_[next_demuxer_data_index] = DemuxerData();
+  access_unit_index_[next_demuxer_data_index] = 0;
+  is_requesting_demuxer_data_ = true;
 
   request_data_cb_.Run();
 }
 
-void MediaDecoderJob::DecodeNextAccessUnit(
-    const base::TimeTicks& start_time_ticks,
-    const base::TimeDelta& start_presentation_timestamp) {
+void MediaDecoderJob::DecodeCurrentAccessUnit(
+    base::TimeTicks start_time_ticks,
+    base::TimeDelta start_presentation_timestamp) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(!decode_cb_.is_null());
 
+  RequestCurrentChunkIfEmpty();
+  const AccessUnit& access_unit = CurrentAccessUnit();
   // If the first access unit is a config change, request the player to dequeue
   // the input buffer again so that it can request config data.
-  if (received_data_.access_units[access_unit_index_].status ==
-      DemuxerStream::kConfigChanged) {
+  if (access_unit.status == DemuxerStream::kConfigChanged) {
     ui_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&MediaDecoderJob::OnDecodeCompleted,
                                          base::Unretained(this),
@@ -254,7 +276,7 @@ void MediaDecoderJob::DecodeNextAccessUnit(
 
   decoder_task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaDecoderJob::DecodeInternal, base::Unretained(this),
-      received_data_.access_units[access_unit_index_],
+      access_unit,
       start_time_ticks, start_presentation_timestamp, needs_flush_,
       media::BindToCurrentLoop(base::Bind(
           &MediaDecoderJob::OnDecodeCompleted, base::Unretained(this)))));
@@ -263,8 +285,8 @@ void MediaDecoderJob::DecodeNextAccessUnit(
 
 void MediaDecoderJob::DecodeInternal(
     const AccessUnit& unit,
-    const base::TimeTicks& start_time_ticks,
-    const base::TimeDelta& start_presentation_timestamp,
+    base::TimeTicks start_time_ticks,
+    base::TimeDelta start_presentation_timestamp,
     bool needs_flush,
     const MediaDecoderJob::DecoderCallback& callback) {
   DVLOG(1) << __FUNCTION__;
@@ -389,7 +411,7 @@ void MediaDecoderJob::DecodeInternal(
 }
 
 void MediaDecoderJob::OnDecodeCompleted(
-    MediaCodecStatus status, const base::TimeDelta& presentation_timestamp,
+    MediaCodecStatus status, base::TimeDelta presentation_timestamp,
     size_t audio_output_bytes) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -412,7 +434,7 @@ void MediaDecoderJob::OnDecodeCompleted(
     case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
     case MEDIA_CODEC_OUTPUT_END_OF_STREAM:
       if (!input_eos_encountered_)
-        access_unit_index_++;
+        access_unit_index_[current_demuxer_data_index_]++;
       break;
 
     case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
@@ -427,6 +449,56 @@ void MediaDecoderJob::OnDecodeCompleted(
   stop_decode_pending_ = false;
   base::ResetAndReturn(&decode_cb_).Run(status, presentation_timestamp,
                                         audio_output_bytes);
+}
+
+const AccessUnit& MediaDecoderJob::CurrentAccessUnit() const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(HasData());
+  int index = NoAccessUnitsRemainingInChunk(true) ?
+      inactive_demuxer_data_index() : current_demuxer_data_index_;
+  return received_data_[index].access_units[access_unit_index_[index]];
+}
+
+bool MediaDecoderJob::NoAccessUnitsRemainingInChunk(
+    bool is_active_chunk) const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  size_t index = is_active_chunk ? current_demuxer_data_index_ :
+      inactive_demuxer_data_index();
+  return received_data_[index].access_units.size() <= access_unit_index_[index];
+}
+
+void MediaDecoderJob::ClearData() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  current_demuxer_data_index_ = 0;
+  InitializeReceivedData();
+  on_data_received_cb_.Reset();
+  if (is_requesting_demuxer_data_)
+    is_incoming_data_invalid_ = true;
+  input_eos_encountered_ = false;
+}
+
+void MediaDecoderJob::RequestCurrentChunkIfEmpty() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(HasData());
+  if (!NoAccessUnitsRemainingInChunk(true))
+    return;
+
+  // Requests new data if the the last access unit of the next chunk is not EOS.
+  current_demuxer_data_index_ = inactive_demuxer_data_index();
+  const AccessUnit last_access_unit =
+      received_data_[current_demuxer_data_index_].access_units.back();
+  if (!last_access_unit.end_of_stream &&
+      last_access_unit.status != DemuxerStream::kConfigChanged &&
+      last_access_unit.status != DemuxerStream::kAborted) {
+    RequestData(base::Closure());
+  }
+}
+
+void MediaDecoderJob::InitializeReceivedData() {
+  for (size_t i = 0; i < 2; ++i) {
+    received_data_[i] = DemuxerData();
+    access_unit_index_[i] = 0;
+  }
 }
 
 }  // namespace media

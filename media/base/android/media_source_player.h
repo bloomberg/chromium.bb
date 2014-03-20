@@ -50,7 +50,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Pause(bool is_media_related_action ALLOW_UNUSED) OVERRIDE;
-  virtual void SeekTo(const base::TimeDelta& timestamp) OVERRIDE;
+  virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;
   virtual void Release() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE;
   virtual int GetVideoWidth() OVERRIDE;
@@ -70,14 +70,14 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) OVERRIDE;
   virtual void OnDemuxerDataAvailable(const DemuxerData& params) OVERRIDE;
   virtual void OnDemuxerSeekDone(
-      const base::TimeDelta& actual_browser_seek_time) OVERRIDE;
+      base::TimeDelta actual_browser_seek_time) OVERRIDE;
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) OVERRIDE;
 
  private:
   friend class MediaSourcePlayerTest;
 
   // Update the current timestamp.
-  void UpdateTimestamps(const base::TimeDelta& presentation_timestamp,
+  void UpdateTimestamps(base::TimeDelta presentation_timestamp,
                         size_t audio_output_bytes);
 
   // Helper function for starting media playback.
@@ -89,7 +89,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
         bool is_audio, MediaCodecStatus status,
-        const base::TimeDelta& presentation_timestamp,
+        base::TimeDelta presentation_timestamp,
         size_t audio_output_bytes);
 
   // Gets MediaCrypto object from |drm_bridge_|.
@@ -104,6 +104,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Helper method to clear any pending |SURFACE_CHANGE_EVENT_PENDING|
   // and reset |video_decoder_job_| to null.
   void ResetVideoDecoderJob();
+  void ResetAudioDecoderJob();
 
   // Helper methods to configure the decoder jobs.
   void ConfigureVideoDecoderJob();
@@ -135,13 +136,13 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // |presentation_timestamp| - The presentation timestamp used for starvation
   // timeout computations. It represents the timestamp of the last piece of
   // decoded data.
-  void StartStarvationCallback(const base::TimeDelta& presentation_timestamp);
+  void StartStarvationCallback(base::TimeDelta presentation_timestamp);
 
   // Schedules a seek event in |pending_events_| and calls StopDecode() on all
   // the MediaDecoderJobs. Sets clock to |seek_time|, and resets
   // |pending_seek_|. There must not already be a seek event in
   // |pending_events_|.
-  void ScheduleSeekEventAndStopDecoding(const base::TimeDelta& seek_time);
+  void ScheduleSeekEventAndStopDecoding(base::TimeDelta seek_time);
 
   // Schedules a browser seek event. We must not currently be processing any
   // seek. Note that there is possibility that browser seek of renderer demuxer
@@ -280,6 +281,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // Whether |surface_| is currently used by the player.
   bool is_surface_in_use_;
+
+  // Whether there are pending data requests by the decoder.
+  bool has_pending_audio_data_request_;
+  bool has_pending_video_data_request_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.

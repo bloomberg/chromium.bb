@@ -276,7 +276,7 @@ int MediaPlayerBridge::GetVideoHeight() {
       env, j_media_player_bridge_.obj());
 }
 
-void MediaPlayerBridge::SeekTo(const base::TimeDelta& timestamp) {
+void MediaPlayerBridge::SeekTo(base::TimeDelta timestamp) {
   // Record the time to seek when OnMediaPrepared() is called.
   pending_seek_ = timestamp;
 
