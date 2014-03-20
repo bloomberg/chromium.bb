@@ -38,7 +38,7 @@ private:
     bool requiresCompositingForAnimation(RenderObject*) const;
     bool requiresCompositingForTransition(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
-    bool requiresCompositingForPlugin(RenderObject*, bool* needToRecomputeCompositingRequirements) const;
+    bool requiresCompositingForPlugin(RenderObject*) const;
     bool requiresCompositingForFrame(RenderObject*) const;
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;

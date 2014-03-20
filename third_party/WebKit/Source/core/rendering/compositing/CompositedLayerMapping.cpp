@@ -139,7 +139,7 @@ static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* 
 static inline bool isAcceleratedContents(RenderObject* renderer)
 {
     return isAcceleratedCanvas(renderer)
-        || (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing())
+        || (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing())
         || renderer->isVideo();
 }
 
@@ -527,7 +527,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (isDirectlyCompositedImage())
         updateImageContents();
 
-    if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing()) {
+    if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing()) {
         PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
         m_graphicsLayer->setContentsToPlatformLayer(pluginView->platformLayer());
     } else if (renderer->node() && renderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(renderer->node())->contentFrame()) {
@@ -1541,7 +1541,7 @@ bool CompositedLayerMapping::paintsChildren() const
 
 static bool isCompositedPlugin(RenderObject* renderer)
 {
-    return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing();
+    return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing();
 }
 
 static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)

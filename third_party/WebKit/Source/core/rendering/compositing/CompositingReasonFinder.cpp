@@ -69,7 +69,7 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
 
     // Only zero or one of the following conditions will be true for a given RenderLayer.
     // FIXME: These should be handled by overrides of RenderObject::additionalCompositingReasons.
-    if (requiresCompositingForPlugin(renderer, needToRecomputeCompositingRequirements))
+    if (requiresCompositingForPlugin(renderer))
         directReasons |= CompositingReasonPlugin;
     else if (requiresCompositingForFrame(renderer))
         directReasons |= CompositingReasonIFrame;
@@ -131,25 +131,12 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
     return renderer->hasTransform() && style->transform().has3DOperation();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPlugin(RenderObject* renderer, bool* needToRecomputeCompositingRequirements) const
+bool CompositingReasonFinder::requiresCompositingForPlugin(RenderObject* renderer) const
 {
     if (!(m_compositingTriggers & PluginTrigger))
         return false;
 
-    if (!renderer->isEmbeddedObject() || !toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing())
-        return false;
-
-    // FIXME: this seems bogus. If we don't know the layout position/size of the plugin yet, would't that be handled elsewhere?
-    *needToRecomputeCompositingRequirements = true;
-
-    RenderWidget* pluginRenderer = toRenderWidget(renderer);
-    // If we can't reliably know the size of the plugin yet, don't change compositing state.
-    if (pluginRenderer->needsLayout())
-        return pluginRenderer->hasLayer() && pluginRenderer->layer()->hasCompositedLayerMapping();
-
-    // Don't go into compositing mode if height or width are zero, or size is 1x1.
-    IntRect contentBox = pixelSnappedIntRect(pluginRenderer->contentBoxRect());
-    return contentBox.height() * contentBox.width() > 1;
+    return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing();
 }
 
 bool CompositingReasonFinder::requiresCompositingForFrame(RenderObject* renderer) const

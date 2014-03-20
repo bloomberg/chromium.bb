@@ -71,12 +71,7 @@ LayerType RenderEmbeddedObject::layerTypeRequired() const
     if (type != NoLayer)
         return type;
 
-    return allowsAcceleratedCompositing() ? NormalLayer : NoLayer;
-}
-
-bool RenderEmbeddedObject::allowsAcceleratedCompositing() const
-{
-    return widget() && widget()->isPluginView() && toPluginView(widget())->platformLayer();
+    return requiresAcceleratedCompositing() ? NormalLayer : NoLayer;
 }
 
 static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
