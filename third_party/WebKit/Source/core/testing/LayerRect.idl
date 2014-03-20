@@ -30,7 +30,6 @@
 
 [
     WillBeGarbageCollected,
-    NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface LayerRect {
     readonly attribute Node layerRootNode;
     readonly attribute DOMString layerType;

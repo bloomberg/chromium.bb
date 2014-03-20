@@ -25,7 +25,6 @@
 
 [
     WillBeGarbageCollected,
-    NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface TypeConversions {
     attribute long testLong;
     [EnforceRange, ImplementedAs=testLong] attribute long testEnforceRangeLong;
