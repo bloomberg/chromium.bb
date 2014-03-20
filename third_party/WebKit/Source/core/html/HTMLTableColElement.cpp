@@ -64,7 +64,10 @@ void HTMLTableColElement::collectStyleForPresentationAttribute(const QualifiedNa
 void HTMLTableColElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == spanAttr) {
-        m_span = !value.isNull() ? value.toInt() : 1;
+        int newSpan = value.toInt();
+        // If the value of span is not a valid non-negative integer greater than zero,
+        // set it to 1.
+        m_span = newSpan ? newSpan : 1;
         if (renderer() && renderer()->isRenderTableCol())
             renderer()->updateFromElement();
     } else if (name == widthAttr) {
