@@ -47,9 +47,6 @@ class ContentBrowserTest : public BrowserTestBase {
   // For all other platforms, this is done automatically when calling into
   // ContentMain. For Android we set things up manually.
   scoped_ptr<ShellMainDelegate> shell_main_delegate_;
-
-  // ContentRendererClient when running in single-process mode.
-  scoped_ptr<ContentRendererClient> single_process_renderer_client_;
 #endif
 };
 

@@ -70,8 +70,13 @@ void ContentBrowserTest::SetUp() {
   shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    single_process_renderer_client_.reset(new ShellContentRendererClient());
-    SetRendererClientForTesting(single_process_renderer_client_.get());
+    // We explicitly leak the new ContentRendererClient as we're
+    // setting a global that may be used after ContentBrowserTest is
+    // destroyed.
+    ContentRendererClient* old_client =
+        SetRendererClientForTesting(new ShellContentRendererClient());
+    // No-one should have set this value before we did.
+    DCHECK(!old_client);
   }
 #elif defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().

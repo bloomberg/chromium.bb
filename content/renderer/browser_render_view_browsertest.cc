@@ -147,8 +147,11 @@ class RenderViewBrowserTest : public ContentBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Override setting of renderer client.
-    renderer_client_.reset(new TestShellContentRendererClient());
-    SetRendererClientForTesting(renderer_client_.get());
+    renderer_client_ = new TestShellContentRendererClient();
+    // Explicitly leaks ownership; this object will remain alive
+    // until process death.  We don't deleted the returned value,
+    // since some contexts set the pointer to a non-heap address.
+    SetRendererClientForTesting(renderer_client_);
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -176,7 +179,7 @@ class RenderViewBrowserTest : public ContentBrowserTest {
 
     PostTaskToInProcessRendererAndWait(
         base::Bind(&RenderViewBrowserTest::GetLatestErrorFromRendererClient0,
-                   renderer_client_.get(), &result, error_code,
+                   renderer_client_, &result, error_code,
                    stale_cache_entry_present));
     return result;
   }
@@ -190,18 +193,10 @@ class RenderViewBrowserTest : public ContentBrowserTest {
         error_code, stale_cache_entry_present);
   }
 
-  scoped_ptr<TestShellContentRendererClient> renderer_client_;
+  TestShellContentRendererClient* renderer_client_;
 };
 
-#if defined(OS_ANDROID)
-// Flaky https://crbug.com/341745
-#define MAYBE_ConfirmCacheInformationPlumbed DISABLED_ConfirmCacheInformationPlumbed
-#else
-#define MAYBE_ConfirmCacheInformationPlumbed ConfirmCacheInformationPlumbed
-#endif
-
-IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
-                       MAYBE_ConfirmCacheInformationPlumbed) {
+IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
   ASSERT_TRUE(test_server()->Start());
 
   // Load URL with "nocache" set, to create stale cache.
