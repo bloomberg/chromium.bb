@@ -34,7 +34,7 @@
             testDOMException("video.webkitCancelKeyRequest('webkit-org.w3.clearkey')", "DOMException.INVALID_STATE_ERR");
             run("video.canPlayType('audio/wav', 'webkit-org.w3.clearkey')");
 
-            video.setAttribute("src", findMediaFile("video", "../content/test"));
+            video.setAttribute("src", findMediaFile("video", "../../content/test"));
 
             consoleWrite("<br>'src' has been set, but loading has not yet started. Verify that all methods except canPlayType() throw INVALID_STATE_ERR.");
 
