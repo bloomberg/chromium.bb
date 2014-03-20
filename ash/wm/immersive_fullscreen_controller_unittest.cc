@@ -14,11 +14,11 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -76,14 +76,14 @@ class MockImmersiveFullscreenControllerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveFullscreenControllerDelegate);
 };
 
-class ConsumeEventHandler : public aura::test::TestEventHandler {
+class ConsumeEventHandler : public ui::test::TestEventHandler {
  public:
   ConsumeEventHandler() {}
   virtual ~ConsumeEventHandler() {}
 
  private:
   virtual void OnEvent(ui::Event* event) OVERRIDE {
-    aura::test::TestEventHandler::OnEvent(event);
+    ui::test::TestEventHandler::OnEvent(event);
     if (event->cancelable())
       event->SetHandled();
   }

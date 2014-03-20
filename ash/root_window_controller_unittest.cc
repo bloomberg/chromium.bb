@@ -20,12 +20,12 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -663,7 +663,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
 
-  aura::test::TestEventHandler* handler = new aura::test::TestEventHandler;
+  ui::test::TestEventHandler* handler = new ui::test::TestEventHandler;
   root_window->SetEventFilter(handler);
 
   aura::test::EventGenerator event_generator(root_window, keyboard_window);

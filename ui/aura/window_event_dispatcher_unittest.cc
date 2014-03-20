@@ -16,7 +16,6 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -28,6 +27,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -85,14 +85,14 @@ class NonClientDelegate : public test::TestWindowDelegate {
 };
 
 // A simple event handler that consumes key events.
-class ConsumeKeyHandler : public test::TestEventHandler {
+class ConsumeKeyHandler : public ui::test::TestEventHandler {
  public:
   ConsumeKeyHandler() {}
   virtual ~ConsumeKeyHandler() {}
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    test::TestEventHandler::OnKeyEvent(event);
+    ui::test::TestEventHandler::OnKeyEvent(event);
     event->StopPropagation();
   }
 
@@ -298,8 +298,8 @@ TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
   TestEventClient client(root_window());
   test::TestWindowDelegate d;
 
-  test::TestEventHandler* nonlock_ef = new test::TestEventHandler;
-  test::TestEventHandler* lock_ef = new test::TestEventHandler;
+  ui::test::TestEventHandler* nonlock_ef = new ui::test::TestEventHandler;
+  ui::test::TestEventHandler* lock_ef = new ui::test::TestEventHandler;
   client.GetNonLockWindow()->SetEventFilter(nonlock_ef);
   client.GetLockWindow()->SetEventFilter(lock_ef);
 
@@ -351,7 +351,7 @@ TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
 }
 
 TEST_F(WindowEventDispatcherTest, IgnoreUnknownKeys) {
-  test::TestEventHandler* filter = new ConsumeKeyHandler;
+  ui::test::TestEventHandler* filter = new ConsumeKeyHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
   ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
@@ -370,7 +370,7 @@ TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
   w1->Show();
   w1->Focus();
 
-  test::TestEventHandler handler;
+  ui::test::TestEventHandler handler;
   w1->AddPreTargetHandler(&handler);
   ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
   DispatchEventUsingWindowDispatcher(&key_press);
@@ -383,7 +383,7 @@ TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
 // Tests that touch-events that are beyond the bounds of the root-window do get
 // propagated to the event filters correctly with the root as the target.
 TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
-  test::TestEventHandler* filter = new test::TestEventHandler;
+  ui::test::TestEventHandler* filter = new ui::test::TestEventHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
   gfx::Point position = root_window()->bounds().origin();
@@ -403,7 +403,7 @@ TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
 // Tests that scroll events are dispatched correctly.
 TEST_F(WindowEventDispatcherTest, ScrollEventDispatch) {
   base::TimeDelta now = ui::EventTimeForNow();
-  test::TestEventHandler* filter = new test::TestEventHandler;
+  ui::test::TestEventHandler* filter = new ui::test::TestEventHandler;
   root_window()->SetEventFilter(filter);
 
   test::TestWindowDelegate delegate;
@@ -753,7 +753,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   EXPECT_TRUE(filter->events().empty());
 }
 
-class HoldPointerOnScrollHandler : public test::TestEventHandler {
+class HoldPointerOnScrollHandler : public ui::test::TestEventHandler {
  public:
   HoldPointerOnScrollHandler(WindowEventDispatcher* dispatcher,
                                   EventFilterRecorder* filter)
@@ -1592,14 +1592,14 @@ TEST_F(WindowEventDispatcherTest, CaptureWindowDestroyed) {
   EXPECT_EQ(NULL, capture_window_tracker.capture_window());
 }
 
-class ExitMessageLoopOnMousePress : public test::TestEventHandler {
+class ExitMessageLoopOnMousePress : public ui::test::TestEventHandler {
  public:
   ExitMessageLoopOnMousePress() {}
   virtual ~ExitMessageLoopOnMousePress() {}
 
  protected:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    test::TestEventHandler::OnMouseEvent(event);
+    ui::test::TestEventHandler::OnMouseEvent(event);
     if (event->type() == ui::ET_MOUSE_PRESSED)
       base::MessageLoopForUI::current()->Quit();
   }
@@ -1701,8 +1701,8 @@ TEST_F(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
       1234, gfx::Rect(20, 20, 100, 100), root_window()));
   child->Show();
 
-  test::TestEventHandler handler_child;
-  test::TestEventHandler handler_root;
+  ui::test::TestEventHandler handler_child;
+  ui::test::TestEventHandler handler_root;
   root_window()->AddPreTargetHandler(&handler_root);
   child->AddPreTargetHandler(&handler_child);
 

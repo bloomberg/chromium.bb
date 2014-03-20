@@ -23,7 +23,6 @@
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -33,6 +32,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -578,7 +578,7 @@ TEST_P(SystemGestureEventFilterTest,
   child->SetBounds(gfx::Rect(100, 100));
   child->Show();
 
-  aura::test::TestEventHandler event_handler;
+  ui::test::TestEventHandler event_handler;
   aura::Env::GetInstance()->PrependPreTargetHandler(&event_handler);
 
   GetEventGenerator().MoveMouseTo(0, 0);

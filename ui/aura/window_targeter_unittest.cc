@@ -6,9 +6,9 @@
 
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/events/test/test_event_handler.h"
 
 namespace aura {
 
@@ -64,7 +64,7 @@ TEST_F(WindowTargeterTest, Basic) {
 
   root_window()->Show();
 
-  test::TestEventHandler handler;
+  ui::test::TestEventHandler handler;
   one->AddPreTargetHandler(&handler);
 
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED,

@@ -169,8 +169,6 @@
         'test/event_generator.h',
         'test/test_cursor_client.cc',
         'test/test_cursor_client.h',
-        'test/test_event_handler.cc',
-        'test/test_event_handler.h',
         'test/test_focus_client.cc',
         'test/test_focus_client.h',
         'test/test_screen.cc',

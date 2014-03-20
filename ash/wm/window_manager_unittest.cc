@@ -15,7 +15,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
@@ -23,6 +22,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/input_method_event_filter.h"
@@ -57,7 +57,7 @@ base::TimeDelta getTime() {
 
 // A slightly changed TestEventHandler which can be configured to return a
 // specified value for key/mouse event handling.
-class CustomEventHandler : public aura::test::TestEventHandler {
+class CustomEventHandler : public ui::test::TestEventHandler {
  public:
   CustomEventHandler()
       : key_result_(ui::ER_UNHANDLED),
@@ -76,7 +76,7 @@ class CustomEventHandler : public aura::test::TestEventHandler {
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    aura::test::TestEventHandler::OnKeyEvent(event);
+    ui::test::TestEventHandler::OnKeyEvent(event);
     if (key_result_ & ui::ER_HANDLED)
       event->SetHandled();
     if (key_result_ & ui::ER_CONSUMED)
@@ -84,7 +84,7 @@ class CustomEventHandler : public aura::test::TestEventHandler {
   }
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    aura::test::TestEventHandler::OnMouseEvent(event);
+    ui::test::TestEventHandler::OnMouseEvent(event);
     if (mouse_result_ & ui::ER_HANDLED)
       event->SetHandled();
     if (mouse_result_ & ui::ER_CONSUMED)

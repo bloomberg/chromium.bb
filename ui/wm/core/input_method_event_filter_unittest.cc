@@ -9,9 +9,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)
@@ -54,7 +54,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   root_filter->AddHandler(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.
-  aura::test::TestEventHandler test_filter;
+  ui::test::TestEventHandler test_filter;
   root_filter->AddHandler(&test_filter);
 
   // We need an active window. Otherwise, the root window will not forward a key

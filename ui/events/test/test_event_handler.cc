@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test/test_event_handler.h"
+#include "ui/events/test/test_event_handler.h"
 
 #include "ui/events/event.h"
 
-namespace aura {
+namespace ui {
 namespace test {
 
 TestEventHandler::TestEventHandler()
@@ -27,26 +27,26 @@ void TestEventHandler::Reset() {
   num_gesture_events_ = 0;
 }
 
-void TestEventHandler::OnKeyEvent(ui::KeyEvent* event) {
+void TestEventHandler::OnKeyEvent(KeyEvent* event) {
   num_key_events_++;
   event->SetHandled();
 }
 
-void TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+void TestEventHandler::OnMouseEvent(MouseEvent* event) {
   num_mouse_events_++;
 }
 
-void TestEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
+void TestEventHandler::OnScrollEvent(ScrollEvent* event) {
   num_scroll_events_++;
 }
 
-void TestEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+void TestEventHandler::OnTouchEvent(TouchEvent* event) {
   num_touch_events_++;
 }
 
-void TestEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void TestEventHandler::OnGestureEvent(GestureEvent* event) {
   num_gesture_events_++;
 }
 
 }  // namespace test
-}  // namespace aura
+}  // namespace ui

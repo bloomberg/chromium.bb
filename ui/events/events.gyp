@@ -233,6 +233,8 @@
         'test/events_test_utils.h',
         'test/events_test_utils_x11.cc',
         'test/events_test_utils_x11.h',
+        'test/test_event_handler.cc',
+        'test/test_event_handler.h',
         'test/test_event_processor.cc',
         'test/test_event_processor.h',
         'test/test_event_target.cc',
