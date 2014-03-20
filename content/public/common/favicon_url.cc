@@ -10,10 +10,10 @@ FaviconURL::FaviconURL()
   : icon_type(INVALID_ICON) {
 }
 
-FaviconURL::FaviconURL(const GURL& url, IconType type)
-    : icon_url(url),
-      icon_type(type) {
-}
+FaviconURL::FaviconURL(const GURL& url,
+                       IconType type,
+                       const std::vector<gfx::Size>& sizes)
+    : icon_url(url), icon_type(type), icon_sizes(sizes) {}
 
 FaviconURL::~FaviconURL() {
 }

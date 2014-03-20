@@ -515,6 +515,13 @@ static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   return FaviconURL::INVALID_ICON;
 }
 
+static void ConvertToFaviconSizes(
+    const blink::WebVector<blink::WebSize>& web_sizes,
+    std::vector<gfx::Size>* sizes) {
+  for (size_t i = 0; i < web_sizes.size(); ++i)
+    sizes->push_back(gfx::Size(web_sizes[i]));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -2736,8 +2743,10 @@ void RenderViewImpl::didChangeIcon(WebFrame* frame,
   WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
   std::vector<FaviconURL> urls;
   for (size_t i = 0; i < icon_urls.size(); i++) {
-    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
-                              ToFaviconType(icon_urls[i].iconType())));
+    std::vector<gfx::Size> sizes(icon_urls[i].sizes().size());
+    ConvertToFaviconSizes(icon_urls[i].sizes(), &sizes);
+    urls.push_back(FaviconURL(
+        icon_urls[i].iconURL(), ToFaviconType(icon_urls[i].iconType()), sizes));
   }
   SendUpdateFaviconURL(urls);
 }
@@ -5115,9 +5124,11 @@ void RenderViewImpl::DidStopLoadingIcons() {
   std::vector<FaviconURL> urls;
   for (size_t i = 0; i < icon_urls.size(); i++) {
     WebURL url = icon_urls[i].iconURL();
+    std::vector<gfx::Size> sizes(icon_urls[i].sizes().size());
+    ConvertToFaviconSizes(icon_urls[i].sizes(), &sizes);
     if (!url.isEmpty())
-      urls.push_back(FaviconURL(url,
-                                ToFaviconType(icon_urls[i].iconType())));
+      urls.push_back(
+          FaviconURL(url, ToFaviconType(icon_urls[i].iconType()), sizes));
   }
   SendUpdateFaviconURL(urls);
 }

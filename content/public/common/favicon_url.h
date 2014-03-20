@@ -5,7 +5,10 @@
 #ifndef CONTENT_PUBLIC_COMMON_FAVICON_URL_
 #define CONTENT_PUBLIC_COMMON_FAVICON_URL_
 
+#include <vector>
+
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -21,7 +24,9 @@ struct CONTENT_EXPORT FaviconURL {
   };
 
   FaviconURL();
-  FaviconURL(const GURL& url, IconType type);
+  FaviconURL(const GURL& url,
+             IconType type,
+             const std::vector<gfx::Size>& sizes);
   ~FaviconURL();
 
   // The url of the icon.
@@ -29,6 +34,9 @@ struct CONTENT_EXPORT FaviconURL {
 
   // The type of the icon
   IconType icon_type;
+
+  // Icon's bitmaps' size
+  std::vector<gfx::Size> icon_sizes;
 };
 
 } // namespace content
