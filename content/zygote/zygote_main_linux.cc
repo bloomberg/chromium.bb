@@ -179,6 +179,17 @@ static void InitLibcLocaltimeFunctions() {
     g_libc_localtime64_r = g_libc_localtime_r;
 }
 
+#if defined(MEMORY_SANITIZER)
+void msan_unpoison_string(const char *s) {
+  if (!s) return;
+  // Can't call strlen() on an uninitialized string. Instead, unpoison byte by
+  // byte until the string is over.
+  do {
+    __msan_unpoison(s, sizeof(*s));
+  } while(*(s++));
+}
+#endif
+
 // Define localtime_override() function with asm name "localtime", so that all
 // references to localtime() will resolve to this function. Notice that we need
 // to set visibility attribute to "default" to export the symbol, as it is set
@@ -200,6 +211,7 @@ struct tm* localtime_override(const time_t* timep) {
     struct tm* res = g_libc_localtime(timep);
 #if defined(MEMORY_SANITIZER)
     if (res) __msan_unpoison(res, sizeof(*res));
+    if (res->tm_zone) msan_unpoison_string(res->tm_zone);
 #endif
     return res;
   }
@@ -223,6 +235,7 @@ struct tm* localtime64_override(const time_t* timep) {
     struct tm* res = g_libc_localtime64(timep);
 #if defined(MEMORY_SANITIZER)
     if (res) __msan_unpoison(res, sizeof(*res));
+    if (res->tm_zone) msan_unpoison_string(res->tm_zone);
 #endif
     return res;
   }
@@ -243,6 +256,7 @@ struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
     struct tm* res = g_libc_localtime_r(timep, result);
 #if defined(MEMORY_SANITIZER)
     if (res) __msan_unpoison(res, sizeof(*res));
+    if (res->tm_zone) msan_unpoison_string(res->tm_zone);
 #endif
     return res;
   }
@@ -263,6 +277,7 @@ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
     struct tm* res = g_libc_localtime64_r(timep, result);
 #if defined(MEMORY_SANITIZER)
     if (res) __msan_unpoison(res, sizeof(*res));
+    if (res->tm_zone) msan_unpoison_string(res->tm_zone);
 #endif
     return res;
   }
