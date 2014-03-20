@@ -11,7 +11,7 @@ class WebRTC(page_measurement.PageMeasurement):
   """Gathers WebRTC-related metrics on a page set."""
 
   def __init__(self):
-    super(WebRTC, self).__init__('webrtc')
+    super(WebRTC, self).__init__('RunWebrtc')
     self._cpu_metric = None
     self._memory_metric = None
 
