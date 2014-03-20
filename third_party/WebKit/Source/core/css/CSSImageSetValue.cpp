@@ -106,7 +106,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
             FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css, options);
 
             if (options.corsEnabled == IsCORSEnabled)
-                request.setCrossOriginAccessControl(loader->document()->securityOrigin(), options.allowCredentials, options.credentialsRequested);
+                request.setCrossOriginAccessControl(loader->document()->securityOrigin(), options.allowCredentials);
 
             if (ResourcePtr<ImageResource> cachedImage = loader->fetchImage(request)) {
                 m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);

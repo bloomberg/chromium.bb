@@ -87,10 +87,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
         return child;
     }
 
-    bool sameOriginRequest = securityOrigin()->canRequest(request.url());
-    request.setCrossOriginAccessControl(
-        securityOrigin(), sameOriginRequest ? AllowStoredCredentials : DoNotAllowStoredCredentials,
-        ClientDidNotRequestCredentials);
+    request.setCrossOriginAccessControl(securityOrigin(), DoNotAllowStoredCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
         return 0;

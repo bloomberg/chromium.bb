@@ -692,8 +692,10 @@ void LinkStyle::process()
         // Load stylesheets that are not needed for the rendering immediately with low priority.
         FetchRequest request = builder.build(blocking);
         AtomicString crossOriginMode = m_owner->fastGetAttribute(HTMLNames::crossoriginAttr);
-        if (!crossOriginMode.isNull())
-            request.setCrossOriginAccessControl(document().securityOrigin(), crossOriginMode);
+        if (!crossOriginMode.isNull()) {
+            StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+            request.setCrossOriginAccessControl(document().securityOrigin(), allowCredentials);
+        }
         setResource(document().fetcher()->fetchCSSStyleSheet(request));
 
         if (!resource()) {
