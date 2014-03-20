@@ -52,6 +52,112 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
 });
 
 /**
+ * Server Request Tests
+ */
+TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestSuccess', function() {
+  expectServerRequests(this, 200, '{}');
+  var callbackCalled = false;
+  requestFromServer('GET', 'test/target').then(function(request) {
+    callbackCalled = true;
+    assertTrue(request.status === 200);
+    assertTrue(request.responseText === '{}');
+  });
+  assertTrue(callbackCalled);
+});
+
+TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestForbidden', function() {
+  this.makeAndRegisterMockApis(['authenticationManager.removeToken']);
+  this.mockApis.expects(once()).authenticationManager_removeToken(ANYTHING);
+
+  expectServerRequests(this, 403, '');
+
+  var callbackCalled = false;
+  requestFromServer('GET', 'test/target').then(function(request) {
+    // The promise is resolved even on HTTP failures.
+    callbackCalled = true;
+    assertTrue(request.status === 403);
+  });
+  assertTrue(callbackCalled);
+});
+
+TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestNoAuth', function() {
+  this.makeAndRegisterMockApis(['authenticationManager.removeToken']);
+  this.mockApis.expects(once()).authenticationManager_removeToken(ANYTHING);
+
+  expectServerRequests(this, 401, '');
+
+  var callbackCalled = false;
+  requestFromServer('GET', 'test/target').then(function(request) {
+    // The promise is resolved even on HTTP failures.
+    callbackCalled = true;
+    assertTrue(request.status === 401);
+  });
+  assertTrue(callbackCalled);
+});
+
+function expectServerRequests(fixture, httpStatus, responseText) {
+  fixture.makeAndRegisterMockApis([
+    'authenticationManager.getAuthToken',
+    'buildServerRequest'
+  ]);
+
+  function XMLHttpRequest() {}
+
+  XMLHttpRequest.prototype = {
+    addEventListener: function(type, listener, wantsUntrusted) {},
+    setRequestHeader: function(header, value) {},
+    send: function() {}
+  }
+
+  fixture.mockApis.expects(once()).authenticationManager_getAuthToken()
+      .will(returnValue(Promise.resolve('token')));
+
+  var mockXMLHttpRequest = mock(XMLHttpRequest);
+  var mockXMLHttpRequestProxy = mockXMLHttpRequest.proxy();
+  fixture.mockApis.expects(once())
+      .buildServerRequest(ANYTHING, ANYTHING, ANYTHING)
+      .will(returnValue(mockXMLHttpRequestProxy));
+
+  mockXMLHttpRequest.expects(once())
+      .setRequestHeader('Authorization', 'Bearer token');
+
+  var loadEndSavedArgs = new SaveMockArguments();
+  mockXMLHttpRequest.expects(once())
+      .addEventListener(
+          loadEndSavedArgs.match(eq('loadend')),
+          loadEndSavedArgs.match(ANYTHING),
+          loadEndSavedArgs.match(eq(false)));
+
+  mockXMLHttpRequestProxy.status = httpStatus;
+  mockXMLHttpRequestProxy.response = responseText;
+  mockXMLHttpRequestProxy.responseText = responseText;
+
+  mockXMLHttpRequest.expects(once()).send()
+      .will(invokeCallback(loadEndSavedArgs, 1, mockXMLHttpRequestProxy));
+}
+
+TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestNoToken', function() {
+  this.makeAndRegisterMockApis([
+    'authenticationManager.getAuthToken',
+    'buildServerRequest'
+  ]);
+
+  this.mockApis.expects(once()).authenticationManager_getAuthToken()
+      .will(returnValue(Promise.reject()));
+  this.mockApis.expects(never()).buildServerRequest()
+
+  var thenCalled = false;
+  var catchCalled = false;
+  requestFromServer('GET', 'test/target').then(function(request) {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
+})
+
+/**
  * Mocks global functions and APIs that initialize() depends upon.
  * @param {Test} fixture Test fixture.
  */
