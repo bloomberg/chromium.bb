@@ -24,8 +24,8 @@ class MessageLoopForIO;
 namespace mojo {
 namespace system {
 
-// |RawChannel| is an interface to objects that wrap an OS "pipe". It presents
-// the following interface to users:
+// |RawChannel| is an interface and base class for objects that wrap an OS
+// "pipe". It presents the following interface to users:
 //  - Receives and dispatches messages on an I/O thread (running a
 //    |MessageLoopForIO|.
 //  - Provides a thread-safe way of writing messages (|WriteMessage()|);
