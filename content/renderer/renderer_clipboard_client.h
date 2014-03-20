@@ -38,8 +38,6 @@ class RendererClipboardClient : public ClipboardClient {
   virtual void ReadCustomData(ui::ClipboardType clipboard_type,
                               const base::string16& type,
                               base::string16* data) OVERRIDE;
-  virtual void ReadData(const ui::Clipboard::FormatType& format,
-                        std::string* data) OVERRIDE;
   virtual WriteContext* CreateWriteContext() OVERRIDE;
 };
 

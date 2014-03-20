@@ -173,12 +173,6 @@ void RendererClipboardClient::ReadCustomData(ui::ClipboardType clipboard_type,
       new ClipboardHostMsg_ReadCustomData(clipboard_type, type, data));
 }
 
-void RendererClipboardClient::ReadData(const ui::Clipboard::FormatType& format,
-                                       std::string* data) {
-  RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadData(format, data));
-}
-
 ClipboardClient::WriteContext* RendererClipboardClient::CreateWriteContext() {
   return new RendererClipboardWriteContext;
 }

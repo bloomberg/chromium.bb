@@ -103,7 +103,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadRTF, OnReadRTF)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadCustomData, OnReadCustomData)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadData, OnReadData)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
@@ -257,11 +256,6 @@ void ClipboardMessageFilter::OnReadCustomData(ui::ClipboardType clipboard_type,
                                               const base::string16& type,
                                               base::string16* result) {
   GetClipboard()->ReadCustomData(clipboard_type, type, result);
-}
-
-void ClipboardMessageFilter::OnReadData(const ui::Clipboard::FormatType& format,
-                                        std::string* data) {
-  GetClipboard()->ReadData(format, data);
 }
 
 // static
