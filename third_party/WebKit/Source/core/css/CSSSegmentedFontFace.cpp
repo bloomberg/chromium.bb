@@ -72,17 +72,6 @@ bool CSSSegmentedFontFace::isValid() const
 void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 {
     pruneTable();
-
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && !isLoading()) {
-        Vector<RefPtr<LoadFontCallback> > callbacks;
-        m_callbacks.swap(callbacks);
-        for (size_t index = 0; index < callbacks.size(); ++index) {
-            if (isLoaded())
-                callbacks[index]->notifyLoaded(this);
-            else
-                callbacks[index]->notifyError(this);
-        }
-    }
 }
 
 void CSSSegmentedFontFace::fontLoadWaitLimitExceeded(CSSFontFace*)
@@ -208,20 +197,11 @@ bool CSSSegmentedFontFace::checkFont(const String& text) const
     return true;
 }
 
-void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, const String& text, PassRefPtr<LoadFontCallback> callback)
+void CSSSegmentedFontFace::match(const String& text, Vector<RefPtr<FontFace> >& faces) const
 {
-    for (FontFaceList::iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it) {
-        if ((*it)->loadStatus() == FontFace::Unloaded && (*it)->cssFontFace()->ranges().intersectsWith(text))
-            (*it)->cssFontFace()->load(fontDescription);
-    }
-
-    if (callback) {
-        if (isLoading())
-            m_callbacks.append(callback);
-        else if (isLoaded())
-            callback->notifyLoaded(this);
-        else
-            callback->notifyError(this);
+    for (FontFaceList::const_iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it) {
+        if ((*it)->cssFontFace()->ranges().intersectsWith(text))
+            faces.append(*it);
     }
 }
 

@@ -378,8 +378,18 @@ void FontFace::setLoadStatus(LoadStatus status)
     m_status = status;
     if (m_status == Error)
         m_error = DOMError::create(NetworkError);
-    if (m_status == Loaded || m_status == Error)
+    if (m_status == Loaded || m_status == Error) {
         resolveReadyPromises();
+
+        Vector<RefPtr<LoadFontCallback> > callbacks;
+        m_callbacks.swap(callbacks);
+        for (size_t i = 0; i < callbacks.size(); ++i) {
+            if (m_status == Loaded)
+                callbacks[i]->notifyLoaded(this);
+            else
+                callbacks[i]->notifyError(this);
+        }
+    }
 }
 
 ScriptPromise FontFace::load(ExecutionContext* context)
@@ -391,18 +401,35 @@ ScriptPromise FontFace::load(ExecutionContext* context)
     else
         m_readyResolvers.append(resolver.release());
 
-    if (m_status == Unloaded) {
-        FontDescription fontDescription;
-        FontFamily fontFamily;
-        fontFamily.setFamily(m_family);
-        fontDescription.setFamily(fontFamily);
-        fontDescription.setTraits(traits());
-
-        CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
-        m_cssFontFace->load(fontDescription, fontSelector);
-        fontSelector->loadPendingFonts();
-    }
+    loadInternal(context);
     return promise;
+}
+
+void FontFace::loadWithCallback(PassRefPtr<LoadFontCallback> callback, ExecutionContext* context)
+{
+    loadInternal(context);
+    if (m_status == Loaded)
+        callback->notifyLoaded(this);
+    else if (m_status == Error)
+        callback->notifyError(this);
+    else
+        m_callbacks.append(callback);
+}
+
+void FontFace::loadInternal(ExecutionContext* context)
+{
+    if (m_status != Unloaded)
+        return;
+
+    FontDescription fontDescription;
+    FontFamily fontFamily;
+    fontFamily.setFamily(m_family);
+    fontDescription.setFamily(fontFamily);
+    fontDescription.setTraits(traits());
+
+    CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
+    m_cssFontFace->load(fontDescription, fontSelector);
+    fontSelector->loadPendingFonts();
 }
 
 void FontFace::resolveReadyPromises()

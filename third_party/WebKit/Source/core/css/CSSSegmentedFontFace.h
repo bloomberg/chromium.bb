@@ -63,15 +63,8 @@ public:
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
 
-    class LoadFontCallback : public RefCounted<LoadFontCallback> {
-    public:
-        virtual ~LoadFontCallback() { }
-        virtual void notifyLoaded(CSSSegmentedFontFace*) = 0;
-        virtual void notifyError(CSSSegmentedFontFace*) = 0;
-    };
-
     bool checkFont(const String&) const;
-    void loadFont(const FontDescription&, const String&, PassRefPtr<LoadFontCallback>);
+    void match(const String&, Vector<RefPtr<FontFace> >&) const;
     void willUseFontData(const FontDescription&);
 
 private:
@@ -90,7 +83,6 @@ private:
     // All non-CSS-connected FontFaces are stored after the CSS-connected ones.
     FontFaceList m_fontFaces;
     FontFaceList::iterator m_firstNonCssConnectedFace;
-    Vector<RefPtr<LoadFontCallback> > m_callbacks;
 };
 
 } // namespace WebCore

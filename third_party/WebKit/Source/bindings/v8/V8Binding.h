@@ -292,6 +292,17 @@ v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8:
     return result;
 }
 
+template<typename T, size_t inlineCapacity>
+v8::Handle<v8::Value> v8ArrayNoInline(const Vector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+{
+    v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
+    int index = 0;
+    typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
+    for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
+        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), v8::Handle<v8::Object>(), isolate));
+    return result;
+}
+
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
     NormalConversion,

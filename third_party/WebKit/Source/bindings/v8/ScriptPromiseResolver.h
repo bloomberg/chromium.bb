@@ -120,6 +120,11 @@ public:
     template<typename T>
     inline void reject(T* value);
 
+    template<typename T, size_t inlineCapacity>
+    void resolve(const Vector<T, inlineCapacity>& iterator) { resolve(v8ArrayNoInline(iterator, m_isolate)); }
+    template<typename T, size_t inlineCapacity>
+    void reject(const Vector<T, inlineCapacity>& iterator) { reject(v8ArrayNoInline(iterator, m_isolate)); }
+
     template<typename T>
     void resolve(PassRefPtr<T> value) { resolve(value.get()); }
     template<typename T>

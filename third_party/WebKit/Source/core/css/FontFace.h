@@ -93,6 +93,14 @@ public:
 
     bool hadBlankText() const;
 
+    class LoadFontCallback : public RefCounted<LoadFontCallback> {
+    public:
+        virtual ~LoadFontCallback() { }
+        virtual void notifyLoaded(FontFace*) = 0;
+        virtual void notifyError(FontFace*) = 0;
+    };
+    void loadWithCallback(PassRefPtr<LoadFontCallback>, ExecutionContext*);
+
 private:
     FontFace();
 
@@ -103,6 +111,7 @@ private:
     bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
     void resolveReadyPromises();
+    void loadInternal(ExecutionContext*);
 
     AtomicString m_family;
     RefPtrWillBeMember<CSSValue> m_src;
@@ -117,6 +126,7 @@ private:
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
     OwnPtr<CSSFontFace> m_cssFontFace;
+    Vector<RefPtr<LoadFontCallback> > m_callbacks;
 };
 
 typedef Vector<RefPtr<FontFace> > FontFaceArray;

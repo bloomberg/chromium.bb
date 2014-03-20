@@ -49,54 +49,65 @@ namespace WebCore {
 static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
 
-class LoadFontPromiseResolver : public CSSSegmentedFontFace::LoadFontCallback {
+class LoadFontPromiseResolver : public FontFace::LoadFontCallback {
 public:
-    static PassRefPtr<LoadFontPromiseResolver> create(const FontFamily& family, ExecutionContext* context)
+    static PassRefPtr<LoadFontPromiseResolver> create(FontFaceArray faces, ExecutionContext* context)
     {
-        int numFamilies = 0;
-        for (const FontFamily* f = &family; f; f = f->next())
-            numFamilies++;
-        return adoptRef<LoadFontPromiseResolver>(new LoadFontPromiseResolver(numFamilies, context));
+        return adoptRef(new LoadFontPromiseResolver(faces, context));
     }
 
+    void loadFonts(ExecutionContext*);
     ScriptPromise promise() { return m_resolver->promise(); }
 
-    virtual void notifyLoaded(CSSSegmentedFontFace*) OVERRIDE { loaded(); }
-    virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE { error(); }
-    void loaded();
-    void error();
+    virtual void notifyLoaded(FontFace*) OVERRIDE;
+    virtual void notifyError(FontFace*) OVERRIDE;
 
 private:
-    LoadFontPromiseResolver(int numLoading, ExecutionContext* context)
-        : m_numLoading(numLoading)
+    LoadFontPromiseResolver(FontFaceArray faces, ExecutionContext* context)
+        : m_numLoading(faces.size())
         , m_errorOccured(false)
         , m_scriptState(ScriptState::current())
         , m_resolver(ScriptPromiseResolver::create(context))
-    { }
+    {
+        m_fontFaces.swap(faces);
+    }
 
+    FontFaceArray m_fontFaces;
     int m_numLoading;
     bool m_errorOccured;
     ScriptState* m_scriptState;
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-void LoadFontPromiseResolver::loaded()
+void LoadFontPromiseResolver::loadFonts(ExecutionContext* context)
+{
+    if (!m_numLoading) {
+        m_resolver->resolve(m_fontFaces);
+        return;
+    }
+
+    for (size_t i = 0; i < m_fontFaces.size(); i++)
+        m_fontFaces[i]->loadWithCallback(this, context);
+}
+
+void LoadFontPromiseResolver::notifyLoaded(FontFace* fontFace)
 {
     m_numLoading--;
-    if (m_numLoading)
+    if (m_numLoading || m_errorOccured)
         return;
 
     ScriptScope scope(m_scriptState);
-    if (m_errorOccured)
-        m_resolver->reject(ScriptValue::createNull());
-    else
-        m_resolver->resolve(ScriptValue::createNull());
+    m_resolver->resolve(m_fontFaces);
 }
 
-void LoadFontPromiseResolver::error()
+void LoadFontPromiseResolver::notifyError(FontFace* fontFace)
 {
-    m_errorOccured = true;
-    loaded();
+    m_numLoading--;
+    if (!m_errorOccured) {
+        m_errorOccured = true;
+        ScriptScope scope(m_scriptState);
+        m_resolver->reject(fontFace->error());
+    }
 }
 
 class FontsReadyPromiseResolver {
@@ -423,30 +434,30 @@ static const String& nullToSpace(const String& s)
     return s.isNull() ? space : s;
 }
 
-ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& exceptionState)
+ScriptPromise FontFaceSet::load(const String& fontString, const String& text)
 {
     if (!inActiveDocumentContext())
         return ScriptPromise();
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
-        return ScriptPromise();
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext());
+        ScriptPromise promise = resolver->promise();
+        resolver->reject(DOMError::create(SyntaxError, "Could not resolve '" + fontString + "' as a font."));
+        return promise;
     }
 
-    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
-    FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
-    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), executionContext());
-    ScriptPromise promise = resolver->promise();
+    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceArray faces;
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
-        if (!face) {
-            resolver->error();
-            continue;
-        }
-        face->loadFont(font.fontDescription(), nullToSpace(text), resolver);
+        CSSSegmentedFontFace* segmentedFontFace = fontFaceCache->get(font.fontDescription(), f->family());
+        if (segmentedFontFace)
+            segmentedFontFace->match(nullToSpace(text), faces);
     }
-    fontSelector->loadPendingFonts();
+
+    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, executionContext());
+    ScriptPromise promise = resolver->promise();
+    resolver->loadFonts(executionContext()); // After this, resolver->promise() may return null.
     return promise;
 }
 
