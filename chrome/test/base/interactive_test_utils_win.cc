@@ -16,7 +16,7 @@
 #if defined(USE_AURA)
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/interactive_test_utils_aura.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 namespace ui_test_utils {

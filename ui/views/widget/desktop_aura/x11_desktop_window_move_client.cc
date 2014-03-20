@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
@@ -41,7 +41,7 @@ namespace views {
 
 X11DesktopWindowMoveClient::X11DesktopWindowMoveClient()
     : move_loop_(this),
-      dispatcher_(NULL) {
+      host_(NULL) {
 }
 
 X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() {}
@@ -50,7 +50,7 @@ void X11DesktopWindowMoveClient::OnMouseMovement(XMotionEvent* event) {
   gfx::Point cursor_point(event->x_root, event->y_root);
   gfx::Point system_loc = cursor_point - window_offset_;
 
-  gfx::Rect target_rect(system_loc, dispatcher_->host()->GetBounds().size());
+  gfx::Rect target_rect(system_loc, host_->GetBounds().size());
 
   window_move_timer_.Start(
       FROM_HERE,
@@ -65,7 +65,7 @@ void X11DesktopWindowMoveClient::OnMouseReleased() {
 }
 
 void X11DesktopWindowMoveClient::OnMoveLoopEnded() {
-  dispatcher_ = NULL;
+  host_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,10 +76,9 @@ aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     aura::client::WindowMoveSource move_source) {
   window_offset_ = drag_offset;
-  dispatcher_ = source->GetHost()->dispatcher();
+  host_ = source->GetHost();
 
-  bool success = move_loop_.RunMoveLoop(source,
-                                        dispatcher_->host()->last_cursor());
+  bool success = move_loop_.RunMoveLoop(source, host_->last_cursor());
   return success ? aura::client::MOVE_SUCCESSFUL : aura::client::MOVE_CANCELED;
 }
 
@@ -92,7 +91,7 @@ void X11DesktopWindowMoveClient::EndMoveLoop() {
 // DesktopWindowTreeHostLinux, private:
 
 void X11DesktopWindowMoveClient::SetHostBounds(const gfx::Rect& rect) {
-  dispatcher_->host()->SetBounds(rect);
+  host_->SetBounds(rect);
 }
 
 }  // namespace views

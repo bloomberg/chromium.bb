@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"

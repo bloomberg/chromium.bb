@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace ash {

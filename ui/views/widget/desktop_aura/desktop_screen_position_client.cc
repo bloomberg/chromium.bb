@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"

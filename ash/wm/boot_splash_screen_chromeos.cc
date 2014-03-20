@@ -6,7 +6,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"

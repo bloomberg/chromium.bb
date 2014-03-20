@@ -62,6 +62,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -748,7 +749,7 @@ scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
     bool defer_compositor_lock) {
   gfx::Size desired_size = window_->bounds().size();
   return scoped_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetHost()->dispatcher(),
+      window_->GetHost(),
       desired_size,
       defer_compositor_lock,
       base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));

@@ -13,7 +13,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"

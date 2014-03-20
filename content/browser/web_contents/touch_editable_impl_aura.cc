@@ -15,7 +15,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/range/range.h"

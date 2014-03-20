@@ -25,7 +25,7 @@
 #if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 namespace {

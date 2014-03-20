@@ -16,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 // Window resizes are not completed by the time the callback happens,

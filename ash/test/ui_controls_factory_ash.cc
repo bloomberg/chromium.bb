@@ -10,8 +10,8 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/gfx/screen.h"
@@ -35,7 +35,7 @@ UIControlsAura* GetUIControlsForRootWindow(aura::Window* root_window) {
       root_window->GetProperty(kUIControlsKey);
   if (!native_ui_control) {
     native_ui_control =
-        aura::test::CreateUIControlsAura(root_window->GetHost()->dispatcher());
+        aura::test::CreateUIControlsAura(root_window->GetHost());
     // Pass the ownership to the |root_window|.
     root_window->SetProperty(kUIControlsKey, native_ui_control);
   }

@@ -27,7 +27,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/display.h"

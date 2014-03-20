@@ -6,9 +6,10 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/screen.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/layout/fill_layout.h"

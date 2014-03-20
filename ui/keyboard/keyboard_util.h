@@ -15,7 +15,7 @@
 struct GritResourceMap;
 
 namespace aura {
-class WindowEventDispatcher;
+class WindowTreeHost;
 }
 
 class GURL;
@@ -64,7 +64,7 @@ KEYBOARD_EXPORT bool InsertText(const base::string16& text,
 // successfully moved according to |swipe_direction|.
 KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
                                 int modifier_flags,
-                                aura::WindowEventDispatcher* dispatcher);
+                                aura::WindowTreeHost* host);
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
@@ -77,7 +77,7 @@ KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                    int key_code,
                                    std::string key_name,
                                    int modifiers,
-                                   aura::WindowEventDispatcher* dispatcher);
+                                   aura::WindowTreeHost* host);
 
 // Marks that the keyboard load has started. This is used to measure the time it
 // takes to fully load the keyboard. This should be called before

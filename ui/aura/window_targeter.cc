@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event_target.h"
 
 namespace aura {
@@ -56,7 +57,7 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
       // from here. Instead, dispatch the event through the
       // WindowEventDispatcher that owns |target|.
       ui::EventDispatchDetails details ALLOW_UNUSED =
-          target->GetHost()->dispatcher()->OnEventFromSource(event);
+          target->GetHost()->event_processor()->OnEventFromSource(event);
       target = NULL;
     }
   }

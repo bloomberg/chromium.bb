@@ -299,9 +299,17 @@ void WindowEventDispatcher::OnCursorMovedToRootLocation(
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, private:
 
+Window* WindowEventDispatcher::window() {
+  return host_->window();
+}
+
+const Window* WindowEventDispatcher::window() const {
+  return host_->window();
+}
+
 void WindowEventDispatcher::TransformEventForDeviceScaleFactor(
     ui::LocatedEvent* event) {
-  event->UpdateForRootTransform(host()->GetInverseRootTransform());
+  event->UpdateForRootTransform(host_->GetInverseRootTransform());
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
@@ -637,7 +645,7 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
   if (!window()->bounds().Contains(root_mouse_location))
     return details;
   gfx::Point host_mouse_location = root_mouse_location;
-  host()->ConvertPointToHost(&host_mouse_location);
+  host_->ConvertPointToHost(&host_mouse_location);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED,
                        host_mouse_location,
                        host_mouse_location,

@@ -18,6 +18,7 @@
 #if defined(USE_ASH)
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
@@ -61,7 +62,7 @@ bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
   return keyboard::MoveCursor(
       swipe_direction,
       modifier_flags,
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher());
+      ash::Shell::GetPrimaryRootWindow()->GetHost());
 #else
   error_ = kNotYetImplementedError;
   return false;
@@ -93,7 +94,7 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
       key_code,
       key_name,
       modifiers,
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher());
+      ash::Shell::GetPrimaryRootWindow()->GetHost());
 #else
   error_ = kNotYetImplementedError;
   return false;

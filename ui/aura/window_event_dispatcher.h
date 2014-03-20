@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_processor.h"
@@ -43,6 +42,7 @@ namespace aura {
 class RootWindowObserver;
 class TestScreen;
 class WindowTargeter;
+class WindowTreeHost;
 
 // WindowEventDispatcher orchestrates event dispatch within a window tree
 // owned by WindowTreeHost. WTH also owns the WED.
@@ -55,13 +55,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   explicit WindowEventDispatcher(WindowTreeHost* host);
   virtual ~WindowEventDispatcher();
 
-  Window* window() { return host()->window(); }
-  const Window* window() const { return host()->window(); }
-  WindowTreeHost* host() {
-    return const_cast<WindowTreeHost*>(
-        const_cast<const WindowEventDispatcher*>(this)->host());
-  }
-  const WindowTreeHost* host() const { return host_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
 
@@ -149,6 +142,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
     WINDOW_MOVING,     // Window is temporarily marked as hidden due to move
                        // across root windows.
   };
+
+  Window* window();
+  const Window* window() const;
 
   // Updates the event with the appropriate transform for the device scale
   // factor. The WindowEventDispatcher dispatches events in the physical pixel

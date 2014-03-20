@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"

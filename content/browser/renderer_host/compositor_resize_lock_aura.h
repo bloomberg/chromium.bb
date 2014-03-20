@@ -11,7 +11,7 @@
 #include "content/browser/compositor/resize_lock.h"
 
 namespace aura {
-class WindowEventDispatcher;
+class WindowTreeHost;
 }
 namespace ui {
 class CompositorLock;
@@ -22,7 +22,7 @@ namespace content {
 // Used to prevent further resizes while a resize is pending.
 class CompositorResizeLock : public ResizeLock {
  public:
-  CompositorResizeLock(aura::WindowEventDispatcher* dispatcher,
+  CompositorResizeLock(aura::WindowTreeHost* host,
                        const gfx::Size new_size,
                        bool defer_compositor_lock,
                        const base::TimeDelta& timeout);
@@ -36,7 +36,7 @@ class CompositorResizeLock : public ResizeLock {
   void CancelLock();
 
  private:
-  aura::WindowEventDispatcher* dispatcher_;
+  aura::WindowTreeHost* host_;
   scoped_refptr<ui::CompositorLock> compositor_lock_;
   base::WeakPtrFactory<CompositorResizeLock> weak_ptr_factory_;
   bool cancelled_;

@@ -10,9 +10,10 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/views/test/widget_test.h"
@@ -801,7 +802,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                              ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details = widget1.GetNativeWindow()->
-      GetHost()->dispatcher()->OnEventFromSource(&mouse_event);
+      GetHost()->event_processor()->OnEventFromSource(&mouse_event);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());
   EXPECT_FALSE(widget2.GetAndClearGotMouseEvent());

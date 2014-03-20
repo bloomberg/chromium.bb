@@ -8,7 +8,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
 using blink::WebTouchEvent;
@@ -36,7 +37,7 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
       end = events.end(); iter != end; ++iter) {
     (*iter)->ConvertLocationToTarget(window, host->window());
     ui::EventDispatchDetails details =
-        host->dispatcher()->OnEventFromSource(*iter);
+        host->event_processor()->OnEventFromSource(*iter);
     if (details.dispatcher_destroyed)
       break;
   }
@@ -54,7 +55,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetHost()->dispatcher()->OnEventFromSource(&wheel_event);
+      window->GetHost()->event_processor()->OnEventFromSource(&wheel_event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -121,7 +122,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetHost()->dispatcher()->OnEventFromSource(&mouse_event);
+      window->GetHost()->event_processor()->OnEventFromSource(&mouse_event);
   if (details.dispatcher_destroyed)
     return;
 }

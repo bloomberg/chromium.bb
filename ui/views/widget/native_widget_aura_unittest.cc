@@ -13,7 +13,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"

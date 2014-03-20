@@ -11,7 +11,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/screen.h"
 

@@ -14,6 +14,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -738,7 +739,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, 0, 0);
     ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
-        GetHost()->dispatcher()->OnEventFromSource(&mouse_move);
+        GetHost()->event_processor()->OnEventFromSource(&mouse_move);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }
 

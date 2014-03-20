@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 #include "grit/ui_strings.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 

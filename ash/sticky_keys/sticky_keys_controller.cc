@@ -14,9 +14,10 @@
 #include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace ash {
@@ -86,7 +87,7 @@ void StickyKeysHandlerDelegateImpl::DispatchEvent(ui::Event* event,
                                                   aura::Window* target) {
   DCHECK(target);
   ui::EventDispatchDetails details =
-      target->GetHost()->dispatcher()->OnEventFromSource(event);
+      target->GetHost()->event_processor()->OnEventFromSource(event);
   if (details.dispatcher_destroyed)
     return;
 }

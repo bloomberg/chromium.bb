@@ -5,6 +5,7 @@ include_rules = [
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",
+  "+ui/events",
   "+ui/gfx",
   "+ui/gl/gl_surface.h",  # To initialize GL for tests.
   "+ui/test",

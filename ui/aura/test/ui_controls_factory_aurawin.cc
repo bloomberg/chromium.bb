@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/base/test/ui_controls_internal_win.h"
 
@@ -84,7 +84,7 @@ class UIControlsWin : public UIControlsAura {
 
 }  // namespace
 
-UIControlsAura* CreateUIControlsAura(WindowEventDispatcher* dispatcher) {
+UIControlsAura* CreateUIControlsAura(WindowTreeHost* host) {
   return new UIControlsWin();
 }
 

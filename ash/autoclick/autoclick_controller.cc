@@ -8,10 +8,11 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
 
@@ -201,9 +202,9 @@ void AutoclickControllerImpl::DoAutoclick() {
                                ui::EF_LEFT_MOUSE_BUTTON);
 
   ui::EventDispatchDetails details =
-      host->dispatcher()->OnEventFromSource(&press_event);
+      host->event_processor()->OnEventFromSource(&press_event);
   if (!details.dispatcher_destroyed)
-    details = host->dispatcher()->OnEventFromSource(&release_event);
+    details = host->event_processor()->OnEventFromSource(&release_event);
   if (details.dispatcher_destroyed)
     return;
 }

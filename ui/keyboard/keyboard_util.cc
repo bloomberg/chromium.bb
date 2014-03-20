@@ -14,9 +14,10 @@
 #include "grit/keyboard_resources.h"
 #include "grit/keyboard_resources_map.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event_processor.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "url/gurl.h"
 
@@ -26,11 +27,12 @@ const char kKeyDown[] ="keydown";
 const char kKeyUp[] = "keyup";
 
 void SendProcessKeyEvent(ui::EventType type,
-                         aura::WindowEventDispatcher* dispatcher) {
+                         aura::WindowTreeHost* host) {
   ui::TranslatedKeyEvent event(type == ui::ET_KEY_PRESSED,
                                ui::VKEY_PROCESSKEY,
                                ui::EF_NONE);
-  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&event);
+  ui::EventDispatchDetails details =
+      host->event_processor()->OnEventFromSource(&event);
   CHECK(!details.dispatcher_destroyed);
 }
 
@@ -95,8 +97,8 @@ bool InsertText(const base::string16& text, aura::Window* root_window) {
 // ui::TextInputClient from that (see above in InsertText()).
 bool MoveCursor(int swipe_direction,
                 int modifier_flags,
-                aura::WindowEventDispatcher* dispatcher) {
-  if (!dispatcher)
+                aura::WindowTreeHost* host) {
+  if (!host)
     return false;
   ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
   ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
@@ -114,10 +116,10 @@ bool MoveCursor(int swipe_direction,
   if (codex != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags, 0);
     ui::EventDispatchDetails details =
-        dispatcher->OnEventFromSource(&press_event);
+        host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags, 0);
-    details = dispatcher->OnEventFromSource(&release_event);
+    details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
 
@@ -125,10 +127,10 @@ bool MoveCursor(int swipe_direction,
   if (codey != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags, 0);
     ui::EventDispatchDetails details =
-        dispatcher->OnEventFromSource(&press_event);
+        host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
-    details = dispatcher->OnEventFromSource(&release_event);
+    details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
   return true;
@@ -139,7 +141,7 @@ bool SendKeyEvent(const std::string type,
                   int key_code,
                   std::string key_name,
                   int modifiers,
-                  aura::WindowEventDispatcher* dispatcher) {
+                  aura::WindowTreeHost* host) {
   ui::EventType event_type = ui::ET_UNKNOWN;
   if (type == kKeyDown)
     event_type = ui::ET_KEY_PRESSED;
@@ -154,16 +156,16 @@ bool SendKeyEvent(const std::string type,
     // Handling of special printable characters (e.g. accented characters) for
     // which there is no key code.
     if (event_type == ui::ET_KEY_RELEASED) {
-      ui::InputMethod* input_method = dispatcher->window()->GetProperty(
+      ui::InputMethod* input_method = host->window()->GetProperty(
           aura::client::kRootWindowInputMethodKey);
       if (!input_method)
         return false;
 
       ui::TextInputClient* tic = input_method->GetTextInputClient();
 
-      SendProcessKeyEvent(ui::ET_KEY_PRESSED, dispatcher);
+      SendProcessKeyEvent(ui::ET_KEY_PRESSED, host);
       tic->InsertChar(static_cast<uint16>(key_value), ui::EF_NONE);
-      SendProcessKeyEvent(ui::ET_KEY_RELEASED, dispatcher);
+      SendProcessKeyEvent(ui::ET_KEY_RELEASED, host);
     }
   } else {
     if (event_type == ui::ET_KEY_RELEASED) {
@@ -182,7 +184,8 @@ bool SendKeyEvent(const std::string type,
     }
 
     ui::KeyEvent event(event_type, code, key_name, modifiers, false);
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&event);
+    ui::EventDispatchDetails details =
+        host->event_processor()->OnEventFromSource(&event);
     CHECK(!details.dispatcher_destroyed);
   }
   return true;

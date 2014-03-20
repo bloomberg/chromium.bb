@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "cc/debug/layer_tree_debug_state.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 
 namespace ash {

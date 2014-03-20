@@ -17,7 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/timer/timer.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/menu/menu_controller.h"
