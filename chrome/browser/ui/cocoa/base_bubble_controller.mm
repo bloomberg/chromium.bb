@@ -21,6 +21,7 @@
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
                          reason:(int)reason;
+- (void)closeCleanup;
 @end
 
 @implementation BaseBubbleController
@@ -138,8 +139,27 @@
   [self close];
 }
 
+- (void)closeCleanup {
+  if (eventTap_) {
+    [NSEvent removeMonitor:eventTap_];
+    eventTap_ = nil;
+  }
+  if (resignationObserver_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:resignationObserver_
+                  name:NSWindowDidResignKeyNotification
+                object:nil];
+    resignationObserver_ = nil;
+  }
+
+  tabStripObserverBridge_.reset();
+
+  NSWindow* window = [self window];
+  [[window parentWindow] removeChildWindow:window];
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
-  // We caught a close so we don't need to watch for the parent closing.
+  [self closeCleanup];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self autorelease];
 }
@@ -162,22 +182,7 @@
 }
 
 - (void)close {
-  // The bubble will be closing, so remove the event taps.
-  if (eventTap_) {
-    [NSEvent removeMonitor:eventTap_];
-    eventTap_ = nil;
-  }
-  if (resignationObserver_) {
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:resignationObserver_
-                  name:NSWindowDidResignKeyNotification
-                object:nil];
-    resignationObserver_ = nil;
-  }
-
-  tabStripObserverBridge_.reset();
-
-  [[[self window] parentWindow] removeChildWindow:[self window]];
+  [self closeCleanup];
   [super close];
 }
 
