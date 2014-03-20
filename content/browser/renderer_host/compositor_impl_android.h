@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/base/android/window_android_compositor.h"
 
 class SkBitmap;
 struct ANativeWindow;
@@ -37,7 +38,8 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
-      public ImageTransportFactoryAndroidObserver {
+      public ImageTransportFactoryAndroidObserver,
+      public ui::WindowAndroidCompositor {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   virtual ~CompositorImpl();
@@ -91,6 +93,9 @@ class CONTENT_EXPORT CompositorImpl
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
+
+  // WindowAndroidCompositor implementation.
+  virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) OVERRIDE;
 
  private:
   cc::UIResourceId GenerateUIResourceFromUIResourceBitmap(

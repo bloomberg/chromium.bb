@@ -183,7 +183,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
   DCHECK(client);
   DCHECK(root_window);
   ImageTransportFactoryAndroid::AddObserver(this);
-  root_window->AttachCompositor();
+  root_window->AttachCompositor(this);
 }
 
 CompositorImpl::~CompositorImpl() {
@@ -466,4 +466,8 @@ void CompositorImpl::DidCommit() {
   root_window_->OnCompositingDidCommit();
 }
 
-} // namespace content
+void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
+  root_layer_->AddChild(layer);
+}
+
+}  // namespace content

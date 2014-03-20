@@ -9,6 +9,7 @@
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/WindowAndroid_jni.h"
+#include "ui/base/android/window_android_compositor.h"
 #include "ui/base/android/window_android_observer.h"
 
 namespace ui {
@@ -17,7 +18,8 @@ using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj)
-  : weak_java_window_(env, obj) {
+  : weak_java_window_(env, obj),
+    compositor_(NULL) {
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -66,13 +68,18 @@ void WindowAndroid::RemoveObserver(WindowAndroidObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void WindowAndroid::AttachCompositor() {
+void WindowAndroid::AttachCompositor(WindowAndroidCompositor* compositor) {
+  if (compositor_ && compositor != compositor_)
+    DetachCompositor();
+
+  compositor_ = compositor;
   FOR_EACH_OBSERVER(WindowAndroidObserver,
                     observer_list_,
                     OnAttachCompositor());
 }
 
 void WindowAndroid::DetachCompositor() {
+  compositor_ = NULL;
   FOR_EACH_OBSERVER(WindowAndroidObserver,
                     observer_list_,
                     OnDetachCompositor());

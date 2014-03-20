@@ -15,6 +15,7 @@
 
 namespace ui {
 
+class WindowAndroidCompositor;
 class WindowAndroidObserver;
 
 // Android implementation of the activity window.
@@ -40,17 +41,20 @@ class UI_BASE_EXPORT WindowAndroid {
   // Compositor callback relay.
   void OnCompositingDidCommit();
 
-  void AttachCompositor();
+  void AttachCompositor(WindowAndroidCompositor* compositor);
   void DetachCompositor();
 
   void AddObserver(WindowAndroidObserver* observer);
   void RemoveObserver(WindowAndroidObserver* observer);
+
+  WindowAndroidCompositor* GetCompositor() { return compositor_; }
 
  private:
   ~WindowAndroid();
 
   JavaObjectWeakGlobalRef weak_java_window_;
   gfx::Vector2dF content_offset_;
+  WindowAndroidCompositor* compositor_;
 
   ObserverList<WindowAndroidObserver> observer_list_;
 

@@ -51,6 +51,7 @@
         'android/view_android.h',
         'android/window_android.cc',
         'android/window_android.h',
+        'android/window_android_compositor.h',
         'android/window_android_observer.h',
         'base_window.cc',
         'base_window.h',

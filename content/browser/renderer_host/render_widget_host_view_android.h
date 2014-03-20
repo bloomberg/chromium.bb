@@ -281,10 +281,11 @@ class RenderWidgetHostViewAndroid
       const base::TimeTicks& start_time,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareBitmapCopyOutputResult(
+  static void PrepareTextureCopyOutputResultForDelegatedReadback(
       const gfx::Size& dst_size_in_pixel,
       const SkBitmap::Config config,
       const base::TimeTicks& start_time,
+      scoped_refptr<cc::Layer> readback_layer,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 

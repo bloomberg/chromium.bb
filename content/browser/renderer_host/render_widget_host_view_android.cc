@@ -55,6 +55,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/android/window_android.h"
+#include "ui/base/android/window_android_compositor.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/display.h"
@@ -622,15 +623,45 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
                         base::TimeTicks::Now() - start_time);
     return;
   }
-  scoped_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
-          dst_size_in_pixel,
-          bitmap_config,
-          start_time,
-          callback));
+
+  scoped_ptr<cc::CopyOutputRequest> request;
+  scoped_refptr<cc::Layer> readback_layer;
+  if (using_delegated_renderer_) {
+    DCHECK(content_view_core_);
+    DCHECK(content_view_core_->GetWindowAndroid());
+    ui::WindowAndroidCompositor* compositor =
+        content_view_core_->GetWindowAndroid()->GetCompositor();
+    DCHECK(compositor);
+    DCHECK(frame_provider_);
+    scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
+        cc::DelegatedRendererLayer::Create(frame_provider_);
+    delegated_layer->SetDisplaySize(texture_size_in_layer_);
+    delegated_layer->SetBounds(content_size_in_layer_);
+    delegated_layer->SetHideLayerAndSubtree(true);
+    delegated_layer->SetIsDrawable(true);
+    delegated_layer->SetContentsOpaque(true);
+    compositor->AttachLayerForReadback(delegated_layer);
+
+    readback_layer = delegated_layer;
+    request = cc::CopyOutputRequest::CreateRequest(
+        base::Bind(&RenderWidgetHostViewAndroid::
+                       PrepareTextureCopyOutputResultForDelegatedReadback,
+                   dst_size_in_pixel,
+                   bitmap_config,
+                   start_time,
+                   readback_layer,
+                   callback));
+  } else {
+    readback_layer = layer_;
+    request = cc::CopyOutputRequest::CreateRequest(
+        base::Bind(&RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
+                   dst_size_in_pixel,
+                   bitmap_config,
+                   start_time,
+                   callback));
+  }
   request->set_area(src_subrect_in_pixel);
-  layer_->RequestCopyOfOutput(request.Pass());
+  readback_layer->RequestCopyOfOutput(request.Pass());
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -1291,6 +1322,20 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 }
 
 // static
+void
+RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResultForDelegatedReadback(
+    const gfx::Size& dst_size_in_pixel,
+    const SkBitmap::Config config,
+    const base::TimeTicks& start_time,
+    scoped_refptr<cc::Layer> readback_layer,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  readback_layer->RemoveFromParent();
+  PrepareTextureCopyOutputResult(
+      dst_size_in_pixel, config, start_time, callback, result.Pass());
+}
+
+// static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkBitmap::Config bitmap_config,
@@ -1345,40 +1390,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                  base::Passed(&bitmap),
                  start_time,
                  base::Passed(&bitmap_pixels_lock)));
-}
-
-// static
-void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
-    const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
-    const base::TimeTicks& start_time,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  if (config != SkBitmap::kARGB_8888_Config) {
-    NOTIMPLEMENTED();
-    callback.Run(false, SkBitmap());
-    return;
-  }
-  DCHECK(result->HasBitmap());
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-
-  if (!result->HasBitmap() || result->IsEmpty() || result->size().IsEmpty())
-    return;
-
-  scoped_ptr<SkBitmap> source = result->TakeBitmap();
-  DCHECK(source);
-  if (!source)
-    return;
-
-  DCHECK_EQ(source->width(), dst_size_in_pixel.width());
-  DCHECK_EQ(source->height(), dst_size_in_pixel.height());
-
-  ignore_result(scoped_callback_runner.Release());
-  UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
-                      base::TimeTicks::Now() - start_time);
-
-  callback.Run(true, *source);
 }
 
 bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(
