@@ -34,6 +34,8 @@ VersionInfo::Channel VersionInfo::GetChannel() {
     return CHANNEL_BETA;
   if (!strcmp(bi->package_name(), "com.google.android.apps.chrome_dev"))
     return CHANNEL_DEV;
+  if (!strcmp(bi->package_name(), "com.chrome.canary"))
+    return CHANNEL_CANARY;
 
   return CHANNEL_UNKNOWN;
 }
