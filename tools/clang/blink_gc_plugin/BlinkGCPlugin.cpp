@@ -56,6 +56,9 @@ const char kRefPtrToGCManagedClassNote[] =
 const char kOwnPtrToGCManagedClassNote[] =
     "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
 
+const char kStackAllocatedFieldNote[] =
+    "[blink-gc] Stack-allocated field %0 declared here:";
+
 const char kPartObjectContainsGCRoot[] =
     "[blink-gc] Field %0 with embedded GC root in %1 declared here:";
 
@@ -101,6 +104,10 @@ const char kFieldRequiresFinalizationNote[] =
 
 const char kManualDispatchMethodNote[] =
     "[blink-gc] Manual dispatch %0 declared here:";
+
+const char kDerivesNonStackAllocated[] =
+    "[blink-gc] Stack-allocated class %0 derives class %1"
+    " which is not stack allocated.";
 
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false) {}
@@ -424,11 +431,12 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
   typedef std::vector<std::pair<FieldPoint*, Edge*> > Errors;
 
   CheckFieldsVisitor(const BlinkGCPluginOptions& options)
-      : options_(options), current_(0) {}
+      : options_(options), current_(0), stack_allocated_host_(false) {}
 
   Errors& invalid_fields() { return invalid_fields_; }
 
   bool ContainsInvalidFields(RecordInfo* info) {
+    stack_allocated_host_ = info->IsStackAllocated();
     for (RecordInfo::Fields::iterator it = info->GetFields().begin();
          it != info->GetFields().end();
          ++it) {
@@ -444,6 +452,9 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (edge->value()->record()->isUnion())
       return;
 
+    if (!stack_allocated_host_ && edge->value()->IsStackAllocated())
+      invalid_fields_.push_back(std::make_pair(current_, edge));
+
     if (!Parent() || !edge->value()->IsGCAllocated())
       return;
 
@@ -454,13 +465,15 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (options_.enable_oilpan)
       return;
 
-    if (Parent()->IsRawPtr() || Parent()->IsRefPtr())
+    if ((!stack_allocated_host_ && Parent()->IsRawPtr()) ||
+        Parent()->IsRefPtr())
       invalid_fields_.push_back(std::make_pair(current_, Parent()));
   }
 
  private:
   const BlinkGCPluginOptions& options_;
   FieldPoint* current_;
+  bool stack_allocated_host_;
   Errors invalid_fields_;
 };
 
@@ -510,6 +523,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         getErrorLevel(), kMissingTraceDispatch);
     diag_missing_finalize_dispatch_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kMissingFinalizeDispatch);
+    diag_derives_non_stack_allocated_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kDerivesNonStackAllocated);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -520,6 +535,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
     diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
+    diag_stack_allocated_field_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kStackAllocatedFieldNote);
     diag_part_object_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kPartObjectContainsGCRoot);
     diag_field_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
@@ -585,9 +602,18 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
   // Check a class-like object (eg, class, specialization, instantiation).
   void CheckClass(RecordInfo* info) {
-    // Don't enforce tracing of stack allocated objects.
-    if (!info || info->IsStackAllocated())
+    if (!info)
       return;
+
+    // Check consistency of stack-allocated hierarchies.
+    if (info->IsStackAllocated()) {
+      for (RecordInfo::Bases::iterator it = info->GetBases().begin();
+           it != info->GetBases().end();
+           ++it) {
+        if (!it->second.info()->IsStackAllocated())
+          ReportDerivesNonStackAllocated(info, &it->second);
+      }
+    }
 
     if (info->RequiresTraceMethod() && !info->GetTraceMethod())
       ReportClassRequiresTraceMethod(info);
@@ -894,6 +920,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         NoteField(it->first, diag_ref_ptr_to_gc_managed_class_note_);
       } else if (it->second->IsOwnPtr()) {
         NoteField(it->first, diag_own_ptr_to_gc_managed_class_note_);
+      } else if (it->second->IsValue()) {
+        NoteField(it->first, diag_stack_allocated_field_note_);
       }
     }
   }
@@ -997,6 +1025,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     diagnostic_.Report(full_loc, error) << receiver->record();
   }
 
+  void ReportDerivesNonStackAllocated(RecordInfo* info, BasePoint* base) {
+    SourceLocation loc = base->spec().getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_derives_non_stack_allocated_)
+        << info->record() << base->info()->record();
+  }
+
   void NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
     SourceLocation loc = dispatch->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -1075,11 +1111,13 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_virtual_and_manual_dispatch_;
   unsigned diag_missing_trace_dispatch_;
   unsigned diag_missing_finalize_dispatch_;
+  unsigned diag_derives_non_stack_allocated_;
 
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
+  unsigned diag_stack_allocated_field_note_;
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;

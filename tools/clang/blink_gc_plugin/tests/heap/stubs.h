@@ -72,12 +72,14 @@ using namespace WTF;
 
 #define DISALLOW_ALLOCATION()                   \
     private:                                    \
-    void* operator new(size_t) = delete;
+    void* operator new(size_t) = delete;        \
+    void* operator new(size_t, void*) = delete;
 
-#define STACK_ALLOCATED()                               \
-    private:                                            \
-    __attribute__((annotate("blink_stack_allocated")))  \
-    void* operator new(size_t) = delete;
+#define STACK_ALLOCATED()                                   \
+    private:                                                \
+    __attribute__((annotate("blink_stack_allocated")))      \
+    void* operator new(size_t) = delete;                    \
+    void* operator new(size_t, void*) = delete;
 
 #define GC_PLUGIN_IGNORE(bug)                           \
     __attribute__((annotate("blink_gc_plugin_ignore")))

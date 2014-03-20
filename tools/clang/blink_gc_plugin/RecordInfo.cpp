@@ -17,6 +17,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       fields_need_tracing_(TracingStatus::Unknown()),
       bases_(0),
       fields_(0),
+      is_stack_allocated_(kNotComputed),
       determined_trace_methods_(false),
       trace_method_(0),
       trace_dispatch_method_(0),
@@ -152,17 +153,34 @@ RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {
 }
 
 bool RecordInfo::IsStackAllocated() {
-  for (CXXRecordDecl::method_iterator it = record_->method_begin();
-       it != record_->method_end();
-       ++it) {
-    if (it->getNameAsString() == kNewOperatorName)
-      return it->isDeleted() && IsAnnotated(*it, "blink_stack_allocated");
+  if (is_stack_allocated_ == kNotComputed) {
+    is_stack_allocated_ = kFalse;
+    for (Bases::iterator it = GetBases().begin();
+         it != GetBases().end();
+         ++it) {
+      if (it->second.info()->IsStackAllocated()) {
+        is_stack_allocated_ = kTrue;
+        break;
+      }
+    }
+    for (CXXRecordDecl::method_iterator it = record_->method_begin();
+         it != record_->method_end();
+         ++it) {
+      if (it->getNameAsString() == kNewOperatorName) {
+        if (it->isDeleted() && IsAnnotated(*it, "blink_stack_allocated")) {
+          is_stack_allocated_ = kTrue;
+          break;
+        }
+      }
+    }
   }
-  return false;
+  return is_stack_allocated_;
 }
 
 // An object requires a tracing method if it has any fields that need tracing.
 bool RecordInfo::RequiresTraceMethod() {
+  if (IsStackAllocated())
+    return false;
   GetFields();
   return fields_need_tracing_.IsNeeded();
 }

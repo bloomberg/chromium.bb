@@ -4,4 +4,10 @@
 
 #include "stack_allocated.h"
 
-// Nothing to define.
+namespace WebCore {
+
+void HeapObject::trace(Visitor* visitor)
+{
+}
+
+}

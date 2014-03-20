@@ -113,6 +113,9 @@ class RecordInfo {
   Bases* bases_;
   Fields* fields_;
 
+  enum CachedBool { kFalse = 0, kTrue = 1, kNotComputed = 2 };
+  CachedBool is_stack_allocated_;
+
   bool determined_trace_methods_;
   clang::CXXMethodDecl* trace_method_;
   clang::CXXMethodDecl* trace_dispatch_method_;
