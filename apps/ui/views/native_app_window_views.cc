@@ -26,7 +26,7 @@ namespace apps {
 NativeAppWindowViews::NativeAppWindowViews()
     : app_window_(NULL),
       web_view_(NULL),
-      window_(NULL),
+      widget_(NULL),
       frameless_(false),
       transparent_background_(false),
       resizable_(false) {}
@@ -43,11 +43,11 @@ void NativeAppWindowViews::Init(AppWindow* app_window,
       create_params.GetContentMaximumSize(gfx::Insets()));
   Observe(app_window_->web_contents());
 
-  window_ = new views::Widget;
+  widget_ = new views::Widget;
   InitializeWindow(app_window, create_params);
 
   OnViewWasResized();
-  window_->AddObserver(this);
+  widget_->AddObserver(this);
 }
 
 NativeAppWindowViews::~NativeAppWindowViews() {
@@ -62,35 +62,33 @@ void NativeAppWindowViews::InitializeWindow(
   init_params.delegate = this;
   init_params.top_level = true;
   init_params.keep_on_top = create_params.always_on_top;
-  window_->Init(init_params);
-  window_->CenterWindow(
+  widget_->Init(init_params);
+  widget_->CenterWindow(
       create_params.GetInitialWindowBounds(gfx::Insets()).size());
 }
 
 // ui::BaseWindow implementation.
 
-bool NativeAppWindowViews::IsActive() const {
-  return window_->IsActive();
-}
+bool NativeAppWindowViews::IsActive() const { return widget_->IsActive(); }
 
 bool NativeAppWindowViews::IsMaximized() const {
-  return window_->IsMaximized();
+  return widget_->IsMaximized();
 }
 
 bool NativeAppWindowViews::IsMinimized() const {
-  return window_->IsMinimized();
+  return widget_->IsMinimized();
 }
 
 bool NativeAppWindowViews::IsFullscreen() const {
-  return window_->IsFullscreen();
+  return widget_->IsFullscreen();
 }
 
 gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() {
-  return window_->GetNativeWindow();
+  return widget_->GetNativeWindow();
 }
 
 gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
-  return window_->GetRestoredBounds();
+  return widget_->GetRestoredBounds();
 }
 
 ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
@@ -103,81 +101,67 @@ ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
 }
 
 gfx::Rect NativeAppWindowViews::GetBounds() const {
-  return window_->GetWindowBoundsInScreen();
+  return widget_->GetWindowBoundsInScreen();
 }
 
 void NativeAppWindowViews::Show() {
-  if (window_->IsVisible()) {
-    window_->Activate();
+  if (widget_->IsVisible()) {
+    widget_->Activate();
     return;
   }
-  window_->Show();
+  widget_->Show();
 }
 
 void NativeAppWindowViews::ShowInactive() {
-  if (window_->IsVisible())
+  if (widget_->IsVisible())
     return;
 
-  window_->ShowInactive();
+  widget_->ShowInactive();
 }
 
-void NativeAppWindowViews::Hide() {
-  window_->Hide();
-}
+void NativeAppWindowViews::Hide() { widget_->Hide(); }
 
-void NativeAppWindowViews::Close() {
-  window_->Close();
-}
+void NativeAppWindowViews::Close() { widget_->Close(); }
 
-void NativeAppWindowViews::Activate() {
-  window_->Activate();
-}
+void NativeAppWindowViews::Activate() { widget_->Activate(); }
 
-void NativeAppWindowViews::Deactivate() {
-  window_->Deactivate();
-}
+void NativeAppWindowViews::Deactivate() { widget_->Deactivate(); }
 
-void NativeAppWindowViews::Maximize() {
-  window_->Maximize();
-}
+void NativeAppWindowViews::Maximize() { widget_->Maximize(); }
 
-void NativeAppWindowViews::Minimize() {
-  window_->Minimize();
-}
+void NativeAppWindowViews::Minimize() { widget_->Minimize(); }
 
-void NativeAppWindowViews::Restore() {
-  window_->Restore();
-}
+void NativeAppWindowViews::Restore() { widget_->Restore(); }
 
 void NativeAppWindowViews::SetBounds(const gfx::Rect& bounds) {
-  window_->SetBounds(bounds);
+  widget_->SetBounds(bounds);
 }
 
 void NativeAppWindowViews::FlashFrame(bool flash) {
-  window_->FlashFrame(flash);
+  widget_->FlashFrame(flash);
 }
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
   // Stub implementation. See also ChromeNativeAppWindowViews.
-  return window_->IsAlwaysOnTop();
+  return widget_->IsAlwaysOnTop();
 }
 
 void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
-  window_->SetAlwaysOnTop(always_on_top);
+  widget_->SetAlwaysOnTop(always_on_top);
 }
 
 gfx::NativeView NativeAppWindowViews::GetHostView() const {
-  return window_->GetNativeView();
+  return widget_->GetNativeView();
 }
 
 gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
-  gfx::Size app_window_size = window_->GetWindowBoundsInScreen().size();
+  gfx::Size app_window_size = widget_->GetWindowBoundsInScreen().size();
   return gfx::Point(app_window_size.width() / 2 - size.width() / 2,
                     app_window_size.height() / 2 - size.height() / 2);
 }
 
 gfx::Size NativeAppWindowViews::GetMaximumDialogSize() {
-  return window_->GetWindowBoundsInScreen().size();
+  return widget_->GetWindowBoundsInScreen().size();
 }
 
 void NativeAppWindowViews::AddObserver(
@@ -233,17 +217,13 @@ void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
 }
 
 void NativeAppWindowViews::DeleteDelegate() {
-  window_->RemoveObserver(this);
+  widget_->RemoveObserver(this);
   app_window_->OnNativeClose();
 }
 
-views::Widget* NativeAppWindowViews::GetWidget() {
-  return window_;
-}
+views::Widget* NativeAppWindowViews::GetWidget() { return widget_; }
 
-const views::Widget* NativeAppWindowViews::GetWidget() const {
-  return window_;
-}
+const views::Widget* NativeAppWindowViews::GetWidget() const { return widget_; }
 
 views::View* NativeAppWindowViews::GetContentsView() {
   return this;
@@ -334,12 +314,12 @@ void NativeAppWindowViews::OnFocus() {
 
 void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // Stub implementation. See also ChromeNativeAppWindowViews.
-  window_->SetFullscreen(fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
+  widget_->SetFullscreen(fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
 }
 
 bool NativeAppWindowViews::IsFullscreenOrPending() const {
   // Stub implementation. See also ChromeNativeAppWindowViews.
-  return window_->IsFullscreen();
+  return widget_->IsFullscreen();
 }
 
 bool NativeAppWindowViews::IsDetached() const {
@@ -347,13 +327,9 @@ bool NativeAppWindowViews::IsDetached() const {
   return false;
 }
 
-void NativeAppWindowViews::UpdateWindowIcon() {
-  window_->UpdateWindowIcon();
-}
+void NativeAppWindowViews::UpdateWindowIcon() { widget_->UpdateWindowIcon(); }
 
-void NativeAppWindowViews::UpdateWindowTitle() {
-  window_->UpdateWindowTitle();
-}
+void NativeAppWindowViews::UpdateWindowTitle() { widget_->UpdateWindowTitle(); }
 
 void NativeAppWindowViews::UpdateBadgeIcon() {
   // Stub implementation. See also ChromeNativeAppWindowViews.
@@ -400,8 +376,7 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   // than 1000x1000px, so this should be big enough.
   gfx::Rect client_bounds = gfx::Rect(1000, 1000);
   gfx::Rect window_bounds =
-      window_->non_client_view()->GetWindowBoundsForClientBounds(
-          client_bounds);
+      widget_->non_client_view()->GetWindowBoundsForClientBounds(client_bounds);
   return window_bounds.InsetsFrom(client_bounds);
 }
 

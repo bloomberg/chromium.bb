@@ -52,19 +52,19 @@ class NativeAppWindowViews : public NativeAppWindow,
   void Init(AppWindow* app_window,
             const AppWindow::CreateParams& create_params);
 
-  void set_window_for_testing(views::Widget* window) { window_ = window; }
+  void set_window_for_testing(views::Widget* window) { widget_ = window; }
   void set_web_view_for_testing(views::WebView* view) { web_view_ = view; }
 
  protected:
   AppWindow* app_window() { return app_window_; }
   const AppWindow* app_window() const { return app_window_; }
 
-  views::Widget* window() { return window_; }
-  const views::Widget* window() const { return window_; }
+  views::Widget* widget() { return widget_; }
+  const views::Widget* widget() const { return widget_; }
 
   views::WebView* web_view() { return web_view_; }
 
-  // Initializes |window_| for |app_window|.
+  // Initializes |widget_| for |app_window|.
   virtual void InitializeWindow(AppWindow* app_window,
                                 const AppWindow::CreateParams& create_params);
 
@@ -170,7 +170,7 @@ class NativeAppWindowViews : public NativeAppWindow,
 
   AppWindow* app_window_;  // Not owned.
   views::WebView* web_view_;
-  views::Widget* window_;
+  views::Widget* widget_;
 
   scoped_ptr<SkRegion> draggable_region_;
 

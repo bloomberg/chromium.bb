@@ -40,10 +40,10 @@ class AppWindowFrameView : public views::NonClientFrameView,
   explicit AppWindowFrameView(NativeAppWindow* window);
   virtual ~AppWindowFrameView();
 
-  // Initializes this for the window |frame|. Sets the number of pixels for
-  // which a click is interpreted as a resize for the inner and outer border of
-  // the window and the lower-right corner resize handle.
-  void Init(views::Widget* frame,
+  // Initializes this for |widget|. Sets the number of pixels for which a click
+  // is interpreted as a resize for the inner and outer border of the window
+  // and the lower-right corner resize handle.
+  void Init(views::Widget* widget,
             const SkColor& frame_color,
             int resize_inside_bounds_size,
             int resize_outside_bounds_size,
@@ -75,7 +75,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
                              const ui::Event& event) OVERRIDE;
 
   NativeAppWindow* window_;
-  views::Widget* frame_;
+  views::Widget* widget_;
   SkColor frame_color_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;

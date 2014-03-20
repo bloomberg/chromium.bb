@@ -234,8 +234,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   init_params.wm_role_name = std::string(kX11WindowRoleApp);
 #endif
 
-  OnBeforeWidgetInit(&init_params, window());
-  window()->Init(init_params);
+  OnBeforeWidgetInit(&init_params, widget());
+  widget()->Init(init_params);
 
   // The frame insets are required to resolve the bounds specifications
   // correctly. So we set the window bounds and constraints now.
@@ -249,9 +249,9 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
         window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
         window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;
     if (!position_specified)
-      window()->CenterWindow(window_bounds.size());
+      widget()->CenterWindow(window_bounds.size());
     else
-      window()->SetBounds(window_bounds);
+      widget()->SetBounds(window_bounds);
   }
 
   // Register accelarators supported by app windows.
@@ -315,8 +315,8 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   params.top_level = true;
-  window()->Init(params);
-  window()->set_focus_on_creation(create_params.focused);
+  widget()->Init(params);
+  widget()->set_focus_on_creation(create_params.focused);
 
 #if defined(USE_ASH)
   if (create_params.state == ui::SHOW_STATE_DETACHED) {
@@ -329,7 +329,7 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
     aura::client::ParentWindowWithContext(native_window,
                                           native_window->GetRootWindow(),
                                           native_window->GetBoundsInScreen());
-    window()->SetBounds(window_bounds);
+    widget()->SetBounds(window_bounds);
   }
 #else
   // TODO(stevenjb): NativeAppWindow panels need to be implemented for other
@@ -342,7 +342,7 @@ bool ChromeNativeAppWindowViews::ShouldUseNativeFrame() const {
 }
 
 void ChromeNativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
-  aura::Window* root_window = window()->GetNativeWindow()->GetRootWindow();
+  aura::Window* root_window = widget()->GetNativeWindow()->GetRootWindow();
   gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize);
   root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
@@ -359,7 +359,7 @@ ChromeNativeAppWindowViews::CreateAppWindowFrameView() {
 #if defined(USE_ASH)
   // For Aura windows on the Ash desktop the sizes are different and the user
   // can resize the window from slightly outside the bounds as well.
-  if (chrome::IsNativeWindowInAsh(window()->GetNativeWindow())) {
+  if (chrome::IsNativeWindowInAsh(widget()->GetNativeWindow())) {
     resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
     resize_outside_bounds_size = ash::kResizeOutsideBoundsSize;
     resize_outside_scale_for_touch = ash::kResizeOutsideBoundsScaleForTouch;
@@ -367,7 +367,7 @@ ChromeNativeAppWindowViews::CreateAppWindowFrameView() {
   }
 #endif
   apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView(this);
-  frame_view->Init(window(),
+  frame_view->Init(widget(),
                    frame_color_,
                    resize_inside_bounds_size,
                    resize_outside_bounds_size,
@@ -395,9 +395,8 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
   }
 #if defined(USE_ASH)
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
-  ui::WindowShowState restore_state =
-      window()->GetNativeWindow()->GetProperty(
-          aura::client::kRestoreShowStateKey);
+  ui::WindowShowState restore_state = widget()->GetNativeWindow()->GetProperty(
+      aura::client::kRestoreShowStateKey);
   // Whitelist states to return so that invalid and transient states
   // are not saved and used to restore windows when they are recreated.
   switch (restore_state) {
@@ -420,13 +419,13 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
 bool ChromeNativeAppWindowViews::IsAlwaysOnTop() const {
   if (app_window()->window_type_is_panel()) {
 #if defined(USE_ASH)
-    return ash::wm::GetWindowState(window()->GetNativeWindow())->
-        panel_attached();
+    return ash::wm::GetWindowState(widget()->GetNativeWindow())
+        ->panel_attached();
 #else
     return true;
 #endif
   } else {
-    return window()->IsAlwaysOnTop();
+    return widget()->IsAlwaysOnTop();
   }
 }
 
@@ -444,10 +443,10 @@ void ChromeNativeAppWindowViews::ShowContextMenuForView(
 
   // Only show context menu if point is in caption.
   gfx::Point point_in_view_coords(p);
-  views::View::ConvertPointFromScreen(window()->non_client_view(),
+  views::View::ConvertPointFromScreen(widget()->non_client_view(),
                                       &point_in_view_coords);
-  int hit_test = window()->non_client_view()->NonClientHitTest(
-      point_in_view_coords);
+  int hit_test =
+      widget()->non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION) {
     menu_runner_.reset(new views::MenuRunner(model.get()));
     if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
@@ -572,7 +571,7 @@ void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   if (app_window()->window_type_is_panel())
     return;
   is_fullscreen_ = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
-  window()->SetFullscreen(is_fullscreen_);
+  widget()->SetFullscreen(is_fullscreen_);
 
 #if defined(USE_ASH)
   if (immersive_fullscreen_controller_.get()) {
@@ -584,7 +583,7 @@ void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
     // Autohide the shelf instead of hiding the shelf completely when only in
     // OS fullscreen.
     ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(window()->GetNativeWindow());
+        ash::wm::GetWindowState(widget()->GetNativeWindow());
     window_state->set_hide_shelf_when_fullscreen(fullscreen_types !=
                                                  AppWindow::FULLSCREEN_TYPE_OS);
     DCHECK(ash::Shell::HasInstance());
@@ -605,7 +604,7 @@ bool ChromeNativeAppWindowViews::IsDetached() const {
   if (!app_window()->window_type_is_panel())
     return false;
 #if defined(USE_ASH)
-  return !ash::wm::GetWindowState(window()->GetNativeWindow())
+  return !ash::wm::GetWindowState(widget()->GetNativeWindow())
               ->panel_attached();
 #else
   return false;
@@ -632,15 +631,15 @@ void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   bool had_shape = shape_;
   shape_ = region.Pass();
 
-  aura::Window* native_window = window()->GetNativeWindow();
+  aura::Window* native_window = widget()->GetNativeWindow();
   if (shape_) {
-    window()->SetShape(new SkRegion(*shape_));
+    widget()->SetShape(new SkRegion(*shape_));
     if (!had_shape) {
       native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
           new ShapedAppWindowTargeter(native_window, this)));
     }
   } else {
-    window()->SetShape(NULL);
+    widget()->SetShape(NULL);
     if (had_shape)
       native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
   }
@@ -657,7 +656,7 @@ SkColor ChromeNativeAppWindowViews::FrameColor() const { return frame_color_; }
 void ChromeNativeAppWindowViews::InitializeWindow(
     AppWindow* app_window,
     const AppWindow::CreateParams& create_params) {
-  DCHECK(window());
+  DCHECK(widget());
   has_frame_color_ = create_params.has_frame_color;
   frame_color_ = create_params.frame_color;
   if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL ||
@@ -668,14 +667,14 @@ void ChromeNativeAppWindowViews::InitializeWindow(
   }
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
       Profile::FromBrowserContext(app_window->browser_context()),
-      window()->GetFocusManager(),
+      widget()->GetFocusManager(),
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       NULL));
 
 #if defined(OS_WIN)
   if (!ShouldUseNativeFrame() &&
-      chrome::GetHostDesktopTypeForNativeWindow(window()->GetNativeWindow()) !=
-      chrome::HOST_DESKTOP_TYPE_ASH) {
+      chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) !=
+          chrome::HOST_DESKTOP_TYPE_ASH) {
     InstallEasyResizeTargeterOnContainer();
   }
 #endif

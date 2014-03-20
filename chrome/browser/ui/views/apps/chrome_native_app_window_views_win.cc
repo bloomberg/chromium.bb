@@ -50,7 +50,7 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
 }
 
 HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
-  return views::HWNDForWidget(window()->GetTopLevelWidget());
+  return views::HWNDForWidget(widget()->GetTopLevelWidget());
 }
 
 void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
