@@ -80,8 +80,7 @@ class LocalFileStreamWriterTest : public testing::Test {
 
   LocalFileStreamWriter* CreateWriter(const base::FilePath& path,
                                       int64 offset) {
-    return new LocalFileStreamWriter(file_task_runner(), path, offset,
-        FileStreamWriter::OPEN_EXISTING_FILE);
+    return new LocalFileStreamWriter(file_task_runner(), path, offset);
   }
 
  private:

@@ -122,12 +122,8 @@ scoped_ptr<FileStreamWriter> IsolatedFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return scoped_ptr<FileStreamWriter>(
-      FileStreamWriter::CreateForLocalFile(
-          context->default_file_task_runner(),
-          url.path(),
-          offset,
-          FileStreamWriter::OPEN_EXISTING_FILE));
+  return scoped_ptr<FileStreamWriter>(FileStreamWriter::CreateForLocalFile(
+      context->default_file_task_runner(), url.path(), offset));
 }
 
 FileSystemQuotaUtil* IsolatedFileSystemBackend::GetQuotaUtil() {

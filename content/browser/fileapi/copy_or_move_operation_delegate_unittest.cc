@@ -718,10 +718,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -736,8 +739,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
       webkit_blob::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
-  scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
 
   std::vector<int64> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
@@ -773,11 +776,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.
 
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -792,8 +797,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
       webkit_blob::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
-  scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
 
   std::vector<int64> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
@@ -825,10 +830,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -843,8 +851,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
       webkit_blob::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
-  scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
 
   std::vector<int64> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(

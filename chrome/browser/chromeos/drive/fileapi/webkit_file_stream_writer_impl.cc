@@ -169,8 +169,7 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
   DCHECK(!close_callback_on_ui_thread.is_null());
   close_callback_on_ui_thread_ = close_callback_on_ui_thread;
   local_file_writer_.reset(fileapi::FileStreamWriter::CreateForLocalFile(
-      file_task_runner_.get(), local_path, offset_,
-      fileapi::FileStreamWriter::OPEN_EXISTING_FILE));
+      file_task_runner_.get(), local_path, offset_));
   int result = local_file_writer_->Write(buf, buf_len, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

@@ -310,8 +310,7 @@ FileSystemBackend::CreateFileStreamWriter(
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
   return scoped_ptr<fileapi::FileStreamWriter>(
       fileapi::FileStreamWriter::CreateForLocalFile(
-          context->default_file_task_runner(), url.path(), offset,
-          fileapi::FileStreamWriter::OPEN_EXISTING_FILE));
+          context->default_file_task_runner(), url.path(), offset));
 }
 
 bool FileSystemBackend::GetVirtualPath(
