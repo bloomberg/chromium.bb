@@ -8,19 +8,13 @@ namespace cc {
 
 RasterWorkerPoolDelegate::RasterWorkerPoolDelegate(
     RasterWorkerPoolClient* client,
-    base::SequencedTaskRunner* task_runner,
     RasterWorkerPool** raster_worker_pools,
     size_t num_raster_worker_pools)
     : client_(client),
-      task_runner_(task_runner),
       raster_worker_pools_(raster_worker_pools,
                            raster_worker_pools + num_raster_worker_pools),
-      has_scheduled_tasks_(num_raster_worker_pools, false),
-      did_finish_running_tasks_pending_(num_raster_worker_pools, false),
       did_finish_running_tasks_pending_count_(0u),
-      did_finish_running_tasks_required_for_activation_pending_count_(0u),
-      run_did_finish_running_tasks_pending_(false),
-      weak_ptr_factory_(this) {
+      did_finish_running_tasks_required_for_activation_pending_count_(0u) {
   DCHECK(client_);
   for (RasterWorkerPoolVector::iterator it = raster_worker_pools_.begin();
        it != raster_worker_pools_.end();
@@ -33,11 +27,10 @@ RasterWorkerPoolDelegate::~RasterWorkerPoolDelegate() {}
 // static
 scoped_ptr<RasterWorkerPoolDelegate> RasterWorkerPoolDelegate::Create(
     RasterWorkerPoolClient* client,
-    base::SequencedTaskRunner* task_runner,
     RasterWorkerPool** raster_worker_pools,
     size_t num_raster_worker_pools) {
   return make_scoped_ptr(new RasterWorkerPoolDelegate(
-      client, task_runner, raster_worker_pools, num_raster_worker_pools));
+      client, raster_worker_pools, num_raster_worker_pools));
 }
 
 void RasterWorkerPoolDelegate::Shutdown() {
@@ -48,30 +41,12 @@ void RasterWorkerPoolDelegate::Shutdown() {
 }
 
 void RasterWorkerPoolDelegate::ScheduleTasks(RasterTaskQueue* raster_queue) {
-  size_t did_finish_running_tasks_pending_count = 0u;
-  for (size_t i = 0u; i < raster_worker_pools_.size(); ++i) {
-    // Empty queue doesn't have to be scheduled unless raster worker pool has
-    // some currently scheduled tasks.
-    if (!raster_queue[i].items.empty() || has_scheduled_tasks_[i]) {
-      did_finish_running_tasks_pending_[i] = true;
-      has_scheduled_tasks_[i] = !raster_queue[i].items.empty();
-      raster_worker_pools_[i]->ScheduleTasks(&raster_queue[i]);
-    }
+  for (size_t i = 0; i < raster_worker_pools_.size(); ++i)
+    raster_worker_pools_[i]->ScheduleTasks(&raster_queue[i]);
 
-    did_finish_running_tasks_pending_count +=
-        did_finish_running_tasks_pending_[i];
-  }
-
-  did_finish_running_tasks_pending_count_ =
-      did_finish_running_tasks_pending_count;
+  did_finish_running_tasks_pending_count_ = raster_worker_pools_.size();
   did_finish_running_tasks_required_for_activation_pending_count_ =
-      did_finish_running_tasks_pending_count;
-
-  // Need to schedule a call to RunDidFinishRunningTasks() when no
-  // DidFinishRunningTasks notifications are expected from raster worker pool
-  // instances.
-  if (!did_finish_running_tasks_pending_count)
-    ScheduleRunDidFinishRunningTasks();
+      raster_worker_pools_.size();
 }
 
 void RasterWorkerPoolDelegate::CheckForCompletedTasks() {
@@ -88,48 +63,17 @@ bool RasterWorkerPoolDelegate::ShouldForceTasksRequiredForActivationToComplete()
 
 void RasterWorkerPoolDelegate::DidFinishRunningTasks() {
   DCHECK_LT(0u, did_finish_running_tasks_pending_count_);
-  --did_finish_running_tasks_pending_count_;
-  RunDidFinishRunningTasks();
+  if (--did_finish_running_tasks_pending_count_)
+    return;
+  client_->DidFinishRunningTasks();
 }
 
 void RasterWorkerPoolDelegate::DidFinishRunningTasksRequiredForActivation() {
   DCHECK_LT(0u,
             did_finish_running_tasks_required_for_activation_pending_count_);
-  --did_finish_running_tasks_required_for_activation_pending_count_;
-  RunDidFinishRunningTasks();
-}
-
-void RasterWorkerPoolDelegate::ScheduleRunDidFinishRunningTasks() {
-  if (run_did_finish_running_tasks_pending_)
+  if (--did_finish_running_tasks_required_for_activation_pending_count_)
     return;
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RasterWorkerPoolDelegate::OnRunDidFinishRunningTasks,
-                 weak_ptr_factory_.GetWeakPtr()));
-  run_did_finish_running_tasks_pending_ = true;
-}
-
-void RasterWorkerPoolDelegate::OnRunDidFinishRunningTasks() {
-  DCHECK(run_did_finish_running_tasks_pending_);
-  run_did_finish_running_tasks_pending_ = false;
-  RunDidFinishRunningTasks();
-}
-
-void RasterWorkerPoolDelegate::RunDidFinishRunningTasks() {
-  if (!did_finish_running_tasks_required_for_activation_pending_count_)
-    client_->DidFinishRunningTasksRequiredForActivation();
-
-  if (!did_finish_running_tasks_pending_count_)
-    client_->DidFinishRunningTasks();
-
-  // Reset |run_did_finish_running_tasks_pending_| vector if no notifications
-  // are pending.
-  if (!did_finish_running_tasks_required_for_activation_pending_count_ &&
-      !did_finish_running_tasks_pending_count_) {
-    did_finish_running_tasks_pending_.assign(
-        did_finish_running_tasks_pending_.size(), false);
-  }
+  client_->DidFinishRunningTasksRequiredForActivation();
 }
 
 }  // namespace cc

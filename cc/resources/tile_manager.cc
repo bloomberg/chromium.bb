@@ -213,7 +213,7 @@ TileManager::TileManager(
       direct_raster_worker_pool_.get()  // RASTER_WORKER_POOL_TYPE_DIRECT
   };
   raster_worker_pool_delegate_ = RasterWorkerPoolDelegate::Create(
-      this, task_runner, raster_worker_pools, arraysize(raster_worker_pools));
+      this, raster_worker_pools, arraysize(raster_worker_pools));
 }
 
 TileManager::~TileManager() {
