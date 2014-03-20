@@ -43,6 +43,7 @@ static bool isCSS(Element* element, const AtomicString& type)
 StyleElement::StyleElement(Document* document, bool createdByParser)
     : m_createdByParser(createdByParser)
     , m_loading(false)
+    , m_registeredAsCandidate(false)
     , m_startPosition(TextPosition::belowRangePosition())
 {
     if (createdByParser && document && document->scriptableDocumentParser() && !document->isInDocumentWrite())
@@ -59,6 +60,8 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
 {
     TRACE_EVENT0("webkit", "StyleElement::processStyleSheet");
     ASSERT(element);
+
+    m_registeredAsCandidate = true;
     document.styleEngine()->addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
         return;
@@ -74,7 +77,14 @@ void StyleElement::removedFromDocument(Document& document, Element* element)
 void StyleElement::removedFromDocument(Document& document, Element* element, ContainerNode* scopingNode, TreeScope& treeScope)
 {
     ASSERT(element);
+
+    if (!m_registeredAsCandidate) {
+        ASSERT(!m_sheet);
+        return;
+    }
+
     document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
+    m_registeredAsCandidate = false;
 
     RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
 
