@@ -27,8 +27,12 @@ enum AddressType {
 };
 
 // Returns true if |type| should be shown when |field_type| has been requested.
-bool ServerTypeMatchesFieldType(ServerFieldType type,
-                                const AutofillType& field_type);
+// This filters the types that we fill into the page to match the ones the
+// dialog actually cares about, preventing rAc from giving away data that an
+// AutofillProfile or other data source might know about the user which isn't
+// represented in the dialog.
+bool ServerTypeEncompassesFieldType(ServerFieldType type,
+                                    const AutofillType& field_type);
 
 // Returns true if |type| in the given |section| should be used for a
 // site-requested |field|.

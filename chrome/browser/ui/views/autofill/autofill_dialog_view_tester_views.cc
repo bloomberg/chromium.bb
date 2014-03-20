@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/views/autofill/autofill_dialog_views.h"
-#include "chrome/browser/ui/views/autofill/decorated_textfield.h"
+#include "chrome/browser/ui/views/autofill/expanding_textfield.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -38,9 +38,9 @@ void AutofillDialogViewTesterViews::CancelForTesting() {
 
 base::string16 AutofillDialogViewTesterViews::GetTextContentsOfInput(
     ServerFieldType type) {
-  views::Textfield* textfield = view_->TextfieldForType(type);
+  ExpandingTextfield* textfield = view_->TextfieldForType(type);
   if (textfield)
-    return textfield->text();
+    return textfield->GetText();
 
   views::Combobox* combobox = view_->ComboboxForType(type);
   if (combobox)
@@ -53,7 +53,7 @@ base::string16 AutofillDialogViewTesterViews::GetTextContentsOfInput(
 void AutofillDialogViewTesterViews::SetTextContentsOfInput(
     ServerFieldType type,
     const base::string16& contents) {
-  views::Textfield* textfield = view_->TextfieldForType(type);
+  ExpandingTextfield* textfield = view_->TextfieldForType(type);
   if (textfield) {
     textfield->SetText(contents);
     return;
@@ -72,8 +72,7 @@ void AutofillDialogViewTesterViews::SetTextContentsOfInput(
 void AutofillDialogViewTesterViews::SetTextContentsOfSuggestionInput(
     DialogSection section,
     const base::string16& text) {
-  view_->GroupForSection(section)->suggested_info->decorated_textfield()->
-      SetText(text);
+  view_->GroupForSection(section)->suggested_info->textfield()->SetText(text);
 }
 
 void AutofillDialogViewTesterViews::ActivateInput(ServerFieldType type) {

@@ -28,12 +28,15 @@ class AutofillField;
 // dialog.
 struct DetailInput {
   enum Length {
-    SHORT,     // Shares a line with other short inputs, like display: inline.
-    SHORT_EOL, // Like SHORT but starts a new line directly afterward. Used to
-               // separate groups of short inputs into different lines.
-    LONG,      // Will be given its own full line, like display: block.
-    NONE,      // Input will not be shown.
+    SHORT,      // Shares a line with other short inputs, like display: inline.
+    SHORT_EOL,  // Like SHORT but starts a new line directly afterward. Used to
+                // separate groups of short inputs into different lines.
+    LONG,       // Will be given its own full line, like display: block.
+    NONE,       // Input will not be shown.
   };
+
+  // Returns whether this input can spread across multiple lines.
+  bool IsMultiline() const;
 
   // Used to determine which inputs share lines when laying out.
   Length length;
