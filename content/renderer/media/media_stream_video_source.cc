@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 
 namespace content {
@@ -276,6 +277,12 @@ void ReleaseOriginalFrame(
 
 }  // anonymous namespace
 
+// static
+MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
+    const blink::WebMediaStreamSource& source) {
+  return static_cast<MediaStreamVideoSource*>(source.extraData());
+}
+
 MediaStreamVideoSource::MediaStreamVideoSource(
     MediaStreamDependencyFactory* factory)
     : state_(NEW),
@@ -288,12 +295,17 @@ MediaStreamVideoSource::~MediaStreamVideoSource() {
 }
 
 void MediaStreamVideoSource::AddTrack(
-    const blink::WebMediaStreamTrack& track,
+    MediaStreamVideoTrack* track,
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   DCHECK(CalledOnValidThread());
-  requested_constraints_.push_back(RequestedConstraints(constraints,
-                                                        callback));
+  DCHECK(std::find(tracks_.begin(), tracks_.end(),
+                   track) == tracks_.end());
+  tracks_.push_back(track);
+
+  requested_constraints_.push_back(
+      RequestedConstraints(constraints, callback));
+
   switch (state_) {
     case NEW: {
       // Tab capture and Screen capture needs the maximum requested height
@@ -312,7 +324,7 @@ void MediaStreamVideoSource::AddTrack(
     }
     case STARTING:
     case RETRIEVING_CAPABILITIES: {
-      // The |callback| will be triggered once the delegate has started or
+      // The |callback| will be triggered once the source has started or
       // the capabilities have been retrieved.
       break;
     }
@@ -324,9 +336,11 @@ void MediaStreamVideoSource::AddTrack(
   }
 }
 
-void MediaStreamVideoSource::RemoveTrack(
-    const blink::WebMediaStreamTrack& track) {
-  // TODO(ronghuawu): What should be done here? Do we really need RemoveTrack?
+void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
+  std::vector<MediaStreamVideoTrack*>::iterator it =
+      std::find(tracks_.begin(), tracks_.end(), video_track);
+  DCHECK(it != tracks_.end());
+  tracks_.erase(it);
 }
 
 void MediaStreamVideoSource::InitAdapter() {
@@ -356,6 +370,7 @@ void MediaStreamVideoSource::DoStopSource() {
   DVLOG(3) << "DoStopSource()";
   StopSourceImpl();
   state_ = ENDED;
+  SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
 }
 
 void MediaStreamVideoSource::DeliverVideoFrame(
@@ -394,6 +409,11 @@ void MediaStreamVideoSource::DeliverVideoFrame(
        frame->format() == media::VideoFrame::YV12) &&
       capture_adapter_) {
     capture_adapter_->OnFrameCaptured(video_frame);
+  }
+
+  for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
+       it != tracks_.end(); ++it) {
+    (*it)->OnVideoFrame(video_frame);
   }
 }
 
@@ -474,8 +494,9 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
   callbacks.swap(requested_constraints_);
   for (std::vector<RequestedConstraints>::iterator it = callbacks.begin();
        it != callbacks.end(); ++it) {
+
     bool success = state_ == STARTED &&
-                   !FilterFormats(it->constraints, formats).empty();
+        !FilterFormats(it->constraints, formats).empty();
     DVLOG(3) << "FinalizeAddTrack() success " << success;
     if (!it->callback.is_null())
       it->callback.Run(this, success);
@@ -487,7 +508,10 @@ void MediaStreamVideoSource::SetReadyState(
   if (!owner().isNull()) {
     owner().setReadyState(state);
   }
-  // TODO(perkj): Notify all registered tracks.
+  for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
+       it != tracks_.end(); ++it) {
+    (*it)->OnReadyStateChanged(state);
+  }
 }
 
 MediaStreamVideoSource::RequestedConstraints::RequestedConstraints(

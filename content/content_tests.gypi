@@ -561,6 +561,7 @@
         'renderer/media/crypto/key_systems_unittest.cc',
         'renderer/media/media_stream_video_capture_source_unittest.cc',
         'renderer/media/media_stream_video_source_unittest.cc',
+        'renderer/media/media_stream_video_track_unittest.cc',
         'renderer/media/mock_media_stream_video_source.cc',
         'renderer/media/mock_media_stream_video_source.h',
         'renderer/media/test_response_generator.cc',

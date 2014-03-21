@@ -25,6 +25,7 @@ class VideoFrame;
 namespace content {
 
 class MediaStreamDependencyFactory;
+class MediaStreamVideoTrack;
 class WebRtcVideoCapturerAdapter;
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
@@ -49,11 +50,15 @@ class CONTENT_EXPORT MediaStreamVideoSource
   explicit MediaStreamVideoSource(MediaStreamDependencyFactory* factory);
   virtual ~MediaStreamVideoSource();
 
+  // Returns the MediaStreamVideoSource object owned by |source|.
+  static MediaStreamVideoSource* GetVideoSource(
+      const blink::WebMediaStreamSource& source);
+
   // Puts |track| in the registered tracks list.
-  virtual void AddTrack(const blink::WebMediaStreamTrack& track,
-                        const blink::WebMediaConstraints& constraints,
-                        const ConstraintsCallback& callback) OVERRIDE;
-  virtual void RemoveTrack(const blink::WebMediaStreamTrack& track) OVERRIDE;
+  void AddTrack(MediaStreamVideoTrack* track,
+                const blink::WebMediaConstraints& constraints,
+                const ConstraintsCallback& callback);
+  void RemoveTrack(MediaStreamVideoTrack* track);
 
   // TODO(ronghuawu): Remove webrtc::VideoSourceInterface from the public
   // interface of this class.
@@ -159,6 +164,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
   std::vector<RequestedConstraints> requested_constraints_;
 
   media::VideoCaptureFormats supported_formats_;
+
+  // Tracks that currently are receiving video frames.
+  std::vector<MediaStreamVideoTrack*> tracks_;
 
   // TODO(perkj): The below classes use webrtc/libjingle types. The goal is to
   // get rid of them as far as possible.

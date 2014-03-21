@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,16 +44,15 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   void StartSource() {
     MockMediaConstraintFactory factory;
-
-    blink::WebMediaStreamTrack track;
-    track.initialize(base::UTF8ToUTF16("test"), webkit_source_);
-
-    // AddTrack will trigger OnSupportedFormats.
-    source_->AddTrack(
-        track,
-        factory.CreateWebMediaConstraints(),
-        base::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
-                   base::Unretained(this)));
+    bool enabled = true;
+    MediaStreamDependencyFactory* dependency_factory = NULL;
+    // CreateVideoTrack will trigger OnSupportedFormats.
+    MediaStreamVideoTrack::CreateVideoTrack(
+        source_, factory.CreateWebMediaConstraints(),
+        base::Bind(
+            &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
+            base::Unretained(this)),
+            enabled, dependency_factory);
   }
 
  protected:
