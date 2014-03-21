@@ -46,6 +46,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     const std::string& client_id,
     bool is_auto_enrollment,
     const std::string& requisition,
+    const std::string& current_state_key,
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& completion_callback)
     : store_(store),
@@ -56,6 +57,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       client_id_(client_id),
       is_auto_enrollment_(is_auto_enrollment),
       requisition_(requisition),
+      current_state_key_(current_state_key),
       allowed_device_modes_(allowed_device_modes),
       completion_callback_(completion_callback),
       device_mode_(DEVICE_MODE_NOT_SET),
@@ -193,7 +195,7 @@ void EnrollmentHandlerChromeOS::AttemptRegistration() {
     enrollment_step_ = STEP_REGISTRATION;
     client_->Register(em::DeviceRegisterRequest::DEVICE,
                       auth_token_, client_id_, is_auto_enrollment_,
-                      requisition_);
+                      requisition_, current_state_key_);
   }
 }
 

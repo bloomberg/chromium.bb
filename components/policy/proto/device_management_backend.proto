@@ -51,6 +51,11 @@ message DeviceRegisterRequest {
   // upon. This allows clients to pass hints e.g. at device enrollment time
   // about the intended use of the device.
   optional string requisition = 6;
+
+  // The current server-backed state key for the client, if applicable. This can
+  // be used by the server to link the registration request to an existing
+  // device record for re-enrollment.
+  optional bytes server_backed_state_key = 7;
 }
 
 // Response from server to device register request.

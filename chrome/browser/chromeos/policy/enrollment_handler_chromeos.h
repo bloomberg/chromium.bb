@@ -63,6 +63,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       const std::string& client_id,
       bool is_auto_enrollment,
       const std::string& requisition,
+      const std::string& current_state_key,
       const AllowedDeviceModes& allowed_device_modes,
       const EnrollmentCallback& completion_callback);
   virtual ~EnrollmentHandlerChromeOS();
@@ -151,6 +152,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string client_id_;
   bool is_auto_enrollment_;
   std::string requisition_;
+  std::string current_state_key_;
   std::string refresh_token_;
   AllowedDeviceModes allowed_device_modes_;
   EnrollmentCallback completion_callback_;

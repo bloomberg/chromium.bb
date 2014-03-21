@@ -38,6 +38,7 @@ const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
 const char kDeviceCertificate[] = "fake-device-certificate";
 const char kRequisition[] = "fake-requisition";
+const char kStateKey[] = "fake-state-key";
 
 class MockStatusProvider : public CloudPolicyClient::StatusProvider {
  public:
@@ -232,8 +233,8 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
 TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
   ExpectRegistration(kOAuthToken);
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
-  client_->Register(em::DeviceRegisterRequest::USER,
-                    kOAuthToken, std::string(), false, std::string());
+  client_->Register(em::DeviceRegisterRequest::USER, kOAuthToken, std::string(),
+                    false, std::string(), std::string());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_ns_key_));
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
@@ -251,10 +252,12 @@ TEST_F(CloudPolicyClientTest, RegistrationParameters) {
   registration_request_.mutable_register_request()->set_auto_enrolled(true);
   registration_request_.mutable_register_request()->set_requisition(
       kRequisition);
+  registration_request_.mutable_register_request()->set_server_backed_state_key(
+      kStateKey);
   ExpectRegistration(kOAuthToken);
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
-  client_->Register(em::DeviceRegisterRequest::USER,
-                    kOAuthToken, kClientID, true, kRequisition);
+  client_->Register(em::DeviceRegisterRequest::USER, kOAuthToken, kClientID,
+                    true, kRequisition, kStateKey);
   EXPECT_EQ(kClientID, client_id_);
 }
 
@@ -263,8 +266,8 @@ TEST_F(CloudPolicyClientTest, RegistrationNoToken) {
       clear_device_management_token();
   ExpectRegistration(kOAuthToken);
   EXPECT_CALL(observer_, OnClientError(_));
-  client_->Register(em::DeviceRegisterRequest::USER,
-                    kOAuthToken, std::string(), false, std::string());
+  client_->Register(em::DeviceRegisterRequest::USER, kOAuthToken, std::string(),
+                    false, std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_ns_key_));
   EXPECT_EQ(DM_STATUS_RESPONSE_DECODING_ERROR, client_->status());
@@ -277,8 +280,8 @@ TEST_F(CloudPolicyClientTest, RegistrationFailure) {
       .WillOnce(service_.FailJob(DM_STATUS_REQUEST_FAILED));
   EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
   EXPECT_CALL(observer_, OnClientError(_));
-  client_->Register(em::DeviceRegisterRequest::USER,
-                    kOAuthToken, std::string(), false, std::string());
+  client_->Register(em::DeviceRegisterRequest::USER, kOAuthToken, std::string(),
+                    false, std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_ns_key_));
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
@@ -296,8 +299,8 @@ TEST_F(CloudPolicyClientTest, RetryRegistration) {
   EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestRegister,
                                  "", kOAuthToken, "", "", _,
                                  MatchProto(registration_request_)));
-  client_->Register(em::DeviceRegisterRequest::USER,
-                    kOAuthToken, std::string(), false, std::string());
+  client_->Register(em::DeviceRegisterRequest::USER, kOAuthToken, std::string(),
+                    false, std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   Mock::VerifyAndClearExpectations(&service_);
 

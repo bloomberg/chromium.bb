@@ -145,7 +145,7 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
           device_store_.get(), install_attributes_, CreateClient(),
           background_task_runner_, auth_token,
           install_attributes_->GetDeviceId(), is_auto_enrollment,
-          GetDeviceRequisition(), allowed_device_modes,
+          GetDeviceRequisition(), GetDeviceStateKey(), allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
                      base::Unretained(this), callback)));
   enrollment_handler_->StartEnrollment();
