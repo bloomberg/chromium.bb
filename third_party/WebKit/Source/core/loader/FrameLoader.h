@@ -123,7 +123,6 @@ public:
 
     bool isLoadingMainFrame() const;
 
-    bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
     bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
     FrameLoadType loadType() const;
