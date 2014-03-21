@@ -44,12 +44,12 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) OVERRIDE {
-    std::vector<int>::iterator pos = std::find(suspended_processes_.begin(),
-                                               suspended_processes_.end(),
-                                               host->GetID());
-    DCHECK_NE(pos, suspended_processes_.end());
-    host->RemoveObserver(this);
-    suspended_processes_.erase(pos);
+    StopWatching(host);
+  }
+
+  virtual void RenderProcessHostDestroyed(
+      content::RenderProcessHost* host) OVERRIDE {
+    StopWatching(host);
   }
 
   // Suspends timers in all current render processes.
@@ -82,6 +82,15 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
   }
 
  private:
+  void StopWatching(content::RenderProcessHost* host) {
+    std::vector<int>::iterator pos = std::find(suspended_processes_.begin(),
+                                               suspended_processes_.end(),
+                                               host->GetID());
+    DCHECK_NE(pos, suspended_processes_.end());
+    host->RemoveObserver(this);
+    suspended_processes_.erase(pos);
+  }
+
   std::vector<int /* RenderProcessHost id */> suspended_processes_;
 };
 
