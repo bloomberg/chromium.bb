@@ -6,6 +6,8 @@
 
 #import <QTKit/QTKit.h>
 
+#include <set>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
@@ -214,6 +216,8 @@ class AVFoundationMonitorImpl;
 @interface CrAVFoundationDeviceObserver : NSObject {
  @private
   AVFoundationMonitorImpl* receiver_;
+  // Member to keep track of the devices we are already monitoring.
+  std::set<CrAVCaptureDevice*> monitoredDevices_;
 }
 
 - (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver;
@@ -304,6 +308,11 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 
 - (void)startObserving:(CrAVCaptureDevice*)device {
   DCHECK(device != nil);
+  // Skip this device if there are already observers connected to it.
+  if (std::find(monitoredDevices_.begin(), monitoredDevices_.end(), device) !=
+          monitoredDevices_.end()) {
+    return;
+  }
   [device addObserver:self
            forKeyPath:@"suspended"
               options:0
@@ -312,14 +321,19 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
            forKeyPath:@"connected"
               options:0
               context:device];
+  monitoredDevices_.insert(device);
 }
 
 - (void)stopObserving:(CrAVCaptureDevice*)device {
   DCHECK(device != nil);
+  std::set<CrAVCaptureDevice*>::iterator found =
+      std::find(monitoredDevices_.begin(), monitoredDevices_.end(), device);
+  DCHECK(found != monitoredDevices_.end());
   [device removeObserver:self
               forKeyPath:@"suspended"];
   [device removeObserver:self
               forKeyPath:@"connected"];
+  monitoredDevices_.erase(found);
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
