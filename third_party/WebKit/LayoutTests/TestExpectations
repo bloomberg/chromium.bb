@@ -947,4 +947,6 @@ crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-
 crbug.com/354787 [ Mac Win ] plugins/touch-events-details.html [ Failure ]
 crbug.com/354787 [ Mac Win ] plugins/transformed-events.html [ Failure ]
 
+crbug.com/354791 transitions/webkit-clip-path-equality.html [ Pass Failure ]
+
 
