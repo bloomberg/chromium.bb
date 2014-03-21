@@ -186,10 +186,11 @@ void RendererMediaPlayerManager::OnMediaPlayerReleased(int player_id) {
     player->OnPlayerReleased();
 }
 
-void RendererMediaPlayerManager::OnConnectedToRemoteDevice(int player_id) {
+void RendererMediaPlayerManager::OnConnectedToRemoteDevice(int player_id,
+    const std::string& remote_playback_message) {
   WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
   if (player)
-    player->OnConnectedToRemoteDevice();
+    player->OnConnectedToRemoteDevice(remote_playback_message);
 }
 
 void RendererMediaPlayerManager::OnDisconnectedFromRemoteDevice(int player_id) {

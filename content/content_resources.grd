@@ -34,9 +34,6 @@
         <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />
         <include name="IDR_UTILITY_SANDBOX_PROFILE" file="utility/utility.sb" type="BINDATA" />
       </if>
-      <if expr="is_android">
-        <include name="IDR_MEDIAPLAYER_REMOTE_PLAYBACK_ICON" file="renderer/resources/media/mediaplayer_remote_playback.png" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>

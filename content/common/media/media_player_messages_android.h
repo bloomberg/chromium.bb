@@ -179,9 +179,12 @@ IPC_MESSAGE_CONTROL2(MediaPlayerMsg_ReadFromDemuxer,
 IPC_MESSAGE_CONTROL1(MediaPlayerMsg_MediaConfigRequest,
                      int /* demuxer_client_id */)
 
-IPC_MESSAGE_ROUTED1(MediaPlayerMsg_ConnectedToRemoteDevice,
-                    int /* player_id */)
+// Clank has connected to the remote device.
+IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ConnectedToRemoteDevice,
+                    int /* player_id */,
+                    std::string /* remote_playback_message */)
 
+// Clank has disconnected from the remote device.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DisconnectedFromRemoteDevice,
                     int /* player_id */)
 

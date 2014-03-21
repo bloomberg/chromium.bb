@@ -29,7 +29,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "grit/content_resources.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -45,6 +44,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
@@ -675,10 +675,11 @@ void WebMediaPlayerAndroid::OnTimeUpdate(const base::TimeDelta& current_time) {
   current_time_ = current_time.InSecondsF();
 }
 
-void WebMediaPlayerAndroid::OnConnectedToRemoteDevice() {
+void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
+    const std::string& remote_playback_message) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!media_source_delegate_);
-  DrawRemotePlaybackIcon();
+  DrawRemotePlaybackText(remote_playback_message);
   is_remote_ = true;
   SetNeedsEstablishPeer(false);
 }
@@ -833,7 +834,9 @@ void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
   UpdatePlayingState(false);
 }
 
-void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
+void WebMediaPlayerAndroid::DrawRemotePlaybackText(
+    const std::string& remote_playback_message) {
+
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!video_weblayer_)
     return;
@@ -854,34 +857,64 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
       SkBitmap::kARGB_8888_Config, canvas_size.width(), canvas_size.height());
   bitmap.allocPixels();
 
+  // Create the canvas and draw the "Casting to <Chromecast>" text on it.
   SkCanvas canvas(bitmap);
   canvas.drawColor(SK_ColorBLACK);
+
+  const SkScalar kTextSize(40);
+  const SkScalar kMinPadding(40);
+
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
-  const SkBitmap* icon_bitmap =
-      GetContentClient()
-          ->GetNativeImageNamed(IDR_MEDIAPLAYER_REMOTE_PLAYBACK_ICON)
-          .ToSkBitmap();
-  // In order to get a reasonable margin around the icon:
-  // - the icon should be under half the frame width
-  // - the icon should be at most 3/5 of the frame height
-  // Additionally, on very large screens, the icon size should be capped. A max
-  // width of 320 was arbitrarily chosen; since this is half the resource's
-  // pixel width, it should look crisp even on 2x deviceScaleFactor displays.
-  int icon_width = 320;
-  icon_width = std::min(icon_width, canvas_size.width() / 2);
-  icon_width = std::min(icon_width,
-                        canvas_size.height() * icon_bitmap->width() /
-                            icon_bitmap->height() * 3 / 5);
-  int icon_height = icon_width * icon_bitmap->height() / icon_bitmap->width();
-  // Center the icon within the frame
-  SkRect icon_rect = SkRect::MakeXYWH((canvas_size.width() - icon_width) / 2,
-                                      (canvas_size.height() - icon_height) / 2,
-                                      icon_width,
-                                      icon_height);
-  canvas.drawBitmapRectToRect(
-      *icon_bitmap, NULL /* src */, icon_rect /* dest */, &paint);
+  paint.setColor(SK_ColorWHITE);
+  paint.setTypeface(SkTypeface::CreateFromName("sans", SkTypeface::kBold));
+  paint.setTextSize(kTextSize);
+
+  // Calculate the vertical margin from the top
+  SkPaint::FontMetrics font_metrics;
+  paint.getFontMetrics(&font_metrics);
+  SkScalar sk_vertical_margin = kMinPadding - font_metrics.fAscent;
+
+  // Measure the width of the entire text to display
+  size_t display_text_width = paint.measureText(
+      remote_playback_message.c_str(), remote_playback_message.size());
+  std::string display_text(remote_playback_message);
+
+  if (display_text_width + (kMinPadding * 2) > canvas_size.width()) {
+    // The text is too long to fit in one line, truncate it and append ellipsis
+    // to the end.
+
+    // First, figure out how much of the canvas the '...' will take up.
+    const std::string kTruncationEllipsis("\xE2\x80\xA6");
+    SkScalar sk_ellipse_width = paint.measureText(
+        kTruncationEllipsis.c_str(), kTruncationEllipsis.size());
+
+    // Then calculate how much of the text can be drawn with the '...' appended
+    // to the end of the string.
+    SkScalar sk_max_original_text_width(
+        canvas_size.width() - (kMinPadding * 2) - sk_ellipse_width);
+    size_t sk_max_original_text_length = paint.breakText(
+        remote_playback_message.c_str(),
+        remote_playback_message.size(),
+        sk_max_original_text_width);
+
+    // Remove the part of the string that doesn't fit and append '...'.
+    display_text.erase(sk_max_original_text_length,
+        remote_playback_message.size() - sk_max_original_text_length);
+    display_text.append(kTruncationEllipsis);
+    display_text_width = paint.measureText(
+        display_text.c_str(), display_text.size());
+  }
+
+  // Center the text horizontally.
+  SkScalar sk_horizontal_margin =
+      (canvas_size.width() - display_text_width) / 2.0;
+  canvas.drawText(display_text.c_str(),
+      display_text.size(),
+      sk_horizontal_margin,
+      sk_vertical_margin,
+      paint);
 
   GLES2Interface* gl = stream_texture_factory_->ContextGL();
 

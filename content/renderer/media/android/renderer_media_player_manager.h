@@ -156,7 +156,8 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnVideoSizeChanged(int player_id, int width, int height);
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
   void OnMediaPlayerReleased(int player_id);
-  void OnConnectedToRemoteDevice(int player_id);
+  void OnConnectedToRemoteDevice(int player_id,
+      const std::string& remote_playback_message);
   void OnDisconnectedFromRemoteDevice(int player_id);
   void OnDidExitFullscreen(int player_id);
   void OnDidEnterFullscreen(int player_id);

@@ -169,7 +169,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnTimeUpdate(const base::TimeDelta& current_time);
 
   // Functions called when media player status changes.
-  void OnConnectedToRemoteDevice();
+  void OnConnectedToRemoteDevice(const std::string& remote_playback_message);
   void OnDisconnectedFromRemoteDevice();
   void OnDidEnterFullscreen();
   void OnDidExitFullscreen();
@@ -250,7 +250,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
  private:
   void Pause(bool is_media_related_action);
-  void DrawRemotePlaybackIcon();
+  void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
   void CreateWebLayerIfNeeded();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
