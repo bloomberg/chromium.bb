@@ -265,6 +265,8 @@ class BASE_EXPORT File {
   // Unlock a file previously locked.
   Error Unlock();
 
+  bool async() const { return async_; }
+
 #if defined(OS_WIN)
   static Error OSErrorToFileError(DWORD last_error);
 #elif defined(OS_POSIX)

@@ -41,27 +41,44 @@ FileStream::Context::IOResult FileStream::Context::IOResult::FromOSError(
   return IOResult(MapSystemError(os_error), os_error);
 }
 
-FileStream::Context::OpenResult::OpenResult()
-    : file(base::kInvalidPlatformFileValue) {
+// ---------------------------------------------------------------------
+
+FileStream::Context::OpenResult::OpenResult() {
 }
 
-FileStream::Context::OpenResult::OpenResult(base::PlatformFile file,
+FileStream::Context::OpenResult::OpenResult(base::File file,
                                             IOResult error_code)
-    : file(file),
+    : file(file.Pass()),
       error_code(error_code) {
 }
+
+FileStream::Context::OpenResult::OpenResult(RValue other)
+    : file(other.object->file.Pass()),
+      error_code(other.object->error_code) {
+}
+
+FileStream::Context::OpenResult& FileStream::Context::OpenResult::operator=(
+    RValue other) {
+  if (this != other.object) {
+    file = other.object->file.Pass();
+    error_code = other.object->error_code;
+  }
+  return *this;
+}
+
+// ---------------------------------------------------------------------
 
 void FileStream::Context::Orphan() {
   DCHECK(!orphaned_);
 
   orphaned_ = true;
-  if (file_ != base::kInvalidPlatformFileValue)
+  if (file_.IsValid())
     bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
 
   if (!async_in_progress_) {
     CloseAndDelete();
-  } else if (file_ != base::kInvalidPlatformFileValue) {
-    CancelIo(file_);
+  } else if (file_.IsValid()) {
+    CancelIo(file_.GetPlatformFile());
   }
 }
 
@@ -69,10 +86,9 @@ void FileStream::Context::OpenAsync(const base::FilePath& path,
                                     int open_flags,
                                     const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
-
   BeginOpenEvent(path);
 
-  const bool posted = base::PostTaskAndReplyWithResult(
+  bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
       base::Bind(
@@ -81,6 +97,13 @@ void FileStream::Context::OpenAsync(const base::FilePath& path,
   DCHECK(posted);
 
   async_in_progress_ = true;
+
+  // TODO(rvargas): Figure out what to do here. For POSIX, async IO is
+  // implemented by doing blocking IO on another thread, so file_ is not really
+  // async, but this code has sync and async paths so it has random checks to
+  // figure out what mode to use. We should probably make this class async only,
+  // and make consumers of sync IO use base::File.
+  async_ = true;
 }
 
 int FileStream::Context::OpenSync(const base::FilePath& path, int open_flags) {
@@ -88,30 +111,29 @@ int FileStream::Context::OpenSync(const base::FilePath& path, int open_flags) {
 
   BeginOpenEvent(path);
   OpenResult result = OpenFileImpl(path, open_flags);
-  file_ = result.file;
-  if (file_ == base::kInvalidPlatformFileValue) {
-    ProcessOpenError(result.error_code);
-  } else {
+  if (result.file.IsValid()) {
+    file_ = result.file.Pass();
     // TODO(satorux): Remove this once all async clients are migrated to use
     // Open(). crbug.com/114783
-    if (open_flags & base::PLATFORM_FILE_ASYNC)
+    if (open_flags & base::File::FLAG_ASYNC)
       OnAsyncFileOpened();
+  } else {
+    ProcessOpenError(result.error_code);
   }
   return result.error_code.result;
 }
 
 void FileStream::Context::CloseSync() {
   DCHECK(!async_in_progress_);
-  if (file_ != base::kInvalidPlatformFileValue) {
-    base::ClosePlatformFile(file_);
-    file_ = base::kInvalidPlatformFileValue;
+  if (file_.IsValid()) {
+    file_.Close();
     bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
   }
 }
 
 void FileStream::Context::CloseAsync(const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
-  const bool posted = base::PostTaskAndReplyWithResult(
+  bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::CloseFileImpl, base::Unretained(this)),
@@ -129,7 +151,7 @@ void FileStream::Context::SeekAsync(Whence whence,
                                     const Int64CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
-  const bool posted = base::PostTaskAndReplyWithResult(
+  bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
       base::Bind(
@@ -152,7 +174,7 @@ int64 FileStream::Context::SeekSync(Whence whence, int64 offset) {
 void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
-  const bool posted = base::PostTaskAndReplyWithResult(
+  bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::FlushFileImpl, base::Unretained(this)),
@@ -197,12 +219,16 @@ void FileStream::Context::BeginOpenEvent(const base::FilePath& path) {
 
 FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
     const base::FilePath& path, int open_flags) {
-  base::PlatformFile file;
+#if defined(OS_POSIX)
+  // Always use blocking IO.
+  open_flags &= ~base::File::FLAG_ASYNC;
+#endif
+  base::File file;
 #if defined(OS_ANDROID)
   if (path.IsContentUri()) {
     // Check that only Read flags are set.
-    DCHECK_EQ(open_flags & ~base::PLATFORM_FILE_ASYNC,
-              base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+    DCHECK_EQ(open_flags & ~base::File::FLAG_ASYNC,
+              base::File::FLAG_OPEN | base::File::FLAG_READ);
     file = base::OpenContentUriForRead(path);
   } else {
 #endif  // defined(OS_ANDROID)
@@ -210,15 +236,22 @@ FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
     // independently from FileStream's destructor. It can cause problems for
     // users wanting to delete the file right after FileStream deletion. Thus
     // we are always adding SHARE_DELETE flag to accommodate such use case.
-    open_flags |= base::PLATFORM_FILE_SHARE_DELETE;
-    file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
+    // TODO(rvargas): This sounds like a bug, as deleting the file would
+    // presumably happen on the wrong thread. There should be an async delete.
+    open_flags |= base::File::FLAG_SHARE_DELETE;
+    file.Initialize(path, open_flags);
 #if defined(OS_ANDROID)
   }
 #endif  // defined(OS_ANDROID)
-  if (file == base::kInvalidPlatformFileValue)
-    return OpenResult(file, IOResult::FromOSError(GetLastErrno()));
+  if (!file.IsValid())
+    return OpenResult(base::File(), IOResult::FromOSError(GetLastErrno()));
 
-  return OpenResult(file, IOResult(OK, 0));
+  return OpenResult(file.Pass(), IOResult(OK, 0));
+}
+
+FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
+  file_.Close();
+  return IOResult(OK, 0);
 }
 
 void FileStream::Context::ProcessOpenError(const IOResult& error_code) {
@@ -228,26 +261,27 @@ void FileStream::Context::ProcessOpenError(const IOResult& error_code) {
 
 void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
                                           OpenResult open_result) {
-  file_ = open_result.file;
-  if (file_ == base::kInvalidPlatformFileValue)
+  if (!open_result.file.IsValid()) {
     ProcessOpenError(open_result.error_code);
-  else if (!orphaned_)
+  } else if (!orphaned_) {
+    file_ = open_result.file.Pass();
     OnAsyncFileOpened();
+  }
   OnAsyncCompleted(IntToInt64(callback), open_result.error_code.result);
 }
 
 void FileStream::Context::CloseAndDelete() {
   DCHECK(!async_in_progress_);
 
-  if (file_ == base::kInvalidPlatformFileValue) {
-    delete this;
-  } else {
-    const bool posted = task_runner_->PostTaskAndReply(
+  if (file_.IsValid()) {
+    bool posted = task_runner_.get()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::ClosePlatformFile), file_),
+        base::Bind(base::IgnoreResult(&Context::CloseFileImpl),
+                   base::Unretained(this)),
         base::Bind(&Context::OnCloseCompleted, base::Unretained(this)));
     DCHECK(posted);
-    file_ = base::kInvalidPlatformFileValue;
+  } else {
+    delete this;
   }
 }
 

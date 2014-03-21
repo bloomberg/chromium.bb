@@ -27,8 +27,9 @@
 #ifndef NET_BASE_FILE_STREAM_CONTEXT_H_
 #define NET_BASE_FILE_STREAM_CONTEXT_H_
 
+#include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
+#include "base/move.h"
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
@@ -61,9 +62,15 @@ class FileStream::Context {
 
   Context(const BoundNetLog& bound_net_log,
           const scoped_refptr<base::TaskRunner>& task_runner);
-  Context(base::PlatformFile file,
+  Context(base::File file,
           const BoundNetLog& bound_net_log,
-          int open_flags,
+          const scoped_refptr<base::TaskRunner>& task_runner);
+
+  // This is a deprecated constructor intended only to support callers that
+  // provide a PlatformFile. Such callers are to be updated to provide a File.
+  Context(base::File file,
+          int flags,
+          const BoundNetLog& bound_net_log,
           const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
   virtual ~Context();
@@ -90,8 +97,9 @@ class FileStream::Context {
   ////////////////////////////////////////////////////////////////////////////
 
   void set_record_uma(bool value) { record_uma_ = value; }
-  base::PlatformFile file() const { return file_; }
+  const base::File& file() const { return file_; }
   bool async_in_progress() const { return async_in_progress_; }
+  bool async() const { return async_in_progress_ || async_ || file_.async(); }
 
   ////////////////////////////////////////////////////////////////////////////
   // Platform-independent methods implemented in file_stream_context.cc.
@@ -134,9 +142,15 @@ class FileStream::Context {
   };
 
   struct OpenResult {
+    MOVE_ONLY_TYPE_FOR_CPP_03(OpenResult, RValue)
+   public:
     OpenResult();
-    OpenResult(base::PlatformFile file, IOResult error_code);
-    base::PlatformFile file;
+    OpenResult(base::File file, IOResult error_code);
+    // C++03 move emulation of this type.
+    OpenResult(RValue other);
+    OpenResult& operator=(RValue other);
+
+    base::File file;
     IOResult error_code;
   };
 
@@ -146,6 +160,8 @@ class FileStream::Context {
   void BeginOpenEvent(const base::FilePath& path);
 
   OpenResult OpenFileImpl(const base::FilePath& path, int open_flags);
+
+  IOResult CloseFileImpl();
 
   void ProcessOpenError(const IOResult& result);
   void OnOpenCompleted(const CompletionCallback& callback,
@@ -193,9 +209,6 @@ class FileStream::Context {
   // Flushes all data written to the stream.
   IOResult FlushFileImpl();
 
-  // Closes the file.
-  IOResult CloseFileImpl();
-
 #if defined(OS_WIN)
   void IOCompletionIsPending(const CompletionCallback& callback, IOBuffer* buf);
 
@@ -214,10 +227,11 @@ class FileStream::Context {
   IOResult WriteFileImpl(scoped_refptr<IOBuffer> buf, int buf_len);
 #endif
 
-  base::PlatformFile file_;
+  base::File file_;
   bool record_uma_;
   bool async_in_progress_;
   bool orphaned_;
+  bool async_;  // To be removed when flags are removed from the constructor.
   BoundNetLog bound_net_log_;
   scoped_refptr<base::TaskRunner> task_runner_;
 

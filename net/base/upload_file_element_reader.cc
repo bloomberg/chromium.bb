@@ -53,8 +53,8 @@ int UploadFileElementReader::Init(const CompletionCallback& callback) {
   file_stream_.reset(new FileStream(NULL, task_runner_.get()));
   int result = file_stream_->Open(
       path_,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
+      base::File::FLAG_OPEN | base::File::FLAG_READ |
+      base::File::FLAG_ASYNC,
       base::Bind(&UploadFileElementReader::OnOpenCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

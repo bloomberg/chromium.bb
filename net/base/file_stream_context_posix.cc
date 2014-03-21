@@ -46,22 +46,35 @@ COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
 
 FileStream::Context::Context(const BoundNetLog& bound_net_log,
                              const scoped_refptr<base::TaskRunner>& task_runner)
-    : file_(base::kInvalidPlatformFileValue),
-      record_uma_(false),
+    : record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
+      async_(false),
       bound_net_log_(bound_net_log),
       task_runner_(task_runner) {
 }
 
-FileStream::Context::Context(base::PlatformFile file,
+FileStream::Context::Context(base::File file,
                              const BoundNetLog& bound_net_log,
-                             int /* open_flags */,
                              const scoped_refptr<base::TaskRunner>& task_runner)
-    : file_(file),
+    : file_(file.Pass()),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
+      async_(false),
+      bound_net_log_(bound_net_log),
+      task_runner_(task_runner) {
+}
+
+FileStream::Context::Context(base::File file,
+                             int flags,
+                             const BoundNetLog& bound_net_log,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
+    : file_(file.Pass()),
+      record_uma_(false),
+      async_in_progress_(false),
+      orphaned_(false),
+      async_((flags & base::File::FLAG_ASYNC) == base::File::FLAG_ASYNC),
       bound_net_log_(bound_net_log),
       task_runner_(task_runner) {
 }
@@ -71,7 +84,7 @@ FileStream::Context::~Context() {
 
 int64 FileStream::Context::GetFileSize() const {
   struct stat info;
-  if (fstat(file_, &info) != 0) {
+  if (fstat(file_.GetPlatformFile(), &info) != 0) {
     IOResult result = IOResult::FromOSError(errno);
     RecordError(result, FILE_ERROR_SOURCE_GET_SIZE);
     return result.result;
@@ -135,7 +148,7 @@ int FileStream::Context::WriteSync(const char* in_buf, int buf_len) {
 }
 
 int FileStream::Context::Truncate(int64 bytes) {
-  if (ftruncate(file_, bytes) != 0) {
+  if (ftruncate(file_.GetPlatformFile(), bytes) != 0) {
     IOResult result = IOResult::FromOSError(errno);
     RecordError(result, FILE_ERROR_SOURCE_SET_EOF);
     return result.result;
@@ -146,7 +159,7 @@ int FileStream::Context::Truncate(int64 bytes) {
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
                                                                 int64 offset) {
-  off_t res = lseek(file_, static_cast<off_t>(offset),
+  off_t res = lseek(file_.GetPlatformFile(), static_cast<off_t>(offset),
                     static_cast<int>(whence));
   if (res == static_cast<off_t>(-1))
     return IOResult::FromOSError(errno);
@@ -155,7 +168,7 @@ FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
 }
 
 FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
-  ssize_t res = HANDLE_EINTR(fsync(file_));
+  ssize_t res = HANDLE_EINTR(fsync(file_.GetPlatformFile()));
   if (res == -1)
     return IOResult::FromOSError(errno);
 
@@ -166,7 +179,7 @@ FileStream::Context::IOResult FileStream::Context::ReadFileImpl(
     scoped_refptr<IOBuffer> buf,
     int buf_len) {
   // Loop in the case of getting interrupted by a signal.
-  ssize_t res = HANDLE_EINTR(read(file_, buf->data(),
+  ssize_t res = HANDLE_EINTR(read(file_.GetPlatformFile(), buf->data(),
                                   static_cast<size_t>(buf_len)));
   if (res == -1)
     return IOResult::FromOSError(errno);
@@ -177,20 +190,12 @@ FileStream::Context::IOResult FileStream::Context::ReadFileImpl(
 FileStream::Context::IOResult FileStream::Context::WriteFileImpl(
     scoped_refptr<IOBuffer> buf,
     int buf_len) {
-  ssize_t res = HANDLE_EINTR(write(file_, buf->data(), buf_len));
+  ssize_t res = HANDLE_EINTR(write(file_.GetPlatformFile(), buf->data(),
+                                   buf_len));
   if (res == -1)
     return IOResult::FromOSError(errno);
 
   return IOResult(res, 0);
-}
-
-FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
-  bool success = base::ClosePlatformFile(file_);
-  file_ = base::kInvalidPlatformFileValue;
-  if (!success)
-    return IOResult::FromOSError(errno);
-
-  return IOResult(OK, 0);
 }
 
 }  // namespace net

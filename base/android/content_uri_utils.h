@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 
 namespace base {
@@ -17,7 +18,7 @@ bool RegisterContentUriUtils(JNIEnv* env);
 
 // Opens a content uri for read and returns the file descriptor to the caller.
 // Returns -1 if the uri is invalid.
-BASE_EXPORT int OpenContentUriForRead(const FilePath& content_uri);
+BASE_EXPORT File OpenContentUriForRead(const FilePath& content_uri);
 
 // Check whether a content uri exists.
 BASE_EXPORT bool ContentUriExists(const FilePath& content_uri);

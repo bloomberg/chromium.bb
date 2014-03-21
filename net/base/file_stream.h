@@ -10,6 +10,7 @@
 #ifndef NET_BASE_FILE_STREAM_H_
 #define NET_BASE_FILE_STREAM_H_
 
+#include "base/files/file.h"
 #include "base/platform_file.h"
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
@@ -45,13 +46,22 @@ class NET_EXPORT FileStream {
   // Uses |task_runner| for asynchronous operations.
   // Note: the new FileStream object takes ownership of the PlatformFile and
   // will close it on destruction.
+  // This constructor is deprecated.
+  // TODO(rvargas): remove all references to PlatformFile.
   FileStream(base::PlatformFile file,
              int flags,
              net::NetLog* net_log,
              const scoped_refptr<base::TaskRunner>& task_runner);
 
   // Same as above, but runs async tasks in base::WorkerPool.
+  // This constructor is deprecated.
   FileStream(base::PlatformFile file, int flags, net::NetLog* net_log);
+
+  // Non-deprecated versions of the previous two constructors.
+  FileStream(base::File file,
+             net::NetLog* net_log,
+             const scoped_refptr<base::TaskRunner>& task_runner);
+  FileStream(base::File file, net::NetLog* net_log);
 
   // The underlying file is closed automatically.
   virtual ~FileStream();
@@ -239,22 +249,18 @@ class NET_EXPORT FileStream {
   void SetBoundNetLogSource(const net::BoundNetLog& owner_bound_net_log);
 
   // Returns the underlying platform file for testing.
-  base::PlatformFile GetPlatformFileForTesting();
+  const base::File& GetFileForTesting() const;
 
  private:
   class Context;
 
-  bool is_async() const { return !!(open_flags_ & base::PLATFORM_FILE_ASYNC); }
-
-  int open_flags_;
   net::BoundNetLog bound_net_log_;
 
-  // Context performing I/O operations. It was extracted into separate class
+  // Context performing I/O operations. It was extracted into a separate class
   // to perform asynchronous operations because FileStream can be destroyed
-  // before completion of async operation. Also if async FileStream is destroyed
-  // without explicit closing file should be closed asynchronously without
-  // delaying FileStream's destructor. To perform all that separate object is
-  // necessary.
+  // before completion of an async operation. Also if a FileStream is destroyed
+  // without explicitly calling Close, the file should be closed asynchronously
+  // without delaying FileStream's destructor.
   scoped_ptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileStream);

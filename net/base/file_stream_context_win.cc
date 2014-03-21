@@ -40,10 +40,10 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 FileStream::Context::Context(const BoundNetLog& bound_net_log,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
-      file_(base::kInvalidPlatformFileValue),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
+      async_(false),
       bound_net_log_(bound_net_log),
       error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
@@ -51,24 +51,41 @@ FileStream::Context::Context(const BoundNetLog& bound_net_log,
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
 }
 
-FileStream::Context::Context(base::PlatformFile file,
+FileStream::Context::Context(base::File file,
                              const BoundNetLog& bound_net_log,
-                             int open_flags,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
-      file_(file),
+      file_(file.Pass()),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
+      async_(false),
       bound_net_log_(bound_net_log),
       error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
-  if (file_ != base::kInvalidPlatformFileValue &&
-      (open_flags & base::PLATFORM_FILE_ASYNC)) {
+  if (file_.IsValid() && file_.async())
     OnAsyncFileOpened();
-  }
+}
+
+FileStream::Context::Context(base::File file,
+                             int flags,
+                             const BoundNetLog& bound_net_log,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
+    : io_context_(),
+      file_(file.Pass()),
+      record_uma_(false),
+      async_in_progress_(false),
+      orphaned_(false),
+      async_((flags & base::File::FLAG_ASYNC) == base::File::FLAG_ASYNC),
+      bound_net_log_(bound_net_log),
+      error_source_(FILE_ERROR_SOURCE_COUNT),
+      task_runner_(task_runner) {
+  io_context_.handler = this;
+  memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
+  if (file_.IsValid() && (file_.async() || flags & base::File::FLAG_ASYNC))
+    OnAsyncFileOpened();
 }
 
 FileStream::Context::~Context() {
@@ -76,7 +93,7 @@ FileStream::Context::~Context() {
 
 int64 FileStream::Context::GetFileSize() const {
   LARGE_INTEGER file_size;
-  if (!GetFileSizeEx(file_, &file_size)) {
+  if (!GetFileSizeEx(file_.GetPlatformFile(), &file_size)) {
     IOResult error = IOResult::FromOSError(GetLastError());
     LOG(WARNING) << "GetFileSizeEx failed: " << error.os_error;
     RecordError(error, FILE_ERROR_SOURCE_GET_SIZE);
@@ -93,7 +110,7 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
   error_source_ = FILE_ERROR_SOURCE_READ;
 
   DWORD bytes_read;
-  if (!ReadFile(file_, buf->data(), buf_len,
+  if (!ReadFile(file_.GetPlatformFile(), buf->data(), buf_len,
                 &bytes_read, &io_context_.overlapped)) {
     IOResult error = IOResult::FromOSError(GetLastError());
     if (error.os_error == ERROR_IO_PENDING) {
@@ -113,7 +130,7 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
 
 int FileStream::Context::ReadSync(char* buf, int buf_len) {
   DWORD bytes_read;
-  if (!ReadFile(file_, buf, buf_len, &bytes_read, NULL)) {
+  if (!ReadFile(file_.GetPlatformFile(), buf, buf_len, &bytes_read, NULL)) {
     IOResult error = IOResult::FromOSError(GetLastError());
     if (error.os_error == ERROR_HANDLE_EOF) {
       return 0;  // Report EOF by returning 0 bytes read.
@@ -133,7 +150,7 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
   error_source_ = FILE_ERROR_SOURCE_WRITE;
 
   DWORD bytes_written = 0;
-  if (!WriteFile(file_, buf->data(), buf_len,
+  if (!WriteFile(file_.GetPlatformFile(), buf->data(), buf_len,
                  &bytes_written, &io_context_.overlapped)) {
     IOResult error = IOResult::FromOSError(GetLastError());
     if (error.os_error == ERROR_IO_PENDING) {
@@ -151,7 +168,7 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
 
 int FileStream::Context::WriteSync(const char* buf, int buf_len) {
   DWORD bytes_written = 0;
-  if (!WriteFile(file_, buf, buf_len, &bytes_written, NULL)) {
+  if (!WriteFile(file_.GetPlatformFile(), buf, buf_len, &bytes_written, NULL)) {
     IOResult error = IOResult::FromOSError(GetLastError());
     LOG(WARNING) << "WriteFile failed: " << error.os_error;
     RecordError(error, FILE_ERROR_SOURCE_WRITE);
@@ -162,7 +179,7 @@ int FileStream::Context::WriteSync(const char* buf, int buf_len) {
 }
 
 int FileStream::Context::Truncate(int64 bytes) {
-  if (!SetEndOfFile(file_)) {
+  if (!SetEndOfFile(file_.GetPlatformFile())) {
     IOResult error = IOResult::FromOSError(GetLastError());
     LOG(WARNING) << "SetEndOfFile failed: " << error.os_error;
     RecordError(error, FILE_ERROR_SOURCE_SET_EOF);
@@ -173,7 +190,8 @@ int FileStream::Context::Truncate(int64 bytes) {
 }
 
 void FileStream::Context::OnAsyncFileOpened() {
-  base::MessageLoopForIO::current()->RegisterIOHandler(file_, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(file_.GetPlatformFile(),
+                                                       this);
 }
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
@@ -181,7 +199,7 @@ FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;
   DWORD move_method = static_cast<DWORD>(whence);
-  if (SetFilePointerEx(file_, distance, &res, move_method)) {
+  if (SetFilePointerEx(file_.GetPlatformFile(), distance, &res, move_method)) {
     SetOffset(&io_context_.overlapped, res);
     return IOResult(res.QuadPart, 0);
   }
@@ -190,16 +208,7 @@ FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
 }
 
 FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
-  if (FlushFileBuffers(file_))
-    return IOResult(OK, 0);
-
-  return IOResult::FromOSError(GetLastError());
-}
-
-FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
-  bool success = base::ClosePlatformFile(file_);
-  file_ = base::kInvalidPlatformFileValue;
-  if (success)
+  if (FlushFileBuffers(file_.GetPlatformFile()))
     return IOResult(OK, 0);
 
   return IOResult::FromOSError(GetLastError());

@@ -19,8 +19,7 @@ FileStream::FileStream(NetLog* net_log,
                        const scoped_refptr<base::TaskRunner>& task_runner)
       /* To allow never opened stream to be destroyed on any thread we set flags
          as if stream was opened asynchronously. */
-    : open_flags_(base::PLATFORM_FILE_ASYNC),
-      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
       context_(new Context(bound_net_log_, task_runner)) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
@@ -28,8 +27,7 @@ FileStream::FileStream(NetLog* net_log,
 FileStream::FileStream(NetLog* net_log)
       /* To allow never opened stream to be destroyed on any thread we set flags
          as if stream was opened asynchronously. */
-    : open_flags_(base::PLATFORM_FILE_ASYNC),
-      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
       context_(new Context(bound_net_log_,
                            base::WorkerPool::GetTaskRunner(true /* slow */))) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
@@ -39,29 +37,40 @@ FileStream::FileStream(base::PlatformFile file,
                        int flags,
                        NetLog* net_log,
                        const scoped_refptr<base::TaskRunner>& task_runner)
-    : open_flags_(flags),
-      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(file, bound_net_log_, open_flags_, task_runner)) {
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(base::File(file), flags, bound_net_log_,
+                           task_runner)) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStream::FileStream(base::PlatformFile file, int flags, NetLog* net_log)
-    : open_flags_(flags),
-      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(file,
-                           bound_net_log_,
-                           open_flags_,
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(base::File(file), flags, bound_net_log_,
+                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
+  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+}
+
+FileStream::FileStream(base::File file,
+                       net::NetLog* net_log,
+                       const scoped_refptr<base::TaskRunner>& task_runner)
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(file.Pass(), bound_net_log_, task_runner)) {
+  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+}
+
+FileStream::FileStream(base::File file, net::NetLog* net_log)
+    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(file.Pass(), bound_net_log_,
                            base::WorkerPool::GetTaskRunner(true /* slow */))) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStream::~FileStream() {
-  if (!is_async()) {
-    base::ThreadRestrictions::AssertIOAllowed();
+  if (context_->async()) {
+    context_.release()->Orphan();
+  } else {
     context_->CloseSync();
     context_.reset();
-  } else {
-    context_.release()->Orphan();
   }
 
   bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
@@ -74,8 +83,7 @@ int FileStream::Open(const base::FilePath& path, int open_flags,
     return ERR_UNEXPECTED;
   }
 
-  open_flags_ = open_flags;
-  DCHECK(is_async());
+  DCHECK(open_flags & base::File::FLAG_ASYNC);
   context_->OpenAsync(path, open_flags, callback);
   return ERR_IO_PENDING;
 }
@@ -88,26 +96,25 @@ int FileStream::OpenSync(const base::FilePath& path, int open_flags) {
     return ERR_UNEXPECTED;
   }
 
-  open_flags_ = open_flags;
-  DCHECK(!is_async());
-  return context_->OpenSync(path, open_flags_);
+  DCHECK(!context_->async());
+  return context_->OpenSync(path, open_flags);
 }
 
 int FileStream::Close(const CompletionCallback& callback) {
-  DCHECK(is_async());
+  DCHECK(context_->async());
   context_->CloseAsync(callback);
   return ERR_IO_PENDING;
 }
 
 int FileStream::CloseSync() {
-  DCHECK(!is_async());
+  DCHECK(!context_->async());
   base::ThreadRestrictions::AssertIOAllowed();
   context_->CloseSync();
   return OK;
 }
 
 bool FileStream::IsOpen() const {
-  return context_->file() != base::kInvalidPlatformFileValue;
+  return context_->file().IsValid();
 }
 
 int FileStream::Seek(Whence whence,
@@ -117,7 +124,7 @@ int FileStream::Seek(Whence whence,
     return ERR_UNEXPECTED;
 
   // Make sure we're async.
-  DCHECK(is_async());
+  DCHECK(context_->async());
   context_->SeekAsync(whence, offset, callback);
   return ERR_IO_PENDING;
 }
@@ -129,7 +136,7 @@ int64 FileStream::SeekSync(Whence whence, int64 offset) {
     return ERR_UNEXPECTED;
 
   // If we're in async, make sure we don't have a request in flight.
-  DCHECK(!is_async() || !context_->async_in_progress());
+  DCHECK(!context_->async() || !context_->async_in_progress());
   return context_->SeekSync(whence, offset);
 }
 
@@ -159,8 +166,7 @@ int FileStream::Read(IOBuffer* buf,
 
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
-  DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
-  DCHECK(is_async());
+  DCHECK(context_->async());
 
   return context_->ReadAsync(buf, buf_len, callback);
 }
@@ -171,10 +177,9 @@ int FileStream::ReadSync(char* buf, int buf_len) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  DCHECK(!is_async());
+  DCHECK(!context_->async());
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
-  DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
 
   return context_->ReadSync(buf, buf_len);
 }
@@ -208,8 +213,7 @@ int FileStream::Write(IOBuffer* buf,
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  DCHECK(is_async());
-  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
+  DCHECK(context_->async());
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
@@ -222,8 +226,7 @@ int FileStream::WriteSync(const char* buf, int buf_len) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  DCHECK(!is_async());
-  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
+  DCHECK(!context_->async());
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
@@ -235,9 +238,6 @@ int64 FileStream::Truncate(int64 bytes) {
 
   if (!IsOpen())
     return ERR_UNEXPECTED;
-
-  // We'd better be open for writing.
-  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
 
   // Seek to the position to truncate from.
   int64 seek_position = SeekSync(FROM_BEGIN, bytes);
@@ -252,9 +252,8 @@ int FileStream::Flush(const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
   // Make sure we're async.
-  DCHECK(is_async());
+  DCHECK(context_->async());
 
   context_->FlushAsync(callback);
   return ERR_IO_PENDING;
@@ -266,7 +265,6 @@ int FileStream::FlushSync() {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
   return context_->FlushSync();
 }
 
@@ -291,7 +289,7 @@ void FileStream::SetBoundNetLogSource(const BoundNetLog& owner_bound_net_log) {
       bound_net_log_.source().ToEventParametersCallback());
 }
 
-base::PlatformFile FileStream::GetPlatformFileForTesting() {
+const base::File& FileStream::GetFileForTesting() const {
   return context_->file();
 }
 

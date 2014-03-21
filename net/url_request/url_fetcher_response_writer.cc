@@ -80,8 +80,8 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
   } else {
     result = file_stream_->Open(
         file_path_,
-        base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC |
-        base::PLATFORM_FILE_CREATE_ALWAYS,
+        base::File::FLAG_WRITE | base::File::FLAG_ASYNC |
+        base::File::FLAG_CREATE_ALWAYS,
         base::Bind(&URLFetcherFileWriter::DidOpenFile,
                    weak_factory_.GetWeakPtr(),
                    callback));
@@ -162,8 +162,8 @@ void URLFetcherFileWriter::DidCreateTempFile(const CompletionCallback& callback,
   owns_file_ = true;
   const int result = file_stream_->Open(
       file_path_,
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC |
-      base::PLATFORM_FILE_OPEN,
+      base::File::FLAG_WRITE | base::File::FLAG_ASYNC |
+      base::File::FLAG_OPEN,
       base::Bind(&URLFetcherFileWriter::DidOpenFile,
                  weak_factory_.GetWeakPtr(),
                  callback));

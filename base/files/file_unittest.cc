@@ -11,7 +11,7 @@
 using base::File;
 using base::FilePath;
 
-TEST(File, Create) {
+TEST(FileTest, Create) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
@@ -87,7 +87,25 @@ TEST(File, Create) {
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
-TEST(File, DeleteOpenFile) {
+TEST(FileTest, Async) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.path().AppendASCII("create_file");
+
+  {
+    File file(file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_ASYNC);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_TRUE(file.async());
+  }
+
+  {
+    File file(file_path, base::File::FLAG_OPEN_ALWAYS);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_FALSE(file.async());
+  }
+}
+
+TEST(FileTest, DeleteOpenFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
@@ -114,7 +132,7 @@ TEST(File, DeleteOpenFile) {
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
-TEST(File, ReadWrite) {
+TEST(FileTest, ReadWrite) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("read_write_file");
@@ -186,7 +204,7 @@ TEST(File, ReadWrite) {
     EXPECT_EQ(data_to_write[i - kOffsetBeyondEndOfFile], data_read_2[i]);
 }
 
-TEST(File, Append) {
+TEST(FileTest, Append) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("append_file");
@@ -234,7 +252,7 @@ TEST(File, Append) {
 }
 
 
-TEST(File, Length) {
+TEST(FileTest, Length) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("truncate_file");
@@ -283,9 +301,9 @@ TEST(File, Length) {
 
 // Flakily fails: http://crbug.com/86494
 #if defined(OS_ANDROID)
-TEST(File, TouchGetInfo) {
+TEST(FileTest, TouchGetInfo) {
 #else
-TEST(File, DISABLED_TouchGetInfo) {
+TEST(FileTest, DISABLED_TouchGetInfo) {
 #endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -349,7 +367,7 @@ TEST(File, DISABLED_TouchGetInfo) {
             creation_time.ToInternalValue());
 }
 
-TEST(File, ReadAtCurrentPosition) {
+TEST(FileTest, ReadAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("read_at_current_position");
@@ -373,7 +391,7 @@ TEST(File, ReadAtCurrentPosition) {
   EXPECT_EQ(std::string(buffer, buffer + kDataSize), std::string(kData));
 }
 
-TEST(File, WriteAtCurrentPosition) {
+TEST(FileTest, WriteAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("write_at_current_position");
@@ -397,7 +415,7 @@ TEST(File, WriteAtCurrentPosition) {
 }
 
 #if defined(OS_WIN)
-TEST(File, GetInfoForDirectory) {
+TEST(FileTest, GetInfoForDirectory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath empty_dir = temp_dir.path().Append(FILE_PATH_LITERAL("gpfi_test"));

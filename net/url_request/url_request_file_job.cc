@@ -229,9 +229,9 @@ void URLRequestFileJob::DidFetchMetaInfo(const FileMetaInfo* meta_info) {
     return;
   }
 
-  int flags = base::PLATFORM_FILE_OPEN |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_ASYNC;
+  int flags = base::File::FLAG_OPEN |
+              base::File::FLAG_READ |
+              base::File::FLAG_ASYNC;
   int rv = stream_->Open(file_path_, flags,
                          base::Bind(&URLRequestFileJob::DidOpen,
                                     weak_ptr_factory_.GetWeakPtr()));

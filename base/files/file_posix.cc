@@ -125,7 +125,6 @@ static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
 void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
-  DCHECK(!(flags & FLAG_ASYNC));
 
   int open_flags = 0;
   if (flags & FLAG_CREATE)
@@ -191,17 +190,19 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
     }
   }
 
-  if (descriptor >= 0 && (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE)))
+  if (descriptor < 0) {
+    error_details_ = File::OSErrorToFileError(errno);
+    return;
+  }
+
+  if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
     created_ = true;
 
-  if ((descriptor >= 0) && (flags & FLAG_DELETE_ON_CLOSE))
+  if (flags & FLAG_DELETE_ON_CLOSE)
     unlink(name.value().c_str());
 
-  if (descriptor >= 0)
-    error_details_ = FILE_OK;
-  else
-    error_details_ = File::OSErrorToFileError(errno);
-
+  async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
+  error_details_ = FILE_OK;
   file_.reset(descriptor);
 }
 #endif  // !defined(OS_NACL)

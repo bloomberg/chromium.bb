@@ -71,7 +71,7 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return lstat(path, sb);
 }
-#else
+#else  // defined(OS_BSD) || defined(OS_MACOSX)
 typedef struct stat64 stat_wrapper_t;
 static int CallStat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
@@ -81,13 +81,7 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return lstat64(path, sb);
 }
-#if defined(OS_ANDROID)
-static int CallFstat(int fd, stat_wrapper_t *sb) {
-  ThreadRestrictions::AssertIOAllowed();
-  return fstat64(fd, sb);
-}
-#endif
-#endif
+#endif // !(defined(OS_BSD) || defined(OS_MACOSX))
 
 // Helper for NormalizeFilePath(), defined below.
 bool RealPath(const FilePath& path, FilePath* real_path) {
@@ -634,11 +628,10 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   stat_wrapper_t file_info;
 #if defined(OS_ANDROID)
   if (file_path.IsContentUri()) {
-    ScopedFD fd(OpenContentUriForRead(file_path));
-    if (!fd.is_valid())
+    File file = OpenContentUriForRead(file_path);
+    if (!file.IsValid())
       return false;
-    if (CallFstat(fd.get(), &file_info) != 0)
-      return false;
+    return file.GetInfo(results);
   } else {
 #endif  // defined(OS_ANDROID)
     if (CallStat(file_path.value().c_str(), &file_info) != 0)

@@ -2451,9 +2451,9 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
 
   // We should be able to read the file.
   char* buffer = new char[image_size];
-  int fd = OpenContentUriForRead(path);
-  EXPECT_LT(0, fd);
-  EXPECT_TRUE(ReadFromFD(fd, buffer, image_size));
+  File file = OpenContentUriForRead(path);
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_TRUE(file.ReadAtCurrentPos(buffer, image_size));
   delete[] buffer;
 }
 
@@ -2466,8 +2466,8 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
   EXPECT_FALSE(GetFileSize(path, &size));
 
   // We should not be able to read the file.
-  int fd = OpenContentUriForRead(path);
-  EXPECT_EQ(-1, fd);
+  File file = OpenContentUriForRead(path);
+  EXPECT_FALSE(file.IsValid());
 }
 #endif
 
