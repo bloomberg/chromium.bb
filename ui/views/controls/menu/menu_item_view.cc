@@ -792,12 +792,18 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  ui::NativeTheme::ColorId color_id =
-      ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+  ui::NativeTheme::ColorId color_id;
   if (enabled()) {
     color_id = render_selection ?
         ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
         ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+  } else {
+    bool emphasized = delegate &&
+                      delegate->GetShouldUseDisabledEmphasizedForegroundColor(
+                          GetCommand());
+    color_id = emphasized ?
+        ui::NativeTheme::kColorId_DisabledEmphasizedMenuItemForegroundColor :
+        ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
   }
   SkColor fg_color = native_theme->GetSystemColor(color_id);
   SkColor override_foreground_color;

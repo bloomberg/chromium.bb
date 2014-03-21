@@ -117,6 +117,8 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kEnabledMenuItemForegroundColor;
     case kColorId_DisabledMenuItemForegroundColor:
       return kDisabledMenuItemForegroundColor;
+    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
+      return SK_ColorBLACK;
     case kColorId_SelectedMenuItemForegroundColor:
       return kEnabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:

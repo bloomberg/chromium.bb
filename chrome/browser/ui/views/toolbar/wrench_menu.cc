@@ -848,15 +848,10 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     return model_->GetLabelFontListAt(index);
   }
 
-  bool GetForegroundColorAt(int index,
-                            bool is_hovered,
-                            SkColor* override_color) const {
-    // The items for which we get a font list, should be shown in black.
-    if (GetLabelFontListAt(index)) {
-      *override_color = SK_ColorBLACK;
-      return true;
-    }
-    return false;
+  bool GetShouldUseDisabledEmphasizedForegroundColor(int index) const {
+    // The items for which we get a font list, should be shown in the bolded
+    // color.
+    return GetLabelFontListAt(index) ? true : false;
   }
 
   // ui::MenuModelDelegate implementation:
@@ -1003,12 +998,12 @@ const gfx::FontList* WrenchMenu::GetLabelFontList(int command_id) const {
   return NULL;
 }
 
-bool WrenchMenu::GetForegroundColor(int command_id,
-                                    bool is_hovered,
-                                    SkColor* override_color) const {
+bool WrenchMenu::GetShouldUseDisabledEmphasizedForegroundColor(
+    int command_id) const {
   if (IsRecentTabsCommand(command_id)) {
-    return recent_tabs_menu_model_delegate_->GetForegroundColorAt(
-        ModelIndexFromCommandId(command_id), is_hovered, override_color);
+    return recent_tabs_menu_model_delegate_->
+        GetShouldUseDisabledEmphasizedForegroundColor(
+            ModelIndexFromCommandId(command_id));
   }
   return false;
 }

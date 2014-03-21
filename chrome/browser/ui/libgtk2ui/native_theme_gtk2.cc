@@ -118,6 +118,7 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
 
     // MenuItem
     case kColorId_EnabledMenuItemForegroundColor:
+    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
       return GetMenuItemStyle()->text[GTK_STATE_NORMAL];
     case kColorId_DisabledMenuItemForegroundColor:
       return GetMenuItemStyle()->text[GTK_STATE_INSENSITIVE];

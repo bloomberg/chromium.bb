@@ -538,6 +538,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kEnabledMenuItemForegroundColor;
     case kColorId_DisabledMenuItemForegroundColor:
       return kDisabledMenuItemForegroundColor;
+    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
+      return SK_ColorBLACK;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
     case kColorId_MenuSeparatorColor:

@@ -60,11 +60,10 @@ class WrenchMenu : public views::MenuDelegate,
 
   // MenuDelegate overrides:
   virtual const gfx::FontList* GetLabelFontList(int command_id) const OVERRIDE;
-  virtual bool GetForegroundColor(int command_id,
-                                  bool is_hovered,
-                                  SkColor* override_color) const OVERRIDE;
+  virtual bool GetShouldUseDisabledEmphasizedForegroundColor(
+      int command_id) const OVERRIDE;
   virtual base::string16 GetTooltipText(int command_id,
-                                  const gfx::Point& p) const OVERRIDE;
+                                        const gfx::Point& p) const OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
                                   const ui::Event& e) OVERRIDE;
   virtual bool GetDropFormats(
