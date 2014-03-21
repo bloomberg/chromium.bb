@@ -27,14 +27,14 @@
 #define FilterOperations_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/IntBoxExtent.h"
+#include "platform/geometry/IntRectExtent.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-typedef IntBoxExtent FilterOutsets;
+typedef IntRectExtent FilterOutsets;
 
 class PLATFORM_EXPORT FilterOperations {
     WTF_MAKE_FAST_ALLOCATED;

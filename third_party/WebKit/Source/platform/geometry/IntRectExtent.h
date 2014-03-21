@@ -27,16 +27,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef IntBoxExtent_h
-#define IntBoxExtent_h
+#ifndef IntRectExtent_h
+#define IntRectExtent_h
 
 #include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 
-class IntBoxExtent {
+class IntRectExtent {
 public:
-    IntBoxExtent()
+    IntRectExtent()
         : m_top(0)
         , m_right(0)
         , m_bottom(0)
@@ -44,7 +44,7 @@ public:
     {
     }
 
-    IntBoxExtent(int top, int right, int bottom, int left)
+    IntRectExtent(int top, int right, int bottom, int left)
         : m_top(top)
         , m_right(right)
         , m_bottom(bottom)
@@ -82,7 +82,7 @@ private:
     int m_left;
 };
 
-inline bool operator==(const IntBoxExtent& a, const IntBoxExtent& b)
+inline bool operator==(const IntRectExtent& a, const IntRectExtent& b)
 {
     return a.top() == b.top()
         && a.right() == b.right()
@@ -90,12 +90,12 @@ inline bool operator==(const IntBoxExtent& a, const IntBoxExtent& b)
         && a.left() == b.left();
 }
 
-inline bool operator!=(const IntBoxExtent& a, const IntBoxExtent& b)
+inline bool operator!=(const IntRectExtent& a, const IntRectExtent& b)
 {
     return !(a == b);
 }
 
-inline void operator+=(IntBoxExtent& a, const IntBoxExtent& b)
+inline void operator+=(IntRectExtent& a, const IntRectExtent& b)
 {
     a.setTop(a.top() + b.top());
     a.setRight(a.right() + b.right());
@@ -106,4 +106,4 @@ inline void operator+=(IntBoxExtent& a, const IntBoxExtent& b)
 } // namespace WebCore
 
 
-#endif // IntBoxExtent_h
+#endif // IntRectExtent_h
