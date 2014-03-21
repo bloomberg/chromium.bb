@@ -315,30 +315,6 @@ V8 contexts living in the same process that need to share data with each other.<
 <p>Open <a href="repros/removeSpellingMarker.html">this link</a> in chrome, place the cursor inside the contenteditable and make sure some mispelling markers show up. Then click on the button to switch the contenteditable to false. Note that the misspelling markers aren't removed. </p>
 
 <h3>
-    <a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a>
-    (Shezan Baig; D32861389)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FscrollClipRect">view changes</a>]</span>
-</h3>
-<p>This bug is somewhat hard to reproduce, the window size needs to be just
-about right.</p>
-<p>Open <a href="repros/scrollClipRect.html">this link</a> in Chrome, and
-resize the window so that new outer scrollbars appear over the existing
-scrollbars of the iframe.  Then resize it just a little smaller.  Then use the
-mouse wheel to scroll the contents of the iframe.</p>
-<p>If the window is sized just right, you will see that only a portion of the
-iframe scrolls.  This is because the clipRect is not being calculated correctly
-due to the scale transform being applied.</p>
-
-<h3>
-    <a name="bugfix-scrollOverflowHidden">bugfix/scrollOverflowHidden</a>
-    (Antonio Gomes &lt;tonikitoo@webkit.org&gt;; D42789626; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=119760">119760</a>)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FscrollOverflowHidden">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/scrollOverflowHidden.html">this link</a> in Chrome, and
-click inside the "abcdef" entry, and drag to the far right.  The elements will
-start scrolling unexpectedly.</p>
-
-<h3>
     <a name="bugfix-selrectantialias">bugfix/selrectantialias</a>
     (Shezan Baig; D32113976; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87157">87157</a>)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fselrectantialias">view changes</a>]</span>
@@ -630,6 +606,14 @@ text.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
+
+<h2><a name="retired-31.0.1650.63">Retired at 31.0.1650.63</a></h2>
+
+<h3><a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a> (Shezan Baig; D32861389)</h3>
+<p>Retired because the issue is no longer reproducable (appears to be fixed upstream).</p>
+
+<h3><a name="bugfix-scrollOverflowHidden">bugfix/scrollOverflowHidden</a> (Antonio Gomes &lt;tonikitoo@webkit.org&gt;; D42789626; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=119760">119760</a>)</h3>
+<p>Retired because the issue is no longer reproducable (appears to be fixed upstream).</p>
 
 <h2><a name="retired-29.0.1547.76">Retired at 29.0.1547.76</a></h2>
 
