@@ -568,6 +568,8 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
   // Synthetic touchstart events should get filtered out in RenderWidget.
   DCHECK(touch_event_queue_->IsPendingAckTouchStart());
+  TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction",
+               "action", touch_action);
 
   touch_action_filter_.OnSetTouchAction(touch_action);
 
