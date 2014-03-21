@@ -256,7 +256,7 @@
         }],
         ['desktop_linux == 1 or chromeos == 1 or OS == "ios"', {
           'dependencies': [
-            '../base/strings/ui_strings.gyp:ui_unittest_strings',
+            '../base/strings/ui_strings.gyp:ui_locale_test_pak',
           ],
         }],
         # See http://crbug.com/162998#c4 for why this is needed.
