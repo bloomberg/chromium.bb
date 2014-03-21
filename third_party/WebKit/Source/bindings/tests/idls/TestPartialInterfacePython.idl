@@ -28,6 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum PartialEnumType {
+    "foo",
+    "bar"
+};
+
+typedef DOMString String;
+
+callback PartialCallbackType = void (String value);
+
 [
     Conditional=PARTIAL_CONDITION,
     RuntimeEnabled=PartialFeatureName,
@@ -42,4 +51,7 @@
     static void partialStaticVoidMethod();
     void partialVoidMethodLongArg(long longArg);
     [CallWith=ExecutionContext, RaisesException] void partialCallWithExecutionContextRaisesExceptionVoidMethod();
+
+    attribute PartialEnumType enumAttribute;
+    void methodThatTakesCallback(PartialCallbackType callback);
 };

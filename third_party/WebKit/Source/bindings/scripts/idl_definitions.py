@@ -164,6 +164,10 @@ class IdlDefinitions(object):
                                 'but no existing interface by that name'
                                 .format(interface_name))
 
+            # Merge callbacks and enumerations
+            self.enumerations.update(other.enumerations)
+            self.callback_functions.update(other.callback_functions)
+
 
 ################################################################################
 # Callback Functions
