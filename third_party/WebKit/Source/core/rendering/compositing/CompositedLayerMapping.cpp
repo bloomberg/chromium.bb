@@ -350,8 +350,11 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
     return false;
 }
 
-void CompositedLayerMapping::updateCompositedBounds()
+void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
 {
+    if (!m_needToUpdateGeometry && updateType != GraphicsLayerUpdater::ForceUpdate)
+        return;
+
     // We need to know if we draw content in order to update our bounds (this has an effect
     // on whether or not descendands will paint into our backing). Update this value now.
     updateDrawsContent();
@@ -425,7 +428,7 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         //
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
-        updateCompositedBounds();
+        updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
         layerCompositor->updateCompositingDescendantGeometry(m_owningLayer.stackingNode(), &m_owningLayer, flags & CompositingChildrenOnly);
 
         if (flags & IsUpdateRoot) {

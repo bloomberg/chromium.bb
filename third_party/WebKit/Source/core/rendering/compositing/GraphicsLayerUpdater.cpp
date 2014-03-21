@@ -166,11 +166,11 @@ GraphicsLayerUpdater::UpdateType GraphicsLayerUpdater::update(RenderLayer& layer
 
     // Note carefully: here we assume that the compositing state of all descendants have been updated already,
     // so it is legitimate to compute and cache the composited bounds for this layer.
-    mapping->updateCompositedBounds();
+    mapping->updateCompositedBounds(updateType);
 
     if (RenderLayerReflectionInfo* reflection = layer.reflectionInfo()) {
         if (reflection->reflectionLayer()->hasCompositedLayerMapping())
-            reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds();
+            reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds(ForceUpdate);
     }
 
     mapping->updateGraphicsLayerConfiguration();

@@ -1431,12 +1431,12 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
     if (layer->stackingNode() != compositingAncestor) {
         if (layer->hasCompositedLayerMapping()) {
             CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-            compositedLayerMapping->updateCompositedBounds();
+            compositedLayerMapping->updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
 
             if (layer->reflectionInfo()) {
                 RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
                 if (reflectionLayer->hasCompositedLayerMapping())
-                    reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
+                    reflectionLayer->compositedLayerMapping()->updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
             }
 
             compositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
