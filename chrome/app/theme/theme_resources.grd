@@ -165,6 +165,15 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_CROS_DEFAULT_THROBBER" file="cros/default_throbber.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_BOTTOM_LEFT" file="common/developer_mode_highlight_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_BOTTOM" file="common/developer_mode_highlight_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_BOTTOM_RIGHT" file="common/developer_mode_highlight_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_CENTER" file="common/developer_mode_highlight_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_LEFT" file="common/developer_mode_highlight_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_RIGHT" file="common/developer_mode_highlight_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP_LEFT" file="common/developer_mode_highlight_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP" file="common/developer_mode_highlight_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP_RIGHT" file="common/developer_mode_highlight_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_HIGH" file="dock_tab_high.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_MAX" file="dock_tab_max.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_WIDE" file="dock_tab_wide.png" />
