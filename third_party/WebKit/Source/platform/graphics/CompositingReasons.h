@@ -88,6 +88,19 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonVideoOverlay
     | CompositingReasonWillChange;
 
+const uint64_t CompositingReasonComboAllStyleDeterminedDirectReasons =
+    CompositingReason3DTransform
+    | CompositingReasonVideo
+    | CompositingReasonCanvas
+    | CompositingReasonPlugin
+    | CompositingReasonIFrame
+    | CompositingReasonBackfaceVisibilityHidden
+    | CompositingReasonActiveAnimation
+    | CompositingReasonTransitionProperty
+    | CompositingReasonFilters
+    | CompositingReasonVideoOverlay
+    | CompositingReasonWillChange;
+
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonComboAllDirectReasons
     | CompositingReasonOverlap
@@ -114,6 +127,8 @@ struct CompositingReasonStringMap {
     const char* description;
 };
 
+// FIXME: This static data shouldn't be in a header. When it's in the header
+// it's copied into every compilation unit that includes the header.
 static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonNone,
         "Unknown",

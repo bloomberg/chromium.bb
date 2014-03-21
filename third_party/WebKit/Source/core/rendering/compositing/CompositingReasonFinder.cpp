@@ -59,9 +59,8 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+CompositingReasons CompositingReasonFinder::styleDeterminedDirectReasons(RenderObject* renderer) const
 {
-    RenderObject* renderer = layer->renderer();
     CompositingReasons directReasons = CompositingReasonNone;
 
     if (requiresCompositingForTransform(renderer))
@@ -76,8 +75,21 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
-    if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
-        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
+    if (requiresCompositingForWillChange(renderer))
+        directReasons |= CompositingReasonWillChange;
+
+    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
+
+    ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedDirectReasons));
+    return directReasons;
+}
+
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+{
+    CompositingReasons directReasons = CompositingReasonNone;
+
+    if (requiresCompositingForOutOfFlowClipping(layer))
+        directReasons |= CompositingReasonOutOfFlowClipping;
 
     if (requiresCompositingForOverflowScrolling(layer))
         directReasons |= CompositingReasonOverflowScrollingTouch;
@@ -85,15 +97,17 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForOverflowScrollingParent(layer))
         directReasons |= CompositingReasonOverflowScrollingParent;
 
-    if (requiresCompositingForOutOfFlowClipping(layer))
-        directReasons |= CompositingReasonOutOfFlowClipping;
+    RenderObject* renderer = layer->renderer();
+    if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
+        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
 
-    if (requiresCompositingForWillChange(renderer))
-        directReasons |= CompositingReasonWillChange;
-
-    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
-
+    ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedDirectReasons));
     return directReasons;
+}
+
+CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+{
+    return styleDeterminedDirectReasons(layer->renderer()) | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
 }
 
 bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const

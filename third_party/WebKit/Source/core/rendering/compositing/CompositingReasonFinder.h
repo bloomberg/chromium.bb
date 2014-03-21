@@ -35,6 +35,9 @@ public:
 private:
     bool isMainFrame() const;
 
+    CompositingReasons styleDeterminedDirectReasons(RenderObject*) const;
+    CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
+
     bool requiresCompositingForAnimation(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
