@@ -76,14 +76,15 @@ GURL GetFeedUrl(net::SpawnedTestServer* server, const std::string& feed_page,
   }
 }
 
-bool ValidatePageElement(content::RenderFrameHost* frame,
+bool ValidatePageElement(WebContents* tab,
+                         const std::string& frame_xpath,
                          const std::string& javascript,
                          const std::string& expected_value) {
   std::string returned_value;
 
-  if (!content::ExecuteScriptAndExtractString(frame,
-                                              javascript,
-                                              &returned_value))
+  if (!content::ExecuteScriptInFrameAndExtractString(tab, frame_xpath,
+                                                     javascript,
+                                                     &returned_value))
     return false;
 
   EXPECT_STREQ(expected_value.c_str(), returned_value.c_str());
@@ -112,13 +113,20 @@ void NavigateToFeedAndValidate(net::SpawnedTestServer* server,
                                GetFeedUrl(server, url, true, extension_id));
 
   WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* frame = content::FrameMatchingPredicate(
-      tab, base::Bind(&content::FrameIsChildOfMainFrame));
   ASSERT_TRUE(ValidatePageElement(
-      tab->GetMainFrame(), kScriptFeedTitle, expected_feed_title));
-  ASSERT_TRUE(ValidatePageElement(frame, kScriptAnchor, expected_item_title));
-  ASSERT_TRUE(ValidatePageElement(frame, kScriptDesc, expected_item_desc));
-  ASSERT_TRUE(ValidatePageElement(frame, kScriptError, expected_error));
+      tab, std::string(), kScriptFeedTitle, expected_feed_title));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptAnchor,
+                                  expected_item_title));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptDesc,
+                                  expected_item_desc));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptError,
+                                  expected_error));
 }
 
 } // namespace

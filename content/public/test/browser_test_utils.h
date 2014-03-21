@@ -164,6 +164,11 @@ bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
 // evaluate to the expected type.
 // OBSOLETE; DO NOT USE! Use ExecuteScriptAndExtract[Int|Bool|String] and
 // specify a RenderFrameHost.
+bool ExecuteScriptInFrameAndExtractInt(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    int* result) WARN_UNUSED_RESULT;
 bool ExecuteScriptInFrameAndExtractBool(
     const internal::ToRenderViewHost& adapter,
     const std::string& frame_xpath,

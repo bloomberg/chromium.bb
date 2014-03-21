@@ -27,66 +27,51 @@ using extensions::Extension;
 
 class ChromeAppAPITest : public ExtensionBrowserTest {
  protected:
-  bool IsAppInstalledInMainFrame() {
-    return IsAppInstalledInFrame(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
-  }
-  bool IsAppInstalledInIFrame() {
-    return IsAppInstalledInFrame(GetIFrame());
-  }
-  bool IsAppInstalledInFrame(content::RenderFrameHost* frame) {
+  bool IsAppInstalled() { return IsAppInstalled(""); }
+  bool IsAppInstalled(const char* frame_xpath) {
     const char kGetAppIsInstalled[] =
         "window.domAutomationController.send(window.chrome.app.isInstalled);";
     bool result;
-    CHECK(content::ExecuteScriptAndExtractBool(frame,
-                                               kGetAppIsInstalled,
-                                               &result));
+    CHECK(
+        content::ExecuteScriptInFrameAndExtractBool(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            frame_xpath,
+            kGetAppIsInstalled,
+            &result));
     return result;
   }
 
-  std::string InstallStateInMainFrame() {
-    return InstallStateInFrame(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
-  }
-  std::string InstallStateInIFrame() {
-    return InstallStateInFrame(GetIFrame());
-  }
-  std::string InstallStateInFrame(content::RenderFrameHost* frame) {
+  std::string InstallState() { return InstallState(""); }
+  std::string InstallState(const char* frame_xpath) {
     const char kGetAppInstallState[] =
         "window.chrome.app.installState("
         "    function(s) { window.domAutomationController.send(s); });";
     std::string result;
-    CHECK(content::ExecuteScriptAndExtractString(frame,
-                                                 kGetAppInstallState,
-                                                 &result));
+    CHECK(
+        content::ExecuteScriptInFrameAndExtractString(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            frame_xpath,
+            kGetAppInstallState,
+            &result));
     return result;
   }
 
-  std::string RunningStateInMainFrame() {
-    return RunningStateInFrame(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
-  }
-  std::string RunningStateInIFrame() {
-    return RunningStateInFrame(GetIFrame());
-  }
-  std::string RunningStateInFrame(content::RenderFrameHost* frame) {
+  std::string RunningState() { return RunningState(""); }
+  std::string RunningState(const char* frame_xpath) {
     const char kGetAppRunningState[] =
         "window.domAutomationController.send("
         "    window.chrome.app.runningState());";
     std::string result;
-    CHECK(content::ExecuteScriptAndExtractString(frame,
-                                                 kGetAppRunningState,
-                                                 &result));
+    CHECK(
+        content::ExecuteScriptInFrameAndExtractString(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            frame_xpath,
+            kGetAppRunningState,
+            &result));
     return result;
   }
 
  private:
-  content::RenderFrameHost* GetIFrame() {
-    return content::FrameMatchingPredicate(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&content::FrameIsChildOfMainFrame));
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppsCheckoutURL,
@@ -119,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
 
   // Before the app is installed, app.com does not think that it is installed
   ui_test_utils::NavigateToURL(browser(), app_url);
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_FALSE(IsAppInstalled());
 
   // Load an app which includes app.com in its extent.
   const Extension* extension = LoadExtension(
@@ -128,11 +113,11 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
 
   // Even after the app is installed, the existing app.com tab is not in an
   // app process, so chrome.app.isInstalled should return false.
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_FALSE(IsAppInstalled());
 
   // Test that a non-app page has chrome.app.isInstalled = false.
   ui_test_utils::NavigateToURL(browser(), non_app_url);
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_FALSE(IsAppInstalled());
 
   // Test that a non-app page returns null for chrome.app.getDetails().
   const char kGetAppDetails[] =
@@ -148,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
 
   // Check that an app page has chrome.app.isInstalled = true.
   ui_test_utils::NavigateToURL(browser(), app_url);
-  EXPECT_TRUE(IsAppInstalledInMainFrame());
+  EXPECT_TRUE(IsAppInstalled());
 
   // Check that an app page returns the correct result for
   // chrome.app.getDetails().
@@ -267,48 +252,48 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
   // Before the app is installed, app.com does not think that it is installed
   ui_test_utils::NavigateToURL(browser(), app_url);
 
-  EXPECT_EQ("not_installed", InstallStateInMainFrame());
-  EXPECT_EQ("cannot_run", RunningStateInMainFrame());
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("not_installed", InstallState());
+  EXPECT_EQ("cannot_run", RunningState());
+  EXPECT_FALSE(IsAppInstalled());
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("app_dot_com_app"));
   ASSERT_TRUE(extension);
 
-  EXPECT_EQ("installed", InstallStateInMainFrame());
-  EXPECT_EQ("ready_to_run", RunningStateInMainFrame());
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("installed", InstallState());
+  EXPECT_EQ("ready_to_run", RunningState());
+  EXPECT_FALSE(IsAppInstalled());
 
   // Reloading the page should put the tab in an app process.
   ui_test_utils::NavigateToURL(browser(), app_url);
-  EXPECT_EQ("installed", InstallStateInMainFrame());
-  EXPECT_EQ("running", RunningStateInMainFrame());
-  EXPECT_TRUE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("installed", InstallState());
+  EXPECT_EQ("running", RunningState());
+  EXPECT_TRUE(IsAppInstalled());
 
   // Disable the extension and verify the state.
   browser()->profile()->GetExtensionService()->DisableExtension(
       extension->id(), Extension::DISABLE_PERMISSIONS_INCREASE);
   ui_test_utils::NavigateToURL(browser(), app_url);
 
-  EXPECT_EQ("disabled", InstallStateInMainFrame());
-  EXPECT_EQ("cannot_run", RunningStateInMainFrame());
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("disabled", InstallState());
+  EXPECT_EQ("cannot_run", RunningState());
+  EXPECT_FALSE(IsAppInstalled());
 
   browser()->profile()->GetExtensionService()->EnableExtension(extension->id());
-  EXPECT_EQ("installed", InstallStateInMainFrame());
-  EXPECT_EQ("ready_to_run", RunningStateInMainFrame());
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("installed", InstallState());
+  EXPECT_EQ("ready_to_run", RunningState());
+  EXPECT_FALSE(IsAppInstalled());
 
   // The non-app URL should still not be installed or running.
   ui_test_utils::NavigateToURL(browser(), non_app_url);
 
-  EXPECT_EQ("not_installed", InstallStateInMainFrame());
-  EXPECT_EQ("cannot_run", RunningStateInMainFrame());
-  EXPECT_FALSE(IsAppInstalledInMainFrame());
+  EXPECT_EQ("not_installed", InstallState());
+  EXPECT_EQ("cannot_run", RunningState());
+  EXPECT_FALSE(IsAppInstalled());
 
-  EXPECT_EQ("installed", InstallStateInIFrame());
-  EXPECT_EQ("cannot_run", RunningStateInIFrame());
-  EXPECT_FALSE(IsAppInstalledInIFrame());
+  EXPECT_EQ("installed", InstallState("//html/iframe[1]"));
+  EXPECT_EQ("cannot_run", RunningState("//html/iframe[1]"));
+  EXPECT_FALSE(IsAppInstalled("//html/iframe[1]"));
 
 }
 
@@ -334,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningStateFrame) {
   // within an app.
   ui_test_utils::NavigateToURL(browser(), app_url);
 
-  EXPECT_EQ("not_installed", InstallStateInIFrame());
-  EXPECT_EQ("cannot_run", RunningStateInIFrame());
-  EXPECT_FALSE(IsAppInstalledInIFrame());
+  EXPECT_EQ("not_installed", InstallState("//html/iframe[1]"));
+  EXPECT_EQ("cannot_run", RunningState("//html/iframe[1]"));
+  EXPECT_FALSE(IsAppInstalled("//html/iframe[1]"));
 }
