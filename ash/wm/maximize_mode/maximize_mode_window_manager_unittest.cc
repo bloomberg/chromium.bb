@@ -65,11 +65,10 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
 
   // Resize our desktop.
   void ResizeDesktop(int width_delta) {
-    aura::Window* container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kSwitchableWindowContainerIds[0]);
-    gfx::Rect bounds = container->bounds();
-    bounds.set_width(bounds.width() - width_delta);
-    container->SetBounds(bounds);
+    gfx::Size size = Shell::GetScreen()->GetDisplayNearestWindow(
+        Shell::GetPrimaryRootWindow()).size();
+    size.Enlarge(0, width_delta);
+    UpdateDisplay(size.ToString());
   }
 
  private:
@@ -356,31 +355,39 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
 // Check that resizing the desktop does reposition unmaximizable & managed
 // windows.
 TEST_F(MaximizeModeWindowManagerTest, DesktopSizeChangeMovesUnmaximizable) {
-  gfx::Rect rect(20, 140, 100, 100);
-  scoped_ptr<aura::Window> window(
+  UpdateDisplay("400x400");
+  // This window will move because it does not fit the new bounds.
+  gfx::Rect rect(20, 300, 100, 100);
+  scoped_ptr<aura::Window> window1(
       CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
-  EXPECT_EQ(rect.ToString(), window->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), window1->bounds().ToString());
+
+  // This window will not move because it does fit the new bounds.
+  gfx::Rect rect2(20, 140, 100, 100);
+  scoped_ptr<aura::Window> window2(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
 
   // Turning on the manager will reposition (but not resize) the window.
   ash::internal::MaximizeModeWindowManager* manager =
       CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
-  EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
-  gfx::Rect moved_bounds(window->bounds());
+  EXPECT_EQ(2, manager->GetNumberOfManagedWindows());
+  gfx::Rect moved_bounds(window1->bounds());
   EXPECT_NE(rect.origin().ToString(), moved_bounds.origin().ToString());
   EXPECT_EQ(rect.size().ToString(), moved_bounds.size().ToString());
 
   // Simulating a desktop resize should move the window again.
-  ResizeDesktop(-10);
-  gfx::Rect new_moved_bounds(window->bounds());
+  UpdateDisplay("300x300");
+  gfx::Rect new_moved_bounds(window1->bounds());
   EXPECT_NE(rect.origin().ToString(), new_moved_bounds.origin().ToString());
   EXPECT_EQ(rect.size().ToString(), new_moved_bounds.size().ToString());
   EXPECT_NE(moved_bounds.origin().ToString(), new_moved_bounds.ToString());
 
   // Turning off the mode should not restore to the initial coordinates since
-  // the new resolution is different.
+  // the new resolution is smaller and the window was on the edge.
   DestroyMaximizeModeWindowManager();
-  EXPECT_NE(rect.ToString(), window->bounds().ToString());
+  EXPECT_NE(rect.ToString(), window1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), window2->bounds().ToString());
 }
 
 // Check that windows return to original location if desktop size changes to

@@ -6,6 +6,7 @@
 #define ASH_WM_DEFAULT_STATE_H_
 
 #include "ash/wm/window_state.h"
+#include "ui/gfx/display.h"
 
 namespace ash {
 namespace wm {
@@ -35,10 +36,6 @@ class DefaultState : public WindowState::State {
   static bool ProcessWorkspaceEvents(WindowState* window_state,
                                      const WMEvent* event);
 
-  // Animates to new window bounds based on the current and previous state type.
-  static void UpdateBounds(wm::WindowState* window_state,
-                           wm::WindowStateType old_state_type);
-
   // Set the fullscreen/maximized bounds without animation.
   static bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
 
@@ -47,6 +44,21 @@ class DefaultState : public WindowState::State {
 
   static void CenterWindow(WindowState* window_state);
 
+  // Enters next state. This is used when the state moves from one to another
+  // within the same desktop mode.
+  void EnterToNextState(wm::WindowState* window_state,
+                        wm::WindowStateType next_state_type);
+
+  // Reenters the current state. This is called when migrating from
+  // previous desktop mode, and the window's state needs to re-construct the
+  // state/bounds for this state.
+  void ReenterToCurrentState(wm::WindowState* window_state,
+                             wm::WindowState::State* state_in_previous_mode);
+
+  // Animates to new window bounds based on the current and previous state type.
+  void UpdateBoundsFromState(wm::WindowState* window_state,
+                             wm::WindowStateType old_state_type);
+
   // The current type of the window.
   WindowStateType state_type_;
 
@@ -54,9 +66,8 @@ class DefaultState : public WindowState::State {
   gfx::Rect stored_bounds_;
   gfx::Rect stored_restore_bounds_;
 
-  // The size of the workspace when the mode got started. If it differs from
-  // the current values the bounds will get ignored.
-  gfx::Size stored_workspace_size_;
+  // The display state in which the mode got started.
+  gfx::Display stored_display_state_;
 
   // The window state only gets remembered for DCHECK reasons.
   WindowState* stored_window_state_;
