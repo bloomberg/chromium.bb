@@ -51,6 +51,7 @@ enum DragApplicationFlags {
 
 class DragData {
 public:
+    // ConvertFilenames is only intended to be used when treating drags as a navigation action.
     enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
 
     // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
@@ -61,10 +62,10 @@ public:
     DragApplicationFlags flags() const { return m_applicationFlags; }
     DataObject* platformData() const { return m_platformDragData; }
     DragOperation draggingSourceOperationMask() const { return m_draggingSourceOperationMask; }
-    bool containsURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
+    bool containsURL(FilenameConversionPolicy filenamePolicy = DoNotConvertFilenames) const;
     bool containsPlainText() const;
     bool containsCompatibleContent() const;
-    String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
+    String asURL(FilenameConversionPolicy filenamePolicy = DoNotConvertFilenames, String* title = 0) const;
     String asPlainText() const;
     void asFilenames(Vector<String>&) const;
     PassRefPtr<DocumentFragment> asFragment(LocalFrame*, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText) const;

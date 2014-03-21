@@ -102,6 +102,8 @@ public:
     BLINK_EXPORT WebString filesystemId() const;
     BLINK_EXPORT void setFilesystemId(const WebString&);
 
+    BLINK_EXPORT void setFilenameForNavigation(const WebString&);
+
 #if BLINK_IMPLEMENTATION
     explicit WebDragData(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);
     WebDragData& operator=(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);

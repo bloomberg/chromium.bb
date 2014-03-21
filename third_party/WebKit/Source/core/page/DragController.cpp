@@ -265,7 +265,7 @@ bool DragController::performDrag(DragData* dragData)
         return false;
 
     if (m_page->settings().navigateOnDragDrop())
-        m_page->mainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
+        m_page->mainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL(DragData::ConvertFilenames))));
     return true;
 }
 
@@ -946,7 +946,7 @@ DragOperation DragController::dragOperation(DragData* dragData)
     // attached sheet If this can be determined from within WebCore
     // operationForDrag can be pulled into WebCore itself
     ASSERT(dragData);
-    return dragData->containsURL() && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
+    return dragData->containsURL(DragData::ConvertFilenames) && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
 }
 
 bool DragController::isCopyKeyDown(DragData* dragData)
