@@ -25,10 +25,10 @@ const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
 const int kIconDimension = 24;
 const int kPadding = 14;
-const int kFolderNameWidth = 150;
-const int kFolderNameHeight = 30;
 const int kBottomSeparatorWidth = 380;
 const int kBottomSeparatorHeight = 1;
+const int kMaxFolderNameWidth = 300;
+const int kFolderNameLeftRightPaddingChars = 4;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
@@ -47,11 +47,6 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   virtual ~FolderNameView() {
   }
 
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(kFolderNameWidth, kFolderNameHeight);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
@@ -60,6 +55,9 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     : folder_item_(NULL),
       back_button_(new views::ImageButton(this)),
       folder_name_view_(new FolderNameView),
+      folder_name_placeholder_text_(
+          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+              IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
       folder_name_visible_(true) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -72,8 +70,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
   folder_name_view_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::MediumFont));
   folder_name_view_->set_placeholder_text_color(kHintTextColor);
-  folder_name_view_->set_placeholder_text(
-      rb.GetLocalizedString(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
+  folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::Border::NullBorder());
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
   folder_name_view_->set_controller(this);
@@ -116,6 +113,8 @@ void FolderHeaderView::Update() {
   folder_name_view_->SetVisible(folder_name_visible_);
   if (folder_name_visible_)
     folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->name()));
+
+  Layout();
 }
 
 gfx::Size FolderHeaderView::GetPreferredSize() {
@@ -132,7 +131,12 @@ void FolderHeaderView::Layout() {
   back_button_->SetBoundsRect(back_bounds);
 
   gfx::Rect text_bounds(rect);
-  int text_width = folder_name_view_->GetPreferredSize().width();
+  int text_char_num = folder_item_->name().size()
+                          ? folder_item_->name().size()
+                          : folder_name_placeholder_text_.size();
+  int text_width = folder_name_view_->GetFontList().GetExpectedTextWidth(
+      text_char_num + kFolderNameLeftRightPaddingChars);
+  text_width = std::min(text_width, kMaxFolderNameWidth);
   text_bounds.set_x(back_bounds.x() + (rect.width() - text_width) / 2);
   text_bounds.set_width(text_width);
   text_bounds.ClampToCenteredSize(gfx::Size(text_bounds.width(),
@@ -172,6 +176,8 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
   std::string name = base::UTF16ToUTF8(folder_name_view_->text());
   delegate_->SetItemName(folder_item_, name);
   folder_item_->AddObserver(this);
+
+  Layout();
 }
 
 void FolderHeaderView::ButtonPressed(views::Button* sender,

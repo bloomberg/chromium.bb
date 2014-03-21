@@ -69,6 +69,8 @@ class FolderHeaderView : public views::View,
   views::ImageButton* back_button_;  // Owned by views hierarchy.
   FolderNameView* folder_name_view_;  // Owned by views hierarchy.
 
+  const base::string16 folder_name_placeholder_text_;
+
   FolderHeaderViewDelegate* delegate_;
 
   bool folder_name_visible_;
