@@ -745,16 +745,21 @@ SMILTime SVGSMILElement::repeatCount() const
 {
     if (m_cachedRepeatCount != invalidCachedTime)
         return m_cachedRepeatCount;
+    SMILTime computedRepeatCount = SMILTime::unresolved();
     const AtomicString& value = fastGetAttribute(SVGNames::repeatCountAttr);
-    if (value.isNull())
-        return SMILTime::unresolved();
-
-    DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite", AtomicString::ConstructFromLiteral));
-    if (value == indefiniteValue)
-        return SMILTime::indefinite();
-    bool ok;
-    double result = value.string().toDouble(&ok);
-    return m_cachedRepeatCount = ok && result > 0 ? result : SMILTime::unresolved();
+    if (!value.isNull()) {
+        DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite", AtomicString::ConstructFromLiteral));
+        if (value == indefiniteValue) {
+            computedRepeatCount = SMILTime::indefinite();
+        } else {
+            bool ok;
+            double result = value.string().toDouble(&ok);
+            if (ok && result > 0)
+                computedRepeatCount = result;
+        }
+    }
+    m_cachedRepeatCount = computedRepeatCount;
+    return m_cachedRepeatCount;
 }
 
 SMILTime SVGSMILElement::maxValue() const
