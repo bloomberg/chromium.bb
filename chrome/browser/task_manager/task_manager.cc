@@ -22,9 +22,10 @@
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 #include "chrome/browser/task_manager/extension_process_resource_provider.h"
 #include "chrome/browser/task_manager/guest_resource_provider.h"
-#include "chrome/browser/task_manager/panel_resource_provider.h"
+#include "chrome/browser/task_manager/panel_information.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_resource_provider.h"
+#include "chrome/browser/task_manager/web_contents_resource_provider.h"
 #include "chrome/browser/task_manager/worker_resource_provider.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
@@ -58,6 +59,7 @@ using content::ResourceRequestInfo;
 using content::WebContents;
 using task_manager::Resource;
 using task_manager::ResourceProvider;
+using task_manager::WebContentsInformation;
 
 class Profile;
 
@@ -250,7 +252,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new task_manager::BackgroundContentsResourceProvider(task_manager));
   AddResourceProvider(
       new task_manager::TabContentsResourceProvider(task_manager));
-  AddResourceProvider(new task_manager::PanelResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WebContentsResourceProvider(
+      task_manager,
+      scoped_ptr<WebContentsInformation>(
+          new task_manager::PanelInformation())));
   AddResourceProvider(
       new task_manager::ChildProcessResourceProvider(task_manager));
   AddResourceProvider(
