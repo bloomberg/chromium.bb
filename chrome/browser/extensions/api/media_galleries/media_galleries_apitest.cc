@@ -419,8 +419,14 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
 };
 
+// Flaky on WinXP Tests(1): http://crbug.com/354425
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_MediaGalleriesNoAccess DISABLED_MediaGalleriesNoAccess
+#else
+#define MAYBE_MediaGalleriesNoAccess MediaGalleriesNoAccess
+#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       MediaGalleriesNoAccess) {
+                       MAYBE_MediaGalleriesNoAccess) {
   MakeSingleFakeGallery();
 
   base::ListValue custom_args;

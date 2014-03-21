@@ -110,7 +110,13 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DISABLED_DeleteFileSystem) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
+// Flaky on WinXP Tests(1): http://crbug.com/354425
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_GetFileStatus DISABLED_GetFileStatus
+#else
+#define MAYBE_GetFileStatus GetFileStatus
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatus) {
   EXPECT_CALL(*mock_remote_service(), IsConflicting(_)).WillOnce(Return(true));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_status"))
       << message_;
