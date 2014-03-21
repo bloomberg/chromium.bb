@@ -9,31 +9,14 @@
 
 namespace message_center {
 
-// TODO(dimich): remove this function and the kEnableRichNotifications flag
-// when a time period in Canary indicates the new notifications are acceptable
-// for default behavior.
+// TODO(dimich): remove this function when balloon notifications are removed
+// completely.
 bool IsRichNotificationEnabled() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(USE_AURA)
   return true;
-#elif !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_AURA)
+#else
   return false;
 #endif
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRichNotifications)) {
-    return false;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRichNotifications)) {
-    return true;
-  }
-
-  return true;
-}
-
-bool IsExperimentalNotificationUIEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalNotificationUI);
 }
 
 MessageCenterShowState GetMessageCenterShowState() {

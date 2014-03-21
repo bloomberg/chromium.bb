@@ -1209,23 +1209,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableTouchEditing)
   },
   {
-    "enable-rich-notifications",
-    IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
-    IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION,
-    kOsWin | kOsMac,
-    ENABLE_DISABLE_VALUE_TYPE(
-        message_center::switches::kEnableRichNotifications,
-        message_center::switches::kDisableRichNotifications)
-  },
-  {
-    "enable-experimental-notification-ui",
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_NAME,
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(
-        message_center::switches::kEnableExperimentalNotificationUI)
-  },
-  {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,

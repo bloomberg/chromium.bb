@@ -62,13 +62,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
  public:
   MessageCenterNotificationsTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // This switch enables the new piping of Notifications through Message
-    // Center.
-    command_line->AppendSwitch(
-      message_center::switches::kEnableRichNotifications);
-  }
-
   MessageCenterNotificationManager* manager() {
     return static_cast<MessageCenterNotificationManager*>(
         g_browser_process->notification_ui_manager());

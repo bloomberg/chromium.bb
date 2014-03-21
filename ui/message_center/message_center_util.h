@@ -17,8 +17,6 @@ MESSAGE_CENTER_EXPORT bool IsRichNotificationEnabled();
 #define RUN_MESSAGE_CENTER_TESTS 1
 #endif
 
-MESSAGE_CENTER_EXPORT bool IsExperimentalNotificationUIEnabled();
-
 enum MessageCenterShowState {
   MESSAGE_CENTER_SHOW_NEVER = 0,
   MESSAGE_CENTER_SHOW_UNREAD,

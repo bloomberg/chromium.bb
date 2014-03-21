@@ -327,9 +327,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
         gfx::TruncateString(notification.title(), kTitleCharacterLimit),
         font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(IsExperimentalNotificationUIEnabled() ?
-                              message_center::kExperimentalTitleLineLimit :
-                              message_center::kTitleLineLimit);
+    title_view_->SetLineLimit(message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
