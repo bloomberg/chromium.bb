@@ -75,6 +75,9 @@ class CC_EXPORT Picture
 
   scoped_ptr<base::Value> AsValue() const;
 
+  // This iterator imprecisely returns the set of pixel refs that are needed to
+  // raster this layer rect from this picture.  Internally, pixel refs are
+  // clumped into tile grid buckets, so there may be false positives.
   class CC_EXPORT PixelRefIterator {
    public:
     PixelRefIterator();

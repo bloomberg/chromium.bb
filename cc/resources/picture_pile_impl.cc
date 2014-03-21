@@ -390,9 +390,9 @@ PicturePileImpl::PixelRefIterator::PixelRefIterator(
     : picture_pile_(picture_pile),
       layer_rect_(
           gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale)),
-      tile_iterator_(&picture_pile_->tiling_, layer_rect_, true) {
-  // TODO(enne): tile iterator should not include borders
-
+      tile_iterator_(&picture_pile_->tiling_,
+                     layer_rect_,
+                     false /* include_borders */) {
   // Early out if there isn't a single tile.
   if (!tile_iterator_)
     return;

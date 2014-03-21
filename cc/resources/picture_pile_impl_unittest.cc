@@ -808,5 +808,83 @@ INSTANTIATE_TEST_CASE_P(PicturePileImpl,
                         OverlapTest,
                         ::testing::Values(1.f, 0.873f, 1.f / 4.f, 4.f));
 
+TEST(PicturePileImplTest, PixelRefIteratorBorders) {
+  // 3 tile width / 1 tile height pile
+  gfx::Size tile_size(128, 128);
+  gfx::Size layer_bounds(320, 128);
+
+  // Fake picture pile impl uses a tile grid the size of the tile.  So,
+  // any iteration that intersects with a tile will return all pixel refs
+  // inside of it.
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  pile->SetMinContentsScale(0.5f);
+
+  // Bitmaps 0-2 are exactly on tiles 0-2, so that they overlap the borders
+  // of adjacent tiles.
+  gfx::Rect bitmap_rects[] = {pile->tiling().TileBounds(0, 0),
+                              pile->tiling().TileBounds(1, 0),
+                              pile->tiling().TileBounds(2, 0), };
+  SkBitmap discardable_bitmap[arraysize(bitmap_rects)];
+
+  for (size_t i = 0; i < arraysize(bitmap_rects); ++i) {
+    CreateBitmap(bitmap_rects[i].size(), "discardable", &discardable_bitmap[i]);
+    pile->add_draw_bitmap(discardable_bitmap[i], bitmap_rects[i].origin());
+  }
+
+  // Sanity check that bitmaps 0-2 intersect the borders of their adjacent
+  // tiles, but not the actual tiles.
+  EXPECT_TRUE(
+      bitmap_rects[0].Intersects(pile->tiling().TileBoundsWithBorder(1, 0)));
+  EXPECT_FALSE(bitmap_rects[0].Intersects(pile->tiling().TileBounds(1, 0)));
+  EXPECT_TRUE(
+      bitmap_rects[1].Intersects(pile->tiling().TileBoundsWithBorder(0, 0)));
+  EXPECT_FALSE(bitmap_rects[1].Intersects(pile->tiling().TileBounds(0, 0)));
+  EXPECT_TRUE(
+      bitmap_rects[1].Intersects(pile->tiling().TileBoundsWithBorder(2, 0)));
+  EXPECT_FALSE(bitmap_rects[1].Intersects(pile->tiling().TileBounds(2, 0)));
+  EXPECT_TRUE(
+      bitmap_rects[2].Intersects(pile->tiling().TileBoundsWithBorder(1, 0)));
+  EXPECT_FALSE(bitmap_rects[2].Intersects(pile->tiling().TileBounds(1, 0)));
+
+  pile->RerecordPile();
+
+  // Tile-sized iterators.
+  {
+    // Because tile 0's borders extend onto tile 1, it will include both
+    // bitmap 0 and 1.  However, it should *not* include bitmap 2.
+    PicturePileImpl::PixelRefIterator iterator(
+        pile->tiling().TileBounds(0, 0), 1.f, pile.get());
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[0].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_FALSE(++iterator);
+  }
+  {
+    // Tile 1 + borders hits all bitmaps.
+    PicturePileImpl::PixelRefIterator iterator(
+        pile->tiling().TileBounds(1, 0), 1.f, pile.get());
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[0].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[2].pixelRef());
+    EXPECT_FALSE(++iterator);
+  }
+  {
+    // Tile 2 should not include bitmap 0, which is only on tile 0 and the
+    // borders of tile 1.
+    PicturePileImpl::PixelRefIterator iterator(
+        pile->tiling().TileBounds(2, 0), 1.f, pile.get());
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == discardable_bitmap[2].pixelRef());
+    EXPECT_FALSE(++iterator);
+  }
+}
+
 }  // namespace
 }  // namespace cc
