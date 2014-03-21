@@ -20,7 +20,7 @@ var finishSuccessfully = function () {
 
 var rejectSysEx = function (next) {
     testRunner.setMIDISysExPermission(false);
-    shouldNotThrow("promise = navigator.requestMIDIAccess({sysex: true})");
+    promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
     shouldBeDefined("promise.then");
     promise.then(function(access) {
@@ -37,7 +37,7 @@ var rejectSysEx = function (next) {
 
 var acceptSysEx = function (next) {
     testRunner.setMIDISysExPermission(true);
-    shouldNotThrow("promise = navigator.requestMIDIAccess({sysex: true})");
+    promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
     shouldBeDefined("promise.then");
     promise.then(function(access) {

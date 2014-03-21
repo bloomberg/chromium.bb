@@ -31,6 +31,8 @@
             'v8/ExceptionStatePlaceholder.cpp',
             'v8/IDBBindingUtilities.cpp',
             'v8/IDBBindingUtilities.h',
+            'v8/MIDIAccessResolver.cpp',
+            'v8/MIDIAccessResolver.h',
             'v8/NPV8Object.cpp',
             'v8/NPV8Object.h',
             'v8/Nullable.h',

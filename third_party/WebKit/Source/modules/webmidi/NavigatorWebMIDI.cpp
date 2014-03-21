@@ -31,11 +31,14 @@
 #include "config.h"
 #include "modules/webmidi/NavigatorWebMIDI.h"
 
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
-#include "modules/webmidi/MIDIAccessPromise.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIOptions.h"
 
 namespace WebCore {
 
@@ -63,20 +66,22 @@ NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
     return *supplement;
 }
 
-PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Navigator& navigator, const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(Navigator& navigator, const Dictionary& options)
 {
     return NavigatorWebMIDI::from(navigator).requestMIDIAccess(options);
 }
 
-PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
 {
-    if (!frame())
-        return nullptr;
+    if (!frame()) {
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(v8::Isolate::GetCurrent());
+        ScriptPromise promise = resolver->promise();
+        // FIXME: Currently this rejection does not work because the context is stopped.
+        resolver->reject(DOMError::create("AbortError"));
+        return promise;
+    }
 
-    ExecutionContext* context = frame()->document();
-    ASSERT(context);
-
-    return MIDIAccessPromise::create(context, options);
+    return MIDIAccess::request(MIDIOptions(options), frame()->document());
 }
 
 } // namespace WebCore

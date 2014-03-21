@@ -23,7 +23,7 @@ window.jsTestIsAsync = true;
 
 // set testRunner configuration so that requestMIDIAccess returns "InvalidStateError".
 testRunner.setMIDIAccessorResult(false);
-shouldNotThrow("navigator.requestMIDIAccess().then(successCallback, errorCallback)");
+navigator.requestMIDIAccess().then(successCallback, errorCallback);
 
 </script>
 </body>

@@ -61,7 +61,7 @@ function successCallback1(a) {
     shouldThrow('output.send([0xf0, 0x45, 0xf7])');
 
     // Now test System Exclusive access - our test mock should not allow this type of access.
-    shouldNotThrow("navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2)");
+    navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2);
 }
 
 function errorCallback1(error) {
@@ -82,7 +82,7 @@ function errorCallback2(error) {
 window.jsTestIsAsync = true;
 
 // Test basic access, with no System Exclusive.
-shouldNotThrow("navigator.requestMIDIAccess().then(successCallback1, errorCallback1)");
+navigator.requestMIDIAccess().then(successCallback1, errorCallback1);
 
 </script>
 </body>

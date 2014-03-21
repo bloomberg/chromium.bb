@@ -31,6 +31,7 @@
 #ifndef NavigatorWebMIDI_h
 #define NavigatorWebMIDI_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "heap/Handle.h"
 #include "modules/webmidi/MIDIOptions.h"
@@ -38,7 +39,6 @@
 
 namespace WebCore {
 
-class MIDIAccessPromise;
 class Navigator;
 
 class NavigatorWebMIDI FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorWebMIDI>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
@@ -47,8 +47,8 @@ public:
     virtual ~NavigatorWebMIDI();
     static NavigatorWebMIDI& from(Navigator&);
 
-    static PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(Navigator&, const Dictionary&);
-    PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
+    static ScriptPromise requestMIDIAccess(Navigator&, const Dictionary&);
+    ScriptPromise requestMIDIAccess(const Dictionary&);
 
     void trace(Visitor*) { }
 

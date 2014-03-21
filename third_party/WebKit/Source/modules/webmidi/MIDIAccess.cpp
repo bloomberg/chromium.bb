@@ -31,36 +31,63 @@
 #include "config.h"
 #include "modules/webmidi/MIDIAccess.h"
 
+#include "bindings/v8/MIDIAccessResolver.h"
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "modules/webmidi/MIDIAccessPromise.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIController.h"
+#include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
+#include "platform/AsyncMethodRunner.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<MIDIAccess> MIDIAccess::create(ExecutionContext* context, MIDIAccessPromise* promise)
+class MIDIAccess::PostAction : public ScriptFunction {
+public:
+    static PassOwnPtr<MIDIAccess::PostAction> create(v8::Isolate* isolate, WeakPtr<MIDIAccess> owner, State state) { return adoptPtr(new PostAction(isolate, owner, state)); }
+
+private:
+    PostAction(v8::Isolate* isolate, WeakPtr<MIDIAccess> owner, State state): ScriptFunction(isolate), m_owner(owner), m_state(state) { }
+    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    {
+        if (!m_owner.get())
+            return value;
+        m_owner->doPostAction(m_state);
+        return value;
+    }
+
+    WeakPtr<MIDIAccess> m_owner;
+    State m_state;
+};
+
+ScriptPromise MIDIAccess::request(const MIDIOptions& options, ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(context, promise)));
+    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(options, context)));
     midiAccess->suspendIfNeeded();
-    midiAccess->startRequest();
-    return midiAccess.release();
+    // Create a wrapper to expose this object to the V8 GC so that
+    // hasPendingActivity takes effect.
+    toV8NoInline(midiAccess.get(), context);
+    // Now this object is retained because m_state equals to Requesting.
+    return midiAccess->startRequest();
 }
 
 MIDIAccess::~MIDIAccess()
 {
-    stop();
 }
 
-MIDIAccess::MIDIAccess(ExecutionContext* context, MIDIAccessPromise* promise)
+MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
     : ActiveDOMObject(context)
-    , m_promise(promise)
-    , m_hasAccess(false)
+    , m_state(Requesting)
+    , m_weakPtrFactory(this)
+    , m_options(options)
     , m_sysExEnabled(false)
-    , m_requesting(false)
+    , m_asyncResolveRunner(this, &MIDIAccess::resolveNow)
+    , m_asyncRejectRunner(this, &MIDIAccess::rejectNow)
 {
     ScriptWrappable::init(this);
     m_accessor = MIDIAccessor::create(this);
@@ -68,12 +95,12 @@ MIDIAccess::MIDIAccess(ExecutionContext* context, MIDIAccessPromise* promise)
 
 void MIDIAccess::setSysExEnabled(bool enable)
 {
-    m_requesting = false;
     m_sysExEnabled = enable;
-    if (enable)
+    if (enable) {
         m_accessor->startSession();
-    else
-        permissionDenied();
+    } else {
+        reject(DOMError::create("SecurityError"));
+    }
 }
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
@@ -94,19 +121,17 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
 void MIDIAccess::didStartSession(bool success)
 {
     ASSERT(isMainThread());
-
-    m_hasAccess = success;
     if (success)
-        m_promise->fulfill();
+        resolve();
     else
-        m_promise->reject(DOMError::create("InvalidStateError"));
+        reject(DOMError::create("InvalidStateError"));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
     ASSERT(isMainThread());
 
-    if (m_hasAccess && portIndex < m_inputs.size()) {
+    if (m_state == Resolved && portIndex < m_inputs.size()) {
         // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
         // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
         // This is how timestamps are defined in the Web MIDI spec.
@@ -121,7 +146,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
 
 void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds)
 {
-    if (m_hasAccess && portIndex < m_outputs.size() && data && length > 0) {
+    if (m_state == Resolved && portIndex < m_outputs.size() && data && length > 0) {
         // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
         // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
         double timeStamp;
@@ -141,49 +166,107 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
     }
 }
 
-void MIDIAccess::stop()
+void MIDIAccess::suspend()
 {
-    m_hasAccess = false;
-    if (!m_requesting)
-        return;
-    m_requesting = false;
-    Document* document = toDocument(executionContext());
-    ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->page());
-    ASSERT(controller);
-    controller->cancelSysExPermissionRequest(this);
+    m_asyncResolveRunner.suspend();
+    m_asyncRejectRunner.suspend();
 }
 
-void MIDIAccess::startRequest()
+void MIDIAccess::resume()
 {
-    if (!m_promise->options()->sysex) {
-        m_accessor->startSession();
+    m_asyncResolveRunner.resume();
+    m_asyncRejectRunner.resume();
+}
+
+void MIDIAccess::stop()
+{
+    if (m_state == Stopped)
         return;
+    m_error.clear();
+    m_accessor.clear();
+    m_asyncResolveRunner.stop();
+    m_asyncRejectRunner.stop();
+    m_weakPtrFactory.revokeAll();
+    if (m_state == Requesting) {
+        Document* document = toDocument(executionContext());
+        ASSERT(document);
+        MIDIController* controller = MIDIController::from(document->page());
+        ASSERT(controller);
+        controller->cancelSysExPermissionRequest(this);
     }
-    Document* document = toDocument(executionContext());
-    ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->page());
-    if (controller) {
-        m_requesting = true;
-        controller->requestSysExPermission(this);
-    } else {
-        permissionDenied();
-    }
+    m_state = Stopped;
+}
+
+bool MIDIAccess::hasPendingActivity() const
+{
+    return m_state == Requesting;
 }
 
 void MIDIAccess::permissionDenied()
 {
     ASSERT(isMainThread());
+    reject(DOMError::create("SecurityError"));
+}
 
-    m_hasAccess = false;
-    m_promise->reject(DOMError::create("SecurityError"));
+ScriptPromise MIDIAccess::startRequest()
+{
+    m_resolver = MIDIAccessResolver::create(ScriptPromiseResolver::create(executionContext()), toIsolate(executionContext()));
+    ScriptPromise promise = m_resolver->promise();
+    promise.then(PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Resolved),
+        PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Stopped));
+
+    if (!m_options.sysex) {
+        m_accessor->startSession();
+        return promise;
+    }
+    Document* document = toDocument(executionContext());
+    ASSERT(document);
+    MIDIController* controller = MIDIController::from(document->page());
+    if (controller) {
+        controller->requestSysExPermission(this);
+    } else {
+        reject(DOMError::create("SecurityError"));
+    }
+    return promise;
+}
+
+void MIDIAccess::resolve()
+{
+    m_asyncResolveRunner.runAsync();
+}
+
+void MIDIAccess::reject(PassRefPtr<DOMError> error)
+{
+    m_error = error;
+    m_asyncRejectRunner.runAsync();
+}
+
+void MIDIAccess::resolveNow()
+{
+    m_resolver->resolve(this, executionContext());
+}
+
+void MIDIAccess::rejectNow()
+{
+    m_resolver->reject(m_error.release().get(), executionContext());
+}
+
+void MIDIAccess::doPostAction(State state)
+{
+    ASSERT(m_state == Requesting);
+    ASSERT(state == Resolved || state == Stopped);
+    m_error.clear();
+    if (state == Stopped) {
+        m_accessor.clear();
+    }
+    m_weakPtrFactory.revokeAll();
+    m_state = state;
 }
 
 void MIDIAccess::trace(Visitor* visitor)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
-    visitor->trace(m_promise);
 }
 
 } // namespace WebCore
