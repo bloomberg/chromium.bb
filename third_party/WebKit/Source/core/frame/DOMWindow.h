@@ -361,7 +361,7 @@ enum PageshowEventPersistence {
 
         mutable RefPtrWillBePersistent<Storage> m_sessionStorage;
         mutable RefPtrWillBePersistent<Storage> m_localStorage;
-        mutable RefPtr<ApplicationCache> m_applicationCache;
+        mutable RefPtrWillBePersistent<ApplicationCache> m_applicationCache;
 
         mutable RefPtrWillBePersistent<Performance> m_performance;
 

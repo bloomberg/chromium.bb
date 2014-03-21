@@ -24,7 +24,8 @@
  */
 
 [
-    DoNotCheckConstants
+    DoNotCheckConstants,
+    WillBeGarbageCollected,
 ] interface ApplicationCache : EventTarget {
     // update status
     const unsigned short UNCACHED = 0;

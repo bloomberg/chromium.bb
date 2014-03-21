@@ -31,6 +31,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,10 +42,13 @@ class ExceptionState;
 class LocalFrame;
 class KURL;
 
-class ApplicationCache FINAL : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
-    REFCOUNTED_EVENT_TARGET(ApplicationCache);
+class ApplicationCache FINAL : public RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowProperty {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>);
 public:
-    static PassRefPtr<ApplicationCache> create(LocalFrame* frame) { return adoptRef(new ApplicationCache(frame)); }
+    static PassRefPtrWillBeRawPtr<ApplicationCache> create(LocalFrame* frame)
+    {
+        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCache(frame));
+    }
     virtual ~ApplicationCache() { ASSERT(!m_frame); }
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
@@ -69,6 +73,8 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
+
+    void trace(Visitor*) { }
 
 private:
     explicit ApplicationCache(LocalFrame*);
