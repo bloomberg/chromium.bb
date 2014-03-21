@@ -191,9 +191,11 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       shared_renderer_state_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           this),
-      browser_view_renderer_(this,
-                             &shared_renderer_state_,
-                             web_contents_.get()) {
+      browser_view_renderer_(
+          this,
+          &shared_renderer_state_,
+          web_contents_.get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);

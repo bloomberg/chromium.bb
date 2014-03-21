@@ -54,9 +54,11 @@ class BrowserViewRendererJavaHelper {
 // Provides software and hardware rendering and the Capture Picture API.
 class BrowserViewRenderer : public content::SynchronousCompositorClient {
  public:
-  BrowserViewRenderer(BrowserViewRendererClient* client,
-                      SharedRendererState* shared_renderer_state,
-                      content::WebContents* web_contents);
+  BrowserViewRenderer(
+      BrowserViewRendererClient* client,
+      SharedRendererState* shared_renderer_state,
+      content::WebContents* web_contents,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   virtual ~BrowserViewRenderer();
 
@@ -147,6 +149,14 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   BrowserViewRendererClient* client_;
   SharedRendererState* shared_renderer_state_;
   content::WebContents* web_contents_;
+  // TODO(boliu): This class should only be used on the UI thread. However in
+  // short term to supporting HardwareRenderer, some callbacks on
+  // SynchronousCompositorClient may be called on non-UI thread. These are
+  // used to detect this and post them back to UI thread.
+  base::WeakPtrFactory<BrowserViewRenderer> weak_factory_on_ui_thread_;
+  base::WeakPtr<BrowserViewRenderer> ui_thread_weak_ptr_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
   bool has_compositor_;
 
   bool is_paused_;
@@ -175,6 +185,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   DrawGLInput draw_gl_input_;
 
+  // TODO(boliu): This is a short term solution to support
+  // SynchronousCompositorClient methods called on non-UI thread.
+  base::Lock scroll_offset_dip_lock_;
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_dip_;
 

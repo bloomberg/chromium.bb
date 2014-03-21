@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -23,7 +22,6 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using content::BrowserThread;
 
 namespace android_webview {
 
@@ -31,15 +29,44 @@ namespace {
 
 const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
+class AutoResetWithLock {
+ public:
+  AutoResetWithLock(gfx::Vector2dF* scoped_variable,
+                    gfx::Vector2dF new_value,
+                    base::Lock& lock)
+      : scoped_variable_(scoped_variable),
+        original_value_(*scoped_variable),
+        lock_(lock) {
+    base::AutoLock auto_lock(lock_);
+    *scoped_variable_ = new_value;
+  }
+
+  ~AutoResetWithLock() {
+    base::AutoLock auto_lock(lock_);
+    *scoped_variable_ = original_value_;
+  }
+
+ private:
+  gfx::Vector2dF* scoped_variable_;
+  gfx::Vector2dF original_value_;
+  base::Lock& lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoResetWithLock);
+};
+
 }  // namespace
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
     SharedRendererState* shared_renderer_state,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       shared_renderer_state_(shared_renderer_state),
       web_contents_(web_contents),
+      weak_factory_on_ui_thread_(this),
+      ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
+      ui_task_runner_(ui_task_runner),
       has_compositor_(false),
       is_paused_(false),
       view_visible_(false),
@@ -124,8 +151,8 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
 
   // Reset scroll back to the origin, will go back to the old
   // value when scroll_reset is out of scope.
-  base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
-                                               gfx::Vector2d());
+  AutoResetWithLock scroll_reset(
+      &scroll_offset_dip_, gfx::Vector2dF(), scroll_offset_dip_lock_);
 
   SkCanvas* rec_canvas = picture->beginRecording(width, height, 0);
   if (has_compositor_)
@@ -227,6 +254,7 @@ void BrowserViewRenderer::DidInitializeCompositor(
                "BrowserViewRenderer::DidInitializeCompositor");
   DCHECK(compositor);
   DCHECK(!has_compositor_);
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   has_compositor_ = true;
   shared_renderer_state_->SetCompositorOnUiThread(compositor);
 }
@@ -235,11 +263,20 @@ void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
   DCHECK(has_compositor_);
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   has_compositor_ = false;
   shared_renderer_state_->SetCompositorOnUiThread(NULL);
 }
 
 void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::SetContinuousInvalidate,
+                   ui_thread_weak_ptr_,
+                   invalidate));
+    return;
+  }
   if (compositor_needs_continuous_invalidate_ == invalidate)
     return;
 
@@ -284,16 +321,25 @@ void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
   DCHECK_LE(scroll_offset_dip.x(), max_scroll_offset_dip_.x());
   DCHECK_LE(scroll_offset_dip.y(), max_scroll_offset_dip_.y());
 
-  if (scroll_offset_dip_ == scroll_offset_dip)
-    return;
+  {
+    base::AutoLock lock(scroll_offset_dip_lock_);
+    if (scroll_offset_dip_ == scroll_offset_dip)
+      return;
 
-  scroll_offset_dip_ = scroll_offset_dip;
+    scroll_offset_dip_ = scroll_offset_dip;
+  }
 
   if (has_compositor_)
     shared_renderer_state_->CompositorDidChangeRootLayerScrollOffset();
 }
 
 void BrowserViewRenderer::DidUpdateContent() {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&BrowserViewRenderer::DidUpdateContent,
+                                         ui_thread_weak_ptr_));
+    return;
+  }
   TRACE_EVENT_INSTANT0("android_webview",
                        "BrowserViewRenderer::DidUpdateContent",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -304,6 +350,14 @@ void BrowserViewRenderer::DidUpdateContent() {
 
 void BrowserViewRenderer::SetMaxRootLayerScrollOffset(
     gfx::Vector2dF new_value_dip) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::SetMaxRootLayerScrollOffset,
+                   ui_thread_weak_ptr_,
+                   new_value_dip));
+    return;
+  }
   DCHECK_GT(dip_scale_, 0);
 
   max_scroll_offset_dip_ = new_value_dip;
@@ -315,12 +369,24 @@ void BrowserViewRenderer::SetMaxRootLayerScrollOffset(
 
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
     gfx::Vector2dF scroll_offset_dip) {
-  // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
-  // DrawGl when http://crbug.com/249972 is fixed.
-  if (scroll_offset_dip_ == scroll_offset_dip)
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::SetTotalRootLayerScrollOffset,
+                   ui_thread_weak_ptr_,
+                   scroll_offset_dip));
     return;
+  }
 
-  scroll_offset_dip_ = scroll_offset_dip;
+  {
+    base::AutoLock lock(scroll_offset_dip_lock_);
+    // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
+    // DrawGl when http://crbug.com/249972 is fixed.
+    if (scroll_offset_dip_ == scroll_offset_dip)
+      return;
+
+    scroll_offset_dip_ = scroll_offset_dip;
+  }
 
   gfx::Vector2d max_offset = max_scroll_offset();
   gfx::Vector2d scroll_offset;
@@ -347,10 +413,16 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 }
 
 gfx::Vector2dF BrowserViewRenderer::GetTotalRootLayerScrollOffset() {
+  base::AutoLock lock(scroll_offset_dip_lock_);
   return scroll_offset_dip_;
 }
 
 bool BrowserViewRenderer::IsExternalFlingActive() const {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    // TODO(boliu): This is short term hack since we cannot call into
+    // view system on non-UI thread.
+    return false;
+  }
   return client_->IsFlingActive();
 }
 
@@ -358,6 +430,16 @@ void BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits(
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits,
+                   ui_thread_weak_ptr_,
+                   page_scale_factor,
+                   min_page_scale_factor,
+                   max_page_scale_factor));
+    return;
+  }
   page_scale_factor_ = page_scale_factor;
   DCHECK_GT(page_scale_factor_, 0);
   client_->SetPageScaleFactorAndLimits(
@@ -366,12 +448,30 @@ void BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits(
 
 void BrowserViewRenderer::SetRootLayerScrollableSize(
     gfx::SizeF scrollable_size) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::SetRootLayerScrollableSize,
+                   ui_thread_weak_ptr_,
+                   scrollable_size));
+    return;
+  }
   client_->SetContentsSize(scrollable_size);
 }
 
 void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                                         gfx::Vector2dF latest_overscroll_delta,
                                         gfx::Vector2dF current_fling_velocity) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::DidOverscroll,
+                   ui_thread_weak_ptr_,
+                   accumulated_overscroll,
+                   latest_overscroll_delta,
+                   current_fling_velocity));
+    return;
+  }
   const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
   if (accumulated_overscroll == latest_overscroll_delta)
     overscroll_rounding_error_ = gfx::Vector2dF();
@@ -417,8 +517,7 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
   // ticked. This can happen if this is reached because force_invalidate is
   // true.
   if (compositor_needs_continuous_invalidate_) {
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
+    ui_task_runner_->PostDelayedTask(
         FROM_HERE,
         fallback_tick_.callback(),
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
