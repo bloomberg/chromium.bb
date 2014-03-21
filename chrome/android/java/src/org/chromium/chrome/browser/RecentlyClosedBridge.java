@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.WindowOpenDisposition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +95,7 @@ public class RecentlyClosedBridge {
         return received ? tabs : null;
     }
 
+    // TODO(newt): delete this once all callers are using the new method below.
     /**
      * Opens a recently closed tab in the current tab.
      *
@@ -102,7 +104,23 @@ public class RecentlyClosedBridge {
      * @return Whether the tab was successfully opened.
      */
     public boolean openRecentlyClosedTab(Tab tab, RecentlyClosedTab recentTab) {
-        return nativeOpenRecentlyClosedTab(mNativeRecentlyClosedTabsBridge, tab, recentTab.id);
+        return openRecentlyClosedTab(tab, recentTab, WindowOpenDisposition.CURRENT_TAB);
+    }
+
+    /**
+     * Opens a recently closed tab in the current tab or a new tab. If opened in the current tab,
+     * the current tab's entire history is replaced.
+     *
+     * @param tab The current Tab.
+     * @param recentTab The RecentlyClosedTab to open.
+     * @param windowOpenDisposition The WindowOpenDisposition value specifying whether to open in
+     *         the current tab or a new tab.
+     * @return Whether the tab was successfully opened.
+     */
+    public boolean openRecentlyClosedTab(Tab tab, RecentlyClosedTab recentTab,
+            int windowOpenDisposition) {
+        return nativeOpenRecentlyClosedTab(mNativeRecentlyClosedTabsBridge, tab, recentTab.id,
+                windowOpenDisposition);
     }
 
     /**
@@ -118,7 +136,7 @@ public class RecentlyClosedBridge {
             long nativeRecentlyClosedTabsBridge, RecentlyClosedCallback callback);
     private native boolean nativeGetRecentlyClosedTabs(
             long nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs, int maxTabCount);
-    private native boolean nativeOpenRecentlyClosedTab(
-            long nativeRecentlyClosedTabsBridge, Tab tab, int recentTabId);
+    private native boolean nativeOpenRecentlyClosedTab(long nativeRecentlyClosedTabsBridge,
+            Tab tab, int recentTabId, int windowOpenDisposition);
     private native void nativeClearRecentlyClosedTabs(long nativeRecentlyClosedTabsBridge);
 }

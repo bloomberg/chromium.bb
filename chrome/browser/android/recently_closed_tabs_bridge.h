@@ -28,7 +28,8 @@ class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
   jboolean OpenRecentlyClosedTab(JNIEnv* env,
                                  jobject obj,
                                  jobject jtab,
-                                 jint tab_id);
+                                 jint tab_id,
+                                 jint j_disposition);
   void ClearRecentlyClosedTabs(JNIEnv* env, jobject obj);
 
   // Observer callback for TabRestoreServiceObserver. Notifies the registered

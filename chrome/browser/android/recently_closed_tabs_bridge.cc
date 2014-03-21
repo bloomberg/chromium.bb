@@ -89,7 +89,8 @@ jboolean RecentlyClosedTabsBridge::GetRecentlyClosedTabs(JNIEnv* env,
 jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
                                                          jobject obj,
                                                          jobject jtab,
-                                                         jint recent_tab_id) {
+                                                         jint recent_tab_id,
+                                                         jint j_disposition) {
   if (!tab_restore_service_)
     return false;
 
@@ -112,9 +113,11 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
   session_tab.current_navigation_index = tab_entry->current_navigation_index;
   session_tab.navigations = tab_entry->navigations;
 
+  WindowOpenDisposition disposition =
+      static_cast<WindowOpenDisposition>(j_disposition);
   SessionRestore::RestoreForeignSessionTab(web_contents,
                                            session_tab,
-                                           CURRENT_TAB);
+                                           disposition);
   return true;
 }
 
