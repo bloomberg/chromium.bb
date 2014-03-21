@@ -287,8 +287,8 @@ TEST_F(MemoryCacheTest, ClientRemoval)
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
     ASSERT_EQ(memoryCache()->liveSize(), resource2->size());
-    ASSERT_TRUE(resource1->inCache());
-    ASSERT_TRUE(resource2->inCache());
+    ASSERT_TRUE(memoryCache()->contains(resource1.get()));
+    ASSERT_TRUE(memoryCache()->contains(resource2.get()));
 
     // Removing the client from resource2 should result in immediate
     // eviction of resource2 because we are over the prune deferral limit.
@@ -297,8 +297,8 @@ TEST_F(MemoryCacheTest, ClientRemoval)
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
     ASSERT_EQ(memoryCache()->liveSize(), 0u);
-    ASSERT_TRUE(resource1->inCache());
-    ASSERT_FALSE(resource2->inCache());
+    ASSERT_TRUE(memoryCache()->contains(resource1.get()));
+    ASSERT_FALSE(memoryCache()->contains(resource2.get()));
 }
 
 // Verifies that CachedResources are evicted from the decode cache
@@ -371,19 +371,16 @@ TEST_F(MemoryCacheTest, MultipleReplace)
 {
     ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest(""), Resource::Raw);
     memoryCache()->add(resource1.get());
-    EXPECT_EQ(1U, resource1->accessCount());
 
     ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest(""), Resource::Raw);
     memoryCache()->replace(resource2.get(), resource1.get());
-    EXPECT_TRUE(resource2->inCache());
-    EXPECT_FALSE(resource1->inCache());
-    EXPECT_EQ(0U, resource2->accessCount());
+    EXPECT_TRUE(memoryCache()->contains(resource2.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource1.get()));
 
     ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest(""), Resource::Raw);
     memoryCache()->replace(resource3.get(), resource2.get());
-    EXPECT_TRUE(resource3->inCache());
-    EXPECT_FALSE(resource2->inCache());
-    EXPECT_EQ(0U, resource3->accessCount());
+    EXPECT_TRUE(memoryCache()->contains(resource3.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
 }
 
 } // namespace

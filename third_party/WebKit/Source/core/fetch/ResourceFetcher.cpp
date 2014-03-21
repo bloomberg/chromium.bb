@@ -629,7 +629,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         resource = revalidateResource(request, resource.get());
         break;
     case Use:
-        resource->updateForAccess();
+        memoryCache()->updateForAccess(resource.get());
         notifyLoadedFromMemoryCache(resource.get());
         break;
     }
@@ -653,7 +653,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     if (resourceNeedsLoad(resource.get(), request, policy)) {
         if (!shouldLoadNewResource(type)) {
-            if (resource->inCache())
+            if (memoryCache()->contains(resource.get()))
                 memoryCache()->remove(resource.get());
             return 0;
         }
@@ -668,7 +668,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         // In that case, the requester should have access to the relevant ResourceError, so
         // we need to return a non-null Resource.
         if (resource->errorOccurred()) {
-            if (resource->inCache())
+            if (memoryCache()->contains(resource.get()))
                 memoryCache()->remove(resource.get());
             return request.options().synchronousPolicy == RequestSynchronously ? resource : 0;
         }
@@ -774,7 +774,7 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
 ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& request, Resource* resource)
 {
     ASSERT(resource);
-    ASSERT(resource->inCache());
+    ASSERT(memoryCache()->contains(resource));
     ASSERT(resource->isLoaded());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());

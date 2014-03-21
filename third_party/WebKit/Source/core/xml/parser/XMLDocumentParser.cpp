@@ -451,7 +451,6 @@ void XMLDocumentParser::insertErrorMessageBlock()
 void XMLDocumentParser::notifyFinished(Resource* unusedResource)
 {
     ASSERT_UNUSED(unusedResource, unusedResource == m_pendingScript);
-    ASSERT(m_pendingScript->accessCount() > 0);
 
     ScriptSourceCode sourceCode(m_pendingScript.get());
     bool errorOccurred = m_pendingScript->errorOccurred();

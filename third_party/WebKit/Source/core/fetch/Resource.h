@@ -160,9 +160,6 @@ public:
             || type() == Raw;
     }
 
-    void updateForAccess();
-    unsigned accessCount() const { return m_accessCount; }
-
     // Computes the status of an object after loading.
     // Updates the expire date on the cache entry file
     void finish(double finishTime = 0.0);
@@ -170,13 +167,6 @@ public:
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*);
     bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription);
-
-    // Called by the cache if the object has been removed from the cache
-    // while still being referenced. This means the object should delete itself
-    // if the number of clients observing it ever drops to 0.
-    // The resource can be brought back to cache after successful revalidation.
-    void setInCache(bool inCache) { m_inCache = inCache; }
-    bool inCache() const { return m_inCache; }
 
     void setCacheLiveResourcePriority(CacheLiveResourcePriority);
     unsigned cacheLiveResourcePriority() const { return m_cacheLiveResourcePriority; }
@@ -358,7 +348,6 @@ private:
 
     size_t m_encodedSize;
     size_t m_decodedSize;
-    unsigned m_accessCount;
     unsigned m_handleCount;
     unsigned m_preloadCount;
     unsigned m_protectorCount;
@@ -367,7 +356,6 @@ private:
     unsigned m_cacheLiveResourcePriority : 2; // CacheLiveResourcePriority
     unsigned m_requestedFromNetworkingLayer : 1;
 
-    unsigned m_inCache : 1;
     unsigned m_loading : 1;
 
     unsigned m_switchingClientsToRevalidatedResource : 1;

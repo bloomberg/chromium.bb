@@ -72,6 +72,7 @@ public:
 
         ResourcePtr<Resource> m_resource;
         bool m_inLiveDecodedResourcesList;
+        unsigned m_accessCount;
 
         MemoryCacheEntry* m_previousInLiveResourcesList;
         MemoryCacheEntry* m_nextInLiveResourcesList;
@@ -82,6 +83,7 @@ public:
         MemoryCacheEntry(Resource* resource)
             : m_resource(resource)
             , m_inLiveDecodedResourcesList(false)
+            , m_accessCount(0)
             , m_previousInLiveResourcesList(0)
             , m_nextInLiveResourcesList(0)
             , m_previousInAllResourcesList(0)
@@ -135,6 +137,7 @@ public:
     void add(Resource*);
     void replace(Resource* newResource, Resource* oldResource);
     void remove(Resource* resource) { evict(resource); }
+    bool contains(Resource*);
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
 
@@ -151,12 +154,9 @@ public:
 
     void prune(Resource* justReleasedResource = 0);
 
-    // Calls to put the cached resource into and out of LRU lists.
-    void insertInLRUList(Resource*);
-    void removeFromLRUList(Resource*);
-
-    // Called to adjust the cache totals when a resource changes size.
-    void adjustSize(bool live, ptrdiff_t delta);
+    // Called to adjust a resource's size, lru list position, and access count.
+    void update(Resource*, size_t oldSize, size_t newSize, bool wasAccessed = false);
+    void updateForAccess(Resource* resource) { update(resource, resource->size(), resource->size(), true); }
 
     // Track decoded resources that are in the cache and referenced by a Web page.
     void insertInLiveDecodedResourcesList(Resource*);
@@ -181,12 +181,16 @@ public:
     virtual void didProcessTask() OVERRIDE;
 
 private:
-    LRUList* lruListFor(MemoryCacheEntry*);
+    LRUList* lruListFor(unsigned accessCount, size_t);
 
 #ifdef MEMORY_CACHE_STATS
     void dumpStats(Timer<MemoryCache>*);
     void dumpLRULists(bool includeLive) const;
 #endif
+
+    // Calls to put the cached resource into and out of LRU lists.
+    void insertInLRUList(MemoryCacheEntry*, LRUList*);
+    void removeFromLRUList(MemoryCacheEntry*, LRUList*);
 
     size_t liveCapacity() const;
     size_t deadCapacity() const;

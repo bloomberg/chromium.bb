@@ -369,7 +369,7 @@ void ImageResource::updateImage(bool allDataReceived)
     if (sizeAvailable || allDataReceived) {
         if (!m_image || m_image->isNull()) {
             error(errorOccurred() ? status() : DecodeError);
-            if (inCache())
+            if (memoryCache()->contains(this))
                 memoryCache()->remove(this);
             return;
         }
