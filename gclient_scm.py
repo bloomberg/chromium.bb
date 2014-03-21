@@ -8,6 +8,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import sys
 import tempfile
 import traceback
@@ -138,6 +139,34 @@ class SCMWrapper(object):
           command, self.__class__.__name__))
 
     return getattr(self, command)(options, args, file_list)
+
+  def GetActualRemoteURL(self):
+    """Attempt to determine the remote URL for this SCMWrapper."""
+    try:
+      return shlex.split(scm.GIT.Capture(
+          ['config', '--local', '--get-regexp', r'remote.*.url'],
+          self.checkout_path))[1]
+    except Exception:
+      pass
+    try:
+      return scm.SVN.CaptureLocalInfo([], self.checkout_path)['URL']
+    except Exception:
+      pass
+    return None
+
+  def DoesRemoteURLMatch(self):
+    """Determine whether the remote URL of this checkout is the expected URL."""
+    if not os.path.exists(self.checkout_path):
+      # A checkout which doesn't exist can't be broken.
+      return True
+
+    actual_remote_url = self.GetActualRemoteURL()
+    if actual_remote_url:
+      return actual_remote_url.rstrip('/') == self.url.rstrip('/')
+    else:
+      # This may occur if the self.checkout_path exists but does not contain a
+      # valid git or svn checkout.
+      return False
 
 
 class GitWrapper(SCMWrapper):

@@ -1044,6 +1044,40 @@ solutions = [
     self._root_dir = root_dir
     self.config_content = None
 
+  def _CheckConfig(self):
+    """Verify that the config matches the state of the existing checked-out
+    solutions."""
+    for dep in self.dependencies:
+      if dep.managed and dep.url:
+        scm = gclient_scm.CreateSCM(dep.url, self.root_dir, dep.name)
+        actual_url = scm.GetActualRemoteURL()
+        if actual_url and not scm.DoesRemoteURLMatch():
+          print >> sys.stderr, ('''
+################################################################################
+################################### WARNING! ###################################
+################################################################################
+
+Your .gclient file seems to be broken. The requested URL is different from what
+is actually checked out in %(checkout_path)s. In the future this will be an
+error.
+
+Expected: %(expected_url)s (%(expected_scm)s)
+Actual:   %(actual_url)s (%(actual_scm)s)
+
+You should ensure that the URL listed in .gclient is correct and either change
+it or fix the checkout. If you're managing your own git checkout in
+%(checkout_path)s but the URL in .gclient is for an svn repository, you probably
+want to set 'managed': False in .gclient.
+
+################################################################################
+################################################################################
+################################################################################
+'''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
+        'expected_url': dep.url,
+        'expected_scm': gclient_scm.GetScmName(dep.url),
+        'actual_url': actual_url,
+        'actual_scm': gclient_scm.GetScmName(actual_url)})
+
   def SetConfig(self, content):
     assert not self.dependencies
     config_dict = {}
@@ -1294,6 +1328,7 @@ solutions = [
             gclient_utils.rmtree(e_dir)
       # record the current list of entries for next time
       self._SaveEntries()
+    self._CheckConfig()
     return 0
 
   def PrintRevInfo(self):

@@ -44,6 +44,13 @@ class SCMMock(object):
   def FullUrlForRelativeUrl(self, url):
     return self.url + url
 
+  # pylint: disable=R0201
+  def DoesRemoteURLMatch(self):
+    return True
+
+  def GetActualRemoteURL(self):
+    return self.url
+
 
 class GclientTest(trial_dir.TestCase):
   def setUp(self):
@@ -250,7 +257,7 @@ class GclientTest(trial_dir.TestCase):
     topdir = self.root_dir
     gclient_fn = os.path.join(topdir, '.gclient')
     fh = open(gclient_fn, 'w')
-    print >> fh, 'solutions = [{"name":"top","url":"svn://svn.top.com/top"}]'
+    print >> fh, 'solutions = [{"name":"top","url":"svn://example.com/top"}]'
     fh.close()
     subdir_fn = os.path.join(topdir, 'top')
     os.mkdir(subdir_fn)
@@ -281,9 +288,9 @@ class GclientTest(trial_dir.TestCase):
     gclient_fn = os.path.join(topdir, '.gclient')
     fh = open(gclient_fn, 'w')
     extra_hooks = [{'name': 'append', 'pattern':'.', 'action':['supercmd']}]
-    print >> fh, ('solutions = [{"name":"top","url":"svn://svn.top.com/top",'
+    print >> fh, ('solutions = [{"name":"top","url":"svn://example.com/top",'
         '"custom_hooks": %s},' ) % repr(extra_hooks + [{'name': 'skip'}])
-    print >> fh, '{"name":"bottom","url":"svn://svn.top.com/bottom"}]'
+    print >> fh, '{"name":"bottom","url":"svn://example.com/bottom"}]'
     fh.close()
     subdir_fn = os.path.join(topdir, 'top')
     os.mkdir(subdir_fn)
