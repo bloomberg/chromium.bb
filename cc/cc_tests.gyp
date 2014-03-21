@@ -41,6 +41,7 @@
       'layers/picture_layer_impl_unittest.cc',
       'layers/picture_layer_unittest.cc',
       'layers/render_surface_unittest.cc',
+      'layers/render_surface_impl_unittest.cc',
       'layers/scrollbar_layer_unittest.cc',
       'layers/solid_color_layer_impl_unittest.cc',
       'layers/solid_color_scrollbar_layer_impl_unittest.cc',

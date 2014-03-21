@@ -16,6 +16,7 @@ class Transform;
 namespace cc {
 
 class DrawQuad;
+class LayerImpl;
 class SharedQuadState;
 
 class CC_EXPORT QuadSink {
@@ -29,6 +30,10 @@ class CC_EXPORT QuadSink {
       scoped_ptr<SharedQuadState> shared_quad_state) = 0;
 
   virtual gfx::Rect UnoccludedContentRect(
+      const gfx::Rect& content_rect,
+      const gfx::Transform& draw_transform) = 0;
+
+  virtual gfx::Rect UnoccludedContributingSurfaceContentRect(
       const gfx::Rect& content_rect,
       const gfx::Transform& draw_transform) = 0;
 

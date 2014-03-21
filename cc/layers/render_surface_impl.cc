@@ -143,6 +143,12 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
 
   const gfx::Transform& draw_transform =
       for_replica ? replica_draw_transform_ : draw_transform_;
+  gfx::Rect visible_content_rect =
+      quad_sink->UnoccludedContributingSurfaceContentRect(content_rect_,
+                                                          draw_transform);
+  if (visible_content_rect.IsEmpty())
+    return;
+
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(SharedQuadState::Create());
   shared_quad_state->SetAll(draw_transform,
@@ -154,8 +160,6 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                             owning_layer_->blend_mode());
 
   if (owning_layer_->ShowDebugBorders()) {
-    gfx::Rect quad_rect = content_rect_;
-    gfx::Rect visible_quad_rect = quad_rect;
     SkColor color = for_replica ?
                     DebugColors::SurfaceReplicaBorderColor() :
                     DebugColors::SurfaceBorderColor();
@@ -167,8 +171,8 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
     scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
         DebugBorderDrawQuad::Create();
     debug_border_quad->SetNew(
-        shared_quad_state, quad_rect, visible_quad_rect, color, width);
-    quad_sink->MaybeAppend(debug_border_quad.PassAs<DrawQuad>());
+        shared_quad_state, content_rect_, visible_content_rect, color, width);
+    quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
   }
 
   // TODO(shawnsingh): By using the same RenderSurfaceImpl for both the content
@@ -212,7 +216,6 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
         uv_scale_y);
   }
 
-  gfx::Rect visible_content_rect(content_rect_);
   ResourceProvider::ResourceId mask_resource_id =
       mask_layer ? mask_layer->ContentsResourceId() : 0;
   gfx::Rect contents_changed_since_last_frame =
@@ -229,7 +232,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                mask_uv_rect,
                owning_layer_->filters(),
                owning_layer_->background_filters());
-  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

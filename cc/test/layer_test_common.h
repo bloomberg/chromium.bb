@@ -28,8 +28,10 @@
 namespace gfx { class Rect; }
 
 namespace cc {
+class LayerImpl;
 class OutputSurface;
 class QuadList;
+class RenderSurfaceImpl;
 class ResourceProvider;
 
 class LayerTestCommon {
@@ -78,6 +80,8 @@ class LayerTestCommon {
     void CalcDrawProps(const gfx::Size& viewport_size);
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);
+    void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
+                                         const gfx::Rect& occluded);
 
     OutputSurface* output_surface() const {
       return host_->host_impl()->output_surface();

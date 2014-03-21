@@ -30,8 +30,19 @@ SharedQuadState* MockQuadCuller::UseSharedQuadState(
 gfx::Rect MockQuadCuller::UnoccludedContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) {
+  DCHECK(draw_transform.IsIdentity() || occluded_content_rect_.IsEmpty());
   gfx::Rect result = content_rect;
   result.Subtract(occluded_content_rect_);
+  return result;
+}
+
+gfx::Rect MockQuadCuller::UnoccludedContributingSurfaceContentRect(
+    const gfx::Rect& content_rect,
+    const gfx::Transform& draw_transform) {
+  DCHECK(draw_transform.IsIdentity() ||
+         occluded_content_rect_for_contributing_surface_.IsEmpty());
+  gfx::Rect result = content_rect;
+  result.Subtract(occluded_content_rect_for_contributing_surface_);
   return result;
 }
 

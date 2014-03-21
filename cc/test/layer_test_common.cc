@@ -120,4 +120,16 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
   layer_impl->DidDraw(resource_provider());
 }
 
+void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
+    RenderSurfaceImpl* surface_impl,
+    const gfx::Rect& occluded) {
+  AppendQuadsData data;
+
+  quad_culler_.clear_lists();
+  quad_culler_.set_occluded_content_rect_for_contributing_surface(occluded);
+  bool for_replica = false;
+  RenderPass::Id id(1, 1);
+  surface_impl->AppendQuads(&quad_culler_, &data, for_replica, id);
+}
+
 }  // namespace cc

@@ -44,6 +44,13 @@ gfx::Rect QuadCuller::UnoccludedContentRect(
       layer_->render_target(), content_rect, draw_transform);
 }
 
+gfx::Rect QuadCuller::UnoccludedContributingSurfaceContentRect(
+    const gfx::Rect& content_rect,
+    const gfx::Transform& draw_transform) {
+  return occlusion_tracker_.UnoccludedContributingSurfaceContentRect(
+      layer_, content_rect, draw_transform);
+}
+
 static inline bool AppendQuadInternal(
     scoped_ptr<DrawQuad> draw_quad,
     const gfx::Rect& culled_rect,
