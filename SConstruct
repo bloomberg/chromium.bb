@@ -1152,8 +1152,7 @@ def SConstructAbsPath(env, path):
 pre_base_env.AddMethod(SConstructAbsPath)
 
 
-def GetPlatformBuildTargetDir(env, target_arch=None, is_pnacl=None,
-                              is_trusted=False):
+def GetPlatformBuildTargetDir(env):
   # Currently we do not support any cross OS compiles, eventually the OS name
   # will probably be passed in through arguments.
   os_name = pynacl.platform.GetOS()
@@ -1162,18 +1161,8 @@ def GetPlatformBuildTargetDir(env, target_arch=None, is_pnacl=None,
   # separate toolchains for each the architectures will probably have to use
   # the Arch3264() variant.
   build_arch = pynacl.platform.GetArch(GetBuildPlatform())
-  if target_arch is None:
-    target_arch = pynacl.platform.GetArch(GetTargetPlatform())
 
-  if is_pnacl is None:
-    is_pnacl = env.Bit('bitcode')
-
-  if is_trusted:
-    return '%s_%s_%s_%s' % (os_name, build_arch, os_name, target_arch)
-  elif is_pnacl:
-    return '%s_%s_pnacl' % (os_name, build_arch)
-  else:
-    return '%s_%s_nacl_%s' % (os_name, build_arch, target_arch)
+  return '%s_%s' % (os_name, build_arch)
 
 pre_base_env.AddMethod(GetPlatformBuildTargetDir)
 
@@ -2509,11 +2498,7 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
-  trusted_build_dir = env.GetPlatformBuildTargetDir(is_trusted=True)
-  jail = env.GetToolchainDir(
-      platform_build_dir=trusted_build_dir,
-      toolchain_name='arm_trusted'
-  )
+  jail = env.GetToolchainDir(toolchain_name='arm_trusted')
   if env.Bit('arm_hard_float'):
     arm_abi = 'gnueabihf'
   else:
@@ -2651,11 +2636,7 @@ def SetUpAndroidEnv(env):
   return env
 
 def SetUpLinuxEnvMips(env):
-  trusted_build_dir = env.GetPlatformBuildTargetDir(is_trusted=True)
-  jail = env.GetToolchainDir(
-      platform_build_dir=trusted_build_dir,
-      toolchain_name='mips_trusted'
-  )
+  jail = env.GetToolchainDir(toolchain_name='mips_trusted')
   if not platform.machine().startswith('mips'):
     # Allow emulation on non-MIPS hosts.
     env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')

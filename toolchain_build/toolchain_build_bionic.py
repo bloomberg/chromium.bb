@@ -50,7 +50,7 @@ def GetToolchainPath(target_arch, libc, *extra_paths):
   os_name = pynacl.platform.GetOS()
   host_arch = pynacl.platform.GetArch()
   return os.path.join(TOOLCHAIN,
-                      '%s_%s_nacl_%s' % (os_name, host_arch, target_arch),
+                      '%s_%s' % (os_name, host_arch),
                       'nacl_%s_%s' % (target_arch, libc),
                       *extra_paths)
 
