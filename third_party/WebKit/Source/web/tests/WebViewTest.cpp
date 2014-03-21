@@ -1098,7 +1098,6 @@ static void configueCompositingWebView(WebSettings* settings)
     settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
     settings->setAcceleratedCompositingForScrollableFramesEnabled(true);
     settings->setCompositedScrollingForFramesEnabled(true);
-    settings->setFixedPositionCreatesStackingContext(true);
 }
 
 TEST_F(WebViewTest, ShowPressOnTransformedLink)

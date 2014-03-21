@@ -165,7 +165,6 @@ protected:
         settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
         settings->setAcceleratedCompositingForScrollableFramesEnabled(true);
         settings->setCompositedScrollingForFramesEnabled(true);
-        settings->setFixedPositionCreatesStackingContext(true);
     }
 
     void initializeTextSelectionWebView(const std::string& url, FrameTestHelpers::WebViewHelper* webViewHelper)

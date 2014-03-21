@@ -194,6 +194,7 @@ bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* rende
 
     EPosition position = renderer->style()->position();
     bool isFixed = renderer->isOutOfFlowPositioned() && position == FixedPosition;
+    // FIXME: The isStackingContainer check here is redundant. Fixed position elements are always stacking contexts.
     if (isFixed && !layer->stackingNode()->isStackingContainer())
         return false;
 

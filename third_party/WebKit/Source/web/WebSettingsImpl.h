@@ -103,7 +103,6 @@ public:
     virtual void setExperimentalWebSocketEnabled(bool) OVERRIDE;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
-    virtual void setFixedPositionCreatesStackingContext(bool) OVERRIDE;
     virtual void setForceCompositingMode(bool) OVERRIDE;
     virtual void setFullScreenEnabled(bool) OVERRIDE;
     virtual void setGestureTapHighlightEnabled(bool) OVERRIDE;

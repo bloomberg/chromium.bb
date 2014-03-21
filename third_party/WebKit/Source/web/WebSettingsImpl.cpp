@@ -668,11 +668,6 @@ void WebSettingsImpl::setMediaFullscreenRequiresUserGesture(bool required)
     m_settings->setMediaFullscreenRequiresUserGesture(required);
 }
 
-void WebSettingsImpl::setFixedPositionCreatesStackingContext(bool creates)
-{
-    m_settings->setFixedPositionCreatesStackingContext(creates);
-}
-
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
     m_settings->setViewportEnabled(enabled);

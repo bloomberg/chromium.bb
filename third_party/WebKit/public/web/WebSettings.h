@@ -113,7 +113,6 @@ public:
     virtual void setExperimentalWebSocketEnabled(bool) = 0;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
-    virtual void setFixedPositionCreatesStackingContext(bool) = 0;
     virtual void setForceCompositingMode(bool) = 0;
     virtual void setFullScreenEnabled(bool) = 0;
     virtual void setGestureTapHighlightEnabled(bool) = 0;
@@ -199,6 +198,9 @@ public:
     virtual void setWebSecurityEnabled(bool) = 0;
     virtual void setWideViewportQuirkEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
+
+    // FIXME: Remove these unused settings.
+    virtual void setFixedPositionCreatesStackingContext(bool) { }
 
 protected:
     ~WebSettings() { }

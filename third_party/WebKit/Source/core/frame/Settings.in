@@ -172,7 +172,6 @@ touchAdjustmentEnabled initial=true
 # A mostly-stable performance optimization. crbug.com/304518 tracks removal.
 compositorTouchHitTesting initial=true
 
-fixedPositionCreatesStackingContext initial=false
 syncXHRInDocumentsEnabled initial=true
 cookieEnabled initial=true
 navigateOnDragDrop initial=true

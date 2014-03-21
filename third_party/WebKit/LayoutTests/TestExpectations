@@ -863,6 +863,10 @@ crbug.com/349537 virtual/stable/http/tests/websocket/workers/worker-reload-repea
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
+crbug.com/354688 [ Mac ] fast/block/positioning/016.html [ NeedsRebaseline ]
+crbug.com/354688 [ Mac ] fast/block/positioning/025.html [ NeedsRebaseline ]
+crbug.com/354688 [ Mac ] fast/block/positioning/fixed-position-stacking-context.html [ NeedsRebaseline ]
+
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]

@@ -124,7 +124,6 @@ private:
         settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
         settings->setAcceleratedCompositingForScrollableFramesEnabled(true);
         settings->setCompositedScrollingForFramesEnabled(true);
-        settings->setFixedPositionCreatesStackingContext(true);
     }
 
     FrameTestHelpers::WebViewHelper m_helper;

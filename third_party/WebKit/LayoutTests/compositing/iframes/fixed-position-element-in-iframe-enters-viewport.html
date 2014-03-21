@@ -20,10 +20,8 @@ If this test passes, you should see a green square.
         if (window.testRunner)
             testRunner.waitUntilDone();
 
-        if (window.internals) {
+        if (window.internals)
             window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
-            window.internals.settings.setFixedPositionCreatesStackingContext(true);
-        }
 
         function runTest()
         {
