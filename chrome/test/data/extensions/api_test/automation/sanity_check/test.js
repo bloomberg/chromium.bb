@@ -5,11 +5,12 @@
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 
-// Do not test orientation attributes (similar to exclusions on native
+// Do not test orientation or hover attributes (similar to exclusions on native
 // accessibility), since they can be inconsistent depending on the environment.
 var RemoveUntestedStates = function(state) {
-  delete state['vertical'];
   delete state['horizontal'];
+  delete state['hovered'];
+  delete state['vertical'];
 };
 
 var allTests = [
@@ -79,8 +80,19 @@ var allTests = [
       chrome.test.succeed();
     };
 
-    chrome.tabs.create({url: 'test.html'}, function(newTab) {
-      chrome.automation.getTree(makeAssertions);
+    chrome.tabs.query({active: true}, function(tabs) {
+      assertEq(1, tabs.length);
+      chrome.tabs.update(tabs[0].id, {url: 'test.html'}, function(tab) {
+        chrome.runtime.onMessage.addListener(
+                               function listener(message, sender) {
+          if (!sender.tab)
+            return;
+          assertEq(tab.id, sender.tab.id);
+          assertTrue(message['loaded']);
+          chrome.automation.getTree(makeAssertions);
+          chrome.runtime.onMessage.removeListener(listener);
+        });
+      });
     });
   }
 ];
