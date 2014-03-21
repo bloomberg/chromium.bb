@@ -73,8 +73,10 @@ class CONTENT_EXPORT WebUI {
   virtual int GetBindings() const = 0;
   virtual void SetBindings(int bindings) = 0;
 
-  // Sets the path for the iframe if this WebUI is embedded in a page.
-  virtual void SetFrameXPath(const std::string& xpath) = 0;
+  // Overrides which frame gets JavaScript messages; this is useful if this
+  // WebUI is embedded in a page. If no override is set, the main frame will
+  // receive the JavaScript messages.
+  virtual void OverrideJavaScriptFrame(const std::string& frame_name) = 0;
 
   // Takes ownership of |handler|, which will be destroyed when the WebUI is.
   virtual void AddMessageHandler(WebUIMessageHandler* handler) = 0;

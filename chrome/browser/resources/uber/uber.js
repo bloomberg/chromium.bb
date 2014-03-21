@@ -245,7 +245,7 @@ cr.define('uber', function() {
 
   /**
    * Selects a subpage. This is called from uber-frame.
-   * @param {string} pageId Should matche an id of one of the iframe containers.
+   * @param {string} pageId Should match an id of one of the iframe containers.
    * @param {integer} historyOption Indicates whether we should push or replace
    *     browser history.
    * @param {string} path A sub-page path.
@@ -259,6 +259,7 @@ cr.define('uber', function() {
     var frame = container.querySelector('iframe');
     if (!frame) {
       frame = container.ownerDocument.createElement('iframe');
+      frame.name = pageId;
       container.appendChild(frame);
       frame.src = sourceUrl;
     } else {

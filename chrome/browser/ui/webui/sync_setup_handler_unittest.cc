@@ -209,7 +209,8 @@ class TestWebUI : public content::WebUI {
     return 0;
   }
   virtual void SetBindings(int bindings) OVERRIDE {}
-  virtual void SetFrameXPath(const std::string& xpath) OVERRIDE {}
+  virtual void OverrideJavaScriptFrame(
+      const std::string& frame_name) OVERRIDE {}
   virtual void AddMessageHandler(
       content::WebUIMessageHandler* handler) OVERRIDE {}
   virtual void RegisterMessageCallback(

@@ -38,7 +38,8 @@ class UberUI : public content::WebUIController {
   typedef std::map<std::string, content::WebUI*> SubpageMap;
 
   // Creates and stores a WebUI for the given URL.
-  void RegisterSubpage(const std::string& page_url);
+  void RegisterSubpage(const std::string& page_url,
+                       const std::string& page_host);
 
   // The WebUI*s in this map are owned.
   SubpageMap sub_uis_;

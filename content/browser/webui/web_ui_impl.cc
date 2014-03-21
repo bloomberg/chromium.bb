@@ -10,11 +10,12 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -127,8 +128,8 @@ void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
 }
 
-void WebUIImpl::SetFrameXPath(const std::string& xpath) {
-  frame_xpath_ = xpath;
+void WebUIImpl::OverrideJavaScriptFrame(const std::string& frame_name) {
+  frame_name_ = frame_name;
 }
 
 WebUIController* WebUIImpl::GetController() const {
@@ -228,9 +229,33 @@ void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
 }
 
 void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
-  static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost())->ExecuteJavascriptInWebFrame(
-      base::ASCIIToUTF16(frame_xpath_), javascript);
+  RenderFrameHost* target_frame = TargetFrame();
+  if (target_frame)
+    target_frame->ExecuteJavaScript(javascript);
+}
+
+RenderFrameHost* WebUIImpl::TargetFrame() {
+  if (frame_name_.empty())
+    return web_contents_->GetMainFrame();
+
+  std::set<RenderFrameHost*> frame_set;
+  web_contents_->ForEachFrame(base::Bind(&WebUIImpl::AddToSetIfFrameNameMatches,
+                                         base::Unretained(this),
+                                         &frame_set));
+
+  // It happens that some sub-pages attempt to send JavaScript messages before
+  // their frames are loaded.
+  DCHECK_GE(1U, frame_set.size());
+  if (frame_set.empty())
+    return NULL;
+  return *frame_set.begin();
+}
+
+void WebUIImpl::AddToSetIfFrameNameMatches(
+    std::set<RenderFrameHost*>* frame_set,
+    RenderFrameHost* host) {
+  if (host->GetFrameName() == frame_name_)
+    frame_set->insert(host);
 }
 
 }  // namespace content

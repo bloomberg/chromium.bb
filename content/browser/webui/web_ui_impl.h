@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
 
 #include <map>
+#include <set>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
@@ -14,6 +15,7 @@
 #include "ipc/ipc_listener.h"
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 
 class CONTENT_EXPORT WebUIImpl : public WebUI,
@@ -39,7 +41,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   virtual void SetLinkTransitionType(PageTransition type) OVERRIDE;
   virtual int GetBindings() const OVERRIDE;
   virtual void SetBindings(int bindings) OVERRIDE;
-  virtual void SetFrameXPath(const std::string& xpath) OVERRIDE;
+  virtual void OverrideJavaScriptFrame(const std::string& frame_name) OVERRIDE;
   virtual void AddMessageHandler(WebUIMessageHandler* handler) OVERRIDE;
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   virtual void RegisterMessageCallback(
@@ -77,8 +79,18 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
                    const std::string& message,
                    const base::ListValue& args);
 
-  // Execute a string of raw Javascript on the page.
+  // Execute a string of raw JavaScript on the page.
   void ExecuteJavascript(const base::string16& javascript);
+
+  // Finds the frame in which to execute JavaScript (the one specified by
+  // OverrideJavaScriptFrame). May return NULL if no frame of the specified name
+  // exists in the page.
+  RenderFrameHost* TargetFrame();
+
+  // A helper function for TargetFrame; adds a frame to the specified set if its
+  // name matches frame_name_.
+  void AddToSetIfFrameNameMatches(std::set<RenderFrameHost*>* frame_set,
+                                  RenderFrameHost* host);
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
@@ -97,9 +109,9 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // Non-owning pointer to the WebContents this WebUI is associated with.
   WebContents* web_contents_;
 
-  // The path for the iframe this WebUI is embedded in (empty if not in an
-  // iframe).
-  std::string frame_xpath_;
+  // The name of the iframe this WebUI is embedded in (empty if not explicitly
+  // overridden with OverrideJavaScriptFrame).
+  std::string frame_name_;
 
   scoped_ptr<WebUIController> controller_;
 
