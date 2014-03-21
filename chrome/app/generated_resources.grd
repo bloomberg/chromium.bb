@@ -11546,6 +11546,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>
+      <message name="IDS_PROFILES_GAIA_SIGNIN_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
+        Sign in
+      </message>
+      <message name="IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
+        Add account
+      </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Remove account
       </message>

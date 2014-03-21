@@ -153,6 +153,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            bool is_primary_account,
                            int width);
 
+  // Creates a webview showing the gaia signin page.
+  views::View* CreateGaiaSigninView(bool add_secondary_account);
+
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();
 
@@ -187,6 +190,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::LabelButton* add_user_button_;
   views::LabelButton* users_button_;
   views::LabelButton* add_account_button_;
+
+  // Buttons displayed in the gaia signin view.
+  views::ImageButton* gaia_signin_cancel_button_;
 
   // Links and buttons displayed in the account removal view.
   views::LabelButton* remove_account_and_relaunch_button_;

@@ -55,6 +55,8 @@ namespace {
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 29;
 const int kProfileAvatarTutorialShowMax = 5;
+const int kFixedGaiaViewHeight = 400;
+const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
 
 // Creates a GridLayout with a single column. This ensures that all the child
@@ -414,6 +416,7 @@ void ProfileChooserView::ResetView() {
   tutorial_ok_button_ = NULL;
   tutorial_learn_more_link_ = NULL;
   account_removal_cancel_button_ = NULL;
+  gaia_signin_cancel_button_ = NULL;
   open_other_profile_indexes_map_.clear();
   current_profile_accounts_map_.clear();
   tutorial_showing_ = false;
@@ -465,36 +468,15 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
-  if (view_to_display == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_to_display == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
-    // Minimum size for embedded sign in pages as defined in Gaia.
-    const int kMinGaiaViewWidth = 320;
-    const int kMinGaiaViewHeight = 440;
-    Profile* profile = browser_->profile();
-    views::WebView* web_view = new views::WebView(profile);
-    signin::Source source = (view_to_display == BUBBLE_VIEW_MODE_GAIA_SIGNIN) ?
-        signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
-        signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
-    GURL url(signin::GetPromoURL(
-        source, false /* auto_close */, true /* is_constrained */));
-    web_view->LoadInitialURL(url);
-    views::GridLayout* layout =
-        CreateSingleColumnLayout(this, kMinGaiaViewWidth);
+  if (view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+      view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL) {
+    bool is_removal_view = view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL;
+    views::GridLayout* layout = CreateSingleColumnLayout(this,
+        is_removal_view ? kFixedAccountRemovalViewWidth : kFixedGaiaViewWidth);
     layout->StartRow(1, 0);
-    layout->AddView(web_view);
-    layout->set_minimum_size(
-        gfx::Size(kMinGaiaViewWidth, kMinGaiaViewHeight));
-    Layout();
-    if (GetBubbleFrameView())
-      SizeToContents();
-    return;
-  }
-
-  if (view_to_display == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL) {
-    views::GridLayout* layout = CreateSingleColumnLayout(
-        this, kFixedAccountRemovalViewWidth);
-    layout->StartRow(1, 0);
-    layout->AddView(CreateAccountRemovalView());
+    layout->AddView(is_removal_view ? CreateAccountRemovalView():
+        CreateGaiaSigninView(view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT));
     Layout();
     if (GetBubbleFrameView())
       SizeToContents();
@@ -603,9 +585,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == account_removal_cancel_button_) {
     account_id_to_remove_.clear();
     ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
-  } else if (current_profile_photo_ &&
-             sender == current_profile_photo_->change_photo_button()) {
-    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+  } else if (sender == gaia_signin_cancel_button_) {
+    std::string primary_account =
+        SigninManagerFactory::GetForProfile(browser_->profile())->
+        GetAuthenticatedUsername();
+    ShowView(primary_account.empty() ? BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
+                                       BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
+             avatar_menu_.get());
   } else if (current_profile_photo_ &&
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
@@ -1033,6 +1019,42 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 
   // Save the original email address, as the button text could be elided.
   current_profile_accounts_map_[email_button] = account;
+}
+
+views::View* ProfileChooserView::CreateGaiaSigninView(
+    bool add_secondary_account) {
+  views::View* view = new views::View();
+  int available_width = kFixedGaiaViewWidth - 2 * views::kButtonHEdgeMarginNew;
+  views::GridLayout* layout = CreateSingleColumnLayout(view, available_width);
+  layout->SetInsets(views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew,
+                    views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew);
+
+  // Adds title.
+  layout->StartRow(1, 0);
+  layout->AddView(new TitleCard(
+      add_secondary_account ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
+                              IDS_PROFILES_GAIA_SIGNIN_TITLE,
+      this, &gaia_signin_cancel_button_));
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  // Adds Gaia signin webview
+  Profile* profile = browser_->profile();
+  views::WebView* web_view = new views::WebView(profile);
+  signin::Source source = add_secondary_account ?
+      signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT :
+      signin::SOURCE_AVATAR_BUBBLE_SIGN_IN;
+  GURL url(signin::GetPromoURL(
+      source, false /* auto_close */, true /* is_constrained */));
+  web_view->LoadInitialURL(url);
+  web_view->SetPreferredSize(gfx::Size(available_width, kFixedGaiaViewHeight));
+
+  layout->StartRow(1, 0);
+  layout->AddView(web_view);
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  return view;
 }
 
 views::View* ProfileChooserView::CreateAccountRemovalView() {
