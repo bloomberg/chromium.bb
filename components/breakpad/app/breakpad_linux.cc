@@ -513,7 +513,7 @@ void CrashReporterWriter::AddFileContents(const char* filename_msg,
   AddItem(file_data, file_size);
   Flush();
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 void DumpProcess() {
   if (g_breakpad)
@@ -862,6 +862,26 @@ void SetCrashKeyValue(const base::StringPiece& key,
 
 void ClearCrashKey(const base::StringPiece& key) {
   g_crash_keys->RemoveKey(key.data());
+}
+
+// GetBreakpadClient() cannot call any Set methods until after InitCrashKeys().
+void InitCrashKeys() {
+  g_crash_keys = new CrashKeyStorage;
+  GetBreakpadClient()->RegisterCrashKeys();
+  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
+}
+
+// Miscellaneous initialization functions to call after Breakpad has been
+// enabled.
+void PostEnableBreakpadInitialization() {
+  SetProcessStartTime();
+  g_pid = getpid();
+
+  base::debug::SetDumpWithoutCrashingFunction(&DumpProcess);
+#if defined(ADDRESS_SANITIZER)
+  // Register the callback for AddressSanitizer error reporting.
+  __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
+#endif
 }
 
 }  // namespace
@@ -1484,6 +1504,7 @@ void InitCrashReporter(const std::string& process_type) {
       return;
     }
 
+    InitCrashKeys();
     EnableCrashDumping(GetBreakpadClient()->IsRunningUnattended());
   } else if (GetBreakpadClient()->EnableBreakpadForProcess(process_type)) {
 #if defined(OS_ANDROID)
@@ -1498,25 +1519,14 @@ void InitCrashReporter(const std::string& process_type) {
     // simplicity.
     if (!parsed_command_line.HasSwitch(switches::kEnableCrashReporter))
       return;
+    InitCrashKeys();
     SetClientIdFromCommandLine(parsed_command_line);
     EnableNonBrowserCrashDumping();
     VLOG(1) << "Non Browser crash dumping enabled for: " << process_type;
 #endif  // #if defined(OS_ANDROID)
   }
 
-  SetProcessStartTime();
-  g_pid = getpid();
-
-  base::debug::SetDumpWithoutCrashingFunction(&DumpProcess);
-#if defined(ADDRESS_SANITIZER)
-  // Register the callback for AddressSanitizer error reporting.
-  __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
-#endif
-
-  g_crash_keys = new CrashKeyStorage;
-  GetBreakpadClient()->RegisterCrashKeys();
-  base::debug::SetCrashKeyReportingFunctions(
-      &SetCrashKeyValue, &ClearCrashKey);
+  PostEnableBreakpadInitialization();
 }
 
 #if defined(OS_ANDROID)
