@@ -5,15 +5,12 @@
 #include "mojo/system/raw_shared_buffer.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"  // TODO(vtl): Remove once enabled on Windows.
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
-// TODO(vtl): Implement and enable on Windows.
-#if !defined(OS_WIN)
 TEST(RawSharedBufferTest, Basic) {
   const size_t kNumInts = 100;
   const size_t kNumBytes = kNumInts * sizeof(int);
@@ -113,7 +110,8 @@ TEST(RawSharedBufferTest, InvalidArguments) {
   EXPECT_FALSE(buffer->Map(50, 51));
   EXPECT_FALSE(buffer->Map(51, 50));
 }
-#endif  // !defined(OS_WIN)
+
+// TODO(vtl): Check that mappings can outlive the shared buffer.
 
 }  // namespace
 }  // namespace system

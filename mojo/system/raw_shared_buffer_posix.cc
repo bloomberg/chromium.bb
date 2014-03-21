@@ -21,7 +21,6 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/embedder/platform_handle.h"
-#include "mojo/embedder/scoped_platform_handle.h"
 
 // We assume that |size_t| and |off_t| (type for |ftruncate()|) fits in a
 // |uint64_t|.
