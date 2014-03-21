@@ -17,6 +17,14 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+@interface CompositingIOSurfaceLayer()
+
+// Private method to wait for a frame of the right size if we're in an active
+// resize. This may potentially dispatch select messages from the run loop.
+- (void)waitForResizedFrameInContext:(CGLContextObj)glContext;
+
+@end
+
 @implementation CompositingIOSurfaceLayer
 
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r {
@@ -83,6 +91,48 @@
     renderWidgetHostView_->SendPendingSwapAck();
 }
 
+- (void)waitForResizedFrameInContext:(CGLContextObj)glContext {
+  // This appears to be causing crashes on 10.6. Temporarily disable the
+  // synchronized resize on 10.6 to verify that the crashes go away.
+  // TODO(ccameron): Remove this.
+  // http://crbug.com/348328
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  // Cache a copy of renderWidgetHostView_ because it may be reset if
+  // a software frame is received in GetBackingStore.
+  content::RenderWidgetHostViewMac* cached_view = renderWidgetHostView_;
+  if (!cached_view->render_widget_host_ ||
+      cached_view->render_widget_host_->is_hidden()) {
+    return;
+  }
+
+  // Note that GetBackingStore can potentially spawn a nested run loop, which
+  // may change the current GL context, or, because the GL contexts are
+  // shared, may change the currently-bound FBO. Ensure that, when the run
+  // loop returns, the original GL context remain current, and the original
+  // FBO remain bound.
+  // TODO(ccameron): This is far too fragile a mechanism to rely on. Find
+  // a way to avoid doing this.
+  GLuint previous_framebuffer = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING,
+                reinterpret_cast<GLint*>(&previous_framebuffer));
+  {
+    // If a resize is in progress then GetBackingStore request a frame of the
+    // current window size and block until a frame of the right size comes in.
+    // This makes the window content not lag behind the resize (at the cost of
+    // blocking on the browser's main thread).
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(NULL);
+    cached_view->about_to_validate_and_paint_ = true;
+    (void)cached_view->render_widget_host_->GetBackingStore(true);
+    cached_view->about_to_validate_and_paint_ = false;
+  }
+  CHECK_EQ(CGLGetCurrentContext(), glContext)
+      << "original GL context failed to re-bind after nested run loop, "
+      << "browser crash is imminent.";
+  glBindFramebuffer(GL_FRAMEBUFFER, previous_framebuffer);
+}
+
 // The remaining methods implement the CAOpenGLLayer interface.
 
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask {
@@ -124,6 +174,18 @@
     return;
   }
 
+  // Acknowledge the frame before we potentially wait for a frame of the right
+  // size.
+  renderWidgetHostView_->SendPendingSwapAck();
+
+  // Wait for a frame of the right size to come in, if needed.
+  [self waitForResizedFrameInContext:glContext];
+
+  // If a transition to software mode has occurred, this layer should be
+  // removed from the heirarchy now, so don't draw anything.
+  if (!renderWidgetHostView_)
+    return;
+
   // The correct viewport to cover the layer will be set up by the caller.
   // Transform this into a window size for DrawIOSurface, where it will be
   // transformed back into this viewport.
@@ -147,7 +209,6 @@
 
   needsDisplay_ = NO;
   renderWidgetHostView_->SendPendingLatencyInfoToHost();
-  renderWidgetHostView_->SendPendingSwapAck();
 
   [super drawInCGLContext:glContext
               pixelFormat:pixelFormat

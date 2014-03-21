@@ -404,6 +404,8 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
+      about_to_validate_and_paint_(false),
+      call_set_needs_display_in_rect_pending_(false),
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
@@ -443,6 +445,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  // If a caller has set this, then when the caller tries to re-set it sometime
+  // in the future, we will crash.
+  CHECK(!about_to_validate_and_paint_);
+
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
   cocoa_view_ = nil;
@@ -808,13 +814,12 @@ void RenderWidgetHostViewMac::WasShown() {
   render_widget_host_->WasShown();
   software_frame_manager_->SetVisibility(true);
 
-  [software_layer_ setNeedsDisplay];
-  [compositing_iosurface_layer_ setNeedsDisplay];
-  PauseForPendingResizeOrRepaints();
-
   // We're messing with the window, so do this to ensure no flashes.
   if (!use_core_animation_)
     [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+
+  [software_layer_ setNeedsDisplay];
+  [compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -1038,10 +1043,34 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
 
   for (size_t i = 0; i < rects.size(); ++i) {
     NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
-    [cocoa_view_ setNeedsDisplayInRect:ns_rect];
+
+    if (about_to_validate_and_paint_) {
+      // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
+      // We're in the middle of executing a -drawRect:, and as soon as it
+      // returns Cocoa will clear its record of what needs display. We instead
+      // use |performSelector:| to call |setNeedsDisplayInRect:| after returning
+      //  to the main loop, at which point |drawRect:| is no longer on the
+      // stack.
+      DCHECK([NSThread isMainThread]);
+      if (!call_set_needs_display_in_rect_pending_) {
+        [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
+                      withObject:nil
+                      afterDelay:0];
+        call_set_needs_display_in_rect_pending_ = true;
+        invalid_rect_ = ns_rect;
+      } else {
+        // The old invalid rect is probably invalid now, since the view has most
+        // likely been resized, but there's no harm in dirtying the union.  In
+        // the limit, this becomes equivalent to dirtying the whole view.
+        invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+      }
+    } else {
+      [cocoa_view_ setNeedsDisplayInRect:ns_rect];
+    }
   }
 
-  [cocoa_view_ displayIfNeeded];
+  if (!about_to_validate_and_paint_)
+    [cocoa_view_ displayIfNeeded];
 }
 
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
@@ -1462,18 +1491,22 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     return;
   }
 
-  // If we reach here, then the frame will be displayed by a future draw
-  // call, so don't make the callback.
-  (void)scoped_ack.Release();
-  if (use_core_animation_) {
-    DCHECK(compositing_iosurface_layer_);
-    compositing_iosurface_layer_async_timer_.Reset();
-    [compositing_iosurface_layer_ gotNewFrame];
-  } else {
-    if (!DrawIOSurfaceWithoutCoreAnimation()) {
-      [cocoa_view_ setNeedsDisplay:YES];
-      GotAcceleratedCompositingError();
-      return;
+  // No need to draw the surface if we are inside a drawRect. It will be done
+  // later.
+  if (!about_to_validate_and_paint_) {
+    // If we reach here, then the frame will be displayed by a future draw
+    // call, so don't make the callback.
+    (void)scoped_ack.Release();
+    if (use_core_animation_) {
+      DCHECK(compositing_iosurface_layer_);
+      compositing_iosurface_layer_async_timer_.Reset();
+      [compositing_iosurface_layer_ gotNewFrame];
+    } else {
+      if (!DrawIOSurfaceWithoutCoreAnimation()) {
+        [cocoa_view_ setNeedsDisplay:YES];
+        GotAcceleratedCompositingError();
+        return;
+      }
     }
   }
 }
@@ -1813,10 +1846,12 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   // ready before the drawing is complete, thrashing the browser main thread.
   if (use_core_animation_) {
     [software_layer_ setNeedsDisplay];
-    [software_layer_ displayIfNeeded];
+    if (!about_to_validate_and_paint_)
+      [software_layer_ displayIfNeeded];
   } else {
     [cocoa_view_ setNeedsDisplay:YES];
-    [cocoa_view_ displayIfNeeded];
+    if (!about_to_validate_and_paint_)
+      [cocoa_view_ displayIfNeeded];
   }
 
   cc::CompositorFrameAck ack;
@@ -2178,19 +2213,6 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
     render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 
   pending_swap_ack_.reset();
-}
-
-void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaints() {
-  if (!render_widget_host_ || render_widget_host_->is_hidden())
-    return;
-
-  // Ensure that all frames are acked before waiting for a frame to come in.
-  // Note that we will draw a frame at the end of this function, so it is safe
-  // to ack a never-drawn frame here.
-  SendPendingSwapAck();
-
-  // Wait for a frame of the right size to come in.
-  render_widget_host_->PauseForPendingResizeOrRepaints();
 }
 
 SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
@@ -2939,23 +2961,21 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   // NB: -[NSView setFrame:] calls through -setFrameSize:, so overriding
   // -setFrame: isn't neccessary.
   [super setFrameSize:newSize];
+  if (renderWidgetHostView_->render_widget_host_) {
+    renderWidgetHostView_->render_widget_host_->SendScreenRects();
+    renderWidgetHostView_->render_widget_host_->WasResized();
+  }
 
-  if (!renderWidgetHostView_->render_widget_host_)
-    return;
-
-  renderWidgetHostView_->render_widget_host_->SendScreenRects();
-  renderWidgetHostView_->render_widget_host_->WasResized();
-
-  // Resize the CALayers to be drawn to.
+  // This call is necessary to make the window wait for a new frame at the new
+  // size to be available before the resize completes. Calling only
+  // setLayerContentsRedrawPolicy:NSViewLayerContentsRedrawOnSetNeedsDisplay on
+  // this is not sufficient.
   ScopedCAActionDisabler disabler;
   CGRect frame = NSRectToCGRect([renderWidgetHostView_->cocoa_view() bounds]);
   [renderWidgetHostView_->software_layer_ setFrame:frame];
   [renderWidgetHostView_->software_layer_ setNeedsDisplay];
   [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
   [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
-
-  // Wait for the frame that WasResize might have requested.
-  renderWidgetHostView_->PauseForPendingResizeOrRepaints();
 
   // Sometimes, especially when infobars are being removed, the setNeedsDisplay
   // calls are dropped on the floor, and stale content is displayed. Calling
@@ -2964,6 +2984,17 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   // http://crbug.com/350817
   [renderWidgetHostView_->software_layer_ displayIfNeeded];
   [renderWidgetHostView_->compositing_iosurface_layer_ displayIfNeeded];
+}
+
+- (void)callSetNeedsDisplayInRect {
+  DCHECK([NSThread isMainThread]);
+  DCHECK(renderWidgetHostView_->call_set_needs_display_in_rect_pending_);
+  [self setNeedsDisplayInRect:renderWidgetHostView_->invalid_rect_];
+  renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
+  renderWidgetHostView_->invalid_rect_ = NSZeroRect;
+
+  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|
@@ -3030,8 +3061,14 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
     return;
   }
 
+  // GetBackingStore works for both software and accelerated frames. If a
+  // SwapBuffers occurs while GetBackingStore is blocking, we will continue to
+  // blit the IOSurface below.
+  DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
+  renderWidgetHostView_->about_to_validate_and_paint_ = true;
   BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
-      renderWidgetHostView_->render_widget_host_->GetBackingStore(false));
+      renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
+  renderWidgetHostView_->about_to_validate_and_paint_ = false;
 
   const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
 
@@ -4222,10 +4259,31 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)drawInContext:(CGContextRef)context {
   TRACE_EVENT0("browser", "SoftwareLayer::drawInContext");
 
+  // Call GetBackingStore to stall until a software frame of the same size as
+  // the window comes in from the renderer.
+  BackingStoreMac* backingStore = NULL;
+
+  // This appears to be causing crashes on 10.6. Temporarily disable the
+  // synchronized resize on 10.6 to verify that the crashes go away.
+  // TODO(ccameron): Remove this.
+  // http://crbug.com/348328
+  if (!base::mac::IsOSSnowLeopard() &&
+      renderWidgetHostView_ &&
+      renderWidgetHostView_->render_widget_host_ &&
+      !renderWidgetHostView_->render_widget_host_->is_hidden()) {
+    // GetBackingStore will dispatch some messages from the run loop, so make
+    // sure that this is robust to having disableRendering called, which would
+    // invalidate renderWidgetHostView_.
+    RenderWidgetHostViewMac* cachedView = renderWidgetHostView_;
+    DCHECK(!cachedView->about_to_validate_and_paint_);
+    cachedView->about_to_validate_and_paint_ = true;
+    backingStore = static_cast<BackingStoreMac*>(
+        cachedView->render_widget_host_->GetBackingStore(true));
+    cachedView->about_to_validate_and_paint_ = false;
+  }
+
   CGRect clipRect = CGContextGetClipBoundingBox(context);
   if (renderWidgetHostView_) {
-    BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
-        renderWidgetHostView_->render_widget_host_->GetBackingStore(false));
     [renderWidgetHostView_->cocoa_view() drawBackingStore:backingStore
                                                 dirtyRect:clipRect
                                                 inContext:context];

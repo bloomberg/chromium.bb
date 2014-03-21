@@ -247,11 +247,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
-  // Pause for a moment to wait for pending repaint or resize messages sent to
-  // the renderer to arrive. If pending resize messages are for an old window
-  // size, then also pump through a new resize message if there is time.
-  void PauseForPendingResizeOrRepaints();
-
   // Check for the existance of a BackingStore of the given |desired_size| and
   // return it if it exists. If the BackingStore is GPU, true is returned and
   // |*backing_store| is set to NULL.

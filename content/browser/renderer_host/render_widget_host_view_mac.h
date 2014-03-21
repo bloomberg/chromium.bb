@@ -415,8 +415,25 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // someone (other than superview) has retained |cocoa_view_|.
   RenderWidgetHostImpl* render_widget_host_;
 
+  // This is true when we are currently painting. In the legacy renderer, this
+  // means we should handle extra paint requests by expanding the invalid rect
+  // rather than actually painting. In hardware compositing it means that we
+  // are inside a draw callback and should not wait for frames to draw before
+  // acknowledging them.
+  bool about_to_validate_and_paint_;
+
+  // This is true when we have already scheduled a call to
+  // |-callSetNeedsDisplayInRect:| but it has not been fulfilled yet.  Used to
+  // prevent us from scheduling multiple calls.
+  bool call_set_needs_display_in_rect_pending_;
+
   // Whether last rendered frame was accelerated.
   bool last_frame_was_accelerated_;
+
+  // The invalid rect that needs to be painted by callSetNeedsDisplayInRect.
+  // This value is only meaningful when
+  // |call_set_needs_display_in_rect_pending_| is true.
+  NSRect invalid_rect_;
 
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This
@@ -504,8 +521,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void TickPendingLatencyInfoDelay();
 
   void SendPendingSwapAck();
-
-  void PauseForPendingResizeOrRepaints();
 
  private:
   friend class RenderWidgetHostView;
