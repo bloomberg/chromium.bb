@@ -503,6 +503,7 @@ base::DictionaryValue* ExperimentsSpecificsToValue(
   SET(favicon_sync, FaviconSyncFlagsToValue);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_channel);
   SET_EXPERIMENT_ENABLED_FIELD(enhanced_bookmarks);
+  SET_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
   return value;
 }
 

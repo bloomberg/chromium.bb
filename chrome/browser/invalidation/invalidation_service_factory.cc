@@ -18,8 +18,10 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
@@ -107,6 +109,10 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
 
 void InvalidationServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kInvalidationServiceUseGCMChannel,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   InvalidatorStorage::RegisterProfilePrefs(registry);
 }
 

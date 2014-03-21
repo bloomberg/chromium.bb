@@ -1022,6 +1022,9 @@ void ProfileSyncService::OnExperimentsChanged(
     profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
   }
 
+  profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
+                                    experiments.gcm_invalidations_enabled);
+
   int bookmarks_experiment_state_before = profile_->GetPrefs()->GetInteger(
       sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".

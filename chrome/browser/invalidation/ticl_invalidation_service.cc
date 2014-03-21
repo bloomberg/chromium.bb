@@ -6,13 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/pref_names.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -64,6 +67,7 @@ TiclInvalidationService::TiclInvalidationService(
       auth_provider_(auth_provider.Pass()),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
+      network_channel_type_(PUSH_CLIENT_CHANNEL),
       logger_() {}
 
 TiclInvalidationService::~TiclInvalidationService() {
@@ -80,8 +84,20 @@ void TiclInvalidationService::Init() {
     invalidator_storage_->SetInvalidatorClientId(GenerateInvalidatorClientId());
   }
 
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kInvalidationServiceUseGCMChannel,
+      base::Bind(&TiclInvalidationService::UpdateInvalidationNetworkChannel,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kGCMChannelEnabled,
+      base::Bind(&TiclInvalidationService::UpdateInvalidationNetworkChannel,
+                 base::Unretained(this)));
+
+  UpdateInvalidationNetworkChannel();
+
   if (IsReadyToStart()) {
-    StartInvalidator(PUSH_CLIENT_CHANNEL);
+    StartInvalidator(network_channel_type_);
   }
 
   auth_provider_->AddObserver(this);
@@ -195,7 +211,7 @@ void TiclInvalidationService::OnGetTokenSuccess(
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
   if (!IsStarted() && IsReadyToStart()) {
-    StartInvalidator(PUSH_CLIENT_CHANNEL);
+    StartInvalidator(network_channel_type_);
   } else {
     UpdateInvalidatorCredentials();
   }
@@ -235,7 +251,7 @@ void TiclInvalidationService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (auth_provider_->GetAccountId() == account_id) {
     if (!IsStarted() && IsReadyToStart()) {
-      StartInvalidator(PUSH_CLIENT_CHANNEL);
+      StartInvalidator(network_channel_type_);
     }
   }
 }
@@ -346,7 +362,9 @@ void TiclInvalidationService::StartInvalidator(
   DCHECK(invalidator_storage_);
   DCHECK(!invalidator_storage_->GetInvalidatorClientId().empty());
 
-  if (access_token_.empty()) {
+  // Request access token for PushClientChannel. GCMNetworkChannel will request
+  // access token before sending message to server.
+  if (network_channel == PUSH_CLIENT_CHANNEL && access_token_.empty()) {
     DVLOG(1)
         << "TiclInvalidationService: "
         << "Deferring start until we have an access token.";
@@ -403,6 +421,26 @@ void TiclInvalidationService::StartInvalidator(
   invalidator_->UpdateRegisteredIds(
       this,
       invalidator_registrar_->GetAllRegisteredIds());
+}
+
+void TiclInvalidationService::UpdateInvalidationNetworkChannel() {
+  InvalidationNetworkChannel network_channel_type = PUSH_CLIENT_CHANNEL;
+// For now don't use GCM on iOS.
+#if !defined(OS_IOS)
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kInvalidationServiceUseGCMChannel) &&
+      gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
+          gcm::GCMProfileService::ALWAYS_ENABLED) {
+    network_channel_type = GCM_NETWORK_CHANNEL;
+  }
+#endif
+  if (network_channel_type_ == network_channel_type)
+    return;
+  network_channel_type_ = network_channel_type;
+  if (IsStarted()) {
+    StopInvalidator();
+    StartInvalidator(network_channel_type_);
+  }
 }
 
 void TiclInvalidationService::UpdateInvalidatorCredentials() {

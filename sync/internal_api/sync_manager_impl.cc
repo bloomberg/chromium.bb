@@ -1129,6 +1129,18 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     found_experiment = true;
   }
 
+  ReadNode gcm_invalidations_node(&trans);
+  if (gcm_invalidations_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS, syncer::kGCMInvalidationsTag) ==
+      BaseNode::INIT_OK) {
+    const sync_pb::GcmInvalidationsFlags& gcm_invalidations =
+        gcm_invalidations_node.GetExperimentsSpecifics().gcm_invalidations();
+    if (gcm_invalidations.has_enabled()) {
+      experiments->gcm_invalidations_enabled = gcm_invalidations.enabled();
+      found_experiment = true;
+    }
+  }
+
   return found_experiment;
 }
 

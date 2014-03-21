@@ -1835,6 +1835,11 @@ const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 // yet.  Used to keep invalidation clients in sync in case of a restart.
 const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 
+// Boolean indicating that TiclInvalidationService should use GCM channel.
+// False or lack of settings means XMPPPushClient channel.
+const char kInvalidationServiceUseGCMChannel[] =
+    "invalidation_service.use_gcm_channel";
+
 // String the identifies the last user that logged into sync and other
 // google services. As opposed to kGoogleServicesUsername, this value is not
 // cleared on signout, but while the user is signed in the two values will
