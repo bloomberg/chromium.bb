@@ -54,7 +54,7 @@ class KeyEvent;
 namespace autofill {
 
 class AutofillDialogSignInDelegate;
-class DecoratedTextfield;
+class ExpandingTextfield;
 class InfoBubble;
 
 // Views toolkit implementation of the Autofill dialog that handles the
@@ -286,7 +286,7 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(NotificationArea);
   };
 
-  typedef std::map<ServerFieldType, DecoratedTextfield*> TextfieldMap;
+  typedef std::map<ServerFieldType, ExpandingTextfield*> TextfieldMap;
   typedef std::map<ServerFieldType, views::Combobox*> ComboboxMap;
 
   // A view that packs a label on the left and some related controls
@@ -389,7 +389,7 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual int GetHeightForWidth(int width) OVERRIDE;
     virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
-    DecoratedTextfield* decorated_textfield() { return decorated_; }
+    ExpandingTextfield* textfield() { return textfield_; }
 
    private:
     // Returns whether there's room to display |state_.vertically_compact_text|
@@ -428,7 +428,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // The icon that comes just before |label_|.
     views::ImageView* icon_;
     // The input set by ShowTextfield.
-    DecoratedTextfield* decorated_;
+    ExpandingTextfield* textfield_;
     // An "Edit" link that flips to editable inputs rather than suggestion text.
     views::Link* edit_link_;
 
@@ -522,7 +522,7 @@ class AutofillDialogViews : public AutofillDialogView,
   void FocusInitialView();
 
   // Sets the visual state for an input to be either valid or invalid. This
-  // should work on Comboboxes or DecoratedTextfields. If |message| is empty,
+  // should work on Comboboxes or ExpandingTextfields. If |message| is empty,
   // the input is valid.
   template<class T>
   void SetValidityForInput(T* input, const base::string16& message);
@@ -564,10 +564,10 @@ class AutofillDialogViews : public AutofillDialogView,
   void DoContentsPreferredSizeChanged();
 
   // Gets the textfield view that is shown for the given |type| or NULL.
-  DecoratedTextfield* TextfieldForType(ServerFieldType type);
+  ExpandingTextfield* TextfieldForType(ServerFieldType type);
 
   // Returns the associated ServerFieldType for |textfield|.
-  ServerFieldType TypeForTextfield(const views::Textfield* textfield);
+  ServerFieldType TypeForTextfield(const views::View* textfield);
 
   // Gets the combobox view that is shown for the given |type|, or NULL.
   views::Combobox* ComboboxForType(ServerFieldType type);

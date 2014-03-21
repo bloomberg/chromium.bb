@@ -189,7 +189,7 @@ bool ServerTypeMatchesShippingField(ServerFieldType type,
                                     const AutofillField& field) {
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
-  return common::ServerTypeMatchesFieldType(
+  return common::ServerTypeEncompassesFieldType(
       type,
       AutofillType(AutofillType::GetEquivalentBillingFieldType(
           field.Type().GetStorableType())));
