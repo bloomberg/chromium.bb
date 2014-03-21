@@ -1943,11 +1943,6 @@
         # unit_tests than in base_unittests.
         '../base/path_service_unittest.cc',
 
-        # TODO(joi): Move to //components/components_tests.gypi once
-        # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/content/browser/content_autofill_driver_unittest.cc',
-        '../components/autofill/content/browser/request_autocomplete_manager_unittest.cc',
-
         # TODO(yael): Move to //components/components_tests.gypi once
         # nacl_defines is moved out of chrome.gyp into a common place.
         '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',

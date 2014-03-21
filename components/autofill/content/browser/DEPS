@@ -15,20 +15,4 @@ specific_include_rules = {
   '.*_[a-z]*test\.cc': [
     "+content/public/test",
   ],
-
-  # TODO(joi): Removing these dependencies needs to wait until some
-  # other things (AutofillWebData::FromBrowserContext and a few other
-  # things) move out of being built in //chrome. If we break the
-  # dependency on ChromeRenderViewHostTestHarness now (by switching to
-  # content::RenderViewHostTestHarness) but leave the test running in
-  # the 'unit_tests' target, it will fail at runtime trying to cast a
-  # plain BrowserContext to a Profile. If on the other hand we move it
-  # to the 'components_unittests' target, it will at this point fail
-  # to build due to a few link-time dependencies.
-  'content_autofill_driver_unittest.cc': [
-    "!chrome/test/base/chrome_render_view_host_test_harness.h",
-  ],
-  'request_autocomplete_manager_unittest.cc': [
-    "!chrome/test/base/chrome_render_view_host_test_harness.h",
-  ],
 }

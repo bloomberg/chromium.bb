@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_renderer_host.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,10 +63,10 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
   using ContentAutofillDriver::DidNavigateMainFrame;
 };
 
-class ContentAutofillDriverTest : public ChromeRenderViewHostTestHarness {
+class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
+    content::RenderViewHostTestHarness::SetUp();
 
     test_manager_delegate_.reset(new TestAutofillManagerDelegate());
     driver_.reset(new TestContentAutofillDriver(web_contents(),
@@ -77,7 +77,7 @@ class ContentAutofillDriverTest : public ChromeRenderViewHostTestHarness {
     // Reset the driver now to cause all pref observers to be removed and avoid
     // crashes that otherwise occur in the destructor.
     driver_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
+    content::RenderViewHostTestHarness::TearDown();
   }
 
  protected:

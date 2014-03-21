@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -90,12 +90,13 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
 
 }  // namespace
 
-class RequestAutocompleteManagerTest : public ChromeRenderViewHostTestHarness {
+class RequestAutocompleteManagerTest :
+    public content::RenderViewHostTestHarness {
  public:
   RequestAutocompleteManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
+    content::RenderViewHostTestHarness::SetUp();
 
     driver_.reset(
         new TestContentAutofillDriver(web_contents(), &manager_delegate_));
@@ -107,7 +108,7 @@ class RequestAutocompleteManagerTest : public ChromeRenderViewHostTestHarness {
     // Reset the driver now to cause all pref observers to be removed and avoid
     // crashes that otherwise occur in the destructor.
     driver_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
+    content::RenderViewHostTestHarness::TearDown();
   }
 
   // Searches for an |AutofillMsg_RequestAutocompleteResult| message in the
