@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_USER_MANAGER_VIEW_H_
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class AutoKeepAlive;
@@ -17,8 +18,12 @@ class WebView;
 // Dialog widget that contains the Desktop User Manager webui.
 class UserManagerView : public views::DialogDelegateView {
  public:
-  // Shows the User Manager or re-activates an existing one.
-  static void Show(const base::FilePath& profile_path_to_focus);
+  // Shows the User Manager or re-activates an existing one, focusing the
+  // profile given by |profile_path_to_focus|. Based on the value of
+  // |tutorial_mode|, a tutorial could be shown, in which case
+  // |profile_path_to_focus| is ignored.
+  static void Show(const base::FilePath& profile_path_to_focus,
+                   profiles::UserManagerTutorialMode tutorial_mode);
 
   // Hide the User Manager.
   static void Hide();
@@ -30,12 +35,10 @@ class UserManagerView : public views::DialogDelegateView {
   explicit UserManagerView(Profile* profile);
   virtual ~UserManagerView();
 
-  // If the |guest_profile| has been initialized succesfully (according to
-  // |status|), creates a new UserManagerView instance with the user with path
-  // |profile_path_to_focus| focused.
-  static void OnGuestProfileCreated(const base::FilePath& profile_path_to_focus,
-                                    Profile* guest_profile,
-                                    Profile::CreateStatus status);
+  // Creates a new UserManagerView instance for the |guest_profile| and
+  // shows the |url|.
+  static void OnGuestProfileCreated(Profile* guest_profile,
+                                    const std::string& url);
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

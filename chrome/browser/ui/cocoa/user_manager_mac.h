@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 
 class UserManagerMac;
 @class UserManagerWindowController;
@@ -23,8 +24,11 @@ class WebContents;
 class UserManagerMac {
  public:
   // Shows the User Manager or re-activates an existing one, focusing the
-  // profile given by |profile_path_to_focus|.
-  static void Show(const base::FilePath& profile_path_to_focus);
+  // profile given by |profile_path_to_focus|. Based on the value of
+  // |tutorial_mode|, a tutorial could be shown, in which case
+  // |profile_path_to_focus| is ignored.
+  static void Show(const base::FilePath& profile_path_to_focus,
+                   profiles::UserManagerTutorialMode tutorial_mode);
 
   // Hide the User Manager.
   static void Hide();
@@ -40,12 +44,10 @@ class UserManagerMac {
   explicit UserManagerMac(Profile* profile);
   virtual ~UserManagerMac();
 
-  // If the |guest_profile| has been initialized succesfully (according to
-  // |status|), creates a new UserManagerMac instance with the user with path
-  // |profile_path_to_focus| focused.
-  static void OnGuestProfileCreated(const base::FilePath& profile_path_to_focus,
-                                    Profile* guest_profile,
-                                    Profile::CreateStatus status);
+  // Creates a new UserManagerMac instance for the |guest_profile| and
+  // shows the |url|.
+  static void OnGuestProfileCreated(Profile* guest_profile,
+                                    const std::string& url);
 
   // An open User Manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.

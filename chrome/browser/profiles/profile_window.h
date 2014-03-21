@@ -18,6 +18,13 @@ namespace profiles {
 // Callback to be used when switching to a new profile is completed.
 typedef base::Callback<void()> ProfileSwitchingDoneCallback;
 
+// Different tutorials that can be displayed in the user manager.
+enum UserManagerTutorialMode {
+  USER_MANAGER_NO_TUTORIAL,        // Does not display a tutorial.
+  USER_MANAGER_TUTORIAL_OVERVIEW,  // Basic overview of new features.
+  USER_MANAGER_TUTORIAL_LOCK,      // TODO(noms): To be implemented.
+};
+
 // Activates a window for |profile| on the desktop specified by
 // |desktop_type|. If no such window yet exists, or if |always_create| is
 // true, this first creates a new window, then activates
@@ -58,6 +65,22 @@ void CloseGuestProfileWindows();
 
 // Closes all the browser windows for |profile| and opens the user manager.
 void LockProfile(Profile* profile);
+
+// Creates or reuses the guest profile needed by the user manager. Based on
+// the value of |tutorial_mode|, the user manager can show a specific
+// tutorial, or no tutorial at all. If a tutorial is not shown, then
+// |profile_path_to_focus| could be used to specify which user should be
+// focused. |callback| is run with the custom url to be displayed, as well as
+// a pointer to the guest profile.
+void CreateGuestProfileForUserManager(
+    const base::FilePath& profile_path_to_focus,
+    profiles::UserManagerTutorialMode tutorial_mode,
+    const base::Callback<void(Profile*, const std::string&)>& callback);
+
+// Based on the |profile| preferences, determines whether a user manager
+// tutorial needs to be shown, and displays the user manager with or without
+// the tutorial.
+void ShowUserManagerMaybeWithTutorial(Profile* profile);
 
 }  // namespace profiles
 

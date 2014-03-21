@@ -25,6 +25,11 @@
   overflow: hidden;
 }
 
+#inner-container.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 /* Screens that have a border and background. */
 #oobe.autolaunch #inner-container,
 #oobe.connect #inner-container,
@@ -174,4 +179,3 @@ html[build=chromium] #header-sections {
    * like "[Product name] > [step header]". */
   content: '\00A0\203A\00A0\00A0';
 }
-

@@ -166,10 +166,19 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSpdyProxyAuthWasEnabledBefore,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
+  // Preferences related to the avatar bubble and user manager tutorials.
+  registry->RegisterIntegerPref(
+      prefs::kProfileAvatarTutorialShown,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kProfileUserManagerTutorialShown,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
-
 
 std::string Profile::GetDebugName() {
   std::string name = GetPath().BaseName().MaybeAsASCII();

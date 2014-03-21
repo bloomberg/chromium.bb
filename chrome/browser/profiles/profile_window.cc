@@ -6,11 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -118,6 +122,36 @@ void OpenBrowserWindowForProfile(
       true);
 }
 
+// Called after a |guest_profile| is available to be used by the user manager.
+// Based on the value of |tutorial_mode| we determine a url to be displayed
+// by the webui and run the |callback|, if it exists.
+void OnUserManagerGuestProfileCreated(
+    const base::FilePath& profile_path_to_focus,
+    profiles::UserManagerTutorialMode tutorial_mode,
+    const base::Callback<void(Profile*, const std::string&)>& callback,
+    Profile* guest_profile,
+    Profile::CreateStatus status) {
+  if (status != Profile::CREATE_STATUS_INITIALIZED || callback.is_null())
+    return;
+
+  // Tell the webui which user should be focused.
+  std::string page = chrome::kChromeUIUserManagerURL;
+
+  if (tutorial_mode == profiles::USER_MANAGER_TUTORIAL_OVERVIEW) {
+    page += "#tutorial";
+  } else if (!profile_path_to_focus.empty()) {
+    const ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = cache.GetIndexOfProfileWithPath(profile_path_to_focus);
+    if (index != std::string::npos) {
+      page += "#";
+      page += base::IntToString(index);
+    }
+  }
+
+  callback.Run(guest_profile, page);
+}
+
 }  // namespace
 
 namespace profiles {
@@ -217,6 +251,43 @@ void LockProfile(Profile* profile) {
   cache.SetProfileSigninRequiredAtIndex(index, true);
   chrome::ShowUserManager(profile->GetPath());
   BrowserList::CloseAllBrowsersWithProfile(profile);
+}
+
+void CreateGuestProfileForUserManager(
+    const base::FilePath& profile_path_to_focus,
+    profiles::UserManagerTutorialMode tutorial_mode,
+    const base::Callback<void(Profile*, const std::string&)>& callback) {
+  // Create the guest profile, if necessary, and open the User Manager
+  // from the guest profile.
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      ProfileManager::GetGuestProfilePath(),
+      base::Bind(&OnUserManagerGuestProfileCreated,
+                 profile_path_to_focus,
+                 tutorial_mode,
+                 callback),
+      base::string16(),
+      base::string16(),
+      std::string());
+}
+
+void ShowUserManagerMaybeWithTutorial(Profile* profile) {
+  if (!profile) {
+    chrome::ShowUserManager(base::FilePath());
+    return;
+  }
+  // Show the tutorial if the profile has not shown it before.
+  PrefService* pref_service = profile->GetPrefs();
+  bool tutorial_shown = pref_service->GetBoolean(
+      prefs::kProfileUserManagerTutorialShown);
+  if (!tutorial_shown)
+    pref_service->SetBoolean(prefs::kProfileUserManagerTutorialShown, true);
+
+  if (tutorial_shown) {
+    chrome::ShowUserManager(profile->GetPath());
+  } else {
+    chrome::ShowUserManagerWithTutorial(
+        profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  }
 }
 
 }  // namespace profiles

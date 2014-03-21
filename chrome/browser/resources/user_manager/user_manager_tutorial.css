@@ -19,6 +19,14 @@
   z-index: 100;
 }
 
+.tutorial-slide.single-pod {
+  margin-left: 30px;
+}
+
+html[dir=rtl] .tutorial-slide.single-pod {
+  margin-right: 30px;
+}
+
 .hidden {
   opacity: 0;
   pointer-events: none;

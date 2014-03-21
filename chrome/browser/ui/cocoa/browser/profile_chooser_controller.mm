@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/user_manager_mac.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -585,20 +586,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be created.
-  bool always_create = ui::WindowOpenDispositionFromNSEvent(
+  bool alwaysCreate = ui::WindowOpenDispositionFromNSEvent(
       [NSApp currentEvent]) == NEW_WINDOW;
-  avatarMenu_->SwitchToProfile([sender tag], always_create,
+  avatarMenu_->SwitchToProfile([sender tag], alwaysCreate,
                                ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 - (IBAction)showUserManager:(id)sender {
-  // Only non-guest users appear in the User Manager.
-  base::FilePath profile_path;
-  if (!isGuestSession_) {
-    size_t active_index = avatarMenu_->GetActiveProfileIndex();
-    profile_path = avatarMenu_->GetItemAt(active_index).profile_path;
-  }
-  chrome::ShowUserManager(profile_path);
+  // Guest users cannot appear in the User Manager, nor display a tutorial.
+  profiles::ShowUserManagerMaybeWithTutorial(
+      isGuestSession_ ? NULL : browser_->profile());
 }
 
 - (IBAction)switchToGuestProfile:(id)sender {
@@ -1223,4 +1220,3 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return label.autorelease();
 }
 @end
-

@@ -376,6 +376,12 @@ extern const char kProfileName[];
 extern const char kProfileIsManaged[];
 extern const char kManagedUserId[];
 
+extern const char kProfileGAIAInfoUpdateTime[];
+extern const char kProfileGAIAInfoPictureURL[];
+
+extern const char kProfileAvatarTutorialShown[];
+extern const char kProfileUserManagerTutorialShown[];
+
 extern const char kInvertNotificationShown[];
 
 extern const char kPrintingEnabled[];
@@ -611,11 +617,6 @@ extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];
 extern const char kSignInPromoShowOnFirstRunAllowed[];
 extern const char kSignInPromoShowNTPBubble[];
-
-extern const char kProfileAvatarTutorialShown[];
-
-extern const char kProfileGAIAInfoUpdateTime[];
-extern const char kProfileGAIAInfoPictureURL[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

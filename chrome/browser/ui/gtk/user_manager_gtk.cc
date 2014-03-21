@@ -14,6 +14,10 @@ void ShowUserManager(const base::FilePath& profile_path_to_focus) {
   NOTIMPLEMENTED();
 }
 
+void ShowUserManagerWithTutorial(profiles::UserManagerTutorialMode tutorial) {
+  NOTIMPLEMENTED();
+}
+
 void HideUserManager() {
   NOTIMPLEMENTED();
 }

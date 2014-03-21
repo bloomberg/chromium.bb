@@ -1203,6 +1203,23 @@ const char kProfileIsManaged[] = "profile.is_managed";
 // The managed user ID.
 const char kManagedUserId[] = "profile.managed_user_id";
 
+// 64-bit integer serialization of the base::Time when the user's GAIA info
+// was last updated.
+const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
+
+// The URL from which the GAIA profile picture was downloaded. This is cached to
+// prevent the same picture from being downloaded multiple times.
+const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
+
+// Integer that specifies the number of times that we have shown the tutorial
+// card in the profile avatar bubble.
+const char kProfileAvatarTutorialShown[] =
+    "profile.avatar_bubble_tutorial_shown";
+
+// Boolean that specifies whether we have shown the user manager tutorial.
+const char kProfileUserManagerTutorialShown[] =
+    "profile.user_manager_tutorial_shown";
+
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
@@ -1859,18 +1876,6 @@ const char kSignInPromoShowOnFirstRunAllowed[] =
 // The bubble is used to confirm that the user is signed into sync.
 const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 #endif
-
-// Integer that specifies the number of times that we have shown the tutorial
-// card in the profile avatar bubble.
-const char kProfileAvatarTutorialShown[] =
-    "profile.avatar_bubble_tutorial_shown";
-
-// Time when the user's GAIA info was last updated (represented as an int64).
-const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
-
-// The URL from which the GAIA profile picture was downloaded. This is cached to
-// prevent the same picture from being downloaded multiple times.
-const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
 
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";

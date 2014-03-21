@@ -30,10 +30,6 @@ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-void RegisterNewProfileUIPrefs(user_prefs::PrefRegistrySyncable* registry);
-#endif
-
 // Migrates prefs from |local_state| to |profile|'s pref store.
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state);
 

@@ -39,7 +39,7 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
 
 TEST_F(UserManagerMacTest, ShowUserManager) {
   EXPECT_FALSE(UserManagerMac::IsShowing());
-  UserManagerMac::Show(base::FilePath());
+  UserManagerMac::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL);
   EXPECT_TRUE(UserManagerMac::IsShowing());
 
   UserManagerMac::Hide();

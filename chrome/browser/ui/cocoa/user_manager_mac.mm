@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/user_manager_mac.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -25,7 +23,12 @@ namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on this header.
 void ShowUserManager(const base::FilePath& profile_path_to_focus) {
-  UserManagerMac::Show(profile_path_to_focus);
+  UserManagerMac::Show(
+      profile_path_to_focus, profiles::USER_MANAGER_NO_TUTORIAL);
+}
+
+void ShowUserManagerWithTutorial(profiles::UserManagerTutorialMode tutorial) {
+  UserManagerMac::Show(base::FilePath(), tutorial);
 }
 
 void HideUserManager() {
@@ -135,22 +138,20 @@ UserManagerMac::~UserManagerMac() {
 }
 
 // static
-void UserManagerMac::Show(const base::FilePath& profile_path_to_focus) {
+void UserManagerMac::Show(const base::FilePath& profile_path_to_focus,
+                          profiles::UserManagerTutorialMode tutorial_mode) {
   if (instance_) {
+    // If there's a user manager window open already, just activate it.
     [instance_->window_controller_ show];
     return;
   }
 
   // Create the guest profile, if necessary, and open the User Manager
   // from the guest profile.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->CreateProfileAsync(
-      ProfileManager::GetGuestProfilePath(),
-      base::Bind(&UserManagerMac::OnGuestProfileCreated,
-                 profile_path_to_focus),
-      base::string16(),
-      base::string16(),
-      std::string());
+  profiles::CreateGuestProfileForUserManager(
+      profile_path_to_focus,
+      tutorial_mode,
+      base::Bind(&UserManagerMac::OnGuestProfileCreated));
 }
 
 // static
@@ -164,32 +165,14 @@ bool UserManagerMac::IsShowing() {
   return instance_ ? [instance_->window_controller_ isVisible]: false;
 }
 
+// static
+void UserManagerMac::OnGuestProfileCreated(Profile* guest_profile,
+                                           const std::string& url) {
+  instance_ = new UserManagerMac(guest_profile);
+  [instance_->window_controller_ showURL:GURL(url)];
+}
+
 void UserManagerMac::WindowWasClosed() {
   instance_ = NULL;
   delete this;
 }
-
-void UserManagerMac::OnGuestProfileCreated(
-    const base::FilePath& profile_path_to_focus,
-    Profile* guest_profile,
-    Profile::CreateStatus status) {
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
-    return;
-
-  instance_ = new UserManagerMac(guest_profile);
-
-  // Tell the webui which user pod should be focused.
-  std::string page = chrome::kChromeUIUserManagerURL;
-
-  if (!profile_path_to_focus.empty()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile_path_to_focus);
-    if (index != std::string::npos) {
-      page += "#";
-      page += base::IntToString(index);
-    }
-  }
-  [instance_->window_controller_ showURL:GURL(page)];
-}
-

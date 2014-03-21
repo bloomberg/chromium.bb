@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "third_party/skia/include/core/SkColor.h"
@@ -100,6 +101,9 @@ void ShowProfileSigninConfirmationDialog(
 
 // Shows the Desktop User Manager with the |profile_path_to_focus| user focused.
 void ShowUserManager(const base::FilePath& profile_path_to_focus);
+
+// Shows the Desktop User Manager with a specific |tutorial|.
+void ShowUserManagerWithTutorial(profiles::UserManagerTutorialMode tutorial);
 
 // Hides the User Manager.
 void HideUserManager();

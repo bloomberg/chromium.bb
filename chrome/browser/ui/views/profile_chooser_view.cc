@@ -521,13 +521,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == end_guest_button_) {
     profiles::CloseGuestProfileWindows();
   } else if (sender == users_button_) {
-    // Only non-guest users appear in the User Manager.
-    base::FilePath profile_path;
-    if (!end_guest_button_) {
-      size_t active_index = avatar_menu_->GetActiveProfileIndex();
-      profile_path = avatar_menu_->GetItemAt(active_index).profile_path;
-    }
-    chrome::ShowUserManager(profile_path);
+    // Guest users cannot appear in the User Manager, nor display a tutorial.
+    profiles::ShowUserManagerMaybeWithTutorial(
+        end_guest_button_ ? NULL : browser_->profile());
   } else if (sender == add_user_button_) {
     profiles::CreateAndSwitchToNewProfile(
         browser_->host_desktop_type(),

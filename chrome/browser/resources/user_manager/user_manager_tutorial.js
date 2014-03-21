@@ -79,8 +79,7 @@ cr.define('cr.ui.login', function() {
     },
 
     endTutorial_: function(e) {
-      $('inner-container').style.opacity = '1';
-      $('inner-container').style.pointerEvents = '';
+      $('inner-container').classList.remove('disabled');
     },
 
     decorate: function() {
@@ -104,10 +103,17 @@ cr.define('cr.ui.login', function() {
   UserManagerTutorial.startTutorial = function() {
     $('user-manager-tutorial').hidden = false;
 
-    // Disable interacting with the pods while the tutorial is showing.
-    $('pod-row').focusPod();  // No focused pods.
-    $('inner-container').style.opacity = '0.4';
-    $('inner-container').style.pointerEvents = 'none';
+    // If there's only one pod, show the slides to the side of the pod.
+    // Otherwise, center the slides and disable interacting with the pods
+    // while the tutorial is showing.
+    if ($('pod-row').pods.length == 1) {
+      $('slide-welcome').classList.add('single-pod');
+      $('slide-your-chrome').classList.add('single-pod');
+      $('slide-complete').classList.add('single-pod');
+    } else {
+      $('pod-row').focusPod();  // No focused pods.
+      $('inner-container').classList.add('disabled');
+    }
   };
 
   /**
