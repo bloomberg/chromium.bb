@@ -3610,19 +3610,19 @@
                 ],
               }],
             ],
+            'conditions': [
+              ['OS=="mac"', {
+                'cflags': [
+                  '-mllvm -asan-globals=0',  # http://crbug.com/352073
+                ],
+              }],
+            ],
           }],
           ['asan_coverage!=0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
                   '-mllvm -asan-coverage=<(asan_coverage)',
-                ],
-              }],
-            ],
-            'conditions': [
-              ['OS=="mac"', {
-                'cflags': [
-                  '-mllvm -asan-globals=0',  # http://crbug.com/352073
                 ],
               }],
             ],
