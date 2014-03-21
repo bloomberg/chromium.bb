@@ -58,6 +58,9 @@ class TabAndroid : public CoreTabHelperDelegate,
   // |obj|.
   static TabAndroid* GetNativeTab(JNIEnv* env, jobject obj);
 
+  // Function to attach helpers to the contentView.
+  static void AttachTabHelpers(content::WebContents* web_contents);
+
   TabAndroid(JNIEnv* env, jobject obj);
   virtual ~TabAndroid();
 
