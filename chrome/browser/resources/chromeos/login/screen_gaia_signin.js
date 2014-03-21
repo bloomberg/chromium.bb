@@ -325,10 +325,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {string} email The authenticated user's e-mail address.
      */
     setAuthenticatedUserEmail: function(attemptToken, email) {
-      if (!email)
-        this.showFatalAuthError();
-      else
-        this.gaiaAuthHost_.setAuthenticatedUserEmail(attemptToken, email);
+      this.gaiaAuthHost_.setAuthenticatedUserEmail(attemptToken, email);
     },
 
     /**
