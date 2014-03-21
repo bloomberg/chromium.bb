@@ -89,7 +89,7 @@ int Yama::GetStatus() {
   }
 
   char yama_scope_value = 0;
-  ssize_t num_read = read(yama_scope.get(), &yama_scope_value, 1);
+  ssize_t num_read = HANDLE_EINTR(read(yama_scope.get(), &yama_scope_value, 1));
   PCHECK(1 == num_read);
 
   switch (yama_scope_value) {

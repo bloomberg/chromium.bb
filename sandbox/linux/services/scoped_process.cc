@@ -48,7 +48,7 @@ ScopedProcess::ScopedProcess(const base::Closure& child_callback)
     pipe_fds_[0] = -1;
     child_callback.Run();
     // Notify the parent that the closure has run.
-    CHECK_EQ(1, write(pipe_fds_[1], kSynchronisationChar, 1));
+    CHECK_EQ(1, HANDLE_EINTR(write(pipe_fds_[1], kSynchronisationChar, 1)));
     WaitForever();
     NOTREACHED();
     _exit(1);
@@ -98,7 +98,7 @@ int ScopedProcess::WaitForExit(bool* got_signaled) {
 
 bool ScopedProcess::WaitForClosureToRun() {
   char c = 0;
-  int ret = read(pipe_fds_[0], &c, 1);
+  int ret = HANDLE_EINTR(read(pipe_fds_[0], &c, 1));
   PCHECK(ret >= 0);
   if (0 == ret)
     return false;
