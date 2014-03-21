@@ -432,7 +432,7 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
   base::FilePath chrome_exe;
   if (!FindChromeExe(&chrome_exe) ||
       ShellUtil::GetChromeDefaultStateFromPath(chrome_exe) !=
-          ShellUtil::DefaultState::IS_DEFAULT) {
+          ShellUtil::IS_DEFAULT) {
     AtlTrace("Chrome is not default: launching in desktop mode\n");
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
