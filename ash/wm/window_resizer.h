@@ -10,8 +10,8 @@
 #include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/window_move_client.h"
 #include "ui/gfx/rect.h"
+#include "ui/wm/public/window_move_client.h"
 
 namespace aura {
 class Window;

@@ -18,12 +18,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/public/activation_client.h"
 
 typedef ash::test::AshTestBase WindowSizerAshTest;
 

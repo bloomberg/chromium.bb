@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -20,6 +19,7 @@
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 using std::make_pair;
 

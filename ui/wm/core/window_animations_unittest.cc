@@ -5,7 +5,6 @@
 #include "ui/wm/core/window_animations.h"
 
 #include "base/time/time.h"
-#include "ui/aura/client/animation_host.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -17,6 +16,7 @@
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/transient_window_stacking_client.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/animation_host.h"
 
 using aura::Window;
 using ui::Layer;

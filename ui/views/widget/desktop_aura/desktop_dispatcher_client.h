@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/aura/client/dispatcher_client.h"
 #include "ui/views/views_export.h"
+#include "ui/wm/public/dispatcher_client.h"
 
 namespace views {
 

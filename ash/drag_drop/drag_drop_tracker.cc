@@ -7,12 +7,12 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
 namespace internal {

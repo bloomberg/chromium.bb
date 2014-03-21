@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/activation_client.h"
+#include "ui/wm/public/activation_client.h"
 
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)

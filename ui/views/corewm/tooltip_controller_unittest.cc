@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -27,6 +26,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/wm_state.h"
+#include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)

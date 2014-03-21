@@ -4,9 +4,9 @@
 
 #include "ui/aura/client/default_activation_client.h"
 
-#include "ui/aura/client/activation_change_observer.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace aura {
 namespace client {

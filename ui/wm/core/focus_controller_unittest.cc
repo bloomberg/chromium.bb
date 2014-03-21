@@ -6,8 +6,6 @@
 
 #include <map>
 
-#include "ui/aura/client/activation_change_observer.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -21,6 +19,8 @@
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/wm_state.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace wm {
 

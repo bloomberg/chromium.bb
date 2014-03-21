@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/animation_host.h"
+#include "ui/wm/public/animation_host.h"
 
-#include "base/compiler_specific.h"
-#include "ui/aura/aura_export.h"
-
-#include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::AnimationHost*)

@@ -11,7 +11,6 @@
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -29,6 +28,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 using views::View;
 

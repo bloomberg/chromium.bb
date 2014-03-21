@@ -24,7 +24,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -37,6 +36,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 

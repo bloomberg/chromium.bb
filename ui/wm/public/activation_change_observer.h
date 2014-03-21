@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_ACTIVATION_CHANGE_OBSERVER_H_
-#define UI_AURA_CLIENT_ACTIVATION_CHANGE_OBSERVER_H_
+#ifndef UI_WM_PUBLIC_ACTIVATION_CHANGE_OBSERVER_H_
+#define UI_WM_PUBLIC_ACTIVATION_CHANGE_OBSERVER_H_
 
 #include "ui/aura/aura_export.h"
 
@@ -42,4 +42,4 @@ AURA_EXPORT ActivationChangeObserver* GetActivationChangeObserver(
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_ACTIVATION_CHANGE_OBSERVER_H_
+#endif  // UI_WM_PUBLIC_ACTIVATION_CHANGE_OBSERVER_H_

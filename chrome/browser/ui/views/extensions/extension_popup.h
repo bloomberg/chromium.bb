@@ -16,7 +16,7 @@
 #include "url/gurl.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/client/activation_change_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 #endif
 
 class Browser;

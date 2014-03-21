@@ -8,8 +8,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/client/activation_client.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -26,6 +24,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/input_method_event_filter.h"
+#include "ui/wm/public/activation_client.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace {
 

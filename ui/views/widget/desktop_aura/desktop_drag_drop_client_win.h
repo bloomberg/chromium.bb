@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ui/aura/client/drag_drop_client.h"
 #include "ui/views/views_export.h"
+#include "ui/wm/public/drag_drop_client.h"
 
 namespace ui {
 class DragSourceWin;

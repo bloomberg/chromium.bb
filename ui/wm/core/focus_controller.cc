@@ -5,7 +5,6 @@
 #include "ui/wm/core/focus_controller.h"
 
 #include "base/auto_reset.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -14,6 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/wm/core/focus_rules.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace wm {
 namespace {

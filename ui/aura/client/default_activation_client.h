@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace aura {
 namespace client {

@@ -4,10 +4,10 @@
 
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
-#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/public/transient_window_client.h"
 
 namespace wm {
 

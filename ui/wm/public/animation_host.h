@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_ANIMATION_HOST_H_
-#define UI_AURA_CLIENT_ANIMATION_HOST_H_
+#ifndef UI_WM_PUBLIC_ANIMATION_HOST_H_
+#define UI_WM_PUBLIC_ANIMATION_HOST_H_
 
 #include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
@@ -45,4 +45,4 @@ AURA_EXPORT AnimationHost* GetAnimationHost(Window* window);
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_ANIMATION_HOST_H_
+#endif  // UI_WM_PUBLIC_ANIMATION_HOST_H_

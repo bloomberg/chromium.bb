@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_move_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -27,6 +26,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/window_move_client.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.

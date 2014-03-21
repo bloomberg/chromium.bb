@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/dispatcher_client.h"
 
 namespace views {
 

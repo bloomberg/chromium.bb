@@ -13,7 +13,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_move_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -22,6 +21,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/window_move_client.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

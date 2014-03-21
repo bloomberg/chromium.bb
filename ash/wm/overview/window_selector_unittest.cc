@@ -24,7 +24,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -37,6 +36,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
 namespace internal {

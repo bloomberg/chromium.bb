@@ -22,7 +22,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -38,6 +37,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace {
 // Size of black border at bottom (or side) of shelf.

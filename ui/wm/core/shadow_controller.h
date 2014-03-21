@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;

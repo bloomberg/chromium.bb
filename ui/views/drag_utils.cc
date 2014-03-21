@@ -4,7 +4,6 @@
 
 #include "ui/views/drag_utils.h"
 
-#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
@@ -12,6 +11,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/drag_drop_client.h"
 
 float GetDeviceScaleForNativeView(views::Widget* widget) {
   float device_scale = 1.0f;

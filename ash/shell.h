@@ -19,7 +19,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_target.h"
@@ -27,6 +26,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace app_list {
 class AppListView;

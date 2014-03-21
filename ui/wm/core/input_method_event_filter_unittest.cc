@@ -5,7 +5,6 @@
 #include "ui/wm/core/input_method_event_filter.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -13,6 +12,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/public/activation_client.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)
 // On platforms except Windows and X11, aura::test::EventGenerator::PressKey

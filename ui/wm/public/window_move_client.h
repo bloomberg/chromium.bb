@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_WINDOW_MOVE_CLIENT_H_
-#define UI_AURA_CLIENT_WINDOW_MOVE_CLIENT_H_
+#ifndef UI_WM_PUBLIC_WINDOW_MOVE_CLIENT_H_
+#define UI_WM_PUBLIC_WINDOW_MOVE_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/vector2d.h"
@@ -53,4 +53,4 @@ AURA_EXPORT WindowMoveClient* GetWindowMoveClient(Window* window);
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_WINDOW_MOVE_CLIENT_H_
+#endif  // UI_WM_PUBLIC_WINDOW_MOVE_CLIENT_H_

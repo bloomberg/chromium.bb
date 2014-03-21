@@ -13,10 +13,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/window_move_client.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/wm/public/window_move_client.h"
 
 namespace aura {
 class Window;

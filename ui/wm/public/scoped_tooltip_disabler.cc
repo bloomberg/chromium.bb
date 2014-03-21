@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/scoped_tooltip_disabler.h"
+#include "ui/wm/public/scoped_tooltip_disabler.h"
 
-#include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/window.h"
+#include "ui/wm/public/tooltip_client.h"
 
 namespace aura {
 namespace client {

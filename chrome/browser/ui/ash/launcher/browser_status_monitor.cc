@@ -17,10 +17,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/public/activation_client.h"
 
 BrowserStatusMonitor::LocalWebContentsObserver::LocalWebContentsObserver(
     content::WebContents* contents,

@@ -29,8 +29,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/aura/client/activation_change_observer.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
@@ -41,6 +39,8 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace aura {
 class WindowTracker;

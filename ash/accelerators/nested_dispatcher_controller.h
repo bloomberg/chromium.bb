@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/aura/client/dispatcher_client.h"
+#include "ui/wm/public/dispatcher_client.h"
 
 namespace ash {
 

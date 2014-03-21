@@ -11,11 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
-#include "ui/aura/client/window_move_client.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
+#include "ui/wm/public/window_move_client.h"
 
 namespace aura {
 class WindowTreeHost;

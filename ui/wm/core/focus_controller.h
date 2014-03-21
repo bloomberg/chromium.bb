@@ -9,11 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace wm {
 
