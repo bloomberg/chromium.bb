@@ -19,30 +19,6 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
       content::WebUIDataSource::Create(keyboard::kKeyboardWebUIHost);
 
   source->SetDefaultResource(IDR_KEYBOARD_WEBUI_INDEX);
-  source->AddResourcePath("elements/kb-altkey.html",
-                          IDR_KEYBOARD_ELEMENTS_ALTKEY);
-  source->AddResourcePath("elements/kb-altkey-container.html",
-                          IDR_KEYBOARD_ELEMENTS_ALTKEY_CONTAINER);
-  source->AddResourcePath("elements/kb-altkey-data.html",
-                          IDR_KEYBOARD_ELEMENTS_ALTKEY_DATA);
-  source->AddResourcePath("elements/kb-altkey-set.html",
-                          IDR_KEYBOARD_ELEMENTS_ALTKEY_SET);
-  source->AddResourcePath("elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY);
-  source->AddResourcePath("elements/kb-key-base.html",
-                          IDR_KEYBOARD_ELEMENTS_KEY_BASE);
-  source->AddResourcePath("elements/kb-key-codes.html",
-                          IDR_KEYBOARD_ELEMENTS_KEY_CODES);
-  source->AddResourcePath("elements/kb-keyboard.html",
-                          IDR_KEYBOARD_ELEMENTS_KEYBOARD);
-  source->AddResourcePath("elements/kb-keyset.html",
-                          IDR_KEYBOARD_ELEMENTS_KEYSET);
-  source->AddResourcePath("elements/kb-modifier-key.html",
-                          IDR_KEYBOARD_ELEMENTS_MODIFIER_KEY);
-  source->AddResourcePath("elements/kb-options-menu.html",
-                          IDR_KEYBOARD_ELEMENTS_OPTIONS_MENU);
-  source->AddResourcePath("elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW);
-  source->AddResourcePath("elements/kb-shift-key.html",
-                          IDR_KEYBOARD_ELEMENTS_SHIFT_KEY);
   source->AddResourcePath("images/back.svg",
                           IDR_KEYBOARD_IMAGES_BACK);
   source->AddResourcePath("images/backspace.svg",
@@ -91,12 +67,10 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_VOLUME_DOWN);
   source->AddResourcePath("images/volume-up.svg",
                           IDR_KEYBOARD_IMAGES_VOLUME_UP);
-  source->AddResourcePath("layouts/latin-accents.js",
-                          IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS);
+  source->AddResourcePath("keyboard.js", IDR_KEYBOARD_JS);
   source->AddResourcePath("layouts/numeric.html", IDR_KEYBOARD_LAYOUTS_NUMERIC);
   source->AddResourcePath("layouts/system-qwerty.html",
                           IDR_KEYBOARD_LAYOUTS_SYSTEM_QWERTY);
-  source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer_loader.js", IDR_KEYBOARD_POLYMER_LOADER);
   source->AddResourcePath("roboto_bold.ttf", IDR_KEYBOARD_ROBOTO_BOLD_TTF);
   source->AddResourcePath("sounds/keypress-delete.wav",
@@ -107,8 +81,6 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR);
   source->AddResourcePath("sounds/keypress-standard.wav",
                           IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD);
-  source->AddResourcePath("touch_fuzzing.js", IDR_KEYBOARD_TOUCH_FUZZING_JS);
-  source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);
 
   // These files are specific to the WebUI version
   source->AddResourcePath("api_adapter.js", IDR_KEYBOARD_WEBUI_API_ADAPTER_JS);

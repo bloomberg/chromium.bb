@@ -9,32 +9,23 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="main.css">
-    <script src="constants.js"></script>
     <script src="polymer_loader.js"></script>
-    <script src="api_adapter.js"></script>
-    <script src="touch_fuzzing.js"></script>
-    <script src="voice_input.js"></script>
-    <script src="main.js"></script>
-
-    <!-- TODO(kevers): Dynamically load alternative keys based on locale. -->
-    <script src="layouts/latin-accents.js"></script>
-    <script src="layouts/symbol-altkeys.js"></script>
-
-    <link rel="import" href="elements/kb-altkey-container.html">
-    <link rel="import" href="elements/kb-altkey.html">
-    <link rel="import" href="elements/kb-altkey-data.html">
-    <link rel="import" href="elements/kb-altkey-set.html">
-    <link rel="import" href="elements/kb-key-codes.html">
-    <link rel="import" href="elements/kb-key-base.html">
-    <link rel="import" href="elements/kb-key.html">
-    <link rel="import" href="elements/kb-keyboard.html">
-    <link rel="import" href="elements/kb-keyset.html">
-    <link rel="import" href="elements/kb-modifier-key.html">
-    <link rel="import" href="elements/kb-row.html">
-    <link rel="import" href="elements/kb-shift-key.html">
-    <link rel="import" href="elements/kb-key-sequence.html">
-    <link rel="import" href="elements/kb-key-import.html">
-    <link rel="import" href="elements/kb-options-menu.html">
+    <script src="keyboard.js"></script>
+    <include src="elements/kb-options-menu.html">
+    <include src="elements/kb-altkey-container.html">
+    <include src="elements/kb-altkey.html">
+    <include src="elements/kb-altkey-data.html">
+    <include src="elements/kb-altkey-set.html">
+    <include src="elements/kb-key-codes.html">
+    <include src="elements/kb-key-base.html">
+    <include src="elements/kb-key.html">
+    <include src="elements/kb-keyboard.html">
+    <include src="elements/kb-keyset.html">
+    <include src="elements/kb-modifier-key.html">
+    <include src="elements/kb-row.html">
+    <include src="elements/kb-shift-key.html">
+    <include src="elements/kb-key-sequence.html">
+    <include src="elements/kb-key-import.html">
     <!-- New layouts are dynamically loaded on demand. The link elements are
       -- inserted here.
       -->

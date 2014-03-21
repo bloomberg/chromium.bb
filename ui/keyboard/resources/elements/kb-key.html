@@ -4,8 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-key" extends="kb-key-base"
-    attributes="image keyCode keyName shiftModifier sound stretch weight">
+<polymer-element name="kb-key" extends="kb-key-base" attributes="image keyCode
+    keyName shiftModifier sound stretch weight">
   <template>
     <style>
       :host {
@@ -142,12 +142,12 @@
        * image displayed changes depending on whether it's pressed or not.
        */
       :ancestor(.microphone) .key {
-        background-image: url('../images/microphone.svg');
+        background-image: url(../images/microphone.svg);
         background-position: 10%;
       }
 
       :ancestor(.audio .microphone) .key {
-        background-image: url('../images/microphone-green.svg');
+        background-image: url(../images/microphone-green.svg);
       }
 
       /* TODO(rsadam@): Use different assets for caps-lock and highlight. */
@@ -159,12 +159,12 @@
        */
       :ancestor(kb-keyboard:not(.caps-locked)[keyset=upper]):host(
           kb-shift-key) .key {
-        background-image: url('../images/shift-filled.svg');
+        background-image: url(../images/shift-filled.svg);
       }
 
       :ancestor(kb-keyboard:not(.caps-locked)[keyset=lower]):host(
           kb-shift-key) .key {
-        background-image: url('../images/shift.svg');
+        background-image: url(../images/shift.svg);
       }
 
       :ancestor(kb-keyboard.ctrl-active):host(
@@ -179,137 +179,13 @@
     </div>
     <div class="hint" part="hint">{{hintText}}</div>
   </template>
-  <script>
-    Polymer('kb-key', {
-      /**
-       * The background image to display on this key. Does not display an
-       * image if this is the empty string.
-       * @type {string}
-       */
-      image: "",
-
-      /**
-       * The background image size to use if an image is specified. The size
-       * is provided as a string, for example, "50%".
-       * @type {string}
-       */
-      imageSize: "",
-
-      /**
-       * Key codes have been deprecated in DOM3 key events, but are required
-       * for legacy web content. The key codes depend on the position of the
-       * key on the keyboard and is independent of which modifier keys (shift,
-       *  alt, ...) are active.
-       * @type {number|undefined}
-       */
-      keyCode: undefined,
-
-      /**
-       * Name of the key as defined in the DOM3 specification for key events.
-       * Like the keyCode, the keyName is independent of the state of the
-       * modifier keys.
-       * @type {string|undefined}
-       */
-      keyName: undefined,
-
-      /**
-       * Whether the shift key is pressed when producing the key value.
-       * @type {boolean}
-       */
-      shiftModifier: false,
-
-      /**
-       * The sound to play when this key is pressed.
-       * @type {Sound}
-       */
-      sound: Sound.DEFAULT,
-
-      /**
-       * Whether the key can be stretched to accomodate pixel rounding errors.
-       */
-      stretch: false,
-
-      /**
-       * Weighting to use for layout in order to properly size the key.
-       * Keys with a high weighting are wider than normal keys.
-       * @type {number}
-       */
-      weight: DEFAULT_KEY_WEIGHT,
-
-      /**
-       * Called when the image attribute changes. This is used to set the
-       * background image of the key.
-       * TODO(rsadam): Remove when polymer {{}} syntax regression is fixed.
-       */
-      imageChanged: function() {
-        if (!this.image) {
-          this.$.key.style.backgroundImage = "none";
-        } else {
-          this.$.key.style.backgroundImage =
-              "url(images/" + this.image + ".svg)";
-        }
-      },
-
-      /**
-       * Returns a subset of the key attributes.
-       * @param {string} caller The id of the function that called
-       *     populateDetails.
-       * @return {Object} Mapping of attributes for the key element.
-       */
-      populateDetails: function(caller) {
-        var details = this.super([caller]);
-        details.keyCode = this.keyCode;
-        details.keyName = this.keyName;
-        details.shiftModifier = this.shiftModifier;
-        details.sound = this.sound;
-        return details;
-      },
-    });
-  </script>
 </polymer-element>
 
 <!-- Special keys -->
 <polymer-element name="kb-abc-key" class="symbol dark" char="Invalid"
     extends="kb-key" weight="125">
-  <script>
-    Polymer('kb-abc-key', {
-      populateDetails: function(caller) {
-        var detail = this.super([caller]);
-        switch (caller) {
-          case ('down'):
-            detail.relegateToShift = true;
-            break;
-          default:
-            break;
-        }
-        return detail;
-      }
-    });
-  </script>
 </polymer-element>
 
 <polymer-element name="kb-hide-keyboard-key" class="hide-keyboard dark"
     align="center" attributes="showMenu" char="Invalid" extends="kb-key">
-  <script>
-    Polymer('kb-hide-keyboard-key', {
-      /**
-       * Whether to show the options menu on key-up.
-       * @type {boolean}
-       */
-      showMenu: true,
-
-      up: function(event) {
-        if (!this.showMenu) {
-          hideKeyboard();
-          return;
-        }
-        var details = {
-          left: this.offsetLeft,
-          top: this.offsetTop,
-          width: this.clientWidth,
-        };
-        this.fire('show-options', details);
-      },
-    });
-  </script>
 </polymer-element>

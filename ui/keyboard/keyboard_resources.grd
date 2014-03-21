@@ -15,23 +15,6 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_KEYBOARD_API_ADAPTER_JS" file="resources/api_adapter.js" type="BINDATA" />
-      <include name="IDR_KEYBOARD_CONSTANTS_JS" file="resources/constants.js" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_ALTKEY" file="resources/elements/kb-altkey.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_ALTKEY_CONTAINER" file="resources/elements/kb-altkey-container.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_ALTKEY_DATA" file="resources/elements/kb-altkey-data.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_ALTKEY_SET" file="resources/elements/kb-altkey-set.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEY" file="resources/elements/kb-key.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEY_BASE" file="resources/elements/kb-key-base.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEY_CODES" file="resources/elements/kb-key-codes.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEY_IMPORT" file="resources/elements/kb-key-import.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEY_SEQUENCE" file="resources/elements/kb-key-sequence.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEYBOARD" file="resources/elements/kb-keyboard.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_KEYSET" file="resources/elements/kb-keyset.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_MODIFIER_KEY" file="resources/elements/kb-modifier-key.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_OPTIONS_MENU" file="resources/elements/kb-options-menu.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_ROW" file="resources/elements/kb-row.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ELEMENTS_SHIFT_KEY" file="resources/elements/kb-shift-key.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_FUNCTION_KEY_ROW" file="resources/layouts/function-key-row.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_BACK" file="resources/images/back.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_BACKSPACE" file="resources/images/backspace.svg" type="BINDATA" />
@@ -58,15 +41,11 @@
       <include name="IDR_KEYBOARD_IMAGES_UP" file="resources/images/up.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_VOLUME_DOWN" file="resources/images/volume-down.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_VOLUME_UP" file="resources/images/volume-up.svg" type="BINDATA" />
-      <!-- Don't flatten html file here. Otherwise, webui keyboard will not load the correct css file. -->
-      <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_DVORAK" file="resources/layouts/dvorak.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS" file="resources/layouts/latin-accents.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_KEYBOARD_JS" file="resources/keyboard.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_NUMERIC" file="resources/layouts/numeric.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_QWERTY" file="resources/layouts/qwerty.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_SYMBOL_ALTKEYS" file="resources/layouts/symbol-altkeys.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_SYSTEM_QWERTY" file="resources/layouts/system-qwerty.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_MAIN_JS" file="resources/main.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources/manifest.json" type="BINDATA" />
       <include name="IDR_KEYBOARD_MAIN_CSS" file="resources/main.css" type="BINDATA" />
       <include name="IDR_KEYBOARD_POLYMER_LOADER" file="resources/polymer_loader.js" flattenhtml="true" type="BINDATA" />
@@ -76,8 +55,6 @@
       <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR" file="resources/sounds/keypress-spacebar.wav" type="BINDATA" />
       <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD" file="resources/sounds/keypress-standard.wav" type="BINDATA" />
       <include name="IDR_KEYBOARD_SPACEBAR_ROW" file="resources/layouts/spacebar-row.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_TOUCH_FUZZING_JS" file="resources/touch_fuzzing.js" type="BINDATA" />
-      <include name="IDR_KEYBOARD_VOICE_INPUT_JS" file="resources/voice_input.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_WEBUI_INDEX" file="resources/webui_index.html" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_WEBUI_API_ADAPTER_JS" file="resources/webui/api_adapter.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_WEBUI_CONSTANTS_JS" file="resources/webui/constants.js" type="BINDATA" />

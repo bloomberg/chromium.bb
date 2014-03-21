@@ -28,61 +28,16 @@
     </style>
     <span>{{label}}</span>
   </template>
-  <script>
-    Polymer('kb-options-menu-item', {
-      down: function(event) {
-        event.stopPropagation();
-      },
 
-      over: function(event) {
-        this.classList.add('active');
-      },
-
-      out: function(event) {
-        this.classList.remove('active');
-      },
-
-      up: function(event) {
-        this.hidden = true;
-        hideKeyboard();
-      },
-    });
-  </script>
 </polymer-element>
 
 <polymer-element name="kb-options-menu-toggle-lock-item"
-    extends="kb-options-menu-item">
-  <script>
-    (function() {
-      /**
-       * The lock and unlock label for this key.
-       * @const
-       * @enum {string}
-       */
-      // TODO(bshe): Localize the string resources. http://crbug.com/328871
-      var KEY_LABEL = {
-        LOCK: 'Lock',
-        UNLOCK: 'Unlock'
-      };
+    extends="kb-options-menu-item"></polymer-element>
 
-      Polymer('kb-options-menu-toggle-lock-item', {
-        up: function(event) {
-          lockKeyboard(!keyboardLocked());
-          this.hidden = true;
-        },
-
-        get label() {
-          return keyboardLocked() ? KEY_LABEL.UNLOCK : KEY_LABEL.LOCK;
-        }
-      });
-    })();
-  </script>
-</polymer-element>
-
-<polymer-element name="kb-options-menu" noscript>
+<polymer-element name="kb-options-menu">
   <template>
     <style>
-      :host {
+      :host() {
         -webkit-box-orient: vertical;
         background-color: #3b3b3e;
         border-radius: 2px;
@@ -93,7 +48,7 @@
         white-space:nowrap;
         z-index: 1;
       }
-      .arm-dismiss :host {
+      .arm-dismiss :host() {
         opacity: 0;
       }
     </style>
@@ -107,7 +62,7 @@
     on-pointerdown="down" on-pointerup="up">
   <template>
     <style>
-      :host {
+      :host() {
         background-color: rgba(0, 0, 0, 0.6);
         bottom: 0;
         left: 0;
@@ -117,32 +72,13 @@
         z-index: 1;
       }
 
-      :host.arm-dismiss {
+      :host(.arm-dismiss) {
         background-color: rgba(0,0,0,0);
       }
     </style>
     <!-- Insert popups here. -->
     <kb-options-menu id="options" hidden></kb-options-menu>
+    <content id="content"></content>
   </template>
-  <script>
-    Polymer('kb-keyboard-overlay', {
-      up: function(event) {
-        this.hidden = true;
-        this.classList.remove('arm-dismiss');
-        event.stopPropagation();
-      },
 
-      down: function(event) {
-        this.classList.add('arm-dismiss');
-        event.stopPropagation();
-      },
-
-      hiddenChanged: function() {
-        this.fire('stateChange', {
-          state: 'overlayVisibility',
-          value: !!this.hidden
-        });
-      }
-    });
-  </script>
 </polymer-element>
