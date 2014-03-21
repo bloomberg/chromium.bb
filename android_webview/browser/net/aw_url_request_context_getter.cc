@@ -12,7 +12,6 @@
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/common/aw_content_client.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"

@@ -8,7 +8,6 @@
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"

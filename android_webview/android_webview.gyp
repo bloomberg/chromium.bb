@@ -197,8 +197,6 @@
         'common/aw_hit_test_data.cc',
         'common/aw_hit_test_data.h',
         'common/aw_resource.h',
-        'common/aw_switches.cc',
-        'common/aw_switches.h',
         'common/devtools_instrumentation.h',
         'common/print_messages.cc',
         'common/print_messages.h',
