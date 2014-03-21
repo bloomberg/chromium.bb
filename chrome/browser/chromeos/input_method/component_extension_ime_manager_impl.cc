@@ -192,6 +192,7 @@ bool ComponentExtensionIMEManagerImpl::IsInitialized() {
 
 // static
 bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
+    const ComponentExtensionIME& component_extension,
     const base::DictionaryValue& dict,
     ComponentExtensionEngine* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -235,6 +236,33 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
     if (layouts->GetString(i, &buffer))
       out->layouts.push_back(buffer);
   }
+
+  std::string url_string;
+  if (dict.GetString(extensions::manifest_keys::kInputView,
+                     &url_string)) {
+    GURL url = extensions::Extension::GetResourceURL(
+        extensions::Extension::GetBaseURLFromExtensionId(
+            component_extension.id),
+        url_string);
+    if (!url.is_valid())
+      return false;
+    out->input_view_url = url;
+  }
+
+  if (dict.GetString(extensions::manifest_keys::kOptionsPage,
+                     &url_string)) {
+    GURL url = extensions::Extension::GetResourceURL(
+        extensions::Extension::GetBaseURLFromExtensionId(
+            component_extension.id),
+        url_string);
+    if (!url.is_valid())
+      return false;
+    out->options_page_url = url;
+  } else {
+    // Fallback to extension level options page.
+    out->options_page_url = component_extension.options_page_url;
+  }
+
   return true;
 }
 
@@ -256,15 +284,6 @@ bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
     if (!url.is_valid())
       return false;
     out->options_page_url = url;
-  }
-  if (manifest.GetString(extensions::manifest_keys::kInputView,
-                         &url_string)) {
-    GURL url = extensions::Extension::GetResourceURL(
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-        url_string);
-    if (!url.is_valid())
-      return false;
-    out->input_view_url = url;
   }
   // It's okay to return true on no option page and/or input view page case.
   return true;
@@ -312,7 +331,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
         continue;
 
       ComponentExtensionEngine engine;
-      ReadEngineComponent(*dictionary, &engine);
+      ReadEngineComponent(component_ime, *dictionary, &engine);
       component_ime.engines.push_back(engine);
     }
     out_imes->push_back(component_ime);

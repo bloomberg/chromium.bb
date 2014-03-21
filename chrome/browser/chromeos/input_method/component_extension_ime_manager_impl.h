@@ -67,8 +67,10 @@ class ComponentExtensionIMEManagerImpl
   // Reads each engine component in |dict|. |dict| is given by GetList with
   // kInputComponents key from manifest. This function returns true on success,
   // otherwise retrun false. This function must be called on FILE thread.
-  static bool ReadEngineComponent(const base::DictionaryValue& dict,
-                                  ComponentExtensionEngine* out);
+  static bool ReadEngineComponent(
+      const ComponentExtensionIME& component_extension,
+      const base::DictionaryValue& dict,
+      ComponentExtensionEngine* out);
 
   // True if initialized.
   bool is_initialized_;

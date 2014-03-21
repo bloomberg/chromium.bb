@@ -203,8 +203,8 @@ input_method::InputMethodDescriptors
               // Enables extension based xkb keyboards on login screen.
               extension_ime_util::IsKeyboardLayoutExtension(
                   input_method_id) && IsInLoginLayoutWhitelist(layouts),
-              component_extension_imes_[i].options_page_url,
-              component_extension_imes_[i].input_view_url));
+              component_extension_imes_[i].engines[j].options_page_url,
+              component_extension_imes_[i].engines[j].input_view_url));
     }
   }
   return result;
