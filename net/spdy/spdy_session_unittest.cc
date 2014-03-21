@@ -190,8 +190,12 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(SpdySessionTest, InitialReadError) {
   CreateDeterministicNetworkSession();
 
-  TryCreateFakeSpdySessionExpectingFailure(
+  base::WeakPtr<SpdySession> session = TryCreateFakeSpdySessionExpectingFailure(
       spdy_session_pool_, key_, ERR_FAILED);
+  EXPECT_TRUE(session);
+  // Flush the read.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(session);
 }
 
 namespace {
@@ -277,8 +281,6 @@ TEST_P(SpdySessionTest, PendingStreamCancellingAnother) {
   session->CloseSessionOnError(ERR_ABORTED, "Aborting session");
 
   EXPECT_EQ(ERR_ABORTED, callback1.WaitForResult());
-
-  data.RunFor(1);
 }
 
 // A session receiving a GOAWAY frame with no active streams should
@@ -330,9 +332,12 @@ TEST_P(SpdySessionTest, GoAwayImmediatelyWithNoActiveStreams) {
 
   data.StopAfter(1);
 
-  TryCreateInsecureSpdySessionExpectingFailure(
-      http_session_, key_, ERR_CONNECTION_CLOSED, BoundNetLog());
+  base::WeakPtr<SpdySession> session =
+      TryCreateInsecureSpdySessionExpectingFailure(
+          http_session_, key_, ERR_CONNECTION_CLOSED, BoundNetLog());
+  base::RunLoop().RunUntilIdle();
 
+  EXPECT_FALSE(session);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
 }
 
@@ -1045,8 +1050,6 @@ TEST_P(SpdySessionTest, FailedPing) {
 
   EXPECT_TRUE(session == NULL);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
-
-  data.RunFor(1);
   EXPECT_EQ(NULL, spdy_stream1.get());
 }
 

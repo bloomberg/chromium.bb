@@ -77,12 +77,11 @@ SpdySessionPool::~SpdySessionPool() {
   CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
-net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
+base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
     scoped_ptr<ClientSocketHandle> connection,
     const BoundNetLog& net_log,
     int certificate_error_code,
-    base::WeakPtr<SpdySession>* available_session,
     bool is_secure) {
   DCHECK_GE(default_protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(default_protocol_, kProtoSPDYMaximumVersion);
@@ -105,22 +104,16 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
                       trusted_spdy_proxy_,
                       net_log.net_log()));
 
-  Error error =  new_session->InitializeWithSocket(
+  new_session->InitializeWithSocket(
       connection.Pass(), this, is_secure, certificate_error_code);
-  DCHECK_NE(error, ERR_IO_PENDING);
 
-  if (error != OK) {
-    available_session->reset();
-    return error;
-  }
-
-  *available_session = new_session->GetWeakPtr();
+  base::WeakPtr<SpdySession> available_session = new_session->GetWeakPtr();
   sessions_.insert(new_session.release());
-  MapKeyToAvailableSession(key, *available_session);
+  MapKeyToAvailableSession(key, available_session);
 
   net_log.AddEvent(
       NetLog::TYPE_SPDY_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET,
-      (*available_session)->net_log().source().ToEventParametersCallback());
+      available_session->net_log().source().ToEventParametersCallback());
 
   // Look up the IP address for this session so that we can match
   // future sessions (potentially to different domains) which can
@@ -129,11 +122,11 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
   // to see if this is a direct connection.
   if (key.proxy_server().is_direct()) {
     IPEndPoint address;
-    if ((*available_session)->GetPeerAddress(&address) == OK)
+    if (available_session->GetPeerAddress(&address) == OK)
       aliases_[address] = key;
   }
 
-  return error;
+  return available_session;
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(

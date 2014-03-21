@@ -315,11 +315,11 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
     }
   } else {
     // Create a session direct to the proxy itself
-    int rv = spdy_pool->CreateAvailableSessionFromSocket(
-        key, transport_socket_handle_.Pass(),
-        net_log(), OK, &spdy_session, /*using_ssl_*/ true);
-    if (rv < 0)
-      return rv;
+    spdy_session =
+        spdy_pool->CreateAvailableSessionFromSocket(
+            key, transport_socket_handle_.Pass(),
+            net_log(), OK, /*using_ssl_*/ true);
+    DCHECK(spdy_session);
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
