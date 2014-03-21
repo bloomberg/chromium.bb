@@ -42,6 +42,11 @@ class PrefRegistrySimple;
 class Profile;
 class TemplateURLService;
 
+namespace {
+class CrashesDOMHandler;
+class FlashDOMHandler;
+}
+
 namespace base {
 class DictionaryValue;
 class MessageLoopProxy;
@@ -60,6 +65,7 @@ struct WebPluginInfo;
 namespace extensions {
 class ExtensionDownloader;
 class ManifestFetchData;
+class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
 
 namespace net {
@@ -68,6 +74,10 @@ class URLFetcher;
 
 namespace prerender {
 bool IsOmniboxEnabled(Profile* profile);
+}
+
+namespace system_logs {
+class ChromeInternalLogSource;
 }
 
 namespace tracked_objects {
@@ -626,17 +636,29 @@ class MetricsService
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
-// This class limits and documents access to the IsMetricsReportingEnabled()
-// method. Since the method is private, each user has to be explicitly declared
-// as a 'friend' below.
+// This class limits and documents access to the IsMetricsReportingEnabled() and
+// IsCrashReportingEnabled() methods. Since these methods are private, each user
+// has to be explicitly declared as a 'friend' below.
 class MetricsServiceHelper {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
+  friend class ChromeRenderMessageFilter;
+  friend class ::CrashesDOMHandler;
   friend class extensions::ExtensionDownloader;
   friend class extensions::ManifestFetchData;
+  friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
+  friend class ::FlashDOMHandler;
+  friend class system_logs::ChromeInternalLogSource;
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsReportingEnabled);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, CrashReportingEnabled);
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();
+
+  // Returns true if crash reporting is enabled.  This is set at the platform
+  // level for Android and ChromeOS, and otherwise is the same as
+  // IsMetricsReportingEnabled for desktop Chrome.
+  static bool IsCrashReportingEnabled();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MetricsServiceHelper);
 };

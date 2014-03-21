@@ -10,7 +10,7 @@
 [generate_thunk,thunk_include="ppapi/thunk/ppb_uma_singleton_api.h"]
 
 label Chrome {
-  M33 = 0.2
+  M35 = 0.3
 };
 
 /**
@@ -54,4 +54,14 @@ interface PPB_UMA_Private {
                             [in] PP_Var name,
                             [in] int32_t sample,
                             [in] int32_t boundary_value);
+
+  /**
+   * IsCrashReportingEnabled returns PP_OK to the completion callback to
+   * indicate that the current user has opted-in to crash reporting, or
+   * PP_ERROR_* on failure or when a user has not opted-in.  This can be used to
+   * gate other reporting processes such as analytics and crash reporting.
+   */
+   [singleton,api=PPB_UMA_Singleton_API]
+   int32_t IsCrashReportingEnabled([in] PP_Instance instance,
+                                   [in] PP_CompletionCallback callback);
 };

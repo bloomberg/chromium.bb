@@ -777,3 +777,7 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
                     base::string16 /* source */,
                     extensions::StackTrace /* stack trace */,
                     int32 /* severity level */)
+
+// Sent by the renderer to check if crash reporting is enabled.
+IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
+                            bool /* enabled */)

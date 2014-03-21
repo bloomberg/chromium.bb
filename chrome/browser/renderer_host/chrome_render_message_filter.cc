@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -133,6 +134,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_IsCrashReportingEnabled,
+                        OnIsCrashReportingEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -492,4 +495,8 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
   *allowed = (origin.SchemeIs(extensions::kExtensionScheme) ||
       extension_info_map_->SecurityOriginHasAPIPermission(
           origin, render_process_id_, APIPermission::kClipboardWrite));
+}
+
+void ChromeRenderMessageFilter::OnIsCrashReportingEnabled(bool* enabled) {
+  *enabled = MetricsServiceHelper::IsCrashReportingEnabled();
 }

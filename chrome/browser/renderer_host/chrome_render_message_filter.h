@@ -166,6 +166,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         bool* allowed);
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
+  void OnIsCrashReportingEnabled(bool* enabled);
 
   int render_process_id_;
 

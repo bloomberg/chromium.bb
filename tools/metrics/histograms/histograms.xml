@@ -36059,6 +36059,7 @@ other types of suffix sets.
   <int value="138418890" label="PPB_Memory(Dev);0.1"/>
   <int value="153443470" label="PPB_URLResponseInfo;1.0"/>
   <int value="153532707" label="PPB_Buffer(Dev);0.4"/>
+  <int value="156766028" label="PPB_UMA_Private;0.3"/>
   <int value="162107265" label="PPB_NetworkMonitor;1.0"/>
   <int value="180906214" label="PPB_Instance_Private;0.1"/>
   <int value="221802429" label="PPB_URLUtil(Dev);0.7"/>

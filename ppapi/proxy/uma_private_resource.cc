@@ -84,6 +84,27 @@ void UMAPrivateResource::HistogramEnumeration(
                                                        boundary_value));
 }
 
+int32_t UMAPrivateResource::IsCrashReportingEnabled(
+    PP_Instance instance,
+    scoped_refptr<TrackedCallback> callback) {
+  if (pending_callback_ != NULL)
+    return PP_ERROR_INPROGRESS;
+  pending_callback_ = callback;
+  Call<PpapiPluginMsg_UMA_IsCrashReportingEnabledReply>(
+      RENDERER,
+      PpapiHostMsg_UMA_IsCrashReportingEnabled(),
+      base::Bind(&UMAPrivateResource::OnPluginMsgIsCrashReportingEnabled,
+          this));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void UMAPrivateResource::OnPluginMsgIsCrashReportingEnabled(
+    const ResourceMessageReplyParams& params) {
+  if (TrackedCallback::IsPending(pending_callback_))
+    pending_callback_->Run(params.result());
+  pending_callback_ = NULL;
+}
+
 }  // namespace proxy
 }  // namespace ppapi
 

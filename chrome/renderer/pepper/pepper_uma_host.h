@@ -37,6 +37,7 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
+  bool IsPluginWhitelisted();
   bool IsHistogramAllowed(const std::string& histogram);
 
   int32_t OnHistogramCustomTimes(
@@ -60,6 +61,9 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
       const std::string& name,
       int32_t sample,
       int32_t boundary_value);
+
+  int32_t OnIsCrashReportingEnabled(
+      ppapi::host::HostMessageContext* context);
 
   const GURL document_url_;
   bool is_plugin_in_process_;

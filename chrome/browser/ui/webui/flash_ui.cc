@@ -20,9 +20,9 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -298,7 +298,8 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // Crash information.
   AddPair(list, base::string16(), "--- Crash data ---");
-  bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
+  bool crash_reporting_enabled =
+      MetricsServiceHelper::IsCrashReportingEnabled();
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::UploadInfo> crashes;
     upload_list_->GetUploads(10, &crashes);

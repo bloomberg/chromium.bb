@@ -8,7 +8,9 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -65,8 +67,15 @@ int32_t PepperUMAHost::OnResourceMessageReceived(
         OnHistogramCustomCounts);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramEnumeration,
         OnHistogramEnumeration);
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_UMA_IsCrashReportingEnabled, OnIsCrashReportingEnabled);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
+}
+
+bool PepperUMAHost::IsPluginWhitelisted() {
+  return ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
+      document_url_, allowed_origins_);
 }
 
 bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
@@ -74,10 +83,7 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
     return true;
   }
 
-  bool is_whitelisted =
-      ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
-          document_url_, allowed_origins_);
-  if (is_whitelisted &&
+  if (IsPluginWhitelisted() &&
       allowed_histogram_prefixes_.find(HashPrefix(histogram)) !=
           allowed_histogram_prefixes_.end()) {
     return true;
@@ -167,5 +173,17 @@ int32_t PepperUMAHost::OnHistogramEnumeration(
   if (counter)
     counter->Add(sample);
   return PP_OK;
+}
+
+int32_t PepperUMAHost::OnIsCrashReportingEnabled(
+    ppapi::host::HostMessageContext* context) {
+  if (!IsPluginWhitelisted())
+    return PP_ERROR_NOACCESS;
+  bool enabled = false;
+  content::RenderThread::Get()->Send(
+      new ChromeViewHostMsg_IsCrashReportingEnabled(&enabled));
+  if (enabled)
+    return PP_OK;
+  return PP_ERROR_FAILED;
 }
 

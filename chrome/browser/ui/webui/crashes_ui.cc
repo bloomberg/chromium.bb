@@ -10,14 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/crash_upload_list.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -29,10 +27,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#endif
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -128,7 +122,8 @@ void CrashesDOMHandler::OnUploadListAvailable() {
 }
 
 void CrashesDOMHandler::UpdateUI() {
-  bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
+  bool crash_reporting_enabled =
+      MetricsServiceHelper::IsCrashReportingEnabled();
   base::ListValue crash_list;
 
   if (crash_reporting_enabled) {
@@ -174,25 +169,4 @@ base::RefCountedMemory* CrashesUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_SAD_FAVICON, scale_factor);
-}
-
-// static
-bool CrashesUI::CrashReportingUIEnabled() {
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool reporting_enabled = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  return reporting_enabled;
-#elif defined(OS_ANDROID)
-  // Android has it's own setings for metrics / crash uploading.
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
-#else
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif
-#else
-  return false;
-#endif
 }

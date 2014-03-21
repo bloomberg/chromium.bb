@@ -12,6 +12,8 @@
 
 namespace pp {
 
+class CompletionCallback;
+
 class UMAPrivate {
  public:
   UMAPrivate();
@@ -35,6 +37,8 @@ class UMAPrivate {
   void HistogramEnumeration(const std::string& name,
                             int32_t sample,
                             int32_t boundary_value);
+
+  int32_t IsCrashReportingEnabled(const CompletionCallback& cc);
 
  private:
   PP_Instance instance_;

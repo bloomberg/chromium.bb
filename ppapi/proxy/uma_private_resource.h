@@ -44,7 +44,15 @@ class PPAPI_PROXY_EXPORT UMAPrivateResource
                                     int32_t sample,
                                     int32_t boundary_value) OVERRIDE;
 
+  virtual int32_t IsCrashReportingEnabled(
+      PP_Instance instance,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+
  private:
+  void OnPluginMsgIsCrashReportingEnabled(
+      const ResourceMessageReplyParams& params);
+  scoped_refptr<TrackedCallback> pending_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(UMAPrivateResource);
 };
 

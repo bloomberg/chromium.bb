@@ -336,3 +336,41 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial3", "Group3"));
   service.log_manager_.FinishCurrentLog();
 }
+
+TEST_F(MetricsServiceTest, MetricsReportingEnabled) {
+#if !defined(OS_CHROMEOS)
+  GetLocalState()->SetBoolean(prefs::kMetricsReportingEnabled, false);
+  EXPECT_FALSE(MetricsServiceHelper::IsMetricsReportingEnabled());
+  GetLocalState()->SetBoolean(prefs::kMetricsReportingEnabled, true);
+  EXPECT_TRUE(MetricsServiceHelper::IsMetricsReportingEnabled());
+  GetLocalState()->ClearPref(prefs::kMetricsReportingEnabled);
+  EXPECT_FALSE(MetricsServiceHelper::IsMetricsReportingEnabled());
+#else
+  // ChromeOS does not register prefs::kMetricsReportingEnabled and uses
+  // device settings for metrics reporting.
+  EXPECT_FALSE(MetricsServiceHelper::IsMetricsReportingEnabled());
+#endif
+}
+
+
+TEST_F(MetricsServiceTest, CrashReportingEnabled) {
+#if defined(GOOGLE_CHROME_BUILD)
+// ChromeOS has different device settings for crash reporting.
+#if !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  const char* crash_pref = prefs::kCrashReportingEnabled;
+#else
+  const char* crash_pref = prefs::kMetricsReportingEnabled;
+#endif
+  GetLocalState()->SetBoolean(crash_pref, false);
+  EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
+  GetLocalState()->SetBoolean(crash_pref, true);
+  EXPECT_TRUE(MetricsServiceHelper::IsCrashReportingEnabled());
+  GetLocalState()->ClearPref(crash_pref);
+  EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
+#endif // !defined(OS_CHROMEOS)
+#else // defined(GOOGLE_CHROME_BUILD)
+  // Chromium branded browsers never have crash reporting enabled.
+  EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
+#endif // defined(GOOGLE_CHROME_BUILD)
+}

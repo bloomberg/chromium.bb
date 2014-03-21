@@ -233,6 +233,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
 
@@ -2067,4 +2068,23 @@ bool MetricsServiceHelper::IsMetricsReportingEnabled() {
     }
   }
   return result;
+}
+
+bool MetricsServiceHelper::IsCrashReportingEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  bool reporting_enabled = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &reporting_enabled);
+  return reporting_enabled;
+#elif defined(OS_ANDROID)
+  // Android has its own settings for metrics / crash uploading.
+  const PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
+#else
+  return MetricsServiceHelper::IsMetricsReportingEnabled();
+#endif
+#else
+  return false;
+#endif
 }

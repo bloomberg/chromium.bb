@@ -1277,6 +1277,8 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_UMA_HistogramEnumeration,
                      std::string /* name */,
                      int32_t /* sample */,
                      int32_t /* boundary_value */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UMA_IsCrashReportingEnabled);
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UMA_IsCrashReportingEnabledReply);
 
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)

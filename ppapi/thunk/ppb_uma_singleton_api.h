@@ -34,6 +34,10 @@ class PPAPI_THUNK_EXPORT PPB_UMA_Singleton_API {
                                     int32_t sample,
                                     int32_t boundary_value) = 0;
 
+  virtual int32_t IsCrashReportingEnabled(
+      PP_Instance instance,
+      scoped_refptr<TrackedCallback> cc) = 0;
+
   static const SingletonResourceID kSingletonResourceID = UMA_SINGLETON_ID;
 };
 

@@ -8,10 +8,10 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
@@ -94,7 +94,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     SystemLogsResponse* response) {
-  if (!CrashesUI::CrashReportingUIEnabled())
+  if (!MetricsServiceHelper::IsCrashReportingEnabled())
     return;
 
   Profile* primary_profile =

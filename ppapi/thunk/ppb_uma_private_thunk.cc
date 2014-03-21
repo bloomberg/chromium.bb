@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_uma_private.idl modified Fri Jan 24 13:23:21 2014.
+// From private/ppb_uma_private.idl modified Thu Mar 13 11:54:51 2014.
 
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -66,16 +67,28 @@ void HistogramEnumeration(PP_Instance instance,
                                           boundary_value);
 }
 
-const PPB_UMA_Private_0_2 g_ppb_uma_private_thunk_0_2 = {
+int32_t IsCrashReportingEnabled(PP_Instance instance,
+                                struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UMA_Private::IsCrashReportingEnabled()";
+  EnterInstanceAPI<PPB_UMA_Singleton_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.functions()->IsCrashReportingEnabled(
+      instance,
+      enter.callback()));
+}
+
+const PPB_UMA_Private_0_3 g_ppb_uma_private_thunk_0_3 = {
   &HistogramCustomTimes,
   &HistogramCustomCounts,
-  &HistogramEnumeration
+  &HistogramEnumeration,
+  &IsCrashReportingEnabled
 };
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_UMA_Private_0_2* GetPPB_UMA_Private_0_2_Thunk() {
-  return &g_ppb_uma_private_thunk_0_2;
+PPAPI_THUNK_EXPORT const PPB_UMA_Private_0_3* GetPPB_UMA_Private_0_3_Thunk() {
+  return &g_ppb_uma_private_thunk_0_3;
 }
 
 }  // namespace thunk
