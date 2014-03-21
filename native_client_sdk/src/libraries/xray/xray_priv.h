@@ -21,10 +21,10 @@ extern "C" {
 
 #if defined(XRAY)
 
-#define XRAY_FORCE_INLINE __attribute__((always_inline))
+#define XRAY_FORCE_INLINE __attribute__((always_inline, no_instrument_function))
 
 #define XRAY_TRACE_STACK_SIZE (256)
-#define XRAY_TRACE_ANNOTATION_LENGTH (1024)
+#define XRAY_TRACE_ANNOTATION_LENGTH (2048)
 #define XRAY_TRACE_BUFFER_SIZE (1048576)
 #define XRAY_ANNOTATION_STACK_SIZE ((XRAY_TRACE_STACK_SIZE) * \
                                     (XRAY_TRACE_ANNOTATION_LENGTH))
@@ -100,7 +100,7 @@ XRAY_NO_INSTRUMENT void XRaySymbolFree(struct XRaySymbol* symbol);
 XRAY_NO_INSTRUMENT int XRaySymbolCount(struct XRaySymbolTable* symtab);
 
 XRAY_NO_INSTRUMENT struct XRaySymbol* XRaySymbolTableCreateEntry(
-    struct XRaySymbolTable* symtab, const char* line);
+    struct XRaySymbolTable* symtab, char* line);
 XRAY_NO_INSTRUMENT void XRaySymbolTableParseMapfile(
     struct XRaySymbolTable* symbols, const char* mapfilename);
 
@@ -115,7 +115,8 @@ XRAY_NO_INSTRUMENT struct XRaySymbol* XRaySymbolTableAtIndex(
 XRAY_NO_INSTRUMENT struct XRaySymbolTable* XRaySymbolTableCreate(int size);
 XRAY_NO_INSTRUMENT void XRaySymbolTableFree(struct XRaySymbolTable* symbtab);
 
-XRAY_NO_INSTRUMENT struct XRaySymbolTable* XRayGetSymbolTable();
+XRAY_NO_INSTRUMENT struct XRaySymbolTable* XRayGetSymbolTable(
+    struct XRayTraceCapture* capture);
 
 XRAY_NO_INSTRUMENT void XRayCheckGuards(struct XRayTraceCapture* capture);
 
@@ -146,7 +147,7 @@ XRAY_NO_INSTRUMENT int XRayFrameGetHead(struct XRayTraceCapture* capture);
 XRAY_NO_INSTRUMENT int XRayFrameGetTail(struct XRayTraceCapture* capture);
 XRAY_NO_INSTRUMENT int XRayFrameGetNext(
     struct XRayTraceCapture* capture, int index);
-XRAY_NO_INSTRUMENT int XRayFrameGetTotalTicks(
+XRAY_NO_INSTRUMENT uint64_t XRayFrameGetTotalTicks(
     struct XRayTraceCapture* capture, int frame);
 XRAY_NO_INSTRUMENT int XRayFrameGetTraceCount(
     struct XRayTraceCapture* capture, int frame);

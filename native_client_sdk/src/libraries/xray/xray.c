@@ -18,11 +18,10 @@
 
 #if defined(XRAY)
 
-#define FORCE_INLINE  __attribute__((always_inline))
-
 /* GTSC - Get Time Stamp Counter */
 #if defined(__amd64__) && !defined(XRAY_NO_RDTSC)
-FORCE_INLINE uint64_t RDTSC64() {
+XRAY_INLINE uint64_t RDTSC64();
+uint64_t RDTSC64() {
   uint64_t a, d;
   __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d));
   return ((uint64_t)a) | (((uint64_t)d) << 32);
@@ -31,7 +30,8 @@ FORCE_INLINE uint64_t RDTSC64() {
 #elif defined(__i386__) && !defined(XRAY_NO_RDTSC)
 #define GTSC(_x)      __asm__ __volatile__ ("rdtsc" : "=A" (_x));
 #else
-FORCE_INLINE uint64_t GTOD() {
+XRAY_INLINE uint64_t GTOD();
+uint64_t GTOD() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec;
@@ -118,6 +118,12 @@ XRAY_NO_INSTRUMENT void __cyg_profile_func_exit(void* this_fn,
                                                 void* call_site);
 #endif
 
+XRAY_INLINE int XRayTraceDecrementIndexInline(
+    struct XRayTraceCapture* capture, int index);
+XRAY_INLINE int XRayTraceIncrementIndexInline(
+    struct XRayTraceCapture* capture, int index);
+
+
 XRAY_NO_INSTRUMENT void __xray_profile_append_annotation(
     struct XRayTraceCapture* capture,
     struct XRayTraceStackEntry* se,
@@ -136,7 +142,7 @@ void XRayCheckGuards(struct XRayTraceCapture* capture) {
 }
 
 /* Decrements the trace index, wrapping around if needed. */
-XRAY_FORCE_INLINE int XRayTraceDecrementIndexInline(
+int XRayTraceDecrementIndexInline(
     struct XRayTraceCapture* capture, int index) {
   --index;
   if (index < 0)
@@ -145,7 +151,7 @@ XRAY_FORCE_INLINE int XRayTraceDecrementIndexInline(
 }
 
 /* Increments the trace index, wrapping around if needed. */
-XRAY_FORCE_INLINE int XRayTraceIncrementIndexInline(
+int XRayTraceIncrementIndexInline(
     struct XRayTraceCapture* capture, int index) {
   ++index;
   if (index >= capture->buffer_size)
@@ -329,7 +335,7 @@ void __cyg_profile_func_enter(void* this_fn, void* call_site) {
     uint32_t depth = capture->stack_depth;
     if (depth < capture->max_stack_depth) {
       struct XRayTraceStackEntry* se = &capture->stack[depth];
-      uint32_t addr = (uint32_t)this_fn;
+      uint32_t addr = (uint32_t)(uintptr_t)this_fn;
       se->depth_addr = XRAY_PACK_DEPTH_ADDR(depth, addr);
       se->dest = capture->buffer_index;
       se->annotation_index = 0;
@@ -539,7 +545,7 @@ bool XRayFrameIsValid(struct XRayTraceCapture* capture, int i) {
   return capture->frame.entry[i].valid;
 }
 
-int XRayFrameGetTotalTicks(struct XRayTraceCapture* capture, int i) {
+uint64_t XRayFrameGetTotalTicks(struct XRayTraceCapture* capture, int i) {
   return capture->frame.entry[i].total_ticks;
 }
 
@@ -602,6 +608,7 @@ void XRayStartFrame(struct XRayTraceCapture* capture) {
   capture->frame.entry[i].start = capture->buffer_index;
   capture->disabled = 0;
   capture->stack_depth = 1;
+
   /* The trace stack[0] is reserved */
   memset(&capture->stack[0], 0, sizeof(capture->stack[0]));
   /* Annotation index 0 is reserved to indicate no annotation */
@@ -616,7 +623,6 @@ void XRayStartFrame(struct XRayTraceCapture* capture) {
 #ifndef XRAY_DISABLE_BROWSER_INTEGRATION
   capture->frame.entry[i].start_time = XRayGenerateTimestampsNow();
 #endif
-
 }
 
 

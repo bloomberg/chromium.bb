@@ -7,6 +7,7 @@
 
 #include <alloca.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -48,7 +49,7 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
     fprintf(f, "label %s\n", label);
   fprintf(f, "\n");
   fprintf(f,
-      "   Address        Ticks   Percent      Function    [annotation...]\n");
+      "   Address          Ticks   Percent      Function    [annotation...]\n");
   fprintf(f,
       "--------------------------------------------------------------------\n");
   total = XRayFrameGetTotalTicks(capture, frame);
@@ -62,8 +63,9 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
       struct XRayTraceBufferEntry* e = XRayTraceGetEntry(capture, index);
       uint32_t depth = XRAY_EXTRACT_DEPTH(e->depth_addr);
       uint32_t addr = XRAY_EXTRACT_ADDR(e->depth_addr);
-      uint32_t ticks = e->end_tick - e->start_tick;
       uint32_t annotation_index = e->annotation_index;
+      uint64_t ticks =
+          e->end_tick > e->start_tick ? e->end_tick - e->start_tick : 0;
       float percent = 100.0f * (float)ticks / total;
       if (percent >= percent_cutoff && ticks >= ticks_cutoff) {
         struct XRaySymbol* symbol;
@@ -74,8 +76,8 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
         } else {
           strcpy(annotation, "");
         }
-        fprintf(f, "0x%08X   %10lld     %5.1f     %s%s %s\n",
-                (unsigned int)addr, (int64_t)ticks, percent,
+        fprintf(f, "0x%08X   %12" PRIu64 "     %5.1f     %s%s %s\n",
+                (unsigned int)addr, ticks, percent,
                 &space[256 - depth], symbol_name, annotation);
       }
     }
@@ -88,7 +90,11 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
 int qcompare(const void* a, const void* b) {
   struct XRayTotal* ia = (struct XRayTotal*)a;
   struct XRayTotal* ib = (struct XRayTotal*)b;
-  return ib->ticks - ia->ticks;
+  if (ib->ticks > ia->ticks)
+    return 1;
+  else if (ib->ticks < ia->ticks)
+    return -1;
+  return 0;
 }
 
 
@@ -104,20 +110,20 @@ void XRayFrameReport(struct XRayTraceCapture* capture, FILE* f) {
     alloca(XRayFrameGetCount(capture) * sizeof(struct XRayTotal));
   fprintf(f, "\n");
   fprintf(f,
-      "Frame#      Total Ticks      Capture size    Annotations   Label\n");
+      "Frame#        Total Ticks      Capture size    Annotations   Label\n");
   fprintf(f,
       "--------------------------------------------------------------------\n");
   while (frame != head) {
-    int64_t total_ticks = XRayFrameGetTotalTicks(capture, frame);
+    uint64_t total_ticks = XRayFrameGetTotalTicks(capture, frame);
     int capture_size = XRayFrameGetTraceCount(capture, frame);
     int annotation_count = XRayFrameGetAnnotationCount(capture, frame);
     bool valid = XRayFrameIsValid(capture, frame);
     char label[XRAY_MAX_LABEL];
     XRayFrameMakeLabel(capture, counter, label);
-    fprintf(f, "   %3d %s     %10lld        %10d     %10d   %s\n",
+    fprintf(f, "   %3d %s     %12" PRIu64 "        %10d     %10d   %s\n",
       counter,
       valid ? " " : "*",
-      (int64_t)total_ticks,
+      total_ticks,
       capture_size,
       annotation_count,
       label);
@@ -139,20 +145,20 @@ void XRayFrameReport(struct XRayTraceCapture* capture, FILE* f) {
   fprintf(f, "Sorted by total ticks (most expensive first):\n");
   fprintf(f, "\n");
   fprintf(f,
-      "Frame#      Total Ticks      Capture size    Annotations   Label\n");
+      "Frame#        Total Ticks      Capture size    Annotations   Label\n");
   fprintf(f,
       "--------------------------------------------------------------------\n");
   for (i = 0; i < counter; ++i) {
     int index = totals[i].index;
     int frame = totals[i].frame;
-    int64_t total_ticks = XRayFrameGetTotalTicks(capture, frame);
+    uint64_t total_ticks = XRayFrameGetTotalTicks(capture, frame);
     int capture_size = XRayFrameGetTraceCount(capture, frame);
     int annotation_count = XRayFrameGetAnnotationCount(capture, frame);
     char label[XRAY_MAX_LABEL];
     XRayFrameMakeLabel(capture, index, label);
-    fprintf(f, "   %3d       %10lld        %10d     %10d   %s\n",
+    fprintf(f, "   %3d       %12" PRIu64 "        %10d     %10d   %s\n",
         index,
-        (int64_t)total_ticks,
+        total_ticks,
         capture_size,
         annotation_count,
         label);

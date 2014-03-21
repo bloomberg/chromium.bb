@@ -15,7 +15,7 @@
 #if defined(XRAY)
 
 struct XRaySymbol* XRaySymbolTableCreateEntry(struct XRaySymbolTable* symtab,
-                                              const char* line) {
+                                              char* line) {
   uint32_t addr;
   unsigned int uiaddr;
   char symbol_text[XRAY_LINE_SIZE];
