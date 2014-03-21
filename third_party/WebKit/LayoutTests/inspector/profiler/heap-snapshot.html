@@ -58,12 +58,17 @@ function test()
             {
                 var snapshot = InspectorTest.createJSHeapSnapshotMockObject();
                 var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
-                var edgesRoot = nodeRoot.rawEdges();
-                InspectorTest.assertEquals(nodeRoot.edgesCount() * snapshot._edgeFieldsCount, edgesRoot.length, "rawEdges length");
-                var edge = snapshot.createEdge(edgesRoot);
+                var edgeIterator = new WebInspector.HeapSnapshotEdgeIterator(nodeRoot);
+                InspectorTest.assertEquals(true, edgeIterator.hasNext(), "has edges");
+                var edge = edgeIterator.item();
                 InspectorTest.assertEquals("shortcut", edge.type(), "edge type");
                 InspectorTest.assertEquals("a", edge.name(), "edge name");
                 InspectorTest.assertEquals("A", edge.node().name(), "edge node name");
+
+                var edgesCount = 0;
+                for (; edgeIterator.hasNext(); edgeIterator.next())
+                    ++edgesCount;
+                InspectorTest.assertEquals(nodeRoot.edgesCount(), edgesCount, "edges count");
             },
 
             function heapSnapshotEdgeIteratorTest()
@@ -290,19 +295,6 @@ function test()
                     var node = nodes.item();
                     InspectorTest.assertEquals(expectedCanBeQueried[node.name()], node.canBeQueried(), "canBeQueried of \"" + node.name() + "\"");
                 }
-            },
-
-            function heapSnapshotArraySliceTest()
-            {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
-                var root = snapshot.rootNode();
-                var rawEdges = root.rawEdges();
-                InspectorTest.assertEquals(6, rawEdges.length);
-                InspectorTest.assertEquals(6, rawEdges.subarray(0).length);
-                InspectorTest.assertEquals(3, rawEdges.subarray(3).length);
-                InspectorTest.assertEquals(3, rawEdges.subarray(3, 6).length);
-                InspectorTest.assertEquals(3, rawEdges.subarray(0, 3).length);
-                InspectorTest.assertEquals(0, rawEdges.subarray(3, 3).length);
             },
 
             function heapSnapshotNodesProviderTest()
