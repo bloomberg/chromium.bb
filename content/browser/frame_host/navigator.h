@@ -37,7 +37,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // The RenderFrameHostImpl started a provisional load.
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                        int parent_routing_id,
-                                       bool main_frame,
                                        const GURL& url) {};
 
   // The RenderFrameHostImpl has failed a provisional load.
@@ -49,7 +48,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      bool is_main_frame,
       int error_code,
       const base::string16& error_description) {}
 

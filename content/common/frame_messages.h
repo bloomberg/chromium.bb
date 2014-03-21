@@ -76,8 +76,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // The WebFrame's uniqueName().
   IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
-  // True if this is the top-most frame.
-  IPC_STRUCT_MEMBER(bool, is_main_frame)
   // Error code as reported in the DidFailProvisionalLoad callback.
   IPC_STRUCT_MEMBER(int, error_code)
   // An error message generated from the error_code. This can be an empty
@@ -338,9 +336,8 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoadForFrame,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoadForFrame,
                     int32 /* parent_routing_id */,
-                    bool /* true if it is the main frame */,
                     GURL /* url */)
 
 // Sent when the renderer fails a provisional load with an error.
@@ -362,9 +359,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidCommitProvisionalLoad,
 // Notifies the browser that a document has been loaded.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
 
-IPC_MESSAGE_ROUTED4(FrameHostMsg_DidFailLoadWithError,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
                     GURL /* validated_url */,
-                    bool /* is_main_frame */,
                     int /* error_code */,
                     base::string16 /* error_description */)
 
@@ -381,9 +377,8 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
 // Notifies the browser that a frame finished loading.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidFinishLoad,
-                    GURL /* validated_url */,
-                    bool /* is_main_frame */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
+                    GURL /* validated_url */)
 
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.

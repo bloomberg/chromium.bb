@@ -207,19 +207,17 @@ void TestWebContents::SetHistoryLengthAndPrune(
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
 
-void TestWebContents::TestDidFinishLoad(const GURL& url,
-                                        bool is_main_frame) {
-  FrameHostMsg_DidFinishLoad msg(0, url, is_main_frame);
+void TestWebContents::TestDidFinishLoad(const GURL& url) {
+  FrameHostMsg_DidFinishLoad msg(0, url);
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
 void TestWebContents::TestDidFailLoadWithError(
     const GURL& url,
-    bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
   FrameHostMsg_DidFailLoadWithError msg(
-      0, url, is_main_frame, error_code, error_description);
+      0, url, error_code, error_description);
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 

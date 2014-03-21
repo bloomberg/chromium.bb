@@ -134,7 +134,6 @@ NavigatorImpl::NavigatorImpl(
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     int parent_routing_id,
-    bool is_main_frame,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
@@ -142,16 +141,9 @@ void NavigatorImpl::DidStartProvisionalLoad(
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
 
-  // TODO(creis): This is a hack for now, until we mirror the frame tree and do
-  // cross-process subframe navigations in actual subframes.  As a result, we
-  // can currently only support a single cross-process subframe per RVH.
+  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   NavigationEntryImpl* pending_entry =
       NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry());
-  if (pending_entry &&
-      pending_entry->frame_tree_node_id() != -1 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
-    is_main_frame = false;
-
   if (is_main_frame) {
     // If there is no browser-initiated pending entry for this navigation and it
     // is not for the error URL, create a pending entry using the current
@@ -188,7 +180,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
     delegate_->DidStartProvisionalLoad(
-        render_frame_host, parent_routing_id, is_main_frame,
+        render_frame_host, parent_routing_id,
         validated_url, is_error_page, is_iframe_srcdoc);
   }
 }
@@ -200,7 +192,6 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
           << ", error_code: " << params.error_code
           << ", error_description: " << params.error_description
-          << ", is_main_frame: " << params.is_main_frame
           << ", showing_repost_interstitial: " <<
             params.showing_repost_interstitial
           << ", frame_id: " << render_frame_host->GetRoutingID();
@@ -258,12 +249,11 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
 void NavigatorImpl::DidFailLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
   if (delegate_) {
     delegate_->DidFailLoadWithError(
-        render_frame_host, url, is_main_frame, error_code,
+        render_frame_host, url, error_code,
         error_description);
   }
 }
@@ -311,17 +301,8 @@ bool NavigatorImpl::NavigateToEntry(
     return false;
   }
 
-  // Use entry->frame_tree_node_id() to pick which RenderFrameHostManager to
-  // use when --site-per-process is used.
   RenderFrameHostManager* manager =
       render_frame_host->frame_tree_node()->render_manager();
-  if (entry.frame_tree_node_id() != -1 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    int64 frame_tree_node_id = entry.frame_tree_node_id();
-    manager = render_frame_host->frame_tree_node()->frame_tree()->FindByID(
-        frame_tree_node_id)->render_manager();
-  }
-
   RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
   if (!dest_render_frame_host)
     return false;  // Unable to create the desired RenderFrameHost.
@@ -351,9 +332,6 @@ bool NavigatorImpl::NavigateToEntry(
   current_load_start_ = base::TimeTicks::Now();
 
   // Navigate in the desired RenderFrameHost.
-  // TODO(creis): As a temporary hack, we currently do cross-process subframe
-  // navigations in a top-level frame of the new process.  Thus, we don't yet
-  // need to store the correct frame ID in FrameMsg_Navigate_Params.
   FrameMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, *controller_, reload_type, &navigate_params);
   dest_render_frame_host->Navigate(navigate_params);
@@ -403,31 +381,18 @@ void NavigatorImpl::DidNavigate(
   bool use_site_per_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
 
-  // When using --site-per-process, look up the FrameTreeNode ID that the
-  // renderer-specific frame ID corresponds to.
-  int64 frame_tree_node_id = frame_tree->root()->frame_tree_node_id();
   if (use_site_per_process) {
-    frame_tree_node_id =
-        render_frame_host->frame_tree_node()->frame_tree_node_id();
-
-    // TODO(creis): In the short term, cross-process subframe navigations are
-    // happening in the pending RenderViewHost's top-level frame.  (We need to
-    // both mirror the frame tree and get the navigation to occur in the correct
-    // subframe to fix this.)  Until then, we should check whether we have a
-    // pending NavigationEntry with a frame ID and if so, treat the
-    // cross-process "main frame" navigation as a subframe navigation.  This
-    // limits us to a single cross-process subframe per RVH, and it affects
-    // NavigateToEntry, NavigatorImpl::DidStartProvisionalLoad, and
-    // OnDidFinishLoad.
+    // TODO(creis): Until we mirror the frame tree in the subframe's process,
+    // cross-process subframe navigations happen in a renderer's main frame.
+    // Correct the transition type here if we know it is for a subframe.
     NavigationEntryImpl* pending_entry =
         NavigationEntryImpl::FromNavigationEntry(
             controller_->GetPendingEntry());
-    int root_ftn_id = frame_tree->root()->frame_tree_node_id();
-    if (pending_entry &&
-        pending_entry->frame_tree_node_id() != -1 &&
-        pending_entry->frame_tree_node_id() != root_ftn_id) {
+    if (!render_frame_host->frame_tree_node()->IsMainFrame() &&
+        pending_entry &&
+        pending_entry->frame_tree_node_id() ==
+            render_frame_host->frame_tree_node()->frame_tree_node_id()) {
       params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
-      frame_tree_node_id = pending_entry->frame_tree_node_id();
     }
   }
 
@@ -448,7 +413,7 @@ void NavigatorImpl::DidNavigate(
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.
   if (use_site_per_process) {
-    FrameTreeNode* frame = frame_tree->FindByID(frame_tree_node_id);
+    FrameTreeNode* frame = render_frame_host->frame_tree_node();
     // TODO(creis): Rename to DidNavigateFrame.
     frame->render_manager()->DidNavigateMainFrame(rvh);
   }

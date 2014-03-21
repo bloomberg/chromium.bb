@@ -56,7 +56,7 @@ void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use in SendNavigateWithParameters.
   GURL url_copy(url);
-  OnDidStartProvisionalLoadForFrame(-1, true, url_copy);
+  OnDidStartProvisionalLoadForFrame(-1, url_copy);
   SendNavigateWithParameters(
       page_id, url_copy, transition, url_copy, response_code, 0);
 }
@@ -65,7 +65,7 @@ void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
     int page_id,
     const GURL& url,
     const GURL& original_request_url) {
-  OnDidStartProvisionalLoadForFrame(-1, true, url);
+  OnDidStartProvisionalLoadForFrame(-1, url);
   SendNavigateWithParameters(
       page_id, url, PAGE_TRANSITION_LINK, original_request_url, 200, 0);
 }

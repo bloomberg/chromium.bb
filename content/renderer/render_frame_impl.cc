@@ -1379,8 +1379,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
   int parent_routing_id = frame->parent() ?
       FromWebFrame(frame->parent())->GetRoutingID() : -1;
   Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, parent_routing_id,
-       is_top_most, ds->request().url()));
+       routing_id_, parent_routing_id, ds->request().url()));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -1427,7 +1426,6 @@ void RenderFrameImpl::didFailProvisionalLoad(
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.frame_unique_name = frame->uniqueName();
-  params.is_main_frame = !frame->parent();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       render_view_.get(),
@@ -1699,7 +1697,6 @@ void RenderFrameImpl::didFailLoad(blink::WebFrame* frame,
       &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(routing_id_,
                                              failed_request.url(),
-                                             !frame->parent(),
                                              error.reason,
                                              error_description));
 }
@@ -1724,8 +1721,7 @@ void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
     return;
 
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
-                                      ds->request().url(),
-                                      !frame->parent()));
+                                      ds->request().url()));
 }
 
 void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,

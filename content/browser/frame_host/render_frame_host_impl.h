@@ -165,13 +165,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
-                                         bool main_frame,
                                          const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(
       const GURL& url,
-      bool is_main_frame,
       int error_code,
       const base::string16& error_description);
   void OnDidRedirectProvisionalLoad(int32 page_id,

@@ -432,7 +432,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       int parent_routing_id,
-      bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
@@ -443,7 +442,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      bool is_main_frame,
       int error_code,
       const base::string16& error_description) OVERRIDE;
   virtual void DidRedirectProvisionalLoad(
@@ -666,8 +664,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);
   void OnDocumentLoadedInFrame();
-  void OnDidFinishLoad(const GURL& url,
-                       bool is_main_frame);
+  void OnDidFinishLoad(const GURL& url);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,

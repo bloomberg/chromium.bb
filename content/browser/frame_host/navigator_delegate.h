@@ -30,7 +30,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       int parent_routing_id,
-      bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) {}
@@ -44,7 +43,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      bool is_main_frame,
       int error_code,
       const base::string16& error_description) {}
 
