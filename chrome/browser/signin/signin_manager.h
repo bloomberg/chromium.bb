@@ -40,8 +40,6 @@
 #include "google_apis/gaia/merge_session_helper.h"
 #include "net/cookies/canonical_cookie.h"
 
-class CookieSettings;
-class ProfileIOData;
 class PrefService;
 class SigninAccountIdHelper;
 class SigninClient;
@@ -134,11 +132,6 @@ class SigninManager : public SigninManagerBase,
   // If true, signout is prohibited for this profile (calls to SignOut() are
   // ignored).
   bool IsSignoutProhibited() const;
-
-  // Checks if signin is allowed for the profile that owns |io_data|. This must
-  // be invoked on the IO thread, and can be used to check if signin is enabled
-  // on that thread.
-  static bool IsSigninAllowedOnIOThread(ProfileIOData* io_data);
 
   // Allows the SigninManager to track the privileged signin process
   // identified by |host_id| so that we can later ask (via IsSigninProcess)

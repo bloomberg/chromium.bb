@@ -903,7 +903,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   if (io_data->IsOffTheRecord())
     return DONT_OFFER;
 
-  if (!SigninManager::IsSigninAllowedOnIOThread(io_data))
+  if (!io_data->signin_allowed()->GetValue())
     return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())

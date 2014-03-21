@@ -14,19 +14,15 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/signin/about_signin_internals.h"
-#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_internals_util.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "components/signin/core/signin_client.h"
 #include "components/signin/core/signin_manager_cookie_helper.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
@@ -37,7 +33,6 @@
 
 using namespace signin_internals_util;
 
-using content::BrowserThread;
 using content::ChildProcessHost;
 using content::RenderProcessHost;
 
@@ -326,12 +321,6 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
 
 bool SigninManager::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
-}
-
-// static
-bool SigninManager::IsSigninAllowedOnIOThread(ProfileIOData* io_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return io_data->signin_allowed()->GetValue();
 }
 
 void SigninManager::OnSigninAllowedPrefChanged() {
