@@ -15,10 +15,10 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#endif  // ENABLE_MDNS
+#endif  // ENABLE_SERVICE_DISCOVERY
 
 class PrintSystemTaskProxy;
 
@@ -43,7 +43,7 @@ class PrintBackend;
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler
     : public content::WebUIMessageHandler,
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
       public local_discovery::PrivetLocalPrinterLister::Delegate,
       public local_discovery::PrivetLocalPrintOperation::Delegate,
 #endif
@@ -80,7 +80,7 @@ class PrintPreviewHandler
   // dialog.
   void ShowSystemDialog();
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.
   virtual void LocalPrinterChanged(
       bool added,
@@ -97,7 +97,7 @@ class PrintPreviewHandler
   virtual void OnPrivetPrintingError(
       const local_discovery::PrivetLocalPrintOperation* print_operation,
         int http_code) OVERRIDE;
-#endif  // ENABLE_MDNS
+#endif  // ENABLE_SERVICE_DISCOVERY
   int regenerate_preview_request_count() const {
     return regenerate_preview_request_count_;
   }
@@ -247,10 +247,8 @@ class PrintPreviewHandler
       base::DictionaryValue* settings) const;
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
-
-
   void PrivetCapabilitiesUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
@@ -308,7 +306,7 @@ class PrintPreviewHandler
   scoped_ptr<CUPSPrinterColorModels> cups_printer_color_models_;
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
   scoped_ptr<local_discovery::PrivetLocalPrinterLister> printer_lister_;

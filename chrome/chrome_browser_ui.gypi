@@ -3421,7 +3421,7 @@
             'browser/ui/webui/media/webrtc_logs_ui.h',
           ],
         }],
-        ['enable_mdns==1', {
+        ['enable_service_discovery==1', {
           'sources': [
             'browser/ui/webui/local_discovery/local_discovery_ui.cc',
             'browser/ui/webui/local_discovery/local_discovery_ui.h',

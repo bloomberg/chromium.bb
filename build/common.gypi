@@ -526,6 +526,7 @@
       'spdy_proxy_auth_value%' : '',
       'data_reduction_proxy_probe_url%' : '',
       'enable_mdns%' : 0,
+      'enable_service_discovery%': 0,
       'enable_hangout_services_extension%': 0,
 
        # Enable the Syzygy optimization step.
@@ -1021,6 +1022,7 @@
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
+    'enable_service_discovery%' : '<(enable_service_discovery)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
     'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
@@ -1853,9 +1855,6 @@
       ['enable_webrtc==1', {
         'grit_defines': ['-D', 'enable_webrtc'],
       }],
-      ['enable_mdns==1', {
-        'grit_defines': ['-D', 'enable_mdns'],
-      }],
       ['enable_hangout_services_extension==1', {
         'grit_defines': ['-D', 'enable_hangout_services_extension'],
       }],
@@ -1867,6 +1866,10 @@
       }],
       ['enable_resource_whitelist_generation==1', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("{textual_id}") {numeric_id}'],
+      }],
+      ['enable_mdns==1 or OS=="mac"', {
+        'grit_defines': ['-D', 'enable_service_discovery'],
+        'enable_service_discovery%': 1
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [
@@ -2544,6 +2547,9 @@
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],
+      }],
+      ['enable_service_discovery==1', {
+        'defines' : [ 'ENABLE_SERVICE_DISCOVERY=1' ],
       }],
       ['enable_hangout_services_extension==1', {
         'defines': ['ENABLE_HANGOUT_SERVICES_EXTENSION=1'],

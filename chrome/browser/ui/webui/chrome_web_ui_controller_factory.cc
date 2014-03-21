@@ -144,7 +144,7 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
@@ -252,7 +252,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (url.host() == chrome::kChromeUIDevicesHost &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kDisableDeviceDiscovery)) {

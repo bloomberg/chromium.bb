@@ -74,7 +74,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_constants.h"
 #endif
 
@@ -535,9 +535,9 @@ void PrintPreviewHandler::RegisterMessages() {
 }
 
 bool PrintPreviewHandler::PrivetPrintingEnabled() {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDeviceDiscovery);
+    switches::kDisableDeviceDiscovery);
 #else
   return false;
 #endif
@@ -559,7 +559,7 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (PrivetPrintingEnabled()) {
     Profile* profile = Profile::FromWebUI(web_ui());
     service_discovery_client_ =
@@ -579,7 +579,7 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
 
 void PrintPreviewHandler::HandleStopGetPrivetPrinters(
     const base::ListValue* args) {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (PrivetPrintingEnabled()) {
     printer_lister_->Stop();
   }
@@ -588,7 +588,7 @@ void PrintPreviewHandler::HandleStopGetPrivetPrinters(
 
 void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
     const base::ListValue* args) {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   std::string name;
   bool success = args->GetString(0, &name);
   DCHECK(success);
@@ -718,7 +718,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (print_with_privet && PrivetPrintingEnabled()) {
     std::string printer_name;
     std::string print_ticket;
@@ -1350,8 +1350,7 @@ void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
 
 #endif
 
-
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 void PrintPreviewHandler::LocalPrinterChanged(
     bool added,
     const std::string& name,

@@ -116,7 +116,7 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
@@ -399,12 +399,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ManagedUserSyncService::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_MDNS)
-  LocalDiscoveryUI::RegisterProfilePrefs(registry);
-#endif
-
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(ENABLE_SERVICE_DISCOVERY)
+  LocalDiscoveryUI::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)

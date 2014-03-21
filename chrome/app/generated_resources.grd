@@ -14596,7 +14596,7 @@ Do you accept?
     </message>
 
     <!-- Local Device Discovery display strings -->
-    <if expr="enable_mdns">
+    <if expr="enable_service_discovery">
       <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Table header for registering a service">
         Register
       </message>

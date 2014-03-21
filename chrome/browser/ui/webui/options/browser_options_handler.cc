@@ -125,7 +125,7 @@
 #include "chrome/installer/util/auto_launch_util.h"
 #endif  // defined(OS_WIN)
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_notifications.h"
 #endif
 
@@ -162,10 +162,10 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 #endif
 #endif  // defined(ENABLE_FULL_PRINTING)
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableDeviceDiscovery);
-#endif  // defined(ENABLE_MDNS)
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
@@ -438,7 +438,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #endif
     { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
       IDS_SHORT_PRODUCT_NAME },
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
     { "cloudPrintDevicesPageButton", IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON },
     { "cloudPrintEnableNotificationsLabel",
       IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
@@ -562,7 +562,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   values->SetBoolean("cloudPrintHideNotificationsCheckbox",
                      !local_discovery::PrivetNotificationService::IsEnabled());
 #endif
@@ -712,7 +712,7 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (cloud_print_mdns_ui_enabled_) {
     web_ui()->RegisterMessageCallback(
         "showCloudPrintDevicesPage",
@@ -1490,7 +1490,7 @@ void BrowserOptionsHandler::ShowManageSSLCertificates(
 }
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 
 void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
     const base::ListValue* args) {

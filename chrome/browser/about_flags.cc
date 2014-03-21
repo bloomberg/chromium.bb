@@ -1388,7 +1388,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
   },
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   {
     "disable-device-discovery",
     IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NAME,
@@ -1411,7 +1411,7 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)
   },
-#endif  // ENABLE_MDNS
+#endif  // ENABLE_SERVICE_DISCOVERY
 #if defined(OS_WIN)
   {
     "enable-cloud-print-xps",

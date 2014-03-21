@@ -49,10 +49,10 @@ int StringForChromeHost(const GURL& url) {
     return IDS_COMPONENTS_TITLE;
   if (host == chrome::kChromeUICrashesHost)
     return IDS_CRASHES_TITLE;
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (host == chrome::kChromeUIDevicesHost)
     return IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE;
-#endif  // ENABLE_MDNS
+#endif  // ENABLE_SERVICE_DISCOVERY
   if (host == chrome::kChromeUIDownloadsHost)
     return IDS_DOWNLOAD_TITLE;
   if (host == chrome::kChromeUIExtensionsHost)

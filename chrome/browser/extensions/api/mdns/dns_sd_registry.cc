@@ -99,7 +99,7 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 }
 
 DnsSdRegistry::DnsSdRegistry() {
-#if defined(ENABLE_MDNS) || defined(OS_MACOSX)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 #endif
 }

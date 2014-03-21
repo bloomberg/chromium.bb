@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #endif
 
@@ -17,7 +17,7 @@ namespace local_discovery {
 
 namespace {
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 const int kVolumeSearchDurationMs = 10000;
 
 std::string EscapeSlashes(const std::string& str) {
@@ -55,7 +55,7 @@ std::string RemoveSlashes(const std::string& str) {
 
   return output;
 }
-#endif  // ENABLE_MDNS
+#endif  // ENABLE_SERVICE_DISCOVERY
 
 }  // namespace
 
@@ -67,7 +67,7 @@ PrivetVolumeLister::~PrivetVolumeLister() {
 }
 
 void PrivetVolumeLister::Start() {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
   privet_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,
                                                   this));
@@ -83,8 +83,7 @@ void PrivetVolumeLister::Start() {
 #endif
 }
 
-
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 void PrivetVolumeLister::DeviceChanged(bool added,
                                        const std::string& name,
                                        const DeviceDescription& description) {

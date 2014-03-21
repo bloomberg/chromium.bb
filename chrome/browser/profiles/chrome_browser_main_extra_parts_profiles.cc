@@ -103,7 +103,7 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_notifications_factory.h"
 #endif
 
@@ -183,7 +183,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   HotwordServiceFactory::GetInstance();
   invalidation::InvalidationServiceFactory::GetInstance();
   InstantServiceFactory::GetInstance();
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   local_discovery::PrivetNotificationServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_MANAGED_USERS)

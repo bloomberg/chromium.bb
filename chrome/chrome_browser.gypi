@@ -1037,6 +1037,8 @@
         'browser/local_discovery/privet_device_resolver.cc',
         'browser/local_discovery/privet_device_resolver.h',
         'browser/local_discovery/privet_http.h',
+        'browser/local_discovery/privet_http_asynchronous_factory_mac.cc',
+        'browser/local_discovery/privet_http_asynchronous_factory_mac.h',
         'browser/local_discovery/privet_http_impl.cc',
         'browser/local_discovery/privet_http_impl.h',
         'browser/local_discovery/privet_local_printer_lister.h',
@@ -3571,7 +3573,7 @@
             'browser/media/webrtc_logging_handler_host.h',
           ]
         }],
-        ['enable_mdns==1', {
+        ['enable_service_discovery==1', {
           'sources' : [
             'browser/local_discovery/privet_http_asynchronous_factory.cc',
             'browser/local_discovery/privet_http_asynchronous_factory.h',
@@ -3579,12 +3581,6 @@
             'browser/local_discovery/privet_notifications.h',
             'browser/local_discovery/privet_notifications_factory.cc',
             'browser/local_discovery/privet_notifications_factory.h',
-            'browser/local_discovery/privet_traffic_detector.cc',
-            'browser/local_discovery/privet_traffic_detector.h',
-            'browser/local_discovery/service_discovery_client_mdns.cc',
-            'browser/local_discovery/service_discovery_client_mdns.h',
-            'browser/local_discovery/service_discovery_host_client.cc',
-            'browser/local_discovery/service_discovery_host_client.h',
             'browser/local_discovery/storage/privet_filesystem_async_util.cc',
             'browser/local_discovery/storage/privet_filesystem_async_util.h',
             'browser/local_discovery/storage/privet_filesystem_attribute_cache.cc',
@@ -3597,6 +3593,18 @@
             'browser/local_discovery/storage/privet_filesystem_operations.h',
             'browser/local_discovery/privet_local_printer_lister.h',
             'browser/local_discovery/privet_local_printer_lister.cc',
+           ]
+        }],
+        ['enable_mdns==1', {
+          'sources' : [
+            'browser/local_discovery/privet_traffic_detector.cc',
+            'browser/local_discovery/privet_traffic_detector.h',
+            'browser/local_discovery/service_discovery_client_mdns.cc',
+            'browser/local_discovery/service_discovery_client_mdns.h',
+            'browser/local_discovery/service_discovery_host_client.cc',
+            'browser/local_discovery/service_discovery_host_client.h',
+            'browser/local_discovery/privet_http_asynchronous_factory_impl.cc',
+            'browser/local_discovery/privet_http_asynchronous_factory_impl.h',
           ]
         }],
         ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {

@@ -242,8 +242,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
-
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
 #endif
 
@@ -2590,7 +2589,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       new sync_file_system::SyncFileSystemBackend(
           Profile::FromBrowserContext(browser_context)));
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
     additional_backends->push_back(

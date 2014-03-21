@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #endif
@@ -22,7 +22,7 @@ namespace local_discovery {
 // This class will eventually list all of the user's Privet storage devices,
 // but during prototyping phase searches the local network for Privet storage
 // devices.
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
 class PrivetVolumeLister : public PrivetDeviceLister::Delegate {
 #else
 class PrivetVolumeLister {
@@ -46,7 +46,7 @@ class PrivetVolumeLister {
     return canonical_volume_list_;
   }
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   virtual void DeviceChanged(bool added,
                              const std::string& name,
                              const DeviceDescription& description) OVERRIDE;
@@ -55,7 +55,7 @@ class PrivetVolumeLister {
 #endif
 
  private:
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   void FinishSearch();
 
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;

@@ -234,7 +234,7 @@ class BrowserOptionsHandler
   void ShowManageSSLCertificates(const base::ListValue* args);
 #endif
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_SERVICE_DISCOVERY)
   void ShowCloudPrintDevicesPage(const base::ListValue* args);
 #endif
 
