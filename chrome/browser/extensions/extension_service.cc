@@ -2563,22 +2563,6 @@ void ExtensionService::OnExtensionInstallPrefChanged() {
   CheckManagementPolicy();
 }
 
-bool ExtensionService::HasApps() const {
-  return !GetAppIds().empty();
-}
-
-ExtensionIdSet ExtensionService::GetAppIds() const {
-  ExtensionIdSet result;
-  const ExtensionSet& extensions = registry_->enabled_extensions();
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if ((*it)->is_app() && (*it)->location() != Manifest::COMPONENT)
-      result.insert((*it)->id());
-  }
-
-  return result;
-}
-
 bool ExtensionService::IsBeingReloaded(
     const std::string& extension_id) const {
   return ContainsKey(extensions_being_reloaded_, extension_id);

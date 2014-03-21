@@ -508,12 +508,6 @@ class ExtensionService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Whether there are any apps installed. Component apps are not included.
-  bool HasApps() const;
-
-  // Gets the set of loaded app ids. Component apps are not included.
-  extensions::ExtensionIdSet GetAppIds() const;
-
   // Record a histogram using the PermissionMessage enum values for each
   // permission in |e|.
   // NOTE: If this is ever called with high frequency, the implementation may

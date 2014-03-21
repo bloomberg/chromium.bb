@@ -48,6 +48,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_set.h"
+#include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -104,7 +107,7 @@ int64 ComputeFilesSize(const base::FilePath& directory,
 }
 
 // Simple task to log the size of the current profile.
-void ProfileSizeTask(const base::FilePath& path, int extension_count) {
+void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const int64 kBytesInOneMB = 1024 * 1024;
 
@@ -152,9 +155,9 @@ void ProfileSizeTask(const base::FilePath& path, int extension_count) {
   size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.PolicySize", size_MB);
 
-  // Count number of extensions in this profile, if we know.
-  if (extension_count != -1)
-    UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count);
+  // Count number of enabled apps in this profile, if we know.
+  if (enabled_app_count != -1)
+    UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", enabled_app_count);
 }
 
 void QueueProfileDirectoryForDeletion(const base::FilePath& path) {
@@ -187,6 +190,27 @@ void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
 }
 
 #endif
+
+#if defined(ENABLE_EXTENSIONS)
+
+// Returns the number of installed (and enabled) apps, excluding any component
+// apps.
+size_t GetEnabledAppCount(Profile* profile) {
+  size_t installed_apps = 0u;
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
+    if ((*iter)->is_app() &&
+        (*iter)->location() != extensions::Manifest::COMPONENT) {
+      ++installed_apps;
+    }
+  }
+  return installed_apps;
+}
+
+#endif  // ENABLE_EXTENSIONS
 
 } // namespace
 
@@ -961,17 +985,15 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
   // Count number of extensions in this profile.
-  int extension_count = -1;
+  int enabled_app_count = -1;
 #if defined(ENABLE_EXTENSIONS)
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (extension_service)
-    extension_count = extension_service->GetAppIds().size();
+  enabled_app_count = GetEnabledAppCount(profile);
 #endif
 
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ProfileSizeTask, profile->GetPath(), extension_count),
+      base::Bind(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
       base::TimeDelta::FromSeconds(112));
 }
 
