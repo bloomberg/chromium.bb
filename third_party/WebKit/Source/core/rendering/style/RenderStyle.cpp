@@ -1229,8 +1229,23 @@ int RenderStyle::computedLineHeight() const
     return lh.value();
 }
 
-void RenderStyle::setWordSpacing(float v) { inherited.access()->font.mutableFontDescription().setWordSpacing(v); }
-void RenderStyle::setLetterSpacing(float v) { inherited.access()->font.mutableFontDescription().setLetterSpacing(v); }
+void RenderStyle::setWordSpacing(float wordSpacing)
+{
+    FontSelector* currentFontSelector = font().fontSelector();
+    FontDescription desc(fontDescription());
+    desc.setWordSpacing(wordSpacing);
+    setFontDescription(desc);
+    font().update(currentFontSelector);
+}
+
+void RenderStyle::setLetterSpacing(float letterSpacing)
+{
+    FontSelector* currentFontSelector = font().fontSelector();
+    FontDescription desc(fontDescription());
+    desc.setLetterSpacing(letterSpacing);
+    setFontDescription(desc);
+    font().update(currentFontSelector);
+}
 
 void RenderStyle::setFontSize(float size)
 {

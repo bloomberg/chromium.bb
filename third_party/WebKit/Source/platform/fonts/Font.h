@@ -88,9 +88,6 @@ public:
     bool operator!=(const Font& other) const { return !(*this == other); }
 
     const FontDescription& fontDescription() const { return m_fontDescription; }
-    // FIXME: This is currently used by RenderStyle::setWordSpacing and RenderStyle::setLetterSpacing.
-    // They are being removed. Do NOT add new uses of this function. Use FontBuilder instead.
-    FontDescription& mutableFontDescription() { return m_fontDescription; }
 
     void update(PassRefPtr<FontSelector>) const;
 
