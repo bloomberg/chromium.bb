@@ -27,7 +27,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     private final AccountManager mAccountManager;
 
     public SystemAccountManagerDelegate(Context context) {
-        mAccountManager = AccountManager.get(context);
+        mAccountManager = AccountManager.get(context.getApplicationContext());
     }
 
     @Override
