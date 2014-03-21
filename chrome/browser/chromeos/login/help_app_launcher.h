@@ -36,6 +36,8 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_HOSTED_ACCOUNT = 1054228,
     // Showed as "Learn more" about enterprise enrolled devices.
     HELP_ENTERPRISE = 2535613,
+    // Shown at reset screen as "Learn more" about powerwash/rollback options.
+    HELP_POWERWASH = 183084,
   };
 
   // Parent window is used to show dialog.

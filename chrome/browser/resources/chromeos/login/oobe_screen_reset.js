@@ -8,6 +8,14 @@
 
 login.createScreen('ResetScreen', 'reset', function() {
   return {
+    /** @override */
+    decorate: function() {
+      $('reset-powerwash-help-link-on-rollback').addEventListener(
+          'click', function(event) {
+        chrome.send('resetOnLearnMore');
+      });
+    },
+
     /**
      * Header text of the screen.
      * @type {string}

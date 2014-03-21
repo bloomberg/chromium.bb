@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -161,6 +162,7 @@ void ResetScreenHandler::RegisterMessages() {
   AddCallback("cancelOnReset", &ResetScreenHandler::HandleOnCancel);
   AddCallback("restartOnReset", &ResetScreenHandler::HandleOnRestart);
   AddCallback("powerwashOnReset", &ResetScreenHandler::HandleOnPowerwash);
+  AddCallback("resetOnLearnMore", &ResetScreenHandler::HandleOnLearnMore);
 }
 
 void ResetScreenHandler::HandleOnCancel() {
@@ -184,6 +186,12 @@ void ResetScreenHandler::HandleOnPowerwash() {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         StartDeviceWipe();
   }
+}
+
+void ResetScreenHandler::HandleOnLearnMore() {
+  if (!help_app_.get())
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
+  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_POWERWASH);
 }
 
 }  // namespace chromeos
