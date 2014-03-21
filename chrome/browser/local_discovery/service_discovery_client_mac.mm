@@ -393,9 +393,9 @@ void ServiceResolverImplMac::OnResolveComplete(
   VLOG(1) << "ServiceResolverImplMac::OnResolveComplete: " << service_name_
           << ", " << status;
 
-  callback_.Run(status, description);
-
   has_resolved_ = true;
+
+  callback_.Run(status, description);
 }
 
 ServiceResolverImplMac::NetServiceContainer*
