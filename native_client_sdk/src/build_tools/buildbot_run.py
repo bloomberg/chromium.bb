@@ -23,6 +23,17 @@ from build_paths import SRC_DIR, SDK_SRC_DIR, SCRIPT_DIR
 import getos
 
 
+def StepArmRunHooks():
+  if getos.GetPlatform() != 'linux':
+    return
+  # Run 'gclient runhooks' for arm, as some arm specific tools are only
+  # installed in that case.
+  buildbot_common.BuildStep('gclient runhooks for arm')
+  env = dict(os.environ)
+  env['GYP_DEFINES'] = 'target_arch=arm'
+  Run(['gclient', 'runhooks'], env=env, cwd=SDK_SRC_DIR)
+
+
 def StepRunUnittests():
   buildbot_common.BuildStep('Run unittests')
 
@@ -93,6 +104,7 @@ def main(args):
     if os.getenv('BUILDBOT_BUILDERNAME', '').endswith('build'):
       options.build_only = True
 
+  StepArmRunHooks()
   StepRunUnittests()
   StepBuildSDK()
   if not options.build_only:
