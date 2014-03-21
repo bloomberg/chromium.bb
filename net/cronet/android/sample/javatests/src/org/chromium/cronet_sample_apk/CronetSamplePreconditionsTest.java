@@ -17,9 +17,10 @@ public class CronetSamplePreconditionsTest extends CronetSampleTestBase {
     @Smoke
     @Feature({"TestInfrastructure"})
     public void testScreenIsOn() throws Exception {
-        PowerManager pm = (PowerManager) getInstrumentation().getContext().getSystemService(
-                Context.POWER_SERVICE);
+        PowerManager pm = (PowerManager)getInstrumentation().getContext()
+                .getSystemService(Context.POWER_SERVICE);
 
-        assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
+        assertTrue("Many tests will fail if the screen is not on.",
+                pm.isScreenOn());
     }
 }

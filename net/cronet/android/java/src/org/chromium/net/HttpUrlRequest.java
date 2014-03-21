@@ -1,0 +1,120 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.net;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+
+/**
+ * HTTP request (GET or POST).
+ */
+public interface HttpUrlRequest {
+
+    public static final int REQUEST_PRIORITY_IDLE = 0;
+
+    public static final int REQUEST_PRIORITY_LOWEST = 1;
+
+    public static final int REQUEST_PRIORITY_LOW = 2;
+
+    public static final int REQUEST_PRIORITY_MEDIUM = 3;
+
+    public static final int REQUEST_PRIORITY_HIGHEST = 4;
+
+    /**
+     * Returns the URL associated with this request.
+     */
+    String getUrl();
+
+    /**
+     * Requests a range starting at the given offset to the end of the resource.
+     * The server may or may not honor the offset request. The client must check
+     * the HTTP status code before processing the response.
+     */
+    void setOffset(long offset);
+
+    /**
+     * Limits the size of the download.
+     *
+     * @param limit Maximum size of the downloaded response (post gzip)
+     * @param cancelEarly If true, cancel the download as soon as the size of
+     *            the response is known. If false, download {@code responseSize}
+     *            bytes and then cancel.
+     */
+    void setContentLengthLimit(long limit, boolean cancelEarly);
+
+    /**
+     * Sets data to upload as part of a POST request.
+     *
+     * @param contentType MIME type of the post content or null if this is not a
+     *            POST.
+     * @param data The content that needs to be uploaded if this is a POST
+     *            request.
+     */
+    void setUploadData(String contentType, byte[] data);
+
+    /**
+     * Sets a readable byte channel to upload as part of a POST request.
+     *
+     * @param contentType MIME type of the post content or null if this is not a
+     *            POST.
+     * @param channel The channel to read to read upload data from if this is a
+     *            POST request.
+     */
+    void setUploadChannel(String contentType, ReadableByteChannel channel);
+
+    /**
+     * Start executing the request.
+     * <p>
+     * If this is a streaming upload request using a ReadableByteChannel, the
+     * call will block while the request is uploaded.
+     */
+    void start();
+
+    /**
+     * Cancel the request in progress.
+     */
+    void cancel();
+
+    /**
+     * Returns {@code true} if the request has been canceled.
+     */
+    boolean isCanceled();
+
+    /**
+     * Returns the entire response as a ByteBuffer.
+     */
+    ByteBuffer getByteBuffer();
+
+    /**
+     * Returns the entire response as a byte array.
+     */
+    byte[] getResponseAsBytes();
+
+    /**
+     * Returns the expected content length. It is not guaranteed to be correct
+     * and may be -1 if the content length is unknown.
+     */
+    long getContentLength();
+
+    /**
+     * Returns the content MIME type if known or {@code null} otherwise.
+     */
+    String getContentType();
+
+    /**
+     * Returns the HTTP status code. It may be 0 if the request has not started
+     * or failed before getting the status code from the server. If the status
+     * code is 206 (partial response) after {@link #setOffset} is called, the
+     * method returns 200.
+     */
+    int getHttpStatusCode();
+
+    /**
+     * Returns the exception that occurred while executing the request of null
+     * if the request was successful.
+     */
+    IOException getException();
+}

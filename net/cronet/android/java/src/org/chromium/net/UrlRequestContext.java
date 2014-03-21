@@ -15,52 +15,53 @@ import org.chromium.base.CalledByNative;
  * Provides context for the native HTTP operations.
  */
 public class UrlRequestContext {
-  protected static final int LOG_NONE = 0;
-  protected static final int LOG_DEBUG = 1;
-  protected static final int LOG_VERBOSE = 2;
+    protected static final int LOG_NONE = 0;
 
-  /**
-   * This field is accessed exclusively from the native layer.
-   */
-  @AccessedByNative
-  private long mRequestContext;
+    protected static final int LOG_DEBUG = 1;
 
-  private final ConditionVariable mStarted = new ConditionVariable();
+    protected static final int LOG_VERBOSE = 2;
 
-  /**
-   * Constructor.
-   *
-   * @param loggingLevel see {@link #LOG_NONE}, {@link #LOG_DEBUG} and
-   *        {@link #LOG_VERBOSE}.
-   */
-  protected UrlRequestContext(Context context,
-                              String userAgent,
-                              int loggingLevel) {
-    nativeInitialize(context, userAgent, loggingLevel);
-    mStarted.block(2000);
-  }
+    /**
+     * This field is accessed exclusively from the native layer.
+     */
+    @AccessedByNative
+    private long mRequestContext;
 
-  /**
-   * Returns the version of this network stack formatted as N.N.N.N/X where
-   * N.N.N.N is the version of Chromium and X is the version of the JNI layer.
-   */
-  public static native String getVersion();
+    private final ConditionVariable mStarted = new ConditionVariable();
 
-  @CalledByNative
-  private void initNetworkThread() {
-    Thread.currentThread().setName("ChromiumNet");
-    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-    mStarted.open();
-  }
+    /**
+     * Constructor.
+     *
+     * @param loggingLevel see {@link #LOG_NONE}, {@link #LOG_DEBUG} and
+     *            {@link #LOG_VERBOSE}.
+     */
+    protected UrlRequestContext(Context context, String userAgent,
+            int loggingLevel) {
+        nativeInitialize(context, userAgent, loggingLevel);
+        mStarted.block(2000);
+    }
 
-  @Override
-  protected void finalize() throws Throwable {
-    nativeFinalize();
-    super.finalize();
-  }
+    /**
+     * Returns the version of this network stack formatted as N.N.N.N/X where
+     * N.N.N.N is the version of Chromium and X is the version of the JNI layer.
+     */
+    public static native String getVersion();
 
-  private native void nativeInitialize(Context context,
-                                       String userAgent,
-                                       int loggingLevel);
-  private native void nativeFinalize();
+    @CalledByNative
+    private void initNetworkThread() {
+        Thread.currentThread().setName("ChromiumNet");
+        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        mStarted.open();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        nativeFinalize();
+        super.finalize();
+    }
+
+    private native void nativeInitialize(Context context, String userAgent,
+            int loggingLevel);
+
+    private native void nativeFinalize();
 }

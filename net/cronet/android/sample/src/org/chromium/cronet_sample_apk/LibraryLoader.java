@@ -10,14 +10,15 @@ import android.util.Log;
  * Cronet Library Loader.
  */
 public class LibraryLoader {
-  private static final String TAG = "LibraryLoader";
-  private static Boolean sInitialized = false;
+    private static final String TAG = "LibraryLoader";
 
-  public static void ensureInitialized() throws UnsatisfiedLinkError {
-    if (sInitialized)
-      return;
-    sInitialized = true;
-    System.loadLibrary("cronet");
-    Log.i(TAG, "libcronet initialization success.");
-  }
+    private static Boolean sInitialized = false;
+
+    public static void ensureInitialized() throws UnsatisfiedLinkError {
+        if (sInitialized)
+            return;
+        sInitialized = true;
+        System.loadLibrary("cronet");
+        Log.i(TAG, "libcronet initialization success.");
+    }
 }

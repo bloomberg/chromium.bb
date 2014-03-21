@@ -13,18 +13,19 @@ import org.chromium.base.PathUtils;
  * Application for managing the Cronet Sample.
  */
 public class CronetSampleApplication extends BaseChromiumApplication {
-  private static final String TAG = "CronetSampleApplication";
-  private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_sample";
+    private static final String TAG = "CronetSampleApplication";
 
-  @Override
-  public void onCreate() {
-    super.onCreate();
-    initializeApplicationParameters();
-  }
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_sample";
 
-  public static void initializeApplicationParameters() {
-    PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-    Log.i(TAG,
-          "CronetSampleApplication.initializeApplicationParameters() success.");
-  }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        initializeApplicationParameters();
+    }
+
+    public static void initializeApplicationParameters() {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        Log.i(TAG, "CronetSampleApplication.initializeApplicationParameters()" +
+                   " success.");
+    }
 }
