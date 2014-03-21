@@ -127,6 +127,7 @@ const char kCryptohomeCheckKeyEx[] = "CheckKeyEx";
 const char kCryptohomeMountEx[] = "MountEx";
 const char kCryptohomeAddKeyEx[] = "AddKeyEx";
 const char kCryptohomeUpdateKeyEx[] = "UpdateKeyEx";
+const char kCryptohomeRemoveKeyEx[] = "RemoveKeyEx";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
