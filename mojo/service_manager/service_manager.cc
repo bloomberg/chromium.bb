@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+
 #include "mojo/service_manager/service_manager.h"
 
 #include "base/lazy_instance.h"
@@ -13,6 +15,11 @@
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
+
+namespace {
+// Used by TestAPI.
+bool has_created_instance = false;
+}
 
 class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
  public:
@@ -52,6 +59,11 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
 
+// static
+bool ServiceManager::TestAPI::HasCreatedInstance() {
+  return has_created_instance;
+}
+
 bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
   return manager_->url_to_service_factory_.find(url) !=
       manager_->url_to_service_factory_.end();
@@ -69,9 +81,10 @@ ServiceManager::~ServiceManager() {
 }
 
 // static
-ServiceManager* GetInstance() {
+ServiceManager* ServiceManager::GetInstance() {
   static base::LazyInstance<ServiceManager> instance =
       LAZY_INSTANCE_INITIALIZER;
+  has_created_instance = true;
   return &instance.Get();
 }
 

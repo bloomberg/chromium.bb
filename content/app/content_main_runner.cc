@@ -101,6 +101,10 @@ int tc_set_new_mode(int mode);
 }
 #endif
 
+#if defined(USE_MOJO)
+#include "content/app/mojo/mojo_init.h"
+#endif
+
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
 #if defined(ENABLE_PLUGINS)
@@ -529,7 +533,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   virtual int Initialize(const ContentMainParams& params) OVERRIDE {
     ui_task_ = params.ui_task;
 
-#if defined(OS_WIN)   
+#if defined(OS_WIN)
     RegisterInvalidParamHandler();
     _Module.Init(NULL, static_cast<HINSTANCE>(params.instance));
 
@@ -660,6 +664,11 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
+
+#if defined(USE_MOJO)
+    // Initialize mojo here so that services can be registered.
+    InitializeMojo();
+#endif
 
     if (!GetContentClient())
       SetContentClient(&empty_content_client_);
