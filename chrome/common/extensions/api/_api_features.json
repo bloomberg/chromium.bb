@@ -464,26 +464,6 @@
     "dependencies": ["permission:mediaGalleries"],
     "contexts": ["blessed_extension"]
   },
-  "mediaGalleries.startMediaScan": {
-    "channel": "dev",
-    "dependencies": ["permission:mediaGalleries"],
-    "contexts": ["blessed_extension"]
-  },
-  "mediaGalleries.cancelMediaScan": {
-    "channel": "dev",
-    "dependencies": ["permission:mediaGalleries"],
-    "contexts": ["blessed_extension"]
-  },
-  "mediaGalleries.addScanResults": {
-    "channel": "dev",
-    "dependencies": ["permission:mediaGalleries"],
-    "contexts": ["blessed_extension"]
-  },
-  "mediaGalleries.onScanProgress": {
-    "channel": "dev",
-    "dependencies": ["permission:mediaGalleries"],
-    "contexts": ["blessed_extension"]
-  },
   "mediaGalleriesPrivate": {
     "dependencies": ["permission:mediaGalleriesPrivate"],
     "contexts": ["blessed_extension"]
