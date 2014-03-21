@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
 
-#include "base/strings/string16.h"
-#include "extensions/browser/extension_function.h"
+#include <string>
 
-class Profile;
+class GURL;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -25,12 +25,12 @@ struct GrantedFileEntry;
 class AppEventRouter {
  public:
   // Dispatches the onLaunched event to the given app.
-  static void DispatchOnLaunchedEvent(Profile* profile,
+  static void DispatchOnLaunchedEvent(content::BrowserContext* context,
                                       const Extension* extension);
 
   // Dispatches the onRestarted event to the given app, providing a list of
   // restored file entries from the previous run.
-  static void DispatchOnRestartedEvent(Profile* profile,
+  static void DispatchOnRestartedEvent(content::BrowserContext* context,
                                        const Extension* extension);
 
   // TODO(benwells): Update this comment, it is out of date.
@@ -49,7 +49,7 @@ class AppEventRouter {
   // |handler_id| corresponds to the id of the file_handlers item in the
   // manifest that resulted in a match which triggered this launch.
   static void DispatchOnLaunchedEventWithFileEntry(
-      Profile* profile,
+      content::BrowserContext* context,
       const Extension* extension,
       const std::string& handler_id,
       const std::string& mime_type,
@@ -57,12 +57,11 @@ class AppEventRouter {
 
   // |handler_id| corresponds to the id of the url_handlers item
   // in the manifest that resulted in a match which triggered this launch.
-  static void DispatchOnLaunchedEventWithUrl(
-      Profile* profile,
-      const Extension* extension,
-      const std::string& handler_id,
-      const GURL& url,
-      const GURL& referrer_url);
+  static void DispatchOnLaunchedEventWithUrl(content::BrowserContext* context,
+                                             const Extension* extension,
+                                             const std::string& handler_id,
+                                             const GURL& url,
+                                             const GURL& referrer_url);
 };
 
 }  // namespace extensions
