@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "extensions/browser/extension_host.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
@@ -89,6 +89,9 @@ class ExtensionViewHost
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

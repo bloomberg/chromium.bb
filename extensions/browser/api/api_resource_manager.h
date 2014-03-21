@@ -13,13 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {

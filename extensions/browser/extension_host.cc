@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_host.h"
+#include "extensions/browser/extension_host.h"
 
 #include <list>
 
@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -40,7 +39,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -427,15 +425,6 @@ void ExtensionHost::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   delegate_->ProcessMediaAccessRequest(
       web_contents, request, callback, extension());
-}
-
-bool ExtensionHost::PreHandleGestureEvent(
-    content::WebContents* source,
-    const blink::WebGestureEvent& event) {
-  // Disable pinch zooming.
-  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 }  // namespace extensions

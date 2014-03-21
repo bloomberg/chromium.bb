@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_HOST_H_
+#define EXTENSIONS_BROWSER_EXTENSION_HOST_H_
 
 #include <string>
 #include <vector>
@@ -37,6 +37,9 @@ class WindowController;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
+//
+// If you are adding code that only affects visible extension views (and not
+// invisible background pages) you should add it to ExtensionViewHost.
 class ExtensionHost : public content::WebContentsDelegate,
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
@@ -98,9 +101,6 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -182,4 +182,4 @@ class ExtensionHost : public content::WebContentsDelegate,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_HOST_H_

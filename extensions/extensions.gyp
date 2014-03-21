@@ -232,6 +232,8 @@
         'browser/event_listener_map.h',
         'browser/event_router.cc',
         'browser/event_router.h',
+        'browser/extension_host.cc',
+        'browser/extension_host.h',
         'browser/extension_host_delegate.h',
         'browser/extension_error.cc',
         'browser/extension_error.h',

@@ -679,8 +679,6 @@
         'browser/extensions/extension_error_ui_default.h',
         'browser/extensions/extension_gcm_app_handler.cc',
         'browser/extensions/extension_gcm_app_handler.h',
-        'browser/extensions/extension_host.cc',
-        'browser/extensions/extension_host.h',
         'browser/extensions/extension_icon_image.cc',
         'browser/extensions/extension_icon_image.h',
         'browser/extensions/extension_icon_manager.cc',

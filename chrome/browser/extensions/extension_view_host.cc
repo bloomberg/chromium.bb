@@ -21,6 +21,7 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension_messages.h"
 #include "grit/browser_resources.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -220,6 +221,15 @@ void ExtensionViewHost::HandleKeyboardEvent(
     }
   }
   UnhandledKeyboardEvent(source, event);
+}
+
+bool ExtensionViewHost::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 content::ColorChooser* ExtensionViewHost::OpenColorChooser(

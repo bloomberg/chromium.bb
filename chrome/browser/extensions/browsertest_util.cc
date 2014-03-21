@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/browsertest_util.h"
 
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

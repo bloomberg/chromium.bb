@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/devtools_util.h"
 
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
