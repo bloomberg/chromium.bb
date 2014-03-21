@@ -944,4 +944,7 @@ crbug.com/350103 virtual/serviceworker/http/tests/serviceworker/postmessage.html
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
+crbug.com/354787 [ Mac Win ] plugins/touch-events-details.html [ Failure ]
+crbug.com/354787 [ Mac Win ] plugins/transformed-events.html [ Failure ]
+
 
