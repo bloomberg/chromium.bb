@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
 class Profile;
@@ -20,13 +22,19 @@ extern const char kHotwordFieldTrialDisabledGroupName[];
 
 // Provides an interface for the Hotword component that does voice triggered
 // search.
-class HotwordService : public KeyedService {
+class HotwordService : public content::NotificationObserver,
+                       public KeyedService {
  public:
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);
 
   explicit HotwordService(Profile* profile);
   virtual ~HotwordService();
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   bool ShouldShowOptInPopup();
 
@@ -64,6 +72,8 @@ class HotwordService : public KeyedService {
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordService);
 };

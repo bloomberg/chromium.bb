@@ -9,11 +9,13 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -117,9 +119,33 @@ HotwordService::HotwordService(Profile* profile)
       prefs::kHotwordSearchEnabled,
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
                  base::Unretained(this)));
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 HotwordService::~HotwordService() {
+}
+
+void HotwordService::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
+    const extensions::Extension* extension =
+        content::Details<const extensions::InstalledExtensionInfo>(details)
+              ->extension;
+    if (extension->id() == extension_misc::kHotwordExtensionId &&
+        !profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) {
+      DisableHotwordExtension(GetExtensionService(profile_));
+      // Once the extension is disabled, it will not be enabled until the
+      // user opts in at which point the pref registrar will take over
+      // enabling and disabling.
+      registrar_.Remove(this,
+                        chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                        content::Source<Profile>(profile_));
+    }
+  }
 }
 
 bool HotwordService::ShouldShowOptInPopup() {
