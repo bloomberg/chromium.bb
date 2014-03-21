@@ -13,7 +13,7 @@ namespace WebCore {
 
 class RemoteFontFaceSource : public CSSFontFaceSource, public FontResourceClient {
 public:
-    RemoteFontFaceSource(FontResource*);
+    explicit RemoteFontFaceSource(FontResource*);
     virtual ~RemoteFontFaceSource();
 
     virtual FontResource* resource() OVERRIDE { return m_font.get(); }

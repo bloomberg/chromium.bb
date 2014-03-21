@@ -36,7 +36,7 @@ class ResourceFetcher;
     class XMLDocumentParserScope {
         WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
     public:
-        XMLDocumentParserScope(ResourceFetcher*);
+        explicit XMLDocumentParserScope(ResourceFetcher*);
         ~XMLDocumentParserScope();
 
         static ResourceFetcher* currentFetcher;

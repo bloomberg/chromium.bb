@@ -45,7 +45,7 @@ class WorkerThread;
 class WorkerScriptDebugServer FINAL : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
-    WorkerScriptDebugServer(WorkerGlobalScope*);
+    explicit WorkerScriptDebugServer(WorkerGlobalScope*);
     virtual ~WorkerScriptDebugServer() { }
 
     void addListener(ScriptDebugListener*);
