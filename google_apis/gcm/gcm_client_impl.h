@@ -100,13 +100,13 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // are pending registration requests to obtain a registration ID for
   // requesting application.
   typedef std::map<std::string, RegistrationRequest*>
-      PendingRegistrations;
+      PendingRegistrationRequests;
 
   // Collection of pending unregistration requests. Keys are app IDs, while
   // values are pending unregistration requests to disable the registration ID
   // currently assigned to the application.
   typedef std::map<std::string, UnregistrationRequest*>
-      PendingUnregistrations;
+      PendingUnregistrationRequests;
 
   friend class GCMClientImplTest;
 
@@ -150,8 +150,12 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Callback for persisting device credentials in the |gcm_store_|.
   void SetDeviceCredentialsCallback(bool success);
 
+  // Callback for persisting registration info in the |gcm_store_|.
+  void UpdateRegistrationCallback(bool success);
+
   // Completes the registration request.
   void OnRegisterCompleted(const std::string& app_id,
+                           const std::vector<std::string>& sender_ids,
                            RegistrationRequest::Status status,
                            const std::string& registration_id);
 
@@ -214,15 +218,20 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   scoped_ptr<CheckinRequest> checkin_request_;
   std::vector<std::string> account_ids_;
 
-  // Currently pending registrations. GCMClientImpl owns the
-  // RegistrationRequests.
-  PendingRegistrations pending_registrations_;
-  STLValueDeleter<PendingRegistrations> pending_registrations_deleter_;
+  // Cached registration info.
+  RegistrationInfoMap registrations_;
 
-  // Currently pending unregistrations. GCMClientImpl owns the
+  // Currently pending registration requests. GCMClientImpl owns the
+  // RegistrationRequests.
+  PendingRegistrationRequests pending_registration_requests_;
+  STLValueDeleter<PendingRegistrationRequests>
+      pending_registration_requests_deleter_;
+
+  // Currently pending unregistration requests. GCMClientImpl owns the
   // UnregistrationRequests.
-  PendingUnregistrations pending_unregistrations_;
-  STLValueDeleter<PendingUnregistrations> pending_unregistrations_deleter_;
+  PendingUnregistrationRequests pending_unregistration_requests_;
+  STLValueDeleter<PendingUnregistrationRequests>
+      pending_unregistration_requests_deleter_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;

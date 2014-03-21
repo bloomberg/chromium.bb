@@ -1309,9 +1309,6 @@ const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 // The GCM channel's enabled state.
 const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 
-// Registered GCM application ids.
-const char kGCMRegisteredAppIDs[] = "gcm.register_app_ids";
-
 // Whether Easy Unlock is enabled.
 extern const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 

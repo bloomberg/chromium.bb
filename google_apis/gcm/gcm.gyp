@@ -62,6 +62,8 @@
         'engine/heartbeat_manager.h',
         'engine/mcs_client.cc',
         'engine/mcs_client.h',
+        'engine/registration_info.cc',
+        'engine/registration_info.h',
         'engine/registration_request.cc',
         'engine/registration_request.h',
         'engine/unregistration_request.cc',

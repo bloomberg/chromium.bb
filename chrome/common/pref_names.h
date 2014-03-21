@@ -410,7 +410,6 @@ extern const char kPreferenceResetTime[];
 extern const char kProfileResetPromptMemento[];
 
 extern const char kGCMChannelEnabled[];
-extern const char kGCMRegisteredAppIDs[];
 
 extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockShowTutorial[];

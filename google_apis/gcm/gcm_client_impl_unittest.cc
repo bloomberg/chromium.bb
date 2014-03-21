@@ -37,6 +37,10 @@ enum LastEvent {
 
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
+const char kAppId[] = "app_id";
+const char kSender[] = "project_id";
+const char kSender2[] = "project_id2";
+const char kSender3[] = "project_id3";
 const char kRegistrationResponsePrefix[] = "token=";
 const char kUnregistrationResponsePrefix[] = "deleted=";
 
@@ -127,6 +131,11 @@ class GCMClientImplTest : public testing::Test,
   void CompleteRegistration(const std::string& registration_id);
   void CompleteUnregistration(const std::string& app_id);
 
+  bool ExistsRegistration(const std::string& app_id) const;
+  void AddRegistration(const std::string& app_id,
+                       const std::vector<std::string>& sender_ids,
+                       const std::string& registration_id);
+
   // GCMClient::Delegate overrides (for verification).
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
@@ -148,6 +157,14 @@ class GCMClientImplTest : public testing::Test,
   GCMClientImpl* gcm_client() const { return gcm_client_.get(); }
   FakeMCSClient* mcs_client() const {
     return reinterpret_cast<FakeMCSClient*>(gcm_client_->mcs_client_.get());
+  }
+
+  void reset_last_event() {
+    last_event_ = NONE;
+    last_app_id_.clear();
+    last_registration_id_.clear();
+    last_message_id_.clear();
+    last_result_ = GCMClient::UNKNOWN_ERROR;
   }
 
   LastEvent last_event() const { return last_event_; }
@@ -211,6 +228,7 @@ void GCMClientImplTest::SetUp() {
   run_loop_.reset(new base::RunLoop);
   BuildGCMClient();
   InitializeGCMClient();
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken);
 }
 
 void GCMClientImplTest::PumpLoop() {
@@ -259,6 +277,7 @@ void GCMClientImplTest::CompleteRegistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  url_fetcher_factory_.RemoveFetcherFromMap(0);
 }
 
 void GCMClientImplTest::CompleteUnregistration(
@@ -270,6 +289,21 @@ void GCMClientImplTest::CompleteUnregistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  url_fetcher_factory_.RemoveFetcherFromMap(0);
+}
+
+bool GCMClientImplTest::ExistsRegistration(const std::string& app_id) const {
+  return gcm_client_->registrations_.count(app_id) > 0;
+}
+
+void GCMClientImplTest::AddRegistration(
+    const std::string& app_id,
+    const std::vector<std::string>& sender_ids,
+    const std::string& registration_id) {
+  linked_ptr<RegistrationInfo> registration(new RegistrationInfo);
+  registration->sender_ids = sender_ids;
+  registration->registration_id = registration_id;
+  gcm_client_->registrations_[app_id] = registration;
 }
 
 void GCMClientImplTest::InitializeGCMClient() {
@@ -300,7 +334,6 @@ void GCMClientImplTest::InitializeGCMClient() {
   // Ensuring that mcs_client is using the same gcm_store as gcm_client.
   mcs_client()->set_gcm_store(gcm_client_->gcm_store_.get());
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken);
 }
 
 void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
@@ -367,42 +400,105 @@ TEST_F(GCMClientImplTest, CheckOut) {
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {
+  EXPECT_FALSE(ExistsRegistration(kAppId));
+
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register("app_id", senders);
+  gcm_client()->Register(kAppId, senders);
   CompleteRegistration("reg_id");
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
-  EXPECT_EQ("app_id", last_app_id());
+  EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ("reg_id", last_registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+}
+
+TEST_F(GCMClientImplTest, RegisterAppFromCache) {
+  EXPECT_FALSE(ExistsRegistration(kAppId));
+
+  std::vector<std::string> senders;
+  senders.push_back("sender");
+  gcm_client()->Register(kAppId, senders);
+  CompleteRegistration("reg_id");
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("reg_id", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+
+  // Recreate GCMClient in order to load from the persistent store.
+  BuildGCMClient();
+  InitializeGCMClient();
+
+  EXPECT_TRUE(ExistsRegistration(kAppId));
 }
 
 TEST_F(GCMClientImplTest, UnregisterApp) {
-  gcm_client()->Unregister("app_id");
-  CompleteUnregistration("app_id");
+  EXPECT_FALSE(ExistsRegistration(kAppId));
+
+  std::vector<std::string> senders;
+  senders.push_back("sender");
+  gcm_client()->Register(kAppId, senders);
+  CompleteRegistration("reg_id");
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+
+  gcm_client()->Unregister(kAppId);
+  CompleteUnregistration(kAppId);
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
-  EXPECT_EQ("app_id", last_app_id());
+  EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_FALSE(ExistsRegistration(kAppId));
 }
 
 TEST_F(GCMClientImplTest, DispatchDownstreamMessage) {
+  // Register to receive messages from kSender and kSender2 only.
+  std::vector<std::string> senders;
+  senders.push_back(kSender);
+  senders.push_back(kSender2);
+  AddRegistration(kAppId, senders, "reg_id");
+
   std::map<std::string, std::string> expected_data;
   expected_data["message_type"] = "gcm";
   expected_data["key"] = "value";
   expected_data["key2"] = "value2";
-  MCSMessage message(BuildDownstreamMessage(
-      "project_id", "app_id", expected_data));
+
+  // Message for kSender will be received.
+  MCSMessage message(BuildDownstreamMessage(kSender, kAppId, expected_data));
   EXPECT_TRUE(message.IsValid());
   ReceiveMessageFromMCS(message);
 
   expected_data.erase(expected_data.find("message_type"));
   EXPECT_EQ(MESSAGE_RECEIVED, last_event());
-  EXPECT_EQ("app_id", last_app_id());
+  EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ(expected_data.size(), last_message().data.size());
   EXPECT_EQ(expected_data, last_message().data);
-  EXPECT_EQ("project_id", last_message().sender_id);
+  EXPECT_EQ(kSender, last_message().sender_id);
+
+  reset_last_event();
+
+  // Message for kSender2 will be received.
+  MCSMessage message2(BuildDownstreamMessage(kSender2, kAppId, expected_data));
+  EXPECT_TRUE(message2.IsValid());
+  ReceiveMessageFromMCS(message2);
+
+  EXPECT_EQ(MESSAGE_RECEIVED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(expected_data.size(), last_message().data.size());
+  EXPECT_EQ(expected_data, last_message().data);
+  EXPECT_EQ(kSender2, last_message().sender_id);
+
+  reset_last_event();
+
+  // Message from kSender3 will be dropped.
+  MCSMessage message3(BuildDownstreamMessage(kSender3, kAppId, expected_data));
+  EXPECT_TRUE(message3.IsValid());
+  ReceiveMessageFromMCS(message3);
+
+  EXPECT_NE(MESSAGE_RECEIVED, last_event());
+  EXPECT_NE(kAppId, last_app_id());
 }
 
 TEST_F(GCMClientImplTest, DispatchDownstreamMessageSendError) {
@@ -411,12 +507,12 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessageSendError) {
   expected_data["google.message_id"] = "007";
   expected_data["error_details"] = "some details";
   MCSMessage message(BuildDownstreamMessage(
-      "project_id", "app_id", expected_data));
+      kSender, kAppId, expected_data));
   EXPECT_TRUE(message.IsValid());
   ReceiveMessageFromMCS(message);
 
   EXPECT_EQ(MESSAGE_SEND_ERROR, last_event());
-  EXPECT_EQ("app_id", last_app_id());
+  EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ("007", last_error_details().message_id);
   EXPECT_EQ(1UL, last_error_details().additional_data.size());
   GCMClient::MessageData::const_iterator iter =
@@ -429,12 +525,12 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessgaesDeleted) {
   std::map<std::string, std::string> expected_data;
   expected_data["message_type"] = "deleted_messages";
   MCSMessage message(BuildDownstreamMessage(
-      "project_id", "app_id", expected_data));
+      kSender, kAppId, expected_data));
   EXPECT_TRUE(message.IsValid());
   ReceiveMessageFromMCS(message);
 
   EXPECT_EQ(MESSAGES_DELETED, last_event());
-  EXPECT_EQ("app_id", last_app_id());
+  EXPECT_EQ(kAppId, last_app_id());
 }
 
 TEST_F(GCMClientImplTest, SendMessage) {
@@ -445,16 +541,16 @@ TEST_F(GCMClientImplTest, SendMessage) {
   message.id = "007";
   message.time_to_live = 500;
   message.data["key"] = "value";
-  gcm_client()->Send("app_id", "project_id", message);
+  gcm_client()->Send(kAppId, kSender, message);
 
   EXPECT_EQ(kDataMessageStanzaTag, mcs_client()->last_message_tag());
-  EXPECT_EQ("app_id", mcs_client()->last_data_message_stanza().category());
-  EXPECT_EQ("project_id", mcs_client()->last_data_message_stanza().to());
+  EXPECT_EQ(kAppId, mcs_client()->last_data_message_stanza().category());
+  EXPECT_EQ(kSender, mcs_client()->last_data_message_stanza().to());
   EXPECT_EQ(500, mcs_client()->last_data_message_stanza().ttl());
   EXPECT_EQ(CurrentTime(), mcs_client()->last_data_message_stanza().sent());
   EXPECT_EQ("007", mcs_client()->last_data_message_stanza().id());
   EXPECT_EQ("gcm@chrome.com", mcs_client()->last_data_message_stanza().from());
-  EXPECT_EQ("project_id", mcs_client()->last_data_message_stanza().to());
+  EXPECT_EQ(kSender, mcs_client()->last_data_message_stanza().to());
   EXPECT_EQ("key", mcs_client()->last_data_message_stanza().app_data(0).key());
   EXPECT_EQ("value",
             mcs_client()->last_data_message_stanza().app_data(0).value());

@@ -6,13 +6,6 @@
 
 namespace gcm {
 
-GCMStore::SerialNumberMappings::SerialNumberMappings()
-    : next_serial_number(1LL) {
-}
-
-GCMStore::SerialNumberMappings::~SerialNumberMappings() {
-}
-
 GCMStore::LoadResult::LoadResult()
     : success(false),
       device_android_id(0),

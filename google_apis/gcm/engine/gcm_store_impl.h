@@ -46,6 +46,13 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
                                     uint64 device_security_token,
                                     const UpdateCallback& callback) OVERRIDE;
 
+  // Registration info.
+  virtual void AddRegistration(const std::string& app_id,
+                               const linked_ptr<RegistrationInfo>& registration,
+                               const UpdateCallback& callback) OVERRIDE;
+  virtual void RemoveRegistration(const std::string& app_id,
+                                  const UpdateCallback& callback) OVERRIDE;
+
   // Unacknowledged incoming message handling.
   virtual void AddIncomingMessage(const std::string& persistent_id,
                                   const UpdateCallback& callback) OVERRIDE;
@@ -65,15 +72,6 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   virtual void RemoveOutgoingMessage(const std::string& persistent_id,
                                      const UpdateCallback& callback) OVERRIDE;
   virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
-                                      const UpdateCallback& callback) OVERRIDE;
-
-  // User serial number handling.
-  virtual void SetNextSerialNumber(int64 next_serial_number,
-                                   const UpdateCallback& callback) OVERRIDE;
-  virtual void AddUserSerialNumber(const std::string& username,
-                                   int64 serial_number,
-                                   const UpdateCallback& callback) OVERRIDE;
-  virtual void RemoveUserSerialNumber(const std::string& username,
                                       const UpdateCallback& callback) OVERRIDE;
 
  private:

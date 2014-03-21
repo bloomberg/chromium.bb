@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
+#include "google_apis/gcm/engine/registration_info.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 
 namespace google {
@@ -35,15 +36,6 @@ class GCM_EXPORT GCMStore {
   typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
       OutgoingMessageMap;
 
-  // Part of load results storing user serial number mapping related values.
-  struct GCM_EXPORT SerialNumberMappings {
-    SerialNumberMappings();
-    ~SerialNumberMappings();
-
-    int64 next_serial_number;
-    std::map<std::string, int64> user_serial_numbers;
-  };
-
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
     LoadResult();
@@ -52,9 +44,9 @@ class GCM_EXPORT GCMStore {
     bool success;
     uint64 device_android_id;
     uint64 device_security_token;
+    RegistrationInfoMap registrations;
     std::vector<std::string> incoming_messages;
     OutgoingMessageMap outgoing_messages;
-    SerialNumberMappings serial_number_mappings;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -79,6 +71,13 @@ class GCM_EXPORT GCMStore {
                                     uint64 device_security_token,
                                     const UpdateCallback& callback) = 0;
 
+  // Registration info.
+  virtual void AddRegistration(const std::string& app_id,
+                               const linked_ptr<RegistrationInfo>& registration,
+                               const UpdateCallback& callback) = 0;
+  virtual void RemoveRegistration(const std::string& app_id,
+                                  const UpdateCallback& callback) = 0;
+
   // Unacknowledged incoming message handling.
   virtual void AddIncomingMessage(const std::string& persistent_id,
                                   const UpdateCallback& callback) = 0;
@@ -100,15 +99,6 @@ class GCM_EXPORT GCMStore {
   virtual void RemoveOutgoingMessage(const std::string& persistent_id,
                                      const UpdateCallback& callback) = 0;
   virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
-                                      const UpdateCallback& callback) = 0;
-
-  // User serial number handling.
-  virtual void SetNextSerialNumber(int64 next_serial_number,
-                                   const UpdateCallback& callback) = 0;
-  virtual void AddUserSerialNumber(const std::string& username,
-                                   int64 serial_number,
-                                   const UpdateCallback& callback) = 0;
-  virtual void RemoveUserSerialNumber(const std::string& username,
                                       const UpdateCallback& callback) = 0;
 
  private:

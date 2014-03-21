@@ -6601,6 +6601,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="GCM.NumUsers">
+  <obsolete>
+    Deprecated as of 3/2014.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Number of GCM users associated with this client at startup time.
@@ -6626,6 +6629,13 @@ other types of suffix sets.
   <summary>
     Number of pending outgoing messages restored from the persistent store at
     startup.
+  </summary>
+</histogram>
+
+<histogram name="GCM.RestoredRegistrations">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of registrations restored from the persistent store at startup.
   </summary>
 </histogram>
 

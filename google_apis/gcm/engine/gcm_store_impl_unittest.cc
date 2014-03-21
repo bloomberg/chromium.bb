@@ -108,8 +108,6 @@ TEST_F(GCMStoreImplTest, LoadNew) {
   EXPECT_EQ(0U, load_result->device_security_token);
   EXPECT_TRUE(load_result->incoming_messages.empty());
   EXPECT_TRUE(load_result->outgoing_messages.empty());
-  EXPECT_EQ(1LL, load_result->serial_number_mappings.next_serial_number);
-  EXPECT_TRUE(load_result->serial_number_mappings.user_serial_numbers.empty());
 }
 
 TEST_F(GCMStoreImplTest, DeviceCredentials) {
@@ -132,6 +130,58 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
 
   ASSERT_EQ(kDeviceId, load_result->device_android_id);
   ASSERT_EQ(kDeviceToken, load_result->device_security_token);
+}
+
+TEST_F(GCMStoreImplTest, Registrations) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  // Add one registration with one sender.
+  linked_ptr<RegistrationInfo> registration1(new RegistrationInfo);
+  registration1->sender_ids.push_back("sender1");
+  registration1->registration_id = "registration1";
+  gcm_store->AddRegistration(
+      "app1",
+      registration1,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  // Add one registration with multiple senders.
+  linked_ptr<RegistrationInfo> registration2(new RegistrationInfo);
+  registration2->sender_ids.push_back("sender2_1");
+  registration2->sender_ids.push_back("sender2_2");
+  registration2->registration_id = "registration2";
+  gcm_store->AddRegistration(
+      "app2",
+      registration2,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  ASSERT_EQ(2, load_result->registrations.size());
+  ASSERT_TRUE(load_result->registrations.find("app1") !=
+              load_result->registrations.end());
+  EXPECT_EQ(registration1->registration_id,
+            load_result->registrations["app1"]->registration_id);
+  ASSERT_EQ(1, load_result->registrations["app1"]->sender_ids.size());
+  EXPECT_EQ(registration1->sender_ids[0],
+            load_result->registrations["app1"]->sender_ids[0]);
+  ASSERT_TRUE(load_result->registrations.find("app2") !=
+              load_result->registrations.end());
+  EXPECT_EQ(registration2->registration_id,
+            load_result->registrations["app2"]->registration_id);
+  ASSERT_EQ(2, load_result->registrations["app2"]->sender_ids.size());
+  EXPECT_EQ(registration2->sender_ids[0],
+            load_result->registrations["app2"]->sender_ids[0]);
+  EXPECT_EQ(registration2->sender_ids[1],
+            load_result->registrations["app2"]->sender_ids[1]);
 }
 
 // Verify saving some incoming messages, reopening the directory, and then
@@ -292,70 +342,6 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
 
   ASSERT_TRUE(load_result->incoming_messages.empty());
   ASSERT_TRUE(load_result->outgoing_messages.empty());
-}
-
-// Verify that the next serial number of persisted properly.
-TEST_F(GCMStoreImplTest, NextSerialNumber) {
-  const int64 kNextSerialNumber = 77LL;
-  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  scoped_ptr<GCMStore::LoadResult> load_result;
-  gcm_store->Load(base::Bind(
-      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
-  PumpLoop();
-
-  gcm_store->SetNextSerialNumber(
-      kNextSerialNumber,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
-  PumpLoop();
-
-  gcm_store = BuildGCMStore().Pass();
-  gcm_store->Load(base::Bind(
-      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
-  PumpLoop();
-
-  EXPECT_EQ(kNextSerialNumber,
-            load_result->serial_number_mappings.next_serial_number);
-}
-
-// Verify that user serial number mappings are persisted properly.
-TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
-  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  scoped_ptr<GCMStore::LoadResult> load_result;
-  gcm_store->Load(base::Bind(
-      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
-  PumpLoop();
-
-  std::string username1 = "username1";
-  int64 serial_number1 = 34LL;
-  gcm_store->AddUserSerialNumber(
-      username1,
-      serial_number1,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
-
-  std::string username2 = "username2";
-  int64 serial_number2 = 56LL;
-  gcm_store->AddUserSerialNumber(
-      username2,
-      serial_number2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
-  PumpLoop();
-
-  gcm_store = BuildGCMStore().Pass();
-  gcm_store->Load(base::Bind(
-      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
-  PumpLoop();
-
-  ASSERT_EQ(2u, load_result->serial_number_mappings.user_serial_numbers.size());
-  ASSERT_NE(
-      load_result->serial_number_mappings.user_serial_numbers.end(),
-      load_result->serial_number_mappings.user_serial_numbers.find(username1));
-  EXPECT_EQ(serial_number1,
-            load_result->serial_number_mappings.user_serial_numbers[username1]);
-  ASSERT_NE(
-      load_result->serial_number_mappings.user_serial_numbers.end(),
-      load_result->serial_number_mappings.user_serial_numbers.find(username2));
-  EXPECT_EQ(serial_number2,
-            load_result->serial_number_mappings.user_serial_numbers[username2]);
 }
 
 // Test that per-app message limits are enforced, persisted across restarts,
