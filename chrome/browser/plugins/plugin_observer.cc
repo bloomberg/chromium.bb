@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -119,6 +120,72 @@ void ConfirmInstallDialogDelegate::OnlyWeakObserversLeft() {
   Cancel();
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+
+// ReloadPluginInfoBarDelegate -------------------------------------------------
+
+class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  static void Create(InfoBarService* infobar_service,
+                     content::NavigationController* controller,
+                     const base::string16& message);
+
+ private:
+  ReloadPluginInfoBarDelegate(content::NavigationController* controller,
+                              const base::string16& message);
+  virtual ~ReloadPluginInfoBarDelegate();
+
+  // ConfirmInfobarDelegate:
+  virtual int GetIconID() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+
+  content::NavigationController* controller_;
+  base::string16 message_;
+};
+
+// static
+void ReloadPluginInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    content::NavigationController* controller,
+    const base::string16& message) {
+  infobar_service->AddInfoBar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new ReloadPluginInfoBarDelegate(controller, message))));
+}
+
+ReloadPluginInfoBarDelegate::ReloadPluginInfoBarDelegate(
+    content::NavigationController* controller,
+    const base::string16& message)
+    : controller_(controller),
+      message_(message) {}
+
+ReloadPluginInfoBarDelegate::~ReloadPluginInfoBarDelegate(){ }
+
+int ReloadPluginInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_PLUGIN_CRASHED;
+}
+
+base::string16 ReloadPluginInfoBarDelegate::GetMessageText() const {
+  return message_;
+}
+
+int ReloadPluginInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+base::string16 ReloadPluginInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_RELOAD_PAGE_WITH_PLUGIN);
+}
+
+bool ReloadPluginInfoBarDelegate::Accept() {
+  controller_->Reload(true);
+  return true;
+}
+
 }  // namespace
 
 // PluginObserver -------------------------------------------------------------
@@ -257,9 +324,10 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
   UMA_HISTOGRAM_COUNTS("Plugin.ShowCrashedInfobar", 1);
 #endif
 
-  SimpleAlertInfoBarDelegate::Create(
+  ReloadPluginInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
-      IDR_INFOBAR_PLUGIN_CRASHED, infobar_text, true);
+      &web_contents()->GetController(),
+      infobar_text);
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {

@@ -11255,7 +11255,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           &lt;/p&gt;
         </message>
       </if>
-      
+
       <!-- Strings used for non-Android builds -->
       <if expr="not is_android">
         <message name="IDS_NEW_TAB_TITLE"
@@ -11948,6 +11948,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_PLUGIN_DISCONNECTED_PROMPT" desc="Info Bar message to notify that the channel connecting to a plugin has encountered an error.">
         <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has encountered an error.</ph>
+      </message>
+      <message name="IDS_RELOAD_PAGE_WITH_PLUGIN" desc="Info Bar button to reload the page where a plugin crashed or disconnected.">
+        Reload
       </message>
       <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Info Bar message to notify that we couldn't load a plugin">
         Could not load <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex>.</ph>
