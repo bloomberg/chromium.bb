@@ -5,12 +5,17 @@
 #include "mojo/shell/app_child_process.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/common/message_pump_mojo.h"
@@ -24,9 +29,58 @@ namespace shell {
 
 namespace {
 
-class AppChildControllerImpl;
+// Blocker ---------------------------------------------------------------------
+
+// Blocks a thread until another thread unblocks it, at which point it unblocks
+// and runs a closure provided by that thread.
+class Blocker {
+ public:
+  class Unblocker {
+   public:
+    ~Unblocker() {}
+
+    void Unblock(base::Closure run_after) {
+      DCHECK(blocker_);
+      DCHECK(blocker_->run_after_.is_null());
+      blocker_->run_after_ = run_after;
+      blocker_->event_.Signal();
+      blocker_ = NULL;
+    }
+
+   private:
+    friend class Blocker;
+    Unblocker(Blocker* blocker) : blocker_(blocker) {
+      DCHECK(blocker_);
+    }
+
+    Blocker* blocker_;
+
+    // Copy and assign allowed.
+  };
+
+  Blocker() : event_(true, false) {}
+  ~Blocker() {}
+
+  void Block() {
+    DCHECK(run_after_.is_null());
+    event_.Wait();
+    run_after_.Run();
+  }
+
+  Unblocker GetUnblocker() {
+    return Unblocker(this);
+  }
+
+ private:
+  base::WaitableEvent event_;
+  base::Closure run_after_;
+
+  DISALLOW_COPY_AND_ASSIGN(Blocker);
+};
 
 // AppContext ------------------------------------------------------------------
+
+class AppChildControllerImpl;
 
 // Should be created and initialized on the main thread.
 class AppContext {
@@ -74,14 +128,17 @@ class AppContext {
   }
 
  private:
+  // Accessed only on the controller thread.
+  // IMPORTANT: This must be BEFORE |controller_thread_|, so that the controller
+  // thread gets joined (and thus |controller_| reset) before |controller_| is
+  // destroyed.
+  scoped_ptr<AppChildControllerImpl> controller_;
+
   base::Thread io_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   base::Thread controller_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> controller_runner_;
-
-  // Accessed only on the controller thread.
-  scoped_ptr<AppChildControllerImpl> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContext);
 };
@@ -99,17 +156,27 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
   static void Init(
       AppContext* app_context,
       embedder::ScopedPlatformHandle platform_channel,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner) {
+      const Blocker::Unblocker& unblocker) {
     DCHECK(app_context);
     DCHECK(platform_channel.is_valid());
-    DCHECK(main_thread_runner);
 
     DCHECK(!app_context->controller());
     app_context->set_controller(
-        make_scoped_ptr(new AppChildControllerImpl(app_context)));
-    app_context->controller()->CreateChannel(platform_channel.Pass(),
-                                             main_thread_runner);
+        make_scoped_ptr(new AppChildControllerImpl(app_context, unblocker)));
+    app_context->controller()->CreateChannel(platform_channel.Pass());
+  }
 
+  void Shutdown() {
+    DVLOG(2) << "AppChildControllerImpl::Shutdown()";
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    // TODO(vtl): Pass in the result from |MainMain()|.
+    controller_client_->AppCompleted(MOJO_RESULT_UNIMPLEMENTED);
+
+    // TODO(vtl): Drain then destroy the channel (on the I/O thread).
+
+    // This will destroy this object.
+    app_context_->set_controller(scoped_ptr<AppChildControllerImpl>());
   }
 
   // |AppChildController| method:
@@ -117,19 +184,23 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
                         ScopedMessagePipeHandle service) OVERRIDE {
     DVLOG(2) << "AppChildControllerImpl::StartApp("
              << app_path.To<std::string>() << ", ...)";
+    DCHECK(thread_checker_.CalledOnValidThread());
 
-    // TODO(vtl): Load/run app.
+    unblocker_.Unblock(base::Bind(&AppChildControllerImpl::StartAppOnMainThread,
+                                  base::FilePath::FromUTF8Unsafe(
+                                      app_path.To<std::string>()),
+                                  base::Passed(&service)));
   }
 
  private:
-  AppChildControllerImpl(AppContext* app_context)
+  AppChildControllerImpl(AppContext* app_context,
+                         const Blocker::Unblocker& unblocker)
       : app_context_(app_context),
+        unblocker_(unblocker),
         channel_info_(NULL) {
   }
 
-  void CreateChannel(
-      embedder::ScopedPlatformHandle platform_channel,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner) {
+  void CreateChannel(embedder::ScopedPlatformHandle platform_channel) {
     DVLOG(2) << "AppChildControllerImpl::CreateChannel()";
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -137,7 +208,7 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
         platform_channel.Pass(),
         app_context_->io_runner(),
         base::Bind(&AppChildControllerImpl::DidCreateChannel,
-                   base::Unretained(this), main_thread_runner),
+                   base::Unretained(this)),
         base::MessageLoopProxy::current()));
     controller_client_.reset(
         mojo_shell::ScopedAppChildControllerClientHandle(
@@ -146,16 +217,49 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
   }
 
   // Callback for |embedder::CreateChannel()|.
-  void DidCreateChannel(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      embedder::ChannelInfo* channel_info) {
+  void DidCreateChannel(embedder::ChannelInfo* channel_info) {
     DVLOG(2) << "AppChildControllerImpl::DidCreateChannel()";
     DCHECK(thread_checker_.CalledOnValidThread());
     channel_info_ = channel_info;
   }
 
+  static void StartAppOnMainThread(const base::FilePath& app_path,
+                                   ScopedMessagePipeHandle service) {
+    // TODO(vtl): This is copied from in_process_dynamic_service_runner.cc.
+    DVLOG(2) << "Loading/running Mojo app from " << app_path.value()
+             << " out of process";
+
+    base::ScopedClosureRunner app_deleter(
+        base::Bind(base::IgnoreResult(&base::DeleteFile), app_path, false));
+
+    do {
+      std::string load_error;
+      base::ScopedNativeLibrary app_library(
+          base::LoadNativeLibrary(app_path, &load_error));
+      if (!app_library.is_valid()) {
+        LOG(ERROR) << "Failed to load library (error: " << load_error << ")";
+        break;
+      }
+
+      typedef MojoResult (*MojoMainFunction)(MojoHandle);
+      MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
+          app_library.GetFunctionPointer("MojoMain"));
+      if (!main_function) {
+        LOG(ERROR) << "Entrypoint MojoMain not found";
+        break;
+      }
+
+      // TODO(vtl): Report the result back to our parent process.
+      // |MojoMain()| takes ownership of the service handle.
+      MojoResult result = main_function(service.release().value());
+      if (result < MOJO_RESULT_OK)
+        LOG(ERROR) << "MojoMain returned an error: " << result;
+    } while (false);
+  }
+
   base::ThreadChecker thread_checker_;
   AppContext* const app_context_;
+  Blocker::Unblocker unblocker_;
 
   RemotePtr<mojo_shell::AppChildControllerClient> controller_client_;
   embedder::ChannelInfo* channel_info_;
@@ -179,21 +283,18 @@ void AppChildProcess::Main() {
   AppContext app_context;
   app_context.Init();
 
-  {
-    base::MessageLoop message_loop;
+  Blocker blocker;
+  app_context.controller_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppChildControllerImpl::Init, base::Unretained(&app_context),
+                 base::Passed(platform_channel()), blocker.GetUnblocker()));
+  // This will block, then run whatever the controller wants.
+  blocker.Block();
 
-    app_context.controller_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppChildControllerImpl::Init,
-                   base::Unretained(&app_context),
-                   base::Passed(platform_channel()),
-                   scoped_refptr<base::SingleThreadTaskRunner>(
-                       message_loop.message_loop_proxy())));
-
-    // Eventually, we'll get a task posted telling us to quit this message loop,
-    // which will also tell us what to do afterwards (e.g., run |MojoMain()|).
-    message_loop.Run();
-  }
+  app_context.controller_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppChildControllerImpl::Shutdown,
+      base::Unretained(app_context.controller())));
 }
 
 }  // namespace shell
