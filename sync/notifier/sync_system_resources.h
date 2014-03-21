@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/values.h"
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "sync/base/sync_export.h"
@@ -115,6 +116,11 @@ class SYNC_EXPORT_PRIVATE SyncNetworkChannel
   virtual void UpdateCredentials(const std::string& email,
       const std::string& token) = 0;
 
+  // Subclass should implement RequestDetailedStatus to provide debugging
+  // information.
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) = 0;
+
   // Classes interested in network channel state changes should implement
   // SyncNetworkChannel::Observer and register here.
   void AddObserver(Observer* observer);
@@ -127,6 +133,9 @@ class SYNC_EXPORT_PRIVATE SyncNetworkChannel
   static scoped_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_ptr<GCMNetworkChannelDelegate> delegate);
+
+  // Get the count of how many valid received messages were received.
+  int GetReceivedMessagesCount() const;
 
  protected:
   // Subclass should notify about connection state through NotifyStateChange.
@@ -145,6 +154,8 @@ class SYNC_EXPORT_PRIVATE SyncNetworkChannel
 
   // Last channel state for new network status receivers.
   InvalidatorState invalidator_state_;
+
+  int received_messages_count_;
 
   ObserverList<Observer> observers_;
 };

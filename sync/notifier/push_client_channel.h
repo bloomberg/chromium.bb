@@ -34,6 +34,8 @@ class SYNC_EXPORT_PRIVATE PushClientChannel
 
   // invalidation::NetworkChannel implementation.
   virtual void SendMessage(const std::string& message) OVERRIDE;
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
 
   // SyncNetworkChannel implementation.
   // If not connected, connects with the given credentials.  If
@@ -71,10 +73,14 @@ class SYNC_EXPORT_PRIVATE PushClientChannel
                             std::string* message,
                             std::string* service_context,
                             int64* scheduling_hash);
+  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
 
   scoped_ptr<notifier::PushClient> push_client_;
   std::string service_context_;
   int64 scheduling_hash_;
+
+  // This count is saved for displaying statatistics.
+  int sent_messages_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PushClientChannel);
 };

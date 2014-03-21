@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/base64.h"
+#include "base/i18n/time_formatting.h"
+#include "base/sha1.h"
 #include "base/strings/string_util.h"
 #if !defined(ANDROID)
 // channel_common.proto defines ANDROID constant that conflicts with Android
@@ -55,12 +57,59 @@ const net::BackoffEntry::Policy kRegisterBackoffPolicy = {
 
 }  // namespace
 
+GCMNetworkChannelDiagnostic::GCMNetworkChannelDiagnostic(
+    GCMNetworkChannel* parent)
+    : parent_(parent),
+      last_message_empty_echo_token_(false),
+      last_post_response_code_(0),
+      registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
+      sent_messages_count_(0) {}
+
+scoped_ptr<base::DictionaryValue>
+GCMNetworkChannelDiagnostic::CollectDebugData() const {
+  scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue);
+  status->SetString("GCMNetworkChannel.Channel", "GCM");
+  status->SetString("GCMNetworkChannel.HashedRegistrationID",
+                    base::SHA1HashString(registration_id_));
+  status->SetString("GCMNetworkChannel.RegistrationResult",
+                    GCMClientResultToString(registration_result_));
+  status->SetBoolean("GCMNetworkChannel.HadLastMessageEmptyEchoToken",
+                     last_message_empty_echo_token_);
+  status->SetString(
+      "GCMNetworkChannel.LastMessageReceivedTime",
+      base::TimeFormatShortDateAndTime(last_message_received_time_));
+  status->SetInteger("GCMNetworkChannel.LastPostResponseCode",
+                     last_post_response_code_);
+  status->SetInteger("GCMNetworkChannel.SentMessages", sent_messages_count_);
+  status->SetInteger("GCMNetworkChannel.ReceivedMessages",
+                     parent_->GetReceivedMessagesCount());
+  return status.Pass();
+}
+
+std::string GCMNetworkChannelDiagnostic::GCMClientResultToString(
+    const gcm::GCMClient::Result result) const {
+#define ENUM_CASE(x) case x: return #x; break;
+  switch (result) {
+    ENUM_CASE(gcm::GCMClient::SUCCESS);
+    ENUM_CASE(gcm::GCMClient::NETWORK_ERROR);
+    ENUM_CASE(gcm::GCMClient::SERVER_ERROR);
+    ENUM_CASE(gcm::GCMClient::TTL_EXCEEDED);
+    ENUM_CASE(gcm::GCMClient::UNKNOWN_ERROR);
+    ENUM_CASE(gcm::GCMClient::NOT_SIGNED_IN);
+    ENUM_CASE(gcm::GCMClient::INVALID_PARAMETER);
+    ENUM_CASE(gcm::GCMClient::ASYNC_OPERATION_PENDING);
+  }
+  NOTREACHED();
+  return "";
+}
+
 GCMNetworkChannel::GCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_ptr<GCMNetworkChannelDelegate> delegate)
     : request_context_getter_(request_context_getter),
       delegate_(delegate.Pass()),
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
+      diagnostic_info_(this),
       weak_factory_(this) {
   delegate_->Initialize();
   Register();
@@ -73,6 +122,11 @@ void GCMNetworkChannel::UpdateCredentials(
     const std::string& email,
     const std::string& token) {
   // Do nothing. We get access token by requesting it for every message.
+}
+
+void GCMNetworkChannel::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  callback.Run(*diagnostic_info_.CollectDebugData());
 }
 
 void GCMNetworkChannel::ResetRegisterBackoffEntryForTest(
@@ -116,12 +170,15 @@ void GCMNetworkChannel::OnRegisterComplete(
         break;
     }
   }
+  diagnostic_info_.registration_id_ = registration_id_;
+  diagnostic_info_.registration_result_ = result;
 }
 
 void GCMNetworkChannel::SendMessage(const std::string& message) {
   DCHECK(CalledOnValidThread());
   DCHECK(!message.empty());
   DVLOG(2) << "SendMessage";
+  diagnostic_info_.sent_messages_count_++;
   cached_message_ = message;
 
   if (!registration_id_.empty()) {
@@ -184,6 +241,7 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
   DCHECK(!message.empty());
   if (!echo_token.empty())
     echo_token_ = echo_token;
+  diagnostic_info_.last_message_empty_echo_token_ = echo_token.empty();
   std::string data;
   if (!Base64DecodeURLSafe(message, &data))
     return;
@@ -192,6 +250,7 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
     return;
   if (!android_message.has_message())
     return;
+  diagnostic_info_.last_message_received_time_ = base::Time::Now();
   DVLOG(2) << "Deliver incoming message";
   DeliverIncomingMessage(android_message.message());
 #else
@@ -207,6 +266,8 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<net::URLFetcher> fetcher = fetcher_.Pass();
 
   net::URLRequestStatus status = fetcher->GetStatus();
+  diagnostic_info_.last_post_response_code_ =
+      status.is_success() ? source->GetResponseCode() : status.error();
   if (!status.is_success()) {
     DVLOG(1) << "URLFetcher failure";
     return;

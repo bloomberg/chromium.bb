@@ -363,19 +363,27 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
 void SyncInvalidationListener::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> callback) {
   DCHECK(CalledOnValidThread());
+  sync_network_channel_->RequestDetailedStatus(callback);
   callback.Run(*CollectDebugData());
 }
 
-scoped_ptr<base::DictionaryValue> SyncInvalidationListener::CollectDebugData() {
+scoped_ptr<base::DictionaryValue>
+SyncInvalidationListener::CollectDebugData() const {
   scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue());
+  return_value->SetString(
+      "SyncInvalidationListener.PushClientState",
+      std::string(InvalidatorStateToString(push_client_state_)));
+  return_value->SetString("SyncInvalidationListener.TiclState",
+                          std::string(InvalidatorStateToString(ticl_state_)));
   scoped_ptr<base::DictionaryValue> unacked_map(new base::DictionaryValue());
-  for (UnackedInvalidationsMap::iterator it =
+  for (UnackedInvalidationsMap::const_iterator it =
            unacked_invalidations_map_.begin();
        it != unacked_invalidations_map_.end();
        ++it) {
     unacked_map->Set((it->first).name(), (it->second).ToValue().release());
   }
-  return_value->Set("UnackedInvalidationsMap", unacked_map.release());
+  return_value->Set("SyncInvalidationListener.UnackedInvalidationsMap",
+                    unacked_map.release());
   return return_value.Pass();
 }
 

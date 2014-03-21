@@ -19,7 +19,9 @@ const char kChannelName[] = "tango_raw";
 
 PushClientChannel::PushClientChannel(
     scoped_ptr<notifier::PushClient> push_client)
-    : push_client_(push_client.Pass()), scheduling_hash_(0) {
+    : push_client_(push_client.Pass()),
+      scheduling_hash_(0),
+      sent_messages_count_(0) {
   push_client_->AddObserver(this);
   notifier::Subscription subscription;
   subscription.channel = kChannelName;
@@ -38,6 +40,11 @@ void PushClientChannel::UpdateCredentials(
   push_client_->UpdateCredentials(email, token);
 }
 
+void PushClientChannel::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  callback.Run(*CollectDebugData());
+}
+
 void PushClientChannel::SendMessage(const std::string& message) {
   std::string encoded_message;
   EncodeMessage(&encoded_message, message, service_context_, scheduling_hash_);
@@ -49,6 +56,7 @@ void PushClientChannel::SendMessage(const std::string& message) {
   notification.recipients.push_back(recipient);
   notification.data = encoded_message;
   push_client_->SendNotification(notification);
+  sent_messages_count_++;
 }
 
 void PushClientChannel::OnNotificationsEnabled() {
@@ -130,6 +138,15 @@ bool PushClientChannel::DecodeMessage(const std::string& data,
     *scheduling_hash = envelope.rpc_scheduling_hash();
   }
   return true;
+}
+
+scoped_ptr<base::DictionaryValue> PushClientChannel::CollectDebugData() const {
+  scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue);
+  status->SetString("PushClientChannel.NetworkChannel", "Push Client");
+  status->SetInteger("PushClientChannel.SentMessages", sent_messages_count_);
+  status->SetInteger("PushClientChannel.ReceivedMessages",
+                     SyncNetworkChannel::GetReceivedMessagesCount());
+  return status.Pass();
 }
 
 }  // namespace syncer

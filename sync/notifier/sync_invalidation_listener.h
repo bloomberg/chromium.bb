@@ -168,7 +168,7 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   void EmitSavedInvalidations(const ObjectIdInvalidationMap& to_emit);
 
   // Generate a Dictionary with all the debugging information.
-  scoped_ptr<base::DictionaryValue> CollectDebugData();
+  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
 
   WeakHandle<AckHandler> GetThisAsAckHandler();
 

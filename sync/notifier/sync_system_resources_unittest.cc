@@ -190,6 +190,12 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
   virtual void UpdateCredentials(const std::string& email,
       const std::string& token) OVERRIDE {
   }
+
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE {
+    base::DictionaryValue value;
+    callback.Run(value);
+  }
 };
 
 class SyncNetworkChannelTest

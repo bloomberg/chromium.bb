@@ -11,6 +11,13 @@ cr.define('chrome.invalidations', function() {
    */
   var tableObjects = {};
 
+  /**
+   * Local variable that contains the detailed information in an object form.
+   * This was done this way as to allow multiple calls to updateDetailedStatus
+   * to keep adding new items.
+   */
+  var cachedDetails = {};
+
   function quote(str) {
     return '\"' + str + '\"';
   }
@@ -32,12 +39,14 @@ cr.define('chrome.invalidations', function() {
    */
   function repaintTable() {
     var keys = [];
-    for (var key in tableObjects)
+    for (var key in tableObjects) {
       keys.push(key);
+    }
     keys.sort();
     var sortedInvalidations = [];
-    for (var i = 0; i < keys.length; i++)
+    for (var i = 0; i < keys.length; i++) {
       sortedInvalidations.push(tableObjects[keys[i]]);
+    }
     var wrapped = { objectsidtable: sortedInvalidations };
     jstProcess(new JsEvalContext(wrapped), $('objectsid-table-div'));
   }
@@ -163,12 +172,15 @@ cr.define('chrome.invalidations', function() {
   }
 
   /**
-   * Update the internal status display.
-   * @param {!Object} details The dictionary containing assorted debugging
+   * Update the internal status display, merging new detailed information.
+   * @param {!Object} newDetails The dictionary containing assorted debugging
    *      details (e.g. Network Channel information).
    */
-  function updateDetailedStatus(details) {
-    $('internal-display').value = JSON.stringify(details, null, 2);
+  function updateDetailedStatus(newDetails) {
+    for (var key in newDetails) {
+      cachedDetails[key] = newDetails[key];
+    }
+    $('internal-display').value = JSON.stringify(cachedDetails, null, 2);
   }
 
   /**
@@ -177,6 +189,7 @@ cr.define('chrome.invalidations', function() {
    */
   function onLoadWork() {
     $('request-detailed-status').onclick = function() {
+      cachedDetails = {};
       chrome.send('requestDetailedStatus');
     };
     chrome.send('doneLoading');

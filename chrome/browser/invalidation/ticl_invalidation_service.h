@@ -131,6 +131,10 @@ class TiclInvalidationService : public base::NonThreadSafe,
   // and invalidations.
   InvalidationLogger logger_;
 
+  // Keep a copy of the important parameters used in network channel creation
+  // for debugging.
+  base::DictionaryValue network_channel_options_;
+
   DISALLOW_COPY_AND_ASSIGN(TiclInvalidationService);
 };
 

@@ -21,6 +21,27 @@
 class GoogleServiceAuthError;
 
 namespace syncer {
+class GCMNetworkChannel;
+
+// POD with copy of some statuses for debugging purposes.
+struct GCMNetworkChannelDiagnostic {
+  explicit GCMNetworkChannelDiagnostic(GCMNetworkChannel* parent);
+
+  // Collect all the internal variables in a single readable dictionary.
+  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
+
+  // TODO(pavely): Move this toString to a more appropiate place in GCMClient.
+  std::string GCMClientResultToString(
+      const gcm::GCMClient::Result result) const;
+
+  GCMNetworkChannel* parent_;
+  bool last_message_empty_echo_token_;
+  base::Time last_message_received_time_;
+  int last_post_response_code_;
+  std::string registration_id_;
+  gcm::GCMClient::Result registration_result_;
+  int sent_messages_count_;
+};
 
 // GCMNetworkChannel is an implementation of SyncNetworkChannel that routes
 // messages through GCMProfileService.
@@ -43,6 +64,8 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   // SyncNetworkChannel implementation.
   virtual void UpdateCredentials(const std::string& email,
                                  const std::string& token) OVERRIDE;
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
 
   // URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -92,6 +115,8 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   // cacheinvalidation client receives echo_token with incoming message from
   // GCM and shuld include it in headers with outgoing message over http.
   std::string echo_token_;
+
+  GCMNetworkChannelDiagnostic diagnostic_info_;
 
   base::WeakPtrFactory<GCMNetworkChannel> weak_factory_;
 

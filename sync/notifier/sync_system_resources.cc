@@ -132,7 +132,8 @@ void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
 }
 
 SyncNetworkChannel::SyncNetworkChannel()
-    : invalidator_state_(DEFAULT_INVALIDATION_ERROR) {}
+    : invalidator_state_(DEFAULT_INVALIDATION_ERROR),
+      received_messages_count_(0) {}
 
 SyncNetworkChannel::~SyncNetworkChannel() {
   STLDeleteElements(&network_status_receivers_);
@@ -196,10 +197,14 @@ bool SyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {
     DLOG(ERROR) << "No receiver for incoming notification";
     return false;
   }
+  received_messages_count_++;
   incoming_receiver_->Run(message);
   return true;
 }
 
+int SyncNetworkChannel::GetReceivedMessagesCount() const {
+  return received_messages_count_;
+}
 
 SyncStorage::SyncStorage(StateWriter* state_writer,
                          invalidation::Scheduler* scheduler)
