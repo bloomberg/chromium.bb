@@ -15,7 +15,7 @@ if [ -x "$UPDATE_MENUS" ]; then
 fi
 
 # Update cache of .desktop file MIME types. Non-fatal since it's just a cache.
-update-desktop-database || true
+update-desktop-database > /dev/null 2>&1 || true
 
 # Updates defaults.list file if present.
 update_defaults_list() {
