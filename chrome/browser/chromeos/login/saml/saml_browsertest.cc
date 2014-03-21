@@ -245,17 +245,7 @@ class SamlTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    FakeGaia::MergeSessionParams params;
-    params.auth_sid_cookie = kTestAuthSIDCookie;
-    params.auth_lsid_cookie = kTestAuthLSIDCookie;
-    params.auth_code = kTestAuthCode;
-    params.refresh_token = kTestRefreshToken;
-    params.access_token = kTestAuthLoginAccessToken;
-    params.gaia_uber_token = kTestGaiaUberToken;
-    params.session_sid_cookie = kTestSessionSIDCookie;
-    params.session_lsid_cookie = kTestSessionLSIDCookie;
-    params.email = kFirstSAMLUserEmail;
-    fake_gaia_.SetMergeSessionParams(params);
+    SetMergeSessionParams(kFirstSAMLUserEmail);
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
@@ -277,6 +267,20 @@ class SamlTest : public InProcessBrowserTest {
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
     }
+  }
+
+  void SetMergeSessionParams(const std::string& email) {
+    FakeGaia::MergeSessionParams params;
+    params.auth_sid_cookie = kTestAuthSIDCookie;
+    params.auth_lsid_cookie = kTestAuthLSIDCookie;
+    params.auth_code = kTestAuthCode;
+    params.refresh_token = kTestRefreshToken;
+    params.access_token = kTestAuthLoginAccessToken;
+    params.gaia_uber_token = kTestGaiaUberToken;
+    params.session_sid_cookie = kTestSessionSIDCookie;
+    params.session_lsid_cookie = kTestSessionLSIDCookie;
+    params.email = email;
+    fake_gaia_.SetMergeSessionParams(params);
   }
 
   WebUILoginDisplay* GetLoginDisplay() {
@@ -502,6 +506,24 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   const User* user = UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kFirstSAMLUserEmail, user->email());
+}
+
+// Verifies that if the authenticated user's e-mail address cannot be retrieved,
+// an error message is shown.
+IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  SetMergeSessionParams("");
+  SendConfirmPassword("fake_password");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
 }
 
 // Tests the password confirm flow: show error on the first failure and

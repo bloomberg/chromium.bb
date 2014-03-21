@@ -1341,7 +1341,7 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
     Previous password
   </message>
-  <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to learly indicate that the user is being redirected to another sign-in provider.">
+  <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider.">
     The sign-in service below is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>. Sign in to continue.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">

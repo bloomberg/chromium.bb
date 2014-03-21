@@ -434,6 +434,9 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("easyUnlockTooltip",
                IDS_LOGIN_EASY_UNLOCK_TOOLTIP);
 
+  builder->Add("fatalEnrollmentError",
+               IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
+
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 

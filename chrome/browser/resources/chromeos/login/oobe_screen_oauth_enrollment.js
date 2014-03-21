@@ -249,7 +249,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {string} email The authenticated user's e-mail address.
      */
     setAuthenticatedUserEmail: function(attemptToken, email) {
-      if (this.attemptToken_ == attemptToken)
+      if (this.attemptToken_ != attemptToken)
+        return;
+
+      if (!email)
+        this.showError(loadTimeData.getString('fatalEnrollmentError'), false);
+      else
         chrome.send('oauthEnrollCompleteLogin', [email]);
     },
 
