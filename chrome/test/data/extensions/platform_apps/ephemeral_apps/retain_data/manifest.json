@@ -1,0 +1,12 @@
+{
+  "name": "Ephemeral Apps Retain Data",
+  "version": "1.0",
+  "manifest_version": 2,
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDT8ZNwuFV1+MZ8K40HD6M7JGQ3dJRxKfj45etp4mOV04lq2ZGF9gLedtTng1dWJcH8HoO7sMaWraMpST/OqPF9qiVoovZqdo/izJ5HJG7f3ZCOtMSCOfBGs8z32YUYcymcbKBOGLbdg+84ckWxGu6l8iPEuJw9EI+8P/WnOpQ4fwIDAQAB",
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  },
+  "permissions": ["storage", "unlimitedStorage"]
+}

@@ -896,7 +896,10 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  extensions::DataDeleter::StartDeleting(profile_, extension.get());
+  // Do not remove the data of ephemeral apps. They will be garbage collected by
+  // EphemeralAppService.
+  if (!extension->is_ephemeral())
+    extensions::DataDeleter::StartDeleting(profile_, extension.get());
 
   UntrackTerminatedExtension(extension_id);
 
@@ -2654,6 +2657,20 @@ void ExtensionService::GarbageCollectIsolatedStorage() {
                                profile_,
                                extensions::util::GetSiteForExtensionId(
                                    (*it)->id(), profile()))->GetPath());
+    }
+  }
+
+  // The data of ephemeral apps can outlive their cache lifetime. Ensure
+  // they are not garbage collected.
+  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> evicted_apps_info(
+      extension_prefs_->GetEvictedEphemeralAppsInfo());
+  for (size_t i = 0; i < evicted_apps_info->size(); ++i) {
+    extensions::ExtensionInfo* info = evicted_apps_info->at(i).get();
+    if (extensions::util::HasIsolatedStorage(*info)) {
+      active_paths->insert(BrowserContext::GetStoragePartitionForSite(
+          profile_,
+          extensions::util::GetSiteForExtensionId(
+              info->extension_id, profile()))->GetPath());
     }
   }
 

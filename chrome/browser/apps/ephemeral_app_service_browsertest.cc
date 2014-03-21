@@ -37,7 +37,7 @@ class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
           InstallExtensionWithSourceAndFlags(
               path,
               1,
-              extensions::Manifest::UNPACKED,
+              extensions::Manifest::INTERNAL,
               Extension::IS_EPHEMERAL);
       app_ids_.push_back(extension->id());
     }

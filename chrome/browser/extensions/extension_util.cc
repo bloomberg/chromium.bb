@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
@@ -197,6 +198,46 @@ scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension) {
   dict->SetString("icon", icon.spec());
 
   return dict.Pass();
+}
+
+bool HasIsolatedStorage(const ExtensionInfo& info) {
+  if (!info.extension_manifest.get())
+    return false;
+
+  std::string error;
+  scoped_refptr<const Extension> extension(Extension::Create(
+      info.extension_path,
+      info.extension_location,
+      *info.extension_manifest,
+      Extension::NO_FLAGS,
+      info.extension_id,
+      &error));
+  if (!extension.get())
+    return false;
+
+  return AppIsolationInfo::HasIsolatedStorage(extension.get());
+}
+
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context) {
+  const Extension* extension = ExtensionRegistry::Get(context)->
+      enabled_extensions().GetExtensionOrAppByURL(extension_site_url);
+  if (extension)
+    return AppIsolationInfo::HasIsolatedStorage(extension);
+
+  if (extension_site_url.SchemeIs(kExtensionScheme)) {
+    // The site URL may also be from an evicted ephemeral app. We do not
+    // immediately delete their data when they are removed from extension
+    // system.
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+    DCHECK(prefs);
+    scoped_ptr<ExtensionInfo> info = prefs->GetEvictedEphemeralAppInfo(
+        extension_site_url.host());
+    if (info.get())
+      return HasIsolatedStorage(*info);
+  }
+
+  return false;
 }
 
 }  // namespace util

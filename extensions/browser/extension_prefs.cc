@@ -179,6 +179,11 @@ const char kPrefGeometryCache[] = "geometry_cache";
 // A preference that indicates when an extension is last launched.
 const char kPrefLastLaunchTime[] = "last_launch_time";
 
+// A preference that marks an ephemeral app that was evicted from the cache.
+// Their data is retained and garbage collected when inactive for a long period
+// of time.
+const char kPrefEvictedEphemeralApp[] = "evicted_ephemeral_app";
+
 // A list of installed ids and a signature.
 const char kInstallSignature[] = "extensions.install_signature";
 
@@ -221,6 +226,11 @@ std::string JoinPrefs(const std::string& parent, const char* child) {
 bool IsBlacklistBitSet(const base::DictionaryValue* ext) {
   bool bool_value;
   return ext->GetBoolean(kPrefBlacklist, &bool_value) && bool_value;
+}
+
+bool IsEvictedEphemeralApp(const base::DictionaryValue* ext) {
+  bool bool_value;
+  return ext->GetBoolean(kPrefEvictedEphemeralApp, &bool_value) && bool_value;
 }
 
 }  // namespace
@@ -1134,7 +1144,14 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
     extension_pref_value_map_->SetExtensionState(extension_id, false);
     content_settings_store_->SetExtensionState(extension_id, false);
   } else {
-    DeleteExtensionPrefs(extension_id);
+    int creation_flags = GetCreationFlags(extension_id);
+    if (creation_flags & Extension::IS_EPHEMERAL) {
+      // Keep ephemeral apps around, but mark them as evicted.
+      UpdateExtensionPref(extension_id, kPrefEvictedEphemeralApp,
+                          new base::FundamentalValue(true));
+    } else {
+      DeleteExtensionPrefs(extension_id);
+    }
   }
 }
 
@@ -1264,6 +1281,11 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
   if (state_value == Extension::EXTERNAL_EXTENSION_UNINSTALLED) {
     LOG(WARNING) << "External extension with id " << extension_id
                  << " has been uninstalled by the user";
+    return scoped_ptr<ExtensionInfo>();
+  }
+
+  if (IsEvictedEphemeralApp(ext)) {
+    // Hide evicted ephemeral apps.
     return scoped_ptr<ExtensionInfo>();
   }
 
@@ -1437,6 +1459,54 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
   }
 
   return extensions_info.Pass();
+}
+
+scoped_ptr<ExtensionPrefs::ExtensionsInfo>
+ExtensionPrefs::GetEvictedEphemeralAppsInfo() const {
+  scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
+
+  const base::DictionaryValue* extensions =
+      prefs_->GetDictionary(pref_names::kExtensions);
+  for (base::DictionaryValue::Iterator extension_id(*extensions);
+       !extension_id.IsAtEnd(); extension_id.Advance()) {
+    const base::DictionaryValue* ext = NULL;
+    if (!Extension::IdIsValid(extension_id.key()) ||
+        !extension_id.value().GetAsDictionary(&ext)) {
+      continue;
+    }
+
+    if (!IsEvictedEphemeralApp(ext))
+      continue;
+
+    scoped_ptr<ExtensionInfo> info =
+        GetInstalledInfoHelper(extension_id.key(), ext);
+    if (info)
+      extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
+  }
+
+  return extensions_info.Pass();
+}
+
+scoped_ptr<ExtensionInfo> ExtensionPrefs::GetEvictedEphemeralAppInfo(
+    const std::string& extension_id) const {
+  const base::DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
+  if (!extension_prefs)
+    return scoped_ptr<ExtensionInfo>();
+
+  if (!IsEvictedEphemeralApp(extension_prefs))
+    return scoped_ptr<ExtensionInfo>();
+
+  return GetInstalledInfoHelper(extension_id, extension_prefs);
+}
+
+void ExtensionPrefs::RemoveEvictedEphemeralApp(
+    const std::string& extension_id) {
+  bool evicted_ephemeral_app = false;
+  if (ReadPrefAsBoolean(extension_id,
+                        kPrefEvictedEphemeralApp,
+                        &evicted_ephemeral_app) && evicted_ephemeral_app) {
+    DeleteExtensionPrefs(extension_id);
+  }
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
@@ -1906,6 +1976,9 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(EventRouter::kRegisteredEvents, NULL);
+
+  // When evicted ephemeral apps are re-installed, this flag must be reset.
+  extension_dict->Remove(kPrefEvictedEphemeralApp, NULL);
 
   // FYI, all code below here races on sudden shutdown because |extension_dict|,
   // |app_sorting_|, |extension_pref_value_map_|, and |content_settings_store_|

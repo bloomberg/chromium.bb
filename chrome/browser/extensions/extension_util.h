@@ -21,6 +21,7 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
+struct ExtensionInfo;
 
 namespace util {
 
@@ -81,6 +82,14 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
 // Sets the name, id, and icon resource path of the given extension into the
 // returned dictionary.
 scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension);
+
+// Returns true if the extension has isolated storage.
+bool HasIsolatedStorage(const ExtensionInfo& info);
+
+// Returns true if the site URL corresponds to an extension or app and has
+// isolated storage.
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context);
 
 }  // namespace util
 }  // namespace extensions

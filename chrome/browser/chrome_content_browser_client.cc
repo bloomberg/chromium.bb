@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
@@ -785,18 +786,8 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     // ExtensionService.
     bool is_isolated = !can_be_default;
     if (can_be_default) {
-      const Extension* extension = NULL;
-      Profile* profile = Profile::FromBrowserContext(browser_context);
-      ExtensionService* extension_service =
-          extensions::ExtensionSystem::Get(profile)->extension_service();
-      if (extension_service) {
-        extension =
-            extension_service->extensions()->GetExtensionOrAppByURL(site);
-        if (extension &&
-            extensions::AppIsolationInfo::HasIsolatedStorage(extension)) {
-          is_isolated = true;
-        }
-      }
+      if (extensions::util::SiteHasIsolatedStorage(site, browser_context))
+        is_isolated = true;
     }
 
     if (is_isolated) {

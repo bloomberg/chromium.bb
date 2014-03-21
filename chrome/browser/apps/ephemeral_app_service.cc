@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@
 #include "extensions/common/extension_set.h"
 
 using extensions::Extension;
+using extensions::ExtensionInfo;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionSet;
 using extensions::ExtensionSystem;
@@ -30,28 +32,27 @@ namespace {
 
 // The number of seconds after startup before performing garbage collection
 // of ephemeral apps.
-const int kGarbageCollectStartupDelay = 60;
+const int kGarbageCollectAppsStartupDelay = 60;
 
 // The number of seconds after an ephemeral app has been installed before
 // performing garbage collection.
-const int kGarbageCollectInstallDelay = 15;
+const int kGarbageCollectAppsInstallDelay = 15;
 
 // When the number of ephemeral apps reaches this count, trigger garbage
 // collection to trim off the least-recently used apps in excess of
 // kMaxEphemeralAppsCount.
-const int kGarbageCollectTriggerCount = 35;
+const int kGarbageCollectAppsTriggerCount = 35;
+
+// The number of seconds after startup before performing garbage collection
+// of the data of evicted ephemeral apps.
+const int kGarbageCollectDataStartupDelay = 120;
 
 }  // namespace
 
-// The number of days of inactivity before an ephemeral app will be removed.
 const int EphemeralAppService::kAppInactiveThreshold = 10;
-
-// If the ephemeral app has been launched within this number of days, it will
-// definitely not be garbage collected.
 const int EphemeralAppService::kAppKeepThreshold = 1;
-
-// The maximum number of ephemeral apps to keep cached. Excess may be removed.
 const int EphemeralAppService::kMaxEphemeralAppsCount = 30;
+const int EphemeralAppService::kDataInactiveThreshold = 90;
 
 // static
 EphemeralAppService* EphemeralAppService::Get(Profile* profile) {
@@ -93,9 +94,9 @@ void EphemeralAppService::Observe(
       DCHECK(extension);
       if (extension->is_ephemeral()) {
         ++ephemeral_app_count_;
-        if (ephemeral_app_count_ >= kGarbageCollectTriggerCount)
+        if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount)
           TriggerGarbageCollect(
-              base::TimeDelta::FromSeconds(kGarbageCollectInstallDelay));
+              base::TimeDelta::FromSeconds(kGarbageCollectAppsInstallDelay));
       }
       break;
     }
@@ -109,7 +110,7 @@ void EphemeralAppService::Observe(
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Ideally we need to know when the extension system is shutting down.
-      garbage_collect_timer_.Stop();
+      garbage_collect_apps_timer_.Stop();
       break;
     }
     default:
@@ -120,7 +121,13 @@ void EphemeralAppService::Observe(
 void EphemeralAppService::Init() {
   InitEphemeralAppCount();
   TriggerGarbageCollect(
-      base::TimeDelta::FromSeconds(kGarbageCollectStartupDelay));
+      base::TimeDelta::FromSeconds(kGarbageCollectAppsStartupDelay));
+
+  garbage_collect_data_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kGarbageCollectDataStartupDelay),
+      this,
+      &EphemeralAppService::GarbageCollectData);
 }
 
 void EphemeralAppService::InitEphemeralAppCount() {
@@ -138,12 +145,13 @@ void EphemeralAppService::InitEphemeralAppCount() {
 }
 
 void EphemeralAppService::TriggerGarbageCollect(const base::TimeDelta& delay) {
-  if (!garbage_collect_timer_.IsRunning())
-    garbage_collect_timer_.Start(
-      FROM_HERE,
-      delay,
-      this,
-      &EphemeralAppService::GarbageCollectApps);
+  if (!garbage_collect_apps_timer_.IsRunning()) {
+    garbage_collect_apps_timer_.Start(
+        FROM_HERE,
+        delay,
+        this,
+        &EphemeralAppService::GarbageCollectApps);
+  }
 }
 
 void EphemeralAppService::GarbageCollectApps() {
@@ -223,5 +231,54 @@ void EphemeralAppService::GetAppsToRemove(
     } else {
       break;
     }
+  }
+}
+
+void EphemeralAppService::GarbageCollectData() {
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  DCHECK(prefs);
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> evicted_apps_info(
+      prefs->GetEvictedEphemeralAppsInfo());
+
+  base::Time time_now = base::Time::Now();
+  const base::Time inactive_threshold =
+      time_now - base::TimeDelta::FromDays(kDataInactiveThreshold);
+
+  for (size_t i = 0; i < evicted_apps_info->size(); ++i) {
+    ExtensionInfo* info = evicted_apps_info->at(i).get();
+    base::Time last_launch_time = prefs->GetLastLaunchTime(info->extension_id);
+    if (last_launch_time > inactive_threshold)
+      continue;
+
+    // Sanity check to ensure the app is not currently installed.
+    if (service->GetInstalledExtension(info->extension_id)) {
+      NOTREACHED();
+      continue;
+    }
+
+    // Ensure the app is not waiting to be installed.
+    scoped_ptr<ExtensionInfo> delayed_install(
+        prefs->GetDelayedInstallInfo(info->extension_id));
+    if (delayed_install.get())
+      continue;
+
+    if (info->extension_manifest.get()) {
+      std::string error;
+      scoped_refptr<const Extension> extension(Extension::Create(
+          info->extension_path,
+          info->extension_location,
+          *info->extension_manifest,
+          prefs->GetCreationFlags(info->extension_id),
+          info->extension_id,
+          &error));
+
+      if (extension.get())
+        extensions::DataDeleter::StartDeleting(profile_, extension.get());
+    }
+
+    prefs->RemoveEvictedEphemeralApp(info->extension_id);
   }
 }

@@ -30,10 +30,18 @@ class EphemeralAppService : public KeyedService,
   explicit EphemeralAppService(Profile* profile);
   virtual ~EphemeralAppService();
 
-  // Constants exposed for testing purposes.
+  // Constants exposed for testing purposes:
+
+  // The number of days of inactivity before an ephemeral app will be removed.
   static const int kAppInactiveThreshold;
+  // If the ephemeral app has been launched within this number of days, it will
+  // definitely not be garbage collected.
   static const int kAppKeepThreshold;
+  // The maximum number of ephemeral apps to keep cached. Excess may be removed.
   static const int kMaxEphemeralAppsCount;
+  // The number of days of inactivity before the data of an already evicted
+  // ephemeral app will be removed.
+  static const int kDataInactiveThreshold;
 
  private:
   // A map used to order the ephemeral apps by their last launch time.
@@ -54,15 +62,21 @@ class EphemeralAppService : public KeyedService,
                               const LaunchTimeAppMap& app_launch_times,
                               std::set<std::string>* remove_app_ids);
 
+  // Garbage collect the data of ephemeral apps that have been evicted and
+  // inactive for a long period of time.
+  void GarbageCollectData();
+
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
 
-  base::OneShotTimer<EphemeralAppService> garbage_collect_timer_;
+  base::OneShotTimer<EphemeralAppService> garbage_collect_apps_timer_;
+  base::OneShotTimer<EphemeralAppService> garbage_collect_data_timer_;
 
   // The count of cached ephemeral apps.
   int ephemeral_app_count_;
 
+  friend class EphemeralAppBrowserTest;
   friend class EphemeralAppServiceTest;
   friend class EphemeralAppServiceBrowserTest;
 
