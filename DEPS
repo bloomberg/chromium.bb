@@ -480,7 +480,7 @@ deps_os = {
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/cros_dbus_cplusplus/source":
       Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
-      "@e4120532bbf3ca9f743b0be1f539381a54d16867",
+      "@f78453e0ba9f3d1584e8873aa3c7437cec861ce0",
 
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
