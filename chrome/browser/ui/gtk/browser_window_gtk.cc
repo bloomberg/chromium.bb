@@ -1219,7 +1219,7 @@ void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
                           &rect);
 }
 
-void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
+void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
   if (titlebar_->avatar_button())
     titlebar_->avatar_button()->ShowAvatarBubble();
 }

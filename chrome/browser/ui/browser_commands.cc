@@ -1042,7 +1042,8 @@ void ShowAppMenu(Browser* browser) {
 }
 
 void ShowAvatarMenu(Browser* browser) {
-  browser->window()->ShowAvatarBubbleFromAvatarButton();
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {

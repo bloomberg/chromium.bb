@@ -107,6 +107,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
       views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::TOP_LEFT;
   if (switches::IsNewProfileManagement()) {
     ProfileChooserView::ShowBubble(
+        ProfileChooserView::BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
         this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
         browser_);
   } else {
