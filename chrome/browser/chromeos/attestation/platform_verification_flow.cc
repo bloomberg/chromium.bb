@@ -175,6 +175,8 @@ void PlatformVerificationFlow::ChallengePlatformKey(
   // A platform key must be bound to a user.  They are not allowed in incognito
   // or guest mode.
   if (delegate_->IsGuestOrIncognito(web_contents)) {
+    VLOG(1) << "Platform verification denied because the current session is "
+            << "guest or incognito.";
     ReportError(callback, PLATFORM_NOT_VERIFIED);
     return;
   }
@@ -240,11 +242,13 @@ void PlatformVerificationFlow::OnConsentResponse(
     if (consent_response == CONSENT_RESPONSE_DENY) {
       content::RecordAction(
           base::UserMetricsAction("PlatformVerificationRejected"));
+      VLOG(1) << "Platform verification denied by user.";
       ReportError(context.callback, USER_REJECTED);
       return;
     } else if (consent_response == CONSENT_RESPONSE_ALLOW) {
       content::RecordAction(
           base::UserMetricsAction("PlatformVerificationAccepted"));
+      VLOG(1) << "Platform verification accepted by user.";
     }
   }
 
@@ -346,6 +350,7 @@ void PlatformVerificationFlow::OnChallengeReady(
     ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
+  VLOG(1) << "Platform verification successful.";
   context.callback.Run(SUCCESS,
                        signed_data_pb.data(),
                        signed_data_pb.signature(),
@@ -361,8 +366,11 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
     LOG(ERROR) << "Failed to get device setting.";
     return false;
   }
-  if (!enabled_for_device)
+  if (!enabled_for_device) {
+    VLOG(1) << "Platform verification denied because Verified Access is "
+            << "disabled for the device.";
     return false;
+  }
 
   // Check the user preference for the feature.
   PrefService* pref_service = delegate_->GetPrefs(web_contents);
@@ -370,15 +378,23 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
     LOG(ERROR) << "Failed to get user prefs.";
     return false;
   }
-  if (!pref_service->GetBoolean(prefs::kEnableDRM))
+  if (!pref_service->GetBoolean(prefs::kEnableDRM)) {
+    VLOG(1) << "Platform verification denied because content protection "
+            << "identifiers have been disabled by the user.";
     return false;
+  }
 
   // Check the user preference for this domain.
   bool enabled_for_domain = false;
   bool found = GetDomainPref(delegate_->GetContentSettings(web_contents),
                              delegate_->GetURL(web_contents),
                              &enabled_for_domain);
-  return (!found || enabled_for_domain);
+  if (found && !enabled_for_domain) {
+    VLOG(1) << "Platform verification denied because the domain has been "
+            << "blocked by the user.";
+    return false;
+  }
+  return true;
 }
 
 bool PlatformVerificationFlow::UpdateSettings(
