@@ -37,6 +37,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadRestrictionVerifier.h"
 #include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
@@ -78,6 +80,8 @@ COMPILE_ASSERT(sizeof(OwnPtr<int>) == sizeof(int*), OwnPtr_should_stay_small);
 COMPILE_ASSERT(sizeof(PassRefPtr<RefCounted<int> >) == sizeof(int*), PassRefPtr_should_stay_small);
 COMPILE_ASSERT(sizeof(RefCounted<int>) == sizeof(SameSizeAsRefCounted), RefCounted_should_stay_small);
 COMPILE_ASSERT(sizeof(RefPtr<RefCounted<int> >) == sizeof(int*), RefPtr_should_stay_small);
+COMPILE_ASSERT(sizeof(String) == sizeof(int*), String_should_stay_small);
+COMPILE_ASSERT(sizeof(AtomicString) == sizeof(String), AtomicString_should_stay_small);
 COMPILE_ASSERT(sizeof(Vector<int>) == sizeof(SameSizeAsVectorWithInlineCapacity<int>), Vector_should_stay_small);
 COMPILE_ASSERT(sizeof(Vector<int, 1>) == sizeof(SameSizeAsVectorWithInlineCapacity<int, 1>), Vector_should_stay_small);
 COMPILE_ASSERT(sizeof(Vector<int, 2>) == sizeof(SameSizeAsVectorWithInlineCapacity<int, 2>), Vector_should_stay_small);
