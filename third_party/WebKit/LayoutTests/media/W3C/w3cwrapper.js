@@ -7,11 +7,20 @@ function getAudioURI(dummy) {
   return "../../../content/test.wav";
 }
 
-function testStep(testFunction){
+function testStep(testFunction) {
   try {
     testFunction();
   } catch (e) {
     testFailed('Aborted with exception: ' + e.message);
+  }
+}
+
+function testDone() {
+  // Match the semantics of testharness.js done(), where nothing that
+  // happens after that call has any effect on the test result.
+  if (!window.wasFinishJSTestCalled) {
+    finishJSTest();
+    assert_equals = assert_true = assert_false = function() { };
   }
 }
 
@@ -25,7 +34,7 @@ function async_test(title, options) {
   description(title);
   return {
     step: testStep,
-    done: finishJSTest
+    done: testDone
   }
 }
 
