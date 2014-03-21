@@ -435,7 +435,7 @@ void BrokerProcess::OpenFileForIPC(const std::string& requested_filename,
     CHECK(file_to_open);
     // We're doing a 2-parameter open, so we don't support O_CREAT. It doesn't
     // hurt to always pass a third argument though.
-    int opened_fd = syscall(__NR_openat, AT_FDCWD, file_to_open, flags, 0);
+    int opened_fd = syscall(__NR_open, file_to_open, flags, 0);
     if (opened_fd < 0) {
       write_pickle->WriteInt(-errno);
     } else {
