@@ -121,9 +121,9 @@ class OneClickSigninHelper
     OneClickSigninSyncStarter::Callback callback;
   };
 
-  // Wrapper to call OneClickSigninSyncStarter after fetching the refresh
-  // token if needed.  Also verifies that the cookie are correct if no password
-  // is specified, and checks that the email from the cookies match the expected
+  // Wrapper to call OneClickSigninSyncStarter after fetching the refresh token
+  // if needed.  Also verifies that the cookies are correct if no password is
+  // specified, and checks that the email from the cookies match the expected
   // email address.
   class SyncStarterWrapper : public SigninOAuthHelper::Consumer,
                              public chrome::BrowserListObserver {

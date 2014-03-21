@@ -199,7 +199,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
     // Drop the leading slash in the path.
     params.SetString("gaiaPath",
         GaiaUrls::GetInstance()->embedded_signin_url().path().substr(1));
-}
+  }
 
   params.SetString("service", "chromiumsync");
   params.SetString("continueUrl",

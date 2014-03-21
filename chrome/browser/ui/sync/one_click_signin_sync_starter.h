@@ -25,7 +25,7 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-// Waits for successful singin notification from the signin manager and then
+// Waits for successful sign-in notification from the signin manager and then
 // starts the sync machine.  Instances of this class delete themselves once
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer,
