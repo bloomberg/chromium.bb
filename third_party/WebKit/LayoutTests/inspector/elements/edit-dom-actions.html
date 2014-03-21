@@ -2,6 +2,7 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="edit-dom-test.js"></script>
 <script>
 
 function test()
@@ -19,7 +20,7 @@ function test()
 
         function testRemove(next)
         {
-            domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
+            InspectorTest.domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
 
             function testBody(node, done)
             {
@@ -31,72 +32,72 @@ function test()
 
         function testSetNodeName(next)
         {
-            domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
+            InspectorTest.domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
             }
         },
 
         function testSetNodeNameInput(next)
         {
-            domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
+            InspectorTest.domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
             }
         },
 
         function testSetNodeValue(next)
         {
-            domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
+            InspectorTest.domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
             }
         },
 
         function testSetAttribute(next)
         {
-            domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
+            InspectorTest.domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
             }
         },
 
         function testSetScriptableAttribute(next)
         {
-            domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
+            InspectorTest.domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
          
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
             }
         },
 
         function testRemoveAttribute(next)
         {
-            domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
+            InspectorTest.domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-attribute", "", done, true);
+                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "", done, true);
             }
         },
 
         function testAddAttribute(next)
         {
-            doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
+            InspectorTest.doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
         },
 
         function testAddAttributeUnquotedValue(next)
         {
-            doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
+            InspectorTest.doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
         },
 
         function testEditCommentAsHTML(next)
@@ -114,7 +115,7 @@ function test()
                 InspectorTest.addResult("Comment node not found");
                 InspectorTest.completeTest();
             }
-            domActionTest("testEditCommentAsHTML", commentNodeSelectionCallback, testBody, next);
+            InspectorTest.domActionTest("testEditCommentAsHTML", commentNodeSelectionCallback, testBody, next);
 
             function testBody(node, done)
             {
@@ -136,7 +137,7 @@ function test()
 
         function testEditAsHTML(next)
         {
-            domActionTestForNodeId("testEditAsHTML", "node-to-edit-as-html", testBody, next);
+            InspectorTest.domActionTestForNodeId("testEditAsHTML", "node-to-edit-as-html", testBody, next);
 
             function testBody(node, done)
             {
@@ -158,7 +159,7 @@ function test()
 
         function testEditInvisibleCharsAsHTML(next)
         {
-            domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
+            InspectorTest.domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
 
             function testBody(node, done)
             {
@@ -181,113 +182,14 @@ function test()
 
         function testEditScript(next)
         {
-            domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
+            InspectorTest.domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
 
             function testBody(node, done)
             {
-                editNodePartAndRun(node, "webkit-html-text-node", "\n    var i = 0;\n    var j = 0;\n", done);
-            }
-        },
-
-        function testEditShadowDOMAsHTML(next)
-        {
-            domActionTestForNodeId("testEditAuthorShadowDOMAsHTML", "authorShadowDOMElement", testBody, next);
-
-            function testBody(node, done)
-            {
-                var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
-                treeElement._editAsHTML();
-                InspectorTest.runAfterPendingDispatches(step2);
-
-                function step2()
-                {
-                    InspectorTest.addResult(treeElement._editing.codeMirror.getValue());
-                    treeElement._editing.codeMirror.setValue("<span foo=\"shadow-span\"><span id=\"inner-shadow-span\">Shadow span contents</span></span>");
-                    var event = InspectorTest.createKeyEvent("Enter");
-                    event.isMetaOrCtrlForTest = true;
-                    treeElement._htmlEditElement.dispatchEvent(event);
-                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
-                }
+                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "\n    var i = 0;\n    var j = 0;\n", done);
             }
         }
     ]);
-
-    function doAddAttribute(testName, dataNodeId, attributeText, next)
-    {
-        domActionTestForNodeId(testName, dataNodeId, testBody, next);
-
-        function testBody(node, done)
-        {
-            var editorElement = editNodePart(node, "webkit-html-attribute");
-            editorElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
-
-            InspectorTest.runAfterPendingDispatches(testContinuation);
-
-            function testContinuation()
-            {
-                var editorElement = window.getSelection().anchorNode.parentElement;
-                editorElement.textContent = attributeText;
-                editorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-                InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", done);
-            }
-        }
-    }
-
-    function domActionTestForNodeId(testName, dataNodeId, testBody, next)
-    {
-        function callback(testNode, continuation)
-        {
-            InspectorTest.selectNodeWithId(dataNodeId, continuation);
-        }
-        domActionTest(testName, callback, testBody, next);
-    }
-
-    function domActionTest(testName, dataNodeSelectionCallback, testBody, next)
-    {
-        var testNode = InspectorTest.expandedNodeWithId(testName);
-        InspectorTest.addResult("==== before ====");
-        InspectorTest.dumpElementsTree(testNode);
-
-        dataNodeSelectionCallback(testNode, step0);
-
-        function step0(node)
-        {
-            InspectorTest.runAfterPendingDispatches(step1.bind(null, node));
-        }
-
-        function step1(node)
-        {
-            testBody(node, step2);
-        }
-
-        function step2()
-        {
-            InspectorTest.addResult("==== after ====");
-            InspectorTest.dumpElementsTree(testNode);
-            next();
-        }
-    }
-
-    function editNodePart(node, className)
-    {
-        var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
-        var textElement = treeElement.listItemElement.getElementsByClassName(className)[0];
-        if (!textElement && treeElement.childrenListElement)
-            textElement = treeElement.childrenListElement.getElementsByClassName(className)[0];
-        treeElement._startEditingTarget(textElement);
-        return textElement;
-    }
-
-    function editNodePartAndRun(node, className, newValue, step2, useSniffer)
-    {
-        var editorElement = editNodePart(node, className);
-        editorElement.textContent = newValue;
-        editorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        if (useSniffer)
-            InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", step2);
-        else
-            InspectorTest.runAfterPendingDispatches(step2);
-    }
 }
 
 </script>
@@ -360,13 +262,6 @@ Tests that user can mutate DOM by means of elements panel.
     <div id="testEditCommentAsHTML">
         <!-- Comment -->
     </div>
-
-    <div id="testEditAuthorShadowDOMAsHTML" />
 </div>
-<script>
-var container = document.getElementById("testEditAuthorShadowDOMAsHTML");
-var root = container.createShadowRoot();
-root.innerHTML = "<div id='authorShadowDOMElement'></div>";
-</script>
 </body>
 </html>

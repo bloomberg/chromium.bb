@@ -468,8 +468,8 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
     if (!element)
         return 0;
 
-    if (element->isInShadowTree()) {
-        *errorString = "Cannot edit elements from shadow trees";
+    if (element->isInShadowTree() && userAgentShadowRoot(element)) {
+        *errorString = "Cannot edit elements from user-agent shadow trees";
         return 0;
     }
 
