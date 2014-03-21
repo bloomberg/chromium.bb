@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-class AnimationClock;
 class Document;
 class SVGElement;
 class SVGSMILElement;
@@ -96,7 +95,6 @@ private:
     double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
 
     Document& document() const;
-    AnimationClock& animationClock() const;
     double currentTime() const;
 
     double m_beginTime;
@@ -108,7 +106,6 @@ private:
     FrameSchedulingState m_frameSchedulingState;
     bool m_documentOrderIndexesDirty;
 
-    OwnPtr<AnimationClock> m_animationClock;
     Timer<SMILTimeContainer> m_wakeupTimer;
 
     typedef pair<SVGElement*, QualifiedName> ElementAttributePair;

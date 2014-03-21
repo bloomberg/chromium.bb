@@ -57,7 +57,6 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     , m_presetStartTime(0)
     , m_frameSchedulingState(Idle)
     , m_documentOrderIndexesDirty(false)
-    , m_animationClock(AnimationClock::create())
     , m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired)
     , m_ownerSVGElement(owner)
 #ifndef NDEBUG
@@ -241,7 +240,6 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
-    DiscardScope discardScope(m_ownerSVGElement);
     updateAnimationsAndScheduleFrameIfNeeded(time, true);
 }
 
@@ -285,7 +283,6 @@ void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
         serviceOnNextFrame();
     } else {
         m_frameSchedulingState = Idle;
-        DiscardScope discardScope(m_ownerSVGElement);
         updateAnimationsAndScheduleFrameIfNeeded(elapsed());
     }
 }
@@ -320,15 +317,9 @@ Document& SMILTimeContainer::document() const
     return m_ownerSVGElement.document();
 }
 
-AnimationClock& SMILTimeContainer::animationClock() const
-{
-    ASSERT(m_animationClock);
-    return *m_animationClock;
-}
-
 double SMILTimeContainer::currentTime() const
 {
-    return animationClock().currentTime();
+    return document().animationClock().currentTime();
 }
 
 void SMILTimeContainer::serviceOnNextFrame()
@@ -345,14 +336,12 @@ void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
         return;
 
     m_frameSchedulingState = Idle;
-    animationClock().updateTime(monotonicAnimationStartTime);
-    DiscardScope discardScope(m_ownerSVGElement);
     updateAnimationsAndScheduleFrameIfNeeded(elapsed());
-    animationClock().unfreeze();
 }
 
 void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime)
 {
+    DiscardScope discardScope(m_ownerSVGElement);
     SMILTime earliestFireTime = updateAnimations(elapsed, seekToTime);
     // If updateAnimations() ended up triggering a synchronization (most likely
     // via syncbases), then give that priority.
