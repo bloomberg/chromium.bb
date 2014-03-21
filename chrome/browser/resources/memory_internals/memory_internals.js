@@ -135,8 +135,8 @@ var MainView = (function() {
     for (var l in tab['history']) {
       var history = tab['history'][l];
       var title = (history['title'] == '') ? history['url'] : history['title'];
-      var url = '<a href="' + history['url'] + '">' + title + '</a> (' +
-          history['time'] + ' sec. ago)';
+      var url = '<a href="' + history['url'] + '">' + HTMLEscape(title) +
+          '</a> (' + history['time'] + ' sec. ago)';
       if (l == tab['index']) {
         url = '<strong>' + url + '</strong>';
       }
