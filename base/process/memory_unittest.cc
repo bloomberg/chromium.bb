@@ -166,14 +166,14 @@ int tc_set_new_mode(int mode);
 }
 #endif  // defined(USE_TCMALLOC)
 
-class OutOfMemoryDeathTest : public testing::Test {
+class OutOfMemoryTest : public testing::Test {
  public:
-  OutOfMemoryDeathTest()
-      : value_(NULL),
-        // Make test size as large as possible minus a few pages so
-        // that alignment or other rounding doesn't make it wrap.
-        test_size_(std::numeric_limits<std::size_t>::max() - 12 * 1024),
-        signed_test_size_(std::numeric_limits<ssize_t>::max()) {
+  OutOfMemoryTest()
+    : value_(NULL),
+    // Make test size as large as possible minus a few pages so
+    // that alignment or other rounding doesn't make it wrap.
+    test_size_(std::numeric_limits<std::size_t>::max() - 12 * 1024),
+    signed_test_size_(std::numeric_limits<ssize_t>::max()) {
   }
 
 #if defined(USE_TCMALLOC)
@@ -186,6 +186,14 @@ class OutOfMemoryDeathTest : public testing::Test {
   }
 #endif  // defined(USE_TCMALLOC)
 
+ protected:
+  void* value_;
+  size_t test_size_;
+  ssize_t signed_test_size_;
+};
+
+class OutOfMemoryDeathTest : public OutOfMemoryTest {
+ public:
   void SetUpInDeathAssert() {
     // Must call EnableTerminationOnOutOfMemory() because that is called from
     // chrome's main function and therefore hasn't been called yet.
@@ -194,10 +202,6 @@ class OutOfMemoryDeathTest : public testing::Test {
     // should be done inside of the ASSERT_DEATH.
     base::EnableTerminationOnOutOfMemory();
   }
-
-  void* value_;
-  size_t test_size_;
-  ssize_t signed_test_size_;
 };
 
 TEST_F(OutOfMemoryDeathTest, New) {
@@ -374,6 +378,54 @@ TEST_F(OutOfMemoryDeathTest, PsychoticallyBigObjCObject) {
 
 #endif  // !ARCH_CPU_64_BITS
 #endif  // OS_MACOSX
+
+class OutOfMemoryHandledTest : public OutOfMemoryTest {
+ public:
+  static const size_t kSafeMallocSize = 512;
+  static const size_t kSafeCallocSize = 128;
+  static const size_t kSafeCallocItems = 4;
+
+  virtual void SetUp() {
+    OutOfMemoryTest::SetUp();
+
+    // We enable termination on OOM - just as Chrome does at early
+    // initialization - and test that UncheckedMalloc and  UncheckedCalloc
+    // properly by-pass this in order to allow the caller to handle OOM.
+    base::EnableTerminationOnOutOfMemory();
+  }
+};
+
+// TODO(b.kelemen): make UncheckedMalloc and UncheckedCalloc work
+// on Windows as well.
+
+TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
+  EXPECT_TRUE(base::UncheckedMalloc(kSafeMallocSize, &value_));
+  EXPECT_TRUE(value_ != NULL);
+  free(value_);
+
+  EXPECT_FALSE(base::UncheckedMalloc(test_size_, &value_));
+  EXPECT_TRUE(value_ == NULL);
+}
+
+TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
+  EXPECT_TRUE(base::UncheckedCalloc(1, kSafeMallocSize, &value_));
+  EXPECT_TRUE(value_ != NULL);
+  const char* bytes = static_cast<const char*>(value_);
+  for (size_t i = 0; i < kSafeMallocSize; ++i)
+    EXPECT_EQ(0, bytes[i]);
+  free(value_);
+
+  EXPECT_TRUE(
+      base::UncheckedCalloc(kSafeCallocItems, kSafeCallocSize, &value_));
+  EXPECT_TRUE(value_ != NULL);
+  bytes = static_cast<const char*>(value_);
+  for (size_t i = 0; i < (kSafeCallocItems * kSafeCallocSize); ++i)
+    EXPECT_EQ(0, bytes[i]);
+  free(value_);
+
+  EXPECT_FALSE(base::UncheckedCalloc(1, test_size_, &value_));
+  EXPECT_TRUE(value_ == NULL);
+}
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_OPENBSD) &&
         // !defined(OS_WIN) && !defined(ADDRESS_SANITIZER)

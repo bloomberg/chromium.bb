@@ -61,17 +61,25 @@ const int kMaxOomScore = 1000;
 BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 #endif
 
+// Special allocator functions for callers that want to check for OOM.
+// These will not abort if the allocation fails even if
+// EnableTerminationOnOutOfMemory has been called.
+// This can be useful for huge and/or unpredictable size memory allocations.
+// Please only use this if you really handle the case when the allocation
+// fails. Doing otherwise would risk security.
+// Return value tells whether the allocation succeeded. If it fails |result| is
+// set to NULL, otherwise it holds the memory address.
+BASE_EXPORT WARN_UNUSED_RESULT bool UncheckedMalloc(size_t size,
+                                                    void** result);
+BASE_EXPORT WARN_UNUSED_RESULT bool UncheckedCalloc(size_t num_items,
+                                                    size_t size,
+                                                    void** result);
+
+// TODO(b.kelemen): make Skia use the new interface and remove these.
 #if defined(OS_MACOSX)
-// Very large images or svg canvases can cause huge mallocs.  Skia
-// does tricks on tcmalloc-based systems to allow malloc to fail with
-// a NULL rather than hit the oom crasher.  This replicates that for
-// OSX.
-//
-// IF YOU USE THIS WITHOUT CONSULTING YOUR FRIENDLY OSX DEVELOPER,
-// YOUR CODE IS LIKELY TO BE REVERTED.  THANK YOU.
 BASE_EXPORT void* UncheckedMalloc(size_t size);
 BASE_EXPORT void* UncheckedCalloc(size_t num_items, size_t size);
-#endif  // defined(OS_MACOSX)
+#endif
 
 }  // namespace base
 

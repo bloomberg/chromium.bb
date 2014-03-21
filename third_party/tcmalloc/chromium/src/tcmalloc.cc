@@ -1719,7 +1719,21 @@ extern "C" PERFTOOLS_DLL_DECL size_t tc_malloc_size(void* ptr) __THROW {
   return MallocExtension::instance()->GetAllocatedSize(ptr);
 }
 
+#if defined(OS_LINUX)
+extern "C" void* PERFTOOLS_DLL_DECL tc_malloc_skip_new_handler(size_t size) {
+  void* result = do_malloc(size);
+  MallocHook::InvokeNewHook(result, size);
+  return result;
+}
+#endif
+
 #endif  // TCMALLOC_USING_DEBUGALLOCATION
+
+#if defined(OS_LINUX)
+// Alias the weak symbol in chromium to our implementation.
+extern "C" __attribute__((visibility("default"), alias("tc_malloc_skip_new_handler")))
+void* tc_malloc_skip_new_handler_weak(size_t size);
+#endif
 
 // --- Validation implementation with an extra mark ----------------------------
 // We will put a mark at the extreme end of each allocation block.  We make

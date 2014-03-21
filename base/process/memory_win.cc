@@ -82,4 +82,15 @@ HMODULE GetModuleFromAddress(void* address) {
   return instance;
 }
 
+// TODO(b.kelemen): implement it with the required semantics. On Linux this is
+// implemented with a weak symbol that is overridden by tcmalloc. This is
+// neccessary because base cannot have a direct dependency on tcmalloc. Since
+// weak symbols are not supported on Windows this will involve some build time
+// magic, much like what is done for libcrt in order to override the allocation
+// functions.
+bool UncheckedMalloc(size_t size, void** result) {
+  *result = malloc(size);
+  return *result != NULL;
+}
+
 }  // namespace base

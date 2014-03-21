@@ -454,6 +454,7 @@
           'process/launch_posix.cc',
           'process/launch_win.cc',
           'process/memory.h',
+          'process/memory.cc',
           'process/memory_linux.cc',
           'process/memory_mac.mm',
           'process/memory_win.cc',

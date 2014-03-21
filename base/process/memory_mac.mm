@@ -502,26 +502,42 @@ id oom_killer_allocWithZone(id self, SEL _cmd, NSZone* zone)
 
 }  // namespace
 
-void* UncheckedMalloc(size_t size) {
+bool UncheckedMalloc(size_t size, void** result) {
   if (g_old_malloc) {
 #if ARCH_CPU_32_BITS
     ScopedClearErrno clear_errno;
     ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
 #endif  // ARCH_CPU_32_BITS
-    return g_old_malloc(malloc_default_zone(), size);
+    *result = g_old_malloc(malloc_default_zone(), size);
+  } else {
+    *result = malloc(size);
   }
-  return malloc(size);
+
+  return *result != NULL;
 }
 
-void* UncheckedCalloc(size_t num_items, size_t size) {
+bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
   if (g_old_calloc) {
 #if ARCH_CPU_32_BITS
     ScopedClearErrno clear_errno;
     ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
 #endif  // ARCH_CPU_32_BITS
-    return g_old_calloc(malloc_default_zone(), num_items, size);
+    *result = g_old_calloc(malloc_default_zone(), num_items, size);
+  } else {
+    *result = calloc(num_items, size);
   }
-  return calloc(num_items, size);
+
+  return *result != NULL;
+}
+
+void* UncheckedMalloc(size_t size) {
+  void* address;
+  return UncheckedMalloc(size, &address) ? address : NULL;
+}
+
+void* UncheckedCalloc(size_t num_items, size_t size) {
+  void* address;
+  return UncheckedCalloc(num_items, size, &address) ? address : NULL;
 }
 
 void EnableTerminationOnOutOfMemory() {

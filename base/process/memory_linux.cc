@@ -12,6 +12,22 @@
 #include "base/process/internal_linux.h"
 #include "base/strings/string_number_conversions.h"
 
+#if defined(USE_TCMALLOC)
+// Used by UncheckedMalloc. If tcmalloc is linked to the executable
+// this will be replaced by a strong symbol that actually implement
+// the semantics and don't call new handler in case the allocation fails.
+extern "C" {
+
+__attribute__((weak, visibility("default")))
+void* tc_malloc_skip_new_handler_weak(size_t size);
+
+void* tc_malloc_skip_new_handler_weak(size_t size) {
+  return malloc(size);
+}
+
+}
+#endif
+
 namespace base {
 
 size_t g_oom_size = 0U;
@@ -180,6 +196,19 @@ bool AdjustOOMScore(ProcessId process, int score) {
   }
 
   return false;
+}
+
+bool UncheckedMalloc(size_t size, void** result) {
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) || \
+    (!defined(LIBC_GLIBC) && !defined(USE_TCMALLOC))
+  *result = malloc(size);
+#elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
+  *result = __libc_malloc(size);
+#elif defined(USE_TCMALLOC)
+  *result = tc_malloc_skip_new_handler_weak(size);
+#endif
+  return *result != NULL;
 }
 
 }  // namespace base
