@@ -11,27 +11,9 @@
 #include "content/common/clipboard_format.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_param_traits.h"
 #include "ui/base/clipboard/clipboard.h"
 
 #define IPC_MESSAGE_START ClipboardMsgStart
-
-#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
-#define CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
-
-namespace IPC {
-
-template<>
-struct ParamTraits<ui::Clipboard::FormatType> {
-  typedef ui::Clipboard::FormatType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ClipboardFormat,
                           content::CLIPBOARD_FORMAT_LAST)

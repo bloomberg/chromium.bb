@@ -147,7 +147,6 @@
     'common/child_process_sandbox_support_impl_linux.h',
     'common/child_process_sandbox_support_impl_shm_linux.cc',
     'common/clipboard_format.h',
-    'common/clipboard_messages.cc',
     'common/clipboard_messages.h',
     'common/content_constants_internal.cc',
     'common/content_constants_internal.h',
