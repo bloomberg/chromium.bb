@@ -79,6 +79,7 @@ from portage._global_updates import _global_updates
 import portage
 import portage.debug
 from portage.versions import vercmp
+# pylint: enable=F0401
 
 
 def Usage():

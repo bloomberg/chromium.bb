@@ -5,11 +5,11 @@
 
 """Command to extract the dependancy tree for a given package."""
 
-# pylint: disable=F0401
-# portage is only available inside the chroot.
 import json
-import portage
+import portage  # pylint: disable=F0401
+
 from parallel_emerge import DepGraphGenerator
+
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 

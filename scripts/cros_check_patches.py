@@ -5,13 +5,11 @@
 
 """Command to list patches applies to a repository."""
 
-# pylint: disable=F0401
-# portage is only available inside the chroot.
 import functools
 import json
 import os
 import parallel_emerge
-import portage
+import portage  # pylint: disable=F0401
 import re
 import shutil
 import sys

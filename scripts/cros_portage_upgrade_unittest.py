@@ -25,8 +25,8 @@ from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
 from chromite.scripts import parallel_emerge
 
-# pylint: disable=F0401
-from portage.package.ebuild import config as portcfg
+from portage.package.ebuild import config as portcfg  # pylint: disable=F0401
+
 # This no longer gets installed by portage.  Stub it as None to avoid
 # `cros lint` errors.
 #from portage.tests.resolver import ResolverPlayground as respgnd

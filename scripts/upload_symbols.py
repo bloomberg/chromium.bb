@@ -443,9 +443,9 @@ def SymbolFinder(tempdir, paths):
   """
   for p in paths:
     # Pylint is confused about members of ParseResult.
-    # pylint: disable=E1101
+
     o = urlparse.urlparse(p)
-    if o.scheme:
+    if o.scheme:  # pylint: disable=E1101
       # Support globs of filenames.
       ctx = gs.GSContext()
       for p in ctx.LS(p):
@@ -454,7 +454,7 @@ def SymbolFinder(tempdir, paths):
         cache_dir = commandline.GetCacheDir()
         common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
         tar_cache = cache.TarballCache(common_path)
-        key = ('%s%s' % (o.netloc, o.path)).split('/')
+        key = ('%s%s' % (o.netloc, o.path)).split('/')  # pylint: disable=E1101
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
         ref = tar_cache.Lookup(key)

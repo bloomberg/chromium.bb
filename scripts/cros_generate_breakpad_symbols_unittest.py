@@ -44,7 +44,7 @@ class FindDebugDirMock(partial_mock.PartialMock):
 @mock.patch('chromite.scripts.cros_generate_breakpad_symbols.'
             'GenerateBreakpadSymbol')
 class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
-  """Test cros_generate_breakpad_symbols.GenerateBreakpadSymbols."""
+  """Test GenerateBreakpadSymbols."""
 
   def setUp(self):
     self.board = 'monkey-board'
@@ -224,7 +224,7 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(gen_mock.call_count, 1)
 
 class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
-  """Test cros_generate_breakpad_symbols.GenerateBreakpadSymbol."""
+  """Test GenerateBreakpadSymbol."""
 
   def setUp(self):
     self.elf_file = os.path.join(self.tempdir, 'elf')
@@ -336,7 +336,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
 
 
 class UtilsTestDir(cros_test_lib.TempDirTestCase):
-  """Tests cros_generate_breakpad_symbols.ReadSymsHeader."""
+  """Tests ReadSymsHeader."""
 
   def testReadSymsHeaderGoodFile(self):
     """Make sure ReadSymsHeader can parse sym files"""
@@ -350,7 +350,7 @@ class UtilsTestDir(cros_test_lib.TempDirTestCase):
 
 
 class UtilsTest(cros_test_lib.TestCase):
-  """Tests cros_generate_breakpad_symbols.ReadSymsHeader."""
+  """Tests ReadSymsHeader."""
 
   def testReadSymsHeaderGoodBuffer(self):
     """Make sure ReadSymsHeader can parse sym file handles"""
