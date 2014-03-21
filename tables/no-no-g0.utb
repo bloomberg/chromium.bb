@@ -155,6 +155,9 @@ uplow \x00D2\x00F2 4-135 DEC 242 ò
 lowercase \x00F3 4-135 DEC 243 ó
 lowercase \x00F4 4-135 DEC 244 ô
 
+# Taken from Czech braille:
+uplow       \x0160\x0161  156,156             Šš                  LATIN CAPITAL LETTER S WITH CARON - LATIN SMALL LETTER S WITH CARON
+
 
 # ------------------- End char definitions --------------------
 include litdigits6Dots.uti

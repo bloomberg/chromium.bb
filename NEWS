@@ -8,6 +8,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Braille table improvements
 - Fix for Norwegian where letsign is affecting some extra characters
   thanks to Lars Bjørndal
+- Much improved hyphenation for Norwegian thanks to Lars Bjørndal
 
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
