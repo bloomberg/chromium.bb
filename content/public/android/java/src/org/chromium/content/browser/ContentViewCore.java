@@ -415,6 +415,10 @@ public class ContentViewCore
     // sequence, so this will also be true for the duration of a pinch gesture.
     private boolean mTouchScrollInProgress;
 
+    // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
+    // onNativeFlingStopped() is called asynchronously.
+    private int mPotentiallyActiveFlingCount;
+
     private ViewAndroid mViewAndroid;
 
     private SmartClipDataListener mSmartClipDataListener = null;
@@ -1203,10 +1207,15 @@ public class ContentViewCore
         nativeIgnoreRemainingTouchEvents(mNativeContentViewCore);
     }
 
+    public boolean isScrollInProgress() {
+        return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0;
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void onFlingStartEventConsumed(int vx, int vy) {
         mTouchScrollInProgress = false;
+        mPotentiallyActiveFlingCount++;
         temporarilyHideTextHandles();
         for (mGestureStateListenersIterator.rewind();
                     mGestureStateListenersIterator.hasNext();) {
@@ -3112,6 +3121,7 @@ public class ContentViewCore
         // Note that mTouchScrollInProgress should normally be false at this
         // point, but we reset it anyway as another failsafe.
         mTouchScrollInProgress = false;
+        if (mPotentiallyActiveFlingCount > 0) mPotentiallyActiveFlingCount--;
         updateGestureStateListener(GestureEventType.FLING_END);
     }
 
