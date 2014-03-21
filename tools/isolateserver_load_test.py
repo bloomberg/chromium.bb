@@ -12,7 +12,6 @@ Note that it only looks at uploading and downloading and do not test
 """
 
 import functools
-import hashlib
 import json
 import logging
 import optparse
@@ -20,7 +19,6 @@ import os
 import random
 import sys
 import time
-import zlib
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -97,31 +95,42 @@ def gen_size(mid_size):
   return int(random.gammavariate(3, 2) * mid_size / 4)
 
 
-def send_and_receive(random_pool, dry_run, zip_it, api, progress, size):
+def send_and_receive(random_pool, storage, progress, size):
   """Sends a random file and gets it back.
+
+  # TODO(maruel): Add a batching argument of value [1, 500] to batch requests.
 
   Returns (delay, size)
   """
   # Create a file out of the pool.
   start = time.time()
-  content = random_pool.gen(size)
-  hash_value = hashlib.sha1(content).hexdigest()
-  pack = zlib.compress if zip_it else lambda x: x
-  unpack = zlib.decompress if zip_it else lambda x: x
+  batch = 1
+  items = [
+    isolateserver.BufferItem(random_pool.gen(size), False)
+    for _ in xrange(batch)
+  ]
   try:
-    if not dry_run:
-      logging.info('contains')
-      item = isolateserver.Item(hash_value, len(content))
-      item = api.contains([item])[0]
+    # len(_uploaded) may be < len(items) happen if the items is not random
+    # enough or value of --mid-size is very low compared to --items.
+    _uploaded = storage.upload_items(items)
 
-      logging.info('upload')
-      api.push(item, [pack(content)])
+    start = time.time()
 
-      logging.info('download')
-      start = time.time()
-      assert content == unpack(''.join(api.fetch(hash_value)))
-    else:
-      time.sleep(size / 10.)
+    cache = isolateserver.MemoryCache()
+    queue = isolateserver.FetchQueue(storage, cache)
+    for i in items:
+      queue.add(i.digest, i.size)
+
+    waiting = [i.digest for i in items]
+    while waiting:
+      waiting.remove(queue.wait(waiting))
+
+    expected = {i.digest: ''.join(i.content()) for i in items}
+    for d in cache.cached_set():
+      actual = cache.read(d)
+      assert expected.pop(d) == actual
+    assert not expected, expected
+
     duration = max(0, time.time() - start)
   except isolateserver.MappingError as e:
     duration = str(e)
@@ -146,26 +155,34 @@ def main():
   parser.add_option(
       '--threads', type='int', default=16, metavar='N',
       help='Parallel worker threads to use, default:%default')
+
+  data_group = optparse.OptionGroup(parser, 'Amount of data')
   graph.unit_option(
-      parser, '--items', default=0, help='Number of items to upload')
+      data_group, '--items', default=0, help='Number of items to upload')
   graph.unit_option(
-      parser, '--max-size', default=0,
+      data_group, '--max-size', default=0,
       help='Loop until this amount of data was transferred')
   graph.unit_option(
-      parser, '--mid-size', default=100*1024,
+      data_group, '--mid-size', default=100*1024,
       help='Rough average size of each item, default:%default')
-  parser.add_option(
+  parser.add_option_group(data_group)
+
+  ui_group = optparse.OptionGroup(parser, 'Result histogram')
+  ui_group.add_option(
       '--columns', type='int', default=graph.get_console_width(), metavar='N',
-      help='For histogram display, default:%default')
-  parser.add_option(
+      help='Width of histogram, default:%default')
+  ui_group.add_option(
       '--buckets', type='int', default=20, metavar='N',
-      help='Number of buckets for histogram display, default:%default')
-  parser.add_option(
+      help='Number of histogram\'s buckets, default:%default')
+  parser.add_option_group(ui_group)
+
+  log_group = optparse.OptionGroup(parser, 'Logging')
+  log_group.add_option(
       '--dump', metavar='FOO.JSON', help='Dumps to json file')
-  parser.add_option(
-      '--dry-run', action='store_true', help='Do not send anything')
-  parser.add_option(
+  log_group.add_option(
       '-v', '--verbose', action='store_true', help='Enable logging')
+  parser.add_option_group(log_group)
+
   options, args = parser.parse_args()
 
   logging.basicConfig(level=logging.INFO if options.verbose else logging.FATAL)
@@ -177,16 +194,13 @@ def main():
         '  Use --max-size if you want to run it until NN bytes where '
         'transfered.\n'
         '  Otherwise use --items to run it for NN items.')
-  if not options.dry_run:
-    options.isolate_server = options.isolate_server.rstrip('/')
-    if not options.isolate_server:
-      parser.error('--isolate-server is required.')
+  options.isolate_server = options.isolate_server.rstrip('/')
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
 
   print(
       ' - Using %d thread,  items=%d,  max-size=%d,  mid-size=%d' % (
       options.threads, options.items, options.max_size, options.mid_size))
-  if options.dry_run:
-    print(' - %sDRY RUN MODE%s' % (colorama.Fore.GREEN, colorama.Fore.RESET))
 
   start = time.time()
 
@@ -195,13 +209,11 @@ def main():
 
   columns = [('index', 0), ('data', 0), ('size', options.items)]
   progress = Progress(columns)
-  api = isolateserver.get_storage_api(options.isolate_server, options.namespace)
+  storage = isolateserver.get_storage(options.isolate_server, options.namespace)
   do_item = functools.partial(
       send_and_receive,
       random_pool,
-      options.dry_run,
-      isolateserver.is_namespace_with_compression(options.namespace),
-      api,
+      storage,
       progress)
 
   # TODO(maruel): Handle Ctrl-C should:

@@ -546,7 +546,7 @@ class Storage(object):
     priority = WorkerPool.HIGH if item.high_priority else WorkerPool.MED
 
     def push(content):
-      """Pushes an item and returns it to |channel|."""
+      """Pushes an Item and returns it to |channel|."""
       item.prepare(self.hash_algo)
       self._storage_api.push(item, push_state, content)
       return item
