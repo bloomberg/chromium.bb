@@ -42,10 +42,11 @@ class ShapeInsideInfo;
 class LayoutState {
     WTF_MAKE_NONCOPYABLE(LayoutState);
 public:
-    LayoutState()
+    // Constructor for root LayoutState created by RenderView
+    LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged)
         : m_clipped(false)
-        , m_isPaginated(false)
-        , m_pageLogicalHeightChanged(false)
+        , m_isPaginated(pageLogicalHeight)
+        , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
 #if !ASSERT_DISABLED
         , m_layoutDeltaXSaturated(false)
         , m_layoutDeltaYSaturated(false)
@@ -53,14 +54,14 @@ public:
         , m_columnInfo(0)
         , m_next(0)
         , m_shapeInsideInfo(0)
-        , m_pageLogicalHeight(0)
+        , m_pageLogicalHeight(pageLogicalHeight)
 #ifndef NDEBUG
         , m_renderer(0)
 #endif
     {
     }
 
-    LayoutState(LayoutState*, RenderBox&, const LayoutSize& offset, LayoutUnit pageHeight, bool pageHeightChanged, ColumnInfo*);
+    LayoutState(LayoutState*, RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageHeightLogicalChanged, ColumnInfo*);
     explicit LayoutState(RenderObject&);
 
     // LayoutState is allocated out of the rendering partition.
@@ -70,6 +71,7 @@ public:
     void clearPaginationInformation();
     bool isPaginatingColumns() const { return m_columnInfo; }
     bool isPaginated() const { return m_isPaginated; }
+    bool isClipped() const { return m_clipped; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
@@ -77,20 +79,42 @@ public:
 
     void addForcedColumnBreak(const RenderBox&, const LayoutUnit& childLogicalOffset);
 
+    void addLayoutDelta(const LayoutSize& delta)
+    {
+        m_layoutDelta += delta;
+#if !ASSERT_DISABLED
+            m_layoutDeltaXSaturated |= m_layoutDelta.width() == LayoutUnit::max() || m_layoutDelta.width() == LayoutUnit::min();
+            m_layoutDeltaYSaturated |= m_layoutDelta.height() == LayoutUnit::max() || m_layoutDelta.height() == LayoutUnit::min();
+#endif
+    }
+
+    void setColumnInfo(ColumnInfo* columnInfo) { m_columnInfo = columnInfo; }
+
+    const LayoutSize& layoutOffset() const { return m_layoutOffset; }
+    const LayoutSize& layoutDelta() const { return m_layoutDelta; }
+    const LayoutSize& pageOffset() const { return m_pageOffset; }
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
 
-    LayoutSize layoutOffset() const { return m_layoutOffset; }
+    LayoutState* next() const { return m_next; }
 
     bool needsBlockDirectionLocationSetBeforeLayout() const { return m_isPaginated && m_pageLogicalHeight; }
 
     ShapeInsideInfo* shapeInsideInfo() const { return m_shapeInsideInfo; }
+    ColumnInfo* columnInfo() const { return m_columnInfo; }
+
+    const LayoutRect& clipRect() const { return m_clipRect; }
+    const LayoutSize& paintOffset() const { return m_paintOffset; }
 
 #ifndef NDEBUG
     RenderObject* renderer() const { return m_renderer; }
 #endif
+#if !ASSERT_DISABLED
+    bool layoutDeltaXSaturated() const { return m_layoutDeltaXSaturated; }
+    bool layoutDeltaYSaturated() const { return m_layoutDeltaYSaturated; }
+#endif
 
-public:
+private:
     // Do not add anything apart from bitfields until after m_columnInfo. See https://bugs.webkit.org/show_bug.cgi?id=100173
     bool m_clipped:1;
     bool m_isPaginated:1;

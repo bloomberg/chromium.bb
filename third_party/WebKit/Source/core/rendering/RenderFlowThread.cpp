@@ -572,7 +572,7 @@ void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject& object)
         LayoutState* layoutState = currentBoxDescendant->view()->layoutState();
         if (layoutState && layoutState->isPaginated()) {
             ASSERT(layoutState->renderer() == currentBoxDescendant);
-            LayoutSize offsetDelta = layoutState->m_layoutOffset - layoutState->m_pageOffset;
+            LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
             setOffsetFromLogicalTopOfFirstRegion(currentBoxDescendant, currentBoxDescendant->isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width());
         }
     }
@@ -605,7 +605,7 @@ LayoutUnit RenderFlowThread::offsetFromLogicalTopOfFirstRegion(const RenderBlock
         LayoutState* layoutState = view()->layoutState();
         ASSERT(layoutState->renderer() == currentBlock);
         ASSERT(layoutState && layoutState->isPaginated());
-        LayoutSize offsetDelta = layoutState->m_layoutOffset - layoutState->m_pageOffset;
+        LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
         return currentBoxDescendant->isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
     }
 

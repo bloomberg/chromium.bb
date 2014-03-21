@@ -109,18 +109,13 @@ public:
     LayoutSize layoutDelta() const
     {
         ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
-        return m_layoutState ? m_layoutState->m_layoutDelta : LayoutSize();
+        return m_layoutState ? m_layoutState->layoutDelta() : LayoutSize();
     }
     void addLayoutDelta(const LayoutSize& delta)
     {
         ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
-        if (m_layoutState) {
-            m_layoutState->m_layoutDelta += delta;
-#if !ASSERT_DISABLED
-            m_layoutState->m_layoutDeltaXSaturated |= m_layoutState->m_layoutDelta.width() == LayoutUnit::max() || m_layoutState->m_layoutDelta.width() == LayoutUnit::min();
-            m_layoutState->m_layoutDeltaYSaturated |= m_layoutState->m_layoutDelta.height() == LayoutUnit::max() || m_layoutState->m_layoutDelta.height() == LayoutUnit::min();
-#endif
-        }
+        if (m_layoutState)
+            m_layoutState->addLayoutDelta(delta);
     }
 
 #if !ASSERT_DISABLED
@@ -129,7 +124,7 @@ public:
         ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
         if (!m_layoutState)
             return false;
-        return (delta.width() == m_layoutState->m_layoutDelta.width() || m_layoutState->m_layoutDeltaXSaturated) && (delta.height() == m_layoutState->m_layoutDelta.height() || m_layoutState->m_layoutDeltaYSaturated);
+        return (delta.width() == m_layoutState->layoutDelta().width() || m_layoutState->layoutDeltaXSaturated()) && (delta.height() == m_layoutState->layoutDelta().height() || m_layoutState->layoutDeltaYSaturated());
     }
 #endif
 
@@ -141,7 +136,7 @@ public:
     void popLayoutState()
     {
         LayoutState* state = m_layoutState;
-        m_layoutState = state->m_next;
+        m_layoutState = state->next();
         delete state;
         popLayoutStateForCurrentFlowThread();
     }
@@ -162,6 +157,7 @@ public:
             m_pageLogicalHeightChanged = true;
         }
     }
+    bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
 
     // Notification that this view moved into or out of a native window.
     void setIsInWindow(bool);
@@ -212,8 +208,6 @@ private:
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
-
-    void initializeLayoutState(LayoutState&);
 
     bool shouldRepaint(const LayoutRect&) const;
 
@@ -279,9 +273,9 @@ class RootLayoutStateScope {
 public:
     explicit RootLayoutStateScope(RenderView& view)
         : m_view(view)
+        , m_rootLayoutState(view.pageLogicalHeight(), view.pageLogicalHeightChanged())
     {
         ASSERT(!m_view.m_layoutState);
-        initializeLayoutState();
         m_view.m_layoutState = &m_rootLayoutState;
     }
 
@@ -291,7 +285,6 @@ public:
         m_view.m_layoutState = 0;
     }
 private:
-    void initializeLayoutState();
     RenderView& m_view;
     LayoutState m_rootLayoutState;
 };

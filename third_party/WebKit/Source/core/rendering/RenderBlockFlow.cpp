@@ -308,7 +308,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     fitBorderToLinesIfNeeded();
 
     RenderView* renderView = view();
-    if (renderView->layoutState()->m_pageLogicalHeight)
+    if (renderView->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
     updateLayerTransform();
@@ -1601,7 +1601,7 @@ LayoutUnit RenderBlockFlow::applyBeforeBreak(RenderBox* child, LayoutUnit logica
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     bool isInsideMulticolFlowThread = flowThread;
     bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->m_pageLogicalHeight; // FIXME: Once columns can print we have to check this.
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
     bool checkBeforeAlways = (checkColumnBreaks && child->style()->columnBreakBefore() == PBALWAYS)
         || (checkPageBreaks && child->style()->pageBreakBefore() == PBALWAYS);
     if (checkBeforeAlways && inNormalFlow(child)) {
@@ -1625,7 +1625,7 @@ LayoutUnit RenderBlockFlow::applyAfterBreak(RenderBox* child, LayoutUnit logical
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     bool isInsideMulticolFlowThread = flowThread;
     bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->m_pageLogicalHeight; // FIXME: Once columns can print we have to check this.
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
     bool checkAfterAlways = (checkColumnBreaks && child->style()->columnBreakAfter() == PBALWAYS)
         || (checkPageBreaks && child->style()->pageBreakAfter() == PBALWAYS);
     if (checkAfterAlways && inNormalFlow(child)) {

@@ -1818,7 +1818,7 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
     if (RenderView* v = view()) {
         if (v->layoutStateEnabled() && !repaintContainer) {
             LayoutState* layoutState = v->layoutState();
-            LayoutSize offset = layoutState->m_paintOffset + locationOffset();
+            LayoutSize offset = layoutState->paintOffset() + locationOffset();
             if (style()->hasInFlowPosition() && layer())
                 offset += layer()->offsetForInFlowPosition();
             transformState.move(offset);
@@ -2023,9 +2023,9 @@ void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintConta
                 rect.move(layer()->offsetForInFlowPosition());
 
             rect.moveBy(location());
-            rect.move(layoutState->m_paintOffset);
-            if (layoutState->m_clipped)
-                rect.intersect(layoutState->m_clipRect);
+            rect.move(layoutState->paintOffset());
+            if (layoutState->isClipped())
+                rect.intersect(layoutState->clipRect());
             return;
         }
     }

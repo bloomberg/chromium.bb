@@ -1798,7 +1798,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     }
 
     if (hasColumns())
-        view()->layoutState()->m_columnInfo = columnInfo(); // FIXME: Kind of gross. We just put this back into the layout state so that pop() will work.
+        view()->layoutState()->setColumnInfo(columnInfo()); // FIXME: Kind of gross. We just put this back into the layout state so that pop() will work.
 }
 
 void RenderBlock::markPositionedObjectsForLayout()
@@ -4668,8 +4668,8 @@ LayoutUnit RenderBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundar
 LayoutUnit RenderBlock::pageLogicalTopForOffset(LayoutUnit offset) const
 {
     RenderView* renderView = view();
-    LayoutUnit firstPageLogicalTop = isHorizontalWritingMode() ? renderView->layoutState()->m_pageOffset.height() : renderView->layoutState()->m_pageOffset.width();
-    LayoutUnit blockLogicalTop = isHorizontalWritingMode() ? renderView->layoutState()->m_layoutOffset.height() : renderView->layoutState()->m_layoutOffset.width();
+    LayoutUnit firstPageLogicalTop = isHorizontalWritingMode() ? renderView->layoutState()->pageOffset().height() : renderView->layoutState()->pageOffset().width();
+    LayoutUnit blockLogicalTop = isHorizontalWritingMode() ? renderView->layoutState()->layoutOffset().height() : renderView->layoutState()->layoutOffset().width();
 
     LayoutUnit cumulativeOffset = offset + blockLogicalTop;
     RenderFlowThread* flowThread = flowThreadContainingBlock();
@@ -4687,7 +4687,7 @@ LayoutUnit RenderBlock::pageLogicalHeightForOffset(LayoutUnit offset) const
     RenderView* renderView = view();
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread)
-        return renderView->layoutState()->m_pageLogicalHeight;
+        return renderView->layoutState()->pageLogicalHeight();
     return flowThread->pageLogicalHeightForOffset(offset + offsetFromLogicalTopOfFirstPage());
 }
 
@@ -4698,7 +4698,7 @@ LayoutUnit RenderBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
 
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread) {
-        LayoutUnit pageLogicalHeight = renderView->layoutState()->m_pageLogicalHeight;
+        LayoutUnit pageLogicalHeight = renderView->layoutState()->pageLogicalHeight();
         LayoutUnit remainingHeight = pageLogicalHeight - intMod(offset, pageLogicalHeight);
         if (pageBoundaryRule == IncludePageBoundary) {
             // If includeBoundaryPoint is true the line exactly on the top edge of a
@@ -4714,7 +4714,7 @@ LayoutUnit RenderBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
 LayoutUnit RenderBlock::adjustForUnsplittableChild(RenderBox* child, LayoutUnit logicalOffset, bool includeMargins)
 {
     bool checkColumnBreaks = view()->layoutState()->isPaginatingColumns() || flowThreadContainingBlock();
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->m_pageLogicalHeight;
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
     bool isUnsplittable = child->isUnsplittableForPagination() || (checkColumnBreaks && child->style()->columnBreakInside() == PBAVOID)
         || (checkPageBreaks && child->style()->pageBreakInside() == PBAVOID);
     if (!isUnsplittable)
@@ -4746,7 +4746,7 @@ void RenderBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeigh
 {
     if (RenderFlowThread* flowThread = flowThreadContainingBlock())
         flowThread->updateMinimumPageHeight(offsetFromLogicalTopOfFirstPage() + offset, minHeight);
-    else if (ColumnInfo* colInfo = view()->layoutState()->m_columnInfo)
+    else if (ColumnInfo* colInfo = view()->layoutState()->columnInfo())
         colInfo->updateMinimumColumnHeight(minHeight);
 }
 
@@ -4853,7 +4853,7 @@ LayoutUnit RenderBlock::offsetFromLogicalTopOfFirstPage() const
     if (layoutState) {
         ASSERT(layoutState->renderer() == this);
 
-        LayoutSize offsetDelta = layoutState->m_layoutOffset - layoutState->m_pageOffset;
+        LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
         return isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
     }
 

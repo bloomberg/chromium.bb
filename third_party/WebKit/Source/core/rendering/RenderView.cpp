@@ -183,17 +183,9 @@ void RenderView::checkLayoutState()
         ASSERT(layoutDeltaMatches(LayoutSize()));
     }
     ASSERT(!m_layoutStateDisableCount);
-    ASSERT(!m_layoutState->m_next);
+    ASSERT(!m_layoutState->next());
 }
 #endif
-
-void RootLayoutStateScope::initializeLayoutState()
-{
-    m_rootLayoutState.m_clipped = false;
-    m_rootLayoutState.m_pageLogicalHeight = m_view.m_pageLogicalHeight;
-    m_rootLayoutState.m_pageLogicalHeightChanged = m_view.m_pageLogicalHeightChanged;
-    m_rootLayoutState.m_isPaginated = m_rootLayoutState.m_pageLogicalHeight;
-}
 
 void RenderView::layout()
 {
