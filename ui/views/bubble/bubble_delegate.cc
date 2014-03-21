@@ -85,6 +85,8 @@ BubbleDelegateView::BubbleDelegateView(
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
+  if (GetWidget())
+    GetWidget()->RemoveObserver(this);
   SetLayoutManager(NULL);
   SetAnchorView(NULL);
 }

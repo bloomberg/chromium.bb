@@ -82,13 +82,16 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       synthesize_mouse_move_(false),
       move_hold_count_(0),
       dispatching_held_event_(false),
+      observer_manager_(this),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
+  Env::GetInstance()->AddObserver(this);
 }
 
 WindowEventDispatcher::~WindowEventDispatcher() {
   TRACE_EVENT0("shutdown", "WindowEventDispatcher::Destructor");
+  Env::GetInstance()->RemoveObserver(this);
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 }
 
@@ -118,7 +121,7 @@ void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent& event) {
 void WindowEventDispatcher::OnMouseEventsEnableStateChanged(bool enabled) {
   // Send entered / exited so that visual state can be updated to match
   // mouse events state.
-  PostMouseMoveEventAfterWindowChange();
+  PostSynthesizeMouseMove();
   // TODO(mazda): Add code to disable mouse events when |enabled| == false.
 }
 
@@ -131,21 +134,6 @@ void WindowEventDispatcher::DispatchCancelModeEvent() {
       DispatchEvent(focused_window ? focused_window : window(), &event);
   if (details.dispatcher_destroyed)
     return;
-}
-
-Window* WindowEventDispatcher::GetGestureTarget(ui::GestureEvent* event) {
-  Window* target = NULL;
-  if (!event->IsEndingEvent()) {
-    // The window that received the start event (e.g. scroll begin) needs to
-    // receive the end event (e.g. scroll end).
-    target = client::GetCaptureWindow(window());
-  }
-  if (!target) {
-    target = ConsumerToWindow(
-        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
-  }
-
-  return target;
 }
 
 void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
@@ -162,39 +150,6 @@ void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void WindowEventDispatcher::OnWindowDestroying(Window* window) {
-  DispatchMouseExitToHidingWindow(window);
-  if (window->IsVisible() &&
-      window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
-    PostMouseMoveEventAfterWindowChange();
-  }
-
-  // Hiding the window releases capture which can implicitly destroy the window
-  // so the window may no longer be valid after this call.
-  OnWindowHidden(window, WINDOW_DESTROYED);
-}
-
-void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
-                                                  bool contained_mouse_point) {
-  if (contained_mouse_point ||
-      (window->IsVisible() &&
-       window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
-    PostMouseMoveEventAfterWindowChange();
-  }
-}
-
-void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
-  // The mouse capture is intentionally ignored. Think that a mouse enters
-  // to a window, the window sets the capture, the mouse exits the window,
-  // and then it releases the capture. In that case OnMouseExited won't
-  // be called. So it is natural not to emit OnMouseExited even though
-  // |window| is the capture window.
-  gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
-  if (window->Contains(mouse_moved_handler_) &&
-      window->ContainsPointInRoot(last_mouse_location))
-    DispatchMouseExitAtPoint(last_mouse_location);
-}
-
 void WindowEventDispatcher::DispatchMouseExitAtPoint(const gfx::Point& point) {
   ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EF_NONE,
                        ui::EF_NONE);
@@ -202,26 +157,6 @@ void WindowEventDispatcher::DispatchMouseExitAtPoint(const gfx::Point& point) {
       DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
   if (details.dispatcher_destroyed)
     return;
-}
-
-void WindowEventDispatcher::OnWindowVisibilityChanged(Window* window,
-                                                      bool is_visible) {
-  if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
-    PostMouseMoveEventAfterWindowChange();
-
-  // Hiding the window releases capture which can implicitly destroy the window
-  // so the window may no longer be valid after this call.
-  if (!is_visible)
-    OnWindowHidden(window, WINDOW_HIDDEN);
-}
-
-void WindowEventDispatcher::OnWindowTransformed(Window* window,
-                                                bool contained_mouse) {
-  if (contained_mouse ||
-      (window->IsVisible() &&
-       window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
-    PostMouseMoveEventAfterWindowChange();
-  }
 }
 
 void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
@@ -273,27 +208,14 @@ void WindowEventDispatcher::OnHostLostMouseGrab() {
   mouse_moved_handler_ = NULL;
 }
 
-void WindowEventDispatcher::OnHostResized(const gfx::Size& size) {
-  TRACE_EVENT1("ui", "WindowEventDispatcher::OnHostResized",
-               "size", size.ToString());
-
-  DispatchDetails details = DispatchHeldEvents();
-  if (details.dispatcher_destroyed)
-    return;
-
-  // Constrain the mouse position within the new root Window size.
-  gfx::Point point;
-  if (host_->QueryMouseLocation(&point)) {
-    SetLastMouseLocation(window(),
-                         ui::ConvertPointToDIP(window()->layer(), point));
-  }
-  synthesize_mouse_move_ = false;
-}
-
 void WindowEventDispatcher::OnCursorMovedToRootLocation(
     const gfx::Point& root_location) {
   SetLastMouseLocation(window(), root_location);
   synthesize_mouse_move_ = false;
+}
+
+void WindowEventDispatcher::OnPostNotifiedWindowDestroying(Window* window) {
+  OnWindowHidden(window, WINDOW_DESTROYED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,6 +232,18 @@ const Window* WindowEventDispatcher::window() const {
 void WindowEventDispatcher::TransformEventForDeviceScaleFactor(
     ui::LocatedEvent* event) {
   event->UpdateForRootTransform(host_->GetInverseRootTransform());
+}
+
+void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
+  // The mouse capture is intentionally ignored. Think that a mouse enters
+  // to a window, the window sets the capture, the mouse exits the window,
+  // and then it releases the capture. In that case OnMouseExited won't
+  // be called. So it is natural not to emit OnMouseExited even though
+  // |window| is the capture window.
+  gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
+  if (window->Contains(mouse_moved_handler_) &&
+      window->ContainsPointInRoot(last_mouse_location))
+    DispatchMouseExitAtPoint(last_mouse_location);
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
@@ -357,28 +291,6 @@ ui::EventDispatchDetails WindowEventDispatcher::ProcessGestures(
   return details;
 }
 
-void WindowEventDispatcher::OnWindowAddedToRootWindow(Window* attached) {
-  if (attached->IsVisible() &&
-      attached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
-    PostMouseMoveEventAfterWindowChange();
-  }
-}
-
-void WindowEventDispatcher::OnWindowRemovedFromRootWindow(Window* detached,
-                                                          Window* new_root) {
-  DCHECK(aura::client::GetCaptureWindow(window()) != window());
-
-  DispatchMouseExitToHidingWindow(detached);
-  if (detached->IsVisible() &&
-      detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
-    PostMouseMoveEventAfterWindowChange();
-  }
-
-  // Hiding the window releases capture which can implicitly destroy the window
-  // so the window may no longer be valid after this call.
-  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN);
-}
-
 void WindowEventDispatcher::OnWindowHidden(Window* invisible,
                                            WindowHiddenReason reason) {
   // If the window the mouse was pressed in becomes invisible, it should no
@@ -398,12 +310,17 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
   CleanupGestureState(invisible);
 
   // Do not clear the capture, and the |event_dispatch_target_| if the
-  // window is moving across root windows, because the target itself
-  // is actually still visible and clearing them stops further event
-  // processing, which can cause unexpected behaviors. See
-  // crbug.com/157583
+  // window is moving across hosts, because the target itself is actually still
+  // visible and clearing them stops further event processing, which can cause
+  // unexpected behaviors. See crbug.com/157583
   if (reason != WINDOW_MOVING) {
-    Window* capture_window = aura::client::GetCaptureWindow(window());
+    // We don't ask |invisible| here, because invisible may have been removed
+    // from the window hierarchy already by the time this function is called
+    // (OnWindowDestroyed).
+    client::CaptureClient* capture_client =
+        client::GetCaptureClient(host_->window());
+    Window* capture_window =
+        capture_client ? capture_client->GetCaptureWindow() : NULL;
 
     if (invisible->Contains(event_dispatch_target_))
       event_dispatch_target_ = NULL;
@@ -425,6 +342,21 @@ void WindowEventDispatcher::CleanupGestureState(Window* window) {
       ++iter) {
     CleanupGestureState(*iter);
   }
+}
+
+Window* WindowEventDispatcher::GetGestureTarget(ui::GestureEvent* event) {
+  Window* target = NULL;
+  if (!event->IsEndingEvent()) {
+    // The window that received the start event (e.g. scroll begin) needs to
+    // receive the end event (e.g. scroll end).
+    target = client::GetCaptureWindow(window());
+  }
+  if (!target) {
+    target = ConsumerToWindow(
+        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
+  }
+
+  return target;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -586,6 +518,129 @@ void WindowEventDispatcher::DispatchCancelTouchEvent(ui::TouchEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WindowEventDispatcher, WindowObserver implementation:
+
+void WindowEventDispatcher::OnWindowDestroying(Window* window) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  DispatchMouseExitToHidingWindow(window);
+  SynthesizeMouseMoveAfterChangeToWindow(window);
+}
+
+void WindowEventDispatcher::OnWindowDestroyed(Window* window) {
+  // We observe all windows regardless of what root Window (if any) they're
+  // attached to.
+  observer_manager_.Remove(window);
+}
+
+void WindowEventDispatcher::OnWindowAddedToRootWindow(Window* attached) {
+  if (!observer_manager_.IsObserving(attached))
+    observer_manager_.Add(attached);
+
+  if (!host_->window()->Contains(attached))
+    return;
+
+  SynthesizeMouseMoveAfterChangeToWindow(attached);
+}
+
+void WindowEventDispatcher::OnWindowRemovingFromRootWindow(Window* detached,
+                                                           Window* new_root) {
+  if (!host_->window()->Contains(detached))
+    return;
+
+  DCHECK(client::GetCaptureWindow(window()) != window());
+
+  DispatchMouseExitToHidingWindow(detached);
+  SynthesizeMouseMoveAfterChangeToWindow(detached);
+
+  // Hiding the window releases capture which can implicitly destroy the window
+  // so the window may no longer be valid after this call.
+  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN);
+}
+
+void WindowEventDispatcher::OnWindowVisibilityChanging(Window* window,
+                                                       bool visible) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  DispatchMouseExitToHidingWindow(window);
+}
+
+void WindowEventDispatcher::OnWindowVisibilityChanged(Window* window,
+                                                      bool visible) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
+    PostSynthesizeMouseMove();
+
+  // Hiding the window releases capture which can implicitly destroy the window
+  // so the window may no longer be valid after this call.
+  if (!visible)
+    OnWindowHidden(window, WINDOW_HIDDEN);
+}
+
+void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
+                                                  const gfx::Rect& old_bounds,
+                                                  const gfx::Rect& new_bounds) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  if (window == host_->window()) {
+    TRACE_EVENT1("ui", "WindowEventDispatcher::OnWindowBoundsChanged(root)",
+                 "size", new_bounds.size().ToString());
+
+    DispatchDetails details = DispatchHeldEvents();
+    if (details.dispatcher_destroyed)
+      return;
+
+    // Constrain the mouse position within the new root Window size.
+    gfx::Point point;
+    if (host_->QueryMouseLocation(&point)) {
+      SetLastMouseLocation(
+          host_->window(),
+          ui::ConvertPointToDIP(host_->window()->layer(), point));
+    }
+    synthesize_mouse_move_ = false;
+  }
+
+  if (window->IsVisible()) {
+    gfx::Rect old_bounds_in_root = old_bounds, new_bounds_in_root = new_bounds;
+    Window::ConvertRectToTarget(window->parent(), host_->window(),
+                                &old_bounds_in_root);
+    Window::ConvertRectToTarget(window->parent(), host_->window(),
+                                &new_bounds_in_root);
+    gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
+    if (old_bounds_in_root.Contains(last_mouse_location) !=
+        new_bounds_in_root.Contains(last_mouse_location)) {
+      PostSynthesizeMouseMove();
+    }
+  }
+}
+
+void WindowEventDispatcher::OnWindowTransforming(Window* window) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  SynthesizeMouseMoveAfterChangeToWindow(window);
+}
+
+void WindowEventDispatcher::OnWindowTransformed(Window* window) {
+  if (!host_->window()->Contains(window))
+    return;
+
+  SynthesizeMouseMoveAfterChangeToWindow(window);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// WindowEventDispatcher, EnvObserver implementation:
+
+void WindowEventDispatcher::OnWindowInitialized(Window* window) {
+  observer_manager_.Add(window);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, private:
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
@@ -625,7 +680,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   return dispatch_details;
 }
 
-void WindowEventDispatcher::PostMouseMoveEventAfterWindowChange() {
+void WindowEventDispatcher::PostSynthesizeMouseMove() {
   if (synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = true;
@@ -634,6 +689,14 @@ void WindowEventDispatcher::PostMouseMoveEventAfterWindowChange() {
       base::Bind(base::IgnoreResult(
           &WindowEventDispatcher::SynthesizeMouseMoveEvent),
           held_event_factory_.GetWeakPtr()));
+}
+
+void WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow(
+    Window* window) {
+  if (window->IsVisible() &&
+      window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
+    PostSynthesizeMouseMove();
+  }
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {

@@ -227,10 +227,14 @@ Window::~Window() {
     delegate_->OnWindowDestroying(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
-  // Let the root know so that it can remove any references to us.
+  // TODO(beng): See comment in window_event_dispatcher.h. This shouldn't be
+  //             necessary but unfortunately is right now due to ordering
+  //             peculiarities. WED must be notified _after_ other observers
+  //             are notified of pending teardown but before the hierarchy
+  //             is actually torn down.
   WindowTreeHost* host = GetHost();
   if (host)
-    host->dispatcher()->OnWindowDestroying(this);
+    host->dispatcher()->OnPostNotifiedWindowDestroying(this);
 
   // Then destroy the children.
   RemoveOrDestroyChildren();
@@ -379,12 +383,11 @@ void Window::SetTransform(const gfx::Transform& transform) {
     NOTREACHED();
     return;
   }
-  WindowEventDispatcher* dispatcher = GetHost()->dispatcher();
-  bool contained_mouse = IsVisible() && dispatcher &&
-      ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowTransforming(this));
   layer()->SetTransform(transform);
-  if (dispatcher)
-    dispatcher->OnWindowTransformed(this, contained_mouse);
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowTransformed(this));
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -571,11 +574,15 @@ void Window::ConvertPointToTarget(const Window* source,
   if (source->GetRootWindow() != target->GetRootWindow()) {
     client::ScreenPositionClient* source_client =
         client::GetScreenPositionClient(source->GetRootWindow());
-    source_client->ConvertPointToScreen(source, point);
+    // |source_client| can be NULL in tests.
+    if (source_client)
+      source_client->ConvertPointToScreen(source, point);
 
     client::ScreenPositionClient* target_client =
         client::GetScreenPositionClient(target->GetRootWindow());
-    target_client->ConvertPointFromScreen(target, point);
+    // |target_client| can be NULL in tests.
+    if (target_client)
+      target_client->ConvertPointFromScreen(target, point);
   } else if ((source != target) && (!source->layer() || !target->layer())) {
     if (!source->layer()) {
       gfx::Vector2d offset_to_layer;
@@ -591,6 +598,16 @@ void Window::ConvertPointToTarget(const Window* source,
   } else {
     ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
   }
+}
+
+// static
+void Window::ConvertRectToTarget(const Window* source,
+                                 const Window* target,
+                                 gfx::Rect* rect) {
+  DCHECK(rect);
+  gfx::Point origin = rect->origin();
+  ConvertPointToTarget(source, target, &origin);
+  rect->set_origin(origin);
 }
 
 void Window::MoveCursorTo(const gfx::Point& point_in_window) {
@@ -888,7 +905,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   // changed notification from the layer (this typically happens after animating
   // hidden). We must notify ourselves.
   if (!layer() || layer()->delegate() != this)
-    OnWindowBoundsChanged(old_bounds, ContainsMouse());
+    OnWindowBoundsChanged(old_bounds);
 }
 
 void Window::SetVisible(bool visible) {
@@ -898,10 +915,6 @@ void Window::SetVisible(bool visible) {
 
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanging(this, visible));
-
-  WindowTreeHost* host = GetHost();
-  if (host)
-    host->dispatcher()->DispatchMouseExitToHidingWindow(this);
 
   client::VisibilityClient* visibility_client =
       client::GetVisibilityClient(this);
@@ -918,9 +931,6 @@ void Window::SetVisible(bool visible) {
     delegate_->OnWindowTargetVisibilityChanged(visible);
 
   NotifyWindowVisibilityChanged(this, visible);
-
-  if (host)
-    host->dispatcher()->OnWindowVisibilityChanged(this, visible);
 }
 
 void Window::SchedulePaint() {
@@ -1008,11 +1018,8 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   Window* root_window = child->GetRootWindow();
   Window* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
-  if (root_window && root_window != new_root_window) {
-    root_window->GetHost()->dispatcher()->OnWindowRemovedFromRootWindow(
-        child, new_root_window);
-    child->NotifyRemovingFromRootWindow();
-  }
+  if (root_window && root_window != new_root_window)
+    child->NotifyRemovingFromRootWindow(new_root_window);
 
   gfx::Vector2d offset;
   GetAncestorWithLayer(&offset);
@@ -1181,12 +1188,12 @@ void Window::OnStackingChanged() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowStackingChanged(this));
 }
 
-void Window::NotifyRemovingFromRootWindow() {
+void Window::NotifyRemovingFromRootWindow(Window* new_root) {
   FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowRemovingFromRootWindow(this));
+                    OnWindowRemovingFromRootWindow(this, new_root));
   for (Window::Windows::const_iterator it = children_.begin();
        it != children_.end(); ++it) {
-    (*it)->NotifyRemovingFromRootWindow();
+    (*it)->NotifyRemovingFromRootWindow(new_root);
   }
 }
 
@@ -1303,8 +1310,7 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
   }
 }
 
-void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds,
-                                   bool contained_mouse) {
+void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds) {
   if (layer()) {
     bounds_ = layer()->bounds();
     if (parent_ && !parent_->layer()) {
@@ -1323,9 +1329,6 @@ void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds,
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
                     OnWindowBoundsChanged(this, old_bounds, bounds()));
-  WindowTreeHost* host = GetHost();
-  if (host)
-    host->dispatcher()->OnWindowBoundsChanged(this, contained_mouse);
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
@@ -1334,7 +1337,7 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
 
 base::Closure Window::PrepareForLayerBoundsChange() {
   return base::Bind(&Window::OnWindowBoundsChanged, base::Unretained(this),
-                    bounds(), ContainsMouse());
+                    bounds());
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {

@@ -13,8 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_processor.h"
@@ -39,7 +42,6 @@ class TouchEvent;
 }
 
 namespace aura {
-class RootWindowObserver;
 class TestScreen;
 class WindowTargeter;
 class WindowTreeHost;
@@ -50,7 +52,9 @@ class WindowTreeHost;
 //             event dispatch.
 class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public ui::GestureEventHelper,
-                                          public client::CaptureDelegate {
+                                          public client::CaptureDelegate,
+                                          public WindowObserver,
+                                          public EnvObserver {
  public:
   explicit WindowEventDispatcher(WindowTreeHost* host);
   virtual ~WindowEventDispatcher();
@@ -68,34 +72,14 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   void DispatchCancelModeEvent();
 
-  // Returns a target window for the given gesture event.
-  Window* GetGestureTarget(ui::GestureEvent* event);
-
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
   // events are dispatched from GestureRecognizer instead of WindowTreeHost.
   void DispatchGestureEvent(ui::GestureEvent* event);
 
-  // Invoked when |window| is being destroyed.
-  void OnWindowDestroying(Window* window);
-
-  // Invoked when |window|'s bounds have changed. |contained_mouse| indicates if
-  // the bounds before change contained the |last_moust_location()|.
-  void OnWindowBoundsChanged(Window* window, bool contained_mouse);
-
-  // Dispatches OnMouseExited to the |window| which is hiding if necessary.
-  void DispatchMouseExitToHidingWindow(Window* window);
-
   // Dispatches a ui::ET_MOUSE_EXITED event at |point|.
+  // TODO(beng): needed only for WTH::OnCursorVisibilityChanged().
   void DispatchMouseExitAtPoint(const gfx::Point& point);
-
-  // Invoked when |window|'s visibility has changed.
-  void OnWindowVisibilityChanged(Window* window, bool is_visible);
-
-  // Invoked when |window|'s transform has changed. |contained_mouse|
-  // indicates if the bounds before change contained the
-  // |last_moust_location()|.
-  void OnWindowTransformed(Window* window, bool contained_mouse);
 
   // Gesture Recognition -------------------------------------------------------
 
@@ -124,9 +108,16 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   gfx::Point GetLastMouseLocationInRoot() const;
 
   void OnHostLostMouseGrab();
-  // TODO(beng): replace with a window observer.
-  void OnHostResized(const gfx::Size& size);
   void OnCursorMovedToRootLocation(const gfx::Point& root_location);
+
+  // TODO(beng): This is only needed because this cleanup needs to happen after
+  //             all other observers are notified of OnWindowDestroying() but
+  //             before OnWindowDestroyed() is sent (i.e. while the window
+  //             hierarchy is still intact). This didn't seem worth adding a
+  //             generic notification for as only this class needs to implement
+  //             it. I would however like to find a way to do this via an
+  //             observer.
+  void OnPostNotifiedWindowDestroying(Window* window);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowEventDispatcherTest,
@@ -153,6 +144,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // the event received from the host.
   void TransformEventForDeviceScaleFactor(ui::LocatedEvent* event);
 
+  // Dispatches OnMouseExited to the |window| which is hiding if necessary.
+  void DispatchMouseExitToHidingWindow(Window* window);
+
   // Dispatches the specified event type (intended for enter/exit) to the
   // |mouse_moved_handler_|.
   ui::EventDispatchDetails DispatchMouseEnterOrExit(
@@ -160,11 +154,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
       ui::EventType type) WARN_UNUSED_RESULT;
   ui::EventDispatchDetails ProcessGestures(
       ui::GestureRecognizer::Gestures* gestures) WARN_UNUSED_RESULT;
-
-  // Called when a Window is attached or detached from the
-  // WindowEventDispatcher.
-  void OnWindowAddedToRootWindow(Window* window);
-  void OnWindowRemovedFromRootWindow(Window* window, Window* new_root);
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierarchy, via SetVisible(false) or being destroyed.
@@ -176,6 +165,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // Cleans up the state of gestures for all windows in |window| (including
   // |window| itself). This includes cancelling active touch points.
   void CleanupGestureState(Window* window);
+
+  // Returns a target window for the given gesture event.
+  Window* GetGestureTarget(ui::GestureEvent* event);
 
   // Overridden from aura::client::CaptureDelegate:
   virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
@@ -199,6 +191,24 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   virtual void DispatchPostponedGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
+  // Overridden from WindowObserver:
+  virtual void OnWindowDestroying(Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE;
+  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(Window* window,
+                                              Window* new_root) OVERRIDE;
+  virtual void OnWindowVisibilityChanging(Window* window,
+                                          bool visible) OVERRIDE;
+  virtual void OnWindowVisibilityChanged(Window* window, bool visible) OVERRIDE;
+  virtual void OnWindowBoundsChanged(Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowTransforming(Window* window) OVERRIDE;
+  virtual void OnWindowTransformed(Window* window) OVERRIDE;
+
+  // Overridden from EnvObserver:
+  virtual void OnWindowInitialized(Window* window) OVERRIDE;
+
   // We hold and aggregate mouse drags and touch moves as a way of throttling
   // resizes when HoldMouseMoves() is called. The following methods are used to
   // dispatch held and newly incoming mouse and touch events, typically when an
@@ -206,17 +216,19 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // ReleaseMouseMoves()/ReleaseTouchMoves() is called.  NOTE: because these
   // methods dispatch events from WindowTreeHost the coordinates are in terms of
   // the root.
-
   ui::EventDispatchDetails DispatchHeldEvents() WARN_UNUSED_RESULT;
+
+  // Posts a task to send synthesized mouse move event if there is no a pending
+  // task.
+  void PostSynthesizeMouseMove();
+
   // Creates and dispatches synthesized mouse move event using the
   // current mouse location.
   ui::EventDispatchDetails SynthesizeMouseMoveEvent() WARN_UNUSED_RESULT;
 
-  void SynthesizeMouseMoveEventAsync();
-
-  // Posts a task to send synthesized mouse move event if there
-  // is no a pending task.
-  void PostMouseMoveEventAfterWindowChange();
+  // Calls SynthesizeMouseMove() if |window| is currently visible and contains
+  // the mouse cursor.
+  void SynthesizeMouseMoveAfterChangeToWindow(Window* window);
 
   void PreDispatchLocatedEvent(Window* target, ui::LocatedEvent* event);
   void PreDispatchMouseEvent(Window* target, ui::MouseEvent* event);
@@ -245,6 +257,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Set when dispatching a held event.
   bool dispatching_held_event_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;

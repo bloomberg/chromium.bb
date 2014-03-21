@@ -293,7 +293,8 @@ void WindowSlider::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void WindowSlider::OnWindowRemovingFromRootWindow(aura::Window* window) {
+void WindowSlider::OnWindowRemovingFromRootWindow(aura::Window* window,
+                                                  aura::Window* new_root) {
   if (window == event_window_) {
     window->RemoveObserver(this);
     window->RemovePreTargetHandler(this);

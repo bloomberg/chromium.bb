@@ -448,7 +448,8 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
       view_->AddedToRootWindow();
   }
 
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                              aura::Window* new_root) OVERRIDE {
     if (window == view_->window_)
       view_->RemovingFromRootWindow();
   }

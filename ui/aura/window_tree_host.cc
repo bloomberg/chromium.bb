@@ -287,7 +287,6 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);
   FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_, OnHostResized(this));
-  dispatcher()->OnHostResized(layer_size);
 }
 
 void WindowTreeHost::OnHostCloseRequested() {

@@ -2129,7 +2129,8 @@ class RootWindowAttachmentObserver : public WindowObserver {
   virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
     ++added_count_;
   }
-  virtual void OnWindowRemovingFromRootWindow(Window* window) OVERRIDE {
+  virtual void OnWindowRemovingFromRootWindow(Window* window,
+                                              Window* new_root) OVERRIDE {
     ++removed_count_;
   }
 
@@ -2391,7 +2392,8 @@ class AddChildNotificationsObserver : public WindowObserver {
   virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
     added_count_++;
   }
-  virtual void OnWindowRemovingFromRootWindow(Window* window) OVERRIDE {
+  virtual void OnWindowRemovingFromRootWindow(Window* window,
+                                              Window* new_root) OVERRIDE {
     removed_count_++;
   }
 

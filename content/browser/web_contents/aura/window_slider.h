@@ -94,7 +94,8 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                              aura::Window* new_root) OVERRIDE;
 
   Delegate* delegate_;
 

@@ -304,7 +304,8 @@ class CrossFadeObserver : public ui::CompositorObserver,
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                              aura::Window* new_root) OVERRIDE {
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
 

@@ -75,6 +75,10 @@ class AURA_EXPORT WindowObserver {
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
 
+  // Invoked when SetTransform() is invoked on |window|.
+  virtual void OnWindowTransforming(Window* window) {}
+  virtual void OnWindowTransformed(Window* window) {}
+
   // Invoked when |window|'s position among its siblings in the stacking order
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}
@@ -100,8 +104,11 @@ class AURA_EXPORT WindowObserver {
   // Called when a Window has been added to a RootWindow.
   virtual void OnWindowAddedToRootWindow(Window* window) {}
 
-  // Called when a Window is about to be removed from a RootWindow.
-  virtual void OnWindowRemovingFromRootWindow(Window* window) {}
+  // Called when a Window is about to be removed from a root Window.
+  // |new_root| contains the new root Window if it is being added to one
+  // atomically.
+  virtual void OnWindowRemovingFromRootWindow(Window* window,
+                                              Window* new_root) {}
 
  protected:
   virtual ~WindowObserver() {}

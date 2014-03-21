@@ -207,6 +207,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   static void ConvertPointToTarget(const Window* source,
                                    const Window* target,
                                    gfx::Point* point);
+  static void ConvertRectToTarget(const Window* source,
+                                  const Window* target,
+                                  gfx::Rect* rect);
 
   // Moves the cursor to the specified location relative to the window.
   virtual void MoveCursorTo(const gfx::Point& point_in_window);
@@ -414,7 +417,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Notifies observers registered with this Window (and its subtree) when the
   // Window has been added or is about to be removed from a RootWindow.
-  void NotifyRemovingFromRootWindow();
+  void NotifyRemovingFromRootWindow(Window* new_root);
   void NotifyAddedToRootWindow();
 
   // Methods implementing hierarchy change notifications. See WindowObserver for
@@ -447,10 +450,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Invoked when the bounds of the window changes. This may be invoked directly
   // by us, or from the closure returned by PrepareForLayerBoundsChange() after
-  // the bounds of the layer has changed. |old_bounds| is the previous bounds,
-  // and |contained_mouse| is true if the mouse was previously within the
-  // window's bounds.
-  void OnWindowBoundsChanged(const gfx::Rect& old_bounds, bool contained_mouse);
+  // the bounds of the layer has changed. |old_bounds| is the previous bounds.
+  void OnWindowBoundsChanged(const gfx::Rect& old_bounds);
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
