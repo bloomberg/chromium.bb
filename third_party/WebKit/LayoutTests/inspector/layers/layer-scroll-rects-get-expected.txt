@@ -1,0 +1,35 @@
+Scroll rectangles
+View elements dump
+scroll-rect: {
+    className : "scroll-rect"
+    height : "11px"
+    left : "4px"
+    title : "repaints on scroll"
+    top : "4px"
+    width : "11px"
+}
+scroll-rect: {
+    className : "scroll-rect"
+    height : "331px"
+    left : "0px"
+    title : "mousewheel event listener"
+    top : "0px"
+    width : "441px"
+}
+scroll-rect: {
+    className : "scroll-rect"
+    height : "11px"
+    left : "4px"
+    title : "touch event listener"
+    top : "4px"
+    width : "11px"
+}
+scroll-rect: {
+    className : "scroll-rect"
+    height : "22px"
+    left : "0px"
+    title : "touch event listener"
+    top : "0px"
+    width : "22px"
+}
+

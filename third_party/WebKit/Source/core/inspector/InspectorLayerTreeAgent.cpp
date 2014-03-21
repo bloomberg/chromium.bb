@@ -77,6 +77,36 @@ inline String idForLayer(const GraphicsLayer* graphicsLayer)
     return String::number(graphicsLayer->platformLayer()->id());
 }
 
+static PassRefPtr<TypeBuilder::LayerTree::ScrollRect> buildScrollRect(const blink::WebRect& rect, const TypeBuilder::LayerTree::ScrollRect::Type::Enum& type)
+{
+    RefPtr<TypeBuilder::DOM::Rect> rectObject = TypeBuilder::DOM::Rect::create()
+        .setX(rect.x)
+        .setY(rect.y)
+        .setHeight(rect.height)
+        .setWidth(rect.width);
+    RefPtr<TypeBuilder::LayerTree::ScrollRect> scrollRectObject = TypeBuilder::LayerTree::ScrollRect::create()
+        .setRect(rectObject.release())
+        .setType(type);
+    return scrollRectObject.release();
+}
+
+static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > buildScrollRectsForLayer(GraphicsLayer* graphicsLayer)
+{
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>::create();
+    blink::WebLayer* webLayer = graphicsLayer->platformLayer();
+    for (size_t i = 0; i < webLayer->nonFastScrollableRegion().size(); ++i) {
+        scrollRects->addItem(buildScrollRect(webLayer->nonFastScrollableRegion()[i], TypeBuilder::LayerTree::ScrollRect::Type::RepaintsOnScroll));
+    }
+    for (size_t i = 0; i < webLayer->touchEventHandlerRegion().size(); ++i) {
+        scrollRects->addItem(buildScrollRect(webLayer->touchEventHandlerRegion()[i], TypeBuilder::LayerTree::ScrollRect::Type::TouchEventHandler));
+    }
+    if (webLayer->haveWheelEventHandlers()) {
+        blink::WebRect webRect(webLayer->position().x, webLayer->position().y, webLayer->bounds().width, webLayer->bounds().height);
+        scrollRects->addItem(buildScrollRect(webRect, TypeBuilder::LayerTree::ScrollRect::Type::WheelEventHandler));
+    }
+    return scrollRects->length() ? scrollRects.release() : nullptr;
+}
+
 static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, BackendNodeId nodeId)
 {
     blink::WebLayer* webLayer = graphicsLayer->platformLayer();
@@ -111,6 +141,9 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         layerObject->setAnchorY(anchor.y());
         layerObject->setAnchorZ(anchor.z());
     }
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = buildScrollRectsForLayer(graphicsLayer);
+    if (scrollRects)
+        layerObject->setScrollRects(scrollRects.release());
     return layerObject;
 }
 
@@ -185,8 +218,8 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     ASSERT(!compositor->compositingLayersNeedRebuild());
 
     LayerIdToNodeIdMap layerIdToNodeIdMap;
-    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), nodeGroup, layerIdToNodeIdMap);
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
+    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), nodeGroup, layerIdToNodeIdMap);
     gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
     return layers.release();
 }

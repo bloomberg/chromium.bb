@@ -101,4 +101,37 @@ function initialize_LayerTreeTests()
             callback();
         }
     }
+
+    InspectorTest.dumpViewScrollRect = function(element)
+    {
+        var value = {
+            className: element.className,
+            title: element.title,
+            width: element.style.width,
+            height: element.style.height,
+            left: element.style.left,
+            top: element.style.top
+        };
+        if (element.__unchanged)
+            value.__unchanged = element.__unchanged;
+        InspectorTest.addObject(value, null, "", "scroll-rect: ");
+    }
+
+    InspectorTest.dumpViewScrollRects = function()
+    {
+        InspectorTest.addResult("View elements dump");
+        var root = WebInspector.inspectorView.panel("layers")._layers3DView._rotatingContainerElement;
+        Array.prototype.forEach.call(root.querySelectorAll('.scroll-rect'), InspectorTest.dumpViewScrollRect.bind(InspectorTest));
+    }
+
+    InspectorTest.dumpModelScrollRects = function()
+    {
+        function dumpScrollRectsForLayer(layer)
+        {
+            InspectorTest.addObject(layer._scrollRects);
+        }
+
+        InspectorTest.addResult("Model elements dump");
+        InspectorTest.layerTreeModel.forEachLayer(dumpScrollRectsForLayer.bind(this));
+    }
 }
