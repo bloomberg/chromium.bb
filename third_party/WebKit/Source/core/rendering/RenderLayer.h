@@ -358,6 +358,9 @@ public:
     // compositing state may legally be read.
     bool isAllowedToQueryCompositingState() const;
 
+    // This returns true if our current phase is the compositing update.
+    bool isInCompositingUpdate() const;
+
     CompositedLayerMappingPtr compositedLayerMapping() const;
     CompositedLayerMappingPtr ensureCompositedLayerMapping();
 
@@ -479,7 +482,33 @@ public:
 
     bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
 
+    void clearAncestorDependentPropertyCache();
+
 private:
+    class AncestorDependentPropertyCache {
+        WTF_MAKE_NONCOPYABLE(AncestorDependentPropertyCache);
+    public:
+        AncestorDependentPropertyCache();
+
+        RenderLayer* ancestorCompositedScrollingLayer() const;
+        void setAncestorCompositedScrollingLayer(RenderLayer*);
+
+        RenderLayer* scrollParent() const;
+        void setScrollParent(RenderLayer*);
+
+        bool ancestorCompositedScrollingLayerDirty() const { return m_ancestorCompositedScrollingLayerDirty; }
+        bool scrollParentDirty() const { return m_scrollParentDirty; }
+
+    private:
+        RenderLayer* m_ancestorCompositedScrollingLayer;
+        RenderLayer* m_scrollParent;
+
+        bool m_ancestorCompositedScrollingLayerDirty;
+        bool m_scrollParentDirty;
+    };
+
+    void ensureAncestorDependentPropertyCache() const;
+
     bool hasOverflowControls() const;
 
     void setIsUnclippedDescendant(bool isUnclippedDescendant) { m_isUnclippedDescendant = isUnclippedDescendant; }
@@ -578,7 +607,6 @@ private:
 
     bool shouldBeSelfPaintingLayer() const;
 
-private:
     // FIXME: We should only create the stacking node if needed.
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();
@@ -630,7 +658,6 @@ private:
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
-private:
     LayerType m_layerType;
 
     // Self-painting layer is an optimization where we avoid the heavy RenderLayer painting
@@ -755,6 +782,8 @@ private:
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
+
+    mutable OwnPtr<AncestorDependentPropertyCache> m_ancestorDependentPropertyCache;
 
     CompositedLayerMapping* m_groupedMapping;
 

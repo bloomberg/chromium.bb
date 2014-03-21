@@ -389,6 +389,14 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     page()->animator().scheduleVisualUpdate();
 }
 
+static void clearAncestorDependentPropertyCacheRecursive(RenderLayer* layer)
+{
+    layer->clearAncestorDependentPropertyCache();
+    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
+    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
+        clearAncestorDependentPropertyCacheRecursive(child);
+}
+
 void RenderLayerCompositor::updateCompositingLayers()
 {
     TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingLayers");
@@ -405,6 +413,9 @@ void RenderLayerCompositor::updateCompositingLayers()
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
 
     updateCompositingLayersInternal();
+
+    // Clear data only valid during compositing updates.
+    clearAncestorDependentPropertyCacheRecursive(rootRenderLayer());
 
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
