@@ -239,6 +239,7 @@ void ShellWebContentsViewDelegate::OnPasteMenuActivated(GtkWidget* widget) {
 }
 
 void ShellWebContentsViewDelegate::OnDeleteMenuActivated(GtkWidget* widget) {
+  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
   if (frame)
     frame->Delete();
 }
