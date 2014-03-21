@@ -13,6 +13,6 @@ Inner iframe on a foreign domain.
 
 
 --------
-Frame: 'aFrame'
+Frame: '<!--framePath //aFrame/<!--frame0-->-->'
 --------
 Inner-inner iframe. This iframe (which is data: URL and whose parent is on a foreign domain) is the frame attempting to access the main frame. It should not have access to it.

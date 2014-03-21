@@ -61,6 +61,7 @@ namespace WebCore {
     private:
         LocalFrame* deepLastChild() const;
         AtomicString uniqueChildName(const AtomicString& requestedName) const;
+        bool uniqueNameExists(const AtomicString& name) const;
         unsigned scopedChildCount(TreeScope*) const;
 
         LocalFrame* m_thisFrame;

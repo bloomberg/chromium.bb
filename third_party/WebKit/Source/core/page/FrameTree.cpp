@@ -116,9 +116,18 @@ LocalFrame* FrameTree::lastChild() const
     return toLocalFrame(m_thisFrame->loader().client()->lastChild());
 }
 
+bool FrameTree::uniqueNameExists(const AtomicString& name) const
+{
+    for (LocalFrame* frame = top(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->tree().uniqueName() == name)
+            return true;
+    }
+    return false;
+}
+
 AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const
 {
-    if (!requestedName.isEmpty() && !child(requestedName) && requestedName != "_blank")
+    if (!requestedName.isEmpty() && !uniqueNameExists(requestedName) && requestedName != "_blank")
         return requestedName;
 
     // Create a repeatable name for a child about to be added to us. The name must be
@@ -184,7 +193,7 @@ LocalFrame* FrameTree::scopedChild(const AtomicString& name) const
         return 0;
 
     for (LocalFrame* child = firstChild(); child; child = child->tree().nextSibling())
-        if (child->tree().uniqueName() == name && child->inScope(scope))
+        if (child->tree().name() == name && child->inScope(scope))
             return child;
     return 0;
 }
@@ -226,7 +235,7 @@ unsigned FrameTree::childCount() const
 LocalFrame* FrameTree::child(const AtomicString& name) const
 {
     for (LocalFrame* child = firstChild(); child; child = child->tree().nextSibling())
-        if (child->tree().uniqueName() == name)
+        if (child->tree().name() == name)
             return child;
     return 0;
 }
@@ -248,7 +257,7 @@ LocalFrame* FrameTree::find(const AtomicString& name) const
 
     // Search subtree starting with this frame first.
     for (LocalFrame* frame = m_thisFrame; frame; frame = frame->tree().traverseNext(m_thisFrame))
-        if (frame->tree().uniqueName() == name)
+        if (frame->tree().name() == name)
             return frame;
 
     // Search the entire tree for this page next.
@@ -259,7 +268,7 @@ LocalFrame* FrameTree::find(const AtomicString& name) const
         return 0;
 
     for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-        if (frame->tree().uniqueName() == name)
+        if (frame->tree().name() == name)
             return frame;
 
     // Search the entire tree of each of the other pages in this namespace.
@@ -270,7 +279,7 @@ LocalFrame* FrameTree::find(const AtomicString& name) const
         Page* otherPage = *it;
         if (otherPage != page) {
             for (LocalFrame* frame = otherPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-                if (frame->tree().uniqueName() == name)
+                if (frame->tree().name() == name)
                     return frame;
             }
         }
