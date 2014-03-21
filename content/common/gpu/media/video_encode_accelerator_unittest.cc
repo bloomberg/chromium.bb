@@ -16,6 +16,7 @@
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,12 +52,12 @@ const uint32 kDefaultFPS = 30;
 //   Output stream is saved for the simple encode test only.
 // - |requested_bitrate| requested bitrate in bits per second (optional).
 //   Bitrate is only forced for tests that test bitrate.
-const base::FilePath::CharType* test_stream_data =
-    FILE_PATH_LITERAL("sync_192p_20frames.yuv:320:192:1:out.h264:200000");
+base::FilePath::StringType test_stream_data =
+    media::GetTestDataFilePath("sync_192p20_frames.yuv").value() +
+    ":320:192:1:out.h264:200000";
 
 struct TestStream {
-  explicit TestStream(base::FilePath::StringType filename)
-      : requested_bitrate(0) {}
+  TestStream() : requested_bitrate(0) {}
   ~TestStream() {}
 
   gfx::Size size;
@@ -680,7 +681,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   const unsigned int keyframe_period = GetParam().b;
   const bool force_bitrate = GetParam().c;
 
-  TestStream test_stream(test_stream_data);
+  TestStream test_stream;
   ParseAndReadTestStreamData(test_stream_data, &test_stream);
 
   // Disregard save_to_file if we didn't get an output filename.

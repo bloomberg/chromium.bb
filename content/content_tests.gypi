@@ -1369,6 +1369,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../media/media.gyp:media',
+            '../media/media.gyp:media_test_support',
             '../testing/gtest.gyp:gtest',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
