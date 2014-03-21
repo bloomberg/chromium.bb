@@ -6,6 +6,8 @@
 #define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
 
 #include "base/message_loop/message_pump_dispatcher.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 
 namespace ui {
@@ -27,12 +29,22 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
   // Spurious events will have no effect.
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
+  void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
+
+  // How long the cached output is valid.
+  static const int kCachedOutputsExpirationMs;
+
  private:
   NativeDisplayDelegateX11::HelperDelegate* delegate_;  // Not owned.
 
   // The base of the event numbers used to represent XRandr events used in
   // decoding events regarding output add/remove.
   int xrandr_event_base_;
+
+  // The last time display observers were notified.
+  base::TimeTicks last_notified_time_;
+
+  scoped_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayEventDispatcherX11);
 };

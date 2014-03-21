@@ -7,6 +7,7 @@
 #undef Bool
 #undef None
 
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
@@ -105,6 +106,7 @@ class NativeDisplayEventDispatcherX11Test : public testing::Test {
   int xrandr_event_base_;
   scoped_ptr<TestHelperDelegate> helper_delegate_;
   scoped_ptr<NativeDisplayEventDispatcherX11> dispatcher_;
+  base::SimpleTestTickClock* test_tick_clock_;  // Owned by |dispatcher_|.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayEventDispatcherX11Test);
@@ -114,7 +116,12 @@ NativeDisplayEventDispatcherX11Test::NativeDisplayEventDispatcherX11Test()
     : xrandr_event_base_(10),
       helper_delegate_(new TestHelperDelegate()),
       dispatcher_(new NativeDisplayEventDispatcherX11(helper_delegate_.get(),
-                                                      xrandr_event_base_)) {}
+                                                      xrandr_event_base_)),
+      test_tick_clock_(new base::SimpleTestTickClock) {
+  test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+  dispatcher_->SetTickClockForTest(
+      scoped_ptr<base::TickClock>(test_tick_clock_));
+}
 
 NativeDisplayEventDispatcherX11Test::~NativeDisplayEventDispatcherX11Test() {}
 
@@ -172,8 +179,12 @@ TEST_F(NativeDisplayEventDispatcherX11Test, AvoidNotificationOnDuplicateEvent) {
   outputs.push_back(CreateOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
+  // Very first event will not be ignored.
   DispatchOutputChangeEvent(1, 10, 20, true);
-  EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+
+  DispatchOutputChangeEvent(1, 10, 20, true);
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDisconnect) {
@@ -239,6 +250,52 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
 
   DispatchOutputChangeEvent(2, 11, 20, false);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+}
+
+TEST_F(NativeDisplayEventDispatcherX11Test,
+       ForceUpdateAfterCacheExpiration) {
+  // +1 to compenstate a possible rounding error.
+  const int kHalfOfExpirationMs =
+      NativeDisplayEventDispatcherX11::kCachedOutputsExpirationMs / 2 + 1;
+
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateOutput(2, 11));
+  helper_delegate_->set_cached_outputs(outputs.get());
+
+  EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
+
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+
+  // Duplicated event will be ignored.
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+
+  test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
+      kHalfOfExpirationMs));
+
+  // Duplicated event will still be ignored.
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+
+  // Duplicated event does notify after expiration timeout.
+  test_tick_clock_->Advance(
+      base::TimeDelta::FromMilliseconds(kHalfOfExpirationMs));
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
+
+  // Last update time has been updated, so next duplicated change event
+  // will be ignored.
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
+
+  // Another duplicated change event arrived within expiration time will
+  // be ignored again.
+  test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
+      kHalfOfExpirationMs));
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
 }
 
 }  // namespace ui
