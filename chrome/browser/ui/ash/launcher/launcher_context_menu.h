@@ -69,6 +69,9 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   FRIEND_TEST_ALL_PREFIXES(
       LauncherContextMenuTest,
       NewWindowMenuIsDisabledWhenIncognitoModeForced);
+  FRIEND_TEST_ALL_PREFIXES(
+      LauncherContextMenuTest,
+      NoAutoHideOptionInMaximizedMode);
 
   enum MenuItem {
     MENU_OPEN_NEW,

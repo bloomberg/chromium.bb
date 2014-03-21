@@ -905,8 +905,9 @@ ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
 
 bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
     aura::Window* root_window) const {
-  return profile_->GetPrefs()->
-      FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
+  return !ash::Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled() &&
+      profile_->GetPrefs()->FindPreference(
+          prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
 }
 
 void ChromeLauncherController::ToggleShelfAutoHideBehavior(

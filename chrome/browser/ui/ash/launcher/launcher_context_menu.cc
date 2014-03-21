@@ -171,9 +171,9 @@ void LauncherContextMenu::Init() {
   // fullscreen because it is confusing when the preference appears not to
   // apply.
   if (!IsFullScreenMode() &&
-        controller_->CanUserModifyShelfAutoHideBehavior(root_window_)) {
+      controller_->CanUserModifyShelfAutoHideBehavior(root_window_)) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
-                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
+                             IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
   if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
