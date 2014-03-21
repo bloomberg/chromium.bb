@@ -389,17 +389,31 @@ void ExtensionAlarmsTestClearGetAllAlarms1Callback(
 TEST_F(ExtensionAlarmsTest, Clear) {
   // Clear a non-existent one.
   {
-    std::string error = RunFunctionAndReturnError(
-        new AlarmsClearFunction(), "[\"nobody\"]");
-    EXPECT_FALSE(error.empty());
+    scoped_ptr<base::Value> result(
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"nobody\"]"));
+    bool copy_bool_result = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
+    EXPECT_FALSE(copy_bool_result);
   }
 
   // Create 3 alarms.
   CreateAlarms(3);
 
   // Clear all but the 0.001-minute alarm.
-  RunFunction(new AlarmsClearFunction(), "[\"7\"]");
-  RunFunction(new AlarmsClearFunction(), "[\"0\"]");
+  {
+    scoped_ptr<base::Value> result(
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"7\"]"));
+    bool copy_bool_result = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
+    EXPECT_TRUE(copy_bool_result);
+  }
+  {
+    scoped_ptr<base::Value> result(
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"0\"]"));
+    bool copy_bool_result = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
+    EXPECT_TRUE(copy_bool_result);
+  }
 
   alarm_manager_->GetAllAlarms(extension()->id(), base::Bind(
       ExtensionAlarmsTestClearGetAllAlarms1Callback, this));
@@ -427,7 +441,9 @@ TEST_F(ExtensionAlarmsTest, ClearAll) {
   {
     scoped_ptr<base::Value> result(RunFunctionAndReturnValue(
         new AlarmsClearAllFunction(), "[]"));
-    EXPECT_FALSE(result.get());
+    bool copy_bool_result = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_result));
+    EXPECT_TRUE(copy_bool_result);
   }
 
   // Create 3 alarms.

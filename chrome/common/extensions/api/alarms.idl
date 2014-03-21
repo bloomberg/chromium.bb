@@ -42,6 +42,7 @@ namespace alarms {
 
   callback AlarmCallback = void (Alarm alarm);
   callback AlarmListCallback = void (Alarm[] alarms);
+  callback ClearCallback = void (boolean wasCleared);
 
   interface Functions {
     // Creates an alarm.  Near the time(s) specified by <var>alarmInfo</var>,
@@ -81,10 +82,10 @@ namespace alarms {
 
     // Clears the alarm with the given name.
     // |name|: The name of the alarm to clear. Defaults to the empty string.
-    static void clear(optional DOMString name);
+    static void clear(optional DOMString name, optional ClearCallback callback);
 
     // Clears all alarms.
-    static void clearAll();
+    static void clearAll(optional ClearCallback callback);
   };
 
   interface Events {

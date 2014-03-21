@@ -189,10 +189,8 @@ bool AlarmsClearFunction::RunImpl() {
 }
 
 void AlarmsClearFunction::Callback(const std::string& name, bool success) {
-  if (!success)
-    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
-
-  SendResponse(success);
+  SetResult(new base::FundamentalValue(success));
+  SendResponse(true);
 }
 
 bool AlarmsClearAllFunction::RunImpl() {
@@ -202,6 +200,7 @@ bool AlarmsClearAllFunction::RunImpl() {
 }
 
 void AlarmsClearAllFunction::Callback() {
+  SetResult(new base::FundamentalValue(true));
   SendResponse(true);
 }
 
