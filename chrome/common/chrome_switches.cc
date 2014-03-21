@@ -673,10 +673,6 @@ const char kEnableSearchButtonInOmniboxForStr[] =
 const char kEnableSearchButtonInOmniboxForStrOrIip[] =
     "enable-search-button-in-omnibox-for-str-or-iip";
 
-// Certificate Transparency: Enable showing the SCT viewer when an SSL
-// certificate is accompanied by, or contains, SCTs.
-const char kEnableSignedCertificateTimestampsViewer[] = "enable-sct-viewer";
-
 // Enable SPDY/4 alpha 2. This is a temporary testing flag.
 const char kEnableSpdy4a2[]                 = "enable-spdy4a2";
 
