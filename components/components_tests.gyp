@@ -511,12 +511,20 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
+            'components.gyp:dom_distiller_content',
+            'components.gyp:dom_distiller_core',
+            'components_resources.gyp:components_resources',
+            '../content/content.gyp:content_common',
+            '../content/content.gyp:content_gpu',
+            '../content/content.gyp:content_plugin',
+            '../content/content.gyp:content_renderer',
+            '../content/content_resources.gyp:content_resources',
             '../content/content_shell_and_tests.gyp:content_browser_test_support',
+            '../content/content_shell_and_tests.gyp:content_shell_lib',
+            '../content/content_shell_and_tests.gyp:content_shell_pak',
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
-            'components.gyp:dom_distiller_content',
-            'components.gyp:dom_distiller_core',
           ],
           'include_dirs': [
             '..',
@@ -527,6 +535,31 @@
           'sources': [
             '../content/test/content_test_launcher.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
+
+            # content_extractor is a standalone content extraction tool built as
+            # a MANUAL component_browsertest.
+            'dom_distiller/standalone/content_extractor.cc',
+          ],
+          'actions': [
+            {
+              'action_name': 'repack_components_pack',
+              'variables': {
+                'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/component_strings_en-US.pak',
+                ],
+              },
+              'inputs': [
+                '<(repack_path)',
+                '<@(pak_inputs)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/components_resources.pak',
+              ],
+              'action': ['python', '<(repack_path)', '<@(_outputs)',
+                         '<@(pak_inputs)'],
+            },
           ],
           'conditions': [
             ['OS=="win"', {
