@@ -11,7 +11,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
@@ -57,9 +57,8 @@ class StartupControllerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
-    token_service_.reset(
-        static_cast<FakeProfileOAuth2TokenServiceWrapper*>(
-            FakeProfileOAuth2TokenServiceWrapper::Build(profile_.get())));
+    token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
+        BuildFakeProfileOAuth2TokenService(profile_.get())));
     signin_.reset(new FakeManagedUserSigninManagerWrapper());
 
     ProfileSyncServiceStartBehavior behavior =
@@ -77,6 +76,7 @@ class StartupControllerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     controller_.reset();
     signin_.reset();
+    token_service_->Shutdown();
     token_service_.reset();
     sync_prefs_.reset();
     started_ = false;
@@ -91,8 +91,7 @@ class StartupControllerTest : public testing::Test {
   StartupController* controller() { return controller_.get(); }
   FakeManagedUserSigninManagerWrapper* signin() { return signin_.get(); }
   FakeProfileOAuth2TokenService* token_service() {
-    return static_cast<FakeProfileOAuth2TokenService*>(
-        token_service_->GetProfileOAuth2TokenService());
+    return token_service_.get();
   }
   sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   Profile* profile() { return profile_.get(); }
@@ -102,7 +101,7 @@ class StartupControllerTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<StartupController> controller_;
   scoped_ptr<FakeManagedUserSigninManagerWrapper> signin_;
-  scoped_ptr<FakeProfileOAuth2TokenServiceWrapper> token_service_;
+  scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<TestingProfile> profile_;
 };

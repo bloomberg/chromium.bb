@@ -21,7 +21,7 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -137,9 +137,8 @@ class ProfileSyncServiceSessionTest
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              BuildAutoIssuingFakeProfileOAuth2TokenService);
     // Don't want the profile to create a real ProfileSyncService.
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(), NULL);
     scoped_ptr<TestingProfile> profile(builder.Build());

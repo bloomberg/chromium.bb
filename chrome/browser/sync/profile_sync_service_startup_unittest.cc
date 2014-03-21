@@ -8,7 +8,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -78,9 +78,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              BuildAutoIssuingFakeProfileOAuth2TokenService);
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               BuildService);
     return builder.Build();

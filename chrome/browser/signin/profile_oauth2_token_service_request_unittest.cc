@@ -8,7 +8,7 @@
 #include <vector>
 #include "base/threading/thread.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -84,7 +84,7 @@ void ProfileOAuth2TokenServiceRequestTest::SetUp() {
                                                   &ui_loop_));
   TestingProfile::Builder builder;
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                            &FakeProfileOAuth2TokenServiceWrapper::Build);
+                            &BuildFakeProfileOAuth2TokenService);
   profile_ = builder.Build();
 
   oauth2_service_ = (FakeProfileOAuth2TokenService*)

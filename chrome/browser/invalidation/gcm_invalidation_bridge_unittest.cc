@@ -7,7 +7,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
@@ -51,9 +51,8 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
 
   virtual void SetUp() OVERRIDE {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        &FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              &BuildAutoIssuingFakeProfileOAuth2TokenService);
     builder.AddTestingFactory(gcm::GCMProfileServiceFactory::GetInstance(),
                               &FakeGCMProfileService::Build);
     profile_ = builder.Build();

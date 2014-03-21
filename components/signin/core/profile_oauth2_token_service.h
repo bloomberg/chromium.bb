@@ -20,7 +20,7 @@ class URLRequestContextGetter;
 class GoogleServiceAuthError;
 class SigninClient;
 
-// ProfileOAuth2TokenService is a class that retrieves
+// ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
 // refresh tokens.
 //
@@ -34,14 +34,16 @@ class SigninClient;
 //
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
-class ProfileOAuth2TokenService : public OAuth2TokenService {
+class ProfileOAuth2TokenService : public OAuth2TokenService,
+                                  public KeyedService {
  public:
   virtual ~ProfileOAuth2TokenService();
 
   // Initializes this token service with the SigninClient.
   virtual void Initialize(SigninClient* client);
 
-  virtual void Shutdown();
+  // KeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
 
   // Lists account IDs of all accounts with a refresh token.
   virtual std::vector<std::string> GetAccounts() OVERRIDE;

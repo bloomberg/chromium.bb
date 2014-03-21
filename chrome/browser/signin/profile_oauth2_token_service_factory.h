@@ -17,13 +17,7 @@ class AndroidProfileOAuth2TokenService;
 class MutableProfileOAuth2TokenService;
 #endif
 
-// A wrapper of ProfileOAuth2TokenService so we can use it as a BCKS.
-class ProfileOAuth2TokenServiceWrapper : public KeyedService {
- public:
-  virtual ProfileOAuth2TokenService* GetProfileOAuth2TokenService() = 0;
-};
-
-/// Singleton that owns all ProfileOAuth2TokenServices and associates them with
+// Singleton that owns all ProfileOAuth2TokenServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ProfileOAuth2TokenService.
 class ProfileOAuth2TokenServiceFactory
@@ -52,7 +46,6 @@ class ProfileOAuth2TokenServiceFactory
 
  private:
   friend struct DefaultSingletonTraits<ProfileOAuth2TokenServiceFactory>;
-  friend class ProfileOAuth2TokenServiceWrapperImpl;
 
 #if defined(OS_ANDROID)
   typedef AndroidProfileOAuth2TokenService PlatformSpecificOAuth2TokenService;
