@@ -32,6 +32,7 @@
 #define DraggedIsolatedFileSystem_h
 
 #include "core/clipboard/DataObject.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,24 +40,27 @@ namespace WebCore {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystem FINAL : public Supplement<DataObject> {
+class DraggedIsolatedFileSystem FINAL : public NoBaseWillBeGarbageCollectedFinalized<DraggedIsolatedFileSystem>, public WillBeHeapSupplement<DataObject> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystem);
 public:
     virtual ~DraggedIsolatedFileSystem();
 
-    static PassOwnPtr<DraggedIsolatedFileSystem> create(const String& filesystemId)
+    static PassOwnPtrWillBeRawPtr<DraggedIsolatedFileSystem> create(const String& filesystemId)
     {
-        return adoptPtr(new DraggedIsolatedFileSystem(filesystemId));
+        return adoptPtrWillBeNoop(new DraggedIsolatedFileSystem(filesystemId));
     }
 
     const String& filesystemId() const { return m_filesystemId; }
     DOMFileSystem* getDOMFileSystem(ExecutionContext*);
 
     static const char* supplementName();
-    static DraggedIsolatedFileSystem* from(DataObject* dataObject) { return static_cast<DraggedIsolatedFileSystem*>(Supplement<DataObject>::from(dataObject, supplementName())); }
+    static DraggedIsolatedFileSystem* from(DataObject*);
+
+    void trace(Visitor*);
 
 private:
     DraggedIsolatedFileSystem(const String& filesystemId);
-    RefPtr<DOMFileSystem> m_filesystem;
+    RefPtrWillBeMember<DOMFileSystem> m_filesystem;
     String m_filesystemId;
 };
 

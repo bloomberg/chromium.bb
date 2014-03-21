@@ -58,9 +58,19 @@ const char* DraggedIsolatedFileSystem::supplementName()
     return "DraggedIsolatedFileSystem";
 }
 
+DraggedIsolatedFileSystem* DraggedIsolatedFileSystem::from(DataObject* dataObject)
+{
+    return static_cast<DraggedIsolatedFileSystem*>(WillBeHeapSupplement<DataObject>::from(dataObject, supplementName()));
+}
+
 DraggedIsolatedFileSystem::DraggedIsolatedFileSystem(const String& filesystemId)
     : m_filesystemId(filesystemId)
 {
+}
+
+void DraggedIsolatedFileSystem::trace(Visitor* visitor)
+{
+    visitor->trace(m_filesystem);
 }
 
 } // namespace WebCore

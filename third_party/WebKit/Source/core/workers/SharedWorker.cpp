@@ -109,6 +109,9 @@ void SharedWorker::unsetPreventGC()
 void SharedWorker::trace(Visitor* visitor)
 {
     AbstractWorker::trace(visitor);
+#if ENABLE(OILPAN)
+    HeapSupplementable<SharedWorker>::trace(visitor);
+#endif
 }
 
 } // namespace WebCore

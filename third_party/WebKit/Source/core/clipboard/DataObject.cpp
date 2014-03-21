@@ -268,6 +268,9 @@ void DataObject::internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem> item
 void DataObject::trace(Visitor* visitor)
 {
     visitor->trace(m_itemList);
+#if ENABLE(OILPAN)
+    HeapSupplementable<DataObject>::trace(visitor);
+#endif
 }
 
 } // namespace WebCore

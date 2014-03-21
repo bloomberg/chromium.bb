@@ -30,6 +30,7 @@
 #ifndef SharedWorkerPerformance_h
 #define SharedWorkerPerformance_h
 
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -37,13 +38,16 @@ namespace WebCore {
 class ExecutionContext;
 class SharedWorker;
 
-class SharedWorkerPerformance FINAL : public Supplement<SharedWorker> {
+class SharedWorkerPerformance FINAL : public NoBaseWillBeGarbageCollected<SharedWorkerPerformance>, public WillBeHeapSupplement<SharedWorker> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
 public:
     virtual ~SharedWorkerPerformance();
     static SharedWorkerPerformance& from(SharedWorker&);
 
     static double workerStart(ExecutionContext*, SharedWorker&);
     double getWorkerStart(ExecutionContext*, SharedWorker&) const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit SharedWorkerPerformance();

@@ -40,7 +40,8 @@ namespace WebCore {
 
 class ExceptionState;
 
-class SharedWorker FINAL : public AbstractWorker, public ScriptWrappable, public Supplementable<SharedWorker> {
+class SharedWorker FINAL : public AbstractWorker, public ScriptWrappable, public WillBeHeapSupplementable<SharedWorker> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
     static PassRefPtrWillBeRawPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     virtual ~SharedWorker();
