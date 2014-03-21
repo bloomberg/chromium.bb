@@ -162,19 +162,16 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 };
 
 // TouchActionBrowserTest.DefaultAuto fails under ThreadSanitizer v2, see
-// http://crbug.com/348539.
-#if (defined(USE_AURA) && !defined(THREAD_SANITIZER)) || defined(OS_ANDROID)
-#define MAYBE_DefaultAuto DefaultAuto
-#else
+// http://crbug.com/348539 and is flaky on XP, see
+// http://crbug.com/354763
+//
 // Mac and Linux GTK don't yet have a gesture recognizer, so can't support
 // turning touch events into scroll gestures.
 // Will be fixed with http://crbug.com/337142
-#define MAYBE_DefaultAuto DISABLED_DefaultAuto
-#endif
-
+//
 // Verify the test infrastructure works - we can touch-scroll the page and get a
 // touchcancel as expected.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45));
