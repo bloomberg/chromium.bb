@@ -315,6 +315,18 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       RenderVideoTrackInMultipleTagsAndPause) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk("getUserMediaAndRenderInSeveralVideoTags();");
+}
+
+
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithMandatorySourceID) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

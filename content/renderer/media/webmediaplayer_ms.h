@@ -158,12 +158,15 @@ class WebMediaPlayerMS
 
   // |current_frame_| is updated only on main thread. The object it holds
   // can be freed on the compositor thread if it is the last to hold a
-  // reference but media::VideoFrame is a thread-safe ref-pointer.
+  // reference but media::VideoFrame is a thread-safe ref-pointer. It is
+  // however read on the compositing thread so locking is required around all
+  // modifications on the main thread, and all reads on the compositing thread.
   scoped_refptr<media::VideoFrame> current_frame_;
   // |current_frame_used_| is updated on both main and compositing thread.
   // It's used to track whether |current_frame_| was painted for detecting
   // when to increase |dropped_frame_count_|.
   bool current_frame_used_;
+  // |current_frame_lock_| protects |current_frame_used_| and |current_frame_|.
   base::Lock current_frame_lock_;
   bool pending_repaint_;
 
@@ -176,6 +179,7 @@ class WebMediaPlayerMS
   bool received_first_frame_;
   bool sequence_started_;
   base::TimeDelta start_time_;
+  base::TimeDelta current_time_;
   unsigned total_frame_count_;
   unsigned dropped_frame_count_;
   media::SkCanvasVideoRenderer video_renderer_;

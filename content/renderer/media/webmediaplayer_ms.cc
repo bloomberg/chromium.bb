@@ -19,18 +19,59 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
 using blink::WebRect;
 using blink::WebSize;
+
+namespace {
+
+// This function copies a YV12 or NATIVE_TEXTURE to a new YV12
+// media::VideoFrame.
+scoped_refptr<media::VideoFrame> CopyFrameToYV12(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(frame->format() == media::VideoFrame::YV12 ||
+         frame->format() == media::VideoFrame::NATIVE_TEXTURE);
+  scoped_refptr<media::VideoFrame> new_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     frame->coded_size(),
+                                     frame->visible_rect(),
+                                     frame->natural_size(),
+                                     frame->GetTimestamp());
+
+  if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(frame->visible_rect().width(),
+                          frame->visible_rect().height());
+    frame->ReadPixelsFromNativeTexture(bitmap);
+
+    media::CopyRGBToVideoFrame(
+        reinterpret_cast<uint8*>(bitmap.getPixels()),
+        bitmap.rowBytes(),
+        frame->visible_rect(),
+        new_frame.get());
+  } else {
+    size_t number_of_planes =
+        media::VideoFrame::NumPlanes(frame->format());
+    for (size_t i = 0; i < number_of_planes; ++i) {
+      media::CopyPlane(i, frame->data(i), frame->stride(i),
+                       frame->rows(i), new_frame.get());
+    }
+  }
+  return new_frame;
+}
+
+}  // anonymous namespace
 
 namespace content {
 
@@ -165,6 +206,17 @@ void WebMediaPlayerMS::pause() {
   paused_ = true;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
+
+  if (!current_frame_)
+    return;
+
+  // Copy the frame so that rendering can show the last received frame.
+  // The original frame must not be referenced when the player is paused since
+  // there might be a finite number of available buffers. E.g, video that
+  // originates from a video camera.
+  scoped_refptr<media::VideoFrame> new_frame = CopyFrameToYV12(current_frame_);
+  base::AutoLock auto_lock(current_frame_lock_);
+  current_frame_ = new_frame;
 }
 
 bool WebMediaPlayerMS::supportsSave() const {
@@ -229,8 +281,8 @@ double WebMediaPlayerMS::duration() const {
 
 double WebMediaPlayerMS::currentTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (current_frame_.get()) {
-    return current_frame_->GetTimestamp().InSecondsF();
+  if (current_time_.ToInternalValue() != 0) {
+    return current_time_.InSecondsF();
   } else if (audio_renderer_.get()) {
     return audio_renderer_->GetCurrentRenderTime().InSecondsF();
   }
@@ -384,7 +436,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     if (!current_frame_used_ && current_frame_.get())
       ++dropped_frame_count_;
     current_frame_ = frame;
-    current_frame_->SetTimestamp(frame->GetTimestamp() - start_time_);
+    current_time_ = frame->GetTimestamp() - start_time_;
     current_frame_used_ = false;
   }
 

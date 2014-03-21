@@ -133,6 +133,13 @@
         failedCallback);
   }
 
+  function getUserMediaAndRenderInSeveralVideoTags() {
+    navigator.webkitGetUserMedia(
+        {video: true},
+        createMultipleVideoRenderersAndPause,
+        function(error) { failedCallback(); });
+  }
+
   // Gets a video stream up, analyses it and returns the aspect ratio to the
   // test through the automation controller.
   function getUserMediaAndAnalyseAndStop(constraints) {
@@ -238,6 +245,53 @@
       sendValueToTest(aspectRatio);
     });
   }
+
+  // This test make sure multiple video renderers can be created for the same
+  // local video track and make sure a renderer can still render if other
+  // renderers are paused. See http://crbug/352619.
+  function createMultipleVideoRenderersAndPause(stream) {
+    function createDetectableRenderer(stream, id) {
+      var video = document.createElement('video');
+      document.body.appendChild(video);
+      var localStreamUrl = URL.createObjectURL(stream);
+      video.id = id;
+      video.src = localStreamUrl;
+      video.autoplay = true;
+      video.play();
+      // The detector needs a canvas.
+      var canvas = document.createElement('canvas');
+      canvas.id = video.id + "-canvas";
+      document.body.appendChild(canvas);
+    };
+
+    // Once 3 renderers are created and paused, create one last renderer and
+    // make sure it can play video.
+    setAllEventsOccuredHandler(function() {
+      var id = "lastVideoTag";
+      createDetectableRenderer(stream, id);
+      detectVideoPlaying(id, function () { reportTestSuccess(); });
+    });
+
+    // Create 3 video renderers and pause them once video is playing.
+    for (var i = 0; i < 3; ++i) {
+      var id = "video" + i;
+      createDetectableRenderer(stream, id);
+      addExpectedEvent();
+      // |video_detected_function| creates a new function that pause the video
+      // tag |id|.
+      var video_detected_function =
+          function (j) {
+            return function () {
+              console.log("pause " + j);
+              $(j).pause();
+              eventOccured();
+           };
+          };
+      // Detect video id |id| and trigger the function returned by
+      // |video_detected_function| when video is playing.
+      detectVideoPlaying(id, video_detected_function(id));
+     }
+   }
 
   // This function tries to calculate the aspect ratio shown by the fake capture
   // device in the video tag. For this, we count the amount of light green
