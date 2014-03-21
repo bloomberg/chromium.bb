@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -234,6 +235,7 @@ class StatsResponse : public webrtc::StatsObserver {
 
   virtual void OnComplete(
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
+    TRACE_EVENT0("webrtc", "StatsResponse::OnComplete")
     for (std::vector<webrtc::StatsReport>::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
       if (it->values.size() > 0) {
@@ -627,6 +629,7 @@ void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::MediaStreamTrackInterface* track,
     webrtc::PeerConnectionInterface::StatsOutputLevel level) {
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::GetStats");
   if (!native_peer_connection_->GetStats(observer, track, level)) {
     DVLOG(1) << "GetStats failed.";
     // TODO(hta): Consider how to get an error back.
