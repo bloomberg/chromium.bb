@@ -41,6 +41,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_KEY_LABEL_EXISTS = 12;
   CRYPTOHOME_ERROR_BACKING_STORE_FAILURE = 13;
   CRYPTOHOME_ERROR_UPDATE_SIGNATURE_INVALID = 14;
+  CRYPTOHOME_ERROR_KEY_NOT_FOUND = 15;
 }
 
 message AccountIdentifier {
@@ -121,4 +122,9 @@ message UpdateKeyRequest {
 }
 
 message CheckKeyRequest {
+}
+
+message RemoveKeyRequest {
+  // Only key.data().label() is used at present.
+  optional Key key = 1;
 }
