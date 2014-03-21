@@ -7,11 +7,14 @@
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/app_list/app_list_switches.h"
+
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace {
 
@@ -64,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
       app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 
 }

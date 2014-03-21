@@ -5,8 +5,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/spellcheck_common.h"
+
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class TwoClientDictionarySyncTest : public SyncTest {
  public:
@@ -106,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(dictionary_helper::AddWord(0, "foo"));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(dictionary_helper::DictionaryMatchesVerifier(0));
   ASSERT_FALSE(dictionary_helper::DictionaryMatchesVerifier(1));
 }

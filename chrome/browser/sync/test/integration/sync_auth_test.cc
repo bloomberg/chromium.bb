@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -17,6 +18,7 @@
 #include "net/url_request/url_request_status.h"
 
 using bookmarks_helper::AddURL;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 const char kShortLivedOAuth2Token[] =
     "{"
@@ -84,7 +86,7 @@ class SyncAuthTest : public SyncTest {
 
     // Run until the bookmark is committed or an auth error is encountered.
     TestForAuthError checker_(GetClient(0)->service());
-    GetClient(0)->AwaitStatusChange(&checker_);
+    checker_.Await();
 
     GoogleServiceAuthError oauth_error =
         GetClient(0)->service()->GetSyncTokenStatus().last_get_token_error;
@@ -299,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, TokenExpiry) {
                                net::URLRequestStatus::SUCCESS);
 
   // Verify that the next sync cycle is successful, and uses the new auth token.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   std::string new_token = GetClient(0)->service()->GetAccessTokenForTest();
   ASSERT_NE(old_token, new_token);
 }

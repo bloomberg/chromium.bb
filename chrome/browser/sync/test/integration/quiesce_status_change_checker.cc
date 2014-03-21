@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 namespace {
@@ -146,7 +145,7 @@ bool ProgressMarkerWatcher::IsSyncDisabled() {
 
 QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
     std::vector<ProfileSyncService*> services)
-  : services_(services), harness_(NULL) {
+  : services_(services), timed_out_(false) {
   DCHECK_LE(1U, services_.size());
   for (size_t i = 0; i < services_.size(); ++i) {
     observers_.push_back(new ProgressMarkerWatcher(services[i], this));
@@ -154,6 +153,31 @@ QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
 }
 
 QuiesceStatusChangeChecker::~QuiesceStatusChangeChecker() {}
+
+base::TimeDelta QuiesceStatusChangeChecker::GetTimeoutDuration() {
+  return base::TimeDelta::FromSeconds(45);
+}
+
+void QuiesceStatusChangeChecker::Await() {
+  DVLOG(1) << "Await: " << GetDebugMessage();
+
+  if (IsExitConditionSatisfied()) {
+    DVLOG(1) << "Await -> Exit before waiting: " << GetDebugMessage();
+    return;
+  }
+
+  base::OneShotTimer<QuiesceStatusChangeChecker> timer;
+  timer.Start(FROM_HERE,
+              GetTimeoutDuration(),
+              base::Bind(&QuiesceStatusChangeChecker::OnTimeout,
+                         base::Unretained(this)));
+
+  {
+    base::MessageLoop* loop = base::MessageLoop::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+    loop->Run();
+  }
+}
 
 bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
   // Check that all progress markers are up to date.
@@ -206,18 +230,20 @@ std::string QuiesceStatusChangeChecker::GetDebugMessage() const {
                             services_.size());
 }
 
-
-void QuiesceStatusChangeChecker::InitObserver(
-    ProfileSyncServiceHarness* harness) {
-  harness_ = harness;
-}
-
-void QuiesceStatusChangeChecker::UninitObserver(
-    ProfileSyncServiceHarness* harness) {
-  harness_ = NULL;
-}
-
 void QuiesceStatusChangeChecker::OnServiceStateChanged(
     ProfileSyncService* service) {
-  harness_->OnStateChanged();
+  if (IsExitConditionSatisfied()) {
+    DVLOG(1) << "Await -> Condition met: " << GetDebugMessage();
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+}
+
+void QuiesceStatusChangeChecker::OnTimeout() {
+  DVLOG(1) << "Await -> Timed out: " << GetDebugMessage();
+  timed_out_ = true;
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
+bool QuiesceStatusChangeChecker::TimedOut() const {
+  return timed_out_;
 }

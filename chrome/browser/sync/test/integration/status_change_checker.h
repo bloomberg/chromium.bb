@@ -29,9 +29,6 @@ class StatusChangeChecker {
   // or "AwaitMigrationDone(BOOKMARKS)".
   virtual std::string GetDebugMessage() const = 0;
 
-  virtual void InitObserver(ProfileSyncServiceHarness*) = 0;
-  virtual void UninitObserver(ProfileSyncServiceHarness*) = 0;
-
  protected:
   virtual ~StatusChangeChecker();
 };
