@@ -119,7 +119,7 @@ class KioskAppManager : public KioskAppDataDelegate {
   void AddApp(const std::string& app_id);
   void RemoveApp(const std::string& app_id);
 
-  // Gets info of all apps.
+  // Gets info of all apps that have no meta data load error.
   void GetApps(Apps* apps) const;
 
   // Gets app data for the given app id. Returns true if |app_id| is known and

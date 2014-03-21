@@ -289,8 +289,11 @@ void KioskAppManager::RemoveApp(const std::string& app_id) {
 void KioskAppManager::GetApps(Apps* apps) const {
   apps->clear();
   apps->reserve(apps_.size());
-  for (size_t i = 0; i < apps_.size(); ++i)
-    apps->push_back(App(*apps_[i]));
+  for (size_t i = 0; i < apps_.size(); ++i) {
+    const KioskAppData& app_data = *apps_[i];
+    if (app_data.status() != KioskAppData::STATUS_ERROR)
+      apps->push_back(App(app_data));
+  }
 }
 
 bool KioskAppManager::GetApp(const std::string& app_id, App* app) const {
@@ -452,7 +455,6 @@ void KioskAppManager::OnKioskAppDataLoadFailure(const std::string& app_id) {
   FOR_EACH_OBSERVER(KioskAppManagerObserver,
                     observers_,
                     OnKioskAppDataLoadFailure(app_id));
-  RemoveApp(app_id);
 }
 
 KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {

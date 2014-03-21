@@ -193,6 +193,8 @@ void KioskAppsHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
   base::StringValue app_id_value(app_id);
   web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.showError",
                                    app_id_value);
+
+  kiosk_app_manager_->RemoveApp(app_id);
 }
 
 
