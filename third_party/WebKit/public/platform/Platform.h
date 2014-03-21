@@ -38,6 +38,7 @@
 #include "WebAudioDevice.h"
 #include "WebCommon.h"
 #include "WebData.h"
+#include "WebGamepadListener.h"
 #include "WebGamepads.h"
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
@@ -215,6 +216,8 @@ public:
     // Gamepad -------------------------------------------------------------
 
     virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
+
+    virtual void setGamepadListener(WebGamepadListener*) { }
 
 
     // History -------------------------------------------------------------

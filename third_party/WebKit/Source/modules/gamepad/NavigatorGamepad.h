@@ -26,9 +26,17 @@
 #ifndef NavigatorGamepad_h
 #define NavigatorGamepad_h
 
+#include "core/frame/DOMWindowLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
+#include "core/frame/DeviceSensorEventController.h"
 #include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebGamepads.h"
+
+namespace blink {
+class WebGamepad;
+class WebGamepads;
+}
 
 namespace WebCore {
 
@@ -36,11 +44,12 @@ class GamepadList;
 class Navigator;
 class WebKitGamepadList;
 
-class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator> {
+class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public DeviceSensorEventController, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
-    virtual ~NavigatorGamepad();
+    static NavigatorGamepad* from(Document&);
     static NavigatorGamepad& from(Navigator&);
+    virtual ~NavigatorGamepad();
 
     static WebKitGamepadList* webkitGetGamepads(Navigator&);
     static GamepadList* getGamepads(Navigator&);
@@ -50,9 +59,28 @@ public:
 
     virtual void trace(Visitor*);
 
+    void didConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
+
 private:
-    NavigatorGamepad();
+    explicit NavigatorGamepad(Document&);
+
     static const char* supplementName();
+
+    // DOMWindowProperty
+    virtual void willDestroyGlobalObjectInFrame() OVERRIDE FINAL;
+    virtual void willDetachGlobalObjectFromFrame() OVERRIDE FINAL;
+
+    // DeviceSensorEventController
+    virtual void registerWithDispatcher() OVERRIDE FINAL;
+    virtual void unregisterWithDispatcher() OVERRIDE FINAL;
+    virtual bool hasLastData() OVERRIDE FINAL;
+    virtual PassRefPtr<Event> getLastEvent() OVERRIDE FINAL;
+    virtual bool isNullEvent(Event*) OVERRIDE FINAL;
+
+    // DOMWindowLifecycleObserver
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE FINAL;
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE FINAL;
+    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE FINAL;
 
     RefPtrWillBeMember<GamepadList> m_gamepads;
     RefPtrWillBeMember<WebKitGamepadList> m_webkitGamepads;

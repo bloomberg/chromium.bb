@@ -30,9 +30,9 @@
 #include "wtf/Assertions.h"
 #endif
 
-namespace blink {
-
 #pragma pack(push, 1)
+
+namespace blink {
 
 // This structure is intentionally POD and fixed size so that it can be stored
 // in shared memory between hardware polling threads and the rest of the

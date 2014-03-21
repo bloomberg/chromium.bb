@@ -74,6 +74,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
+#include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
@@ -123,6 +124,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
                 DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::screenOrientationEnabled())
                 ScreenOrientationController::from(*document);
+            if (RuntimeEnabledFeatures::gamepadEnabled())
+                NavigatorGamepad::from(*document);
         }
     }
 }

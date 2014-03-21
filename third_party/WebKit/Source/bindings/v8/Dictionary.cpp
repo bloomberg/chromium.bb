@@ -28,6 +28,7 @@
 
 #include "V8DOMError.h"
 #include "V8EventTarget.h"
+#include "V8Gamepad.h"
 #include "V8IDBKeyRange.h"
 #include "V8MIDIPort.h"
 #include "V8MediaKeyError.h"
@@ -44,6 +45,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
+#include "modules/gamepad/Gamepad.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "modules/speech/SpeechRecognitionResult.h"
@@ -505,6 +507,16 @@ bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<SpeechRecognitionResu
         return false;
 
     value = V8SpeechRecognitionResultList::toNativeWithTypeCheck(m_isolate, v8Value);
+    return true;
+}
+
+bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<Gamepad>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    value = V8Gamepad::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 

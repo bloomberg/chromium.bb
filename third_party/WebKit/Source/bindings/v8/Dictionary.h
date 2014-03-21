@@ -46,6 +46,7 @@ namespace WebCore {
 class ArrayValue;
 class DOMError;
 class DOMWindow;
+class Gamepad;
 class IDBKeyRange;
 class MIDIPort;
 class MediaKeyError;
@@ -91,6 +92,7 @@ public:
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResult>&) const;
     bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResultList>&) const;
+    bool get(const String&, RefPtrWillBeRawPtr<Gamepad>&) const;
     bool get(const String&, RefPtr<MediaStream>&) const;
     bool get(const String&, RefPtr<EventTarget>&) const;
     bool get(const String&, HashSet<AtomicString>&) const;

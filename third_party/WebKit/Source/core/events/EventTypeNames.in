@@ -82,6 +82,8 @@ fetch
 focus
 focusin
 focusout
+gamepadconnected
+gamepaddisconnected
 gesturescrollend
 gesturescrollstart
 gesturescrollupdate

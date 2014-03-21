@@ -92,6 +92,7 @@ FormData
 Function
 GainNode
 Gamepad
+GamepadEvent
 HTMLAllCollection
 HTMLAnchorElement
 HTMLAppletElement
