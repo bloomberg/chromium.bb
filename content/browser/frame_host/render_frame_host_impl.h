@@ -26,6 +26,10 @@ class FilePath;
 class ListValue;
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace content {
 
 class CrossProcessFrameConnector;
@@ -59,9 +63,16 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) OVERRIDE;
+  virtual void Undo() OVERRIDE;
+  virtual void Redo() OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
+  virtual void CopyToFindPboard() OVERRIDE;
   virtual void Paste() OVERRIDE;
+  virtual void PasteAndMatchStyle() OVERRIDE;
+  virtual void Delete() OVERRIDE;
+  virtual void SelectAll() OVERRIDE;
+  virtual void Unselect() OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
   virtual void ExecuteJavaScript(
       const base::string16& javascript) OVERRIDE;
@@ -142,6 +153,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
+
+  // Requests the renderer to select the region between two points.
+  void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
  protected:
   friend class RenderFrameHostFactory;

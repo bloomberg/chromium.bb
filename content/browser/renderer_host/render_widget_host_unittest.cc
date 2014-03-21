@@ -2393,15 +2393,6 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
     EXPECT_TRUE(host_->mock_input_router()->send_event_called_); \
   }
 
-TEST_InputRouterRoutes_NOARGS(Undo);
-TEST_InputRouterRoutes_NOARGS(Redo);
-#if defined(OS_MACOSX)
-TEST_InputRouterRoutes_NOARGS(CopyToFindPboard);
-#endif
-TEST_InputRouterRoutes_NOARGS(PasteAndMatchStyle);
-TEST_InputRouterRoutes_NOARGS(Delete);
-TEST_InputRouterRoutes_NOARGS(SelectAll);
-TEST_InputRouterRoutes_NOARGS(Unselect);
 TEST_InputRouterRoutes_NOARGS(Focus);
 TEST_InputRouterRoutes_NOARGS(Blur);
 TEST_InputRouterRoutes_NOARGS(LostCapture);
@@ -2415,9 +2406,19 @@ TEST_InputRouterRoutes_NOARGS(LostCapture);
     EXPECT_TRUE(host_->mock_input_router()->send_event_called_); \
   }
 
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Undo);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Redo);
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Cut);
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Copy);
+#if defined(OS_MACOSX)
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_CopyToFindPboard);
+#endif
 TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Paste);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_PasteAndMatchStyle);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Delete);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_SelectAll);
+TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Unselect);
+
 #undef TEST_InputRouterRoutes_NOARGS_FromRFH
 
 TEST_F(RenderWidgetHostTest, InputRouterRoutesReplace) {

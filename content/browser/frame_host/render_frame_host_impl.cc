@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -183,6 +184,16 @@ void RenderFrameHostImpl::ExecuteCustomContextMenuCommand(
   Send(new FrameMsg_CustomContextMenuAction(routing_id_, context, action));
 }
 
+void RenderFrameHostImpl::Undo() {
+  Send(new InputMsg_Undo(routing_id_));
+  RecordAction(base::UserMetricsAction("Undo"));
+}
+
+void RenderFrameHostImpl::Redo() {
+  Send(new InputMsg_Redo(routing_id_));
+  RecordAction(base::UserMetricsAction("Redo"));
+}
+
 void RenderFrameHostImpl::Cut() {
   Send(new InputMsg_Cut(routing_id_));
   RecordAction(base::UserMetricsAction("Cut"));
@@ -193,9 +204,37 @@ void RenderFrameHostImpl::Copy() {
   RecordAction(base::UserMetricsAction("Copy"));
 }
 
+void RenderFrameHostImpl::CopyToFindPboard() {
+#if defined(OS_MACOSX)
+  // Windows/Linux don't have the concept of a find pasteboard.
+  Send(new InputMsg_CopyToFindPboard(routing_id_));
+  RecordAction(base::UserMetricsAction("CopyToFindPboard"));
+#endif
+}
+
 void RenderFrameHostImpl::Paste() {
   Send(new InputMsg_Paste(routing_id_));
   RecordAction(base::UserMetricsAction("Paste"));
+}
+
+void RenderFrameHostImpl::PasteAndMatchStyle() {
+  Send(new InputMsg_PasteAndMatchStyle(routing_id_));
+  RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
+}
+
+void RenderFrameHostImpl::Delete() {
+  Send(new InputMsg_Delete(routing_id_));
+  RecordAction(base::UserMetricsAction("DeleteSelection"));
+}
+
+void RenderFrameHostImpl::SelectAll() {
+  Send(new InputMsg_SelectAll(routing_id_));
+  RecordAction(base::UserMetricsAction("SelectAll"));
+}
+
+void RenderFrameHostImpl::Unselect() {
+  Send(new InputMsg_Unselect(routing_id_));
+  RecordAction(base::UserMetricsAction("Unselect"));
 }
 
 void RenderFrameHostImpl::InsertCSS(const std::string& css) {
@@ -225,6 +264,11 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
+  if (IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart) {
+    return render_view_host_->input_router()->SendInput(
+        make_scoped_ptr(message));
+  }
+
   return GetProcess()->Send(message);
 }
 
@@ -633,6 +677,11 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.transition = PAGE_TRANSITION_LINK;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   Navigate(params);
+}
+
+void RenderFrameHostImpl::SelectRange(const gfx::Point& start,
+                                      const gfx::Point& end) {
+  Send(new InputMsg_SelectRange(routing_id_, start, end));
 }
 
 }  // namespace content

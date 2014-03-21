@@ -1122,9 +1122,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
-                        OnSelectionBoundsChanged)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
                         OnSelectionRootBoundsChanged)
@@ -1389,20 +1386,6 @@ void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
 }
 
 void RenderViewHostImpl::OnDidChangeNumWheelEvents(int count) {
-}
-
-void RenderViewHostImpl::OnSelectionChanged(const base::string16& text,
-                                            size_t offset,
-                                            const gfx::Range& range) {
-  if (view_)
-    view_->SelectionChanged(text, offset, range);
-}
-
-void RenderViewHostImpl::OnSelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-  if (view_) {
-    view_->SelectionBoundsChanged(params);
-  }
 }
 
 #if defined(OS_ANDROID)

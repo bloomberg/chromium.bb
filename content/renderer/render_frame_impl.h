@@ -21,6 +21,7 @@
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "ui/gfx/range/range.h"
 
 class TransportDIB;
 struct FrameMsg_BuffersSwapped_Params;
@@ -343,6 +344,10 @@ class CONTENT_EXPORT RenderFrameImpl
   friend class RenderFrameObserver;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
                            ShouldUpdateSelectionTextFromContextMenuParams);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           OnExtendSelectionAndDelete);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           SetEditableSelectionAndComposition);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
@@ -369,13 +374,24 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
                                  unsigned action);
+  void OnUndo();
+  void OnRedo();
   void OnCut();
   void OnCopy();
   void OnPaste();
+  void OnPasteAndMatchStyle();
+  void OnDelete();
+  void OnSelectAll();
+  void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
+  void OnUnselect();
   void OnCSSInsertRequest(const std::string& css);
   void OnJavaScriptExecuteRequest(const base::string16& javascript,
                                   int id,
                                   bool notify_result);
+  void OnSetEditableSelectionOffsets(int start, int end);
+#if defined(OS_MACOSX)
+  void OnCopyToFindPboard();
+#endif
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
@@ -390,6 +406,12 @@ class CONTENT_EXPORT RenderFrameImpl
                const GURL& url,
                const Referrer& referrer,
                blink::WebNavigationPolicy policy);
+
+  // Dispatches the current state of selection on the webpage to the browser if
+  // it has changed.
+  // TODO(varunjain): delete this method once we figure out how to keep
+  // selection handles in sync with the webpage.
+  void SyncSelectionIfRequired();
 
   // Returns whether |params.selection_text| should be synchronized to the
   // browser before bringing up the context menu. Static for testing.
@@ -436,6 +458,21 @@ class CONTENT_EXPORT RenderFrameImpl
   // always respond properly to the request, so we don't have to worry so
   // much about leaks.
   IDMap<ContextMenuClient, IDMapExternalPointer> pending_context_menus_;
+
+  // The text selection the last time DidChangeSelection got called. May contain
+  // additional characters before and after the selected text, for IMEs. The
+  // portion of this string that is the actual selected text starts at index
+  // |selection_range_.GetMin() - selection_text_offset_| and has length
+  // |selection_range_.length()|.
+  base::string16 selection_text_;
+  // The offset corresponding to the start of |selection_text_| in the document.
+  size_t selection_text_offset_;
+  // Range over the document corresponding to the actual selected text (which
+  // could correspond to a substring of |selection_text_|; see above).
+  gfx::Range selection_range_;
+  // Used to inform didChangeSelection() when it is called in the context
+  // of handling a InputMsg_SelectRange IPC.
+  bool handling_select_range_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

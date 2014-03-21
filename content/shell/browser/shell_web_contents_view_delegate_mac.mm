@@ -238,7 +238,8 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
         frame->Paste();
       break;
     case ShellContextMenuItemDeleteTag:
-      web_contents_->GetRenderViewHost()->Delete();
+      if (frame)
+        frame->Delete();
       break;
     case ShellContextMenuItemOpenLinkTag: {
       ShellBrowserContext* browser_context =

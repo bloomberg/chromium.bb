@@ -21,6 +21,7 @@ class Accelerator;
 }
 
 namespace content {
+class RenderFrameHost;
 class TouchEditableImplAuraTest;
 
 // Aura specific implementation of ui::TouchEditable for a RenderWidgetHostView.
@@ -76,6 +77,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   friend class TouchEditableImplAuraTest;
 
   void Cleanup();
+
+  RenderFrameHost* GetFocusedFrame();
 
   // Rectangles for the selection anchor and focus.
   gfx::Rect selection_anchor_rect_;

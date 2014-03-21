@@ -1300,12 +1300,6 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
     host_->ForwardGestureEventWithLatencyInfo(event, CreateLatencyInfo(event));
 }
 
-void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
-                                              const gfx::Point& end) {
-  if (host_)
-    host_->SelectRange(start, end);
-}
-
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host_)
     host_->MoveCaret(point);

@@ -206,7 +206,8 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
         frame->Paste();
       break;
     case ShellContextMenuItemDeleteId:
-      web_contents_->GetRenderViewHost()->Delete();
+      if (frame)
+        frame->Delete();
       break;
     case ShellContextMenuItemOpenLinkId: {
       ShellBrowserContext* browser_context =

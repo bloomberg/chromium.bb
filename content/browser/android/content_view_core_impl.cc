@@ -1230,11 +1230,13 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
 void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                                    jfloat x1, jfloat y1,
                                                    jfloat x2, jfloat y2) {
-  if (GetRenderWidgetHostViewAndroid()) {
-    GetRenderWidgetHostViewAndroid()->SelectRange(
-        gfx::Point(x1 / dpi_scale(), y1 / dpi_scale()),
-        gfx::Point(x2 / dpi_scale(), y2 / dpi_scale()));
-  }
+  if (!web_contents_ || !web_contents_->GetFocusedFrame())
+    return;
+
+  RenderFrameHostImpl* frame =
+      static_cast<RenderFrameHostImpl*>(web_contents_->GetFocusedFrame());
+  frame->SelectRange(gfx::Point(x1 / dpi_scale(), y1 / dpi_scale()),
+                     gfx::Point(x2 / dpi_scale(), y2 / dpi_scale()));
 }
 
 void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,

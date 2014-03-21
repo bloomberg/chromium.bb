@@ -166,23 +166,23 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (void)handlesUndoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = webContents_->GetRenderViewHost();
-  if (!view) {
+  RenderFrameHost* frame = webContents_->GetFocusedFrame();
+  if (!frame) {
     NOTREACHED();
     return;
   }
 
-  view->Undo();
+  frame->Undo();
 }
 
 - (void)handlesRedoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = webContents_->GetRenderViewHost();
-  if (!view) {
+  RenderFrameHost* frame = webContents_->GetFocusedFrame();
+  if (!frame) {
     NOTREACHED();
     return;
   }
 
-  view->Redo();
+  frame->Redo();
 }
 
 - (void)handlesCutScriptCommand:(NSScriptCommand*)command {
@@ -216,13 +216,13 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (void)handlesSelectAllScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = webContents_->GetRenderViewHost();
-  if (!view) {
+  RenderFrameHost* frame = webContents_->GetFocusedFrame();
+  if (!frame) {
     NOTREACHED();
     return;
   }
 
-  view->SelectAll();
+  frame->SelectAll();
 }
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {

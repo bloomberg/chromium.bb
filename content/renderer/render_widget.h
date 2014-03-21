@@ -91,27 +91,23 @@ class CONTENT_EXPORT RenderWidget
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
-  // The compositing surface assigned by the RenderWidgetHost
-  // (or RenderViewHost). Will be gfx::kNullPluginWindow if not assigned yet,
-  // in which case we should not create any GPU command buffers with it.
-  // The routing ID assigned by the RenderProcess. Will be MSG_ROUTING_NONE if
-  // not yet assigned a view ID, in which case, the process MUST NOT send
-  // messages with this ID to the parent.
-  int32 routing_id() const {
-    return routing_id_;
-  }
-
-  int32 surface_id() const {
-    return surface_id_;
-  }
-
-  // May return NULL when the window is closing.
+  int32 routing_id() const { return routing_id_; }
+  int32 surface_id() const { return surface_id_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
-
   gfx::Size size() const { return size_; }
+  float filtered_time_per_frame() const { return filtered_time_per_frame_; }
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen() const { return is_fullscreen_; }
   bool is_hidden() const { return is_hidden_; }
+  bool handling_input_event() const { return handling_input_event_; }
+  // Temporary for debugging purposes...
+  bool closing() const { return closing_; }
+  bool is_swapped_out() { return is_swapped_out_; }
+  ui::MenuSourceType context_menu_source_type() {
+    return context_menu_source_type_; }
+  gfx::Point touch_editing_context_menu_location() {
+    return touch_editing_context_menu_location_;
+  }
 
   // Functions to track out-of-process frames for special notifications.
   void RegisterSwappedOutChildFrame(RenderFrameImpl* frame);
@@ -189,13 +185,12 @@ class CONTENT_EXPORT RenderWidget
   // Notifies about a compositor frame commit operation having finished.
   virtual void DidCommitCompositorFrame();
 
-  float filtered_time_per_frame() const {
-    return filtered_time_per_frame_;
-  }
-
   // Handle common setup/teardown for handling IME events.
   void StartHandlingImeEvent();
   void FinishHandlingImeEvent();
+
+  // Returns whether we currently should handle an IME event.
+  bool ShouldHandleImeEvent();
 
   virtual void InstrumentWillBeginFrame(int frame_id) {}
   virtual void InstrumentDidBeginFrame() {}
@@ -203,8 +198,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void InstrumentWillComposite() {}
 
   bool UsingSynchronousRendererCompositor() const;
-
-  bool is_swapped_out() { return is_swapped_out_; }
 
   // ScreenMetricsEmulator class manages screen emulation inside a render
   // widget. This includes resizing, placing view on the screen at desired
@@ -240,21 +233,22 @@ class CONTENT_EXPORT RenderWidget
 
   void OnShowHostContextMenu(ContextMenuParams* params);
 
+#if defined(OS_ANDROID) || defined(USE_AURA)
+  // |show_ime_if_needed| should be true iff the update may cause the ime to be
+  // displayed, e.g. after a tap on an input field on mobile.
+  // |send_ime_ack| should be true iff the browser side is required to
+  // acknowledge the change before the renderer handles any more IME events.
+  // This is when the event did not originate from the browser side IME, such as
+  // changes from JavaScript or autofill.
+  void UpdateTextInputState(bool show_ime_if_needed, bool send_ime_ack);
+#endif
+
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   // Checks if the composition range or composition character bounds have been
   // changed. If they are changed, the new value will be sent to the browser
   // process.
   void UpdateCompositionInfo(bool should_update_range);
 #endif
-
-  // Temporary for debugging purposes...
-  bool closing() const { return closing_; }
-
-  ui::MenuSourceType context_menu_source_type() {
-    return context_menu_source_type_; }
-  gfx::Point touch_editing_context_menu_location() {
-    return touch_editing_context_menu_location_;
-  }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -382,8 +376,6 @@ class CONTENT_EXPORT RenderWidget
   // Called by the browser process for every required IME acknowledgement.
   void OnImeEventAck();
 #endif
-  // Returns whether we currently should handle an IME event.
-  bool ShouldHandleImeEvent();
 
   void OnSnapshot(const gfx::Rect& src_subrect);
 
@@ -447,16 +439,6 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_resize_ack();
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
-
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  // |show_ime_if_needed| should be true iff the update may cause the ime to be
-  // displayed, e.g. after a tap on an input field on mobile.
-  // |send_ime_ack| should be true iff the browser side is required to
-  // acknowledge the change before the renderer handles any more IME events.
-  // This is when the event did not originate from the browser side IME, such as
-  // changes from JavaScript or autofill.
-  void UpdateTextInputState(bool show_ime_if_needed, bool send_ime_ack);
-#endif
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -557,6 +539,7 @@ class CONTENT_EXPORT RenderWidget
   int32 surface_id_;
 
   // We are responsible for destroying this object via its Close method.
+  // May be NULL when the window is closing.
   blink::WebWidget* webwidget_;
 
   // This is lazily constructed and must not outlive webwidget_.

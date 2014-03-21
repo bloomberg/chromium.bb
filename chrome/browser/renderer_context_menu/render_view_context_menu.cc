@@ -1803,11 +1803,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_UNDO:
-      rvh->Undo();
+      if (render_frame_host)
+        render_frame_host->Undo();
       break;
 
     case IDC_CONTENT_CONTEXT_REDO:
-      rvh->Redo();
+      if (render_frame_host)
+        render_frame_host->Redo();
       break;
 
     case IDC_CONTENT_CONTEXT_CUT:
@@ -1826,15 +1828,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
-      rvh->PasteAndMatchStyle();
+      if (render_frame_host)
+        render_frame_host->PasteAndMatchStyle();
       break;
 
     case IDC_CONTENT_CONTEXT_DELETE:
-      rvh->Delete();
+      if (render_frame_host)
+        render_frame_host->Delete();
       break;
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      rvh->SelectAll();
+      if (render_frame_host)
+        render_frame_host->SelectAll();
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:

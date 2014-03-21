@@ -24,6 +24,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
+#include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -48,6 +49,7 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -75,6 +77,7 @@
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -107,6 +110,7 @@ using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginParams;
+using blink::WebRange;
 using blink::WebReferrerPolicy;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
@@ -129,6 +133,8 @@ using webkit_glue::WebURLResponseExtraDataImpl;
 namespace content {
 
 namespace {
+
+const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
@@ -305,7 +311,10 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       is_loading_(false),
       is_swapped_out_(false),
       is_detaching_(false),
-      cookie_jar_(this) {
+      cookie_jar_(this),
+      selection_text_offset_(0),
+      selection_range_(gfx::Range::InvalidRange()),
+      handling_select_range_(false) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -396,7 +405,7 @@ void RenderFrameImpl::PepperSelectionChanged(
     PepperPluginInstanceImpl* instance) {
   if (instance != render_view_->focused_pepper_plugin())
     return;
-  render_view_->SyncSelectionIfRequired();
+  SyncSelectionIfRequired();
 }
 
 RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
@@ -554,12 +563,24 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+    IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
+    IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
     IPC_MESSAGE_HANDLER(InputMsg_Copy, OnCopy)
     IPC_MESSAGE_HANDLER(InputMsg_Paste, OnPaste)
+    IPC_MESSAGE_HANDLER(InputMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
+    IPC_MESSAGE_HANDLER(InputMsg_Delete, OnDelete)
+    IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
+    IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
+    IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
+                        OnSetEditableSelectionOffsets)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
+#endif
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -872,24 +893,70 @@ void RenderFrameImpl::OnCustomContextMenuAction(
   }
 }
 
+void RenderFrameImpl::OnUndo() {
+  frame_->executeCommand(WebString::fromUTF8("Undo"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnRedo() {
+  frame_->executeCommand(WebString::fromUTF8("Redo"), GetFocusedElement());
+}
+
 void RenderFrameImpl::OnCut() {
-  base::AutoReset<bool> handling_select_range(
-      &render_view_->handling_select_range_, true);
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->executeCommand(WebString::fromUTF8("Cut"), GetFocusedElement());
 }
 
 void RenderFrameImpl::OnCopy() {
-  base::AutoReset<bool> handling_select_range(
-      &render_view_->handling_select_range_, true);
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   WebNode current_node = context_menu_node_.isNull() ?
       GetFocusedElement() : context_menu_node_;
   frame_->executeCommand(WebString::fromUTF8("Copy"), current_node);
 }
 
 void RenderFrameImpl::OnPaste() {
-  base::AutoReset<bool> handling_select_range(
-      &render_view_->handling_select_range_, true);
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->executeCommand(WebString::fromUTF8("Paste"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnPasteAndMatchStyle() {
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  frame_->executeCommand(
+      WebString::fromUTF8("PasteAndMatchStyle"), GetFocusedElement());
+}
+
+#if defined(OS_MACOSX)
+void RenderFrameImpl::OnCopyToFindPboard() {
+  // Since the find pasteboard supports only plain text, this can be simpler
+  // than the |OnCopy()| case.
+  if (frame_->hasSelection()) {
+    base::string16 selection = frame_->selectionAsText();
+    RenderThread::Get()->Send(
+        new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
+  }
+}
+#endif
+
+void RenderFrameImpl::OnDelete() {
+  frame_->executeCommand(WebString::fromUTF8("Delete"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnSelectAll() {
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  frame_->executeCommand(WebString::fromUTF8("SelectAll"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnSelectRange(const gfx::Point& start,
+                                    const gfx::Point& end) {
+  // This IPC is dispatched by RenderWidgetHost, so use its routing id.
+  Send(new ViewHostMsg_SelectRange_ACK(GetRenderWidget()->routing_id()));
+
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  frame_->selectRange(start, end);
+}
+
+void RenderFrameImpl::OnUnselect() {
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  frame_->executeCommand(WebString::fromUTF8("Unselect"), GetFocusedElement());
 }
 
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
@@ -921,6 +988,15 @@ void RenderFrameImpl::OnJavaScriptExecuteRequest(
     }
     Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
   }
+}
+
+void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  if (!GetRenderWidget()->ShouldHandleImeEvent())
+    return;
+  ImeEventGuard guard(GetRenderWidget());
+  // TODO(jam): move this method to WebFrame since it uses the focused frame.
+  render_view_->webview()->setEditableSelectionOffsets(start, end);
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
@@ -1752,7 +1828,22 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
 }
 
 void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
-  render_view_->didChangeSelection(is_empty_selection);
+  if (!GetRenderWidget()->handling_input_event() && !handling_select_range_)
+    return;
+
+  if (is_empty_selection)
+    selection_text_.clear();
+
+  // UpdateTextInputType should be called before SyncSelectionIfRequired.
+  // UpdateTextInputType may send TextInputTypeChanged to notify the focus
+  // was changed, and SyncSelectionIfRequired may send SelectionChanged
+  // to notify the selection was changed.  Focus change should be notified
+  // before selection change.
+  GetRenderWidget()->UpdateTextInputType();
+  SyncSelectionIfRequired();
+#if defined(OS_ANDROID)
+  GetRenderWidget()->UpdateTextInputState(false, true);
+#endif
 }
 
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
@@ -1770,20 +1861,15 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   // to showing the context menu.
   // TODO(asvitkine): http://crbug.com/152432
   if (ShouldUpdateSelectionTextFromContextMenuParams(
-          render_view_->selection_text_,
-          render_view_->selection_text_offset_,
-          render_view_->selection_range_,
-          params)) {
-    render_view_->selection_text_ = params.selection_text;
+          selection_text_, selection_text_offset_, selection_range_, params)) {
+    selection_text_ = params.selection_text;
     // TODO(asvitkine): Text offset and range is not available in this case.
-    render_view_->selection_text_offset_ = 0;
-    render_view_->selection_range_ =
-        gfx::Range(0, render_view_->selection_text_.length());
+    selection_text_offset_ = 0;
+    selection_range_ = gfx::Range(0, selection_text_.length());
+    // This IPC is dispatched by RenderWidetHost, so use its routing ID.
     Send(new ViewHostMsg_SelectionChanged(
-        routing_id_,
-        render_view_->selection_text_,
-        render_view_->selection_text_offset_,
-        render_view_->selection_range_));
+        GetRenderWidget()->routing_id(), selection_text_,
+        selection_text_offset_, selection_range_));
   }
 
   params.frame_id = routing_id_;
@@ -2496,6 +2582,10 @@ void RenderFrameImpl::didStopLoading() {
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 
+void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
+  render_view_->didChangeLoadProgress(frame_, load_progress);
+}
+
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     RenderFrame* render_frame,
     WebFrame* frame,
@@ -2753,8 +2843,63 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
-void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
-  render_view_->didChangeLoadProgress(frame_, load_progress);
+void RenderFrameImpl::SyncSelectionIfRequired() {
+  base::string16 text;
+  size_t offset;
+  gfx::Range range;
+#if defined(ENABLE_PLUGINS)
+  if (render_view_->focused_pepper_plugin_) {
+    render_view_->focused_pepper_plugin_->GetSurroundingText(&text, &range);
+    offset = 0;  // Pepper API does not support offset reporting.
+    // TODO(kinaba): cut as needed.
+  } else
+#endif
+  {
+    size_t location, length;
+    if (!render_view_->webview()->caretOrSelectionRange(&location, &length))
+      return;
+
+    range = gfx::Range(location, location + length);
+
+    if (render_view_->webview()->textInputInfo().type !=
+            blink::WebTextInputTypeNone) {
+      // If current focused element is editable, we will send 100 more chars
+      // before and after selection. It is for input method surrounding text
+      // feature.
+      if (location > kExtraCharsBeforeAndAfterSelection)
+        offset = location - kExtraCharsBeforeAndAfterSelection;
+      else
+        offset = 0;
+      length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
+      WebRange webrange = WebRange::fromDocumentRange(frame_, offset, length);
+      if (!webrange.isNull())
+        text = WebRange::fromDocumentRange(
+            frame_, offset, length).toPlainText();
+    } else {
+      offset = location;
+      text = frame_->selectionAsText();
+      // http://crbug.com/101435
+      // In some case, frame->selectionAsText() returned text's length is not
+      // equal to the length returned from webview()->caretOrSelectionRange().
+      // So we have to set the range according to text.length().
+      range.set_end(range.start() + text.length());
+    }
+  }
+
+  // Sometimes we get repeated didChangeSelection calls from webkit when
+  // the selection hasn't actually changed. We don't want to report these
+  // because it will cause us to continually claim the X clipboard.
+  if (selection_text_offset_ != offset ||
+      selection_range_ != range ||
+      selection_text_ != text) {
+    selection_text_ = text;
+    selection_text_offset_ = offset;
+    selection_range_ = range;
+    // This IPC is dispatched by RenderWidetHost, so use its routing ID.
+    Send(new ViewHostMsg_SelectionChanged(
+        GetRenderWidget()->routing_id(), text, offset, range));
+  }
+  GetRenderWidget()->UpdateSelectionBounds();
 }
 
 }  // namespace content

@@ -4,10 +4,10 @@
 
 #include "content/browser/web_contents/touch_editable_impl_aura.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -229,12 +229,11 @@ void TouchEditableImplAura::OnViewDestroyed() {
 
 void TouchEditableImplAura::SelectRect(const gfx::Point& start,
                                        const gfx::Point& end) {
-  if (!rwhva_)
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
     return;
 
-  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
-  host->SelectRange(start, end);
+  static_cast<RenderFrameHostImpl*>(focused_frame)->SelectRange(start, end);
 }
 
 void TouchEditableImplAura::MoveCaretTo(const gfx::Point& point) {
@@ -334,12 +333,9 @@ bool TouchEditableImplAura::GetAcceleratorForCommandId(
 }
 
 void TouchEditableImplAura::ExecuteCommand(int command_id, int event_flags) {
-  if (!rwhva_)
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
     return;
-  RenderWidgetHost* host = rwhva_->GetRenderWidgetHost();
-  RenderViewHost* rvh = RenderViewHost::From(host);
-  WebContents* wc = WebContents::FromRenderViewHost(rvh);
-  RenderFrameHost* focused_frame = wc->GetFocusedFrame();
   switch (command_id) {
     case IDS_APP_CUT:
       focused_frame->Cut();
@@ -351,10 +347,10 @@ void TouchEditableImplAura::ExecuteCommand(int command_id, int event_flags) {
       focused_frame->Paste();
       break;
     case IDS_APP_DELETE:
-      host->Delete();
+      focused_frame->Delete();
       break;
     case IDS_APP_SELECT_ALL:
-      host->SelectAll();
+      focused_frame->SelectAll();
       break;
     default:
       NOTREACHED();
@@ -386,6 +382,15 @@ void TouchEditableImplAura::Cleanup() {
   handles_hidden_due_to_scroll_ = false;
   scroll_in_progress_ = false;
   overscroll_in_progress_ = false;
+}
+
+RenderFrameHost* TouchEditableImplAura::GetFocusedFrame() {
+  if (!rwhva_)
+    return NULL;
+  RenderWidgetHost* host = rwhva_->GetRenderWidgetHost();
+  RenderViewHost* rvh = RenderViewHost::From(host);
+  WebContents* wc = WebContents::FromRenderViewHost(rvh);
+  return wc->GetFocusedFrame();
 }
 
 }  // namespace content

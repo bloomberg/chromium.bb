@@ -1949,7 +1949,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "</body>"
            "</html>");
   ExecuteJavaScript("document.getElementById('test1').focus();");
-  view()->OnSetEditableSelectionOffsets(4, 8);
+  frame()->OnSetEditableSelectionOffsets(4, 8);
   const std::vector<blink::WebCompositionUnderline> empty_underline;
   view()->OnSetCompositionFromExistingText(7, 10, empty_underline);
   blink::WebTextInputInfo info = view()->webview()->textInputInfo();
@@ -1957,7 +1957,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(8, info.selectionEnd);
   EXPECT_EQ(7, info.compositionStart);
   EXPECT_EQ(10, info.compositionEnd);
-  view()->OnUnselect();
+  frame()->OnUnselect();
   info = view()->webview()->textInputInfo();
   EXPECT_EQ(0, info.selectionStart);
   EXPECT_EQ(0, info.selectionEnd);
@@ -1974,13 +1974,13 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
            "</body>"
            "</html>");
   ExecuteJavaScript("document.getElementById('test1').focus();");
-  view()->OnSetEditableSelectionOffsets(10, 10);
+  frame()->OnSetEditableSelectionOffsets(10, 10);
   view()->OnExtendSelectionAndDelete(3, 4);
   blink::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
   EXPECT_EQ(7, info.selectionStart);
   EXPECT_EQ(7, info.selectionEnd);
-  view()->OnSetEditableSelectionOffsets(4, 8);
+  frame()->OnSetEditableSelectionOffsets(4, 8);
   view()->OnExtendSelectionAndDelete(2, 5);
   info = view()->webview()->textInputInfo();
   EXPECT_EQ("abuvwxyz", info.value);

@@ -316,6 +316,12 @@ IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequest,
                     int,  /* ID */
                     bool  /* if true, a reply is requested */)
 
+// Selects between the given start and end offsets in the currently focused
+// editable field.
+IPC_MESSAGE_ROUTED2(FrameMsg_SetEditableSelectionOffsets,
+                    int /* start */,
+                    int /* end */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

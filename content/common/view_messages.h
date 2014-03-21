@@ -829,12 +829,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_SetCompositionFromExistingText,
     int /* end */,
     std::vector<blink::WebCompositionUnderline> /* underlines */)
 
-// Selects between the given start and end offsets in the currently focused
-// editable field.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetEditableSelectionOffsets,
-                    int /* start */,
-                    int /* end */)
-
 // Deletes the current selection plus the specified number of characters before
 // and after the selection or caret.
 IPC_MESSAGE_ROUTED2(ViewMsg_ExtendSelectionAndDelete,

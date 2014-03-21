@@ -431,7 +431,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didChangeLoadProgress(blink::WebFrame* frame,
                                      double load_progress);
   virtual void didCancelCompositionOnSelectionChange();
-  virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const blink::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
   virtual blink::WebColorChooser* createColorChooser(
@@ -856,20 +855,12 @@ class CONTENT_EXPORT RenderViewImpl
   //
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
-
-  void OnDelete();
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnMoveCaret(const gfx::Point& point);
-  void OnPasteAndMatchStyle();
-  void OnRedo();
   void OnReplace(const base::string16& text);
   void OnReplaceMisspelling(const base::string16& text);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnSelectAll();
-  void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
-  void OnUndo();
-  void OnUnselect();
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32 download_id);
@@ -936,7 +927,6 @@ class CONTENT_EXPORT RenderViewImpl
       int start, int end,
       const std::vector<blink::WebCompositionUnderline>& underlines);
   void OnExitFullscreen();
-  void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
   void OnSetPageEncoding(const std::string& encoding_name);
@@ -969,7 +959,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnExtractSmartClipData(const gfx::Rect& rect);
   void GetSelectionRootBounds(gfx::Rect* bounds) const;
 #elif defined(OS_MACOSX)
-  void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const base::string16& text,
                                        int plugin_id);
   void OnSelectPopupMenuItem(int selected_index);
@@ -1061,12 +1050,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
-
-  // Dispatches the current state of selection on the webpage to the browser if
-  // it has changed.
-  // TODO(varunjain): delete this method once we figure out how to keep
-  // selection handles in sync with the webpage.
-  void SyncSelectionIfRequired();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs();
@@ -1242,18 +1225,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
 
-  // The text selection the last time DidChangeSelection got called. May contain
-  // additional characters before and after the selected text, for IMEs. The
-  // portion of this string that is the actual selected text starts at index
-  // |selection_range_.GetMin() - selection_text_offset_| and has length
-  // |selection_range_.length()|.
-  base::string16 selection_text_;
-  // The offset corresponding to the start of |selection_text_| in the document.
-  size_t selection_text_offset_;
-  // Range over the document corresponding to the actual selected text (which
-  // could correspond to a substring of |selection_text_|; see above).
-  gfx::Range selection_range_;
-
 #if defined(OS_ANDROID)
   // Cache the old top controls state constraints. Used when updating
   // current value only without altering the constraints.
@@ -1421,10 +1392,6 @@ class CONTENT_EXPORT RenderViewImpl
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   ObserverList<RenderViewObserver> observers_;
-
-  // Used to inform didChangeSelection() when it is called in the context
-  // of handling a InputMsg_SelectRange IPC.
-  bool handling_select_range_;
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;

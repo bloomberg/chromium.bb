@@ -36,7 +36,6 @@ struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct FrameMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
@@ -543,11 +542,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
                                                   bool is_pinned_to_right);
   void OnDidChangeNumWheelEvents(int count);
-  void OnSelectionChanged(const base::string16& text,
-                          size_t offset,
-                          const gfx::Range& range);
-  void OnSelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
 #if defined(OS_ANDROID)
   void OnSelectionRootBoundsChanged(const gfx::Rect& bounds);
 #endif

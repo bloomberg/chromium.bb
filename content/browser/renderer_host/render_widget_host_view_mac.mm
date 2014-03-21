@@ -3994,17 +3994,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)undo:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->Undo();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->Undo();
 }
 
 - (void)redo:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->Redo();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->Redo();
 }
 
 - (void)cut:(id)sender {
@@ -4020,10 +4018,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)copyToFindPboard:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->CopyToFindPboard();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->CopyToFindPboard();
 }
 
 - (void)paste:(id)sender {
@@ -4033,10 +4030,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->PasteAndMatchStyle();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->PasteAndMatchStyle();
 }
 
 - (void)selectAll:(id)sender {
@@ -4047,10 +4043,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->SelectAll();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->SelectAll();
 }
 
 - (void)startSpeaking:(id)sender {

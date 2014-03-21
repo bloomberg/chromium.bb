@@ -38,7 +38,6 @@
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/webmessageportchannel_impl.h"
-#include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
@@ -188,6 +187,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "third_party/WebKit/public/web/default/WebRenderTheme.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
@@ -345,8 +345,6 @@ static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
 // better than having to wake up all renderers during shutdown.
 const int kDelaySecondsForContentStateSyncHidden = 5;
 const int kDelaySecondsForContentStateSync = 1;
-
-const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
 #if defined(OS_ANDROID)
 // Delay between tapping in content and launching the associated android intent.
@@ -656,8 +654,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       history_list_offset_(-1),
       history_list_length_(0),
       target_url_status_(TARGET_NONE),
-      selection_text_offset_(0),
-      selection_range_(gfx::Range::InvalidRange()),
 #if defined(OS_ANDROID)
       top_controls_constraints_(cc::BOTH),
 #endif
@@ -695,7 +691,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       enumeration_completion_id_(0),
       load_progress_tracker_(new LoadProgressTracker(this)),
       session_storage_namespace_id_(params->session_storage_namespace_id),
-      handling_select_range_(false),
       next_snapshot_id_(0) {
 }
 
@@ -1071,27 +1066,18 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewImpl, message, msg_is_ok)
-    IPC_MESSAGE_HANDLER(InputMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(InputMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
-    IPC_MESSAGE_HANDLER(InputMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
-    IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
-    IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
-    IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
-    IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetEditableSelectionOffsets,
-                        OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCompositionFromExistingText,
                         OnSetCompositionFromExistingText)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtendSelectionAndDelete,
@@ -1168,7 +1154,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PauseVideo, OnPauseVideo)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtractSmartClipData, OnExtractSmartClipData)
 #elif defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -1266,14 +1251,6 @@ void RenderViewImpl::OnUpdateTargetURLAck() {
   target_url_status_ = TARGET_NONE;
 }
 
-void RenderViewImpl::OnDelete() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"),
-                                            GetFocusedElement());
-}
-
 void RenderViewImpl::OnExecuteEditCommand(const std::string& name,
     const std::string& value) {
   if (!webview() || !webview()->focusedFrame())
@@ -1290,23 +1267,6 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
   Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
 
   webview()->focusedFrame()->moveCaretSelection(point);
-}
-
-void RenderViewImpl::OnPasteAndMatchStyle() {
-  if (!webview())
-    return;
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("PasteAndMatchStyle"), GetFocusedElement());
-}
-
-void RenderViewImpl::OnRedo() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"),
-                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnReplace(const base::string16& text) {
@@ -1346,77 +1306,16 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
   }
 }
 
-void RenderViewImpl::OnSelectAll() {
-  if (!webview())
-    return;
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("SelectAll"), GetFocusedElement());
-}
-
-void RenderViewImpl::OnSelectRange(const gfx::Point& start,
-                                   const gfx::Point& end) {
-  if (!webview())
-    return;
-
-  Send(new ViewHostMsg_SelectRange_ACK(routing_id_));
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->selectRange(start, end);
-}
-
 void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   edit_commands_ = edit_commands;
 }
-
-void RenderViewImpl::OnUndo() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"),
-                                            GetFocusedElement());
-}
-
-void RenderViewImpl::OnUnselect() {
-  if (!webview())
-    return;
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"),
-                                            GetFocusedElement());
-}
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnCopyToFindPboard() {
-  if (!webview())
-    return;
-
-  // Since the find pasteboard supports only plain text, this can be simpler
-  // than the |OnCopy()| case.
-  WebFrame* frame = webview()->focusedFrame();
-  if (frame->hasSelection()) {
-    base::string16 selection = frame->selectionAsText();
-    RenderThread::Get()->Send(
-        new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
-  }
-}
-#endif
 
 void RenderViewImpl::OnSetName(const std::string& name) {
   if (!webview())
     return;
 
   webview()->mainFrame()->setName(WebString::fromUTF8(name));
-}
-
-void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  if (!ShouldHandleImeEvent())
-    return;
-  ImeEventGuard guard(this);
-  webview()->setEditableSelectionOffsets(start, end);
 }
 
 void RenderViewImpl::OnSetCompositionFromExistingText(
@@ -1857,25 +1756,6 @@ void RenderViewImpl::didChangeLoadProgress(WebFrame* frame,
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
-}
-
-void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
-  if (!handling_input_event_ && !handling_select_range_)
-    return;
-
-  if (is_empty_selection)
-    selection_text_.clear();
-
-  // UpdateTextInputType should be called before SyncSelectionIfRequired.
-  // UpdateTextInputType may send TextInputTypeChanged to notify the focus
-  // was changed, and SyncSelectionIfRequired may send SelectionChanged
-  // to notify the selection was changed.  Focus change should be notified
-  // before selection change.
-  UpdateTextInputType();
-  SyncSelectionIfRequired();
-#if defined(OS_ANDROID)
-  UpdateTextInputState(false, true);
-#endif
 }
 
 void RenderViewImpl::didExecuteCommand(const WebString& command_name) {
@@ -3288,65 +3168,6 @@ void RenderViewImpl::SyncNavigationState() {
 
   const WebHistoryItem& item = webview()->mainFrame()->currentHistoryItem();
   SendUpdateState(item);
-}
-
-void RenderViewImpl::SyncSelectionIfRequired() {
-  WebFrame* frame = webview()->focusedFrame();
-  if (!frame)
-    return;
-
-  base::string16 text;
-  size_t offset;
-  gfx::Range range;
-#if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->GetSurroundingText(&text, &range);
-    offset = 0;  // Pepper API does not support offset reporting.
-    // TODO(kinaba): cut as needed.
-  } else
-#endif
-  {
-    size_t location, length;
-    if (!webview()->caretOrSelectionRange(&location, &length))
-      return;
-
-    range = gfx::Range(location, location + length);
-
-    if (webview()->textInputInfo().type != blink::WebTextInputTypeNone) {
-      // If current focused element is editable, we will send 100 more chars
-      // before and after selection. It is for input method surrounding text
-      // feature.
-      if (location > kExtraCharsBeforeAndAfterSelection)
-        offset = location - kExtraCharsBeforeAndAfterSelection;
-      else
-        offset = 0;
-      length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
-      WebRange webrange = WebRange::fromDocumentRange(frame, offset, length);
-      if (!webrange.isNull())
-        text = WebRange::fromDocumentRange(frame, offset, length).toPlainText();
-    } else {
-      offset = location;
-      text = frame->selectionAsText();
-      // http://crbug.com/101435
-      // In some case, frame->selectionAsText() returned text's length is not
-      // equal to the length returned from webview()->caretOrSelectionRange().
-      // So we have to set the range according to text.length().
-      range.set_end(range.start() + text.length());
-    }
-  }
-
-  // Sometimes we get repeated didChangeSelection calls from webkit when
-  // the selection hasn't actually changed. We don't want to report these
-  // because it will cause us to continually claim the X clipboard.
-  if (selection_text_offset_ != offset ||
-      selection_range_ != range ||
-      selection_text_ != text) {
-    selection_text_ = text;
-    selection_text_offset_ = offset;
-    selection_range_ = range;
-    Send(new ViewHostMsg_SelectionChanged(routing_id_, text, offset, range));
-  }
-  UpdateSelectionBounds();
 }
 
 GURL RenderViewImpl::GetLoadingUrl(blink::WebFrame* frame) const {

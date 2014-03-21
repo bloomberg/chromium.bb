@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -196,11 +197,11 @@ void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
                                                     int start, int end) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
+  RenderFrameHost* rfh = GetFocusedFrame();
+  if (!rfh)
     return;
 
-  rwhi->Send(new ViewMsg_SetEditableSelectionOffsets(rwhi->GetRoutingID(),
+  rfh->Send(new FrameMsg_SetEditableSelectionOffsets(rfh->GetRoutingID(),
                                                      start, end));
 }
 
@@ -229,19 +230,15 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*, jobject,
 }
 
 void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
-    return;
-
-  rwhi->Unselect();
+  RenderFrameHost* rfh = GetFocusedFrame();
+  if (rfh)
+    rfh->Unselect();
 }
 
 void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
-    return;
-
-  rwhi->SelectAll();
+  RenderFrameHost* rfh = GetFocusedFrame();
+  if (rfh)
+    rfh->SelectAll();
 }
 
 void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {

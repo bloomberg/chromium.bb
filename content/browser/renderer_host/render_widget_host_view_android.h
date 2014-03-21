@@ -234,9 +234,6 @@ class RenderWidgetHostViewAndroid
 
   bool HasValidFrame() const;
 
-  // Select all text between the given coordinates.
-  void SelectRange(const gfx::Point& start, const gfx::Point& end);
-
   void MoveCaret(const gfx::Point& point);
 
   // Returns true when animation ticks are still needed. This avoids a separate
