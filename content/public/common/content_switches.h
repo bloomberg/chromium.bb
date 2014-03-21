@@ -53,6 +53,7 @@ extern const char kDisableDesktopNotifications[];
 extern const char kDisableDirectNPAPIRequests[];
 extern const char kDisableDomainBlockingFor3DAPIs[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
+CONTENT_EXPORT extern const char kDisableFastTextAutosizing[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
 CONTENT_EXPORT extern const char kDisableFiltersOverIPC[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];

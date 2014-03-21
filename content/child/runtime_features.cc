@@ -157,7 +157,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (ui::IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 
-  if (command_line.HasSwitch(switches::kEnableFastTextAutosizing))
+  if (command_line.HasSwitch(switches::kEnableFastTextAutosizing)
+      && !command_line.HasSwitch(switches::kDisableFastTextAutosizing))
     WebRuntimeFeatures::enableFastTextAutosizing(true);
 
   if (command_line.HasSwitch(switches::kDisableRepaintAfterLayout))

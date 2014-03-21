@@ -155,6 +155,9 @@ extern const char kDisableDomainBlockingFor3DAPIs[] =
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
+// Disable the fast text autosizing implementation.
+const char kDisableFastTextAutosizing[]     = "disable-fast-text-autosizing";
+
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 

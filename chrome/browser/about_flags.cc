@@ -1766,7 +1766,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_NAME,
     IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableFastTextAutosizing)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableFastTextAutosizing,
+                              switches::kDisableFastTextAutosizing)
   },
   {
     "disable-cast",
