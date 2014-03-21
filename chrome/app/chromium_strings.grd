@@ -863,6 +863,14 @@ For Chromium, processes used to display diagnostics information (such as this "a
 • Manage your Google Accounts
       </message>
 
+      <!-- Account removal view in the avatar menu bubble -->
+      <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a secondary account.">
+        To remove your account, Chromium needs to restart. Make sure you've saved any open work before continuing.
+      </message>
+      <message name="IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a primary account.">
+        You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit settings.
+      </message>
+
       <!-- Sync Promo New Tab Page bubble strings -->
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE_NEW" desc="The body of the sync promo NTP bubble.">
         Now that you're signed in, you can get your tabs, bookmarks and other Chromium stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.

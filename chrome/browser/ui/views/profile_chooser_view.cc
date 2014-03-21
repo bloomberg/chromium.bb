@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -35,6 +36,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -53,6 +55,7 @@ namespace {
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 29;
 const int kProfileAvatarTutorialShowMax = 5;
+const int kFixedAccountRemovalViewWidth = 280;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -283,6 +286,50 @@ class EditableProfileName : public views::LabelButton,
   DISALLOW_COPY_AND_ASSIGN(EditableProfileName);
 };
 
+// A title card with one back button right aligned and one label center aligned.
+class TitleCard : public views::View {
+ public:
+   TitleCard(int message_id, views::ButtonListener* listener,
+             views::ImageButton** back_button) {
+    back_button_ = new views::ImageButton(listener);
+    back_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                    views::ImageButton::ALIGN_MIDDLE);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    back_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                           rb->GetImageSkiaNamed(IDR_BACK));
+    back_button_->SetImage(views::ImageButton::STATE_HOVERED,
+                           rb->GetImageSkiaNamed(IDR_BACK_H));
+    back_button_->SetImage(views::ImageButton::STATE_PRESSED,
+                           rb->GetImageSkiaNamed(IDR_BACK_P));
+    back_button_->SetImage(views::ImageButton::STATE_DISABLED,
+                           rb->GetImageSkiaNamed(IDR_BACK_D));
+    *back_button = back_button_;
+
+    title_label_ = new views::Label(l10n_util::GetStringUTF16(message_id));
+    title_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
+    AddChildView(back_button_);
+    AddChildView(title_label_);
+  }
+
+ private:
+  virtual void Layout() OVERRIDE{
+    back_button_->SetBoundsRect(GetContentsBounds());
+    title_label_->SetBoundsRect(GetContentsBounds());
+  }
+
+  virtual gfx::Size GetPreferredSize() OVERRIDE{
+    int height = profiles::kAvatarIconPadding * 2 +
+        std::max(title_label_->GetPreferredSize().height(),
+                 back_button_->GetPreferredSize().height());
+    return gfx::Size(width(), height);
+  }
+
+  views::ImageButton* back_button_;
+  views::Label* title_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(TitleCard);
+};
 
 // ProfileChooserView ---------------------------------------------------------
 
@@ -366,6 +413,7 @@ void ProfileChooserView::ResetView() {
   current_profile_name_ = NULL;
   tutorial_ok_button_ = NULL;
   tutorial_learn_more_link_ = NULL;
+  account_removal_cancel_button_ = NULL;
   open_other_profile_indexes_map_.clear();
   current_profile_accounts_map_.clear();
   tutorial_showing_ = false;
@@ -436,6 +484,17 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     layout->AddView(web_view);
     layout->set_minimum_size(
         gfx::Size(kMinGaiaViewWidth, kMinGaiaViewHeight));
+    Layout();
+    if (GetBubbleFrameView())
+      SizeToContents();
+    return;
+  }
+
+  if (view_to_display == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL) {
+    views::GridLayout* layout = CreateSingleColumnLayout(
+        this, kFixedAccountRemovalViewWidth);
+    layout->StartRow(1, 0);
+    layout->AddView(CreateAccountRemovalView());
     Layout();
     if (GetBubbleFrameView())
       SizeToContents();
@@ -531,8 +590,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         ProfileMetrics::ADD_NEW_USER_ICON);
   } else if (sender == add_account_button_) {
     ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
-  } else if (sender == current_profile_photo_->change_photo_button()) {
-    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
   } else if (sender == tutorial_ok_button_) {
     // If the user manually dismissed the tutorial, never show it again by
     // setting the number of times shown to the maximum plus 1, so that later we
@@ -541,6 +598,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     browser_->profile()->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
     ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+  } else if (sender == remove_account_and_relaunch_button_) {
+    RemoveAccount();
+  } else if (sender == account_removal_cancel_button_) {
+    account_id_to_remove_.clear();
+    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  } else if (current_profile_photo_ &&
+             sender == current_profile_photo_->change_photo_button()) {
+    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+  } else if (current_profile_photo_ &&
+             sender == current_profile_photo_->change_photo_button()) {
+    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
   } else {
     // One of the "other profiles" buttons was pressed.
     ButtonIndexes::const_iterator match =
@@ -558,12 +626,20 @@ void ProfileChooserView::OnMenuButtonClicked(views::View* source,
   AccountButtonIndexes::const_iterator match =
       current_profile_accounts_map_.find(source);
   DCHECK(match != current_profile_accounts_map_.end());
+  account_id_to_remove_ = match->second;
+  ShowView(BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL, avatar_menu_.get());
+}
 
+void ProfileChooserView::RemoveAccount() {
+  DCHECK(!account_id_to_remove_.empty());
   MutableProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-          browser_->profile());
+      browser_->profile());
   if (oauth2_token_service)
-    oauth2_token_service->RevokeCredentials(match->second);
+    oauth2_token_service->RevokeCredentials(account_id_to_remove_);
+  account_id_to_remove_.clear();
+
+  chrome::AttemptRestart();
 }
 
 void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
@@ -946,16 +1022,67 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
       gfx::ElideEmail(base::UTF8ToUTF16(account),
                       rb->GetFontList(ui::ResourceBundle::BaseFont),
                       width - menu_marker->width()),
-      is_primary_account ? NULL : this,  // Cannot delete the primary account.
-      !is_primary_account);
+      this,
+      true /* show_menu_marker */);
   email_button->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
-  if (!is_primary_account) {
-    email_button->set_menu_marker(menu_marker);
+  email_button->set_menu_marker(menu_marker);
+  if (!is_primary_account)
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  }
   layout->StartRow(1, 0);
   layout->AddView(email_button);
 
   // Save the original email address, as the button text could be elided.
   current_profile_accounts_map_[email_button] = account;
 }
+
+views::View* ProfileChooserView::CreateAccountRemovalView() {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(
+      view, kFixedAccountRemovalViewWidth - 2 * views::kButtonHEdgeMarginNew);
+  layout->SetInsets(views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew,
+                    views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew);
+
+  // Adds title.
+  layout->StartRow(1, 0);
+  layout->AddView(new TitleCard(IDS_PROFILES_ACCOUNT_REMOVAL_TITLE, this,
+                                &account_removal_cancel_button_));
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  const std::string& primary_account = SigninManagerFactory::GetForProfile(
+      browser_->profile())->GetAuthenticatedUsername();
+  bool is_primary_account = primary_account == account_id_to_remove_;
+
+  // Adds main text.
+  views::Label* content_label = new views::Label(is_primary_account ?
+      l10n_util::GetStringFUTF16(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
+                                 base::UTF8ToUTF16(account_id_to_remove_)) :
+      l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT));
+
+  content_label->SetMultiLine(true);
+  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& small_font_list =
+      rb->GetFontList(ui::ResourceBundle::SmallFont);
+  content_label->SetFontList(small_font_list);
+  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(content_label);
+
+  // Adds button.
+  if (!is_primary_account) {
+    remove_account_and_relaunch_button_ = new views::BlueButton(
+        this, l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON));
+    remove_account_and_relaunch_button_->SetHorizontalAlignment(
+        gfx::ALIGN_CENTER);
+    layout->StartRowWithPadding(
+        1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddView(remove_account_and_relaunch_button_);
+  } else {
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  }
+
+  return view;
+}
+

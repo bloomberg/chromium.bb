@@ -28,6 +28,7 @@ class Image;
 
 namespace views {
 class GridLayout;
+class ImageButton;
 class Link;
 class LabelButton;
 }
@@ -53,7 +54,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
     // Shows a web view for primary sign in.
     BUBBLE_VIEW_MODE_GAIA_SIGNIN,
     // Shows a web view for adding secondary accounts.
-    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT
+    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
+    // Shows a view for confirming account removal.
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
   };
 
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -150,6 +153,11 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            bool is_primary_account,
                            int width);
 
+  // Creates a view to confirm account removal for |account_id_to_remove_|.
+  views::View* CreateAccountRemovalView();
+
+  void RemoveAccount();
+
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
 
@@ -179,6 +187,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::LabelButton* add_user_button_;
   views::LabelButton* users_button_;
   views::LabelButton* add_account_button_;
+
+  // Links and buttons displayed in the account removal view.
+  views::LabelButton* remove_account_and_relaunch_button_;
+  views::ImageButton* account_removal_cancel_button_;
+
+  // Records the account id to remove.
+  std::string account_id_to_remove_;
 
   // Active view mode.
   BubbleViewMode view_mode_;
