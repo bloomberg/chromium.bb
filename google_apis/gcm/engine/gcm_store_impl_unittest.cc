@@ -165,19 +165,19 @@ TEST_F(GCMStoreImplTest, Registrations) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(2, load_result->registrations.size());
+  ASSERT_EQ(2u, load_result->registrations.size());
   ASSERT_TRUE(load_result->registrations.find("app1") !=
               load_result->registrations.end());
   EXPECT_EQ(registration1->registration_id,
             load_result->registrations["app1"]->registration_id);
-  ASSERT_EQ(1, load_result->registrations["app1"]->sender_ids.size());
+  ASSERT_EQ(1u, load_result->registrations["app1"]->sender_ids.size());
   EXPECT_EQ(registration1->sender_ids[0],
             load_result->registrations["app1"]->sender_ids[0]);
   ASSERT_TRUE(load_result->registrations.find("app2") !=
               load_result->registrations.end());
   EXPECT_EQ(registration2->registration_id,
             load_result->registrations["app2"]->registration_id);
-  ASSERT_EQ(2, load_result->registrations["app2"]->sender_ids.size());
+  ASSERT_EQ(2u, load_result->registrations["app2"]->sender_ids.size());
   EXPECT_EQ(registration2->sender_ids[0],
             load_result->registrations["app2"]->sender_ids[0]);
   EXPECT_EQ(registration2->sender_ids[1],
