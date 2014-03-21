@@ -173,11 +173,6 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
-  // This test hangs when there is no GPU process.
-  // http://crbug.com/327272
-  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
-    return;
-
   content::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;
