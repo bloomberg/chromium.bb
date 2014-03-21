@@ -66,6 +66,9 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
 bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
                                   const base::DictionaryValue& properties_b);
 
+// Returns true if |key| corresponds to a passphrase property.
+bool IsPassphraseKey(const std::string& key);
+
 }  // namespace shill_property_util
 
 class CHROMEOS_EXPORT NetworkTypePattern {

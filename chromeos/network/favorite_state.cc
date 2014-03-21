@@ -25,6 +25,13 @@ FavoriteState::~FavoriteState() {
 
 bool FavoriteState::PropertyChanged(const std::string& key,
                                     const base::Value& value) {
+  // All property values except UIData (which may contain a lengthy
+  // certificate pattern) and passphrase entries get stored in |properties_|.
+  if (key != shill::kUIDataProperty &&
+      !shill_property_util::IsPassphraseKey(key)) {
+    properties_.SetWithoutPathExpansion(key, value.DeepCopy());
+  }
+
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == shill::kProfileProperty) {
@@ -37,6 +44,15 @@ bool FavoriteState::PropertyChanged(const std::string& key,
       return false;
     }
     ui_data_ = *new_ui_data;
+
+    // Add ONCSource to |properties_| for debugging.
+    scoped_ptr<base::DictionaryValue> onc_dict(new base::DictionaryValue);
+    ui_data_.FillDictionary(onc_dict.get());
+    std::string onc_source;
+    onc_dict->GetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
+                                            &onc_source);
+    properties_.SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
+                                              onc_source);
     return true;
   } else if (key == shill::kGuidProperty) {
     return GetStringValue(key, value, &guid_);
@@ -70,23 +86,6 @@ bool FavoriteState::PropertyChanged(const std::string& key,
 bool FavoriteState::IsPrivate() const {
   return !profile_path_.empty() &&
       profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
-}
-
-void FavoriteState::GetProperties(base::DictionaryValue* dictionary) const {
-  dictionary->SetStringWithoutPathExpansion(shill::kNameProperty, name());
-  dictionary->SetStringWithoutPathExpansion(shill::kTypeProperty, type());
-  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                            profile_path_);
-  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid_);
-
-  // ONCSource is used for debugging in chrome://network.
-  scoped_ptr<base::DictionaryValue> onc_dict(new base::DictionaryValue);
-  ui_data_.FillDictionary(onc_dict.get());
-  std::string onc_source;
-  onc_dict->GetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
-                                          &onc_source);
-  dictionary->SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
-                                            onc_source);
 }
 
 }  // namespace chromeos

@@ -263,6 +263,20 @@ bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
   return identifying_a.Equals(&identifying_b);
 }
 
+bool IsPassphraseKey(const std::string& key) {
+  return key == shill::kEapPrivateKeyPasswordProperty ||
+      key == shill::kEapPasswordProperty ||
+      key == shill::kL2tpIpsecPasswordProperty ||
+      key == shill::kOpenVPNPasswordProperty ||
+      key == shill::kOpenVPNAuthUserPassProperty ||
+      key == shill::kOpenVPNTLSAuthContentsProperty ||
+      key == shill::kPassphraseProperty ||
+      key == shill::kOpenVPNOTPProperty ||
+      key == shill::kEapPrivateKeyProperty ||
+      key == shill::kEapPinProperty ||
+      key == shill::kApnPasswordProperty;
+}
+
 }  // namespace shill_property_util
 
 namespace {

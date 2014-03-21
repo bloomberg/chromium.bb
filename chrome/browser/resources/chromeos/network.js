@@ -95,15 +95,33 @@ var NetworkUI = function() {
   };
 
   /**
+   * Create a cell with a button for expanding a network state table row.
+   *
+   * @param {dictionary} state Property values for the network or favorite.
+   * @return {DOMElement} The created td element that displays the given value.
+   */
+  var createStateTableExpandButton = function(state) {
+    var cell = document.createElement('td');
+    cell.className = 'state-table-expand-button-cell';
+    var button = document.createElement('button');
+    button.addEventListener('click', function(event) {
+      toggleExpandRow(event.target, state);
+    });
+    button.className = 'state-table-expand-button';
+    cell.appendChild(button);
+    return cell;
+  };
+
+  /**
    * Create a cell in network state table.
    *
    * @param {string} value Content in the cell.
    * @return {DOMElement} The created td element that displays the given value.
    */
   var createStateTableCell = function(value) {
-    var col = document.createElement('td');
-    col.textContent = value || '';
-    return col;
+    var cell = document.createElement('td');
+    cell.textContent = value || '';
+    return cell;
   };
 
   /**
@@ -118,8 +136,12 @@ var NetworkUI = function() {
   var createStateTableRow = function(stateFields, path, state) {
     var row = document.createElement('tr');
     row.className = 'state-table-row';
+    row.appendChild(createStateTableExpandButton(state));
     row.appendChild(createStateTableCell(path));
-    row.appendChild(createStateTableCell(state['GUID'].slice(1, 9)));
+    var guid = state['GUID'];
+    if (guid)
+      guid = guid.slice(1, 9);
+    row.appendChild(createStateTableCell(guid));
     for (var i = 0; i < stateFields.length; ++i) {
       var field = stateFields[i];
       var value = '';
@@ -168,11 +190,52 @@ var NetworkUI = function() {
   };
 
   /**
+   * Toggle the button state and add or remove a row displaying the complete
+   * state information for a row.
+   *
+   * @param {DOMElement} btn The button that was clicked.
+   * @param {dictionary} state Property values for the network or favorite.
+   */
+  var toggleExpandRow = function(btn, state) {
+    var cell = btn.parentNode;
+    var row = cell.parentNode;
+    if (btn.classList.contains('state-table-expand-button-expanded')) {
+      btn.classList.remove('state-table-expand-button-expanded');
+      row.parentNode.removeChild(row.nextSibling);
+    } else {
+      btn.classList.add('state-table-expand-button-expanded');
+      var expandedRow = createExpandedRow(state, row);
+      row.parentNode.insertBefore(expandedRow, row.nextSibling);
+    }
+  };
+
+  /**
+   * Creates the expanded row for displaying the complete state as JSON.
+   *
+   * @param {dictionary} state Property values for the network or favorite.
+   * @param {DOMElement} baseRow The unexpanded row associated with the new row.
+   * @return {DOMElement} The created tr element for the expanded row.
+   */
+  var createExpandedRow = function(state, baseRow) {
+    var expandedRow = document.createElement('tr');
+    expandedRow.className = 'state-table-row';
+    var emptyCell = document.createElement('td');
+    emptyCell.style.border = 'none';
+    expandedRow.appendChild(emptyCell);
+    var detailCell = document.createElement('td');
+    detailCell.className = 'state-table-expanded-cell';
+    detailCell.colSpan = baseRow.childNodes.length - 1;
+    detailCell.innerHTML = JSON.stringify(state, null, '\t');
+    expandedRow.appendChild(detailCell);
+    return expandedRow;
+  };
+
+  /**
    * Sends a refresh request.
    */
   var sendRefresh = function() {
     chrome.send('requestNetworkInfo');
-  }
+  };
 
   /**
    * Sets refresh rate if the interval is found in the url.

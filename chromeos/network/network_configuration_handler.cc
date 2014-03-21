@@ -84,25 +84,13 @@ void SetNetworkProfileErrorCallback(
       dbus_error_name, dbus_error_message);
 }
 
-bool IsPassphrase(const std::string& key) {
-  return key == shill::kEapPrivateKeyPasswordProperty ||
-      key == shill::kEapPasswordProperty ||
-      key == shill::kL2tpIpsecPasswordProperty ||
-      key == shill::kOpenVPNPasswordProperty ||
-      key == shill::kPassphraseProperty ||
-      key == shill::kOpenVPNOTPProperty ||
-      key == shill::kEapPrivateKeyProperty ||
-      key == shill::kEapPinProperty ||
-      key == shill::kApnPasswordProperty;
-}
-
 void LogConfigProperties(const std::string& desc,
                          const std::string& path,
                          const base::DictionaryValue& properties) {
   for (base::DictionaryValue::Iterator iter(properties);
        !iter.IsAtEnd(); iter.Advance()) {
     std::string v = "******";
-    if (!IsPassphrase(iter.key()))
+    if (!shill_property_util::IsPassphraseKey(iter.key()))
       base::JSONWriter::Write(&iter.value(), &v);
     NET_LOG_DEBUG(desc,  path + "." + iter.key() + "=" + v);
   }
