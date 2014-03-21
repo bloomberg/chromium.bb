@@ -160,14 +160,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
         static void swap(T* src, T* srcEnd, T* dst)
         {
-            char* srcC = reinterpret_cast<char*>(src);
-            char* srcEndC = reinterpret_cast<char*>(srcEnd);
-            char* dstC = reinterpret_cast<char*>(dst);
-
-            // FIXME: Below performs per-byte swap. This can be optimized by doing coarce-grained swap before-hand.
-            size_t size = srcEndC - srcC;
-            for (size_t i = 0; i < size; ++i)
-              std::swap(srcC[i], dstC[i]);
+            std::swap_ranges(reinterpret_cast<char*>(src), reinterpret_cast<char*>(srcEnd), reinterpret_cast<char*>(dst));
         }
     };
 
