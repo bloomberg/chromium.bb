@@ -1206,8 +1206,9 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
             consumer()->gcm_app_handler()->message().sender_id);
 }
 
+// Flaky on all platforms: http://crbug.com/354803
 TEST_F(GCMProfileServiceSingleProfileTest,
-       MessageNotReceivedFromNotRegisteredSender) {
+       DISABLED_MessageNotReceivedFromNotRegisteredSender) {
   // Explicitly not registering the sender2 here, so that message gets dropped.
   consumer()->Register(kTestingAppId, ToSenderList("sender1"));
   WaitUntilCompleted();
