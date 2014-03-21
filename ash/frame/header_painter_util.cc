@@ -22,8 +22,8 @@ const int kTopCornerRadiusWhenRestored = 2;
 // Distance between left edge of the window and the header icon.
 const int kIconXOffset = 9;
 
-// Height and width of header icon.
-const int kIconSize = 16;
+// Default height and width of header icon.
+const int kDefaultIconSize = 16;
 
 // Space between the title text and the caption buttons.
 const int kTitleCaptionButtonSpacing = 5;
@@ -57,8 +57,8 @@ int HeaderPainterUtil::GetIconXOffset() {
 }
 
 // static
-int HeaderPainterUtil::GetIconSize() {
-  return kIconSize;
+int HeaderPainterUtil::GetDefaultIconSize() {
+  return kDefaultIconSize;
 }
 
 // static

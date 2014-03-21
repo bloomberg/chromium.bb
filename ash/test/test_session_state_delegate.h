@@ -24,6 +24,8 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // SessionStateDelegate:
   virtual content::BrowserContext* GetBrowserContextByIndex(
       MultiProfileIndex index) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) OVERRIDE;
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
@@ -75,6 +77,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // running now.
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
 
+  // Setting non NULL image enables avatar icon.
+  void SetUserImage(const gfx::ImageSkia& user_image);
+
  private:
   // Whether a session is in progress and there is an active user.
   bool has_active_user_;
@@ -104,7 +109,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   std::string activated_user_;
 
   // A test user image.
-  gfx::ImageSkia null_image_;
+  gfx::ImageSkia user_image_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegate);
 };

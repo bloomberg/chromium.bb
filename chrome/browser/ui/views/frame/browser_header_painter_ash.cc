@@ -248,7 +248,7 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
   if (window_icon_) {
     // Vertically center the window icon with respect to the caption button
     // container.
-    int icon_size = ash::HeaderPainterUtil::GetIconSize();
+    int icon_size = ash::HeaderPainterUtil::GetDefaultIconSize();
     int icon_offset_y = (caption_button_container_->height() - icon_size) / 2;
     window_icon_->SetBounds(ash::HeaderPainterUtil::GetIconXOffset(),
         icon_offset_y, icon_size, icon_size);

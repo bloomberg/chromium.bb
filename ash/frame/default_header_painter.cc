@@ -75,6 +75,7 @@ DefaultHeaderPainter::DefaultHeaderPainter()
     : frame_(NULL),
       view_(NULL),
       window_icon_(NULL),
+      window_icon_size_(HeaderPainterUtil::GetDefaultIconSize()),
       caption_button_container_(NULL),
       height_(0),
       mode_(MODE_INACTIVE),
@@ -215,11 +216,11 @@ void DefaultHeaderPainter::LayoutHeader() {
   if (window_icon_) {
     // Vertically center the window icon with respect to the caption button
     // container.
-    int icon_size = HeaderPainterUtil::GetIconSize();
     // Floor when computing the center of |caption_button_container_|.
-    int icon_offset_y = caption_button_container_->height() / 2 - icon_size / 2;
+    int icon_offset_y =
+        caption_button_container_->height() / 2 - window_icon_size_ / 2;
     window_icon_->SetBounds(HeaderPainterUtil::GetIconXOffset(), icon_offset_y,
-        icon_size, icon_size);
+                            window_icon_size_, window_icon_size_);
   }
 
   // The header/content separator line overlays the caption buttons.
@@ -236,6 +237,12 @@ void DefaultHeaderPainter::SetHeaderHeightForPainting(int height) {
 
 void DefaultHeaderPainter::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
+}
+
+void DefaultHeaderPainter::UpdateWindowIcon(views::View* window_icon,
+                                            int window_icon_size) {
+  window_icon_ = window_icon;
+  window_icon_size_ = window_icon_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

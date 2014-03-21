@@ -21,6 +21,8 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   // SessionStateDelegate:
   virtual content::BrowserContext* GetBrowserContextByIndex(
       MultiProfileIndex index) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) OVERRIDE;
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
@@ -50,7 +52,7 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   bool screen_locked_;
 
   // A pseudo user image.
-  gfx::ImageSkia null_image_;
+  gfx::ImageSkia user_image_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
 };

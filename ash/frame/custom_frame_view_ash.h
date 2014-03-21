@@ -58,9 +58,13 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  virtual void VisibilityChanged(views::View* starting_from,
+                                 bool is_visible) OVERRIDE;
 
   // Get the view of the header.
   views::View* GetHeaderView();
+
+  const views::View* GetAvatarIconViewForTest() const;
 
  private:
   class OverlayView;

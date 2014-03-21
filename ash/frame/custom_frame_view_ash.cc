@@ -10,7 +10,10 @@
 #include "ash/frame/caption_buttons/frame_maximize_button_observer.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
+#include "ash/frame/frame_util.h"
 #include "ash/frame/header_painter.h"
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -20,9 +23,11 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -142,12 +147,18 @@ class CustomFrameViewAsh::HeaderView
   // Returns the view's minimum width.
   int GetMinimumWidth() const;
 
+  void UpdateAvatarIcon();
+
   // views::View overrides:
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
+  }
+
+  views::View* avatar_icon() const {
+    return avatar_icon_;
   }
 
  private:
@@ -166,6 +177,8 @@ class CustomFrameViewAsh::HeaderView
 
   // Helper for painting the header.
   scoped_ptr<DefaultHeaderPainter> header_painter_;
+
+  views::ImageView* avatar_icon_;
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
@@ -187,6 +200,7 @@ class CustomFrameViewAsh::HeaderView
 CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
     : frame_(frame),
       header_painter_(new ash::DefaultHeaderPainter),
+      avatar_icon_(NULL),
       caption_button_container_(NULL),
       maximize_bubble_(NULL),
       fullscreen_visible_fraction_(0) {
@@ -205,6 +219,7 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
     frame_maximize_button->AddObserver(this);
 
   header_painter_->Init(frame_, this, NULL, caption_button_container_);
+  UpdateAvatarIcon();
 }
 
 CustomFrameViewAsh::HeaderView::~HeaderView() {
@@ -236,6 +251,33 @@ int CustomFrameViewAsh::HeaderView::GetPreferredHeight() const {
 
 int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
   return header_painter_->GetMinimumHeaderWidth();
+}
+
+void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
+  SessionStateDelegate* delegate =
+      Shell::GetInstance()->session_state_delegate();
+  aura::Window* window = frame_->GetNativeView();
+  bool show = delegate->ShouldShowAvatar(window);
+  int icon_size = 0;
+  if (!show) {
+    if (!avatar_icon_)
+      return;
+    delete avatar_icon_;
+    avatar_icon_ = NULL;
+  } else {
+    gfx::ImageSkia image = GetAvatarImageForContext(
+        delegate->GetBrowserContextForWindow(window)).AsImageSkia();
+    DCHECK(!image.isNull());
+    DCHECK_EQ(image.width(), image.height());
+    if (!avatar_icon_) {
+      avatar_icon_ = new views::ImageView();
+      AddChildView(avatar_icon_);
+    }
+    avatar_icon_->SetImage(image);
+    icon_size = image.width();
+  }
+  header_painter_->UpdateWindowIcon(avatar_icon_, icon_size);
+  Layout();
 }
 
 void CustomFrameViewAsh::HeaderView::Layout() {
@@ -475,8 +517,18 @@ bool CustomFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
+void CustomFrameViewAsh::VisibilityChanged(views::View* starting_from,
+                                           bool is_visible) {
+  if (is_visible)
+    header_view_->UpdateAvatarIcon();
+}
+
 views::View* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;
+}
+
+const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
+  return header_view_->avatar_icon();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

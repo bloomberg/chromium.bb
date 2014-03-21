@@ -31,7 +31,7 @@ class ASH_EXPORT HeaderPainterUtil {
   static int GetIconXOffset();
 
   // Returns the size of the header icon.
-  static int GetIconSize();
+  static int GetDefaultIconSize();
 
   // Returns the amount that the frame background is inset from the left edge of
   // the window.

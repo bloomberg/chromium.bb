@@ -4,7 +4,9 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -97,6 +99,11 @@ class CustomFrameViewAshTest : public test::AshTestBase {
     return widget.Pass();
   }
 
+  test::TestSessionStateDelegate* GetTestSessionStateDelegate() {
+    return static_cast<ash::test::TestSessionStateDelegate*>(
+        Shell::GetInstance()->session_state_delegate());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshTest);
 };
@@ -156,6 +163,32 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
             min_frame_size.height());
   EXPECT_EQ(max_client_size.height() + delegate->GetTitleBarHeight(),
             max_frame_size.height());
+}
+
+// Verify that CustomFrameViewAsh updates the avatar icon based on the
+// state of the SessionStateDelegate after visibility change.
+TEST_F(CustomFrameViewAshTest, AvatarIcon) {
+  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
+  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
+
+  // Avatar image becomes available.
+  const gfx::ImageSkia user_image =
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_GUEST_ICON);
+  GetTestSessionStateDelegate()->SetUserImage(user_image);
+  widget->Hide();
+  widget->Show();
+  EXPECT_TRUE(custom_frame_view->GetAvatarIconViewForTest());
+
+  // Avatar image is gone; the ImageView for the avatar icon should be
+  // removed.
+  GetTestSessionStateDelegate()->SetUserImage(gfx::ImageSkia());
+  widget->Hide();
+  widget->Show();
+  EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
 }
 
 }  // namespace ash

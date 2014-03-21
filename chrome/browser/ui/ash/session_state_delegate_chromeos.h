@@ -25,6 +25,8 @@ class SessionStateDelegateChromeos
   // ash::SessionStateDelegate:
   virtual content::BrowserContext* GetBrowserContextByIndex(
       ash::MultiProfileIndex index) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) OVERRIDE;
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;

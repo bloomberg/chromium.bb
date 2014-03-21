@@ -46,6 +46,12 @@ TestSessionStateDelegate::GetBrowserContextByIndex(
   return NULL;
 }
 
+content::BrowserContext*
+TestSessionStateDelegate::GetBrowserContextForWindow(
+    aura::Window* window) {
+  return NULL;
+}
+
 int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
@@ -118,6 +124,11 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
   user_adding_screen_running_ = user_adding_screen_running;
 }
 
+void TestSessionStateDelegate::SetUserImage(
+    const gfx::ImageSkia& user_image) {
+  user_image_ = user_image;
+}
+
 const base::string16 TestSessionStateDelegate::GetUserDisplayName(
     MultiProfileIndex index) const {
   return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
@@ -140,11 +151,11 @@ const std::string TestSessionStateDelegate::GetUserID(
 
 const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
     content::BrowserContext* context) const {
-  return null_image_;
+  return user_image_;
 }
 
 bool TestSessionStateDelegate::ShouldShowAvatar(aura::Window* window) {
-  return false;
+  return !user_image_.isNull();
 }
 
 void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {

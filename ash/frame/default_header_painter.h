@@ -46,6 +46,9 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   virtual void SetHeaderHeightForPainting(int height) OVERRIDE;
   virtual void SchedulePaintForTitle() OVERRIDE;
 
+  // Sets the window icon for the header. Passing NULL removes the window icon.
+  void UpdateWindowIcon(views::View* window_icon, int icon_size);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, TitleIconAlignment);
 
@@ -73,6 +76,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   views::Widget* frame_;
   views::View* view_;
   views::View* window_icon_;  // May be NULL.
+  int window_icon_size_;
   FrameCaptionButtonContainerView* caption_button_container_;
 
   // The height of the header including the header/content separator.

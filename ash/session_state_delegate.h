@@ -51,6 +51,10 @@ class ASH_EXPORT SessionStateDelegate {
   virtual content::BrowserContext* GetBrowserContextByIndex(
       MultiProfileIndex index) = 0;
 
+  // Returns the browser context associated with the window.
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) = 0;
+
   // Returns the maximum possible number of logged in users.
   virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
 

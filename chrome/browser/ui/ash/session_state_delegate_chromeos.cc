@@ -38,6 +38,16 @@ content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
   return chromeos::UserManager::Get()->GetProfileByUser(user);
 }
 
+content::BrowserContext*
+SessionStateDelegateChromeos::GetBrowserContextForWindow(
+    aura::Window* window) {
+  const std::string& user_id =
+      chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+  const chromeos::User* user = chromeos::UserManager::Get()->FindUser(user_id);
+  DCHECK(user);
+  return chromeos::UserManager::Get()->GetProfileByUser(user);
+}
+
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
   // We limit list of logged in users to 10 due to memory constraints.
   // Note that 10 seems excessive, but we want to test how many users are

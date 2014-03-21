@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
+#include "ash/shell_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -20,7 +21,13 @@ SessionStateDelegateStub::~SessionStateDelegateStub() {
 content::BrowserContext*
 SessionStateDelegateStub::GetBrowserContextByIndex(
     MultiProfileIndex index) {
-  return NULL;
+  return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+}
+
+content::BrowserContext*
+SessionStateDelegateStub::GetBrowserContextForWindow(
+    aura::Window* window) {
+  return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
 }
 
 int SessionStateDelegateStub::GetMaximumNumberOfLoggedInUsers() const {
@@ -79,11 +86,11 @@ const std::string SessionStateDelegateStub::GetUserID(
 
 const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
     content::BrowserContext* context) const {
-  return null_image_;
+  return user_image_;
 }
 
 bool SessionStateDelegateStub::ShouldShowAvatar(aura::Window* window) {
-  return false;
+  return !user_image_.isNull();
 }
 
 void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {
