@@ -107,6 +107,18 @@ GIT_REMOTES = {
 }
 GIT_REMOTES.update(CROS_REMOTES)
 
+# Prefix to distinguish internal and external changes. This is used
+# when user specifies a patch with "-g", when generating a key for
+# a patch to used in our PatchCache, and when display a custom string
+# for the patch.
+INTERNAL_CHANGE_PREFIX = '*'
+EXTERNAL_CHANGE_PREFIX = ''
+
+CHANGE_PREFIX = {
+    INTERNAL_REMOTE: INTERNAL_CHANGE_PREFIX,
+    EXTERNAL_REMOTE: EXTERNAL_CHANGE_PREFIX,
+}
+
 # List of remotes that are ok to include in the external manifest.
 EXTERNAL_REMOTES = (EXTERNAL_REMOTE, CHROMIUM_REMOTE)
 

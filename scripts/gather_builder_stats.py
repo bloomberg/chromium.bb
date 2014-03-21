@@ -705,7 +705,9 @@ class CLStats(StatsManager):
     for k, _ in sorted(submitted_after_new_patch.items(),
                        key=lambda x: x[1][-1].timestamp):
       logging.info('Bad patch candidate in: CL:%s%s',
-                   '*' if k.internal else '', k.gerrit_number)
+                   constants.INTERNAL_CHANGE_PREFIX
+                   if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
+                   k.gerrit_number)
 
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
 def _PrepareCreds(email, password=None):

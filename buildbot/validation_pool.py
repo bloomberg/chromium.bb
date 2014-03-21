@@ -476,7 +476,7 @@ class PatchSeries(object):
   def _LookupHelper(self, query):
     """Returns the helper for a given query."""
     remote = constants.EXTERNAL_REMOTE
-    if query.startswith('*'):
+    if query.startswith(constants.INTERNAL_CHANGE_PREFIX):
       remote = constants.INTERNAL_REMOTE
     return self._helper_pool.GetHelper(remote)
 

@@ -341,7 +341,7 @@ def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.
 
   Args:
-    patches: a list of patch IDs to query.  Internal patches start with a '*'.
+    patches: a list of patch IDs to query. Internal patches start with a '*'.
 
   Returns:
     A list of GerritPatch objects describing each patch.  Only the first
@@ -357,8 +357,10 @@ def GetGerritPatchInfo(patches):
              for x in patches]
 
   # Next, split on internal vs external.
-  internal_patches = [x for x in patches if x.startswith('*')]
-  external_patches = [x for x in patches if not x.startswith('*')]
+  internal_patches = [x for x in patches if x.startswith(
+      constants.INTERNAL_CHANGE_PREFIX)]
+  external_patches = [x for x in patches if not x.startswith(
+      constants.INTERNAL_CHANGE_PREFIX)]
 
   if internal_patches:
     # feed it id's w/ * stripped off, but bind them back
@@ -367,8 +369,10 @@ def GetGerritPatchInfo(patches):
     # of a conflict between gerrit instances.  Since change-id is
     # effectively user controlled, better safe than sorry.
     helper = GetGerritHelper(constants.INTERNAL_REMOTE)
-    raw_ids = [x[1:] for x in internal_patches]
-    parsed_patches.update(('*' + k, v) for k, v in
+    raw_ids = [x[len(constants.INTERNAL_CHANGE_PREFIX):] for
+               x in internal_patches]
+    parsed_patches.update(
+        (constants.INTERNAL_CHANGE_PREFIX + k, v) for k, v in
         helper.QueryMultipleCurrentPatchset(raw_ids))
 
   if external_patches:

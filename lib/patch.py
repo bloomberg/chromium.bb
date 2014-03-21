@@ -264,15 +264,15 @@ def _StripPrefix(text, strict, force_external, force_internal):
                     " True, but not both." % caller_name)
   if not text:
     raise ValueError("%s invoked w/ an empty value: %r" % (caller_name, text))
-  prefix = '*' if force_internal else ''
-  if text[0] == '*':
+  prefix = constants.INTERNAL_CHANGE_PREFIX if force_internal else ''
+  if text.startswith(constants.INTERNAL_CHANGE_PREFIX):
     if strict:
       raise ValueError(
           "%s invoked w/ an internally-formatted argument while in strict "
           "mode: %s" % (caller_name, text))
     if not force_external:
-      prefix = '*'
-    text = text[1:]
+      prefix = constants.INTERNAL_CHANGE_PREFIX
+    text = text[len(constants.INTERNAL_CHANGE_PREFIX):]
   return prefix, text
 
 
@@ -308,7 +308,7 @@ def FormatChangeId(text, force_internal=False, force_external=False,
       raise ValueError("FormatChangeId invoked w/ a malformed Change-Id, "
                        "value isn't 41 characters: %r" % (original_text,))
 
-  # Drop the leading I.
+  # Drop the leading I/i.
   text = text[1:].lower()
   if not git.IsSHA1(text, False):
     raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
@@ -394,9 +394,9 @@ def FormatFullChangeId(text, force_internal=False, force_external=False,
     text: Refer to FormatChangeId docstring.
     force_internal: Refer to FormatChangeId docstring.
     force_external: Refer to FormatChangeId docstring.
-    strict: If True, then it's an error if text starts with '*' to signify an
-      internal change; and the Change-Id portion of text must meet the 'strict'
-      criteria of FormatChangeId.
+    strict: If True, then it's an error if text starts with internal change
+      prefix to signify an internal change; and the Change-Id portion of text
+      must meet the 'strict' criteria of FormatChangeId.
   """
   err_str = "FormatFullChangeId invoked w/ a malformed change-id: %r" % text
   prefix, text = _StripPrefix(text, strict, force_external, force_internal)
@@ -449,7 +449,9 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
           % (original_text,))
     target_text = text = text[3:]
 
-  text = text.lstrip('*')
+  if text.startswith(constants.INTERNAL_CHANGE_PREFIX):
+    text = text[len(constants.INTERNAL_CHANGE_PREFIX):]
+
   if len(text.split('~')) == 3:
     if not full_changeid:
       raise ValueError(
@@ -979,7 +981,7 @@ class GitRepoPatch(object):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
     if self.sha1 is not None:
-      s = '%s:%s%s' % (s, '*' if self.internal else '', self.sha1[:8])
+      s = '%s:%s%s' % (s, constants.CHANGE_PREFIX[self.remote], self.sha1[:8])
     # TODO(ferringb,build): This gets a bit long in output; should likely
     # do some form of truncation to it.
     if self._subject_line:
@@ -1178,7 +1180,7 @@ class GerritPatch(GitRepoPatch):
       self.owner = None
     self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
                                             strict=True)
-    prefix_str = '*' if self.internal else ''
+    prefix_str = constants.CHANGE_PREFIX[self.remote]
     self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
     self.url = patch_dict['url']
     # status - Current state of this change.  Can be one of
@@ -1371,7 +1373,7 @@ class GerritPatch(GitRepoPatch):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.owner, self.gerrit_number_str)
     if self.sha1 is not None:
-      s = '%s:%s%s' % (s, '*' if self.internal else '', self.sha1[:8])
+      s = '%s:%s%s' % (s, constants.CHANGE_PREFIX[self.remote], self.sha1[:8])
     if self._subject_line:
       s += ':"%s"' % (self._subject_line,)
     return s
