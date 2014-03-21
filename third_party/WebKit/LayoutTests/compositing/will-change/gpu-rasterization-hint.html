@@ -79,8 +79,11 @@
   </style>
 
   <script>
-    if (window.internals)
+    if (window.internals) {
       window.internals.settings.setAcceleratedCompositingForGpuRasterizationHintEnabled(true);
+      // Force an update of the compositing triggers.
+      window.internals.layerTreeAsText(document);
+    }
 
     if (window.testRunner) {
       testRunner.dumpAsText();

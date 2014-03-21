@@ -1580,13 +1580,16 @@ bool RenderLayerCompositor::has3DContent() const
     return layerHas3DContent(rootRenderLayer());
 }
 
+void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer* layer)
+{
+    CompositingReasons reasons = m_compositingReasonFinder.styleDeterminedReasons(layer->renderer());
+    layer->setCompositingReasons(reasons, CompositingReasonComboAllStyleDeterminedReasons);
+}
+
 void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
 {
-    CompositingReasons layerReasons = layer->compositingReasons();
-
-    layerReasons &= ~CompositingReasonComboAllDirectReasons;
-    layerReasons |= m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
-    layer->setCompositingReasons(layerReasons);
+    CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
+    layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
 }
 
 bool RenderLayerCompositor::needsOwnBacking(const RenderLayer* layer) const

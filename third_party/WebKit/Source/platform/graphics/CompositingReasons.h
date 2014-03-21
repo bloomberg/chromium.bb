@@ -11,6 +11,7 @@
 namespace WebCore {
 
 const uint64_t CompositingReasonNone                                   = 0;
+const uint64_t CompositingReasonAll                                    = ~static_cast<uint64_t>(0);
 
 // Intrinsic reasons that can be known right away by the layer
 const uint64_t CompositingReason3DTransform                            = UINT64_C(1) << 0;
@@ -88,17 +89,11 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonVideoOverlay
     | CompositingReasonWillChange;
 
-const uint64_t CompositingReasonComboAllStyleDeterminedDirectReasons =
+const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     CompositingReason3DTransform
-    | CompositingReasonVideo
-    | CompositingReasonCanvas
-    | CompositingReasonPlugin
-    | CompositingReasonIFrame
     | CompositingReasonBackfaceVisibilityHidden
-    | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
     | CompositingReasonFilters
-    | CompositingReasonVideoOverlay
     | CompositingReasonWillChange;
 
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =

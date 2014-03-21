@@ -16,9 +16,11 @@ class RenderObject;
 class RenderView;
 
 class CompositingReasonFinder {
+    WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
 public:
     explicit CompositingReasonFinder(RenderView&);
 
+    CompositingReasons styleDeterminedReasons(RenderObject*) const;
     CompositingReasons directReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
 
     void updateTriggers();
@@ -35,7 +37,6 @@ public:
 private:
     bool isMainFrame() const;
 
-    CompositingReasons styleDeterminedDirectReasons(RenderObject*) const;
     CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
 
     bool requiresCompositingForAnimation(RenderObject*) const;

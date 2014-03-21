@@ -1211,11 +1211,12 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
     return 0;
 }
 
-void RenderLayer::setCompositingReasons(CompositingReasons reasons)
+void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
-    if (m_compositingProperties.compositingReasons == reasons)
+    ASSERT(reasons == (reasons & mask));
+    if ((m_compositingProperties.compositingReasons & mask) == (reasons & mask))
         return;
-    m_compositingProperties.compositingReasons = reasons;
+    m_compositingProperties.compositingReasons = (reasons & mask) | (m_compositingProperties.compositingReasons & ~mask);
     m_clipper.setCompositingClipRectsDirty();
 }
 
@@ -3949,6 +3950,8 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
             didPaintWithFilters = true;
         updateFilters(oldStyle, renderer()->style());
     }
+
+    compositor()->updateStyleDeterminedCompositingReasons(this);
 
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756

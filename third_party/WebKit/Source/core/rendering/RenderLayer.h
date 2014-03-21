@@ -480,8 +480,10 @@ public:
     bool scrollsOverflow() const;
 
     bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
+    CompositingReasons styleDeterminedCompositingReasons() const { return compositingReasons() & CompositingReasonComboAllStyleDeterminedReasons; }
 
     void clearAncestorDependentPropertyCache();
+
 
 private:
     class AncestorDependentPropertyCache {
@@ -650,8 +652,8 @@ private:
     bool lostGroupedMapping() const { return m_compositingProperties.lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_compositingProperties.lostGroupedMapping = b; }
 
-    void setCompositingReasons(CompositingReasons);
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
+    void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
 
     friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;

@@ -199,6 +199,8 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
+    void updateStyleDeterminedCompositingReasons(RenderLayer*);
+
     void scheduleAnimationIfNeeded();
 
 private:

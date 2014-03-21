@@ -59,7 +59,7 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::styleDeterminedDirectReasons(RenderObject* renderer) const
+CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject* renderer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
 
@@ -69,24 +69,23 @@ CompositingReasons CompositingReasonFinder::styleDeterminedDirectReasons(RenderO
     if (requiresCompositingForBackfaceVisibilityHidden(renderer))
         directReasons |= CompositingReasonBackfaceVisibilityHidden;
 
-    if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonActiveAnimation;
-
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
     if (requiresCompositingForWillChange(renderer))
         directReasons |= CompositingReasonWillChange;
 
-    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
-
-    ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedDirectReasons));
+    ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
+    RenderObject* renderer = layer->renderer();
+
+    if (requiresCompositingForAnimation(renderer))
+        directReasons |= CompositingReasonActiveAnimation;
 
     if (requiresCompositingForOutOfFlowClipping(layer))
         directReasons |= CompositingReasonOutOfFlowClipping;
@@ -97,17 +96,20 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     if (requiresCompositingForOverflowScrollingParent(layer))
         directReasons |= CompositingReasonOverflowScrollingParent;
 
-    RenderObject* renderer = layer->renderer();
     if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
         directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
 
-    ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedDirectReasons));
+    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
+
+    ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
 }
 
 CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
 {
-    return styleDeterminedDirectReasons(layer->renderer()) | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
+    CompositingReasons styleReasons = layer->styleDeterminedCompositingReasons();
+    ASSERT(styleDeterminedReasons(layer->renderer()) == styleReasons);
+    return styleReasons | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
 }
 
 bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
