@@ -22,7 +22,6 @@ namespace switches {
 // Please keep alphabetized.
 CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];
-CHROMEOS_EXPORT extern const char kAuthExtensionPath[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDerelictDetectionTimeout[];
 CHROMEOS_EXPORT extern const char kDerelictIdleTimeout[];

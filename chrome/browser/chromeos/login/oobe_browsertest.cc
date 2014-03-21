@@ -37,7 +37,7 @@ class OobeTest : public InProcessBrowserTest {
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(
-        chromeos::switches::kAuthExtensionPath, "gaia_auth");
+        ::switches::kAuthExtensionPath, "gaia_auth");
     fake_gaia_.Initialize();
   }
 
