@@ -60,7 +60,7 @@ public class ResourceExtractor {
 
             String timestampFile = checkPakTimestamp();
             if (timestampFile != null) {
-                deleteFiles(mContext);
+                deleteFiles();
             }
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -162,7 +162,7 @@ public class ResourceExtractor {
                 // returning null? It might be useful to gather UMA here too to track if
                 // this happens with regularity.
                 Log.w(LOGTAG, "Exception unpacking required pak resources: " + e.getMessage());
-                deleteFiles(mContext);
+                deleteFiles();
                 return null;
             }
 
@@ -271,9 +271,9 @@ public class ResourceExtractor {
     }
 
     private ResourceExtractor(Context context) {
-        mContext = context;
-        mAppDataDir = getAppDataDirFromContext(mContext);
-        mOutputDir = getOutputDirFromContext(mContext);
+        mContext = context.getApplicationContext();
+        mAppDataDir = getAppDataDir();
+        mOutputDir = getOutputDir();
     }
 
     public void waitForCompletion() {
@@ -287,11 +287,11 @@ public class ResourceExtractor {
             mExtractTask.get();
         } catch (CancellationException e) {
             // Don't leave the files in an inconsistent state.
-            deleteFiles(mContext);
+            deleteFiles();
         } catch (ExecutionException e2) {
-            deleteFiles(mContext);
+            deleteFiles();
         } catch (InterruptedException e3) {
-            deleteFiles(mContext);
+            deleteFiles();
         }
     }
 
@@ -313,12 +313,12 @@ public class ResourceExtractor {
         mExtractTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public static File getAppDataDirFromContext(Context context) {
-        return new File(PathUtils.getDataDirectory(context.getApplicationContext()));
+    private File getAppDataDir() {
+        return new File(PathUtils.getDataDirectory(mContext));
     }
 
-    public static File getOutputDirFromContext(Context context) {
-        return new File(getAppDataDirFromContext(context), "paks");
+    private File getOutputDir() {
+        return new File(getAppDataDir(), "paks");
     }
 
     /**
@@ -328,12 +328,12 @@ public class ResourceExtractor {
      * lead to malfunction/UX misbehavior. So, we regard failing to update them
      * as an error.
      */
-    public static void deleteFiles(Context context) {
-        File icudata = new File(getAppDataDirFromContext(context), ICU_DATA_FILENAME);
+    private void deleteFiles() {
+        File icudata = new File(getAppDataDir(), ICU_DATA_FILENAME);
         if (icudata.exists() && !icudata.delete()) {
             Log.e(LOGTAG, "Unable to remove the icudata " + icudata.getName());
         }
-        File dir = getOutputDirFromContext(context);
+        File dir = getOutputDir();
         if (dir.exists()) {
             File[] files = dir.listFiles();
             for (File file : files) {
