@@ -1,0 +1,16 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+@charset "utf-8";
+/* Document */
+body{font-family:'Open Sans',sans-serif;font-size:18px;line-height:1.4;}
+/* Don't let images bleed out of viewport. */
+img{max-width:100%;}
+/* Margin */
+.margin-x-narrow{width:95%;}
+.margin-narrow{width:85%;}
+.margin-medium{width:75%;}
+.margin-wide{width:55%;}
+.margin-x-wide{width:35%;}
+/* Override html styling attributes */
+table,tr,td{background-color:transparent!important;}
