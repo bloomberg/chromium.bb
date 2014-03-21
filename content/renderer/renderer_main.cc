@@ -226,9 +226,9 @@ int RendererMain(const MainFunctionParams& parameters) {
     } else {
       LOG(ERROR) << "Running without renderer sandbox";
 #ifndef NDEBUG
-      // For convenience, we print the stack traces for crashes.  When sandbox
-      // is enabled, the in-process stack dumping is enabled as part of the
-      // EnableSandbox() call.
+      // For convenience, we print the stack trace for crashes. We can't get
+      // symbols when the sandbox is enabled, so only try when the sandbox is
+      // disabled.
       base::debug::EnableInProcessStackDumping();
 #endif
     }

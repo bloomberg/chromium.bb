@@ -15,10 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <map>
 #include <ostream>
-#include <string>
-#include <vector>
 
 #if defined(__GLIBCXX__)
 #include <cxxabi.h>
@@ -30,10 +27,8 @@
 
 #include "base/basictypes.h"
 #include "base/debug/debugger.h"
-#include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -120,26 +115,13 @@ class BacktraceOutputHandler {
 };
 
 void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
-  // This should be more than enough to store a 64-bit number in hex:
-  // 16 hex digits + 1 for null-terminator.
-  char buf[17] = { '\0' };
-  handler->HandleOutput("0x");
+  char buf[1024] = { '\0' };
+  handler->HandleOutput(" [0x");
   internal::itoa_r(reinterpret_cast<intptr_t>(pointer),
                    buf, sizeof(buf), 16, 12);
   handler->HandleOutput(buf);
+  handler->HandleOutput("]");
 }
-
-#if defined(USE_SYMBOLIZE)
-void OutputFrameId(intptr_t frame_id, BacktraceOutputHandler* handler) {
-  // Max unsigned 64-bit number in decimal has 20 digits (18446744073709551615).
-  // Hence, 30 digits should be more than enough to represent it in decimal
-  // (including the null-terminator).
-  char buf[30] = { '\0' };
-  handler->HandleOutput("#");
-  internal::itoa_r(frame_id, buf, sizeof(buf), 10, 1);
-  handler->HandleOutput(buf);
-}
-#endif  // defined(USE_SYMBOLIZE)
 
 void ProcessBacktrace(void *const *trace,
                       size_t size,
@@ -149,8 +131,6 @@ void ProcessBacktrace(void *const *trace,
 
 #if defined(USE_SYMBOLIZE)
   for (size_t i = 0; i < size; ++i) {
-    OutputFrameId(i, handler);
-    handler->HandleOutput(" ");
     OutputPointer(trace[i], handler);
     handler->HandleOutput(" ");
 
@@ -188,9 +168,8 @@ void ProcessBacktrace(void *const *trace,
 
   if (!printed) {
     for (size_t i = 0; i < size; ++i) {
-      handler->HandleOutput(" [");
       OutputPointer(trace[i], handler);
-      handler->HandleOutput("]\n");
+      handler->HandleOutput("\n");
     }
   }
 #endif  // defined(USE_SYMBOLIZE)
@@ -458,248 +437,6 @@ void WarmUpBacktrace() {
 }
 
 }  // namespace
-
-#if defined(USE_SYMBOLIZE)
-
-// class SandboxSymbolizeHelper.
-//
-// The purpose of this class is to prepare and install a "file open" callback
-// needed by the stack trace symbolization code
-// (base/third_party/symbolize/symbolize.h) so that it can function properly
-// in a sandboxed process.  The caveat is that this class must be instantiated
-// before the sandboxing is enabled so that it can get the chance to open all
-// the object files that are loaded in the virtual address space of the current
-// process.
-class SandboxSymbolizeHelper {
- public:
-  // Returns the singleton instance.
-  static SandboxSymbolizeHelper* GetInstance() {
-    return Singleton<SandboxSymbolizeHelper>::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<SandboxSymbolizeHelper>;
-
-  SandboxSymbolizeHelper()
-      : is_initialized_(false) {
-    Init();
-  }
-
-  ~SandboxSymbolizeHelper() {
-    UnregisterCallback();
-    CloseObjectFiles();
-  }
-
-  // Returns a O_RDONLY file descriptor for |file_path| if it was opened
-  // sucessfully during the initialization.  The file is repositioned at
-  // offset 0.
-  // IMPORTANT: This function must be async-signal-safe because it can be
-  // called from a signal handler (symbolizing stack frames for a crash).
-  int GetFileDescriptor(const char* file_path) {
-    int fd = -1;
-
-#if !defined(NDEBUG)
-    if (file_path) {
-      // The assumption here is that iterating over std::map<std::string, int>
-      // using a const_iterator does not allocate dynamic memory, hense it is
-      // async-signal-safe.
-      std::map<std::string, int>::const_iterator it;
-      for (it = modules_.begin(); it != modules_.end(); ++it) {
-        if (strcmp((it->first).c_str(), file_path) == 0) {
-          // POSIX.1-2004 requires an implementation to guarantee that dup()
-          // is async-signal-safe.
-          fd = dup(it->second);
-          break;
-        }
-      }
-      // POSIX.1-2004 requires an implementation to guarantee that lseek()
-      // is async-signal-safe.
-      if (fd >= 0 && lseek(fd, 0, SEEK_SET) < 0) {
-        // Failed to seek.
-        fd = -1;
-      }
-    }
-#endif  // !defined(NDEBUG)
-
-    return fd;
-  }
-
-  // Searches for the object file (from /proc/self/maps) that contains
-  // the specified pc.  If found, sets |start_address| to the start address
-  // of where this object file is mapped in memory, sets the module base
-  // address into |base_address|, copies the object file name into
-  // |out_file_name|, and attempts to open the object file.  If the object
-  // file is opened successfully, returns the file descriptor.  Otherwise,
-  // returns -1.  |out_file_name_size| is the size of the file name buffer
-  // (including the null terminator).
-  // IMPORTANT: This function must be async-signal-safe because it can be
-  // called from a signal handler (symbolizing stack frames for a crash).
-  static int OpenObjectFileContainingPc(uint64_t pc, uint64_t& start_address,
-                                        uint64_t& base_address, char* file_path,
-                                        int file_path_size) {
-    // This method can only be called after the singleton is instantiated.
-    // This is ensured by the following facts:
-    // * This is the only static method in this class, it is private, and
-    //   the class has no friends (except for the DefaultSingletonTraits).
-    //   The compiler guarantees that it can only be called after the
-    //   singleton is instantiated.
-    // * This method is used as a callback for the stack tracing code and
-    //   the callback registration is done in the constructor, so logically
-    //   it cannot be called before the singleton is created.
-    SandboxSymbolizeHelper* instance = GetInstance();
-
-    // The assumption here is that iterating over
-    // std::vector<MappedMemoryRegion> using a const_iterator does not allocate
-    // dynamic memory, hence it is async-signal-safe.
-    std::vector<MappedMemoryRegion>::const_iterator it;
-    bool is_first = true;
-    for (it = instance->regions_.begin(); it != instance->regions_.end();
-         ++it, is_first = false) {
-      const MappedMemoryRegion& region = *it;
-      if (region.start <= pc && pc < region.end) {
-        start_address = region.start;
-        // Don't subtract 'start_address' from the first entry:
-        // * If a binary is compiled w/o -pie, then the first entry in
-        //   process maps is likely the binary itself (all dynamic libs
-        //   are mapped higher in address space). For such a binary,
-        //   instruction offset in binary coincides with the actual
-        //   instruction address in virtual memory (as code section
-        //   is mapped to a fixed memory range).
-        // * If a binary is compiled with -pie, all the modules are
-        //   mapped high at address space (in particular, higher than
-        //   shadow memory of the tool), so the module can't be the
-        //   first entry.
-        base_address = (is_first ? 0U : start_address) - region.offset;
-        if (file_path && file_path_size > 0) {
-          strncpy(file_path, region.path.c_str(), file_path_size);
-          // Ensure null termination.
-          file_path[file_path_size - 1] = '\0';
-        }
-        return instance->GetFileDescriptor(region.path.c_str());
-      }
-    }
-    return -1;
-  }
-
-  // Parses /proc/self/maps in order to compile a list of all object file names
-  // for the modules that are loaded in the current process.
-  // Returns true on success.
-  bool CacheMemoryRegions() {
-    // Reads /proc/self/maps.
-    std::string contents;
-    if (!ReadProcMaps(&contents)) {
-      LOG(ERROR) << "Failed to read /proc/self/maps";
-      return false;
-    }
-
-    // Parses /proc/self/maps.
-    if (!ParseProcMaps(contents, &regions_)) {
-      LOG(ERROR) << "Failed to parse the contents of /proc/self/maps";
-      return false;
-    }
-
-    is_initialized_ = true;
-    return true;
-  }
-
-  // Opens all object files and caches their file descriptors.
-  void OpenSymbolFiles() {
-    // Pre-opening and caching the file descriptors of all loaded modules is
-    // not considered safe for retail builds.  Hence it is only done in debug
-    // builds.  For more details, take a look at: http://crbug.com/341966
-    // Enabling this to release mode would require approval from the security
-    // team.
-#if !defined(NDEBUG)
-    // Open the object files for all read-only executable regions and cache
-    // their file descriptors.
-    std::vector<MappedMemoryRegion>::const_iterator it;
-    for (it = regions_.begin(); it != regions_.end(); ++it) {
-      const MappedMemoryRegion& region = *it;
-      // Only interesed in read-only executable regions.
-      if ((region.permissions & MappedMemoryRegion::READ) ==
-              MappedMemoryRegion::READ &&
-          (region.permissions & MappedMemoryRegion::WRITE) == 0 &&
-          (region.permissions & MappedMemoryRegion::EXECUTE) ==
-              MappedMemoryRegion::EXECUTE) {
-        if (region.path.empty()) {
-          // Skip regions with empty file names.
-          continue;
-        }
-        if (region.path[0] == '[') {
-          // Skip pseudo-paths, like [stack], [vdso], [heap], etc ...
-          continue;
-        }
-        // Avoid duplicates.
-        if (modules_.find(region.path) == modules_.end()) {
-          int fd = open(region.path.c_str(), O_RDONLY | O_CLOEXEC);
-          if (fd >= 0) {
-            modules_.insert(std::make_pair(region.path, fd));
-          } else {
-            LOG(WARNING) << "Failed to open file: " << region.path
-                         << "\n  Error: " << strerror(errno);
-          }
-        }
-      }
-    }
-#endif  // !defined(NDEBUG)
-  }
-
-  // Initializes and installs the symbolization callback.
-  void Init() {
-    if (CacheMemoryRegions()) {
-      OpenSymbolFiles();
-      google::InstallSymbolizeOpenObjectFileCallback(
-          &OpenObjectFileContainingPc);
-    }
-  }
-
-  // Unregister symbolization callback.
-  void UnregisterCallback() {
-    if (is_initialized_) {
-      google::InstallSymbolizeOpenObjectFileCallback(NULL);
-      is_initialized_ = false;
-    }
-  }
-
-  // Closes all file descriptors owned by this instance.
-  void CloseObjectFiles() {
-#if !defined(NDEBUG)
-    std::map<std::string, int>::iterator it;
-    for (it = modules_.begin(); it != modules_.end(); ++it) {
-      int ret = IGNORE_EINTR(close(it->second));
-      DCHECK(!ret);
-      it->second = -1;
-    }
-    modules_.clear();
-#endif  // !defined(NDEBUG)
-  }
-
-  // Set to true upon successful initialization.
-  bool is_initialized_;
-
-#if !defined(NDEBUG)
-  // Mapping from file name to file descriptor.  Includes file descriptors
-  // for all successfully opened object files and the file descriptor for
-  // /proc/self/maps.  This code is not safe for release builds so
-  // this is only done for DEBUG builds.
-  std::map<std::string, int> modules_;
-#endif  // !defined(NDEBUG)
-
-  // Cache for the process memory regions.  Produced by parsing the contents
-  // of /proc/self/maps cache.
-  std::vector<MappedMemoryRegion> regions_;
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxSymbolizeHelper);
-};
-#endif  // USE_SYMBOLIZE
-
-bool EnableInProcessStackDumpingForSandbox() {
-#if defined(USE_SYMBOLIZE)
-  SandboxSymbolizeHelper::GetInstance();
-#endif  // USE_SYMBOLIZE
-
-  return EnableInProcessStackDumping();
-}
 
 bool EnableInProcessStackDumping() {
   // When running in an application, our code typically expects SIGPIPE

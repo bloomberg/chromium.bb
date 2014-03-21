@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -136,11 +135,6 @@ void LinuxSandbox::PreinitializeSandbox() {
 #endif
 
 #if !defined(NDEBUG)
-  // The in-process stack dumping needs to open /proc/self/maps and cache
-  // its contents before the sandbox is enabled.  It also pre-opens the
-  // object files that are already loaded in the process address space.
-  base::debug::EnableInProcessStackDumpingForSandbox();
-
   // Open proc_fd_ only in Debug mode so that forgetting to close it doesn't
   // produce a sandbox escape in Release mode.
   proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC);
