@@ -315,6 +315,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
     @Override
     public void prepareMenu(Menu menu) {
+        menu.setGroupVisible(R.id.MAIN_MENU, true);
+
         // Disable the "Back" menu item if there is no page to go to.
         MenuItem backMenuItem = menu.findItem(R.id.back_menu_id);
         backMenuItem.setEnabled(getActiveTab().canGoBack());
@@ -337,8 +339,6 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
         menu.findItem(R.id.distill_page).setVisible(
                 CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER));
-
-        menu.setGroupVisible(R.id.MAIN_MENU, true);
     }
 
     @VisibleForTesting
