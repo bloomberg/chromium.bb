@@ -16,7 +16,6 @@
 namespace net {
 
 class ClientSocketHandle;
-class HttpStream;
 class SpdySession;
 
 class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
@@ -65,7 +64,6 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   // Called by an attached Job if it sets up a SpdySession.
   void OnNewSpdySessionReady(Job* job,
-                             scoped_ptr<HttpStream> stream,
                              const base::WeakPtr<SpdySession>& spdy_session,
                              bool direct);
 

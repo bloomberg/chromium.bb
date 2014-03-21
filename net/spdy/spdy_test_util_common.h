@@ -247,9 +247,8 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
 
 // Tries to create a SPDY session for the given key but expects the
 // attempt to fail with the given error. A SPDY session for |key| must
-// not already exist. The session will be created but close in the
-// next event loop iteration.
-base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
+// not already exist.
+void TryCreateInsecureSpdySessionExpectingFailure(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     Error expected_error,
@@ -270,12 +269,10 @@ base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
 // Tries to create an insecure SPDY session for the given key but
 // expects the attempt to fail with the given error. The session will
 // neither receive nor send any data. A SPDY session for |key| must
-// not already exist. The session will be created but close in the
-// next event loop iteration.
-base::WeakPtr<SpdySession> TryCreateFakeSpdySessionExpectingFailure(
-    SpdySessionPool* pool,
-    const SpdySessionKey& key,
-    Error expected_error);
+// not already exist.
+void TryCreateFakeSpdySessionExpectingFailure(SpdySessionPool* pool,
+                                              const SpdySessionKey& key,
+                                              Error expected_error);
 
 class SpdySessionPoolPeer {
  public:

@@ -532,7 +532,7 @@ SpdySession::~SpdySession() {
   net_log_.EndEvent(NetLog::TYPE_SPDY_SESSION);
 }
 
-void SpdySession::InitializeWithSocket(
+Error SpdySession::InitializeWithSocket(
     scoped_ptr<ClientSocketHandle> connection,
     SpdySessionPool* pool,
     bool is_secure,
@@ -593,17 +593,19 @@ void SpdySession::InitializeWithSocket(
       NetLog::TYPE_SPDY_SESSION_INITIALIZED,
       connection_->socket()->NetLog().source().ToEventParametersCallback());
 
-  DCHECK_NE(availability_state_, STATE_CLOSED);
-  connection_->AddHigherLayeredPool(this);
-  if (enable_sending_initial_data_)
-    SendInitialData();
-  pool_ = pool;
-
-  // Bootstrap the read loop.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&SpdySession::PumpReadLoop,
-                 weak_factory_.GetWeakPtr(), READ_STATE_DO_READ, OK));
+  int error = DoReadLoop(READ_STATE_DO_READ, OK);
+  if (error == ERR_IO_PENDING)
+    error = OK;
+  if (error == OK) {
+    DCHECK_NE(availability_state_, STATE_CLOSED);
+    connection_->AddHigherLayeredPool(this);
+    if (enable_sending_initial_data_)
+      SendInitialData();
+    pool_ = pool;
+  } else {
+    DcheckClosed();
+  }
+  return static_cast<Error>(error);
 }
 
 bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
@@ -1552,8 +1554,9 @@ SpdySession::CloseSessionResult SpdySession::DoCloseSession(
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.OtherErrors",
                               total_bytes_received_, 1, 100000000, 50);
 
-  DCHECK(pool_);
-  if (availability_state_ != STATE_GOING_AWAY)
+  // |pool_| will be NULL when |InitializeWithSocket()| is in the
+  // call stack.
+  if (pool_ && availability_state_ != STATE_GOING_AWAY)
     pool_->MakeSessionUnavailable(GetWeakPtr());
 
   availability_state_ = STATE_CLOSED;
@@ -1625,8 +1628,10 @@ void SpdySession::CloseSessionOnError(Error err,
 void SpdySession::MakeUnavailable() {
   if (availability_state_ < STATE_GOING_AWAY) {
     availability_state_ = STATE_GOING_AWAY;
-    DCHECK(pool_);
-    pool_->MakeSessionUnavailable(GetWeakPtr());
+    // |pool_| will be NULL when |InitializeWithSocket()| is in the
+    // call stack.
+    if (pool_)
+      pool_->MakeSessionUnavailable(GetWeakPtr());
   }
 }
 
@@ -1681,8 +1686,7 @@ base::Value* SpdySession::GetInfoAsValue() const {
 }
 
 bool SpdySession::IsReused() const {
-  return buffered_spdy_framer_->frames_received() > 0 ||
-      connection_->reuse_type() == ClientSocketHandle::UNUSED_IDLE;
+  return buffered_spdy_framer_->frames_received() > 0;
 }
 
 bool SpdySession::GetLoadTimingInfo(SpdyStreamId stream_id,

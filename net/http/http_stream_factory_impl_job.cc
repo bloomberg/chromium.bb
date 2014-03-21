@@ -334,23 +334,20 @@ void HttpStreamFactoryImpl::Job::OnWebSocketHandshakeStreamReadyCallback() {
 }
 
 void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
-  DCHECK(stream_.get());
+  DCHECK(!stream_.get());
   DCHECK(!IsPreconnecting());
   DCHECK(using_spdy());
-  // Note: an event loop iteration has passed, so |new_spdy_session_| may be
-  // NULL at this point if the SpdySession closed immediately after creation.
+  if (!new_spdy_session_)
+    return;
   base::WeakPtr<SpdySession> spdy_session = new_spdy_session_;
   new_spdy_session_.reset();
   if (IsOrphaned()) {
-    if (spdy_session) {
-      stream_factory_->OnNewSpdySessionReady(
-          spdy_session, spdy_session_direct_, server_ssl_config_, proxy_info_,
-          was_npn_negotiated(), protocol_negotiated(), using_spdy(), net_log_);
-    }
+    stream_factory_->OnNewSpdySessionReady(
+        spdy_session, spdy_session_direct_, server_ssl_config_, proxy_info_,
+        was_npn_negotiated(), protocol_negotiated(), using_spdy(), net_log_);
     stream_factory_->OnOrphanedJobComplete(this);
   } else {
-    request_->OnNewSpdySessionReady(
-        this, stream_.Pass(), spdy_session, spdy_session_direct_);
+    request_->OnNewSpdySessionReady(this, spdy_session, spdy_session_direct_);
   }
   // |this| may be deleted after this call.
 }
@@ -1107,27 +1104,21 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     SpdySessionPool* spdy_pool = session_->spdy_session_pool();
     spdy_session = spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
     if (!spdy_session) {
-      new_spdy_session_ =
+      int error =
           spdy_pool->CreateAvailableSessionFromSocket(spdy_session_key,
                                                       connection_.Pass(),
                                                       net_log_,
                                                       spdy_certificate_error_,
+                                                      &new_spdy_session_,
                                                       using_ssl_);
+      if (error != OK)
+        return error;
       const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
       base::WeakPtr<HttpServerProperties> http_server_properties =
           session_->http_server_properties();
       if (http_server_properties)
         http_server_properties->SetSupportsSpdy(host_port_pair, true);
       spdy_session_direct_ = direct;
-
-      // Create a SpdyHttpStream attached to the session;
-      // OnNewSpdySessionReadyCallback is not called until an event loop
-      // iteration later, so if the SpdySession is closed between then, allow
-      // reuse state from the underlying socket, sampled by SpdyHttpStream,
-      // bubble up to the request.
-      bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-      stream_.reset(new SpdyHttpStream(new_spdy_session_, use_relative_url));
-
       return OK;
     }
   }

@@ -256,13 +256,13 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |certificate_error_code| must either be OK or less than
   // ERR_IO_PENDING.
   //
-  // The session begins reading from |connection| on a subsequent event loop
-  // iteration, so the SpdySession may close immediately afterwards if the first
-  // read of |connection| fails.
-  void InitializeWithSocket(scoped_ptr<ClientSocketHandle> connection,
-                            SpdySessionPool* pool,
-                            bool is_secure,
-                            int certificate_error_code);
+  // Returns OK on success, or an error on failure. Never returns
+  // ERR_IO_PENDING. If an error is returned, the session must be
+  // destroyed immediately.
+  Error InitializeWithSocket(scoped_ptr<ClientSocketHandle> connection,
+                             SpdySessionPool* pool,
+                             bool is_secure,
+                             int certificate_error_code);
 
   // Returns the protocol used by this session. Always between
   // kProtoSPDYMinimumVersion and kProtoSPDYMaximumVersion.
@@ -367,8 +367,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   base::Value* GetInfoAsValue() const;
 
   // Indicates whether the session is being reused after having successfully
-  // used to send/receive data in the past or if the underlying socket was idle
-  // before being used for a SPDY session.
+  // used to send/receive data in the past.
   bool IsReused() const;
 
   // Returns true if the underlying transport socket ever had any reads or
@@ -618,7 +617,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Advance the ReadState state machine. |expected_read_state| is the
   // expected starting read state.
   //
-  // This function must always be called via PumpReadLoop().
+  // This function must always be called via PumpReadLoop() except for
+  // from InitializeWithSocket().
   int DoReadLoop(ReadState expected_read_state, int result);
   // The implementations of the states of the ReadState state machine.
   int DoRead();

@@ -79,14 +79,15 @@ class NET_EXPORT SpdySessionPool
   // encountered when connecting the SSL socket, with OK meaning there
   // was no error.
   //
-  // Returns the new SpdySession. Note that the SpdySession begins reading from
-  // |connection| on a subsequent event loop iteration, so it may be closed
-  // immediately afterwards if the first read of |connection| fails.
-  base::WeakPtr<SpdySession> CreateAvailableSessionFromSocket(
+  // If successful, OK is returned and |available_session| will be
+  // non-NULL and available. Otherwise, an error is returned and
+  // |available_session| will be NULL.
+  net::Error CreateAvailableSessionFromSocket(
       const SpdySessionKey& key,
       scoped_ptr<ClientSocketHandle> connection,
       const BoundNetLog& net_log,
       int certificate_error_code,
+      base::WeakPtr<SpdySession>* available_session,
       bool is_secure);
 
   // Find an available session for the given key, or NULL if there isn't one.
