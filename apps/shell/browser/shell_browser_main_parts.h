@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
 #include "ui/aura/window_tree_host_observer.h"
 
 namespace aura {
@@ -104,6 +105,9 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
 
   // Owned by the KeyedService system.
   extensions::ShellExtensionSystem* extension_system_;
+
+  // For running app browsertests.
+  const content::MainFunctionParams parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

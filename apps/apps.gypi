@@ -153,8 +153,8 @@
           ],
         },
         {
-          'target_name': 'app_shell',
-          'type': 'executable',
+          'target_name': 'app_shell_lib',
+          'type': 'static_library',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'variables': {
             'chromium_code': 1,
@@ -177,7 +177,6 @@
           'sources': [
             'shell/app/shell_main_delegate.cc',
             'shell/app/shell_main_delegate.h',
-            'shell/app/shell_main.cc',
             'shell/browser/shell_app_sorting.cc',
             'shell/browser/shell_app_sorting.h',
             'shell/browser/shell_app_window_delegate.cc',
@@ -207,6 +206,24 @@
             'shell/renderer/shell_content_renderer_client.cc',
             'shell/renderer/shell_content_renderer_client.h',
           ],
+        },
+        {
+          'target_name': 'app_shell',
+          'type': 'executable',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'variables': {
+            'chromium_code': 1,
+          },
+          'dependencies': [
+            'app_shell_lib',
+            'app_shell_pak',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'shell/app/shell_main.cc',
+          ],
           'conditions': [
             ['OS=="win"', {
               'msvs_settings': {
@@ -221,7 +238,34 @@
             }],
           ],
         },
+        {
+          'target_name': 'apps_browsertests',
+          'type': '<(gtest_target_type)',
+          'variables': {
+            'chromium_code': 1,
+          },
+          'dependencies': [
+            'app_shell_lib',
+            # TODO(yoz): find the right deps
+            '../base/base.gyp:test_support_base',
+            '../content/content.gyp:content_app_both',
+            '../content/content_shell_and_tests.gyp:content_browser_test_support',
+            '../content/content_shell_and_tests.gyp:test_support_content',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'defines': [
+            'HAS_OUT_OF_PROC_TEST_RUNNER',
+          ],
+          'sources': [
+            # TODO(yoz): Refactor once we have a second test target.
+            'test/app_shell_test.h',
+            'test/app_shell_test.cc',
+            'test/apps_test_launcher_delegate.cc',
+            'test/apps_test_launcher_delegate.h',
+            'test/apps_tests_main.cc',
+          ],
+        },
       ],  # targets
-    }],  # chromeos==1
+    }],  # chromeos==1 or linux aura or win aura
   ],  # conditions
 }

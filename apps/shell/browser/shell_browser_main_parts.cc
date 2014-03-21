@@ -76,8 +76,7 @@ namespace apps {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : extension_system_(NULL) {
-}
+    : extension_system_(NULL), parameters_(parameters) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
@@ -130,6 +129,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   devtools_delegate_.reset(
       new content::ShellDevToolsDelegate(browser_context_.get()));
+
+  // For running browser tests.
+  // TODO(yoz): This is set up to exit prematurely because we don't have
+  // any tests yet.
+  if (parameters_.ui_task) {
+    parameters_.ui_task->Run();
+    delete parameters_.ui_task;
+    return;
+  }
 
   CreateRootWindow();
   CreateViewsDelegate();
