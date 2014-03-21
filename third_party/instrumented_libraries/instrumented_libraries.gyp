@@ -94,8 +94,6 @@
             '<(_sanitizer_type)-libpixman-1-0',
           ],
         }],
-      ],
-      'conditions': [
         ['msan==1', {
           'dependencies': [
             '<(_sanitizer_type)-libcups2',
