@@ -889,7 +889,7 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 
 def main(args):
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser(description=__doc__)
   parser.add_option('--bionic', help='Add bionic build.',
       action='store_true')
   parser.add_option('--tar', help='Force the tar step.',

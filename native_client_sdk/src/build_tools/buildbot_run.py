@@ -14,6 +14,7 @@ run.
 
 import buildbot_common
 import os
+import optparse
 import subprocess
 import sys
 
@@ -74,17 +75,34 @@ def StepTestSDK():
   Run(cmd, cwd=SCRIPT_DIR)
 
 
-def main():
+def main(args):
+  parser = optparse.OptionParser(description=__doc__)
+  parser.add_option('--build-only', action='store_true',
+      help='Only build the SDK, don\'t build or run tests.')
+  parser.add_option('--build-properties',
+      help='JSON properties passed by buildbot. Currently ignored.')
+  parser.add_option('--factory-properties',
+      help='JSON properties passed by buildbot. Currently ignored.')
+  options, args = parser.parse_args(args)
+
+  # Skip the testing phase if we are running on a build-only bots.
+  if not options.build_only:
+    # Infer build-only from bot name.
+    # TODO(sbc): Remove this once buildbot script have been updated
+    # to pass --build-only argument.
+    if os.getenv('BUILDBOT_BUILDERNAME', '').endswith('build'):
+      options.build_only = True
+
   StepRunUnittests()
   StepBuildSDK()
-  # Skip the testing phase if we are running on a build-only bots.
-  if not buildbot_common.IsBuildOnlyBot():
+  if not options.build_only:
     StepTestSDK()
+
   return 0
 
 
 if __name__ == '__main__':
   try:
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('buildbot_run: interrupted')
