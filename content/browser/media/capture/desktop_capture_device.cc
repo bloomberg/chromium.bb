@@ -380,6 +380,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
       scoped_ptr<webrtc::WindowCapturer> window_capturer(
           webrtc::WindowCapturer::Create(options));
       if (window_capturer && window_capturer->SelectWindow(source.id)) {
+        window_capturer->BringSelectedWindowToFront();
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             window_capturer.release(),
             webrtc::MouseCursorMonitor::CreateForWindow(options, source.id)));

@@ -119,6 +119,10 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
     return true;
   }
 
+  virtual bool BringSelectedWindowToFront() OVERRIDE {
+    return true;
+  }
+
  private:
   Callback* callback_;
   WindowList window_list_;
