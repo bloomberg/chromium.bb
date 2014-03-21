@@ -1,19 +1,31 @@
 // include resources/js-test.js before this file.
 
-function doLeakTest(src, tolerance) {
-    function getCounterValues() {
-        testRunner.resetTestHelperControllers();
-        gc();
+function getCounterValues() {
+    testRunner.resetTestHelperControllers();
+    gc();
 
-        var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
+    var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
 
-        var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
-        for (typename in refCountedInstances)
-            ret['numberOfInstances-'+typename] = refCountedInstances[typename];
+    var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
+    for (typename in refCountedInstances)
+        ret['numberOfInstances-'+typename] = refCountedInstances[typename];
 
-        return ret;
+    return ret;
+}
+
+function compareValues(countersBefore, countersAfter, tolerance) {
+    for (type in tolerance) {
+        var before = countersBefore[type];
+        var after = countersAfter[type];
+
+        if (after - before <= tolerance[type])
+            testPassed('The difference of counter "'+type+'" before and after the cycle is under the threshold of '+tolerance[type]+'.');
+        else
+            testFailed('counter "'+type+'" was '+before+' before and now '+after+' after the cycle. This exceeds the threshold of '+tolerance[type]+'.');
     }
+}
 
+function doLeakTest(src, tolerance) {
     var frame = document.createElement('iframe');
     document.body.appendChild(frame);
     function loadSourceIntoIframe(src, callback) {
@@ -27,18 +39,6 @@ function doLeakTest(src, tolerance) {
             return true;
         };
         frame.src = src;
-    }
-
-    function compareValues(countersBefore, countersAfter, tolerance) {
-        for (type in tolerance) {
-            var before = countersBefore[type];
-            var after = countersAfter[type];
-
-            if (after - before <= tolerance[type])
-                testPassed('The difference of counter "'+type+'" before and after the cycle is under the threshold of '+tolerance[type]+'.');
-            else
-                testFailed('counter "'+type+'" was '+before+' before and now '+after+' after the cycle. This exceeds the threshold of '+tolerance[type]+'.');
-        }
     }
 
     jsTestIsAsync = true;

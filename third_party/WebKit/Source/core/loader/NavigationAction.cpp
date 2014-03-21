@@ -55,16 +55,21 @@ NavigationAction::NavigationAction()
 }
 
 NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, FrameLoadType frameLoadType,
-        bool isFormSubmission, PassRefPtr<Event> event)
+    bool isFormSubmission, PassRefPtr<Event> passEvent)
     : m_resourceRequest(resourceRequest)
-    , m_type(navigationType(frameLoadType, isFormSubmission || resourceRequest.httpBody(), event))
-    , m_event(event)
 {
+    RefPtr<Event> event = passEvent;
+    m_type = navigationType(frameLoadType, isFormSubmission || resourceRequest.httpBody(), event);
+    m_eventTimeStamp = event ? event->timeStamp() : 0;
+
     const MouseEvent* mouseEvent = 0;
-    if (m_type == NavigationTypeLinkClicked && m_event->isMouseEvent())
-        mouseEvent = toMouseEvent(m_event.get());
-    else if (m_type == NavigationTypeFormSubmitted && m_event && m_event->underlyingEvent() && m_event->underlyingEvent()->isMouseEvent())
-        mouseEvent = toMouseEvent(m_event->underlyingEvent());
+    if (m_type == NavigationTypeLinkClicked) {
+        ASSERT(event);
+        if (event->isMouseEvent())
+            mouseEvent = toMouseEvent(event.get());
+    } else if (m_type == NavigationTypeFormSubmitted && event && event->underlyingEvent() && event->underlyingEvent()->isMouseEvent()) {
+        mouseEvent = toMouseEvent(event->underlyingEvent());
+    }
 
     if (!mouseEvent || !navigationPolicyFromMouseEvent(mouseEvent->button(), mouseEvent->ctrlKey(), mouseEvent->shiftKey(), mouseEvent->altKey(), mouseEvent->metaKey(), &m_policy))
         m_policy = NavigationPolicyCurrentTab;

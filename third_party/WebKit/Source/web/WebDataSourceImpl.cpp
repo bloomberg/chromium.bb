@@ -106,11 +106,8 @@ WebNavigationType WebDataSourceImpl::navigationType() const
 
 double WebDataSourceImpl::triggeringEventTime() const
 {
-    if (!triggeringAction().event())
-        return 0.0;
-
     // DOMTimeStamp uses units of milliseconds.
-    return convertDOMTimeStampToSeconds(triggeringAction().event()->timeStamp());
+    return convertDOMTimeStampToSeconds(triggeringAction().eventTimeStamp());
 }
 
 WebDataSource::ExtraData* WebDataSourceImpl::extraData() const

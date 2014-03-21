@@ -29,6 +29,7 @@
 #ifndef NavigationAction_h
 #define NavigationAction_h
 
+#include "core/dom/DOMTimeStamp.h"
 #include "core/events/Event.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
@@ -45,14 +46,14 @@ namespace WebCore {
 
         const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
         NavigationType type() const { return m_type; }
-        Event* event() const { return m_event.get(); }
+        DOMTimeStamp eventTimeStamp() const { return m_eventTimeStamp; }
         NavigationPolicy policy() const { return m_policy; }
         bool shouldOpenInNewWindow() const { return m_policy != NavigationPolicyCurrentTab; }
 
     private:
         ResourceRequest m_resourceRequest;
         NavigationType m_type;
-        RefPtr<Event> m_event;
+        DOMTimeStamp m_eventTimeStamp;
         NavigationPolicy m_policy;
     };
 
