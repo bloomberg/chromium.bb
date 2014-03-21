@@ -30,13 +30,13 @@ ui.results = ui.results || {};
 
 var kResultsPrefetchDelayMS = 500;
 
-// FIXME: Rather than using table, should we be using something fancier?
-ui.results.Comparison = base.extends('table', {
+ui.results.Comparison = base.extends('div', {
     init: function()
     {
         this.className = 'comparison';
-        this.innerHTML = '<thead><tr><th>Expected</th><th>Actual</th><th>Diff</th></tr></thead>' +
-                         '<tbody><tr><td class="expected result-container"></td><td class="actual result-container"></td><td class="diff result-container"></td></tr></tbody>';
+        this.innerHTML = '<div><h2>Expected</h2><div class="results-container expected"></div></div>' +
+                         '<div><h2>Actual</h2><div class="results-container actual"></div></div>' +
+                         '<div><h2>Diff</h2><div class="results-container diff"></div></div>';
     },
     _selectorForKind: function(kind)
     {

@@ -24,7 +24,7 @@
  */
 
 /* FIXME: This should really be in actions.css. */
-ul.actions>li {
+ul.actions > li {
     display: inline-block;
 }
 
@@ -39,8 +39,9 @@ ol.notifications ul {
     padding: 0;
 }
 
-ol.notifications>li {
-    display: -webkit-box;
+ol.notifications > li {
+    display: flex;
+    flex-wrap: wrap;
     position: relative;
     width: 100%;
     padding: 10px;
@@ -62,15 +63,15 @@ ol.notifications div.what {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     padding: 0 0 0 10px;
-    -webkit-box-flex: 1;
+    flex: 1;
 }
 
-    ol.notifications>li div.what ul.effects>li.builder {
+    ol.notifications > li div.what ul.effects > li.builder {
         display: inline;
         padding-right: 5px;
     }
 
-ol.notifications ul.causes>li, ol.notifications div.problem {
+ol.notifications ul.causes > li, ol.notifications div.problem {
     display: -webkit-box;
 }
 
@@ -78,48 +79,48 @@ ol.notifications ul.causes div.description, ol.notifications div.problem ul.effe
     -webkit-box-flex: 1;
 }
 
-ol.notifications>li div.problem {
+ol.notifications > li div.problem {
     padding-bottom: 10px;
 }
 
-    ol.notifications>li div.problem>ul.actions {
+    ol.notifications > li div.problem > ul.actions {
         visibility: hidden;
     }
 
-    ol.notifications>li:hover div.problem>ul.actions {
+    ol.notifications > li:hover div.problem > ul.actions {
         visibility: visible;
     }
 
-    ol.notifications>li table.failures {
+    ol.notifications > li table.failures {
         opacity: 0.2;
         -webkit-transition: opacity 0.5s;
     }
 
-    ol.notifications>li:hover table.failures {
+    ol.notifications > li:hover table.failures {
         opacity: 1;
     }
 
-ol.notifications>li ul.causes>li>ul.actions {
+ol.notifications > li ul.causes > li > ul.actions {
 }
 
-    ol.notifications>li ul.causes>li>div.description {
+    ol.notifications > li ul.causes > li > div.description {
         padding: 0 10px 5px 0;
         display: -webkit-box;
     }
 
-        ol.notifications>li ul.causes>li>div.description>a {
+        ol.notifications > li ul.causes > li > div.description > a {
             padding: 5px 10px 5px 10px;
             margin: -5px 10px -2px 0;
             border-radius: 4px;
             display: inline-block;
         }
 
-        ol.notifications>li ul.causes>li:hover>div.description>a {
+        ol.notifications > li ul.causes > li:hover > div.description > a {
             background-color: #555;
             color: White;
         }
 
-        ol.notifications>li ul.causes>li:hover>div.description>a::after {
+        ol.notifications > li ul.causes > li:hover > div.description > a::after {
             content: '';
             width: 0;
             height: 0;
@@ -131,7 +132,7 @@ ol.notifications>li ul.causes>li>ul.actions {
             border-bottom: 5px solid White;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span {
+        ol.notifications > li ul.causes > li > div.description > span {
             padding: 0 10px 0 0;
             display: block;
             cursor: default;
@@ -139,46 +140,46 @@ ol.notifications>li ul.causes>li>ul.actions {
             -webkit-box-flex: 1;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.author {
+        ol.notifications > li ul.causes > li > div.description > span > span.author {
             padding: 0 0 0 5px;
             font-style: italic;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.reviewer {
+        ol.notifications > li ul.causes > li > div.description > span > span.reviewer {
             color: Gray;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.bugID::before {
+        ol.notifications > li ul.causes > li > div.description > span > span.bugID::before {
             content: '[bug ';
             padding-left: 8px;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.bugID::after {
+        ol.notifications > li ul.causes > li > div.description > span > span.bugID::after {
             content: ']';
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.bugID>a {
+        ol.notifications > li ul.causes > li > div.description > span > span.bugID > a {
             cursor: hand;
             pointer-events: auto;
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.reviewer::before {
+        ol.notifications > li ul.causes > li > div.description > span > span.reviewer::before {
             content: ' (';
         }
 
-        ol.notifications>li ul.causes>li>div.description>span>span.reviewer::after {
+        ol.notifications > li ul.causes > li > div.description > span > span.reviewer::after {
             content: ')';
         }
 
-    ol.notifications>li ul.causes>li>ul.actions {
+    ol.notifications > li ul.causes > li > ul.actions {
         visibility: hidden;
     }
 
-    ol.notifications>li ul.causes>li:hover>ul.actions {
+    ol.notifications > li ul.causes > li:hover > ul.actions {
         visibility: visible;
     }
 
-    ol.notifications>li ul.causes>li li {
+    ol.notifications > li ul.causes > li li {
         padding: 10px 0 0 0;
         display: inline;
     }

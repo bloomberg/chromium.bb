@@ -79,6 +79,12 @@
     padding-right: 4px;
 }
 
+/* This checkbox just overlaps the main content on smalls screens and doesn't
+make a lot of sense as currently designed.*/
+@media only screen and (max-width: 400px) {
+    #link-handling { display: none; }
+}
+
 #new-window-for-links {
     vertical-align: text-bottom;
 }
