@@ -45,9 +45,9 @@ public:
 
     virtual ~SVGMarkerOrientEnumeration();
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
 
 private:
     SVGMarkerOrientEnumeration(SVGAngle*);
@@ -58,7 +58,7 @@ private:
     SVGAngle* m_angle;
 };
 
-class SVGAngle : public NewSVGPropertyBase {
+class SVGAngle : public SVGPropertyBase {
 public:
     typedef SVGAngleTearOff TearOffType;
 
@@ -91,17 +91,17 @@ public:
     SVGEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
     void orientTypeChanged();
 
-    // NewSVGPropertyBase:
+    // SVGPropertyBase:
 
     PassRefPtr<SVGAngle> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedAngle; }
 
@@ -114,9 +114,9 @@ private:
     RefPtr<SVGMarkerOrientEnumeration> m_orientType;
 };
 
-inline PassRefPtr<SVGAngle> toSVGAngle(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGAngle> toSVGAngle(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGAngle::classType());
     return static_pointer_cast<SVGAngle>(base.release());
 }

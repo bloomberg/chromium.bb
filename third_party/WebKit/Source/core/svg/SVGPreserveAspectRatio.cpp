@@ -34,7 +34,7 @@
 namespace WebCore {
 
 SVGPreserveAspectRatio::SVGPreserveAspectRatio()
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
 {
     setDefault();
 }
@@ -55,7 +55,7 @@ PassRefPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
     return preserveAspectRatio.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGPreserveAspectRatio::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGPreserveAspectRatio::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
 
@@ -397,12 +397,12 @@ String SVGPreserveAspectRatio::valueAsString() const
     }
 }
 
-void SVGPreserveAspectRatio::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGPreserveAspectRatio::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -415,7 +415,7 @@ void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animati
     m_meetOrSlice = preserveAspectRatioToUse->m_meetOrSlice;
 }
 
-float SVGPreserveAspectRatio::calculateDistance(PassRefPtr<NewSVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGPreserveAspectRatio::calculateDistance(PassRefPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     // No paced animations for SVGPreserveAspectRatio.
     return -1;

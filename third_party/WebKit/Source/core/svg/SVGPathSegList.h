@@ -33,8 +33,8 @@
 
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSeg.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGListPropertyHelper.h"
 #include "wtf/WeakPtr.h"
 
 namespace WebCore {
@@ -42,12 +42,12 @@ namespace WebCore {
 class SVGPathElement;
 class SVGPathSegListTearOff;
 
-class SVGPathSegList : public NewSVGListPropertyHelper<SVGPathSegList, SVGPathSeg> {
+class SVGPathSegList : public SVGListPropertyHelper<SVGPathSegList, SVGPathSeg> {
 public:
     typedef void PrimitiveType;
     typedef SVGPathSeg ItemPropertyType;
     typedef SVGPathSegListTearOff TearOffType;
-    typedef NewSVGListPropertyHelper<SVGPathSegList, SVGPathSeg> Base;
+    typedef SVGListPropertyHelper<SVGPathSegList, SVGPathSeg> Base;
 
     static PassRefPtr<SVGPathSegList> create(SVGPathElement* contextElement, SVGPathSegRole role = PathSegUndefinedRole)
     {
@@ -59,7 +59,7 @@ public:
     const SVGPathByteStream* byteStream() const;
     void clearByteStream() { m_byteStream.clear(); }
 
-    // NewSVGListPropertyHelper methods with |m_byteStream| sync:
+    // SVGListPropertyHelper methods with |m_byteStream| sync:
 
     ItemPropertyType* at(size_t index)
     {
@@ -129,15 +129,15 @@ public:
 
     PassRefPtr<ItemPropertyType> appendItem(PassRefPtr<ItemPropertyType> passItem);
 
-    // NewSVGPropertyBase:
+    // SVGPropertyBase:
     PassRefPtr<SVGPathSegList> clone();
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
@@ -167,9 +167,9 @@ private:
     bool m_listSyncedToByteStream;
 };
 
-inline PassRefPtr<SVGPathSegList> toSVGPathSegList(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGPathSegList> toSVGPathSegList(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGPathSegList::classType());
     return static_pointer_cast<SVGPathSegList>(base.release());
 }

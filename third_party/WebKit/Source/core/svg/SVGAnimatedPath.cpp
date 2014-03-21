@@ -36,7 +36,7 @@
 namespace WebCore {
 
 SVGAnimatedPath::SVGAnimatedPath(SVGPathElement* contextElement, const QualifiedName& attributeName)
-    : NewSVGAnimatedProperty<SVGPathSegList>(contextElement, attributeName, SVGPathSegList::create(contextElement, PathSegUnalteredRole))
+    : SVGAnimatedProperty<SVGPathSegList>(contextElement, attributeName, SVGPathSegList::create(contextElement, PathSegUnalteredRole))
 {
 }
 

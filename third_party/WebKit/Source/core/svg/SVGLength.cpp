@@ -106,7 +106,7 @@ SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
 } // namespace
 
 SVGLength::SVGLength(SVGLengthMode mode)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_valueInSpecifiedUnits(0)
     , m_unitMode(mode)
     , m_unitType(LengthTypeNumber)
@@ -114,7 +114,7 @@ SVGLength::SVGLength(SVGLengthMode mode)
 }
 
 SVGLength::SVGLength(const SVGLength& o)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_valueInSpecifiedUnits(o.m_valueInSpecifiedUnits)
     , m_unitMode(o.m_unitMode)
     , m_unitType(o.m_unitType)
@@ -126,7 +126,7 @@ PassRefPtr<SVGLength> SVGLength::clone() const
     return adoptRef(new SVGLength(*this));
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGLength> length = create();
 
@@ -434,14 +434,14 @@ PassRefPtr<SVGLength> SVGLength::blend(PassRefPtr<SVGLength> passFrom, float pro
     return length;
 }
 
-void SVGLength::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGLength::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
 
     setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
 }
 
-void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     RefPtr<SVGLength> fromLength = toSVGLength(fromValue);
     RefPtr<SVGLength> toLength = toSVGLength(toValue);
@@ -456,7 +456,7 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
 }
 
-float SVGLength::calculateDistance(PassRefPtr<NewSVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGLength::calculateDistance(PassRefPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
     RefPtr<SVGLength> toLength = toSVGLength(toValue);

@@ -24,12 +24,12 @@
 
 namespace WebCore {
 
-void SVGString::add(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGString::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -39,7 +39,7 @@ void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     animationElement->animateDiscreteType<String>(percentage, fromString, toString, m_value);
 }
 
-float SVGString::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+float SVGString::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for strings.
     return -1;

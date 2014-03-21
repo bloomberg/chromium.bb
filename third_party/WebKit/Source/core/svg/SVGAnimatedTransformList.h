@@ -32,11 +32,11 @@
 #define SVGAnimatedTransformList_h
 
 #include "core/svg/SVGTransformListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef NewSVGAnimatedProperty<SVGTransformList> SVGAnimatedTransformList;
+typedef SVGAnimatedProperty<SVGTransformList> SVGAnimatedTransformList;
 
 } // namespace WebCore
 

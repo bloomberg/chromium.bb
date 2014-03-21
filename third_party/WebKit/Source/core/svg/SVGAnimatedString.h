@@ -32,11 +32,11 @@
 #define SVGAnimatedString_h
 
 #include "core/svg/SVGString.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedString FINAL : public NewSVGAnimatedProperty<SVGString> {
+class SVGAnimatedString FINAL : public SVGAnimatedProperty<SVGString> {
 public:
     static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
     {
@@ -45,7 +45,7 @@ public:
 
 protected:
     SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-        : NewSVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
     {
     }
 };

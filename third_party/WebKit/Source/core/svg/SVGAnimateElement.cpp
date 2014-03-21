@@ -94,7 +94,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     m_animator->setContextElement(targetElement);
 
     // Values-animation accumulates using the last values entry corresponding to the end of duration time.
-    NewSVGPropertyBase* toAtEndOfDurationProperty = m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty.get() : m_toProperty.get();
+    SVGPropertyBase* toAtEndOfDurationProperty = m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty.get() : m_toProperty.get();
     m_animator->calculateAnimatedValue(percentage, repeatCount, m_fromProperty.get(), m_toProperty.get(), toAtEndOfDurationProperty, resultAnimationElement->m_animatedProperty.get());
 }
 

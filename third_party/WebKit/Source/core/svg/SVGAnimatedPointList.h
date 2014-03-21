@@ -32,11 +32,11 @@
 #define SVGAnimatedPointList_h
 
 #include "core/svg/SVGPointListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef NewSVGAnimatedProperty<SVGPointList> SVGAnimatedPointList;
+typedef SVGAnimatedProperty<SVGPointList> SVGAnimatedPointList;
 
 } // namespace WebCore
 

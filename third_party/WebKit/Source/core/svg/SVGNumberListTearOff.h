@@ -32,12 +32,12 @@
 #define SVGNumberListTearOff_h
 
 #include "core/svg/SVGNumberList.h"
-#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
+#include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
 class SVGNumberListTearOff FINAL :
-    public NewSVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>,
+    public SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>,
     public ScriptWrappable {
 public:
     static PassRefPtr<SVGNumberListTearOff> create(PassRefPtr<SVGNumberList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
@@ -47,7 +47,7 @@ public:
 
 private:
     SVGNumberListTearOff(PassRefPtr<SVGNumberList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
-        : NewSVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(target, contextElement, propertyIsAnimVal, attributeName)
+        : SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
         ScriptWrappable::init(this);
     }

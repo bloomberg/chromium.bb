@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-inline PassRefPtr<SVGLengthList> toSVGLengthList(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGLengthList> toSVGLengthList(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGLengthList::classType());
     return static_pointer_cast<SVGLengthList>(base.release());
 }
@@ -51,7 +51,7 @@ PassRefPtr<SVGLengthList> SVGLengthList::clone()
     return ret.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGLengthList::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGLengthList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
     ret->setValueAsString(value, IGNORE_EXCEPTION);
@@ -115,7 +115,7 @@ void SVGLengthList::setValueAsString(const String& value, ExceptionState& except
     }
 }
 
-void SVGLengthList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGLengthList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     RefPtr<SVGLengthList> otherList = toSVGLengthList(other);
 
@@ -160,7 +160,7 @@ bool SVGLengthList::adjustFromToListValues(PassRefPtr<SVGLengthList> passFromLis
     return true;
 }
 
-void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     RefPtr<SVGLengthList> fromList = toSVGLengthList(fromValue);
     RefPtr<SVGLengthList> toList = toSVGLengthList(toValue);
@@ -194,7 +194,7 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
     }
 }
 
-float SVGLengthList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+float SVGLengthList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGLengthList right now. We need the distance for every single value.
     return -1;

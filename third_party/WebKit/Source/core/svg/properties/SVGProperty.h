@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewSVGProperty_h
-#define NewSVGProperty_h
+#ifndef SVGProperty_h
+#define SVGProperty_h
 
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "wtf/Noncopyable.h"
@@ -44,40 +44,40 @@ class QualifiedName;
 class SVGElement;
 class SVGAnimationElement;
 
-class NewSVGPropertyBase : public RefCounted<NewSVGPropertyBase> {
-    WTF_MAKE_NONCOPYABLE(NewSVGPropertyBase);
+class SVGPropertyBase : public RefCounted<SVGPropertyBase> {
+    WTF_MAKE_NONCOPYABLE(SVGPropertyBase);
 
 public:
     // Properties do not have a primitive type by default
     typedef void PrimitiveType;
 
-    virtual ~NewSVGPropertyBase()
+    virtual ~SVGPropertyBase()
     {
         ASSERT(!m_ownerList);
     }
 
     // FIXME: remove this in WebAnimations transition.
     // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const = 0;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const = 0;
 
     virtual String valueAsString() const = 0;
 
     // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) = 0;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) = 0;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) = 0;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) = 0;
 
     AnimatedPropertyType type()
     {
         return m_type;
     }
 
-    NewSVGPropertyBase* ownerList() const
+    SVGPropertyBase* ownerList() const
     {
         return m_ownerList;
     }
 
-    void setOwnerList(NewSVGPropertyBase* ownerList)
+    void setOwnerList(SVGPropertyBase* ownerList)
     {
         // Previous owner list must be cleared before setting new owner list.
         ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
@@ -86,7 +86,7 @@ public:
     }
 
 protected:
-    explicit NewSVGPropertyBase(AnimatedPropertyType type)
+    explicit SVGPropertyBase(AnimatedPropertyType type)
         : m_type(type)
         , m_ownerList(0)
     {
@@ -96,9 +96,9 @@ private:
     const AnimatedPropertyType m_type;
 
     // FIXME: oilpan: This is kept as a raw ptr to break reference cycle. Should be Member in oilpan.
-    NewSVGPropertyBase* m_ownerList;
+    SVGPropertyBase* m_ownerList;
 };
 
 }
 
-#endif // NewSVGProperty_h
+#endif // SVGProperty_h

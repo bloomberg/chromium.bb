@@ -65,7 +65,7 @@ PassRefPtr<SVGPathSegList> SVGPathSegList::clone()
     return svgPathSegList.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGPathSegList::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGPathSegList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGPathSegList> svgPathSegList = SVGPathSegList::create(m_contextElement);
     svgPathSegList->setValueAsString(value, IGNORE_EXCEPTION);
@@ -159,7 +159,7 @@ void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exce
         exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
 }
 
-void SVGPathSegList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGPathSegList::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
     if (length() != otherList->length())
@@ -170,7 +170,7 @@ void SVGPathSegList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
     invalidateList();
 }
 
-void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     invalidateList();
 
@@ -230,7 +230,7 @@ void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElemen
     }
 }
 
-float SVGPathSegList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+float SVGPathSegList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Support paced animations.
     return -1;

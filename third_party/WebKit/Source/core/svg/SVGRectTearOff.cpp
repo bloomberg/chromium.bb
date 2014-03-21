@@ -38,7 +38,7 @@
 namespace WebCore {
 
 SVGRectTearOff::SVGRectTearOff(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
-    : NewSVGPropertyTearOff<SVGRect>(target, contextElement, propertyIsAnimVal, attributeName)
+    : SVGPropertyTearOff<SVGRect>(target, contextElement, propertyIsAnimVal, attributeName)
 {
     ScriptWrappable::init(this);
 }

@@ -140,7 +140,7 @@ void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType, Exceptio
 }
 
 SVGLengthTearOff::SVGLengthTearOff(PassRefPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
-    : NewSVGPropertyTearOff<SVGLength>(target, contextElement, propertyIsAnimVal, attributeName)
+    : SVGPropertyTearOff<SVGLength>(target, contextElement, propertyIsAnimVal, attributeName)
 {
     ScriptWrappable::init(this);
 }

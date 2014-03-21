@@ -33,11 +33,11 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGLength.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
-class SVGLengthTearOff FINAL : public NewSVGPropertyTearOff<SVGLength>, public ScriptWrappable {
+class SVGLengthTearOff FINAL : public SVGPropertyTearOff<SVGLength>, public ScriptWrappable {
 public:
     // Forward declare these enums in the w3c naming scheme, for IDL generation
     enum {

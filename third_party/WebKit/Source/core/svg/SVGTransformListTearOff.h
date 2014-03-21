@@ -33,12 +33,12 @@
 
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGTransformTearOff.h"
-#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
+#include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
 class SVGTransformListTearOff FINAL :
-    public NewSVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>,
+    public SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>,
     public ScriptWrappable {
 public:
     static PassRefPtr<SVGTransformListTearOff> create(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())

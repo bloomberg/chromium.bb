@@ -28,7 +28,7 @@
 namespace WebCore {
 
 SVGStringList::SVGStringList()
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
 {
 }
 
@@ -125,7 +125,7 @@ void SVGStringList::setValueAsString(const String& data, ExceptionState&)
     }
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGStringList::cloneForAnimation(const String& string) const
+PassRefPtr<SVGPropertyBase> SVGStringList::cloneForAnimation(const String& string) const
 {
     RefPtr<SVGStringList> svgStringList = create();
     svgStringList->setValueAsString(string, IGNORE_EXCEPTION);
@@ -161,19 +161,19 @@ bool SVGStringList::checkIndexBound(size_t index, ExceptionState& exceptionState
     return true;
 }
 
-void SVGStringList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGStringList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();
 }
 
-void SVGStringList::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGStringList::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();
 }
 
-float SVGStringList::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+float SVGStringList::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGStringList is never animated.
     ASSERT_NOT_REACHED();

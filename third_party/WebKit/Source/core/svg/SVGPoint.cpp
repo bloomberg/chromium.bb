@@ -43,12 +43,12 @@
 namespace WebCore {
 
 SVGPoint::SVGPoint()
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
 {
 }
 
 SVGPoint::SVGPoint(const FloatPoint& point)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_value(point)
 {
 }
@@ -58,7 +58,7 @@ PassRefPtr<SVGPoint> SVGPoint::clone() const
     return SVGPoint::create(m_value);
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGPoint::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGPoint::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGPoint> point = SVGPoint::create();
     point->setValueAsString(value, IGNORE_EXCEPTION);
@@ -125,19 +125,19 @@ String SVGPoint::valueAsString() const
     return builder.toString();
 }
 
-void SVGPoint::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGPoint::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();
 }
 
-void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();
 }
 
-float SVGPoint::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement)
+float SVGPoint::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();

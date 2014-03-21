@@ -35,7 +35,7 @@
 namespace WebCore {
 
 SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue)
-    : NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(contextElement, attributeName,
+    : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(contextElement, attributeName,
         SVGIntegerOptionalInteger::create(SVGInteger::create(initialFirstValue), SVGInteger::create(initialSecondValue)))
     , m_firstInteger(SVGAnimatedInteger::create(contextElement, attributeName, baseValue()->firstInteger()))
     , m_secondInteger(SVGAnimatedInteger::create(contextElement, attributeName, baseValue()->secondInteger()))
@@ -46,21 +46,21 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement*
 
 void SVGAnimatedIntegerOptionalInteger::animationStarted()
 {
-    NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationStarted();
+    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationStarted();
     m_firstInteger->animationStarted();
     m_secondInteger->animationStarted();
 }
 
-void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(PassRefPtr<NewSVGPropertyBase> value)
+void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
 {
-    NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
+    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
     m_firstInteger->setAnimatedValue(currentValue()->firstInteger());
     m_secondInteger->setAnimatedValue(currentValue()->secondInteger());
 }
 
 void SVGAnimatedIntegerOptionalInteger::animationEnded()
 {
-    NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationEnded();
+    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationEnded();
     m_firstInteger->animationEnded();
     m_secondInteger->animationEnded();
 }

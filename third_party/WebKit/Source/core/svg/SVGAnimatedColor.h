@@ -32,33 +32,33 @@
 #define SVGAnimatedColor_h
 
 #include "core/css/StyleColor.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
 class SVGAnimationElement;
 
-// StyleColor adaptor to NewSVGPropertyBase. This is only used for SMIL animations.
+// StyleColor adaptor to SVGPropertyBase. This is only used for SMIL animations.
 // FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
-class SVGColorProperty FINAL : public NewSVGPropertyBase {
+class SVGColorProperty FINAL : public SVGPropertyBase {
 public:
     static PassRefPtr<SVGColorProperty> create(StyleColor styleColor)
     {
         return adoptRef(new SVGColorProperty(styleColor));
     }
 
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
     virtual String valueAsString() const OVERRIDE;
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedColor; }
 
 private:
     explicit SVGColorProperty(StyleColor styleColor)
-        : NewSVGPropertyBase(classType())
+        : SVGPropertyBase(classType())
         , m_styleColor(styleColor)
     {
     }
@@ -66,9 +66,9 @@ private:
     StyleColor m_styleColor;
 };
 
-inline PassRefPtr<SVGColorProperty> toSVGColorProperty(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGColorProperty> toSVGColorProperty(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGColorProperty::classType());
     return static_pointer_cast<SVGColorProperty>(base.release());
 }

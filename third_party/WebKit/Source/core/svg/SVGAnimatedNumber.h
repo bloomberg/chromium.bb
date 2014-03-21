@@ -32,14 +32,14 @@
 #define SVGAnimatedNumber_h
 
 #include "core/svg/SVGNumberTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
 class SVGAnimatedNumberOptionalNumber;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumber
-class SVGAnimatedNumber : public NewSVGAnimatedProperty<SVGNumber> {
+class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber> {
 public:
     static PassRefPtr<SVGAnimatedNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGNumber> initialValue)
     {
@@ -55,7 +55,7 @@ public:
 
 protected:
     SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGNumber> initialValue)
-        : NewSVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)
         , m_parentNumberOptionalNumber(0)
     {
     }

@@ -21,7 +21,7 @@
 #ifndef SVGTransform_h
 #define SVGTransform_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
@@ -41,7 +41,7 @@ enum SVGTransformType {
     SVG_TRANSFORM_SKEWY = 6
 };
 
-class SVGTransform : public NewSVGPropertyBase {
+class SVGTransform : public SVGPropertyBase {
 public:
     typedef SVGTransformTearOff TearOffType;
 
@@ -68,7 +68,7 @@ public:
     virtual ~SVGTransform();
 
     PassRefPtr<SVGTransform> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     SVGTransformType transformType() const { return m_transformType; }
 
@@ -96,9 +96,9 @@ public:
 
     virtual String valueAsString() const OVERRIDE;
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedTransform; }
 
@@ -126,9 +126,9 @@ inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
     return !(a == b);
 }
 
-inline PassRefPtr<SVGTransform> toSVGTransform(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGTransform> toSVGTransform(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGTransform::classType());
     return static_pointer_cast<SVGTransform>(base.release());
 }

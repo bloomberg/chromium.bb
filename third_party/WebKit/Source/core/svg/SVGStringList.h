@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGString.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/properties/SVGListPropertyHelper.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ class SVGStringListTearOff;
 //   SVGStringList items are exposed to Javascript as DOMString (not SVGString) as in the spec.
 //   SVGString is used only for boxing values for non-list string property SVGAnimatedString,
 //   and not used for SVGStringList.
-class SVGStringList FINAL : public NewSVGPropertyBase {
+class SVGStringList FINAL : public SVGPropertyBase {
 public:
     typedef SVGStringListTearOff TearOffType;
 
@@ -73,15 +73,15 @@ public:
     void appendItem(const String&);
     void replaceItem(const String&, size_t, ExceptionState&);
 
-    // NewSVGPropertyBase:
+    // SVGPropertyBase:
     PassRefPtr<SVGStringList> clone();
     void setValueAsString(const String&, ExceptionState&);
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
     virtual String valueAsString() const OVERRIDE;
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedStringList; }
 

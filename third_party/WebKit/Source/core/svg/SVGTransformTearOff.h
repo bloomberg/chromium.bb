@@ -34,13 +34,13 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGTransform.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
 class SVGMatrix;
 
-class SVGTransformTearOff FINAL : public NewSVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
+class SVGTransformTearOff FINAL : public SVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
 public:
     enum SVGTransformType {
         SVG_TRANSFORM_UNKNOWN = WebCore::SVG_TRANSFORM_UNKNOWN,

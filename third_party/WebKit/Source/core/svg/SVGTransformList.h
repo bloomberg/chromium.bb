@@ -33,13 +33,13 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGTransform.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/properties/SVGListPropertyHelper.h"
 
 namespace WebCore {
 
 class SVGTransformListTearOff;
 
-class SVGTransformList FINAL : public NewSVGListPropertyHelper<SVGTransformList, SVGTransform> {
+class SVGTransformList FINAL : public SVGListPropertyHelper<SVGTransformList, SVGTransform> {
 public:
     typedef SVGTransformListTearOff TearOffType;
 
@@ -57,8 +57,8 @@ public:
 
     bool concatenate(AffineTransform& result) const;
 
-    // NewSVGPropertyBase:
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    // SVGPropertyBase:
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
     PassRefPtr<SVGTransformList> clone();
 
     virtual String valueAsString() const OVERRIDE;
@@ -66,9 +66,9 @@ public:
     bool parse(const UChar*& ptr, const UChar* end);
     bool parse(const LChar*& ptr, const LChar* end);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedTransformList; }
 

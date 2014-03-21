@@ -32,7 +32,7 @@
 #define SVGStaticStringList_h
 
 #include "core/svg/SVGStringListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
@@ -40,7 +40,7 @@ class SVGElement;
 
 // SVGStringList property implementations for SVGTests properties.
 // Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
-class SVGStaticStringList FINAL : public NewSVGAnimatedPropertyBase {
+class SVGStaticStringList FINAL : public SVGAnimatedPropertyBase {
 public:
     static PassRefPtr<SVGStaticStringList> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
@@ -49,11 +49,11 @@ public:
 
     virtual ~SVGStaticStringList();
 
-    // NewSVGAnimatedPropertyBase:
-    virtual NewSVGPropertyBase* currentValueBase() OVERRIDE;
+    // SVGAnimatedPropertyBase:
+    virtual SVGPropertyBase* currentValueBase() OVERRIDE;
     virtual void animationStarted() OVERRIDE;
-    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() OVERRIDE;
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
     virtual void animationEnded() OVERRIDE;
     virtual bool needsSynchronizeAttribute() OVERRIDE;
 

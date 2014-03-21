@@ -64,7 +64,7 @@ enum SVGPathSegRole {
     PathSegUndefinedRole = 2
 };
 
-class NewSVGPropertyBase;
+class SVGPropertyBase;
 class SVGPathElement;
 class SVGElement;
 
@@ -105,12 +105,12 @@ public:
     virtual unsigned short pathSegType() const = 0;
     virtual String pathSegTypeAsLetter() const = 0;
 
-    NewSVGPropertyBase* ownerList() const
+    SVGPropertyBase* ownerList() const
     {
         return m_ownerList;
     }
 
-    void setOwnerList(NewSVGPropertyBase* ownerList)
+    void setOwnerList(SVGPropertyBase* ownerList)
     {
         // Previous owner list must be cleared before setting new owner list.
         ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
@@ -128,7 +128,7 @@ protected:
 
 private:
     // FIXME: oilpan: These are kept as raw ptrs to break reference cycle. Should be Member in oilpan.
-    NewSVGPropertyBase* m_ownerList;
+    SVGPropertyBase* m_ownerList;
     SVGElement* m_contextElement;
 };
 

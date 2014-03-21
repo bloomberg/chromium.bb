@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class SVGIntegerOptionalInteger : public NewSVGPropertyBase {
+class SVGIntegerOptionalInteger : public SVGPropertyBase {
 public:
     // Tearoff of SVGIntegerOptionalInteger is never created.
     typedef void TearOffType;
@@ -47,14 +47,14 @@ public:
     }
 
     PassRefPtr<SVGIntegerOptionalInteger> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedIntegerOptionalInteger; }
 
@@ -68,9 +68,9 @@ protected:
     RefPtr<SVGInteger> m_secondInteger;
 };
 
-inline PassRefPtr<SVGIntegerOptionalInteger> toSVGIntegerOptionalInteger(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGIntegerOptionalInteger> toSVGIntegerOptionalInteger(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGIntegerOptionalInteger::classType());
     return static_pointer_cast<SVGIntegerOptionalInteger>(base.release());
 }

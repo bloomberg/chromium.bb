@@ -58,7 +58,7 @@ SVGAnimatedTypeAnimator::~SVGAnimatedTypeAnimator()
 {
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
 {
     if (isAnimatingSVGDom()) {
         // SVG DOM animVal animation code-path.
@@ -135,18 +135,18 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimati
     return nullptr;
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::constructFromString(const String& value)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::constructFromString(const String& value)
 {
     return createPropertyForAnimation(value);
 }
 
-void SVGAnimatedTypeAnimator::calculateFromAndToValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& toString)
+void SVGAnimatedTypeAnimator::calculateFromAndToValues(RefPtr<SVGPropertyBase>& from, RefPtr<SVGPropertyBase>& to, const String& fromString, const String& toString)
 {
     from = constructFromString(fromString);
     to = constructFromString(toString);
 }
 
-void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& byString)
+void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<SVGPropertyBase>& from, RefPtr<SVGPropertyBase>& to, const String& fromString, const String& byString)
 {
     from = constructFromString(fromString);
     to = constructFromString(byString);
@@ -155,27 +155,27 @@ void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<NewSVGPropertyBase
 
 namespace {
 
-typedef void (NewSVGAnimatedPropertyBase::*NewSVGAnimatedPropertyMethod)();
+typedef void (SVGAnimatedPropertyBase::*SVGAnimatedPropertyMethod)();
 
-void invokeMethodOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, NewSVGAnimatedPropertyMethod method)
+void invokeMethodOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, SVGAnimatedPropertyMethod method)
 {
     Vector<SVGElement*>::const_iterator it = list.begin();
     Vector<SVGElement*>::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
-        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
+        RefPtr<SVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
             (animatedProperty.get()->*method)();
     }
 }
 
-void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, PassRefPtr<NewSVGPropertyBase> passValue)
+void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, PassRefPtr<SVGPropertyBase> passValue)
 {
-    RefPtr<NewSVGPropertyBase> value = passValue;
+    RefPtr<SVGPropertyBase> value = passValue;
 
     Vector<SVGElement*>::const_iterator it = list.begin();
     Vector<SVGElement*>::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
-        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
+        RefPtr<SVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
             animatedProperty->setAnimatedValue(value);
     }
@@ -183,22 +183,22 @@ void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, cons
 
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const Vector<SVGElement*>& list)
 {
     ASSERT(isAnimatingSVGDom());
-    RefPtr<NewSVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
+    RefPtr<SVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
     ASSERT(animatedValue->type() == m_type);
     setAnimatedValueOnAllTargetProperties(list, m_animatedProperty->attributeName(), animatedValue);
 
     return animatedValue.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const Vector<SVGElement*>& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
-    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationStarted);
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &SVGAnimatedPropertyBase::animationStarted);
 
     return resetAnimation(list);
 }
@@ -208,10 +208,10 @@ void SVGAnimatedTypeAnimator::stopAnimValAnimation(const Vector<SVGElement*>& li
     ASSERT(isAnimatingSVGDom());
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
-    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationEnded);
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &SVGAnimatedPropertyBase::animationEnded);
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const Vector<SVGElement*>& list)
 {
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
@@ -225,7 +225,7 @@ public:
     {
     }
 
-    PassRefPtr<NewSVGPropertyBase> operator()(SVGAnimationElement*, const String& value)
+    PassRefPtr<SVGPropertyBase> operator()(SVGAnimationElement*, const String& value)
     {
         return m_animator->createPropertyForAnimation(value);
     }
@@ -234,20 +234,20 @@ private:
     SVGAnimatedTypeAnimator* m_animator;
 };
 
-void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase* from, NewSVGPropertyBase* to, NewSVGPropertyBase* toAtEndOfDuration, NewSVGPropertyBase* animated)
+void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDuration, SVGPropertyBase* animated)
 {
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
 
-    RefPtr<NewSVGPropertyBase> fromValue = m_animationElement->animationMode() == ToAnimation ? animated : from;
-    RefPtr<NewSVGPropertyBase> toValue = to;
-    RefPtr<NewSVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration;
-    RefPtr<NewSVGPropertyBase> animatedValue = animated;
+    RefPtr<SVGPropertyBase> fromValue = m_animationElement->animationMode() == ToAnimation ? animated : from;
+    RefPtr<SVGPropertyBase> toValue = to;
+    RefPtr<SVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration;
+    RefPtr<SVGPropertyBase> animatedValue = animated;
 
     // Apply CSS inheritance rules.
     ParsePropertyFromString parsePropertyFromString(this);
-    m_animationElement->adjustForInheritance<RefPtr<NewSVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->fromPropertyValueType(), fromValue, m_contextElement);
-    m_animationElement->adjustForInheritance<RefPtr<NewSVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->toPropertyValueType(), toValue, m_contextElement);
+    m_animationElement->adjustForInheritance<RefPtr<SVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->fromPropertyValueType(), fromValue, m_contextElement);
+    m_animationElement->adjustForInheritance<RefPtr<SVGPropertyBase>, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->toPropertyValueType(), toValue, m_contextElement);
 
     animatedValue->calculateAnimatedValue(m_animationElement, percentage, repeatCount, fromValue, toValue, toAtEndOfDurationValue, m_contextElement);
 }
@@ -256,8 +256,8 @@ float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const
 {
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
-    RefPtr<NewSVGPropertyBase> fromValue = createPropertyForAnimation(fromString);
-    RefPtr<NewSVGPropertyBase> toValue = createPropertyForAnimation(toString);
+    RefPtr<SVGPropertyBase> fromValue = createPropertyForAnimation(fromString);
+    RefPtr<SVGPropertyBase> toValue = createPropertyForAnimation(toString);
     return fromValue->calculateDistance(toValue, m_contextElement);
 }
 

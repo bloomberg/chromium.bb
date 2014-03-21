@@ -32,11 +32,11 @@
 #define SVGAnimatedLength_h
 
 #include "core/svg/SVGLengthTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedLength : public NewSVGAnimatedProperty<SVGLength> {
+class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength> {
 public:
     static PassRefPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
     {
@@ -48,7 +48,7 @@ public:
 
 protected:
     SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
-        : NewSVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
         , m_negativeValuesMode(negativeValuesMode)
     {
     }

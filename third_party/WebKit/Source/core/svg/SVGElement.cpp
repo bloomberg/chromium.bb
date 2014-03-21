@@ -722,14 +722,14 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
     return AnimatedUnknown;
 }
 
-void SVGElement::addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase> passProperty)
+void SVGElement::addToPropertyMap(PassRefPtr<SVGAnimatedPropertyBase> passProperty)
 {
-    RefPtr<NewSVGAnimatedPropertyBase> property(passProperty);
+    RefPtr<SVGAnimatedPropertyBase> property(passProperty);
     QualifiedName attributeName = property->attributeName();
     m_newAttributeToPropertyMap.set(attributeName, property.release());
 }
 
-PassRefPtr<NewSVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
+PassRefPtr<SVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
 {
     return m_newAttributeToPropertyMap.get(attributeName);
 }
@@ -969,7 +969,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
 
         elementData()->m_animatedSVGAttributesAreDirty = false;
     } else {
-        RefPtr<NewSVGAnimatedPropertyBase> property = m_newAttributeToPropertyMap.get(name);
+        RefPtr<SVGAnimatedPropertyBase> property = m_newAttributeToPropertyMap.get(name);
         if (property && property->needsSynchronizeAttribute())
             property->synchronizeAttribute();
     }

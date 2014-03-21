@@ -32,11 +32,11 @@
 #define SVGAnimatedNumberList_h
 
 #include "core/svg/SVGNumberListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef NewSVGAnimatedProperty<SVGNumberList> SVGAnimatedNumberList;
+typedef SVGAnimatedProperty<SVGNumberList> SVGAnimatedNumberList;
 
 } // namespace WebCore
 

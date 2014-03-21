@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-PassRefPtr<NewSVGPropertyBase> SVGBoolean::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGBoolean::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGBoolean> svgBoolean = create();
     svgBoolean->setValueAsString(value, IGNORE_EXCEPTION);
@@ -62,12 +62,12 @@ void SVGBoolean::setValueAsString(const String& value, ExceptionState& exception
     }
 }
 
-void SVGBoolean::add(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGBoolean::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
     bool fromBoolean = animationElement->animationMode() == ToAnimation ? m_value : toSVGBoolean(from)->value();
@@ -76,7 +76,7 @@ void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, f
     animationElement->animateDiscreteType<bool>(percentage, fromBoolean, toBoolean, m_value);
 }
 
-float SVGBoolean::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+float SVGBoolean::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for boolean.
     return -1;

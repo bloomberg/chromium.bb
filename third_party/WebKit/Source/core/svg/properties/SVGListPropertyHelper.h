@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewSVGListPropertyHelper_h
-#define NewSVGListPropertyHelper_h
+#ifndef SVGListPropertyHelper_h
+#define SVGListPropertyHelper_h
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
@@ -43,16 +43,16 @@ namespace WebCore {
 // This is an implementation of the SVG*List property spec:
 // http://www.w3.org/TR/SVG/single-page.html#types-InterfaceSVGLengthList
 template<typename Derived, typename ItemProperty>
-class NewSVGListPropertyHelper : public NewSVGPropertyBase {
+class SVGListPropertyHelper : public SVGPropertyBase {
 public:
     typedef ItemProperty ItemPropertyType;
 
-    NewSVGListPropertyHelper()
-        : NewSVGPropertyBase(Derived::classType())
+    SVGListPropertyHelper()
+        : SVGPropertyBase(Derived::classType())
     {
     }
 
-    ~NewSVGListPropertyHelper()
+    ~SVGListPropertyHelper()
     {
         clear();
     }
@@ -68,7 +68,7 @@ public:
 
     const ItemPropertyType* at(size_t index) const
     {
-        return const_cast<NewSVGListPropertyHelper<Derived, ItemProperty>*>(this)->at(index);
+        return const_cast<SVGListPropertyHelper<Derived, ItemProperty>*>(this)->at(index);
     }
 
     class ConstIterator {
@@ -154,19 +154,19 @@ private:
 
     Vector<RefPtr<ItemPropertyType> > m_values;
 
-    static PassRefPtr<Derived> toDerived(PassRefPtr<NewSVGPropertyBase> passBase)
+    static PassRefPtr<Derived> toDerived(PassRefPtr<SVGPropertyBase> passBase)
     {
         if (!passBase)
             return nullptr;
 
-        RefPtr<NewSVGPropertyBase> base = passBase;
+        RefPtr<SVGPropertyBase> base = passBase;
         ASSERT(base->type() == Derived::classType());
         return static_pointer_cast<Derived>(base);
     }
 };
 
 template<typename Derived, typename ItemProperty>
-bool NewSVGListPropertyHelper<Derived, ItemProperty>::operator==(const Derived& other) const
+bool SVGListPropertyHelper<Derived, ItemProperty>::operator==(const Derived& other) const
 {
     if (length() != other.length())
         return false;
@@ -181,7 +181,7 @@ bool NewSVGListPropertyHelper<Derived, ItemProperty>::operator==(const Derived& 
 }
 
 template<typename Derived, typename ItemProperty>
-void NewSVGListPropertyHelper<Derived, ItemProperty>::clear()
+void SVGListPropertyHelper<Derived, ItemProperty>::clear()
 {
     // detach all list items as they are no longer part of this list
     typename Vector<RefPtr<ItemPropertyType> >::const_iterator it = m_values.begin();
@@ -195,7 +195,7 @@ void NewSVGListPropertyHelper<Derived, ItemProperty>::clear()
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::initialize(PassRefPtr<ItemProperty> passNewItem)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::initialize(PassRefPtr<ItemProperty> passNewItem)
 {
     RefPtr<ItemPropertyType> newItem = passNewItem;
 
@@ -209,7 +209,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::initia
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::getItem(size_t index, ExceptionState& exceptionState)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::getItem(size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
         return nullptr;
@@ -220,7 +220,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::getIte
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(PassRefPtr<ItemProperty> passNewItem, size_t index)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(PassRefPtr<ItemProperty> passNewItem, size_t index)
 {
     // Spec: If the index is greater than or equal to length, then the new item is appended to the end of the list.
     if (index > m_values.size())
@@ -243,7 +243,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::insert
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::removeItem(size_t index, ExceptionState& exceptionState)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::removeItem(size_t index, ExceptionState& exceptionState)
 {
     if (index >= m_values.size()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
@@ -257,7 +257,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::remove
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::appendItem(PassRefPtr<ItemProperty> passNewItem)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::appendItem(PassRefPtr<ItemProperty> passNewItem)
 {
     RefPtr<ItemPropertyType> newItem = passNewItem;
 
@@ -271,7 +271,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::append
 }
 
 template<typename Derived, typename ItemProperty>
-PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::replaceItem(PassRefPtr<ItemProperty> passNewItem, size_t index, ExceptionState& exceptionState)
+PassRefPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(PassRefPtr<ItemProperty> passNewItem, size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
         return nullptr;
@@ -302,7 +302,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::replac
 }
 
 template<typename Derived, typename ItemProperty>
-bool NewSVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t index, ExceptionState& exceptionState)
+bool SVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t index, ExceptionState& exceptionState)
 {
     if (index >= m_values.size()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
@@ -313,7 +313,7 @@ bool NewSVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t ind
 }
 
 template<typename Derived, typename ItemProperty>
-bool NewSVGListPropertyHelper<Derived, ItemProperty>::removeFromOldOwnerListAndAdjustIndex(PassRefPtr<ItemPropertyType> passItem, size_t* indexToModify)
+bool SVGListPropertyHelper<Derived, ItemProperty>::removeFromOldOwnerListAndAdjustIndex(PassRefPtr<ItemPropertyType> passItem, size_t* indexToModify)
 {
     RefPtr<ItemPropertyType> item = passItem;
     ASSERT(item);
@@ -348,13 +348,13 @@ bool NewSVGListPropertyHelper<Derived, ItemProperty>::removeFromOldOwnerListAndA
 }
 
 template<typename Derived, typename ItemProperty>
-size_t NewSVGListPropertyHelper<Derived, ItemProperty>::findItem(PassRefPtr<ItemPropertyType> item)
+size_t SVGListPropertyHelper<Derived, ItemProperty>::findItem(PassRefPtr<ItemPropertyType> item)
 {
     return m_values.find(item);
 }
 
 template<typename Derived, typename ItemProperty>
-void NewSVGListPropertyHelper<Derived, ItemProperty>::deepCopy(PassRefPtr<Derived> passFrom)
+void SVGListPropertyHelper<Derived, ItemProperty>::deepCopy(PassRefPtr<Derived> passFrom)
 {
     RefPtr<Derived> from = passFrom;
 
@@ -368,4 +368,4 @@ void NewSVGListPropertyHelper<Derived, ItemProperty>::deepCopy(PassRefPtr<Derive
 
 }
 
-#endif // NewSVGListPropertyHelper_h
+#endif // SVGListPropertyHelper_h

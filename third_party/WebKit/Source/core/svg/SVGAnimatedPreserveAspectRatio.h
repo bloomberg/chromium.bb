@@ -32,11 +32,11 @@
 #define SVGAnimatedPreserveAspectRatio_h
 
 #include "core/svg/SVGPreserveAspectRatioTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedPreserveAspectRatio : public NewSVGAnimatedProperty<SVGPreserveAspectRatio> {
+class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio> {
 public:
     static PassRefPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
     {
@@ -45,7 +45,7 @@ public:
 
 protected:
     SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
-        : NewSVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
     {
     }
 };

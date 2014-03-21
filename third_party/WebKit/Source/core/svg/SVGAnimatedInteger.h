@@ -32,14 +32,14 @@
 #define SVGAnimatedInteger_h
 
 #include "core/svg/SVGInteger.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
 class SVGAnimatedIntegerOptionalInteger;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedInteger
-class SVGAnimatedInteger : public NewSVGAnimatedProperty<SVGInteger> {
+class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger> {
 public:
     static PassRefPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
     {
@@ -55,7 +55,7 @@ public:
 
 protected:
     SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
-        : NewSVGAnimatedProperty<SVGInteger>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGInteger>(contextElement, attributeName, initialValue)
         , m_parentIntegerOptionalInteger(0)
     {
     }

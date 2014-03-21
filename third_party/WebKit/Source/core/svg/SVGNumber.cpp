@@ -37,7 +37,7 @@
 namespace WebCore {
 
 SVGNumber::SVGNumber(float value)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_value(value)
 {
 }
@@ -47,7 +47,7 @@ PassRefPtr<SVGNumber> SVGNumber::clone() const
     return create(m_value);
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGNumber::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGNumber::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGNumber> svgNumber = create();
     svgNumber->setValueAsString(value, IGNORE_EXCEPTION);
@@ -99,12 +99,12 @@ void SVGNumber::setValueAsString(const String& string, ExceptionState& exception
     }
 }
 
-void SVGNumber::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGNumber::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     setValue(m_value + toSVGNumber(other)->value());
 }
 
-void SVGNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -115,7 +115,7 @@ void SVGNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     animationElement->animateAdditiveNumber(percentage, repeatCount, fromNumber->value(), toNumber->value(), toAtEndOfDurationNumber->value(), m_value);
 }
 
-float SVGNumber::calculateDistance(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+float SVGNumber::calculateDistance(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     return fabsf(m_value - toSVGNumber(other)->value());
 }

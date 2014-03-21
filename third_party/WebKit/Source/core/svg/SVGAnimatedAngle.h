@@ -38,7 +38,7 @@ namespace WebCore {
 
 class SVGMarkerElement;
 
-class SVGAnimatedAngle FINAL : public NewSVGAnimatedProperty<SVGAngle> {
+class SVGAnimatedAngle FINAL : public SVGAnimatedProperty<SVGAngle> {
 public:
     static PassRefPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
     {
@@ -49,12 +49,12 @@ public:
 
     SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
 
-    // NewSVGAnimatedPropertyBase:
+    // SVGAnimatedPropertyBase:
 
     virtual void synchronizeAttribute() OVERRIDE;
 
     virtual void animationStarted() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
     virtual void animationEnded() OVERRIDE;
 
 protected:

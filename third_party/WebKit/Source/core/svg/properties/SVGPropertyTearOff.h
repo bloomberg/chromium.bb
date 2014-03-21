@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewSVGPropertyTearOff_h
-#define NewSVGPropertyTearOff_h
+#ifndef SVGPropertyTearOff_h
+#define SVGPropertyTearOff_h
 
 #include "core/dom/QualifiedName.h"
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -42,9 +42,9 @@ enum PropertyIsAnimValType {
     PropertyIsAnimVal
 };
 
-class NewSVGPropertyTearOffBase : public RefCounted<NewSVGPropertyTearOffBase> {
+class SVGPropertyTearOffBase : public RefCounted<SVGPropertyTearOffBase> {
 public:
-    virtual ~NewSVGPropertyTearOffBase() { }
+    virtual ~SVGPropertyTearOffBase() { }
 
     PropertyIsAnimValType propertyIsAnimVal() const
     {
@@ -86,7 +86,7 @@ public:
     virtual AnimatedPropertyType type() const = 0;
 
 protected:
-    NewSVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    SVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
         : m_contextElement(contextElement)
         , m_propertyIsAnimVal(propertyIsAnimVal)
         , m_isReadOnlyProperty(false)
@@ -104,7 +104,7 @@ private:
 };
 
 template <typename Property>
-class NewSVGPropertyTearOff : public NewSVGPropertyTearOffBase {
+class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 public:
     Property* target()
     {
@@ -122,8 +122,8 @@ public:
     }
 
 protected:
-    NewSVGPropertyTearOff(PassRefPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
-        : NewSVGPropertyTearOffBase(contextElement, propertyIsAnimVal, attributeName)
+    SVGPropertyTearOff(PassRefPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+        : SVGPropertyTearOffBase(contextElement, propertyIsAnimVal, attributeName)
         , m_target(target)
     {
         ASSERT(m_target);
@@ -135,4 +135,4 @@ private:
 
 }
 
-#endif // NewSVGPropertyTearOff_h
+#endif // SVGPropertyTearOff_h

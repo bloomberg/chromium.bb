@@ -24,7 +24,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGLengthContext.h"
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "heap/Handle.h"
 
 namespace WebCore {
@@ -40,7 +40,7 @@ enum SVGLengthNegativeValuesMode {
 
 class SVGLengthTearOff;
 
-class SVGLength FINAL : public NewSVGPropertyBase {
+class SVGLength FINAL : public SVGPropertyBase {
 public:
     typedef SVGLengthTearOff TearOffType;
 
@@ -50,7 +50,7 @@ public:
     }
 
     PassRefPtr<SVGLength> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     SVGLengthType unitType() const { return static_cast<SVGLengthType>(m_unitType); }
     void setUnitType(SVGLengthType);
@@ -96,9 +96,9 @@ public:
 
     PassRefPtr<SVGLength> blend(PassRefPtr<SVGLength> from, float progress) const;
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedLength; }
 
@@ -111,9 +111,9 @@ private:
     unsigned m_unitType : 4;
 };
 
-inline PassRefPtr<SVGLength> toSVGLength(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGLength> toSVGLength(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGLength::classType());
     return static_pointer_cast<SVGLength>(base.release());
 }

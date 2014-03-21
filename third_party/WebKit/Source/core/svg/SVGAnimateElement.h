@@ -63,10 +63,10 @@ private:
 
     virtual bool hasValidAttributeType() OVERRIDE;
 
-    RefPtr<NewSVGPropertyBase> m_fromProperty;
-    RefPtr<NewSVGPropertyBase> m_toProperty;
-    RefPtr<NewSVGPropertyBase> m_toAtEndOfDurationProperty;
-    RefPtr<NewSVGPropertyBase> m_animatedProperty;
+    RefPtr<SVGPropertyBase> m_fromProperty;
+    RefPtr<SVGPropertyBase> m_toProperty;
+    RefPtr<SVGPropertyBase> m_toAtEndOfDurationProperty;
+    RefPtr<SVGPropertyBase> m_animatedProperty;
 
     Vector<SVGElement*> m_animatedElements;
     OwnPtr<SVGAnimatedTypeAnimator> m_animator;

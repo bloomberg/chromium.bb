@@ -31,11 +31,11 @@
 #ifndef SVGEnumeration_h
 #define SVGEnumeration_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace WebCore {
 
-class SVGEnumerationBase : public NewSVGPropertyBase {
+class SVGEnumerationBase : public SVGPropertyBase {
 public:
     typedef std::pair<unsigned short, String> StringEntry;
     typedef Vector<StringEntry> StringEntries;
@@ -52,25 +52,25 @@ public:
     // This assumes that |m_entries| are sorted.
     unsigned short maxEnumValue() const { return m_entries.last().first; }
 
-    // NewSVGPropertyBase:
+    // SVGPropertyBase:
     virtual PassRefPtr<SVGEnumerationBase> clone() const = 0;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedEnumeration; }
 
-    // Ensure that |SVGAnimatedEnumerationBase::setBaseVal| is used instead of |NewSVGAnimatedProperty<SVGEnumerationBase>::setBaseVal|.
+    // Ensure that |SVGAnimatedEnumerationBase::setBaseVal| is used instead of |SVGAnimatedProperty<SVGEnumerationBase>::setBaseVal|.
     void setValue(unsigned short) { ASSERT_NOT_REACHED(); }
 
 protected:
     SVGEnumerationBase(unsigned short value, const StringEntries& entries)
-        : NewSVGPropertyBase(classType())
+        : SVGPropertyBase(classType())
         , m_value(value)
         , m_entries(entries)
     {

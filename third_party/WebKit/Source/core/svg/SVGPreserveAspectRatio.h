@@ -21,7 +21,7 @@
 #ifndef SVGPreserveAspectRatio_h
 #define SVGPreserveAspectRatio_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace WebCore {
 
@@ -29,7 +29,7 @@ class AffineTransform;
 class FloatRect;
 class SVGPreserveAspectRatioTearOff;
 
-class SVGPreserveAspectRatio : public NewSVGPropertyBase {
+class SVGPreserveAspectRatio : public SVGPropertyBase {
 public:
     enum SVGPreserveAspectRatioType {
         SVG_PRESERVEASPECTRATIO_UNKNOWN = 0,
@@ -59,7 +59,7 @@ public:
     }
 
     virtual PassRefPtr<SVGPreserveAspectRatio> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     bool operator==(const SVGPreserveAspectRatio&) const;
     bool operator!=(const SVGPreserveAspectRatio& other) const { return !operator==(other); }
@@ -81,9 +81,9 @@ public:
     bool parse(const UChar*& ptr, const UChar* end, bool validate);
     bool parse(const LChar*& ptr, const LChar* end, bool validate);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     static AnimatedPropertyType classType() { return AnimatedPreserveAspectRatio; }
 
@@ -98,9 +98,9 @@ private:
     SVGMeetOrSliceType m_meetOrSlice;
 };
 
-inline PassRefPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGPreserveAspectRatio::classType());
     return static_pointer_cast<SVGPreserveAspectRatio>(base.release());
 }

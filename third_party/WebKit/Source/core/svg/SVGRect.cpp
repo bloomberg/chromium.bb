@@ -33,19 +33,19 @@
 namespace WebCore {
 
 SVGRect::SVGRect()
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_isValid(true)
 {
 }
 
 SVGRect::SVGRect(InvalidSVGRectTag)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
 {
     setInvalid();
 }
 
 SVGRect::SVGRect(const FloatRect& rect)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_isValid(true)
     , m_value(rect)
 {
@@ -56,7 +56,7 @@ PassRefPtr<SVGRect> SVGRect::clone() const
     return SVGRect::create(m_value);
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGRect::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGRect::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGRect> rect = SVGRect::create();
     rect->setValueAsString(value, IGNORE_EXCEPTION);
@@ -130,12 +130,12 @@ String SVGRect::valueAsString() const
     return builder.toString();
 }
 
-void SVGRect::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGRect::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     m_value += toSVGRect(other)->value();
 }
 
-void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     ASSERT(animationElement);
     RefPtr<SVGRect> fromRect = animationElement->animationMode() == ToAnimation ? this : toSVGRect(fromValue);
@@ -154,7 +154,7 @@ void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
     m_value = FloatRect(animatedX, animatedY, animatedWidth, animatedHeight);
 }
 
-float SVGRect::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement)
+float SVGRect::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement)
 {
     // FIXME: Distance calculation is not possible for SVGRect right now. We need the distance for every single value.
     return -1;

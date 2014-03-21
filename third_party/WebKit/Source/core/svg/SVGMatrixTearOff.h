@@ -42,7 +42,7 @@ class SVGTransformTearOff;
 
 // SVGMatrixTearOff wraps a AffineTransform for Javascript.
 // Its instance can either hold a static value, or this can be teared off from |SVGTransform.matrix|.
-// This does not derive from NewSVGPropertyTearOff, as its instances are never tied to an animated property nor an XML attribute.
+// This does not derive from SVGPropertyTearOff, as its instances are never tied to an animated property nor an XML attribute.
 class SVGMatrixTearOff FINAL : public RefCounted<SVGMatrixTearOff>, public ScriptWrappable {
 public:
     static PassRefPtr<SVGMatrixTearOff> create(const AffineTransform& value)

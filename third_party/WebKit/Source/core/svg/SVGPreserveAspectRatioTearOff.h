@@ -33,11 +33,11 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
-class SVGPreserveAspectRatioTearOff FINAL : public NewSVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
+class SVGPreserveAspectRatioTearOff FINAL : public SVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
 public:
     enum {
         SVG_PRESERVEASPECTRATIO_UNKNOWN = SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_UNKNOWN,

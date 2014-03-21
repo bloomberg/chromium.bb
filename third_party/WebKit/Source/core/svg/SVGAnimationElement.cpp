@@ -491,7 +491,7 @@ AnimatedPropertyType SVGAnimationElement::determineAnimatedPropertyType() const
     if (!targetElement())
         return AnimatedString;
 
-    RefPtr<NewSVGAnimatedPropertyBase> property = targetElement()->propertyFromAttribute(attributeName());
+    RefPtr<SVGAnimatedPropertyBase> property = targetElement()->propertyFromAttribute(attributeName());
     if (property) {
         AnimatedPropertyType propertyType = property->type();
 

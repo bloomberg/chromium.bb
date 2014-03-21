@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
-NewSVGAnimatedPropertyBase::NewSVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
+SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
     : m_type(type)
     , m_isReadOnly(false)
     , m_isAnimating(false)
@@ -49,36 +49,36 @@ NewSVGAnimatedPropertyBase::NewSVGAnimatedPropertyBase(AnimatedPropertyType type
     m_contextElement->setContextElement();
 }
 
-NewSVGAnimatedPropertyBase::~NewSVGAnimatedPropertyBase()
+SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase()
 {
     ASSERT(!isAnimating());
 }
 
-void NewSVGAnimatedPropertyBase::animationStarted()
+void SVGAnimatedPropertyBase::animationStarted()
 {
     ASSERT(!isAnimating());
     m_isAnimating = true;
 }
 
-void NewSVGAnimatedPropertyBase::animationEnded()
+void SVGAnimatedPropertyBase::animationEnded()
 {
     ASSERT(isAnimating());
     m_isAnimating = false;
 }
 
-void NewSVGAnimatedPropertyBase::synchronizeAttribute()
+void SVGAnimatedPropertyBase::synchronizeAttribute()
 {
     ASSERT(needsSynchronizeAttribute());
     AtomicString value(currentValueBase()->valueAsString());
     m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
 }
 
-bool NewSVGAnimatedPropertyBase::isSpecified() const
+bool SVGAnimatedPropertyBase::isSpecified() const
 {
     return isAnimating() || contextElement()->hasAttribute(attributeName());
 }
 
-void NewSVGAnimatedPropertyBase::commitChange()
+void SVGAnimatedPropertyBase::commitChange()
 {
     contextElement()->invalidateSVGAttributes();
     contextElement()->svgAttributeChanged(m_attributeName);

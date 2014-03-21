@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewSVGListPropertyTearOffHelper_h
-#define NewSVGListPropertyTearOffHelper_h
+#ifndef SVGListPropertyTearOffHelper_h
+#define SVGListPropertyTearOffHelper_h
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 #include "wtf/HashMap.h"
 #include "wtf/TypeTraits.h"
 
@@ -71,7 +71,7 @@ public:
 };
 
 template<typename Derived, typename ListProperty>
-class NewSVGListPropertyTearOffHelper : public NewSVGPropertyTearOff<ListProperty> {
+class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
 public:
     typedef ListProperty ListPropertyType;
     typedef typename ListPropertyType::ItemPropertyType ItemPropertyType;
@@ -197,8 +197,8 @@ public:
     }
 
 protected:
-    NewSVGListPropertyTearOffHelper(PassRefPtr<ListPropertyType> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
-        : NewSVGPropertyTearOff<ListPropertyType>(target, contextElement, propertyIsAnimVal, attributeName)
+    SVGListPropertyTearOffHelper(PassRefPtr<ListPropertyType> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+        : SVGPropertyTearOff<ListPropertyType>(target, contextElement, propertyIsAnimVal, attributeName)
     {
     }
 
@@ -221,4 +221,4 @@ private:
 
 }
 
-#endif // NewSVGListPropertyTearOffHelper_h
+#endif // SVGListPropertyTearOffHelper_h

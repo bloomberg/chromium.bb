@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-inline PassRefPtr<SVGNumberList> toSVGNumberList(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGNumberList> toSVGNumberList(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGNumberList::classType());
     return static_pointer_cast<SVGNumberList>(base.release());
 }
@@ -50,7 +50,7 @@ PassRefPtr<SVGNumberList> SVGNumberList::clone()
     return svgNumberList.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGNumberList::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGNumberList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();
     svgNumberList->setValueAsString(value, IGNORE_EXCEPTION);
@@ -116,7 +116,7 @@ void SVGNumberList::setValueAsString(const String& value, ExceptionState& except
     }
 }
 
-void SVGNumberList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGNumberList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     RefPtr<SVGNumberList> otherList = toSVGNumberList(other);
 
@@ -160,7 +160,7 @@ bool SVGNumberList::adjustFromToListValues(PassRefPtr<SVGNumberList> passFromLis
     return true;
 }
 
-void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     RefPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
     RefPtr<SVGNumberList> toList = toSVGNumberList(toValue);
@@ -184,7 +184,7 @@ void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement
     }
 }
 
-float SVGNumberList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+float SVGNumberList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGNumberList right now. We need the distance for every single value.
     return -1;

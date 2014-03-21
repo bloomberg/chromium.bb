@@ -32,11 +32,11 @@
 #define SVGStringListTearOff_h
 
 #include "core/svg/SVGStringList.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
-class SVGStringListTearOff : public NewSVGPropertyTearOff<SVGStringList>, public ScriptWrappable {
+class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>, public ScriptWrappable {
 public:
     static PassRefPtr<SVGStringListTearOff> create(PassRefPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {

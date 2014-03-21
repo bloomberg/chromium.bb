@@ -36,7 +36,7 @@ namespace WebCore {
 class AffineTransform;
 class CSSCursorImageValue;
 class Document;
-class NewSVGAnimatedPropertyBase;
+class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGCursorElement;
 class SVGDocumentExtensions;
@@ -93,7 +93,7 @@ public:
 
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    PassRefPtr<NewSVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
+    PassRefPtr<SVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
     static AnimatedPropertyType animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventIfPossible(bool sendParentLoadEvents = false);
@@ -143,7 +143,7 @@ public:
     bool isContextElement() const { return m_isContextElement; }
     void setContextElement() { m_isContextElement = true; }
 
-    void addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase>);
+    void addToPropertyMap(PassRefPtr<SVGAnimatedPropertyBase>);
 
     SVGAnimatedString* className() { return m_className.get(); }
 
@@ -203,7 +203,7 @@ private:
 
     HashSet<SVGElement*> m_elementsWithRelativeLengths;
 
-    typedef HashMap<QualifiedName, RefPtr<NewSVGAnimatedPropertyBase> > AttributeToPropertyMap;
+    typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_newAttributeToPropertyMap;
 
 #if !ASSERT_DISABLED

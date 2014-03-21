@@ -32,11 +32,11 @@
 #define SVGAnimatedRect_h
 
 #include "core/svg/SVGRectTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedRect : public NewSVGAnimatedProperty<SVGRect> {
+class SVGAnimatedRect : public SVGAnimatedProperty<SVGRect> {
 public:
     static PassRefPtr<SVGAnimatedRect> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
@@ -45,7 +45,7 @@ public:
 
 protected:
     SVGAnimatedRect(SVGElement* contextElement, const QualifiedName& attributeName)
-        : NewSVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::create(SVGRect::InvalidSVGRectTag()))
+        : SVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::create(SVGRect::InvalidSVGRectTag()))
     {
     }
 };

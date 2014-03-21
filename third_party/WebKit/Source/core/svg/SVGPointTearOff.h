@@ -33,13 +33,13 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGPoint.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 
 class SVGMatrixTearOff;
 
-class SVGPointTearOff : public NewSVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
+class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
 public:
     static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {

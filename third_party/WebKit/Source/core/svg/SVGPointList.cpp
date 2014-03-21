@@ -29,9 +29,9 @@
 
 namespace WebCore {
 
-inline PassRefPtr<SVGPointList> toSVGPointList(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGPointList> toSVGPointList(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGPointList::classType());
     return static_pointer_cast<SVGPointList>(base.release());
 }
@@ -51,7 +51,7 @@ PassRefPtr<SVGPointList> SVGPointList::clone()
     return svgPointList.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGPointList::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGPointList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGPointList> svgPointList = SVGPointList::create();
     svgPointList->setValueAsString(value, IGNORE_EXCEPTION);
@@ -132,7 +132,7 @@ void SVGPointList::setValueAsString(const String& value, ExceptionState& excepti
         exceptionState.throwDOMException(SyntaxError, "Problem parsing points=\""+value+"\"");
 }
 
-void SVGPointList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGPointList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     RefPtr<SVGPointList> otherList = toSVGPointList(other);
 
@@ -176,7 +176,7 @@ bool SVGPointList::adjustFromToListValues(PassRefPtr<SVGPointList> passFromList,
     return true;
 }
 
-void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     RefPtr<SVGPointList> fromList = toSVGPointList(fromValue);
     RefPtr<SVGPointList> toList = toSVGPointList(toValue);
@@ -207,7 +207,7 @@ void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement,
     }
 }
 
-float SVGPointList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+float SVGPointList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGPointList right now. We need the distance for every single value.
     return -1;

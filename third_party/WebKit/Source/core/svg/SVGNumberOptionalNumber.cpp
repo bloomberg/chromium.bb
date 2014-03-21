@@ -37,7 +37,7 @@
 namespace WebCore {
 
 SVGNumberOptionalNumber::SVGNumberOptionalNumber(PassRefPtr<SVGNumber> firstNumber, PassRefPtr<SVGNumber> secondNumber)
-    : NewSVGPropertyBase(classType())
+    : SVGPropertyBase(classType())
     , m_firstNumber(firstNumber)
     , m_secondNumber(secondNumber)
 {
@@ -48,7 +48,7 @@ PassRefPtr<SVGNumberOptionalNumber> SVGNumberOptionalNumber::clone() const
     return SVGNumberOptionalNumber::create(m_firstNumber->clone(), m_secondNumber->clone());
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGNumberOptionalNumber::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGNumberOptionalNumber::cloneForAnimation(const String& value) const
 {
     float x, y;
     if (!parseNumberOptionalNumber(value, x, y)) {
@@ -79,7 +79,7 @@ void SVGNumberOptionalNumber::setValueAsString(const String& value, ExceptionSta
     m_secondNumber->setValue(y);
 }
 
-void SVGNumberOptionalNumber::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+void SVGNumberOptionalNumber::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGNumberOptionalNumber> otherNumberOptionalNumber = toSVGNumberOptionalNumber(other);
 
@@ -87,7 +87,7 @@ void SVGNumberOptionalNumber::add(PassRefPtr<NewSVGPropertyBase> other, SVGEleme
     m_secondNumber->setValue(m_secondNumber->value() + otherNumberOptionalNumber->m_secondNumber->value());
 }
 
-void SVGNumberOptionalNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGNumberOptionalNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -103,7 +103,7 @@ void SVGNumberOptionalNumber::calculateAnimatedValue(SVGAnimationElement* animat
     m_secondNumber->setValue(y);
 }
 
-float SVGNumberOptionalNumber::calculateDistance(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+float SVGNumberOptionalNumber::calculateDistance(PassRefPtr<SVGPropertyBase> other, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGNumberOptionalNumber right now. We need the distance for every single value.
     return -1;

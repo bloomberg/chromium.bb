@@ -32,13 +32,13 @@
 #define SVGAnimatedPath_h
 
 #include "core/svg/SVGPathSegListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
 class SVGPathElement;
 
-class SVGAnimatedPath : public NewSVGAnimatedProperty<SVGPathSegList> {
+class SVGAnimatedPath : public SVGAnimatedProperty<SVGPathSegList> {
 public:
     virtual ~SVGAnimatedPath();
 

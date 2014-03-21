@@ -43,7 +43,7 @@ void SVGAnimatedInteger::synchronizeAttribute()
         return;
     }
 
-    NewSVGAnimatedProperty<SVGInteger>::synchronizeAttribute();
+    SVGAnimatedProperty<SVGInteger>::synchronizeAttribute();
 }
 
 }

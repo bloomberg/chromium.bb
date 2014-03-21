@@ -28,15 +28,15 @@ G*     * Redistributions in binary form must reproduce the above
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewSVGAnimatedProperty_h
-#define NewSVGAnimatedProperty_h
+#ifndef SVGAnimatedProperty_h
+#define SVGAnimatedProperty_h
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -45,15 +45,15 @@ namespace WebCore {
 
 class SVGElement;
 
-class NewSVGAnimatedPropertyBase : public RefCounted<NewSVGAnimatedPropertyBase> {
+class SVGAnimatedPropertyBase : public RefCounted<SVGAnimatedPropertyBase> {
 public:
-    virtual ~NewSVGAnimatedPropertyBase();
+    virtual ~SVGAnimatedPropertyBase();
 
-    virtual NewSVGPropertyBase* currentValueBase() = 0;
+    virtual SVGPropertyBase* currentValueBase() = 0;
 
     virtual void animationStarted();
-    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() = 0;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) = 0;
+    virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() = 0;
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) = 0;
     virtual void animationEnded();
 
     virtual bool needsSynchronizeAttribute() = 0;
@@ -92,7 +92,7 @@ public:
     bool isSpecified() const;
 
 protected:
-    NewSVGAnimatedPropertyBase(AnimatedPropertyType, SVGElement*, const QualifiedName& attributeName);
+    SVGAnimatedPropertyBase(AnimatedPropertyType, SVGElement*, const QualifiedName& attributeName);
     void commitChange();
 
 private:
@@ -105,11 +105,11 @@ private:
 
     const QualifiedName& m_attributeName;
 
-    WTF_MAKE_NONCOPYABLE(NewSVGAnimatedPropertyBase);
+    WTF_MAKE_NONCOPYABLE(SVGAnimatedPropertyBase);
 };
 
 template <typename Property>
-class NewSVGAnimatedPropertyCommon : public NewSVGAnimatedPropertyBase {
+class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
 public:
     Property* baseValue()
     {
@@ -123,10 +123,10 @@ public:
 
     const Property* currentValue() const
     {
-        return const_cast<NewSVGAnimatedPropertyCommon*>(this)->currentValue();
+        return const_cast<SVGAnimatedPropertyCommon*>(this)->currentValue();
     }
 
-    virtual NewSVGPropertyBase* currentValueBase() OVERRIDE
+    virtual SVGPropertyBase* currentValueBase() OVERRIDE
     {
         return currentValue();
     }
@@ -141,31 +141,31 @@ public:
             parseError = ParsingAttributeFailedError;
     }
 
-    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() OVERRIDE
+    virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() OVERRIDE
     {
         return m_baseValue->clone();
     }
 
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase> passValue) OVERRIDE
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase> passValue) OVERRIDE
     {
         ASSERT(isAnimating());
 
-        RefPtr<NewSVGPropertyBase> value = passValue;
+        RefPtr<SVGPropertyBase> value = passValue;
         ASSERT(value->type() == Property::classType());
         m_currentValue = static_pointer_cast<Property>(value.release());
     }
 
     virtual void animationEnded() OVERRIDE
     {
-        NewSVGAnimatedPropertyBase::animationEnded();
+        SVGAnimatedPropertyBase::animationEnded();
 
         ASSERT(m_currentValue);
         m_currentValue.clear();
     }
 
 protected:
-    NewSVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-        : NewSVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
+    SVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+        : SVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
         , m_baseValue(initialValue)
     {
     }
@@ -179,11 +179,11 @@ private:
 // This is for classes which return primitive type for its "animVal".
 // Examples are SVGAnimatedBoolean, SVGAnimatedNumber, etc.
 template <typename Property, typename TearOffType = typename Property::TearOffType, typename PrimitiveType = typename Property::PrimitiveType>
-class NewSVGAnimatedProperty : public NewSVGAnimatedPropertyCommon<Property> {
+class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtr<NewSVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+    static PassRefPtr<SVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
     {
-        return adoptRef(new NewSVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
+        return adoptRef(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
     }
 
     virtual bool needsSynchronizeAttribute() OVERRIDE
@@ -195,7 +195,7 @@ public:
 
     virtual void synchronizeAttribute() OVERRIDE
     {
-        NewSVGAnimatedPropertyBase::synchronizeAttribute();
+        SVGAnimatedPropertyBase::synchronizeAttribute();
         m_baseValueUpdated = false;
     }
 
@@ -229,8 +229,8 @@ public:
     }
 
 protected:
-    NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-        : NewSVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+        : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
         , m_baseValueUpdated(false)
     {
     }
@@ -243,22 +243,22 @@ protected:
 // This is for classes which return special type for its "animVal".
 // Examples are SVGAnimatedLength, SVGAnimatedRect, SVGAnimated*List, etc.
 template <typename Property, typename TearOffType>
-class NewSVGAnimatedProperty<Property, TearOffType, void> : public NewSVGAnimatedPropertyCommon<Property> {
+class SVGAnimatedProperty<Property, TearOffType, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtr<NewSVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+    static PassRefPtr<SVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
     {
-        return adoptRef(new NewSVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
+        return adoptRef(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
     }
 
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase> value) OVERRIDE
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase> value) OVERRIDE
     {
-        NewSVGAnimatedPropertyCommon<Property>::setAnimatedValue(value);
+        SVGAnimatedPropertyCommon<Property>::setAnimatedValue(value);
         updateAnimValTearOffIfNeeded();
     }
 
     virtual void animationEnded() OVERRIDE
     {
-        NewSVGAnimatedPropertyCommon<Property>::animationEnded();
+        SVGAnimatedPropertyCommon<Property>::animationEnded();
         updateAnimValTearOffIfNeeded();
     }
 
@@ -293,8 +293,8 @@ public:
     }
 
 protected:
-    NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-        : NewSVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+        : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
     {
     }
 
@@ -316,4 +316,4 @@ private:
 
 }
 
-#endif // NewSVGAnimatedProperty_h
+#endif // SVGAnimatedProperty_h

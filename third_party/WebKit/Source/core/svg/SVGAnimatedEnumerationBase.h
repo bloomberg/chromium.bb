@@ -32,11 +32,11 @@
 #define SVGAnimatedEnumerationBase_h
 
 #include "core/svg/SVGEnumeration.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedEnumerationBase : public NewSVGAnimatedProperty<SVGEnumerationBase> {
+class SVGAnimatedEnumerationBase : public SVGAnimatedProperty<SVGEnumerationBase> {
 public:
     virtual ~SVGAnimatedEnumerationBase();
 
@@ -44,7 +44,7 @@ public:
 
 protected:
     SVGAnimatedEnumerationBase(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumerationBase> initialValue)
-        : NewSVGAnimatedProperty<SVGEnumerationBase>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGEnumerationBase>(contextElement, attributeName, initialValue)
     {
     }
 };

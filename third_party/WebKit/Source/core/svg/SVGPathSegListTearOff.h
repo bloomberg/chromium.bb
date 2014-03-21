@@ -32,7 +32,7 @@
 #define SVGPathSegListTearOff_h
 
 #include "core/svg/SVGPathSegList.h"
-#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
+#include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
@@ -57,7 +57,7 @@ public:
 };
 
 class SVGPathSegListTearOff FINAL :
-    public NewSVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>,
+    public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>,
     public ScriptWrappable {
 public:
     static PassRefPtr<SVGPathSegListTearOff> create(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
@@ -67,7 +67,7 @@ public:
 
 private:
     SVGPathSegListTearOff(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
-        : NewSVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>(target, contextElement, propertyIsAnimVal, attributeName)
+        : SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
         ScriptWrappable::init(this);
     }

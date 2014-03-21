@@ -32,11 +32,11 @@
 #define SVGAnimatedBoolean_h
 
 #include "core/svg/SVGBoolean.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedBoolean FINAL : public NewSVGAnimatedProperty<SVGBoolean> {
+class SVGAnimatedBoolean FINAL : public SVGAnimatedProperty<SVGBoolean> {
 public:
     static PassRefPtr<SVGAnimatedBoolean> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGBoolean> initialValue)
     {
@@ -45,7 +45,7 @@ public:
 
 protected:
     SVGAnimatedBoolean(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGBoolean> initialValue)
-        : NewSVGAnimatedProperty<SVGBoolean>(contextElement, attributeName, initialValue)
+        : SVGAnimatedProperty<SVGBoolean>(contextElement, attributeName, initialValue)
     {
     }
 };

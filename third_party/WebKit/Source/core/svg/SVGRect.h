@@ -20,14 +20,14 @@
 #ifndef SVGRect_h
 #define SVGRect_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 
 class SVGRectTearOff;
 
-class SVGRect : public NewSVGPropertyBase {
+class SVGRect : public SVGPropertyBase {
 public:
     typedef SVGRectTearOff TearOffType;
 
@@ -49,7 +49,7 @@ public:
     }
 
     PassRefPtr<SVGRect> clone() const;
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     const FloatRect& value() const { return m_value; }
     void setValue(const FloatRect& v) { m_value = v; }
@@ -69,9 +69,9 @@ public:
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     bool isValid() const { return m_isValid; }
     void setInvalid();
@@ -90,9 +90,9 @@ private:
     FloatRect m_value;
 };
 
-inline PassRefPtr<SVGRect> toSVGRect(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGRect> toSVGRect(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGRect::classType());
     return static_pointer_cast<SVGRect>(base.release());
 }

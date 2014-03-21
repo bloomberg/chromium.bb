@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
-void NewSVGPropertyTearOffBase::commitChange()
+void SVGPropertyTearOffBase::commitChange()
 {
     ASSERT(!isImmutable());
     if (!contextElement() || isAnimVal())

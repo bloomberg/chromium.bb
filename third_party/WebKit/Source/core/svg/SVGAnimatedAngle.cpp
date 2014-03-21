@@ -38,7 +38,7 @@
 namespace WebCore {
 
 SVGAnimatedAngle::SVGAnimatedAngle(SVGMarkerElement* contextElement)
-    : NewSVGAnimatedProperty<SVGAngle>(contextElement, SVGNames::orientAttr, SVGAngle::create())
+    : SVGAnimatedProperty<SVGAngle>(contextElement, SVGNames::orientAttr, SVGAngle::create())
     , m_orientType(SVGAnimatedEnumeration<SVGMarkerOrientType>::create(contextElement, SVGNames::orientAttr, baseValue()->orientType()))
 {
 }
@@ -62,19 +62,19 @@ void SVGAnimatedAngle::synchronizeAttribute()
 
 void SVGAnimatedAngle::animationStarted()
 {
-    NewSVGAnimatedProperty<SVGAngle>::animationStarted();
+    SVGAnimatedProperty<SVGAngle>::animationStarted();
     m_orientType->animationStarted();
 }
 
-void SVGAnimatedAngle::setAnimatedValue(PassRefPtr<NewSVGPropertyBase> value)
+void SVGAnimatedAngle::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
 {
-    NewSVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);
+    SVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);
     m_orientType->setAnimatedValue(currentValue()->orientType());
 }
 
 void SVGAnimatedAngle::animationEnded()
 {
-    NewSVGAnimatedProperty<SVGAngle>::animationEnded();
+    SVGAnimatedProperty<SVGAngle>::animationEnded();
     m_orientType->animationEnded();
 }
 

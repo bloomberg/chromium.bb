@@ -32,11 +32,11 @@
 #define SVGAnimatedLengthList_h
 
 #include "core/svg/SVGLengthListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef NewSVGAnimatedProperty<SVGLengthList> SVGAnimatedLengthList;
+typedef SVGAnimatedProperty<SVGLengthList> SVGAnimatedLengthList;
 
 } // namespace WebCore
 

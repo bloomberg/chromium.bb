@@ -31,11 +31,11 @@
 #ifndef SVGBoolean_h
 #define SVGBoolean_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace WebCore {
 
-class SVGBoolean : public NewSVGPropertyBase {
+class SVGBoolean : public SVGPropertyBase {
 public:
     // SVGBoolean does not have a tear-off type.
     typedef void TearOffType;
@@ -47,14 +47,14 @@ public:
     }
 
     PassRefPtr<SVGBoolean> clone() const { return create(m_value); }
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
     bool operator==(const SVGBoolean& other) const { return m_value == other.m_value; }
     bool operator!=(const SVGBoolean& other) const { return !operator==(other); }
@@ -66,7 +66,7 @@ public:
 
 private:
     SVGBoolean(bool value)
-        : NewSVGPropertyBase(classType())
+        : SVGPropertyBase(classType())
         , m_value(value)
     {
     }
@@ -74,9 +74,9 @@ private:
     bool m_value;
 };
 
-inline PassRefPtr<SVGBoolean> toSVGBoolean(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGBoolean> toSVGBoolean(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGBoolean::classType());
     return static_pointer_cast<SVGBoolean>(base.release());
 }

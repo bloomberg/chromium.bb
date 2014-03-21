@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
-inline PassRefPtr<SVGTransformList> toSVGTransformList(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGTransformList> toSVGTransformList(PassRefPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<NewSVGPropertyBase> base = passBase;
+    RefPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGTransformList::classType());
     return static_pointer_cast<SVGTransformList>(base.release());
 }
@@ -256,7 +256,7 @@ void SVGTransformList::setValueAsString(const String& value, ExceptionState& exc
     }
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
+PassRefPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;
@@ -282,7 +282,7 @@ PassRefPtr<SVGTransformList> SVGTransformList::create(SVGTransformType transform
     return svgTransformList.release();
 }
 
-void SVGTransformList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+void SVGTransformList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     if (isEmpty())
         return;
@@ -300,7 +300,7 @@ void SVGTransformList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* con
     append(SVGTransformDistance::addSVGTransforms(fromTransform, toTransform));
 }
 
-void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
     ASSERT(animationElement);
     bool isToAnimation = animationElement->animationMode() == ToAnimation;
@@ -334,7 +334,7 @@ void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElem
     }
 }
 
-float SVGTransformList::calculateDistance(PassRefPtr<NewSVGPropertyBase> toValue, SVGElement*)
+float SVGTransformList::calculateDistance(PassRefPtr<SVGPropertyBase> toValue, SVGElement*)
 {
     // FIXME: This is not correct in all cases. The spec demands that each component (translate x and y for example)
     // is paced separately. To implement this we need to treat each component as individual animation everywhere.
