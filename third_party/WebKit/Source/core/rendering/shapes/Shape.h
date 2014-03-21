@@ -62,7 +62,7 @@ typedef Vector<LineSegment> SegmentList;
 class Shape {
 public:
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
-    static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& drawRect, const LayoutRect& clipRect, WritingMode, Length margin, Length padding);
+    static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, Length margin, Length padding);
     static PassOwnPtr<Shape> createLayoutBoxShape(const RoundedRect&, WritingMode, const Length& margin, const Length& padding);
 
     virtual ~Shape() { }
