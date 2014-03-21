@@ -19,6 +19,7 @@
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
+class TranslateClient;
 class TranslateDriver;
 struct TranslateErrorDetails;
 class TranslateTabHelper;
@@ -129,6 +130,7 @@ class TranslateManager : public content::NotificationObserver {
   // TODO(droger): Remove all uses of |translate_tab_helper_|, use
   // TranslateClient and TranslateDriver instead.
   TranslateTabHelper* translate_tab_helper_;  // Weak.
+  TranslateClient* translate_client_;         // Weak.
   TranslateDriver* translate_driver_;  // Weak.
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;

@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -25,6 +24,7 @@
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
+#include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_error_details.h"
@@ -216,7 +216,8 @@ TranslateManager::TranslateManager(
     : max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       accept_languages_pref_name_(accept_languages_pref_name),
       translate_tab_helper_(helper),
-      translate_driver_(helper->GetTranslateDriver()),
+      translate_client_(helper),
+      translate_driver_(translate_client_->GetTranslateDriver()),
       weak_method_factory_(this) {
 
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
@@ -233,12 +234,7 @@ TranslateManager::TranslateManager(
 }
 
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  DCHECK(web_contents);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
-  PrefService* prefs = original_profile->GetPrefs();
+  PrefService* prefs = translate_client_->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
@@ -259,6 +255,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 
   // MHTML pages currently cannot be translated.
   // See bug: 217945.
+  WebContents* web_contents = translate_tab_helper_->GetWebContents();
   if (web_contents->GetContentsMimeType() == "multipart/related") {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED);
@@ -302,10 +299,10 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   }
 
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs()));
+      translate_client_->GetTranslatePrefs());
 
   TranslateAcceptLanguages* accept_languages =
-      TranslateTabHelper::GetTranslateAcceptLanguages(profile);
+      translate_client_->GetTranslateAcceptLanguages();
   // Don't translate any user black-listed languages.
   if (!translate_prefs->CanTranslateLanguage(accept_languages,
                                              language_code)) {

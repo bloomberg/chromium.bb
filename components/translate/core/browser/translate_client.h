@@ -5,6 +5,11 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 
+#include "base/memory/ref_counted.h"
+#include "components/translate/core/browser/translate_prefs.h"
+
+class PrefService;
+class TranslateAcceptLanguages;
 class TranslateDriver;
 
 // A client interface that needs to be supplied to TranslateManager by the
@@ -16,6 +21,15 @@ class TranslateClient {
  public:
   // Gets the TranslateDriver associated with the client.
   virtual TranslateDriver* GetTranslateDriver() = 0;
+
+  // Returns the associated PrefService.
+  virtual PrefService* GetPrefs() = 0;
+
+  // Returns the associated TranslatePrefs.
+  virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() = 0;
+
+  // Returns the associated TranslateAcceptLanguages.
+  virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_

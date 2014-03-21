@@ -78,6 +78,9 @@ class TranslateTabHelper
 
   // TranslateClient implementation.
   virtual TranslateDriver* GetTranslateDriver() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() OVERRIDE;
+  virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() OVERRIDE;
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);

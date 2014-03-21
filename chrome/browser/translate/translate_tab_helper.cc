@@ -113,6 +113,25 @@ TranslateDriver* TranslateTabHelper::GetTranslateDriver() {
   return &translate_driver_;
 }
 
+PrefService* TranslateTabHelper::GetPrefs() {
+  DCHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return profile->GetOriginalProfile()->GetPrefs();
+}
+
+scoped_ptr<TranslatePrefs> TranslateTabHelper::GetTranslatePrefs() {
+  DCHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return CreateTranslatePrefs(profile->GetPrefs());
+}
+
+TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages() {
+  DCHECK(web_contents());
+  return GetTranslateAcceptLanguages(web_contents()->GetBrowserContext());
+}
+
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateTabHelper, message)
