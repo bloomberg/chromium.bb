@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@7cdc23bbeb9c8b3abd0181b003d606d829b30b04',
+         '@90e387ad60c82d3af2180d4b1bdb96bc6c37b444',
     'angle_revision':
          '28b4790916c70dff3cee85ba351ab46299a1af97'
 }
