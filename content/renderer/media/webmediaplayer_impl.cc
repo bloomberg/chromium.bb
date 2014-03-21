@@ -680,9 +680,6 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
 
   web_graphics_context->deleteTexture(source_texture);
-
-  // The flush() operation is not necessary here. It is kept since the
-  // performance will be better when it is added than not.
   web_graphics_context->flush();
   return true;
 }

@@ -472,6 +472,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
 
   web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
   web_graphics_context->deleteTexture(source_texture);
+  web_graphics_context->flush();
   return true;
 }
 
