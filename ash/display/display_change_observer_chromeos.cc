@@ -165,6 +165,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     displays.back().set_touch_support(
         output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
                                       gfx::Display::TOUCH_SUPPORT_AVAILABLE);
+    displays.back().set_available_color_profiles(
+        output.available_color_profiles);
   }
 
   // DisplayManager can be null during the boot.

@@ -174,7 +174,8 @@ class ASH_EXPORT DisplayManager
                                gfx::Display::Rotation rotation,
                                float ui_scale,
                                const gfx::Insets* overscan_insets,
-                               const gfx::Size& resolution_in_pixels);
+                               const gfx::Size& resolution_in_pixels,
+                               ui::ColorCalibrationProfile color_profile);
 
   // Returns the display's selected mode.
   bool GetSelectedModeForDisplayId(int64 display_id,
@@ -187,6 +188,10 @@ class ASH_EXPORT DisplayManager
   // Returns an empty insets (0, 0, 0, 0) if no insets are specified for
   // the display.
   gfx::Insets GetOverscanInsets(int64 display_id) const;
+
+  // Sets the color calibration of the display to |profile|.
+  void SetColorCalibrationProfile(int64 display_id,
+                                  ui::ColorCalibrationProfile profile);
 
   // Called when display configuration has changed. The new display
   // configurations is passed as a vector of Display object, which
@@ -303,6 +308,9 @@ private:
   // you must use |GetDisplayInfo| to get the correct DisplayInfo for
   // a display.
   void InsertAndUpdateDisplayInfo(const DisplayInfo& new_info);
+
+  // Called when the display info is updated through InsertAndUpdateDisplayInfo.
+  void OnDisplayInfoUpdated(const DisplayInfo& display_info);
 
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);

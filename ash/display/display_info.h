@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ui/display/display_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -154,6 +155,24 @@ class ASH_EXPORT DisplayInfo {
     display_modes_.swap(display_modes);
   }
 
+  ui::ColorCalibrationProfile color_profile() const {
+    return color_profile_;
+  }
+
+  // Sets the color profile. It will ignore if the specified |profile| is not in
+  // |available_color_profiles_|.
+  void SetColorProfile(ui::ColorCalibrationProfile profile);
+
+  const std::vector<ui::ColorCalibrationProfile>&
+      available_color_profiles() const {
+    return available_color_profiles_;
+  }
+
+  void set_available_color_profiles(
+      const std::vector<ui::ColorCalibrationProfile>& profiles) {
+    available_color_profiles_ = profiles;
+  }
+
   // Returns a string representation of the DisplayInfo, excluding display
   // modes.
   std::string ToString() const;
@@ -195,6 +214,12 @@ class ASH_EXPORT DisplayInfo {
 
   // The list of modes supported by this display.
   std::vector<DisplayMode> display_modes_;
+
+  // The current profile of the color calibration.
+  ui::ColorCalibrationProfile color_profile_;
+
+  // The list of available variations for the color calibration.
+  std::vector<ui::ColorCalibrationProfile> available_color_profiles_;
 };
 
 }  // namespace internal

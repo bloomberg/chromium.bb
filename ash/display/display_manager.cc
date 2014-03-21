@@ -464,11 +464,13 @@ void DisplayManager::RegisterDisplayProperty(
     gfx::Display::Rotation rotation,
     float ui_scale,
     const gfx::Insets* overscan_insets,
-    const gfx::Size& resolution_in_pixels) {
+    const gfx::Size& resolution_in_pixels,
+    ui::ColorCalibrationProfile color_profile) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
 
   display_info_[display_id].set_rotation(rotation);
+  display_info_[display_id].SetColorProfile(color_profile);
   // Just in case the preference file was corrupted.
   if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_configured_ui_scale(ui_scale);
@@ -500,6 +502,21 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {
       display_info_.find(display_id);
   return (it != display_info_.end()) ?
       it->second.overscan_insets_in_dip() : gfx::Insets();
+}
+
+void DisplayManager::SetColorCalibrationProfile(
+    int64 display_id,
+    ui::ColorCalibrationProfile profile) {
+#if defined(OS_CHROMEOS)
+  if (delegate_)
+    delegate_->PreDisplayConfigurationChange(false);
+  if (Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
+          display_id, profile)) {
+    display_info_[display_id].SetColorProfile(profile);
+  }
+  if (delegate_)
+    delegate_->PostDisplayConfigurationChange();
+#endif
 }
 
 void DisplayManager::OnNativeDisplaysChanged(
@@ -972,6 +989,18 @@ void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
     display_info_[new_info.id()].set_native(false);
   }
   display_info_[new_info.id()].UpdateDisplaySize();
+
+  OnDisplayInfoUpdated(display_info_[new_info.id()]);
+}
+
+void DisplayManager::OnDisplayInfoUpdated(const DisplayInfo& display_info) {
+#if defined(OS_CHROMEOS)
+  ui::ColorCalibrationProfile color_profile = display_info.color_profile();
+  if (color_profile != ui::COLOR_PROFILE_STANDARD) {
+    Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
+        display_info.id(), color_profile);
+  }
+#endif
 }
 
 gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {

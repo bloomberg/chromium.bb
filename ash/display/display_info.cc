@@ -173,7 +173,8 @@ DisplayInfo::DisplayInfo()
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
-      native_(false) {
+      native_(false),
+      color_profile_(ui::COLOR_PROFILE_STANDARD) {
 }
 
 DisplayInfo::DisplayInfo(int64 id,
@@ -187,7 +188,8 @@ DisplayInfo::DisplayInfo(int64 id,
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
-      native_(false) {
+      native_(false),
+      color_profile_(ui::COLOR_PROFILE_STANDARD) {
 }
 
 DisplayInfo::~DisplayInfo() {
@@ -212,13 +214,17 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   if (!native_info.overscan_insets_in_dip_.empty())
     overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
 
-  // Rotation_ and ui_scale_ are given by preference, or unit
-  // tests. Don't copy if this native_info came from
+  // Rotation_ and ui_scale_ color_profile_ are given by preference,
+  // or unit tests. Don't copy if this native_info came from
   // DisplayChangeObserver.
   if (!native_info.native()) {
     rotation_ = native_info.rotation_;
     configured_ui_scale_ = native_info.configured_ui_scale_;
+    color_profile_ = native_info.color_profile();
   }
+
+  available_color_profiles_ = native_info.available_color_profiles();
+
   // Don't copy insets as it may be given by preference.  |rotation_|
   // is treated as a native so that it can be specified in
   // |CreateFromSpec|.
@@ -296,6 +302,14 @@ std::string DisplayInfo::ToFullString() const {
                         iter->native ? "(N)" : "");
   }
   return ToString() + ", display_modes==" + display_modes_str;
+}
+
+void DisplayInfo::SetColorProfile(ui::ColorCalibrationProfile profile) {
+  if (std::find(available_color_profiles_.begin(),
+                available_color_profiles_.end(),
+                profile) != available_color_profiles_.end()) {
+    color_profile_ = profile;
+  }
 }
 
 }  // namespace internal

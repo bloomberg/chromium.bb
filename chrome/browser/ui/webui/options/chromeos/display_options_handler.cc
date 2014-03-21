@@ -60,6 +60,26 @@ bool CompareDisplayMode(ash::internal::DisplayMode d1,
   return d1.size.GetArea() < d2.size.GetArea();
 }
 
+base::string16 GetColorProfileName(ui::ColorCalibrationProfile profile) {
+  switch (profile) {
+    case ui::COLOR_PROFILE_STANDARD:
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_STANDARD);
+    case ui::COLOR_PROFILE_DYNAMIC:
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_DYNAMIC);
+    case ui::COLOR_PROFILE_MOVIE:
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_MOVIE);
+    case ui::COLOR_PROFILE_READING:
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_READING);
+  }
+
+  NOTREACHED();
+  return base::string16();
+}
+
 }  // namespace
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
@@ -110,6 +130,9 @@ void DisplayOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "startCalibratingOverscan", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN));
+  localized_strings->SetString(
+      "selectedDisplayColorProfile", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE));
 }
 
 void DisplayOptionsHandler::InitializePage() {
@@ -144,6 +167,10 @@ void DisplayOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setOrientation",
       base::Bind(&DisplayOptionsHandler::HandleSetOrientation,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setColorProfile",
+      base::Bind(&DisplayOptionsHandler::HandleSetColorProfile,
                  base::Unretained(this)));
 }
 
@@ -242,6 +269,19 @@ void DisplayOptionsHandler::SendDisplayInfo(
       js_resolutions->Append(resolution_info);
     }
     js_display->Set("resolutions", js_resolutions);
+
+    js_display->SetInteger("colorProfile", display_info.color_profile());
+    base::ListValue* available_color_profiles = new base::ListValue();
+    for (size_t i = 0;
+         i < display_info.available_color_profiles().size(); ++i) {
+      base::DictionaryValue* color_profile_dict = new base::DictionaryValue();
+      ui::ColorCalibrationProfile color_profile =
+          display_info.available_color_profiles()[i];
+      color_profile_dict->SetInteger("profileId", color_profile);
+      color_profile_dict->SetString("name", GetColorProfileName(color_profile));
+      available_color_profiles->Append(color_profile_dict);
+    }
+    js_display->Set("availableColorProfiles", available_color_profiles);
     js_displays.Append(js_display);
   }
 
@@ -404,6 +444,35 @@ void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {
     LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
 
   GetDisplayManager()->SetDisplayRotation(display_id, new_rotation);
+}
+
+void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {
+  DCHECK(!args->empty());
+  int64 display_id = GetDisplayId(args);
+  if (display_id == gfx::Display::kInvalidDisplayID)
+    return;
+
+  std::string profile_value;
+  if (!args->GetString(1, &profile_value)) {
+    LOG(ERROR) << "Invalid profile_value";
+    return;
+  }
+
+  int profile_id;
+  if (!base::StringToInt(profile_value, &profile_id)) {
+    LOG(ERROR) << "Invalid profile: " << profile_value;
+    return;
+  }
+
+  if (profile_id < ui::COLOR_PROFILE_STANDARD ||
+      profile_id > ui::COLOR_PROFILE_READING) {
+    LOG(ERROR) << "Invalid profile_id: " << profile_id;
+    return;
+  }
+
+  GetDisplayManager()->SetColorCalibrationProfile(
+      display_id, static_cast<ui::ColorCalibrationProfile>(profile_id));
+  SendAllDisplayInfo();
 }
 
 }  // namespace options

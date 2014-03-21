@@ -61,6 +61,7 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   void HandleSetUIScale(const base::ListValue* args);
   void HandleSetResolution(const base::ListValue* args);
   void HandleSetOrientation(const base::ListValue* args);
+  void HandleSetColorProfile(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(DisplayOptionsHandler);
 };

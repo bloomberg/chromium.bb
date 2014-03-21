@@ -330,7 +330,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // Set new display's selected resolution.
   display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400));
+      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400),
+      ui::COLOR_PROFILE_STANDARD);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
@@ -355,7 +356,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // Set yet another new display's selected resolution.
   display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400));
+      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400),
+      ui::COLOR_PROFILE_STANDARD);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
