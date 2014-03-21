@@ -28,7 +28,7 @@ def GetVersion(compiler, tool):
       # Unmodified: GNU assembler (GNU Binutils) 2.24
       # Ubuntu: GNU assembler (GNU Binutils for Ubuntu) 2.22
       # Fedora: GNU assembler version 2.23.2
-      version_re = re.compile(r"^GNU [^ ]+ .* (\d+).(\d+).*?$", re.M)
+      version_re = re.compile(r"^GNU [^ ]+ .* (\d+)\.(\d+)\.*?$", re.M)
     elif tool == "linker":
       compiler = compiler + " -Xlinker --version"
       # Using BFD linker
@@ -39,7 +39,7 @@ def GetVersion(compiler, tool):
       # Unmodified: GNU gold (GNU Binutils 2.24) 1.11
       # Ubuntu: GNU gold (GNU Binutils for Ubuntu 2.22) 1.11
       # Fedora: GNU gold (version 2.23.2) 1.11
-      version_re = re.compile(r"^GNU [^ ]+ .* (\d+).(\d+).*?$", re.M)
+      version_re = re.compile(r"^GNU [^ ]+ .* (\d+)\.(\d+)\.*?$", re.M)
     else:
       raise Exception("Unknown tool %s" % tool)
 
