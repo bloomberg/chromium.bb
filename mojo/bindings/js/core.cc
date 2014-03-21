@@ -45,7 +45,8 @@ MojoResult WriteMessage(MojoHandle handle,
                           flags);
 }
 
-gin::Dictionary ReadMessage(const gin::Arguments& args, MojoHandle handle,
+gin::Dictionary ReadMessage(const gin::Arguments& args,
+                            MojoHandle handle,
                             MojoReadMessageFlags flags) {
   uint32_t num_bytes = 0;
   uint32_t num_handles = 0;
@@ -82,6 +83,83 @@ gin::Dictionary ReadMessage(const gin::Arguments& args, MojoHandle handle,
   return dictionary;
 }
 
+gin::Dictionary CreateDataPipe(const gin::Arguments& args,
+                               v8::Handle<v8::Value> options_value) {
+  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  dictionary.Set("result", MOJO_RESULT_INVALID_ARGUMENT);
+
+  MojoHandle producer_handle = MOJO_HANDLE_INVALID;
+  MojoHandle consumer_handle = MOJO_HANDLE_INVALID;
+  MojoResult result = MOJO_RESULT_OK;
+
+  if (options_value->IsObject()) {
+    gin::Dictionary options_dict(args.isolate(), options_value->ToObject());
+    MojoCreateDataPipeOptions options;
+    // For future struct_size, we can probably infer that from the presence of
+    // properties in options_dict. For now, it's always 16.
+    options.struct_size = 16;
+    // Ideally these would be optional. But the interface makes it hard to
+    // typecheck them then.
+    if (!options_dict.Get("flags", &options.flags) ||
+        !options_dict.Get("elementNumBytes", &options.element_num_bytes) ||
+        !options_dict.Get("capacityNumBytes", &options.capacity_num_bytes)) {
+      return dictionary;
+    }
+
+    result = MojoCreateDataPipe(&options, &producer_handle, &consumer_handle);
+  } else if (options_value->IsNull() || options_value->IsUndefined()) {
+    result = MojoCreateDataPipe(NULL, &producer_handle, &consumer_handle);
+  } else {
+    return dictionary;
+  }
+
+  CHECK_EQ(MOJO_RESULT_OK, result);
+
+  dictionary.Set("result", result);
+  dictionary.Set("producerHandle", producer_handle);
+  dictionary.Set("consumerHandle", consumer_handle);
+  return dictionary;
+}
+
+gin::Dictionary WriteData(const gin::Arguments& args,
+                          MojoHandle handle,
+                          const gin::ArrayBufferView& buffer,
+                          MojoWriteDataFlags flags) {
+  uint32_t num_bytes = static_cast<uint32_t>(buffer.num_bytes());
+  MojoResult result = MojoWriteData(handle, buffer.bytes(), &num_bytes, flags);
+  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  dictionary.Set("result", result);
+  dictionary.Set("numBytes", num_bytes);
+  return dictionary;
+}
+
+gin::Dictionary ReadData(const gin::Arguments& args,
+                         MojoHandle handle,
+                         MojoReadDataFlags flags) {
+  uint32_t num_bytes = 0;
+  MojoResult result = MojoReadData(
+      handle, NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+  if (result != MOJO_RESULT_OK) {
+    gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+    dictionary.Set("result", result);
+    return dictionary;
+  }
+
+  v8::Handle<v8::ArrayBuffer> array_buffer =
+      v8::ArrayBuffer::New(args.isolate(), num_bytes);
+  gin::ArrayBuffer buffer;
+  ConvertFromV8(args.isolate(), array_buffer, &buffer);
+  CHECK_EQ(num_bytes, buffer.num_bytes());
+
+  result = MojoReadData(handle, buffer.bytes(), &num_bytes, flags);
+  CHECK_EQ(num_bytes, buffer.num_bytes());
+
+  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  dictionary.Set("result", result);
+  dictionary.Set("buffer", array_buffer);
+  return dictionary;
+}
+
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
@@ -102,6 +180,9 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetMethod("createMessagePipe", CreateMessagePipe)
         .SetMethod("writeMessage", WriteMessage)
         .SetMethod("readMessage", ReadMessage)
+        .SetMethod("createDataPipe", CreateDataPipe)
+        .SetMethod("writeData", WriteData)
+        .SetMethod("readData", ReadData)
 
         // TODO(vtl): Change name of "kInvalidHandle", now that there's no such
         // C++ constant?
@@ -138,6 +219,21 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetValue("READ_MESSAGE_FLAG_NONE", MOJO_READ_MESSAGE_FLAG_NONE)
         .SetValue("READ_MESSAGE_FLAG_MAY_DISCARD",
                   MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)
+
+        .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_NONE",
+                  MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE)
+        .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD",
+                  MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD)
+
+        .SetValue("WRITE_DATA_FLAG_NONE", MOJO_WRITE_DATA_FLAG_NONE)
+        .SetValue("WRITE_DATA_FLAG_ALL_OR_NONE",
+                  MOJO_WRITE_DATA_FLAG_ALL_OR_NONE)
+
+        .SetValue("READ_DATA_FLAG_NONE", MOJO_READ_DATA_FLAG_NONE)
+        .SetValue("READ_DATA_FLAG_ALL_OR_NONE",
+                  MOJO_READ_DATA_FLAG_ALL_OR_NONE)
+        .SetValue("READ_DATA_FLAG_DISCARD", MOJO_READ_DATA_FLAG_DISCARD)
+        .SetValue("READ_DATA_FLAG_QUERY", MOJO_READ_DATA_FLAG_QUERY)
         .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
