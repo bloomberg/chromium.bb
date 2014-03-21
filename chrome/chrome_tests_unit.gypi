@@ -1947,13 +1947,6 @@
         # remaining dependencies back to //chrome are eliminated.
         '../components/autofill/content/browser/content_autofill_driver_unittest.cc',
         '../components/autofill/content/browser/request_autocomplete_manager_unittest.cc',
-        '../components/autofill/content/browser/wallet/full_wallet_unittest.cc',
-        '../components/autofill/content/browser/wallet/instrument_unittest.cc',
-        '../components/autofill/content/browser/wallet/wallet_address_unittest.cc',
-        '../components/autofill/content/browser/wallet/wallet_client_unittest.cc',
-        '../components/autofill/content/browser/wallet/wallet_items_unittest.cc',
-        '../components/autofill/content/browser/wallet/wallet_service_url_unittest.cc',
-        '../components/autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
 
         # TODO(yael): Move to //components/components_tests.gypi once
         # nacl_defines is moved out of chrome.gyp into a common place.

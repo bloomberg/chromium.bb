@@ -18,6 +18,13 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'autofill/content/browser/wallet/full_wallet_unittest.cc',
+            'autofill/content/browser/wallet/instrument_unittest.cc',
+            'autofill/content/browser/wallet/wallet_address_unittest.cc',
+            'autofill/content/browser/wallet/wallet_client_unittest.cc',
+            'autofill/content/browser/wallet/wallet_items_unittest.cc',
+            'autofill/content/browser/wallet/wallet_service_url_unittest.cc',
+            'autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
             'autofill/core/browser/address_field_unittest.cc',
             'autofill/core/browser/address_unittest.cc',
             'autofill/core/browser/android/auxiliary_profile_unittest_android.cc',
@@ -217,6 +224,10 @@
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
+                # Dependencies of autofill
+                'components.gyp:autofill_content_browser',
+                'components.gyp:autofill_content_test_support',
+
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',
 
@@ -259,7 +270,7 @@
                 ['exclude', '\\.mm$'],
                 ['include', '^test/run_all_unittests\\.cc$'],
                 ['include', '^auto_login_parser/'],
-                ['include', '^autofill/'],
+                ['include', '^autofill/core/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^json_schema/'],
                 ['include', '^keyed_service/core/'],
