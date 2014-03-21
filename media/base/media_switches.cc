@@ -15,9 +15,6 @@ const char kVideoThreads[] = "video-threads";
 // Enables ADTS stream parser for Media Source Extensions.
 const char kEnableADTSStreamParser[] = "enable-adts-stream-parser";
 
-// Enables MP3 stream parser for Media Source Extensions.
-const char kEnableMP3StreamParser[] = "enable-mp3-stream-parser";
-
 #if defined(OS_ANDROID)
 // Disables the infobar popup for accessing protected media identifier.
 const char kDisableInfobarForProtectedMediaIdentifier[] =

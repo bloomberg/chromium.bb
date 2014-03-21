@@ -318,13 +318,6 @@ static bool CheckTypeAndCodecs(
     if (type == type_info.type) {
       if (codecs.empty()) {
 #if defined(USE_PROPRIETARY_CODECS)
-        if (type_info.codecs == kAudioMP3Codecs &&
-            !CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableMP3StreamParser)) {
-          DVLOG(1) << "MP3StreamParser is not enabled.";
-          return false;
-        }
-
         if (type_info.codecs == kAudioADTSCodecs &&
             !CommandLine::ForCurrentProcess()->HasSwitch(
                 switches::kEnableADTSStreamParser)) {

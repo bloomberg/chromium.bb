@@ -1099,7 +1099,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLCDText,
     switches::kEnableLayerSquashing,
     switches::kEnableLogging,
-    switches::kEnableMP3StreamParser,
     switches::kEnableMapImage,
     switches::kEnableMemoryBenchmarking,
     switches::kEnableOverlayFullscreenVideo,

@@ -41,7 +41,6 @@ void TestSuiteNoAtExit::Initialize() {
   media::InitializeMediaLibraryForTesting();
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitch(switches::kEnableADTSStreamParser);
-  cmd_line->AppendSwitch(switches::kEnableMP3StreamParser);
 }
 
 int main(int argc, char** argv) {
