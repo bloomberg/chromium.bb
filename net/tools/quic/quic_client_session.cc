@@ -20,7 +20,7 @@ QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     QuicCryptoClientConfig* crypto_config)
     : QuicSession(connection, config),
-      crypto_stream_(server_key, this, NULL, crypto_config) {
+      crypto_stream_(server_key, this, NULL, NULL, crypto_config) {
 }
 
 QuicClientSession::~QuicClientSession() {

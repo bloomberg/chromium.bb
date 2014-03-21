@@ -39,6 +39,7 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
       const QuicSessionKey& server_key,
       QuicSession* session,
       QuicCryptoClientStream::Visitor* visitor,
+      ProofVerifyContext* verify_context,
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,
       const ProofVerifyDetails* proof_verify_details_);

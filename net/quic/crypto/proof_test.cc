@@ -38,6 +38,7 @@ TEST(ProofTest, Verify) {
   const vector<string>* first_certs;
   string error_details, signature, first_signature;
   CertVerifyResult cert_verify_result;
+  ProofVerifyContext verify_context;
 
   ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
                                &first_certs, &first_signature));
@@ -52,7 +53,8 @@ TEST(ProofTest, Verify) {
   TestCompletionCallback callback;
   rv = verifier->VerifyProof(hostname, server_config, *certs, signature,
                              &error_details, &cert_verify_result,
-                             callback.callback());
+                             verify_context, callback.callback());
+
   rv = callback.GetResult(rv);
   ASSERT_EQ(OK, rv);
   ASSERT_EQ("", error_details);
@@ -60,14 +62,15 @@ TEST(ProofTest, Verify) {
 
   rv = verifier->VerifyProof("foo.com", server_config, *certs, signature,
                              &error_details, &cert_verify_result,
-                             callback.callback());
+                             verify_context, callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
 
   rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
                              *certs, signature, &error_details,
-                             &cert_verify_result, callback.callback());
+                             &cert_verify_result, verify_context,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
@@ -75,7 +78,8 @@ TEST(ProofTest, Verify) {
   const string corrupt_signature = "1" + signature;
   rv = verifier->VerifyProof(hostname, server_config, *certs,
                              corrupt_signature, &error_details,
-                             &cert_verify_result, callback.callback());
+                             &cert_verify_result, verify_context,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
@@ -86,7 +90,7 @@ TEST(ProofTest, Verify) {
   }
   rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
                              &error_details, &cert_verify_result,
-                             callback.callback());
+                             verify_context, callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
@@ -132,12 +136,14 @@ static void RunVerification(ProofVerifier* verifier,
   TestCompletionCallback comp_callback;
   bool ok;
   string error_details;
+  scoped_ptr<ProofVerifyContext> verify_context(
+      CryptoTestUtils::ProofVerifyContextForTesting());
   TestProofVerifierCallback* callback =
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
   ProofVerifier::Status status = verifier->VerifyProof(
-      hostname, server_config, certs, proof, &error_details, &details,
-      callback);
+      hostname, server_config, certs, proof, verify_context.get(),
+      &error_details, &details, callback);
 
   switch (status) {
     case ProofVerifier::FAILURE:

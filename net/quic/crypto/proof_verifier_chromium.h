@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 
 namespace net {
@@ -29,12 +30,21 @@ struct ProofVerifyDetailsChromium : public ProofVerifyDetails {
   CertVerifyResult cert_verify_result;
 };
 
+// ProofVerifyContextChromium is the implementation-specific information that a
+// ProofVerifierChromium needs in order to log correctly.
+struct ProofVerifyContextChromium : public ProofVerifyContext {
+ public:
+  explicit ProofVerifyContextChromium(const BoundNetLog& net_log)
+      : net_log(net_log) {}
+
+  BoundNetLog net_log;
+};
+
 // ProofVerifierChromium implements the QUIC ProofVerifier interface.  It is
 // capable of handling multiple simultaneous requests.
 class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
  public:
-  ProofVerifierChromium(CertVerifier* cert_verifier,
-                        const BoundNetLog& net_log);
+  explicit ProofVerifierChromium(CertVerifier* cert_verifier);
   virtual ~ProofVerifierChromium();
 
   // ProofVerifier interface
@@ -42,8 +52,9 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
                              const std::string& server_config,
                              const std::vector<std::string>& certs,
                              const std::string& signature,
+                             const ProofVerifyContext* verify_context,
                              std::string* error_details,
-                             scoped_ptr<ProofVerifyDetails>* details,
+                             scoped_ptr<ProofVerifyDetails>* verify_details,
                              ProofVerifierCallback* callback) OVERRIDE;
 
  private:
@@ -57,8 +68,6 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
 
   // Underlying verifier used to verify certificates.
   CertVerifier* const cert_verifier_;
-
-  BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ProofVerifierChromium);
 };
