@@ -105,7 +105,6 @@ class AudioManagerAndroid {
     // performed where the AEC performance is evaluated using e.g. a WebRTC
     // audio client such as https://apprtc.appspot.com/?r=<ROOM NAME>.
     private static final String[] SUPPORTED_AEC_MODELS = new String[] {
-         "GT-I8190N", // Galaxy S3 mini
          "GT-I9300",  // Galaxy S3
          "GT-I9500",  // Galaxy S4
          "GT-N7105",  // Galaxy Note 2
