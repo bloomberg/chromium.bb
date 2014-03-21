@@ -158,17 +158,22 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(const Params& params,
       profile_(profile),
       button_pressed_(false) {
   RecordHistogramAction(SHOWN);
-  SigninManagerFactory::GetInstance()->GetForProfile(profile_)->AddObserver(
-      this);
+
+  // The AutoLogin infobar is shown in incognito mode on Android, so a
+  // SigninManager isn't guaranteed to exist for |profile_|.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_);
+  if (signin_manager)
+    signin_manager->AddObserver(this);
 }
 
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
-  // The SigninManagerFactory is scoped to the lifetime of the app and the
-  // SigninManager is scoped to the lifetime of the Profile, both of which are
-  // longer than the lifetime of the WebContents that this object cannot
-  // outlive. Therefore, it's safe to call RemoveObserver() unconditionally.
-  SigninManagerFactory::GetInstance()->GetForProfile(profile_)->RemoveObserver(
-      this);
+  // The AutoLogin infobar is shown in incognito mode on Android, so a
+  // SigninManager isn't guaranteed to exist for |profile_|.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_);
+  if (signin_manager)
+    signin_manager->RemoveObserver(this);
 
   if (!button_pressed_)
     RecordHistogramAction(IGNORED);
