@@ -9,11 +9,9 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/search_engines_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 using base::ASCIIToUTF16;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class TwoClientSearchEnginesSyncTest : public SyncTest {
  public:
@@ -194,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   search_engines_helper::AddSearchEngine(0, 0);
   ASSERT_TRUE(
-      AwaitCommitActivityCompletion(GetClient(0)->service()));
+      GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_TRUE(search_engines_helper::ServiceMatchesVerifier(0));
   ASSERT_FALSE(search_engines_helper::ServiceMatchesVerifier(1));
 

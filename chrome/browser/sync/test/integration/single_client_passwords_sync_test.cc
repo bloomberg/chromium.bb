@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 
@@ -15,7 +14,6 @@ using passwords_helper::GetPasswordStore;
 using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 using autofill::PasswordForm;
 
@@ -37,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_EQ(1, GetPasswordCount(0));
 }

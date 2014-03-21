@@ -10,11 +10,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
-#include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
 class ProfileSyncService;
 class ProgressMarkerWatcher;
+class ProfileSyncServiceHarness;
 
 // Waits until all provided clients have finished committing any unsynced items
 // and downloading each others' udpates.
@@ -34,27 +34,17 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
       std::vector<ProfileSyncService*> services);
   virtual ~QuiesceStatusChangeChecker();
 
-  // Timeout length for this operation.  Default is 45s.
-  virtual base::TimeDelta GetTimeoutDuration();
-
-  // Blocks until all clients have quiesced or we time out.
-  void Await();
-
-  // A callback function for some helper objects.
-  void OnServiceStateChanged(ProfileSyncService* service);
-
-  // A callback for when the time limit is exceeded.
-  void OnTimeout();
-
   virtual bool IsExitConditionSatisfied() OVERRIDE;
   virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual void InitObserver(ProfileSyncServiceHarness* harness) OVERRIDE;
+  virtual void UninitObserver(ProfileSyncServiceHarness* harness) OVERRIDE;
 
-  bool TimedOut() const;
+  void OnServiceStateChanged(ProfileSyncService* service);
 
  private:
   std::vector<ProfileSyncService*> services_;
   ScopedVector<ProgressMarkerWatcher> observers_;
-  bool timed_out_;
+  ProfileSyncServiceHarness* harness_;
 
   DISALLOW_COPY_AND_ASSIGN(QuiesceStatusChangeChecker);
 };

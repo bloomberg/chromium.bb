@@ -23,7 +23,6 @@
 
 class Profile;
 class ProfileSyncServiceHarness;
-class P2PInvalidationForwarder;
 
 namespace base {
 class CommandLine;
@@ -370,10 +369,6 @@ class SyncTest : public InProcessBrowserTest {
   // a sync profile, and implements methods that sync the contents of the
   // profile with the server.
   ScopedVector<ProfileSyncServiceHarness> clients_;
-
-  // A set of objects to listen for commit activity and broadcast notifications
-  // of this activity to its peer sync clients.
-  ScopedVector<P2PInvalidationForwarder> invalidation_forwarders_;
 
   // Sync profile against which changes to individual profiles are verified. We
   // don't need a corresponding verifier sync client because the contents of the

@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -29,7 +28,6 @@ using apps_helper::IncognitoEnableApp;
 using apps_helper::InstallApp;
 using apps_helper::InstallAppsPendingForSync;
 using apps_helper::UninstallApp;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace {
 
@@ -348,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
   ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APP_LIST));
   InstallApp(GetProfile(0), 0);
   InstallApp(verifier(), 0);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_TRUE(HasSameAppsAsVerifier(0));
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
 
@@ -370,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableSync) {
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   InstallApp(GetProfile(0), 0);
   InstallApp(verifier(), 0);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_TRUE(HasSameAppsAsVerifier(0));
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
 
