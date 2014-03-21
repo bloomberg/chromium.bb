@@ -45,7 +45,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   QuicCryptoClientStream(const QuicSessionKey& server_key,
                          QuicSession* session,
                          Visitor* visitor,
-                         ProofVerifyContext* verify_context,
                          QuicCryptoClientConfig* crypto_config);
   virtual ~QuicCryptoClientStream();
 
@@ -135,7 +134,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool verify_ok_;
   string verify_error_details_;
   scoped_ptr<ProofVerifyDetails> verify_details_;
-  scoped_ptr<ProofVerifyContext> verify_context_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

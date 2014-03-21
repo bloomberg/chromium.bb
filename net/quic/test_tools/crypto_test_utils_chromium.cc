@@ -22,7 +22,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
  public:
   TestProofVerifierChromium(CertVerifier* cert_verifier,
                             const std::string& cert_file)
-      : ProofVerifierChromium(cert_verifier),
+      : ProofVerifierChromium(cert_verifier, BoundNetLog()),
         cert_verifier_(cert_verifier) {
     // Load and install the root for the validated chain.
     scoped_refptr<X509Certificate> root_cert =
@@ -39,11 +39,6 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
 // static
 ProofSource* CryptoTestUtils::ProofSourceForTesting() {
   return new ProofSourceChromium();
-}
-
-// static
-ProofVerifyContext* CryptoTestUtils::ProofVerifyContextForTesting() {
-  return new ProofVerifyContextChromium(BoundNetLog());
 }
 
 // static

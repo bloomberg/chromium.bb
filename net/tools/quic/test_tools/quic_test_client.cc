@@ -39,7 +39,6 @@ class RecordingProofVerifier : public ProofVerifier {
                              const string& server_config,
                              const vector<string>& certs,
                              const string& signature,
-                             const net::ProofVerifyContext* context,
                              string* error_details,
                              scoped_ptr<ProofVerifyDetails>* details,
                              ProofVerifierCallback* callback) OVERRIDE {

@@ -47,7 +47,7 @@ class ProofVerifierChromium::Job {
                      const std::vector<std::string>& certs,
                      const std::string& signature,
                      std::string* error_details,
-                     scoped_ptr<ProofVerifyDetails>* verify_details,
+                     scoped_ptr<ProofVerifyDetails>* details,
                      ProofVerifierCallback* callback);
 
  private:
@@ -104,10 +104,10 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     const vector<string>& certs,
     const string& signature,
     std::string* error_details,
-    scoped_ptr<ProofVerifyDetails>* verify_details,
+    scoped_ptr<ProofVerifyDetails>* details,
     ProofVerifierCallback* callback) {
   DCHECK(error_details);
-  DCHECK(verify_details);
+  DCHECK(details);
   DCHECK(callback);
 
   callback_.reset(callback);
@@ -125,7 +125,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain. Certs are empty.";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    details->reset(verify_details_.release());
     return FAILURE;
   }
 
@@ -139,7 +139,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    details->reset(verify_details_.release());
     return FAILURE;
   }
 
@@ -149,7 +149,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    verify_details->reset(verify_details_.release());
+    details->reset(verify_details_.release());
     return FAILURE;
   }
 
@@ -158,13 +158,13 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
   next_state_ = STATE_VERIFY_CERT;
   switch (DoLoop(OK)) {
     case OK:
-      verify_details->reset(verify_details_.release());
+      details->reset(verify_details_.release());
       return SUCCESS;
     case ERR_IO_PENDING:
       return PENDING;
     default:
       *error_details = error_details_;
-      verify_details->reset(verify_details_.release());
+      details->reset(verify_details_.release());
       return FAILURE;
   }
 }
@@ -310,8 +310,11 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
   return true;
 }
 
-ProofVerifierChromium::ProofVerifierChromium(CertVerifier* cert_verifier)
-    : cert_verifier_(cert_verifier) {}
+ProofVerifierChromium::ProofVerifierChromium(CertVerifier* cert_verifier,
+                                             const BoundNetLog& net_log)
+  : cert_verifier_(cert_verifier),
+    net_log_(net_log) {
+}
 
 ProofVerifierChromium::~ProofVerifierChromium() {
   STLDeleteElements(&active_jobs_);
@@ -322,19 +325,12 @@ ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
     const std::string& server_config,
     const std::vector<std::string>& certs,
     const std::string& signature,
-    const ProofVerifyContext* verify_context,
     std::string* error_details,
-    scoped_ptr<ProofVerifyDetails>* verify_details,
+    scoped_ptr<ProofVerifyDetails>* details,
     ProofVerifierCallback* callback) {
-  if (!verify_context) {
-    *error_details = "Missing context";
-    return FAILURE;
-  }
-  const ProofVerifyContextChromium* chromium_context =
-      reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
-  scoped_ptr<Job> job(new Job(this, cert_verifier_, chromium_context->net_log));
+  scoped_ptr<Job> job(new Job(this, cert_verifier_, net_log_));
   Status status = job->VerifyProof(hostname, server_config, certs, signature,
-                                   error_details, verify_details, callback);
+                                   error_details, details, callback);
   if (status == PENDING) {
     active_jobs_.insert(job.release());
   }

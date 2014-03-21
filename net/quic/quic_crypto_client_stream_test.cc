@@ -29,8 +29,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
       : connection_(new PacketSavingConnection(false)),
         session_(new TestSession(connection_, DefaultQuicConfig())),
         server_key_(kServerHostname, kServerPort, false),
-        stream_(new QuicCryptoClientStream(
-            server_key_, session_.get(), NULL, NULL, &crypto_config_)) {
+        stream_(new QuicCryptoClientStream(server_key_, session_.get(), NULL,
+                                           &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());
     session_->config()->SetDefaults();
     crypto_config_.SetDefaults();
@@ -108,7 +108,7 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {
   QuicSessionKey server_key("invalid", 80, false);
   stream_.reset(new QuicCryptoClientStream(server_key, session_.get(), NULL,
-                                           NULL, &crypto_config_));
+                                           &crypto_config_));
   session_->SetCryptoStream(stream_.get());
 
   CompleteCryptoHandshake();
@@ -123,7 +123,7 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   connection_ = new PacketSavingConnection(true);
   session_.reset(new TestSession(connection_, DefaultQuicConfig()));
   stream_.reset(new QuicCryptoClientStream(server_key_, session_.get(), NULL,
-                                           NULL, &crypto_config_));
+                                           &crypto_config_));
 
   session_->SetCryptoStream(stream_.get());
   session_->config()->SetDefaults();

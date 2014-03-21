@@ -25,7 +25,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     QuicClientSession* session,
     QuicCryptoClientConfig* crypto_config) {
   last_stream_ = new MockCryptoClientStream(
-      server_key, session, session, NULL, crypto_config, handshake_mode_,
+      server_key, session, session, crypto_config, handshake_mode_,
       proof_verify_details_);
   return last_stream_;
 }

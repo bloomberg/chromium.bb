@@ -737,7 +737,8 @@ int QuicStreamFactory::CreateSession(
       config, crypto_config, net_log.net_log());
   all_sessions_.insert(*session);  // owning pointer
   if (is_https) {
-    crypto_config->SetProofVerifier(new ProofVerifierChromium(cert_verifier));
+    crypto_config->SetProofVerifier(
+        new ProofVerifierChromium(cert_verifier, net_log));
   }
   return OK;
 }
