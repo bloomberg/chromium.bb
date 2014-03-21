@@ -68,6 +68,10 @@ class Token {
   bool IsIdentifierEqualTo(const char* v) const;
   bool IsStringEqualTo(const char* v) const;
 
+  // For STRING tokens, returns the string value (no quotes at end, does
+  // unescaping).
+  std::string StringValue() const;
+
  private:
   Type type_;
   base::StringPiece value_;
