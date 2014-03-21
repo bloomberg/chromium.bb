@@ -15,7 +15,6 @@ class InvalidationHandler;
 }  // namespace syncer
 
 namespace invalidation {
-class InvalidationAuthProvider;
 class InvalidationLogger;
 
 // Interface for classes that handle invalidation registrations and send out
@@ -108,9 +107,6 @@ class InvalidationService : public KeyedService {
   // Triggers requests of internal status.
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> post_caller) = 0;
-
-  // Returns the authentication provider.
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() = 0;
 
  protected:
   virtual ~InvalidationService() { }

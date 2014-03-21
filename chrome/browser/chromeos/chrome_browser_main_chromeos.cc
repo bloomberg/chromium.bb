@@ -756,6 +756,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();
 
+  // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
+  DeviceOAuth2TokenServiceFactory::Shutdown();
+
   // Shutdown the upgrade detector for Chrome OS. The upgrade detector
   // stops monitoring changes from the update engine.
   if (UpgradeDetectorChromeos::GetInstance())
@@ -831,9 +834,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We first call PostMainMessageLoopRun and then destroy UserManager, because
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
-
-  // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
-  DeviceOAuth2TokenServiceFactory::Shutdown();
 
   // Called after
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be

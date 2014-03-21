@@ -5,15 +5,13 @@
 #ifndef CHROME_BROWSER_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
 
-#include <string>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -36,10 +34,11 @@ class TiclInvalidationService : public base::NonThreadSafe,
                                 public InvalidationService,
                                 public OAuth2TokenService::Consumer,
                                 public OAuth2TokenService::Observer,
-                                public InvalidationAuthProvider::Observer,
+                                public SigninManagerBase::Observer,
                                 public syncer::InvalidationHandler {
  public:
-  TiclInvalidationService(scoped_ptr<InvalidationAuthProvider> auth_provider,
+  TiclInvalidationService(SigninManagerBase* signin,
+                          ProfileOAuth2TokenService* oauth2_token_service,
                           Profile* profile);
   virtual ~TiclInvalidationService();
 
@@ -59,7 +58,6 @@ class TiclInvalidationService : public base::NonThreadSafe,
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) OVERRIDE;
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
 
   void RequestAccessToken();
 
@@ -76,8 +74,8 @@ class TiclInvalidationService : public base::NonThreadSafe,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
 
-  // InvalidationAuthProvider::Observer implementation.
-  virtual void OnInvalidationAuthLogout() OVERRIDE;
+  // SigninManagerBase::Observer implementation.
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
@@ -107,9 +105,11 @@ class TiclInvalidationService : public base::NonThreadSafe,
   void StartInvalidator(InvalidationNetworkChannel network_channel);
   void UpdateInvalidatorCredentials();
   void StopInvalidator();
+  void Logout();
 
   Profile *const profile_;
-  scoped_ptr<InvalidationAuthProvider> auth_provider_;
+  SigninManagerBase *const signin_manager_;
+  ProfileOAuth2TokenService *const oauth2_token_service_;
 
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
   scoped_ptr<InvalidatorStorage> invalidator_storage_;

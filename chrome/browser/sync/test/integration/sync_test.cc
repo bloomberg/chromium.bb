@@ -25,15 +25,11 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
-#include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -41,7 +37,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -112,13 +107,7 @@ void SetProxyConfigCallback(
 
 KeyedService* BuildP2PInvalidationService(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new invalidation::P2PInvalidationService(
-      profile,
-      scoped_ptr<invalidation::InvalidationAuthProvider>(
-          new invalidation::ProfileInvalidationAuthProvider(
-              SigninManagerFactory::GetForProfile(profile),
-              ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-              LoginUIServiceFactory::GetForProfile(profile))));
+  return new invalidation::P2PInvalidationService(profile);
 }
 
 SyncTest::SyncTest(TestType test_type)

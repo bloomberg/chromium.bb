@@ -20,7 +20,6 @@ class Profile;
 
 namespace invalidation {
 class InvalidationControllerAndroid;
-class InvalidationLogger;
 
 // This InvalidationService is used to deliver invalidations on Android.  The
 // Android operating system has its own mechanisms for delivering invalidations.
@@ -54,7 +53,6 @@ class InvalidationServiceAndroid
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) OVERRIDE;
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
