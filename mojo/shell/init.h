@@ -8,7 +8,7 @@
 namespace mojo {
 namespace shell {
 
-// Initialization routines shared by desktop and android main functions.
+// Initialization routines shared by desktop and Android main functions.
 
 void InitializeLogging();
 

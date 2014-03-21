@@ -14,6 +14,8 @@
 namespace mojo {
 namespace shell {
 
+// An implementation of |DynamicServiceRunner| that loads/runs the given app
+// (from the file system) on a separate thread (in the current process).
 class InProcessDynamicServiceRunner
     : public DynamicServiceRunner,
       public base::DelegateSimpleThread::Delegate {

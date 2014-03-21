@@ -21,7 +21,6 @@ namespace shell {
 class ChildProcess {
  public:
   enum Type {
-    // TODO(vtl): Add real types here.
     TYPE_TEST,
     // Hosts a single app (see app_child_process(_host).*).
     TYPE_APP

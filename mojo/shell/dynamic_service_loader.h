@@ -21,18 +21,19 @@ namespace shell {
 class Context;
 class DynamicServiceRunnerFactory;
 
-// A subclass of ServiceManager::Loader that loads a dynamic library containing
-// the implementation of the service.
+// An implementation of ServiceLoader that retrieves a dynamic library
+// containing the implementation of the service and loads/runs it (via a
+// DynamicServiceRunner).
 class DynamicServiceLoader : public ServiceLoader {
  public:
   DynamicServiceLoader(Context* context,
                        scoped_ptr<DynamicServiceRunnerFactory> runner_factory);
   virtual ~DynamicServiceLoader();
 
-  // Initiates the dynamic load. If the url is a mojo: scheme then the name
-  // specified will be modified to the platform's naming scheme. Also the
+  // Initiates the dynamic load. If the URL has a mojo: scheme, then the name
+  // specified will be modified to the platform's naming scheme. Also, the
   // value specified to the --origin command line argument will be used as the
-  // host / port.
+  // host/port.
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedShellHandle service_handle) OVERRIDE;

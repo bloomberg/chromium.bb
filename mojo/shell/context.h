@@ -20,6 +20,7 @@ namespace shell {
 
 class DynamicServiceLoader;
 
+// The "global" context for the shell's main process.
 class Context {
  public:
   Context();

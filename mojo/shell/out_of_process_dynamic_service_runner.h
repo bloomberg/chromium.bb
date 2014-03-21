@@ -15,6 +15,8 @@
 namespace mojo {
 namespace shell {
 
+// An implementation of |DynamicServiceRunner| that loads/runs the given app
+// (from the file system) in a separate process (of its own).
 class OutOfProcessDynamicServiceRunner
     : public DynamicServiceRunner,
       public mojo_shell::AppChildControllerClient {

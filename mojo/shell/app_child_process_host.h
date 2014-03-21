@@ -18,6 +18,9 @@ struct ChannelInfo;
 
 namespace shell {
 
+// A subclass of |ChildProcessHost| to host a |TYPE_APP| child process, which
+// runs a single app (loaded from the file system).
+//
 // Note: After |Start()|, this object must remain alive until the controller
 // client's |AppCompleted()| is called.
 class AppChildProcessHost : public ChildProcessHost,

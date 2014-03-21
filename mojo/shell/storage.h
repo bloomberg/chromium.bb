@@ -10,7 +10,7 @@
 namespace mojo {
 namespace shell {
 
-// A object that represents the persistent storage used by the shell.
+// An object that represents the persistent storage used by the shell.
 class Storage {
  public:
   Storage();

@@ -18,7 +18,8 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
-// A context object that contains the common task runners for the shell
+// A context object that contains the common task runners for the shell's main
+// process.
 class TaskRunners {
  public:
   explicit TaskRunners(base::SingleThreadTaskRunner* ui_runner);

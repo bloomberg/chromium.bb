@@ -19,6 +19,8 @@ namespace shell {
 
 class Context;
 
+// Abstraction for loading a service (from the file system) and running it (on
+// another thread or in a separate process).
 class DynamicServiceRunner {
  public:
   virtual ~DynamicServiceRunner() {}
