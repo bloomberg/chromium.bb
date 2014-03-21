@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/usb_device_permission_data.h"
+#include "extensions/common/permissions/usb_device_permission_data.h"
 
 #include <string>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/usb_device_permission.h"
 
 namespace {
 

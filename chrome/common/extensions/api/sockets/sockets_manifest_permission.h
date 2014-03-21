@@ -8,9 +8,9 @@
 #include <set>
 #include <vector>
 
-#include "chrome/common/extensions/permissions/socket_permission_entry.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/permissions/manifest_permission.h"
+#include "extensions/common/permissions/socket_permission_entry.h"
 
 namespace content {
 struct SocketPermissionRequest;

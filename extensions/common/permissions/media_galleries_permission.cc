@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "extensions/common/permissions/media_galleries_permission.h"
 
 #include <set>
 #include <string>

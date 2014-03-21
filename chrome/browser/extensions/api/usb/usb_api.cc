@@ -13,9 +13,9 @@
 #include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/common/extensions/api/usb.h"
-#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/usb_device_permission.h"
 
 namespace usb = extensions::api::usb;
 namespace BulkTransfer = usb::BulkTransfer;

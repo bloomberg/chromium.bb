@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_
 
 #include <string>
 
@@ -15,8 +15,8 @@ namespace extensions {
 // override settings.
 class SettingsOverrideAPIPermission : public APIPermission {
  public:
-  SettingsOverrideAPIPermission(
-      const APIPermissionInfo* permission, const std::string& setting_value);
+  SettingsOverrideAPIPermission(const APIPermissionInfo* permission,
+                                const std::string& setting_value);
   virtual ~SettingsOverrideAPIPermission();
 
   // APIPermission overrides.
@@ -41,4 +41,4 @@ class SettingsOverrideAPIPermission : public APIPermission {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_SETTINGS_OVERRIDE_PERMISSION_H_

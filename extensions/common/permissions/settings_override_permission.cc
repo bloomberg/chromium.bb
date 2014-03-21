@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/settings_override_permission.h"
+#include "extensions/common/permissions/settings_override_permission.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -11,13 +11,11 @@
 namespace extensions {
 
 SettingsOverrideAPIPermission::SettingsOverrideAPIPermission(
-    const APIPermissionInfo* permission, const std::string& setting_value)
-    : APIPermission(permission),
-      setting_value_(setting_value) {
-}
+    const APIPermissionInfo* permission,
+    const std::string& setting_value)
+    : APIPermission(permission), setting_value_(setting_value) {}
 
-SettingsOverrideAPIPermission::~SettingsOverrideAPIPermission() {
-}
+SettingsOverrideAPIPermission::~SettingsOverrideAPIPermission() {}
 
 bool SettingsOverrideAPIPermission::HasMessages() const {
   return info()->message_id() > PermissionMessage::kNone;
@@ -43,10 +41,10 @@ PermissionMessages SettingsOverrideAPIPermission::GetMessages() const {
       NOTREACHED();
   }
   PermissionMessages result;
-  result.push_back(PermissionMessage(
-      info()->message_id(),
-      l10n_util::GetStringFUTF16(string_id,
-                                 base::UTF8ToUTF16(setting_value_))));
+  result.push_back(
+      PermissionMessage(info()->message_id(),
+                        l10n_util::GetStringFUTF16(
+                            string_id, base::UTF8ToUTF16(setting_value_))));
   return result;
 }
 
@@ -97,15 +95,13 @@ APIPermission* SettingsOverrideAPIPermission::Intersect(
   return new SettingsOverrideAPIPermission(info(), setting_value_);
 }
 
-void SettingsOverrideAPIPermission::Write(IPC::Message* m) const {
-}
+void SettingsOverrideAPIPermission::Write(IPC::Message* m) const {}
 
-bool SettingsOverrideAPIPermission::Read(
-    const IPC::Message* m, PickleIterator* iter) {
+bool SettingsOverrideAPIPermission::Read(const IPC::Message* m,
+                                         PickleIterator* iter) {
   return true;
 }
 
-void SettingsOverrideAPIPermission::Log(std::string* log) const {
-}
+void SettingsOverrideAPIPermission::Log(std::string* log) const {}
 
 }  // namespace extensions

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/permission_message_util.h"
+#include "extensions/common/permissions/permission_message_util.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,8 +72,7 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
           IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO,
           IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO,
           IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW,
-          IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY,
-      };
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY, };
       std::vector<int> message_ids;
       for (size_t i = 0; i < arraysize(kRetainedFilesMessageIDs); i++) {
         message_ids.push_back(kRetainedFilesMessageIDs[i]);
@@ -92,17 +91,17 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   return PermissionMessage(message_id, message, details);
 }
 
-std::set<std::string> GetDistinctHosts(
-    const URLPatternSet& host_patterns,
-    bool include_rcd,
-    bool exclude_file_scheme) {
+std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
+                                       bool include_rcd,
+                                       bool exclude_file_scheme) {
   // Use a vector to preserve order (also faster than a map on small sets).
   // Each item is a host split into two parts: host without RCDs and
   // current best RCD.
   typedef std::vector<std::pair<std::string, std::string> > HostVector;
   HostVector hosts_best_rcd;
   for (URLPatternSet::const_iterator i = host_patterns.begin();
-       i != host_patterns.end(); ++i) {
+       i != host_patterns.end();
+       ++i) {
     if (exclude_file_scheme && i->scheme() == content::kFileScheme)
       continue;
 
@@ -142,7 +141,8 @@ std::set<std::string> GetDistinctHosts(
   // Build up the final vector by concatenating hosts and RCDs.
   std::set<std::string> distinct_hosts;
   for (HostVector::iterator it = hosts_best_rcd.begin();
-       it != hosts_best_rcd.end(); ++it)
+       it != hosts_best_rcd.end();
+       ++it)
     distinct_hosts.insert(it->first + it->second);
   return distinct_hosts;
 }

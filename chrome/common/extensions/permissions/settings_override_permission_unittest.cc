@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-#include "chrome/common/extensions/permissions/settings_override_permission.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/settings_override_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

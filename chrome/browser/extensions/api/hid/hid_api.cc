@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "chrome/common/extensions/api/hid.h"
-#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/usb_device_permission.h"
 #include "net/base/io_buffer.h"
 
 namespace hid = extensions::api::hid;

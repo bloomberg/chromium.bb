@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/socket_permission_data.h"
+#include "extensions/common/permissions/socket_permission_data.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/socket_permission.h"
 #include "url/url_canon.h"
 
 namespace {
@@ -80,9 +80,9 @@ const char* TypeToString(SocketPermissionRequest::OperationType type) {
 
 namespace extensions {
 
-SocketPermissionData::SocketPermissionData() { }
+SocketPermissionData::SocketPermissionData() {}
 
-SocketPermissionData::~SocketPermissionData() { }
+SocketPermissionData::~SocketPermissionData() {}
 
 bool SocketPermissionData::operator<(const SocketPermissionData& rhs) const {
   return entry_ < rhs.entry_;
@@ -92,13 +92,12 @@ bool SocketPermissionData::operator==(const SocketPermissionData& rhs) const {
   return entry_ == rhs.entry_;
 }
 
-bool SocketPermissionData::Check(
-    const APIPermission::CheckParam* param) const {
+bool SocketPermissionData::Check(const APIPermission::CheckParam* param) const {
   if (!param)
     return false;
   const SocketPermission::CheckParam& specific_param =
       *static_cast<const SocketPermission::CheckParam*>(param);
-  const SocketPermissionRequest &request = specific_param.request;
+  const SocketPermissionRequest& request = specific_param.request;
 
   return entry_.Check(request);
 }
@@ -116,8 +115,8 @@ bool SocketPermissionData::FromValue(const base::Value* value) {
 }
 
 SocketPermissionEntry& SocketPermissionData::entry() {
-   // Clear the spec because the caller could mutate |this|.
-   spec_.clear();
+  // Clear the spec because the caller could mutate |this|.
+  spec_.clear();
   return entry_;
 }
 

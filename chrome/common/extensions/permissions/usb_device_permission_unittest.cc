@@ -9,10 +9,10 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/permissions/usb_device_permission.h"
-#include "chrome/common/extensions/permissions/usb_device_permission_data.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_info.h"
+#include "extensions/common/permissions/usb_device_permission.h"
+#include "extensions/common/permissions/usb_device_permission_data.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_MESSAGING_MESSAGE_H_
-#define CHROME_COMMON_EXTENSIONS_API_MESSAGING_MESSAGE_H_
+#ifndef EXTENSIONS_COMMON_API_MESSAGING_MESSAGE_H_
+#define EXTENSIONS_COMMON_API_MESSAGING_MESSAGE_H_
 
 namespace extensions {
 
-// A message consists of both the data itself as well as a user  gestur e state.
+// A message consists of both the data itself as well as a user gesture state.
 struct Message {
   std::string data;
   bool user_gesture;
@@ -19,4 +19,4 @@ struct Message {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_MESSAGING_MESSAGE_H_
+#endif  // EXTENSIONS_COMMON_API_MESSAGING_MESSAGE_H_

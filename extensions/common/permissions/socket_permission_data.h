@@ -1,18 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_DATA_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_DATA_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_DATA_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_DATA_H_
 
 #include <string>
 
-#include "chrome/common/extensions/permissions/socket_permission_entry.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/socket_permission_entry.h"
 #include "ipc/ipc_param_traits.h"
 
 namespace ipc_fuzzer {
-template <class T> struct FuzzTraits;
-template <class T> struct GenerateTraits;
+template <class T>
+struct FuzzTraits;
+template <class T>
+struct GenerateTraits;
 }  // namespace ipc_fuzzer
 
 namespace extensions {
@@ -84,4 +86,4 @@ class SocketPermissionData {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_DATA_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_DATA_H_

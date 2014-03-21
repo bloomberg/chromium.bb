@@ -1,26 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_H_
 
 #include <string>
 
-#include "chrome/common/extensions/permissions/set_disjunction_permission.h"
-#include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/set_disjunction_permission.h"
+#include "extensions/common/permissions/socket_permission_data.h"
 
 namespace extensions {
 
-class SocketPermission : public SetDisjunctionPermission<SocketPermissionData,
-                                                         SocketPermission> {
+class SocketPermission
+    : public SetDisjunctionPermission<SocketPermissionData, SocketPermission> {
  public:
   struct CheckParam : APIPermission::CheckParam {
     CheckParam(content::SocketPermissionRequest::OperationType type,
-        const std::string& host,
-        int port)
-      : request(type, host, port) { }
+               const std::string& host,
+               int port)
+        : request(type, host, port) {}
     content::SocketPermissionRequest request;
   };
 
@@ -40,4 +40,4 @@ class SocketPermission : public SetDisjunctionPermission<SocketPermissionData,
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_H_

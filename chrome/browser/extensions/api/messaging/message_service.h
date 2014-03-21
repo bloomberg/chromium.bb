@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
-#include "chrome/common/extensions/api/messaging/message.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/common/api/messaging/message.h"
 
 class GURL;
 class Profile;

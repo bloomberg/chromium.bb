@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_
 
 #include <string>
 #include <vector>
@@ -11,8 +11,10 @@
 #include "ipc/ipc_param_traits.h"
 
 namespace ipc_fuzzer {
-template <class T> struct FuzzTraits;
-template <class T> struct GenerateTraits;
+template <class T>
+struct FuzzTraits;
+template <class T>
+struct GenerateTraits;
 }  // namespace ipc_fuzzer
 
 namespace extensions {
@@ -21,11 +23,7 @@ namespace extensions {
 // as UDP "bind", host 127.0.0.1, port *.
 class SocketPermissionEntry {
  public:
-  enum HostType {
-    ANY_HOST,
-    HOSTS_IN_DOMAINS,
-    SPECIFIC_HOSTS,
-  };
+  enum HostType { ANY_HOST, HOSTS_IN_DOMAINS, SPECIFIC_HOSTS, };
 
   SocketPermissionEntry();
   ~SocketPermissionEntry();
@@ -83,4 +81,4 @@ class SocketPermissionEntry {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_SOCKET_PERMISSION_ENTRY_H_

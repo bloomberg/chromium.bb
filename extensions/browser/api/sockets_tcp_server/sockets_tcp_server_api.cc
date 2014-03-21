@@ -5,11 +5,11 @@
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/socket_permission.h"
 #include "net/base/net_errors.h"
 
 using content::SocketPermissionRequest;

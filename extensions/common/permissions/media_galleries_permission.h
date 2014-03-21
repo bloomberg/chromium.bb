@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
-#include "chrome/common/extensions/permissions/set_disjunction_permission.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/media_galleries_permission_data.h"
+#include "extensions/common/permissions/set_disjunction_permission.h"
 
 namespace extensions {
 
@@ -53,4 +53,4 @@ class MediaGalleriesPermission
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_

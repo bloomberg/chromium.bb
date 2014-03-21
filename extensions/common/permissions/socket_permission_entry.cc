@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/socket_permission_entry.h"
+#include "extensions/common/permissions/socket_permission_entry.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/socket_permission.h"
 #include "url/url_canon.h"
 
 namespace {
@@ -40,9 +40,8 @@ bool StartsOrEndsWithWhitespace(const std::string& str) {
 namespace extensions {
 
 SocketPermissionEntry::SocketPermissionEntry()
-  : pattern_(SocketPermissionRequest::NONE, std::string(), kInvalidPort),
-    match_subdomains_(false) {
-}
+    : pattern_(SocketPermissionRequest::NONE, std::string(), kInvalidPort),
+      match_subdomains_(false) {}
 
 SocketPermissionEntry::~SocketPermissionEntry() {}
 
@@ -89,8 +88,8 @@ bool SocketPermissionEntry::Check(
       url_parse::Component component(0, lhost.length());
       url_canon::RawCanonOutputT<char, 128> ignored_output;
       url_canon::CanonHostInfo host_info;
-      url_canon::CanonicalizeIPAddress(lhost.c_str(), component,
-                                       &ignored_output, &host_info);
+      url_canon::CanonicalizeIPAddress(
+          lhost.c_str(), component, &ignored_output, &host_info);
       if (host_info.IsIPAddress())
         return false;
 
@@ -114,16 +113,17 @@ bool SocketPermissionEntry::Check(
 }
 
 SocketPermissionEntry::HostType SocketPermissionEntry::GetHostType() const {
-  return pattern_.host.empty() ? SocketPermissionEntry::ANY_HOST :
-         match_subdomains_     ? SocketPermissionEntry::HOSTS_IN_DOMAINS :
-                                 SocketPermissionEntry::SPECIFIC_HOSTS;
+  return pattern_.host.empty()
+             ? SocketPermissionEntry::ANY_HOST
+             : match_subdomains_ ? SocketPermissionEntry::HOSTS_IN_DOMAINS
+                                 : SocketPermissionEntry::SPECIFIC_HOSTS;
 }
 
 bool SocketPermissionEntry::IsAddressBoundType() const {
   return pattern_.type == SocketPermissionRequest::TCP_CONNECT ||
-      pattern_.type == SocketPermissionRequest::TCP_LISTEN ||
-      pattern_.type == SocketPermissionRequest::UDP_BIND ||
-      pattern_.type == SocketPermissionRequest::UDP_SEND_TO;
+         pattern_.type == SocketPermissionRequest::TCP_LISTEN ||
+         pattern_.type == SocketPermissionRequest::UDP_BIND ||
+         pattern_.type == SocketPermissionRequest::UDP_SEND_TO;
 }
 
 // static
@@ -159,10 +159,10 @@ bool SocketPermissionEntry::ParseHostPattern(
     return true;
   }
 
-    // Return an error if address is specified for permissions that don't
-    // need it (such as 'resolve-host').
-    if (!result.IsAddressBoundType())
-      return false;
+  // Return an error if address is specified for permissions that don't
+  // need it (such as 'resolve-host').
+  if (!result.IsAddressBoundType())
+    return false;
 
   result.pattern_.host = pattern_tokens[0];
   if (!result.pattern_.host.empty()) {
@@ -184,8 +184,7 @@ bool SocketPermissionEntry::ParseHostPattern(
     result.pattern_.host = JoinString(host_components, kDot);
   }
 
-  if (pattern_tokens.size() == 1 ||
-      pattern_tokens[1].empty() ||
+  if (pattern_tokens.size() == 1 || pattern_tokens[1].empty() ||
       pattern_tokens[1] == kWildcard) {
     *entry = result;
     return true;
@@ -213,7 +212,7 @@ std::string SocketPermissionEntry::GetHostPatternAsString() const {
     if (!pattern_.host.empty())
       result.append(1, kDot).append(pattern_.host);
   } else {
-     result.append(pattern_.host);
+    result.append(pattern_.host);
   }
 
   if (pattern_.port == kWildcardPortNumber)

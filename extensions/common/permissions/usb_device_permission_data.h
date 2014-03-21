@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
 
 #include <string>
 
@@ -68,4 +68,4 @@ class UsbDevicePermissionData {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
