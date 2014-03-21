@@ -52,7 +52,6 @@ void SpeechRecognition::start(ExceptionState& exceptionState)
         return;
     }
 
-    setPendingActivity(this);
     m_finalResults.clear();
     m_controller->start(this, m_grammars.get(), m_lang, m_continuous, m_interimResults, m_maxAlternatives);
     m_started = true;
@@ -142,7 +141,6 @@ void SpeechRecognition::didEnd()
     m_stopping = false;
     if (!m_stoppedByActiveDOMObject)
         dispatchEvent(Event::create(EventTypeNames::end));
-    unsetPendingActivity(this);
 }
 
 const AtomicString& SpeechRecognition::interfaceName() const
@@ -160,6 +158,11 @@ void SpeechRecognition::stop()
     m_stoppedByActiveDOMObject = true;
     if (hasPendingActivity())
         abort();
+}
+
+bool SpeechRecognition::hasPendingActivity() const
+{
+    return m_started;
 }
 
 SpeechRecognition::SpeechRecognition(ExecutionContext* context)

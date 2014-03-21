@@ -85,6 +85,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     // ActiveDOMObject.
+    virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
