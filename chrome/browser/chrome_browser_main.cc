@@ -763,13 +763,13 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 int ChromeBrowserMainParts::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreads");
   result_code_ = PreCreateThreadsImpl();
-  // These members must be initialized before returning from this function.
-#if !defined(OS_ANDROID)
-  DCHECK(master_prefs_.get());
-  DCHECK(browser_creator_.get());
-#endif
 
-  if (result_code_ == 0) {
+  if (result_code_ == content::RESULT_CODE_NORMAL_EXIT) {
+#if !defined(OS_ANDROID)
+    // These members must be initialized before exiting this function normally.
+    DCHECK(master_prefs_.get());
+    DCHECK(browser_creator_.get());
+#endif
     for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
       chrome_extra_parts_[i]->PreCreateThreads();
   }
