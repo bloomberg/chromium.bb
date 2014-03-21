@@ -593,6 +593,14 @@ void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
   ++renderer_frame_number_;
 }
 
+void RenderWidgetHostViewBase::LockCompositingSurface() {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewBase::UnlockCompositingSurface() {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewBase::FlushInput() {
   RenderWidgetHostImpl* impl = NULL;
   if (GetRenderWidgetHost())

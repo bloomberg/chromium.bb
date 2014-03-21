@@ -124,6 +124,13 @@ ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
 
 }  // anonymous namespace
 
+RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
+    uint32 output_id,
+    scoped_ptr<cc::CompositorFrame> output_frame)
+    : output_surface_id(output_id), frame(output_frame.Pass()) {}
+
+RenderWidgetHostViewAndroid::LastFrameInfo::~LastFrameInfo() {}
+
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
@@ -136,9 +143,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       texture_id_in_layer_(0),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
-      overscroll_effect_enabled_(
-          !CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kDisableOverscrollEdgeEffect)),
+      overscroll_effect_enabled_(!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOverscrollEdgeEffect)),
       overscroll_effect_(OverscrollGlow::Create(overscroll_effect_enabled_)),
       flush_input_requested_(false),
       accelerated_surface_route_id_(0),
@@ -149,7 +155,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       using_delegated_renderer_(CommandLine::ForCurrentProcess()->HasSwitch(
                                     switches::kEnableDelegatedRenderer) &&
                                 !CommandLine::ForCurrentProcess()->HasSwitch(
-                                    switches::kDisableDelegatedRenderer)) {
+                                    switches::kDisableDelegatedRenderer)),
+      locks_on_frame_count_(0) {
   if (!using_delegated_renderer_) {
     texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
@@ -287,6 +294,9 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (texture_size_in_layer_.IsEmpty())
     return false;
 
+  if (!frame_evictor_->HasFrame())
+    return false;
+
   if (using_delegated_renderer_) {
     if (!delegated_renderer_layer_.get())
       return false;
@@ -377,16 +387,37 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   return is_showing_ && content_view_core_;
 }
 
-void RenderWidgetHostViewAndroid::LockResources() {
+void RenderWidgetHostViewAndroid::LockCompositingSurface() {
   DCHECK(HasValidFrame());
   DCHECK(host_);
-  DCHECK(!host_->is_hidden());
+  DCHECK(frame_evictor_->HasFrame());
   frame_evictor_->LockFrame();
+  locks_on_frame_count_++;
 }
 
-void RenderWidgetHostViewAndroid::UnlockResources() {
+void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
+  if (!frame_evictor_->HasFrame() || locks_on_frame_count_ == 0)
+    return;
+
   DCHECK(HasValidFrame());
   frame_evictor_->UnlockFrame();
+  locks_on_frame_count_--;
+
+  if (locks_on_frame_count_ == 0 && last_frame_info_) {
+    InternalSwapCompositorFrame(last_frame_info_->output_surface_id,
+                                last_frame_info_->frame.Pass());
+    last_frame_info_.reset();
+  }
+}
+
+void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {
+  if (!frame_evictor_->HasFrame()) {
+    DCHECK_EQ(locks_on_frame_count_, 0u);
+    return;
+  }
+  while (locks_on_frame_count_ > 0) {
+    UnlockCompositingSurface();
+  }
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -786,10 +817,9 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
                  weak_ptr_factory_.GetWeakPtr(),
                  output_surface_id);
 
+  ack_callbacks_.push(ack_callback);
   if (host_->is_hidden())
-    ack_callback.Run();
-  else
-    ack_callbacks_.push(ack_callback);
+    RunAckCallbacks();
 }
 
 void RenderWidgetHostViewAndroid::ComputeContentsSize(
@@ -807,9 +837,15 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
   UpdateAnimationSize(frame_metadata);
 }
 
-void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
+void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  if (locks_on_frame_count_ > 0) {
+    DCHECK(HasValidFrame());
+    RetainFrame(output_surface_id, frame.Pass());
+    return;
+  }
+
   // Always let ContentViewCore know about the new frame first, so it can decide
   // to schedule a Draw immediately when it sees the texture layer invalidation.
   UpdateContentViewCoreFrameMetadata(frame->metadata);
@@ -862,6 +898,33 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 
   BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
   frame_evictor_->SwappedFrame(!host_->is_hidden());
+}
+
+void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
+    uint32 output_surface_id,
+    scoped_ptr<cc::CompositorFrame> frame) {
+  InternalSwapCompositorFrame(output_surface_id, frame.Pass());
+}
+
+void RenderWidgetHostViewAndroid::RetainFrame(
+    uint32 output_surface_id,
+    scoped_ptr<cc::CompositorFrame> frame) {
+  DCHECK(locks_on_frame_count_);
+
+  // Store the incoming frame so that it can be swapped when all the locks have
+  // been released. If there is already a stored frame, then replace and skip
+  // the previous one but make sure we still eventually send the ACK. Holding
+  // the ACK also blocks the renderer when its max_frames_pending is reached.
+  if (last_frame_info_) {
+    base::Closure ack_callback =
+        base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   last_frame_info_->output_surface_id);
+
+    ack_callbacks_.push(ack_callback);
+  }
+
+  last_frame_info_.reset(new LastFrameInfo(output_surface_id, frame.Pass()));
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -963,10 +1026,9 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   current_mailbox_ = mailbox;
   last_output_surface_id_ = output_surface_id;
 
+  ack_callbacks_.push(ack_callback);
   if (host_->is_hidden())
-    ack_callback.Run();
-  else
-    ack_callbacks_.push(ack_callback);
+    RunAckCallbacks();
 }
 
 void RenderWidgetHostViewAndroid::AttachLayers() {
@@ -1280,6 +1342,9 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (content_view_core_ && !using_synchronous_compositor_)
     content_view_core_->GetWindowAndroid()->RemoveObserver(this);
 
+  if (content_view_core != content_view_core_)
+    ReleaseLocksOnSurface();
+
   content_view_core_ = content_view_core;
 
   if (GetBrowserAccessibilityManager()) {
@@ -1313,6 +1378,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
+  ReleaseLocksOnSurface();
   if (texture_layer_.get())
     texture_layer_->SetIsDrawable(false);
   if (delegated_renderer_layer_.get())

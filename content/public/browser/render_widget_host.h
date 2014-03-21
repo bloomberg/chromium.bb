@@ -197,6 +197,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const gfx::Size& accelerated_dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       const SkBitmap::Config& bitmap_config) = 0;
+  // Ensures that the view does not drop the backing store even when hidden.
+  virtual bool CanCopyFromBackingStore() = 0;
+#if defined(OS_ANDROID)
+  virtual void LockBackingStore() = 0;
+  virtual void UnlockBackingStore() = 0;
+#endif
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.
   virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,

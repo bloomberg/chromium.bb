@@ -742,6 +742,24 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
   callback.Run(result, output.GetBitmap());
 }
 
+bool RenderWidgetHostImpl::CanCopyFromBackingStore() {
+  if (view_)
+    return view_->IsSurfaceAvailableForCopy();
+  return false;
+}
+
+#if defined(OS_ANDROID)
+void RenderWidgetHostImpl::LockBackingStore() {
+  if (view_)
+    view_->LockCompositingSurface();
+}
+
+void RenderWidgetHostImpl::UnlockBackingStore() {
+  if (view_)
+    view_->UnlockCompositingSurface();
+}
+#endif
+
 #if defined(TOOLKIT_GTK)
 bool RenderWidgetHostImpl::CopyFromBackingStoreToGtkWindow(
     const gfx::Rect& dest_rect, GdkWindow* target) {

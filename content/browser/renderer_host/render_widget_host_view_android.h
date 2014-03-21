@@ -175,6 +175,8 @@ class RenderWidgetHostViewAndroid
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       OVERRIDE;
+  virtual void LockCompositingSurface() OVERRIDE;
+  virtual void UnlockCompositingSurface() OVERRIDE;
 
   // Implementation of BrowserAccessibilityDelegate:
   virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
@@ -219,9 +221,6 @@ class RenderWidgetHostViewAndroid
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
   void OnSmartClipDataExtracted(const base::string16& result);
-
-  void LockResources();
-  void UnlockResources();
 
   long GetNativeImeAdapter();
 
@@ -298,6 +297,19 @@ class RenderWidgetHostViewAndroid
 
   bool IsReadbackConfigSupported(SkBitmap::Config bitmap_config);
 
+  // If we have locks on a frame during a ContentViewCore swap or a context
+  // lost, the frame is no longer valid and we can safely release all the locks.
+  // Use this method to release all the locks.
+  void ReleaseLocksOnSurface();
+
+  // Drop any incoming frames from the renderer when there are locks on the
+  // current frame.
+  void RetainFrame(uint32 output_surface_id,
+                   scoped_ptr<cc::CompositorFrame> frame);
+
+  void InternalSwapCompositorFrame(uint32 output_surface_id,
+                                   scoped_ptr<cc::CompositorFrame> frame);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -362,6 +374,18 @@ class RenderWidgetHostViewAndroid
   scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
 
   bool using_delegated_renderer_;
+
+  size_t locks_on_frame_count_;
+
+  struct LastFrameInfo {
+    LastFrameInfo(uint32 output_id,
+                  scoped_ptr<cc::CompositorFrame> output_frame);
+    ~LastFrameInfo();
+    uint32 output_surface_id;
+    scoped_ptr<cc::CompositorFrame> frame;
+  };
+
+  scoped_ptr<LastFrameInfo> last_frame_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
