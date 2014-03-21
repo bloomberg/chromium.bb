@@ -528,7 +528,7 @@
         '../mojo/mojo.gyp:mojo_environment_chromium',
         '../mojo/mojo.gyp:mojo_system',
         '../mojo/mojo.gyp:mojo_system_impl',
-     ],
+      ],
     }],
     ['OS=="mac"', {
       'dependencies': [
