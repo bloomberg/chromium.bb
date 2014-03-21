@@ -11,14 +11,18 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 
 // Common test results.
 const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
+const char MediaBrowserTest::kPluginCrashed[] = "PLUGIN_CRASHED";
 
-MediaBrowserTest::MediaBrowserTest() {
+MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {
 }
 
 MediaBrowserTest::~MediaBrowserTest() {
@@ -55,6 +59,8 @@ void MediaBrowserTest::RunMediaTestPage(
 base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
                                          const std::string& expected_title) {
   DVLOG(1) << "Running test URL: " << gurl;
+  // Observe the web contents for plugin crashes.
+  Observe(browser()->tab_strip_model()->GetActiveWebContents());
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::ASCIIToUTF16(expected_title));
@@ -68,4 +74,21 @@ void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kError));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kFailed));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kPluginCrashed));
 }
+
+void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
+                                     base::ProcessId plugin_pid) {
+  VLOG(0) << "Plugin crashed: " << plugin_path.value();
+  if (ignore_plugin_crash_)
+    return;
+  // Update document title to quit TitleWatcher early.
+  web_contents()->GetController().GetActiveEntry()
+      ->SetTitle(base::ASCIIToUTF16(kPluginCrashed));
+  ADD_FAILURE() << "Failing test due to plugin crash.";
+}
+
+void MediaBrowserTest::IgnorePluginCrash() {
+  ignore_plugin_crash_ = true;
+}
+

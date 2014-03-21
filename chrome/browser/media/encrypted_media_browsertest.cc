@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gtest/include/gtest/gtest-spi.h"
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
@@ -626,7 +627,16 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
 
 // When CDM crashes, we should still get a decode error.
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
+  IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
+}
+
+// Testing that the media browser test does fail on plugin crash.
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
+  // Plugin crash is not ignored by default, the test is expected to fail.
+  EXPECT_NONFATAL_FAILURE(
+      TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
+      "plugin crash");
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
