@@ -50,7 +50,7 @@ DEFAULT = cr.Config.From(
 )
 
 
-def DetectClient(context):
+def DetectClient():
   # Attempt to detect the current client from the cwd
   # See if we can detect the source tree root
   client_path = os.getcwd()
@@ -66,11 +66,11 @@ def DetectClient(context):
       # we have the src path, base is one level up
       client_path = dirname
   if client_path is not None:
-    context.derived['CR_CLIENT_PATH'] = client_path
-  # now get the value from context, it may be different
-  client_path = context.Get('CR_CLIENT_PATH')
+    cr.context.derived['CR_CLIENT_PATH'] = client_path
+  # now get the value from it may be different
+  client_path = cr.context.Get('CR_CLIENT_PATH')
   if client_path is not None:
-    context.derived['CR_CLIENT_NAME'] = os.path.basename(client_path)
+    cr.context.derived['CR_CLIENT_NAME'] = os.path.basename(client_path)
 
 
 def _GetConfigFilename(path):
@@ -96,24 +96,22 @@ def AddArguments(parser):
   )
 
 
-def GetOutArgument(context):
-  return getattr(context.args, '_out', None)
+def GetOutArgument():
+  return getattr(cr.context.args, '_out', None)
 
 
-def ApplyOutArgument(context):
+def ApplyOutArgument():
   # TODO(iancottrell): be flexible, allow out to do approximate match...
-  out = GetOutArgument(context)
+  out = GetOutArgument()
   if out:
-    context.derived.Set(CR_OUT_FULL=out)
+    cr.context.derived.Set(CR_OUT_FULL=out)
 
 
-def ReadGClient(context):
+def ReadGClient():
   """Loads the .gclient configuration for the current client.
 
   This will load from CR_CLIENT_PATH.
 
-  Args:
-    context: The active context to load configuration for.
   Returns:
     The dict of values set in the .gclient file.
 
@@ -121,7 +119,7 @@ def ReadGClient(context):
   # Now attempt to load and parse the .gclient file
   result = {}
   try:
-    gclient_file = context.Substitute(
+    gclient_file = cr.context.Substitute(
         os.path.join('{CR_CLIENT_PATH}', GCLIENT_FILENAME))
     with open(gclient_file, 'r') as spec_file:
       # matching the behaviour of gclient, so pylint: disable=exec-used
@@ -132,46 +130,41 @@ def ReadGClient(context):
   return result
 
 
-def WriteGClient(context):
+def WriteGClient():
   """Writes the .gclient configuration for the current client.
 
   This will write to CR_CLIENT_PATH.
 
-  Args:
-    context: The active context to write the configuration for.
-
   """
-  gclient_file = context.Substitute(
+  gclient_file = cr.context.Substitute(
       os.path.join('{CR_CLIENT_PATH}', GCLIENT_FILENAME))
   spec = '\n'.join('%s = %s' % (key, pprint.pformat(value))
-      for key,value in context.gclient.items())
-  if context.dry_run:
+      for key,value in cr.context.gclient.items())
+  if cr.context.dry_run:
     print 'Write the following spec to', gclient_file
     print spec
   else:
     with open(gclient_file, 'w') as spec_file:
       spec_file.write(spec)
 
-def LoadConfig(context):
+def LoadConfig():
   """Loads the client configuration for the given context.
 
   This will load configuration if present from CR_CLIENT_PATH and then
   CR_BUILD_DIR.
 
-  Args:
-    context: The active context to load configuratin for.
   Returns:
     True if configuration was fully loaded.
 
   """
   # Load the root config, will help set default build dir
-  client_path = context.Find('CR_CLIENT_PATH')
+  client_path = cr.context.Find('CR_CLIENT_PATH')
   if not client_path:
     return False
   cr.auto.client.__path__.append(os.path.join(client_path, CLIENT_CONFIG_PATH))
   cr.loader.Scan()
   # Now load build dir config
-  build_dir = context.Find('CR_BUILD_DIR')
+  build_dir = cr.context.Find('CR_BUILD_DIR')
   if not build_dir:
     return False
   cr.auto.build.__path__.append(os.path.join(build_dir, CLIENT_CONFIG_PATH))
@@ -179,19 +172,18 @@ def LoadConfig(context):
   return hasattr(cr.auto.build, 'config')
 
 
-def WriteConfig(context, path, data):
+def WriteConfig(path, data):
   """Writes a configuration out to a file.
 
   This writes all the key value pairs in data out to a config file below path.
 
   Args:
-    context: The context to run under.
     path: The base path to write the config plugin into.
     data: The key value pairs to write.
   """
   filename = _GetConfigFilename(path)
   config_dir = os.path.dirname(filename)
-  if context.dry_run:
+  if cr.context.dry_run:
     print 'makedirs', config_dir
     print 'Write config to', filename
     _WriteConfig(sys.stdout, data)
@@ -205,10 +197,10 @@ def WriteConfig(context, path, data):
       _WriteConfig(writer, data)
 
 
-def PrintInfo(context):
-  print 'Selected output directory is', context.Find('CR_BUILD_DIR')
+def PrintInfo():
+  print 'Selected output directory is', cr.context.Find('CR_BUILD_DIR')
   try:
     for name in cr.auto.build.config.OVERRIDES.exported.keys():
-      print ' ', name, '=', context.Get(name)
+      print ' ', name, '=', cr.context.Get(name)
   except AttributeError:
     pass

@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,6 @@ This includes the configuration variables and command line handling.
 import argparse
 import os
 import cr
-
 
 class _DumpVisitor(cr.visitor.ExportVisitor):
   """A visitor that prints all variables in a config hierarchy."""
@@ -57,9 +56,9 @@ class _ShowHelp(argparse.Action):
   """
 
   def __call__(self, parser, namespace, values, option_string=None):
-    if parser.context.speculative:
+    if cr.context.speculative:
       return
-    command = cr.Command.GetActivePlugin(parser.context)
+    command = cr.Command.GetActivePlugin()
     if command:
       command.parser.print_help()
     else:
@@ -76,12 +75,12 @@ class _ArgumentParser(argparse.ArgumentParser):
   """
 
   def error(self, message):
-    if self.context.speculative:
+    if cr.context.speculative:
       return
     super(_ArgumentParser, self).error(message)
 
   def parse_args(self):
-    if self.context.speculative:
+    if cr.context.speculative:
       result = self.parse_known_args()
       if result:
         return result[0]
@@ -95,16 +94,19 @@ class _ArgumentParser(argparse.ArgumentParser):
     return result
 
 
-class Context(cr.config.Config, cr.loader.AutoExport):
+# The context stack
+_stack = []
+
+
+class _Context(cr.config.Config):
   """The base context holder for the cr system.
 
-  This is passed to almost all methods in the cr system, and holds the common
-  context they all shared. Mostly this is stored in the Config structure of
-  variables.
+  This holds the common context shared throughout cr.
+  Mostly this is stored in the Config structure of variables.
   """
 
   def __init__(self, description='', epilog=''):
-    super(Context, self).__init__('Context')
+    super(_Context, self).__init__('Context')
     self._args = None
     self._arguments = cr.config.Config('ARGS')
     self._derived = cr.config.Config('DERIVED')
@@ -118,17 +120,25 @@ class Context(cr.config.Config, cr.loader.AutoExport):
     # Build the command line argument parser
     self._parser = _ArgumentParser(add_help=False, description=description,
                                    epilog=epilog)
-    self._parser.context = self
     self._subparsers = self.parser.add_subparsers()
     # Add the global arguments
     self.AddCommonArguments(self._parser)
     self._gclient = {}
-    # Try to detect the current client information
-    cr.base.client.DetectClient(self)
+
+  def __enter__(self):
+    """ To support using 'with cr.base.context.Create():'"""
+    _stack.append(self)
+    cr.context = self
+    return self
+
+  def __exit__(self, *_):
+    _stack.pop()
+    if _stack:
+      cr.context = _stack[-1]
+    return False
 
   def AddSubParser(self, source):
     parser = source.AddArguments(self._subparsers)
-    parser.context = self
 
   @classmethod
   def AddCommonArguments(cls, parser):
@@ -202,12 +212,8 @@ class Context(cr.config.Config, cr.loader.AutoExport):
   @property
   def gclient(self):
     if not self._gclient:
-      self._gclient = cr.base.client.ReadGClient(self)
+      self._gclient = cr.base.client.ReadGClient()
     return self._gclient
-
-  def WriteGClient(self):
-    if self._gclient:
-      cr.base.client.WriteGClient(self)
 
   def ParseArgs(self, speculative=False):
     cr.plugin.DynamicChoices.only_active = not speculative
@@ -221,3 +227,5 @@ class Context(cr.config.Config, cr.loader.AutoExport):
   def DumpValues(self, with_source):
     _DumpVisitor(with_source).VisitNode(self)
 
+def Create(description='', epilog=''):
+  return _Context(description=description, epilog=epilog)

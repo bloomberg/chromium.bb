@@ -20,25 +20,25 @@ class Installer(cr.Action, cr.Plugin.Type):
   SELECTOR_HELP = 'Sets the installer to use.'
 
   @cr.Plugin.activemethod
-  def Uninstall(self, context, targets, arguments):
+  def Uninstall(self, targets, arguments):
     """Removes a target from it's installed location."""
 
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Install(self, context, targets, arguments):
+  def Install(self, targets, arguments):
     """Installs a target somewhere so that it is ready to run."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Reinstall(self, context, targets, arguments):
+  def Reinstall(self, targets, arguments):
     """Force a target to install even if already installed.
 
     Default implementation is to do an Uninstall Install sequence.
     Do not call the base version if you implement a more efficient one.
     """
-    self.Uninstall(context, targets, [])
-    self.Install(context, targets, arguments)
+    self.Uninstall(targets, [])
+    self.Install(targets, arguments)
 
 
 class SkipInstaller(Installer):
@@ -48,8 +48,8 @@ class SkipInstaller(Installer):
   def priority(self):
     return super(SkipInstaller, self).priority - 1
 
-  def Uninstall(self, context, targets, arguments):
+  def Uninstall(self, targets, arguments):
     pass
 
-  def Install(self, context, targets, arguments):
+  def Install(self, targets, arguments):
     pass

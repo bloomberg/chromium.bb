@@ -17,7 +17,7 @@ class _ArchInitHookHelper(cr.InitHook):
   def _ArchConvert(self, old_arch):
     return old_arch
 
-  def Run(self, context, old_version, config):
+  def Run(self, old_version, config):
     if old_version is None or not self._VersionTest(old_version):
       return
     old_arch = config.OVERRIDES.Find(cr.Arch.SELECTOR)

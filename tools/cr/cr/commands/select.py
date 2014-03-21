@@ -40,22 +40,20 @@ class SelectCommand(cr.Command):
         help='Don\'t prepare the output directory.'
     )
 
-  def Run(self, context):
-    self.Select(context)
+  def Run(self):
+    self.Select()
 
   @classmethod
-  def Select(cls, context):
+  def Select(cls):
     """Performs the select.
 
     This is also called by the init command to auto select the new output
     directory.
-    Args:
-      context: The cr Context to select in.
     """
     cr.base.client.WriteConfig(
-        context, context.Get('CR_CLIENT_PATH'), dict(
-            CR_OUT_FULL=context.Get('CR_OUT_FULL')))
-    cr.base.client.PrintInfo(context)
+        cr.context.Get('CR_CLIENT_PATH'), dict(
+            CR_OUT_FULL=cr.context.Get('CR_OUT_FULL')))
+    cr.base.client.PrintInfo()
     # Now we run the post select actions
-    if not getattr(context.args, '_no_prepare', None):
-      cr.PrepareCommand.Prepare(context)
+    if not getattr(cr.context.args, '_no_prepare', None):
+      cr.PrepareCommand.Prepare()

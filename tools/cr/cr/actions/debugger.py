@@ -22,30 +22,30 @@ class Debugger(cr.Action, cr.Plugin.Type):
     cr.Runner.AddSelectorArg(command, parser)
 
   @classmethod
-  def ShouldInvoke(cls, context):
+  def ShouldInvoke(cls):
     """Checks if the debugger is attaching or launching."""
-    return not cr.Runner.Skipping(context)
+    return not cr.Runner.Skipping()
 
   @cr.Plugin.activemethod
-  def Restart(self, context, targets, arguments):
+  def Restart(self, targets, arguments):
     """Ask the debugger to restart.
 
     Defaults to a Kill Invoke sequence.
     """
-    self.Kill(context, targets, [])
-    self.Invoke(context, targets, arguments)
+    self.Kill(targets, [])
+    self.Invoke(targets, arguments)
 
   @cr.Plugin.activemethod
-  def Kill(self, context, targets, arguments):
+  def Kill(self, targets, arguments):
     """Kill the running debugger."""
-    cr.Runner.Kill(context, targets, arguments)
+    cr.Runner.Kill(targets, arguments)
 
   @cr.Plugin.activemethod
-  def Invoke(self, context, targets, arguments):
+  def Invoke(self, targets, arguments):
     """Invoke the program within a debugger."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Attach(self, context, targets, arguments):
+  def Attach(self, targets, arguments):
     """Attach a debugger to a running program."""
     raise NotImplementedError('Must be overridden.')

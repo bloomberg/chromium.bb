@@ -26,13 +26,13 @@ class PrepareCommand(cr.Command):
         running gyp.
         """)
 
-  def Run(self, context):
-    self.Prepare(context)
+  def Run(self):
+    self.Prepare()
 
   @classmethod
-  def Prepare(cls, context):
+  def Prepare(cls):
     for preparation in PrepareOut.Plugins():
-      preparation.Prepare(context)
+      preparation.Prepare()
 
 
 class PrepareOut(cr.Plugin, cr.Plugin.Type):
@@ -41,8 +41,7 @@ class PrepareOut(cr.Plugin, cr.Plugin.Type):
   See PrepareCommand for details.
   """
 
-  def Prepare(self, context):
+  def Prepare(self):
     """All PrepareOut plugins must override this method to do their work."""
-    _ = context
     raise NotImplementedError('Must be overridden.')
 

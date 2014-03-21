@@ -109,6 +109,7 @@ def Scan():
         # Try this one again, if progress was made on a possible dependency
         remains.append(name)
   if remains:
+    print "Cannot load all of", remains
     # There are modules that won't import in any order.
     # Print all the errors as we can't determine root cause.
     for name in remains:

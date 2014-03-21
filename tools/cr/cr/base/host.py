@@ -36,22 +36,21 @@ class Host(cr.Plugin, cr.Plugin.Type):
     return False
 
   @classmethod
-  def Select(cls, context):
+  def Select(cls):
     for host in cls.Plugins():
       if host.Matches():
         return host
 
-  def _Execute(self, context, command,
+  def _Execute(self, command,
                shell=False, capture=False, silent=False,
                ignore_dry_run=False, return_status=False,
                ignore_interrupt_signal=False):
     """This is the only method that launches external programs.
 
     It is a thin wrapper around subprocess.Popen that handles cr specific
-    issues. The command is expanded in the context, so that context variables
+    issues. The command is expanded in the active context so that variables
     are substituted.
     Args:
-      context: the cr context to run under.
       command: the command to run.
       shell: whether to run the command using the shell.
       capture: controls wether the output of the command is captured.
@@ -67,19 +66,19 @@ class Host(cr.Plugin, cr.Plugin.Type):
       the status if return_status is true, or the output if capture is true,
       otherwise nothing.
     """
-    with context.Trace():
-      command = [context.Substitute(arg) for arg in command if arg]
-    trail = context.trail
+    with cr.context.Trace():
+      command = [cr.context.Substitute(arg) for arg in command if arg]
+    trail = cr.context.trail
     if not command:
       print 'Empty command passed to execute'
       exit(1)
-    if context.verbose:
+    if cr.context.verbose:
       print ' '.join(command)
-      if context.verbose >= _TRAIL_VERBOSITY:
+      if cr.context.verbose >= _TRAIL_VERBOSITY:
         print 'Command expanded the following variables:'
         for key, value in trail:
           print '   ', key, '=', value
-    if ignore_dry_run or not context.dry_run:
+    if ignore_dry_run or not cr.context.dry_run:
       out = None
       if capture:
         out = subprocess.PIPE
@@ -88,12 +87,12 @@ class Host(cr.Plugin, cr.Plugin.Type):
       try:
         p = subprocess.Popen(
             command, shell=shell,
-            env={k: str(v) for k, v in context.exported.items()},
+            env={k: str(v) for k, v in cr.context.exported.items()},
             stdout=out)
       except OSError:
         print 'Failed to exec', command
         # Don't log the trail if we already have
-        if context.verbose < _TRAIL_VERBOSITY:
+        if cr.context.verbose < _TRAIL_VERBOSITY:
           print 'Variables used to build the command were:'
           for key, value in trail:
             print '   ', key, '=', value
@@ -116,31 +115,30 @@ class Host(cr.Plugin, cr.Plugin.Type):
     return ''
 
   @cr.Plugin.activemethod
-  def Shell(self, context, *command):
+  def Shell(self, *command):
     command = ' '.join([pipes.quote(arg) for arg in command])
-    return self._Execute(context, [command], shell=True,
-                         ignore_interrupt_signal=True)
+    return self._Execute([command], shell=True, ignore_interrupt_signal=True)
 
   @cr.Plugin.activemethod
-  def Execute(self, context, *command):
-    return self._Execute(context, command, shell=False)
+  def Execute(self, *command):
+    return self._Execute(command, shell=False)
 
   @cr.Plugin.activemethod
-  def ExecuteSilently(self, context, *command):
-    return self._Execute(context, command, shell=False, silent=True)
+  def ExecuteSilently(self, *command):
+    return self._Execute(command, shell=False, silent=True)
 
   @cr.Plugin.activemethod
-  def CaptureShell(self, context, *command):
-    return self._Execute(context, command,
+  def CaptureShell(self, *command):
+    return self._Execute(command,
                          shell=True, capture=True, ignore_dry_run=True)
 
   @cr.Plugin.activemethod
-  def Capture(self, context, *command):
-    return self._Execute(context, command, capture=True, ignore_dry_run=True)
+  def Capture(self, *command):
+    return self._Execute(command, capture=True, ignore_dry_run=True)
 
   @cr.Plugin.activemethod
-  def ExecuteStatus(self, context, *command):
-    return self._Execute(context, command,
+  def ExecuteStatus(self, *command):
+    return self._Execute(command,
                          ignore_dry_run=True, return_status=True)
 
   @cr.Plugin.activemethod

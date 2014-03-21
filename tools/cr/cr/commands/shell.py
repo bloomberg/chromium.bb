@@ -35,9 +35,9 @@ class ShellCommand(cr.Command):
     self.ConsumeArgs(parser, 'the shell')
     return parser
 
-  def Run(self, context):
-    if context.remains:
-      cr.Host.Shell(context, *context.remains)
+  def Run(self):
+    if cr.context.remains:
+      cr.Host.Shell(*cr.context.remains)
       return
     # If we get here, we are trying to launch an interactive shell
     shell = os.environ.get('SHELL', None)
@@ -48,6 +48,6 @@ class ShellCommand(cr.Command):
       with tempfile.NamedTemporaryFile() as rcfile:
         rcfile.write('source ~/.bashrc\nPS1="'+ps1+'"')
         rcfile.flush()
-        cr.Host.Execute(context, shell, '--rcfile', rcfile.name)
+        cr.Host.Execute(shell, '--rcfile', rcfile.name)
     else:
-      cr.Host.Execute(context, shell)
+      cr.Host.Execute(shell)

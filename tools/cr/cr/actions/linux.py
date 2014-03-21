@@ -17,15 +17,15 @@ class LinuxRunner(cr.Runner):
   def enabled(self):
     return cr.LinuxPlatform.GetInstance().is_active
 
-  def Kill(self, context, targets, arguments):
+  def Kill(self, targets, arguments):
     # TODO(iancottrell): Think about how to implement this, or even if we should
     print '**WARNING** Kill not yet implemented on linux'
 
-  def Run(self, context, target, arguments):
+  def Run(self, target, arguments):
     cr.Host.Execute(target, '{CR_BINARY}', '{CR_RUN_ARGUMENTS}', *arguments)
 
-  def Test(self, context, target, arguments):
-    self.Run(context, target, arguments)
+  def Test(self, target, arguments):
+    self.Run(target, arguments)
 
 
 class LinuxInstaller(cr.Installer):
@@ -39,12 +39,12 @@ class LinuxInstaller(cr.Installer):
   def enabled(self):
     return cr.LinuxPlatform.GetInstance().is_active
 
-  def Uninstall(self, context, targets, arguments):
+  def Uninstall(self, targets, arguments):
     pass
 
-  def Install(self, context, targets, arguments):
+  def Install(self, targets, arguments):
     pass
 
-  def Reinstall(self, context, targets, arguments):
+  def Reinstall(self, targets, arguments):
     pass
 

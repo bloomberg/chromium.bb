@@ -15,11 +15,10 @@ class GypPrepareOut(cr.PrepareOut):
       GYP_GENERATOR_FLAGS='output_dir={CR_OUT_BASE} config={CR_BUILDTYPE}',
   )
 
-  def Prepare(self, context):
-    if context.verbose >= 1:
-      print context.Substitute('Invoking gyp with {GYP_GENERATOR_FLAGS}')
+  def Prepare(self):
+    if cr.context.verbose >= 1:
+      print cr.context.Substitute('Invoking gyp with {GYP_GENERATOR_FLAGS}')
     cr.Host.Execute(
-        context,
         '{CR_SRC}/build/gyp_chromium',
         '--depth={CR_SRC}',
         '--check'

@@ -39,13 +39,13 @@ class Platform(cr.Plugin, cr.Plugin.Type):
   def __init__(self):
     super(Platform, self).__init__()
 
-  def Activate(self, context):
-    super(Platform, self).Activate(context)
-    if _PathFixup not in context.fixup_hooks:
-      context.fixup_hooks.append(_PathFixup)
+  def Activate(self):
+    super(Platform, self).Activate()
+    if _PathFixup not in cr.context.fixup_hooks:
+      cr.context.fixup_hooks.append(_PathFixup)
 
   @cr.Plugin.activemethod
-  def Prepare(self, context):
+  def Prepare(self):
     pass
 
   @property
@@ -53,12 +53,12 @@ class Platform(cr.Plugin, cr.Plugin.Type):
     return []
 
 
-def _PathFixup(context, key, value):
+def _PathFixup(base, key, value):
   """A context fixup that does platform specific modifications to the PATH."""
   if key == 'PATH':
     paths = []
-    for entry in Platform.GetActivePlugin(context).paths:
-      entry = context.Substitute(entry)
+    for entry in Platform.GetActivePlugin().paths:
+      entry = base.Substitute(entry)
       if entry not in paths:
         paths.append(entry)
     for entry in value.split(os.path.pathsep):

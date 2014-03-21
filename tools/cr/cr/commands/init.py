@@ -50,13 +50,13 @@ class InitCommand(cr.Command):
     )
     return parser
 
-  def EarlyArgProcessing(self, context):
-    base_settings = getattr(context.args, '_settings', None)
+  def EarlyArgProcessing(self):
+    base_settings = getattr(cr.context.args, '_settings', None)
     if base_settings:
       self._settings.extend(base_settings)
     # Do not call super early processing, we do not want to apply
     # the output arg...
-    out = cr.base.client.GetOutArgument(context)
+    out = cr.base.client.GetOutArgument()
     if out:
       # Output directory is fully specified
       # We need to deduce other settings from it's name
@@ -68,11 +68,12 @@ class InitCommand(cr.Command):
         print 'Specified build type', buildtype, 'is not valid'
         print 'Must be one of', ','.join(p.name for p in cr.BuildType.Plugins())
         exit(1)
-      if context.args.CR_BUILDTYPE and context.args.CR_BUILDTYPE != buildtype:
+      if (cr.context.args.CR_BUILDTYPE and
+          cr.context.args.CR_BUILDTYPE != buildtype):
         print 'If --type and --out are both specified, they must match'
-        print 'Got', context.args.CR_BUILDTYPE, 'and', buildtype
+        print 'Got', cr.context.args.CR_BUILDTYPE, 'and', buildtype
         exit(1)
-      platform = context.args.CR_PLATFORM
+      platform = cr.context.args.CR_PLATFORM
       if not platform:
         # Try to guess platform based on output name
         platforms = [p.name for p in cr.Platform.AllPlugins()]
@@ -84,23 +85,23 @@ class InitCommand(cr.Command):
             print 'Matched all of', ','.join(matches)
           exit(1)
         platform = matches[0]
-      context.derived.Set(
+      cr.context.derived.Set(
           CR_OUT_FULL=out,
           CR_OUT_BASE=base,
           CR_PLATFORM=platform,
           CR_BUILDTYPE=buildtype,
       )
-    if not 'CR_OUT_BASE' in context:
-      context.derived['CR_OUT_BASE'] = 'out_{CR_PLATFORM}'
-    if not 'CR_OUT_FULL' in context:
-      context.derived['CR_OUT_FULL'] = os.path.join(
+    if not 'CR_OUT_BASE' in cr.context:
+      cr.context.derived['CR_OUT_BASE'] = 'out_{CR_PLATFORM}'
+    if not 'CR_OUT_FULL' in cr.context:
+      cr.context.derived['CR_OUT_FULL'] = os.path.join(
           '{CR_OUT_BASE}', '{CR_BUILDTYPE}')
 
-  def Run(self, context):
+  def Run(self):
     """Overridden from cr.Command."""
-    src_path = context.Get('CR_SRC')
+    src_path = cr.context.Get('CR_SRC')
     if not os.path.isdir(src_path):
-      print context.Substitute('Path {CR_SRC} is not a valid client')
+      print cr.context.Substitute('Path {CR_SRC} is not a valid client')
       exit(1)
 
     # Ensure we have an output directory override ready to fill in
@@ -109,7 +110,7 @@ class InitCommand(cr.Command):
     build_package = cr.auto.build
 
     # Collect the old version (and float convert)
-    old_version = context.Find('CR_VERSION')
+    old_version = cr.context.Find('CR_VERSION')
     try:
       old_version = float(old_version)
     except (ValueError, TypeError):
@@ -132,7 +133,7 @@ class InitCommand(cr.Command):
     build_package.config.OVERRIDES.Set(CR_VERSION=cr.base.client.VERSION)
     # Add all the variables that we always want to have
     for name in OUT_CONFIG_VARS:
-      value = context.Find(name)
+      value = cr.context.Find(name)
       build_package.config.OVERRIDES[name] = value
     # Apply the settings from the command line
     for setting in self._settings:
@@ -146,16 +147,16 @@ class InitCommand(cr.Command):
 
     # Run all the output directory init hooks
     for hook in InitHook.Plugins():
-      hook.Run(context, old_version, build_package.config)
+      hook.Run(old_version, build_package.config)
     # Redo activations, they might have changed
-    cr.plugin.Activate(context)
+    cr.plugin.Activate()
 
     # Write out the new configuration, and select it as the default
-    cr.base.client.WriteConfig(context, context.Get('CR_BUILD_DIR'),
+    cr.base.client.WriteConfig(cr.context.Get('CR_BUILD_DIR'),
                                build_package.config.OVERRIDES.exported)
     # Prepare the platform in here, using the updated config
-    cr.Platform.Prepare(context)
-    cr.SelectCommand.Select(context)
+    cr.Platform.Prepare()
+    cr.SelectCommand.Select()
 
 
 class InitHook(cr.Plugin, cr.Plugin.Type):
@@ -165,12 +166,11 @@ class InitHook(cr.Plugin, cr.Plugin.Type):
   cr.fixups package.
   """
 
-  def Run(self, context, old_version, config):
+  def Run(self, old_version, config):
     """Run the initialization hook.
 
     This is invoked once per init invocation.
     Args:
-      context: The context of the init command.
       old_version: The old version,
           0.0 if the old version was bad or missing,
           None if building a new output direcory.

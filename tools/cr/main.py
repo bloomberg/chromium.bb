@@ -13,6 +13,7 @@ import cr
 import cr.auto.user
 import cr.autocomplete
 import cr.loader
+import cr.base.context
 
 _CONTACT = 'iancottrell@chromium.org'
 
@@ -32,63 +33,67 @@ def Main():
   cr.loader.Scan()
 
   # Build the command context
-  context = cr.Context(
+  with cr.base.context.Create(
       description='The chrome dev build tool.',
       epilog='Contact ' + _CONTACT + ' if you have issues with this tool.',
-  )
-  # Install the sub-commands
-  for command in cr.Command.Plugins():
-    context.AddSubParser(command)
+      ) as context:
 
-  # test for the special autocomplete command
-  if context.autocompleting:
-    # After plugins are loaded so pylint: disable=g-import-not-at-top
-    cr.autocomplete.Complete(context)
-    return
-  # Speculative argument processing to add config specific args
-  context.ParseArgs(True)
-  cr.plugin.Activate(context)
-  # At this point we should know what command we are going to use
-  command = cr.Command.GetActivePlugin(context)
-  # Do some early processing, in case it changes the build dir
-  if command:
-    command.EarlyArgProcessing(context)
-  # Update the activated set again, in case the early processing changed it
-  cr.plugin.Activate(context)
-  # Load the build specific configuration
-  found_build_dir = cr.base.client.LoadConfig(context)
-  # Final processing or arguments
-  context.ParseArgs()
-  cr.plugin.Activate(context)
-  # If we did not get a command before, it might have been fixed.
-  if command is None:
-    command = cr.Command.GetActivePlugin(context)
-  # If the verbosity level is 3 or greater, then print the environment here
-  if context.verbose >= 3:
-    context.DumpValues(context.verbose > 3)
-  if command is None:
-    print context.Substitute('No command specified.')
-    exit(1)
-  if command.requires_build_dir:
-    if not found_build_dir:
-      if not context.Find('CR_OUT_FULL'):
-        print context.Substitute(
-            'No build directory specified. Please use cr init to make one.')
-      else:
-        print context.Substitute(
-            'Build {CR_BUILD_DIR} not a valid build directory')
+    # Try to detect the current client information
+    cr.base.client.DetectClient()
+
+    # Install the sub-commands
+    for command in cr.Command.Plugins():
+      cr.context.AddSubParser(command)
+
+    # test for the special autocomplete command
+    if cr.context.autocompleting:
+      # After plugins are loaded so pylint: disable=g-import-not-at-top
+      cr.autocomplete.Complete()
+      return
+    # Speculative argument processing to add config specific args
+    cr.context.ParseArgs(True)
+    cr.plugin.Activate()
+    # At this point we should know what command we are going to use
+    command = cr.Command.GetActivePlugin()
+    # Do some early processing, in case it changes the build dir
+    if command:
+      command.EarlyArgProcessing()
+    # Update the activated set again, in case the early processing changed it
+    cr.plugin.Activate()
+    # Load the build specific configuration
+    found_build_dir = cr.base.client.LoadConfig()
+    # Final processing or arguments
+    cr.context.ParseArgs()
+    cr.plugin.Activate()
+    # If we did not get a command before, it might have been fixed.
+    if command is None:
+      command = cr.Command.GetActivePlugin()
+    # If the verbosity level is 3 or greater, then print the environment here
+    if cr.context.verbose >= 3:
+      cr.context.DumpValues(cr.context.verbose > 3)
+    if command is None:
+      print cr.context.Substitute('No command specified.')
       exit(1)
-    if context.Find('CR_VERSION') != cr.base.client.VERSION:
-      print context.Substitute(
-          'Build {CR_BUILD_DIR} is for the wrong version of cr')
-      print 'Please run cr init to reset it'
-      exit(1)
-    cr.Platform.Prepare(context)
-  if context.verbose >= 1:
-    print context.Substitute(
-        'Running cr ' + command.name + ' for {CR_BUILD_DIR}')
-  # Invoke the given command
-  command.Run(context)
+    if command.requires_build_dir:
+      if not found_build_dir:
+        if not cr.context.Find('CR_OUT_FULL'):
+          print cr.context.Substitute(
+              'No build directory specified. Please use cr init to make one.')
+        else:
+          print cr.context.Substitute(
+              'Build {CR_BUILD_DIR} not a valid build directory')
+        exit(1)
+      if cr.context.Find('CR_VERSION') != cr.base.client.VERSION:
+        print cr.context.Substitute(
+            'Build {CR_BUILD_DIR} is for the wrong version of cr')
+        print 'Please run cr init to reset it'
+        exit(1)
+      cr.Platform.Prepare()
+    if cr.context.verbose >= 1:
+      print cr.context.Substitute(
+          'Running cr ' + command.name + ' for {CR_BUILD_DIR}')
+    # Invoke the given command
+    command.Run()
 
 if __name__ == '__main__':
   sys.exit(Main())

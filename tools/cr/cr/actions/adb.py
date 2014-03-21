@@ -106,14 +106,14 @@ class AdbRunner(cr.Runner):
   def enabled(self):
     return cr.AndroidPlatform.GetInstance().is_active
 
-  def Kill(self, context, targets, arguments):
+  def Kill(self, targets, arguments):
     for target in targets:
       Adb.Kill(target, arguments)
 
-  def Run(self, context, target, arguments):
+  def Run(self, target, arguments):
     Adb.Run(target, arguments)
 
-  def Test(self, context, target, arguments):
+  def Test(self, target, arguments):
     cr.Host.Execute(
         target,
         '{CR_TEST_RUNNER}', '{CR_TEST_TYPE}',
@@ -130,14 +130,14 @@ class AdbInstaller(cr.Installer):
   def enabled(self):
     return cr.AndroidPlatform.GetInstance().is_active
 
-  def Uninstall(self, context, targets, arguments):
+  def Uninstall(self, targets, arguments):
     for target in targets:
       Adb.Uninstall(target, arguments)
 
-  def Install(self, context, targets, arguments):
+  def Install(self, targets, arguments):
     for target in targets:
       Adb.Install(target, arguments)
 
-  def Reinstall(self, context, targets, arguments):
+  def Reinstall(self, targets, arguments):
     for target in targets:
       Adb.Reinstall(target, arguments)

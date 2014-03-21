@@ -34,15 +34,14 @@ class NinjaBuilder(cr.Builder):
     super(NinjaBuilder, self).__init__()
     self._targets = []
 
-  def Build(self, context, targets, arguments):
+  def Build(self, targets, arguments):
     # Make sure Goma is started if Ninja is set to use it.
     # This may be redundant, but it currently improves reliability.
     try:
-      with open(context.Get('NINJA_BUILD_FILE'), 'r') as f:
-        if f.readline().rstrip('\n') == context.Get('NINJA_GOMA_LINE'):
+      with open(cr.context.Get('NINJA_BUILD_FILE'), 'r') as f:
+        if f.readline().rstrip('\n') == cr.context.Get('NINJA_GOMA_LINE'):
           # Goma is active, so make sure it's started.
           cr.Host.ExecuteSilently(
-              context,
               '{NINJA_GOMA_CTL}',
               'ensure_start'
           )
@@ -52,7 +51,6 @@ class NinjaBuilder(cr.Builder):
     build_arguments = [target.build_target for target in targets]
     build_arguments.extend(arguments)
     cr.Host.Execute(
-        context,
         '{NINJA_BINARY}',
         '-C{CR_BUILD_DIR}',
         '-j{NINJA_JOBS}',
@@ -60,26 +58,24 @@ class NinjaBuilder(cr.Builder):
         *build_arguments
     )
 
-  def Clean(self, context, targets, arguments):
+  def Clean(self, targets, arguments):
     build_arguments = [target.build_target for target in targets]
     build_arguments.extend(arguments)
     cr.Host.Execute(
-        context,
         '{NINJA_BINARY}',
         '-C{CR_BUILD_DIR}',
         '-tclean',
         *build_arguments
     )
 
-  def GetTargets(self, context):
+  def GetTargets(self):
     """Overridden from Builder.GetTargets."""
     if not self._targets:
       try:
-        context.Get('CR_BUILD_DIR', raise_errors=True)
+        cr.context.Get('CR_BUILD_DIR', raise_errors=True)
       except KeyError:
         return self._targets
       output = cr.Host.Capture(
-          context,
           '{NINJA_BINARY}',
           '-C{CR_BUILD_DIR}',
           '-ttargets',

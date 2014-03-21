@@ -31,9 +31,8 @@ class Target(cr.Config, cr.AutoExport):
   # TODO(iancottrell): support the other test types
   TEST_TYPES = [NOT_A_TEST, NORMAL_TEST]
 
-  def  __init__(self, context, target_name):
+  def  __init__(self, target_name):
     super(Target, self).__init__(target_name)
-    self.context = context
     test_type = None
     if self.TEST_PATTERN.search(target_name):
       test_type = self.NORMAL_TEST
@@ -45,7 +44,7 @@ class Target(cr.Config, cr.AutoExport):
         CR_RUN_ARGUMENTS='',
         CR_TEST_TYPE=test_type,
     )
-    self.AddChildren(config, context)
+    self.AddChildren(config, cr.context)
     if hasattr(self, 'CONFIG'):
       self.AddChild(self.CONFIG)
     if not self.valid:
@@ -59,15 +58,15 @@ class Target(cr.Config, cr.AutoExport):
 
   @property
   def verbose(self):
-    return self.context.verbose
+    return cr.context.verbose
 
   @property
   def dry_run(self):
-    return self.context.dry_run
+    return cr.context.dry_run
 
   @property
   def valid(self):
-    return cr.Builder.IsTarget(self.context, self.build_target)
+    return cr.Builder.IsTarget(self.build_target)
 
   @property
   def is_test(self):
@@ -94,14 +93,13 @@ class Target(cr.Config, cr.AutoExport):
         yield t
 
   @classmethod
-  def CreateTarget(cls, context, target_name):
+  def CreateTarget(cls, target_name):
     """Attempts to build a target by name.
 
     This searches the set of installed targets in priority order to see if any
     of them are willing to handle the supplied name.
     If a target cannot be found, the program will be aborted.
     Args:
-      context: The context to run in.
       target_name: The name of the target we are searching for.
     Returns:
       The target that matched.
@@ -112,12 +110,12 @@ class Target(cr.Config, cr.AutoExport):
         reverse=True
     )
     for handler in target_clses:
-      target = handler.Build(context, target_name)
+      target = handler.Build(target_name)
       if target:
         if not target.valid:
           print 'Invalid target {0} as {1}'.format(
               target_name, target.build_target)
-          guesses = cr.Builder.GuessTargets(context, target_name)
+          guesses = cr.Builder.GuessTargets(target_name)
           if guesses:
             print 'Did you mean {0}?'.format(
                 ', '.join(guesses[:-1]) + ' or ' + guesses[-1]
@@ -128,19 +126,19 @@ class Target(cr.Config, cr.AutoExport):
     exit(1)
 
   @classmethod
-  def GetTargets(cls, context):
-    target_names = getattr(context.args, '_targets', None)
+  def GetTargets(cls):
+    target_names = getattr(cr.context.args, '_targets', None)
     if not target_names:
-      target_names = [context.Get('CR_DEFAULT_TARGET')]
+      target_names = [cr.context.Get('CR_DEFAULT_TARGET')]
     elif hasattr(target_names, 'swapcase'):
       # deal with the single target case
       target_names = [target_names]
-    return [cls.CreateTarget(context, target_name)
+    return [cls.CreateTarget(target_name)
             for target_name in target_names]
 
   @classmethod
-  def Build(cls, context, target_name):
-    return cls(context, target_name)
+  def Build(cls, target_name):
+    return cls(target_name)
 
 
 class NamedTarget(Target):
@@ -153,10 +151,10 @@ class NamedTarget(Target):
   PRIORITY = Target.PRIORITY + 1
 
   @classmethod
-  def Build(cls, context, target_name):
+  def Build(cls, target_name):
     try:
       if target_name == cls.NAME:
-        return cls(context, target_name)
+        return cls(target_name)
     except AttributeError:
       pass
     return None

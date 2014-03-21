@@ -32,41 +32,41 @@ class Runner(cr.Action, cr.Plugin.Type):
     )
 
   @cr.Plugin.activemethod
-  def Kill(self, context, targets, arguments):
+  def Kill(self, targets, arguments):
     """Stops all running processes that match a target."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Run(self, context, target, arguments):
+  def Run(self, target, arguments):
     """Run a new copy of a runnable target."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Test(self, context, target, arguments):
+  def Test(self, target, arguments):
     """Run a test target."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Invoke(self, context, targets, arguments):
+  def Invoke(self, targets, arguments):
     """Invoke a target.
 
     This dispatches to either Test or Run depending on the target type.
     """
     for target in targets:
       if target.is_test:
-        self.Test(context, target, arguments)
+        self.Test(target, arguments)
       else:
-        self.Run(context, target, arguments)
+        self.Run(target, arguments)
 
   @cr.Plugin.activemethod
-  def Restart(self, context, targets, arguments):
+  def Restart(self, targets, arguments):
     """Force a target to restart if it is already running.
 
     Default implementation is to do a Kill Invoke sequence.
     Do not call the base version if you implement a more efficient one.
     """
-    self.Kill(context, targets, [])
-    self.Invoke(context, targets, arguments)
+    self.Kill(targets, [])
+    self.Invoke(targets, arguments)
 
 
 class SkipRunner(Runner):
@@ -76,12 +76,12 @@ class SkipRunner(Runner):
   def priority(self):
     return super(SkipRunner, self).priority - 1
 
-  def Kill(self, context, targets, arguments):
+  def Kill(self, targets, arguments):
     pass
 
-  def Run(self, context, target, arguments):
+  def Run(self, target, arguments):
     pass
 
-  def Test(self, context, target, arguments):
+  def Test(self, target, arguments):
     pass
 

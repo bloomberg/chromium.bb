@@ -51,19 +51,19 @@ class AndroidPlatform(cr.Platform):
   def priority(self):
     return super(AndroidPlatform, self).priority + 1
 
-  def Prepare(self, context):
+  def Prepare(self):
     """Override Prepare from cr.Platform."""
-    super(AndroidPlatform, self).Prepare(context)
+    super(AndroidPlatform, self).Prepare()
     try:
       # capture the result of env setup if we have not already done so
       if not self._env_ready:
         # See what the env would be without env setup
-        before = context.exported
+        before = cr.context.exported
         before['GYP_DEFINES'] = before.get(
             'GYP_DEFINES', '') + ' target_arch={CR_ENVSETUP_ARCH}'
         # Run env setup and capture/parse its output
         envsetup = 'source {CR_ENVSETUP}'
-        output = cr.Host.CaptureShell(context, envsetup + ' > /dev/null && env')
+        output = cr.Host.CaptureShell(envsetup + ' > /dev/null && env')
         env_setup = cr.Config('envsetup', literal=True, export=True)
         for line in output.split('\n'):
           (key, op, value) = line.partition('=')
@@ -77,7 +77,7 @@ class AndroidPlatform(cr.Platform):
               # Make a version of GYP_DEFINES that is the combination of base
               # setting and envsetup, needs to override the overrides
               # Note: Forcing it into the top level scope - sledge-hammer
-              context[key] = value.strip() + ' ' + before.get(key, '')
+              cr.context[key] = value.strip() + ' ' + before.get(key, '')
         items = env_setup.exported.items()
         if not items:
           # Because of the way envsetup is run, the exit code does not make it
@@ -109,13 +109,13 @@ class AndroidInitHook(cr.InitHook):
   def enabled(self):
     return cr.AndroidPlatform.GetInstance().is_active
 
-  def Run(self, context, old_version, config):
+  def Run(self, old_version, config):
     _ = old_version, config  # unused
     # Check we are an android capable client
-    target_os = context.gclient.get('target_os', [])
+    target_os = cr.context.gclient.get('target_os', [])
     if 'android' in target_os:
       return
-    url = context.gclient.get('solutions', [{}])[0].get('url')
+    url = cr.context.gclient.get('solutions', [{}])[0].get('url')
     if (url.startswith('https://chrome-internal.googlesource.com/') and
         url.endswith('/internal/apps.git')):
       return
@@ -126,10 +126,10 @@ class AndroidInitHook(cr.InitHook):
       print 'Abandoning the creation of and android output directory.'
       exit(1)
     target_os.append('android')
-    context.gclient['target_os'] = target_os
-    context.WriteGClient()
+    cr.context.gclient['target_os'] = target_os
+    cr.base.client.WriteGClient()
     print 'Client updated.'
     print 'You may need to sync before an output directory can be made.'
     if cr.Host.YesNo('Would you like to sync this client now?'):
-      cr.SyncCommand.Sync(context, ["--nohooks"])
+      cr.SyncCommand.Sync(["--nohooks"])
 

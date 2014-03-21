@@ -27,14 +27,14 @@ class DebugCommand(cr.Command):
     self.ConsumeArgs(parser, 'the binary')
     return parser
 
-  def Run(self, context):
-    targets = cr.Target.GetTargets(context)
-    if not cr.Debugger.ShouldInvoke(context):
-      cr.Debugger.Attach(context, targets, context.remains)
-    elif cr.Installer.Skipping(context):
-      cr.Debugger.Restart(context, targets, context.remains)
+  def Run(self):
+    targets = cr.Target.GetTargets()
+    if not cr.Debugger.ShouldInvoke():
+      cr.Debugger.Attach(targets, cr.context.remains)
+    elif cr.Installer.Skipping():
+      cr.Debugger.Restart(targets, cr.context.remains)
     else:
-      cr.Builder.Build(context, targets, [])
-      cr.Debugger.Kill(context, targets, [])
-      cr.Installer.Reinstall(context, targets, [])
-      cr.Debugger.Invoke(context, targets, context.remains)
+      cr.Builder.Build(targets, [])
+      cr.Debugger.Kill(targets, [])
+      cr.Installer.Reinstall(targets, [])
+      cr.Debugger.Invoke(targets, cr.context.remains)

@@ -26,26 +26,26 @@ class Builder(cr.Action, cr.Plugin.Type):
   SELECTOR_HELP = 'Sets the builder to use to update dependencies.'
 
   @cr.Plugin.activemethod
-  def Build(self, context, targets, arguments):
+  def Build(self, targets, arguments):
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Clean(self, context, targets, arguments):
+  def Clean(self, targets, arguments):
     """Clean temporary files built by a target."""
     raise NotImplementedError('Must be overridden.')
 
   @cr.Plugin.activemethod
-  def Rebuild(self, context, targets, arguments):
+  def Rebuild(self, targets, arguments):
     """Make a target build even if it is up to date.
 
     Default implementation is to do a Clean and Build sequence.
     Do not call the base version if you implement a more efficient one.
     """
-    self.Clean(context, targets, [])
-    self.Build(context, targets, arguments)
+    self.Clean(targets, [])
+    self.Build(targets, arguments)
 
   @cr.Plugin.activemethod
-  def GetTargets(self, context):
+  def GetTargets(self):
     """Gets the full set of targets supported by this builder.
 
     Used in automatic target name transformations, and also in offering the
@@ -54,14 +54,14 @@ class Builder(cr.Action, cr.Plugin.Type):
     return []
 
   @cr.Plugin.activemethod
-  def IsTarget(self, context, target_name):
+  def IsTarget(self, target_name):
     """Check if a target name is on the builder knows about."""
-    return target_name in self.GetTargets(context)
+    return target_name in self.GetTargets()
 
   @cr.Plugin.activemethod
-  def GuessTargets(self, context, target_name):
+  def GuessTargets(self, target_name):
     """Returns a list of closest matching targets for a named target."""
-    return difflib.get_close_matches(target_name, self.GetTargets(context))
+    return difflib.get_close_matches(target_name, self.GetTargets(), 10, 0.4)
 
 
 class SkipBuilder(Builder):
@@ -71,9 +71,9 @@ class SkipBuilder(Builder):
   def priority(self):
     return super(SkipBuilder, self).priority - 1
 
-  def Build(self, context, targets, arguments):
+  def Build(self, targets, arguments):
     pass
 
-  def Clean(self, context, targets, arguments):
+  def Clean(self, targets, arguments):
     pass
 

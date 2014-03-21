@@ -97,13 +97,13 @@ class Config(cr.visitor.Node):
     Returns:
         A dynamic value.
     """
-    def Resolve(context):
-      test = context.Get(condition)
+    def Resolve(base):
+      test = base.Get(condition)
       if test:
         value = true_value
       else:
         value = false_value
-      return context.Substitute(value)
+      return base.Substitute(value)
     return Resolve
 
   @classmethod
@@ -116,11 +116,11 @@ class Config(cr.visitor.Node):
     Returns:
         value if it resolves, alternate otherwise.
     """
-    def Resolve(context):
+    def Resolve(base):
       try:
-        return context.Substitute(value)
+        return base.Substitute(value)
       except KeyError:
-        return context.Substitute(alternate)
+        return base.Substitute(alternate)
     return Resolve
 
   def __init__(self, name='--', literal=False, export=None, enabled=True):

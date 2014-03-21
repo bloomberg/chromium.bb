@@ -36,17 +36,16 @@ class SyncCommand(cr.Command):
     # TODO(iancottrell): clean no-hooks support would be nice.
     return parser
 
-  def Run(self, context):
-    self.Sync(context, context.remains)
+  def Run(self):
+    self.Sync(cr.context.remains)
 
   @staticmethod
-  def Sync(context, args):
+  def Sync(args):
     # TODO(iancottrell): we should probably run the python directly,
     # rather than the shell wrapper
     # TODO(iancottrell): try to help out when the local state is not a good
     # one to do a sync in
-    cr.Host.Execute(context, '{GCLIENT_BINARY}', 'sync', *args)
-
+    cr.Host.Execute('{GCLIENT_BINARY}', 'sync', *args)
 
   @classmethod
   def ClassInit(cls):

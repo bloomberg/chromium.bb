@@ -104,8 +104,8 @@ class Plugin(cr.loader.AutoExport):
       self.method = method
 
     def __get__(self, instance, owner):
-      def unbound(context, *args, **kwargs):
-        active = owner.GetActivePlugin(context)
+      def unbound(*args, **kwargs):
+        active = owner.GetActivePlugin()
         if not active:
           print 'No active', owner.__name__
           exit(1)
@@ -113,10 +113,10 @@ class Plugin(cr.loader.AutoExport):
         if not method:
           print owner.__name__, 'does not support', self.method.__name__
           exit(1)
-        return method(context, *args, **kwargs)
+        return method(*args, **kwargs)
 
-      def bound(context, *args, **kwargs):
-        return self.method(instance, context, *args, **kwargs)
+      def bound(*args, **kwargs):
+        return self.method(instance, *args, **kwargs)
 
       if instance is None:
         return unbound
@@ -167,7 +167,7 @@ class Plugin(cr.loader.AutoExport):
   def is_active(self):
     return self._is_active
 
-  def Activate(self, unused_context):
+  def Activate(self):
     assert not self._is_active
     self._is_active = True
     for config_root in CONFIG_TYPES:
@@ -265,17 +265,15 @@ class Plugin(cr.loader.AutoExport):
     return [plugin for plugin in cls.UnorderedPlugins() if plugin.is_active]
 
   @classmethod
-  def GetActivePlugin(cls, context):
+  def GetActivePlugin(cls):
     """Gets the active plugin of type cls.
 
     This method will select a plugin to be the active one, and will activate
     the plugin if needed.
-    Args:
-      context: The context to select the active plugin for.
     Returns:
       the plugin that is currently active.
     """
-    plugin, _ = _GetActivePlugin(cls, context)
+    plugin, _ = _GetActivePlugin(cls)
     return plugin
 
   @classproperty
@@ -288,14 +286,14 @@ class Plugin(cr.loader.AutoExport):
     return result
 
   @classmethod
-  def Select(cls, context):
+  def Select(cls):
     """Called to determine which plugin should be the active one."""
     plugin = cls.default
     selector = getattr(cls, 'SELECTOR', None)
     if selector:
       if plugin is not None:
         _selectors[selector] = plugin.name
-      name = context.Find(selector)
+      name = cr.context.Find(selector)
       if name is not None:
         plugin = cls.FindPlugin(name)
     return plugin
@@ -313,26 +311,26 @@ def ChainModuleConfigs(module):
 cr.loader.scan_hooks.append(ChainModuleConfigs)
 
 
-def _GetActivePlugin(cls, context):
+def _GetActivePlugin(cls):
   activated = False
   actives = cls.GetAllActive()
-  plugin = cls.Select(context)
+  plugin = cls.Select()
   for active in actives:
     if active != plugin:
       active.Deactivate()
   if plugin and not plugin.is_active:
     activated = True
-    plugin.Activate(context)
+    plugin.Activate()
   return plugin, activated
 
 
-def Activate(context):
+def Activate():
   """Activates a plugin for all known plugin types."""
   types = Plugin.Type.__subclasses__()
   modified = True
   while modified:
     modified = False
     for child in types:
-      _, activated = _GetActivePlugin(child, context)
+      _, activated = _GetActivePlugin(child)
       if activated:
         modified = True

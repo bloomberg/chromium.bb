@@ -29,7 +29,7 @@ class Action(cr.Plugin):
     )
 
   @cr.Plugin.activemethod
-  def Skipping(self, context):
+  def Skipping(self):
     """A method that is used to detect void or skip implementations.
 
     Most actions have a skip version that you can select to indicate that you
@@ -39,8 +39,6 @@ class Action(cr.Plugin):
     performing actions that were only there to produce the inputs of an action
     that is being skipped).
 
-    Args:
-      context: the cr context to test within.
     Returns:
       True if this implementation is a skip action.
     """

@@ -29,22 +29,22 @@ class RunCommand(cr.Command):
     self.ConsumeArgs(parser, 'the binary')
     return parser
 
-  def Run(self, context):
-    targets = cr.Target.GetTargets(context)
+  def Run(self):
+    targets = cr.Target.GetTargets()
     test_targets = [target for target in targets if target.is_test]
     run_targets = [target for target in targets if not target.is_test]
-    if cr.Installer.Skipping(context):
+    if cr.Installer.Skipping():
       # No installer, only build test targets
       build_targets = test_targets
     else:
       build_targets = targets
     if build_targets:
-      cr.Builder.Build(context, build_targets, [])
+      cr.Builder.Build(build_targets, [])
     # See if we can use restart when not installing
-    if cr.Installer.Skipping(context):
-      cr.Runner.Restart(context, targets, context.remains)
+    if cr.Installer.Skipping():
+      cr.Runner.Restart(targets, cr.context.remains)
     else:
-      cr.Runner.Kill(context, run_targets, [])
-      cr.Installer.Reinstall(context, run_targets, [])
-      cr.Runner.Invoke(context, targets, context.remains)
+      cr.Runner.Kill(run_targets, [])
+      cr.Installer.Reinstall(run_targets, [])
+      cr.Runner.Invoke(targets, cr.context.remains)
 

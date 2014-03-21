@@ -29,8 +29,8 @@ class InstallCommand(cr.Command):
     self.ConsumeArgs(parser, 'the installer')
     return parser
 
-  def Run(self, context):
-    targets = cr.Target.GetTargets(context)
-    if not cr.Installer.Skipping(context):
-      cr.Builder.Build(context, targets, [])
-    cr.Installer.Reinstall(context, targets, context.remains)
+  def Run(self):
+    targets = cr.Target.GetTargets()
+    if not cr.Installer.Skipping():
+      cr.Builder.Build(targets, [])
+    cr.Installer.Reinstall(targets, cr.context.remains)

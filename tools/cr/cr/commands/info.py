@@ -24,20 +24,20 @@ class InfoCommand(cr.Command):
     self.ConsumeArgs(parser, 'the environment')
     return parser
 
-  def EarlyArgProcessing(self, context):
-    if getattr(context.args, '_short', False):
+  def EarlyArgProcessing(self):
+    if getattr(cr.context.args, '_short', False):
       self.requires_build_dir = False
 
-  def Run(self, context):
-    if context.remains:
-      for var in context.remains:
-        if getattr(context.args, '_short', False):
-          val = context.Find(var)
+  def Run(self):
+    if cr.context.remains:
+      for var in cr.context.remains:
+        if getattr(cr.context.args, '_short', False):
+          val = cr.context.Find(var)
           if val is None:
             val = ''
           print val
         else:
-          print var, '=', context.Find(var)
+          print var, '=', cr.context.Find(var)
     else:
-      cr.base.client.PrintInfo(context)
+      cr.base.client.PrintInfo()
 

@@ -18,18 +18,16 @@ class Command(cr.Plugin, cr.Plugin.Type):
   """
 
   @classmethod
-  def Select(cls, context):
+  def Select(cls):
     """Called to select which command is active.
 
     This picks a command based on the first non - argument on the command
     line.
-    Args:
-      context: The context to select the command for.
     Returns:
       the selected command, or None if not specified on the command line.
     """
-    if context.args:
-      return getattr(context.args, '_command', None)
+    if cr.context.args:
+      return getattr(cr.context.args, '_command', None)
     return None
 
   def __init__(self):
@@ -59,7 +57,7 @@ class Command(cr.Plugin, cr.Plugin.Type):
         epilog=self.epilog,
     )
     self.parser.set_defaults(_command=self)
-    cr.Context.AddCommonArguments(self.parser)
+    cr.context.AddCommonArguments(self.parser)
     cr.base.client.AddArguments(self.parser)
     return self.parser
 
@@ -78,27 +76,21 @@ class Command(cr.Plugin, cr.Plugin.Type):
         help='The additional arguments to {0}.'.format(reason)
     )
 
-  def EarlyArgProcessing(self, context):
+  def EarlyArgProcessing(self):
     """Called to make decisions based on speculative argument parsing.
 
     When this method is called, enough of the command line parsing has been
     done that the command is selected. This allows the command to make any
     modifications needed before the final argument parsing is done.
-
-    Args:
-      context: The context that is parsing the arguments.
     """
-    cr.base.client.ApplyOutArgument(context)
+    cr.base.client.ApplyOutArgument()
 
   @cr.Plugin.activemethod
-  def Run(self, context):
+  def Run(self):
     """The main method of the command.
 
     This is the only thing that a command has to implement, and it should not
     call this base version.
-    Args:
-      context: The context to run the command in.
     """
-    _ = context
     raise NotImplementedError('Must be overridden.')
 

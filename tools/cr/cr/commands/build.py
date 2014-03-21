@@ -28,9 +28,9 @@ class BuildCommand(cr.Command):
     self.ConsumeArgs(parser, 'the builder')
     return parser
 
-  def Run(self, context):
+  def Run(self):
     return cr.Builder.Build(
-        context, cr.Target.GetTargets(context), context.remains)
+        cr.Target.GetTargets(), cr.context.remains)
 
 
 class CleanCommand(cr.Command):
@@ -52,9 +52,9 @@ class CleanCommand(cr.Command):
     self.ConsumeArgs(parser, 'the builder')
     return parser
 
-  def Run(self, context):
+  def Run(self):
     return cr.Builder.Clean(
-        context, cr.Target.GetTargets(context), context.remains)
+        cr.Target.GetTargets(), cr.context.remains)
 
 
 class RebuildCommand(cr.Command):
@@ -76,6 +76,6 @@ class RebuildCommand(cr.Command):
     self.ConsumeArgs(parser, 'the builder')
     return parser
 
-  def Run(self, context):
+  def Run(self):
     return cr.Builder.Rebuild(
-        context, cr.Target.GetTargets(context), context.remains)
+        cr.Target.GetTargets(), cr.context.remains)
