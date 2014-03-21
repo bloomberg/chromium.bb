@@ -11,7 +11,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
-#include "chrome/browser/extensions/extension_gcm_app_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
@@ -34,7 +33,6 @@ using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::FeatureSwitch;
-using extensions::ExtensionGCMAppHandler;
 
 ExtensionSyncService::ExtensionSyncService(Profile* profile,
                                            ExtensionPrefs* extension_prefs,
@@ -51,8 +49,7 @@ ExtensionSyncService::ExtensionSyncService(Profile* profile,
       pending_extension_enables_(make_scoped_ptr(new sync_driver::SyncPrefs(
                                      extension_prefs_->pref_service())),
                                  &extension_sync_bundle_,
-                                 syncer::EXTENSIONS),
-      extesnion_gcm_app_handler_(new ExtensionGCMAppHandler(profile)) {
+                                 syncer::EXTENSIONS) {
   SetSyncStartFlare(sync_start_util::GetFlareForSyncableService(
       profile_->GetPath()));
 

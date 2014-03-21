@@ -10,10 +10,13 @@
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/event_router.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "google_apis/gcm/gcm_client.h"
 
 class Profile;
+namespace content {
+class BrowserContext;
+}
 namespace gcm {
 class GCMProfileService;
 }
@@ -24,12 +27,17 @@ class GcmJsEventRouter;
 
 // Defines the interface to provide handling logic for a given app.
 class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
+                               public BrowserContextKeyedAPI,
                                public content::NotificationObserver {
  public:
-  explicit ExtensionGCMAppHandler(Profile* profile);
+  explicit ExtensionGCMAppHandler(content::BrowserContext* context);
   virtual ~ExtensionGCMAppHandler();
 
-  // Overridden from gcm::GCMAppHandler:
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>*
+  GetFactoryInstance();
+
+  // gcm::GCMAppHandler implementation.
   virtual void ShutdownHandler() OVERRIDE;
   virtual void OnMessage(
       const std::string& app_id,
@@ -40,15 +48,20 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
 
  private:
-  // Overridden from content::NotificationObserver:
+  friend class BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>;
+
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
   gcm::GCMProfileService* GetGCMProfileService() const;
-  void OnExtensionsReady();
   void OnUnregisterCompleted(const std::string& app_id,
                              gcm::GCMClient::Result result);
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "ExtensionGCMAppHandler"; }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;

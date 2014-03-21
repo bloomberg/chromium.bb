@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +16,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 #if !defined(OS_ANDROID)
@@ -26,14 +26,24 @@ namespace extensions {
 
 namespace {
 
+base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
 bool IsGCMPermissionEnabled(const Extension* extension) {
   return PermissionsData::HasAPIPermission(extension, APIPermission::kGcm);
 }
 
 }  // namespace
 
-ExtensionGCMAppHandler::ExtensionGCMAppHandler(Profile* profile)
-    : profile_(profile),
+
+// static
+BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>*
+ExtensionGCMAppHandler::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+ExtensionGCMAppHandler::ExtensionGCMAppHandler(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
       weak_factory_(this) {
   // Listen to various extension related notifications.
   registrar_.Add(this,
@@ -45,13 +55,6 @@ ExtensionGCMAppHandler::ExtensionGCMAppHandler(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
-
-  // Register app handlers when the extension system is ready. It might be ready
-  // now.
-  ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&ExtensionGCMAppHandler::OnExtensionsReady,
-                 weak_factory_.GetWeakPtr()));
 
 #if !defined(OS_ANDROID)
   js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
@@ -134,18 +137,6 @@ void ExtensionGCMAppHandler::Observe(
 
 gcm::GCMProfileService* ExtensionGCMAppHandler::GetGCMProfileService() const {
   return gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-}
-
-void ExtensionGCMAppHandler::OnExtensionsReady() {
-  // Register app handler for those loaded extensions that use GCM.
-  const ExtensionSet& enabled_extensions =
-      ExtensionRegistry::Get(profile_)->enabled_extensions();
-  for (ExtensionSet::const_iterator extension = enabled_extensions.begin();
-       extension != enabled_extensions.end();
-       ++extension) {
-    if (IsGCMPermissionEnabled(extension->get()))
-      GetGCMProfileService()->AddAppHandler((*extension)->id(), this);
-  }
 }
 
 void ExtensionGCMAppHandler::OnUnregisterCompleted(
