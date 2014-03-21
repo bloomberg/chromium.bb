@@ -32,6 +32,13 @@ void FakeUpdateEngineClient::RequestUpdateCheck(
   callback.Run(update_check_result_);
 }
 
+void FakeUpdateEngineClient::Rollback() {
+}
+
+void FakeUpdateEngineClient::CanRollbackCheck(
+    const RollbackCheckCallback& callback) {
+}
+
 void FakeUpdateEngineClient::RebootAfterUpdate() {
   reboot_after_update_call_count_++;
 }

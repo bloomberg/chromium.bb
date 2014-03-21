@@ -2210,8 +2210,12 @@ const char kPerformanceTracingEnabled[] =
 // Value of the enums in TabStrip::LayoutType as an int.
 const char kTabStripLayoutType[] = "tab_strip_layout_type";
 
-// Indicates that factory reset was requested from options page.
+// Indicates that factory reset was requested from options page or reset screen.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
+
+// Indicates that rollback was requested alongside with factory reset.
+// Makes sense only if kFactoryResetRequested is true.
+const char kRollbackRequested[] = "RollbackRequested";
 
 // Boolean recording whether we have showed a balloon that calls out the message
 // center for desktop notifications.

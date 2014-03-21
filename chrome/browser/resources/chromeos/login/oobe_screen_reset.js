@@ -22,12 +22,14 @@ login.createScreen('ResetScreen', 'reset', function() {
      */
     get buttons() {
       var buttons = [];
-
       var resetButton = this.ownerDocument.createElement('button');
       resetButton.id = 'reset-button';
-      resetButton.textContent = loadTimeData.getString('resetButton');
+      resetButton.textContent = '';
       resetButton.addEventListener('click', function(e) {
-        chrome.send('resetOnReset');
+        if ($('reset').needRestart)
+          chrome.send('restartOnReset', [$('reset-rollback-checkbox').checked]);
+        else
+          chrome.send('powerwashOnReset');
         e.stopPropagation();
       });
       buttons.push(resetButton);
@@ -36,7 +38,7 @@ login.createScreen('ResetScreen', 'reset', function() {
       cancelButton.id = 'reset-cancel-button';
       cancelButton.textContent = loadTimeData.getString('cancelButton');
       cancelButton.addEventListener('click', function(e) {
-        chrome.send('resetOnCancel');
+        chrome.send('cancelOnReset');
         e.stopPropagation();
       });
       buttons.push(cancelButton);
@@ -55,8 +57,77 @@ login.createScreen('ResetScreen', 'reset', function() {
      * Cancels the reset and drops the user back to the login screen.
      */
     cancel: function() {
-      chrome.send('resetOnCancel');
-    }
+      chrome.send('cancelOnReset');
+    },
+
+    /**
+     * Event handler that is invoked just before the screen in shown.
+     * @param {Object} data Screen init payload.
+     */
+    onBeforeShow: function(data) {
+      if (data === undefined)
+        return;
+      if ('showRestartMsg' in data)
+        this.setRestartMsg_(data['showRestartMsg']);
+      if ('showRollbackOption' in data)
+        this.setRollbackAvailable_(data['showRollbackOption']);
+      if ('simpleConfirm' in data) {
+        this.isConfirmational = data['simpleConfirm'];
+        this.confirmRollback = false;
+      }
+      if ('rollbackConfirm' in data) {
+        this.isConfirmational = data['rollbackConfirm'];
+        this.confirmRollback = true;
+      }
+
+      if (this.isConfirmational) {
+        // Exec after reboot initiated by reset screen.
+        // Confirmational form of screen.
+        $('reset-button').textContent = loadTimeData.getString(
+            'resetButtonReset');
+        if (this.confirmRollback) {
+          $('reset-warning-msg').textContent = loadTimeData.getString(
+              'resetAndRollbackWarningTextConfirmational');
+          $('reset-warning-details').textContent = loadTimeData.getString(
+              'resetAndRollbackWarningDetailsConfirmational');
+        } else {
+          $('reset-warning-msg').textContent = loadTimeData.getString(
+              'resetWarningTextConfirmational');
+          $('reset-warning-details').textContent = loadTimeData.getString(
+              'resetWarningDetailsConfirmational');
+        }
+      } else {
+        $('reset-warning-msg').textContent = loadTimeData.getString(
+            'resetWarningTextInitial');
+        $('reset-warning-details').textContent = loadTimeData.getString(
+            'resetWarningDetailsInitial');
+        if (this.needRestart)
+          $('reset-button').textContent = loadTimeData.getString(
+              'resetButtonRelaunch');
+        else
+          $('reset-button').textContent = loadTimeData.getString(
+              'resetButtonPowerwash');
+      }
+    },
+
+    /**
+      * Sets restart necessity for the screen.
+      * @param {bool} need_restart. If restart required before reset.
+      * @private
+      */
+    setRestartMsg_: function(need_restart) {
+      this.classList.toggle('norestart', !need_restart);
+      this.needRestart = need_restart;
+    },
+
+    /**
+      * Sets rollback availability for the screen.
+      * @param {bool} can_rollback. If Rollback is available on reset screen.
+      * @private
+      */
+    setRollbackAvailable_: function(show_rollback) {
+      this.classList.toggle('norollback', !show_rollback);
+      this.showRollback = show_rollback;
+    },
   };
 });
-

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_RESET_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
@@ -32,15 +33,33 @@ class ResetScreenHandler : public ResetScreenActor,
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
 
+  void OnRollbackCheck(bool can_rollback);
+
  private:
   // JS messages handlers.
   void HandleOnCancel();
-  void HandleOnReset();
+  void HandleOnRestart(bool should_rollback);
+  void HandleOnPowerwash();
+
+  void ShowWithParams();
 
   Delegate* delegate_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  // Keeps whether restart is required before reset.
+  // False if first exec after boot.
+  bool restart_required_;
+
+  // Keeps whether previous reboot was requested from reset screen. Makes sense
+  // for first exec after boot situation.
+  bool reboot_was_requested_;
+
+  // Keeps whether rollback option is available fo.
+  bool rollback_available_;
+
+  base::WeakPtrFactory<ResetScreenHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreenHandler);
 };

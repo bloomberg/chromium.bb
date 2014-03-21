@@ -135,6 +135,7 @@ const char OobeUI::kScreenOobeNetwork[]     = "connect";
 const char OobeUI::kScreenOobeEula[]        = "eula";
 const char OobeUI::kScreenOobeUpdate[]      = "update";
 const char OobeUI::kScreenOobeEnrollment[]  = "oauth-enrollment";
+const char OobeUI::kScreenOobeReset[]       = "reset";
 const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
 const char OobeUI::kScreenAccountPicker[]   = "account-picker";
 const char OobeUI::kScreenKioskAutolaunch[] = "autolaunch";
@@ -390,6 +391,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_OOBE_EULA] = kScreenOobeEula;
   screen_names_[SCREEN_OOBE_UPDATE] = kScreenOobeUpdate;
   screen_names_[SCREEN_OOBE_ENROLLMENT] = kScreenOobeEnrollment;
+  screen_names_[SCREEN_OOBE_RESET] = kScreenOobeReset;
   screen_names_[SCREEN_GAIA_SIGNIN] = kScreenGaiaSignin;
   screen_names_[SCREEN_ACCOUNT_PICKER] = kScreenAccountPicker;
   screen_names_[SCREEN_KIOSK_AUTOLAUNCH] = kScreenKioskAutolaunch;

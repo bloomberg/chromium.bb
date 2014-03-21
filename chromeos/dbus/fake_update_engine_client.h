@@ -28,6 +28,9 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   virtual bool HasObserver(Observer* observer) OVERRIDE;
   virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) OVERRIDE;
   virtual void RebootAfterUpdate() OVERRIDE;
+  virtual void Rollback() OVERRIDE;
+  virtual void CanRollbackCheck(
+      const RollbackCheckCallback& callback) OVERRIDE;
   virtual Status GetLastStatus() OVERRIDE;
   virtual void SetChannel(const std::string& target_channel,
                           bool is_powerwash_allowed) OVERRIDE;

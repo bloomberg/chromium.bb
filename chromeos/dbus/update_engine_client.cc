@@ -27,7 +27,7 @@ const char kReleaseChannelStable[] = "stable-channel";
 // Delay between successive state transitions during AU.
 const int kStateTransitionDefaultDelayMs = 3000;
 
-// Delay between successive notificatioins about downloading progress
+// Delay between successive notifications about downloading progress
 // during fake AU.
 const int kStateTransitionDownloadingDelayMs = 250;
 
@@ -121,6 +121,37 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&UpdateEngineClientImpl::OnRebootAfterUpdate,
                    weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual void Rollback() OVERRIDE {
+    VLOG(1) << "Requesting a rollback";
+     dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kAttemptRollback);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(true /* powerwash */);
+
+    update_engine_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnRollback,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+
+  virtual void CanRollbackCheck(
+      const RollbackCheckCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kCanRollback);
+
+    VLOG(1) << "Requesting to get rollback availability status";
+    update_engine_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnCanRollbackCheck,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
   }
 
   virtual Status GetLastStatus() OVERRIDE {
@@ -224,6 +255,33 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       LOG(ERROR) << "Failed to request rebooting after update";
       return;
     }
+  }
+
+  // Called when a response for Rollback() is received.
+  void OnRollback(dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to rollback";
+      return;
+    }
+  }
+
+  // Called when a response for CanRollbackCheck() is received.
+  void OnCanRollbackCheck(const RollbackCheckCallback& callback,
+                          dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to request rollback availability status";
+      callback.Run(false);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool can_rollback;
+    if (!reader.PopBool(&can_rollback)) {
+      LOG(ERROR) << "Incorrect response: " << response->ToString();
+      callback.Run(false);
+      return;
+    }
+    VLOG(1) << "Rollback availability status received: " << can_rollback;
+    callback.Run(can_rollback);
   }
 
   // Called when a response for GetStatus is received.
@@ -346,17 +404,22 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     callback.Run(UPDATE_RESULT_NOTIMPLEMENTED);
   }
   virtual void RebootAfterUpdate() OVERRIDE {}
+  virtual void Rollback() OVERRIDE {}
+  virtual void CanRollbackCheck(
+      const RollbackCheckCallback& callback) OVERRIDE {
+    callback.Run(true);
+  }
   virtual Status GetLastStatus() OVERRIDE { return Status(); }
   virtual void SetChannel(const std::string& target_channel,
                           bool is_powerwash_allowed) OVERRIDE {
-    LOG(INFO) << "Requesting to set channel: "
-              << "target_channel=" << target_channel << ", "
-              << "is_powerwash_allowed=" << is_powerwash_allowed;
+    VLOG(1) << "Requesting to set channel: "
+            << "target_channel=" << target_channel << ", "
+            << "is_powerwash_allowed=" << is_powerwash_allowed;
   }
   virtual void GetChannel(bool get_current_channel,
                           const GetChannelCallback& callback) OVERRIDE {
-    LOG(INFO) << "Requesting to get channel, get_current_channel="
-              << get_current_channel;
+    VLOG(1) << "Requesting to get channel, get_current_channel="
+            << get_current_channel;
     callback.Run(kReleaseChannelBeta);
   }
 };

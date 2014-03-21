@@ -3,7 +3,20 @@
  * found in the LICENSE file.
  */
 
+.norollback #rollback,
+.norestart #reset-warning-restart,
+#powerwash-help-link {
+  display: none;
+}
+
+.norollback #powerwash-help-link {
+  display: block;
+}
+
 #reset {
+  display: flex;
+  flex-flow: column;
+  font-size: 16px;
   min-height: 423px;
   padding: 40px 17px 80px;
   text-align: center;
@@ -12,7 +25,12 @@
 
 #reset #reset-controls {
   -webkit-box-pack: center;
-  bottom: 80px;
+  bottom: 40px;
+  margin-top: auto;
+}
+
+#reset-controls button {
+  margin: 0 10px;
 }
 
 #reset #reset-warning-msg {
@@ -21,8 +39,18 @@
   padding: 5px 45px 30px;
 }
 
-#reset #reset-warning-details {
+.reset-text {
   color: #606060;
-  font-size: 16px;
-  padding: 35px 40px 80px;
+}
+
+#reset #reset-warning-details {
+  padding: 20px 40px 0;
+}
+
+#reset #reset-warning-restart {
+  padding: 30px 40px 0;
+}
+
+#reset #rollback {
+  padding: 30px 40px 10px;
 }

@@ -84,6 +84,17 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
   // Reboots if update has been performed.
   virtual void RebootAfterUpdate() = 0;
 
+  // Starts Rollback.
+  virtual void Rollback() = 0;
+
+  // Called once CanRollbackCheck() is complete. Takes one parameter:
+  // - bool: the result of the rollback availability check.
+  typedef base::Callback<void(bool can_rollback)> RollbackCheckCallback;
+
+  // Checks if Rollback is available and calls |callback| when completed.
+  virtual void CanRollbackCheck(
+      const RollbackCheckCallback& callback) = 0;
+
   // Called once GetChannel() is complete. Takes one parameter;
   // - string: the channel name like "beta-channel".
   typedef base::Callback<void(const std::string& channel_name)>

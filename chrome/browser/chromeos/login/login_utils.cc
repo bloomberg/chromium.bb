@@ -919,6 +919,7 @@ void LoginUtilsImpl::AttemptRestart(Profile* profile) {
 // static
 void LoginUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  registry->RegisterBooleanPref(prefs::kRollbackRequested, false);
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }

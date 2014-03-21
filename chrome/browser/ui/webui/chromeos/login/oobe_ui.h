@@ -56,6 +56,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenOobeEula[];
   static const char kScreenOobeUpdate[];
   static const char kScreenOobeEnrollment[];
+  static const char kScreenOobeReset[];
   static const char kScreenGaiaSignin[];
   static const char kScreenAccountPicker[];
   static const char kScreenKioskAutolaunch[];

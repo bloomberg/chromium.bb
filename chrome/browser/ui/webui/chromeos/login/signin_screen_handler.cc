@@ -1406,8 +1406,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    prefs->SetBoolean(prefs::kFactoryResetRequested, false);
-    prefs->CommitPendingWrite();
     HandleToggleResetScreen();
     return;
   }
