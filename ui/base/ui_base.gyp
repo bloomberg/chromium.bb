@@ -601,15 +601,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'webui_test_support',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources',
-        ]
-      }
-    },
   ],
   'conditions': [
     ['OS=="android"' , {

@@ -912,8 +912,8 @@
         '../third_party/libjingle/libjingle.gyp:peerconnection_server',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-        '../ui/base/ui_base.gyp:webui_test_support',
         '../ui/compositor/compositor.gyp:compositor_test_support',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
