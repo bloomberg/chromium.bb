@@ -4,10 +4,27 @@
 
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 
+#include "base/macros.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 
 namespace invalidation {
+
+FakeInvalidationAuthProvider::FakeInvalidationAuthProvider() {
+  token_service_.set_auto_post_fetch_response_on_message_loop(true);
+}
+
+FakeInvalidationAuthProvider::~FakeInvalidationAuthProvider() {}
+
+OAuth2TokenService* FakeInvalidationAuthProvider::GetTokenService() {
+  return &token_service_;
+}
+
+std::string FakeInvalidationAuthProvider::GetAccountId() {
+  return "fake@example.com";
+}
+
+bool FakeInvalidationAuthProvider::ShowLoginUI() { return false; }
 
 FakeInvalidationService::FakeInvalidationService()
     : client_id_(GenerateInvalidatorClientId()) {
@@ -54,6 +71,11 @@ void FakeInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> caller) {
   base::DictionaryValue value;
   caller.Run(value);
+}
+
+InvalidationAuthProvider*
+FakeInvalidationService::GetInvalidationAuthProvider() {
+  return &auth_provider_;
 }
 
 void FakeInvalidationService::SetInvalidatorState(
