@@ -12,52 +12,40 @@ import TestGyp
 import TestMac
 
 import collections
-import plistlib
-import os
-import re
-import struct
-import subprocess
 import sys
-import tempfile
 
 
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['ninja', 'xcode'])
 
   test_cases = [
-    ('Default', 'TestNoArchs', ['i386']),
     ('Default', 'TestArch32Bits', ['i386']),
-    ('Default', 'TestArch64Bits', ['x86_64']),
-    ('Default', 'TestMultiArchs', ['i386', 'x86_64']),
-    ('Default-iphoneos', 'TestNoArchs', ['armv7']),
     ('Default-iphoneos', 'TestArch32Bits', ['armv7']),
-    ('Default-iphoneos', 'TestArch64Bits', ['arm64']),
-    ('Default-iphoneos', 'TestMultiArchs', ['armv7', 'arm64']),
   ]
+
+  if TestMac.Xcode.Version() < '0510':
+    test_cases.extend([
+        ('Default', 'TestNoArchs', ['i386']),
+        ('Default-iphoneos', 'TestNoArchs', ['armv7'])])
+
+  if TestMac.Xcode.Version() >= '0500':
+    test_cases.extend([
+        ('Default', 'TestArch64Bits', ['x86_64']),
+        ('Default', 'TestMultiArchs', ['i386', 'x86_64']),
+        ('Default-iphoneos', 'TestArch64Bits', ['arm64']),
+        ('Default-iphoneos', 'TestMultiArchs', ['armv7', 'arm64'])])
 
   test.run_gyp('test-archs.gyp', chdir='app-bundle')
   for configuration, target, archs in test_cases:
-    is_64_bit_build = ('arm64' in archs or 'x86_64' in archs)
     is_device_build = configuration.endswith('-iphoneos')
 
     kwds = collections.defaultdict(list)
-    if test.format == 'xcode' and is_device_build:
-      configuration, sdk = configuration.split('-')
-      kwds['arguments'].extend(['-sdk', sdk])
-
-    # TODO(sdefresne): remove those special-cases once the bots have been
-    # updated to use a more recent version of Xcode.
-    if TestMac.Xcode.Version() < '0500':
-      if is_64_bit_build:
-        continue
-      if test.format == 'xcode':
-        arch = 'i386'
-        if is_device_build:
-          arch = 'armv7'
-        kwds['arguments'].extend(['-arch', arch])
-    elif TestMac.Xcode.Version() >= '0510':
-      if target == 'TestNoArchs':
-        continue
+    if test.format == 'xcode':
+      if is_device_build:
+        configuration, sdk = configuration.split('-')
+        kwds['arguments'].extend(['-sdk', sdk])
+      if TestMac.Xcode.Version() < '0500':
+        kwds['arguments'].extend(['-arch', archs[0]])
 
     test.set_configuration(configuration)
     filename = '%s.bundle/%s' % (target, target)

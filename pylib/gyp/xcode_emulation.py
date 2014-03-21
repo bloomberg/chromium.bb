@@ -389,7 +389,8 @@ class XcodeSettings(object):
     if arch is not None:
       archs = [arch]
     else:
-      archs = self._Settings().get('ARCHS', [self._DefaultArch()])
+      assert self.configname
+      archs = self.GetActiveArchs(self.configname)
     if len(archs) != 1:
       # TODO: Supporting fat binaries will be annoying.
       self._WarnUnimplemented('ARCHS')
@@ -646,7 +647,8 @@ class XcodeSettings(object):
     if arch is not None:
       archs = [arch]
     else:
-      archs = self._Settings().get('ARCHS', [self._DefaultArch()])
+      assert self.configname
+      archs = self.GetActiveArchs(self.configname)
     if len(archs) != 1:
       # TODO: Supporting fat binaries will be annoying.
       self._WarnUnimplemented('ARCHS')
@@ -1470,7 +1472,17 @@ def _FilterIOSArchitectureForSDKROOT(xcode_settings):
   for archs in defaults_archs.itervalues():
     allowed_archs.update(archs)
   selected_archs = set()
-  for arch in (xcode_settings.get('ARCHS', []) or ['$(ARCHS_STANDARD)']):
+  archs = xcode_settings.get('ARCHS')
+  if archs:
+    # Respect any architecture that have been explicitly configured in the
+    # input gyp files (except variables like $(ARCHS_STANDARD)).
+    variable_pattern = re.compile(r'^\$\([a-zA-Z0-9_]*\)$')
+    for arch in archs:
+      if not variable_pattern.search(arch):
+        allowed_archs.add(arch)
+  else:
+    archs = ['$(ARCHS_STANDARD)']
+  for arch in archs:
     if arch in defaults_archs:
       selected_archs.update(defaults_archs[arch])
     elif arch in allowed_archs:

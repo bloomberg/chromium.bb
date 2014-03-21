@@ -29,7 +29,7 @@ def CheckFileType(test, file, archs):
     found_file, found_archs = match.groups()
     if found_file != file or set(found_archs.split()) != set(archs):
       print 'Expected file %s with arch %s, got %s with arch %s' % (
-          file, ' '.join(archs), found_file, ' '.join(found_archs))
+          file, ' '.join(archs), found_file, found_archs)
       test.fail_test()
 
 
