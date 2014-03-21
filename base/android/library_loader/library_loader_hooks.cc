@@ -64,5 +64,9 @@ jstring GetVersionNumber(JNIEnv* env, jclass clazz) {
   return env->NewStringUTF(g_library_version_number);
 }
 
+static void RecordNativeLibraryHack(JNIEnv*, jclass, jboolean usedHack) {
+  UMA_HISTOGRAM_BOOLEAN("LibraryLoader.NativeLibraryHack", usedHack);
+}
+
 }  // namespace android
 }  // namespace base

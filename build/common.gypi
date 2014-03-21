@@ -2092,6 +2092,8 @@
       # processing.
       'chromium_code%': '<(chromium_code)',
 
+      'component%': '<(component)',
+
       # See http://msdn.microsoft.com/en-us/library/aa652360(VS.71).aspx
       'win_release_Optimization%': '2', # 2 = /Os
       'win_debug_Optimization%': '0',   # 0 = /Od

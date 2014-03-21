@@ -34,7 +34,7 @@ public class ContentBrowserTestsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         try {
-            LibraryLoader.ensureInitialized();
+            LibraryLoader.ensureInitialized(null);
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
             System.exit(-1);
