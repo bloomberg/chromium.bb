@@ -37,9 +37,6 @@ def main():
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--defines', help='Pre-defines macros', action='append')
 
-  # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-  parser.add_option('--ignore', help='Ignored.')
-
   options, _ = parser.parse_args()
 
   DoGcc(options)

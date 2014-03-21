@@ -88,9 +88,6 @@ def main():
                     'compiled should be built with stricter warnings for '
                     'chromium code.')
 
-  # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-  parser.add_option('--ignore', help='Ignored.')
-
   options, args = parser.parse_args()
 
   DoJavac(options, args)
