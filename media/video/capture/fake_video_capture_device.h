@@ -20,6 +20,8 @@ namespace media {
 
 class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
+  typedef void (*SupportedFormatsCallback)(VideoCaptureFormats*);
+
   static VideoCaptureDevice* Create(const Name& device_name);
   virtual ~FakeVideoCaptureDevice();
   // Used for testing. This will make sure the next call to Create will
@@ -27,6 +29,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static void SetFailNextCreate();
   static void SetNumberOfFakeDevices(size_t number_of_devices);
   static size_t NumberOfFakeDevices();
+  static void SetSupportedFormats(const VideoCaptureFormats& new_formats);
 
   static void GetDeviceNames(Names* device_names);
   static void GetDeviceSupportedFormats(const Name& device,
