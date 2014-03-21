@@ -19,6 +19,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/common/url_constants.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -398,10 +399,9 @@ void TranslateBubbleView::HandleLinkClicked(
       break;
     }
     case LINK_ID_LANGUAGE_SETTINGS: {
-      std::string url = std::string(chrome::kChromeUISettingsURL) +
-          chrome::kLanguageOptionsSubPage;
+      GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
       web_contents()->OpenURL(content::OpenURLParams(
-          GURL(url),
+          url,
           content::Referrer(),
           NEW_FOREGROUND_TAB,
           content::PAGE_TRANSITION_LINK,

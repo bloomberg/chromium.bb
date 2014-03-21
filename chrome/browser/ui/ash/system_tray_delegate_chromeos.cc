@@ -89,6 +89,7 @@
 #include "chrome/browser/ui/webui/chromeos/charger_replacement_handler.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -218,21 +219,21 @@ void BluetoothDeviceConnectError(
   // TODO(sad): Do something?
 }
 
-// Shows the settings sub page in the last active browser. If there is no such
-// browser, creates a new browser with the settings sub page.
-void ShowSettingsSubPageForAppropriateBrowser(const std::string& sub_page,
-                                              Profile* profile) {
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile,
-                                                 chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::ShowSettingsSubPage(displayer.browser(), sub_page);
+void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
+  chrome::ShowSettingsSubPageForProfile(
+      ProfileManager::GetActiveUserProfile(), sub_page);
+}
+
+void ShowSettingsSubPageForPrimaryUser(const std::string& sub_page) {
+  chrome::ShowSettingsSubPageForProfile(
+      ProfileManager::GetPrimaryUserProfile(), sub_page);
 }
 
 void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowSettingsSubPageForAppropriateBrowser(
-      page, ProfileManager::GetPrimaryUserProfile());
+  ShowSettingsSubPageForPrimaryUser(page);
 }
 
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
@@ -428,9 +429,7 @@ bool SystemTrayDelegateChromeOS::IsOobeCompleted() const {
 void SystemTrayDelegateChromeOS::ChangeProfilePicture() {
   content::RecordAction(
       base::UserMetricsAction("OpenChangeProfilePictureDialog"));
-  ShowSettingsSubPageForAppropriateBrowser(
-      chrome::kChangeProfilePictureSubPage,
-      ProfileManager::GetActiveUserProfile());
+  ShowSettingsSubPageForActiveUser(chrome::kChangeProfilePictureSubPage);
 }
 
 const std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
@@ -478,9 +477,7 @@ base::HourClockType SystemTrayDelegateChromeOS::GetHourClockType() const {
 }
 
 void SystemTrayDelegateChromeOS::ShowSettings() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::ShowSettings(displayer.browser());
+  ShowSettingsSubPageForActiveUser("");
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
@@ -493,8 +490,7 @@ void SystemTrayDelegateChromeOS::ShowDateSettings() {
       std::string(chrome::kSearchSubPage) + "#" +
       l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   // Everybody can change the time zone (even though it is a device setting).
-  ShowSettingsSubPageForAppropriateBrowser(
-      sub_page, ProfileManager::GetActiveUserProfile());
+  ShowSettingsSubPageForActiveUser(sub_page);
 }
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettings(
@@ -510,8 +506,7 @@ void SystemTrayDelegateChromeOS::ShowBluetoothSettings() {
 
 void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
   content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
-  ShowSettingsSubPageForAppropriateBrowser(
-      kDisplaySettingsSubPageName, ProfileManager::GetActiveUserProfile());
+  ShowSettingsSubPageForActiveUser(kDisplaySettingsSubPageName);
 }
 
 void SystemTrayDelegateChromeOS::ShowChromeSlow() {
@@ -535,12 +530,12 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
     return true;
 
   GURL visible_url = active_contents->GetLastCommittedURL();
-  std::string display_settings_url =
-      std::string(chrome::kChromeUISettingsURL) + kDisplaySettingsSubPageName;
-  std::string display_overscan_url = std::string(chrome::kChromeUISettingsURL) +
-                                     kDisplayOverscanSettingsSubPageName;
-  return (visible_url.spec() != display_settings_url) &&
-         (visible_url.spec() != display_overscan_url);
+  GURL display_settings_url =
+      chrome::GetSettingsUrl(kDisplaySettingsSubPageName);
+  GURL display_overscan_url =
+      chrome::GetSettingsUrl(kDisplayOverscanSettingsSubPageName);
+  return (visible_url != display_settings_url &&
+          visible_url != display_overscan_url);
 }
 
 void SystemTrayDelegateChromeOS::ShowDriveSettings() {
@@ -556,8 +551,7 @@ void SystemTrayDelegateChromeOS::ShowDriveSettings() {
 
 void SystemTrayDelegateChromeOS::ShowIMESettings() {
   content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForAppropriateBrowser(
-      chrome::kLanguageOptionsSubPage, ProfileManager::GetActiveUserProfile());
+  ShowSettingsSubPageForActiveUser(chrome::kLanguageOptionsSubPage);
 }
 
 void SystemTrayDelegateChromeOS::ShowHelp() {
@@ -577,8 +571,7 @@ void SystemTrayDelegateChromeOS::ShowAccessibilitySettings() {
   std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
                          l10n_util::GetStringUTF8(
                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-  ShowSettingsSubPageForAppropriateBrowser(
-      sub_page, ProfileManager::GetActiveUserProfile());
+  ShowSettingsSubPageForActiveUser(sub_page);
 }
 
 void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {
@@ -840,8 +833,7 @@ void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
   std::string sub_page =
       std::string(chrome::kSearchSubPage) + "#" +
       l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-  ShowSettingsSubPageForAppropriateBrowser(
-      sub_page, ProfileManager::GetPrimaryUserProfile());
+  ShowSettingsSubPageForPrimaryUser(sub_page);
 }
 
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {

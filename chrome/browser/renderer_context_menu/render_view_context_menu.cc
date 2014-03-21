@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
@@ -1850,9 +1851,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
-      std::string url = std::string(chrome::kChromeUISettingsURL) +
-          chrome::kLanguageOptionsSubPage;
-      OpenURL(GURL(url), GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
+      GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
+      OpenURL(url, GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1861,9 +1861,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
-      std::string url = std::string(chrome::kChromeUISettingsURL) +
-          chrome::kHandlerSettingsSubPage;
-      OpenURL(GURL(url), GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
+      GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
+      OpenURL(url, GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 

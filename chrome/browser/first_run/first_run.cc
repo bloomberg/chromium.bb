@@ -41,6 +41,7 @@
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -361,8 +362,8 @@ void FirstRunBubbleLauncher::Observe(
            chrome::kChromeUIChromeSigninURL ||
        gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
        signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()) ||
-       contents->GetURL() == GURL(std::string(chrome::kChromeUISettingsURL) +
-                                  chrome::kSyncSetupSubPage))) {
+       (contents->GetURL() ==
+        chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)))) {
     return;
   }
 

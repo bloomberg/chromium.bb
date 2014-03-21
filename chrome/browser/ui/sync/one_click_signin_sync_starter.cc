@@ -508,8 +508,8 @@ void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
 void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(
     content::WebContents* contents,
     const std::string& sub_page) {
-  std::string url = std::string(chrome::kChromeUISettingsURL) + sub_page;
-  content::OpenURLParams params(GURL(url),
+  GURL url = chrome::GetSettingsUrl(sub_page);
+  content::OpenURLParams params(url,
                                 content::Referrer(),
                                 CURRENT_TAB,
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL,

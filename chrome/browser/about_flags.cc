@@ -1813,6 +1813,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableBleedingEdgeRenderingFastPaths)
   },
+  {
+    "enable-settings-window",
+    IDS_FLAGS_ENABLE_SETTINGS_WINDOW_NAME,
+    IDS_FLAGS_ENABLE_SETTINGS_WINDOW_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableSettingsWindow)
+  },
 };
 
 const Experiment* experiments = kExperiments;

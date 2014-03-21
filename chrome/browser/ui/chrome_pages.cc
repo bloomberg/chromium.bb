@@ -15,18 +15,22 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
-#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
@@ -51,9 +55,8 @@ void OpenBookmarkManagerWithHash(Browser* browser,
   content::RecordAction(UserMetricsAction("ShowBookmarks"));
   NavigateParams params(GetSingletonTabNavigateParams(
       browser,
-      GURL(kChromeUIBookmarksURL).Resolve(
-          base::StringPrintf("/#%s%s", action.c_str(),
-              base::Int64ToString(node_id).c_str()))));
+      GURL(kChromeUIBookmarksURL).Resolve(base::StringPrintf(
+          "/#%s%s", action.c_str(), base::Int64ToString(node_id).c_str()))));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
@@ -76,10 +79,10 @@ void ShowHelpImpl(Browser* browser,
 #if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-    const extensions::Extension* extension = profile->GetExtensionService()->
-        GetInstalledExtension(genius_app::kGeniusAppId);
-    OpenApplication(
-        AppLaunchParams(profile, extension, 0, host_desktop_type));
+    const extensions::Extension* extension =
+        profile->GetExtensionService()->GetInstalledExtension(
+            genius_app::kGeniusAppId);
+    OpenApplication(AppLaunchParams(profile, extension, 0, host_desktop_type));
     return;
   }
 #endif
@@ -176,8 +179,8 @@ void ShowConflicts(Browser* browser) {
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {
-  ShowHelpImpl(browser, browser->profile(), browser->host_desktop_type(),
-      source);
+  ShowHelpImpl(
+      browser, browser->profile(), browser->host_desktop_type(), source);
 }
 
 void ShowHelpForProfile(Profile* profile,
@@ -196,22 +199,69 @@ void ShowSlow(Browser* browser) {
 #endif
 }
 
-void ShowSettings(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ShowOptions"));
-  ShowSettingsSubPage(browser, std::string());
-}
-
-void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
+GURL GetSettingsUrl(const std::string& sub_page) {
   std::string url = std::string(kChromeUISettingsURL) + sub_page;
 #if defined(OS_CHROMEOS)
   if (sub_page.find(kInternetOptionsSubPage, 0) != std::string::npos) {
     std::string::size_type loc = sub_page.find("?", 0);
-    std::string network_page = loc != std::string::npos ?
-        sub_page.substr(loc) : std::string();
+    std::string network_page =
+        loc != std::string::npos ? sub_page.substr(loc) : std::string();
     url = std::string(kChromeUISettingsURL) + network_page;
   }
 #endif
-  NavigateParams params(GetSingletonTabNavigateParams(browser, GURL(url)));
+  return GURL(url);
+}
+
+bool IsSettingsWindow(const Browser* browser) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSettingsWindow))
+    return false;
+  if (browser->is_type_tabbed())
+    return false;
+  const content::WebContents* web_contents =
+      browser->tab_strip_model()->GetWebContentsAt(0);
+  if (!web_contents)
+    return false;
+  GURL url(web_contents->GetURL());
+  return (url.SchemeIs(content::kChromeUIScheme) &&
+          url.spec().find(chrome::kChromeUISettingsURL) == 0);
+}
+
+void ShowSettings(Browser* browser) {
+  ShowSettingsSubPage(browser, std::string());
+}
+
+void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableSettingsWindow)) {
+    SettingsWindowManager::GetInstance()->ShowForProfile(browser->profile(),
+                                                         sub_page);
+    return;
+  }
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
+}
+
+void ShowSettingsSubPageForProfile(Profile* profile,
+                                   const std::string& sub_page) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableSettingsWindow)) {
+    SettingsWindowManager::GetInstance()->ShowForProfile(profile, sub_page);
+    return;
+  }
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, false, HOST_DESKTOP_TYPE_NATIVE);
+  if (!browser) {
+    browser = new Browser(
+        Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+  }
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
+}
+
+void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
+                                        const std::string& sub_page) {
+  content::RecordAction(UserMetricsAction("ShowOptions"));
+  GURL gurl = GetSettingsUrl(sub_page);
+  NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
@@ -221,8 +271,8 @@ void ShowContentSettings(Browser* browser,
   ShowSettingsSubPage(
       browser,
       kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-      options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
-          content_settings_type));
+          options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
+              content_settings_type));
 }
 
 void ShowClearBrowsingDataDialog(Browser* browser) {
@@ -272,8 +322,7 @@ void ShowBrowserSignin(Browser* browser, signin::Source source) {
       browser = displayer->browser();
     }
 
-    NavigateToSingletonTab(browser,
-                           GURL(signin::GetPromoURL(source, false)));
+    NavigateToSingletonTab(browser, GURL(signin::GetPromoURL(source, false)));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
   }
 }

@@ -14771,6 +14771,14 @@ Do you accept?
     <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION" desc="Describes an about:flags experiment for prefetching search results">
       If enabled, prefetch search results for the typed omnibox query and reuse prerendered search base page to commit any search query (not just prefetch query).
     </message>
+
+    <!-- Settings window flags -->
+    <message name="IDS_FLAGS_ENABLE_SETTINGS_WINDOW_NAME" desc="An about::flags experiment title to show settings in a separate window">
+      Show settings in a window
+    </message>
+    <message name="IDS_FLAGS_ENABLE_SETTINGS_WINDOW_DESCRIPTION" desc="Describes an about:flags experiment to show settings in a separate window">
+      If enabled, Settings will be shown in a dedicated window instead of as a browser tab.
+    </message>
   </messages>
   </release>
 </grit>

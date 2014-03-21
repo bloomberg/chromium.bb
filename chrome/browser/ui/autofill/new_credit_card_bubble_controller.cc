@@ -62,11 +62,7 @@ void NewCreditCardBubbleController::OnBubbleDestroyed() {
 }
 
 void NewCreditCardBubbleController::OnLinkClicked() {
-  Browser* browser = chrome::FindTabbedBrowser(profile_, false,
-                                               chrome::GetActiveDesktop());
-  if (browser)
-    chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
-
+  chrome::ShowSettingsSubPageForProfile(profile_, chrome::kAutofillSubPage);
   Hide();
 }
 

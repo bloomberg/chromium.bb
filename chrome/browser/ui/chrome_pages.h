@@ -10,9 +10,9 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/content_settings_types.h"
+#include "url/gurl.h"
 
 class Browser;
-class GURL;
 
 namespace content {
 class WebContents;
@@ -54,11 +54,21 @@ void ShowHelpForProfile(Profile* profile,
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
 
+// Constructs a settings GURL for the specified |sub_page|.
+GURL GetSettingsUrl(const std::string& sub_page);
+
+// Returns true if |browser| is a popup window containing a settings page.
+bool IsSettingsWindow(const Browser* browser);
+
 // Various things that open in a settings UI.
 void ShowSettings(Browser* browser);
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page);
+void ShowSettingsSubPageForProfile(Profile* profile,
+                                   const std::string& sub_page);
 void ShowContentSettings(Browser* browser,
                          ContentSettingsType content_settings_type);
+void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
+                                        const std::string& sub_page);
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
 void ShowImportDialog(Browser* browser);

@@ -769,6 +769,9 @@ class Browser : public TabStripModelObserver,
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
+  // Returns true if the Browser window should show the location bar.
+  bool ShouldShowLocationBar() const;
+
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of

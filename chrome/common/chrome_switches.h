@@ -193,6 +193,7 @@ extern const char kEnableSdchOverHttps[];
 extern const char kEnableSearchButtonInOmniboxAlways[];
 extern const char kEnableSearchButtonInOmniboxForStr[];
 extern const char kEnableSearchButtonInOmniboxForStrOrIip[];
+extern const char kEnableSettingsWindow[];
 extern const char kEnableSpdy4a2[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
