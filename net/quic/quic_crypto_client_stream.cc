@@ -46,6 +46,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
     const QuicSessionKey& server_key,
     QuicSession* session,
     Visitor* visitor,
+    ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
       visitor_(visitor),
@@ -54,7 +55,8 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       crypto_config_(crypto_config),
       server_key_(server_key),
       generation_counter_(0),
-      proof_verify_callback_(NULL) {
+      proof_verify_callback_(NULL),
+      verify_context_(verify_context) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -239,6 +241,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached->server_config(),
             cached->certs(),
             cached->signature(),
+            verify_context_.get(),
             &verify_error_details_,
             &verify_details_,
             proof_verify_callback);

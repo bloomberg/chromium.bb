@@ -23,6 +23,7 @@ class ChannelIDSigner;
 class CommonCertSets;
 class ProofSource;
 class ProofVerifier;
+class ProofVerifyContext;
 class QuicClock;
 class QuicConfig;
 class QuicCryptoClientStream;
@@ -95,6 +96,10 @@ class CryptoTestUtils {
 
   // Returns a |ProofVerifier| that uses the QUIC testing root CA.
   static ProofVerifier* ProofVerifierForTesting();
+
+  // Returns a |ProofVerifyContext| that must be used with the verifier
+  // returned by ||ProofVerifierForTesting.
+  static ProofVerifyContext* ProofVerifyContextForTesting();
 
   // MockCommonCertSets returns a CommonCertSets that contains a single set with
   // hash |hash|, consisting of the certificate |cert| at index |index|.

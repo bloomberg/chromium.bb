@@ -112,7 +112,9 @@ QuicClientSession::QuicClientSession(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
               server_key, this, crypto_config) :
-          new QuicCryptoClientStream(server_key, this, this, crypto_config));
+          new QuicCryptoClientStream(server_key, this, this,
+                                     new ProofVerifyContextChromium(net_log_),
+                                     crypto_config));
 
   connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair
