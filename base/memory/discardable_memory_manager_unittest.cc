@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/discardable_memory_provider.h"
+#include "base/memory/discardable_memory_manager.h"
 
 #include "base/bind.h"
 #include "base/memory/discardable_memory.h"
@@ -13,21 +13,21 @@
 
 namespace base {
 
-class DiscardableMemoryProviderTestBase {
+class DiscardableMemoryManagerTestBase {
  public:
   class TestDiscardableMemory : public DiscardableMemory {
    public:
     TestDiscardableMemory(
-        internal::DiscardableMemoryProvider* provider, size_t size)
-        : provider_(provider),
+        internal::DiscardableMemoryManager* manager, size_t size)
+        : manager_(manager),
           is_locked_(false) {
-      provider_->Register(this, size);
+      manager_->Register(this, size);
     }
 
     virtual ~TestDiscardableMemory() {
       if (is_locked_)
         Unlock();
-      provider_->Unregister(this);
+      manager_->Unregister(this);
     }
 
     // Overridden from DiscardableMemory:
@@ -35,7 +35,7 @@ class DiscardableMemoryProviderTestBase {
       DCHECK(!is_locked_);
 
       bool purged = false;
-      memory_ = provider_->Acquire(this, &purged);
+      memory_ = manager_->Acquire(this, &purged);
       if (!memory_)
         return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
@@ -45,7 +45,7 @@ class DiscardableMemoryProviderTestBase {
     }
     virtual void Unlock() OVERRIDE {
       DCHECK(is_locked_);
-      provider_->Release(this, memory_.Pass());
+      manager_->Release(this, memory_.Pass());
       is_locked_ = false;
     }
     virtual void* Memory() const OVERRIDE {
@@ -54,29 +54,29 @@ class DiscardableMemoryProviderTestBase {
     }
 
    private:
-    internal::DiscardableMemoryProvider* provider_;
+    internal::DiscardableMemoryManager* manager_;
     scoped_ptr<uint8, FreeDeleter> memory_;
     bool is_locked_;
 
     DISALLOW_COPY_AND_ASSIGN(TestDiscardableMemory);
   };
 
-  DiscardableMemoryProviderTestBase()
-      : provider_(new internal::DiscardableMemoryProvider) {
-    provider_->RegisterMemoryPressureListener();
+  DiscardableMemoryManagerTestBase()
+      : manager_(new internal::DiscardableMemoryManager) {
+    manager_->RegisterMemoryPressureListener();
   }
 
  protected:
   bool IsRegistered(const DiscardableMemory* discardable) {
-    return provider_->IsRegisteredForTest(discardable);
+    return manager_->IsRegisteredForTest(discardable);
   }
 
   bool CanBePurged(const DiscardableMemory* discardable) {
-    return provider_->CanBePurgedForTest(discardable);
+    return manager_->CanBePurgedForTest(discardable);
   }
 
   size_t BytesAllocated() const {
-    return provider_->GetBytesAllocatedForTest();
+    return manager_->GetBytesAllocatedForTest();
   }
 
   void* Memory(const DiscardableMemory* discardable) const {
@@ -84,16 +84,16 @@ class DiscardableMemoryProviderTestBase {
   }
 
   void SetDiscardableMemoryLimit(size_t bytes) {
-    provider_->SetDiscardableMemoryLimit(bytes);
+    manager_->SetDiscardableMemoryLimit(bytes);
   }
 
   void SetBytesToKeepUnderModeratePressure(size_t bytes) {
-    provider_->SetBytesToKeepUnderModeratePressure(bytes);
+    manager_->SetBytesToKeepUnderModeratePressure(bytes);
   }
 
   scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size) {
     scoped_ptr<TestDiscardableMemory> memory(
-        new TestDiscardableMemory(provider_.get(), size));
+        new TestDiscardableMemory(manager_.get(), size));
     if (memory->Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_PURGED)
       return scoped_ptr<DiscardableMemory>();
     return memory.PassAs<DiscardableMemory>();
@@ -101,17 +101,17 @@ class DiscardableMemoryProviderTestBase {
 
  private:
   MessageLoopForIO message_loop_;
-  scoped_ptr<internal::DiscardableMemoryProvider> provider_;
+  scoped_ptr<internal::DiscardableMemoryManager> manager_;
 };
 
-class DiscardableMemoryProviderTest
-    : public DiscardableMemoryProviderTestBase,
+class DiscardableMemoryManagerTest
+    : public DiscardableMemoryManagerTestBase,
       public testing::Test {
  public:
-  DiscardableMemoryProviderTest() {}
+  DiscardableMemoryManagerTest() {}
 };
 
-TEST_F(DiscardableMemoryProviderTest, CreateLockedMemory) {
+TEST_F(DiscardableMemoryManagerTest, CreateLockedMemory) {
   size_t size = 1024;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
@@ -120,7 +120,7 @@ TEST_F(DiscardableMemoryProviderTest, CreateLockedMemory) {
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
-TEST_F(DiscardableMemoryProviderTest, CreateLockedMemoryZeroSize) {
+TEST_F(DiscardableMemoryManagerTest, CreateLockedMemoryZeroSize) {
   size_t size = 0;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_FALSE(discardable);
@@ -128,7 +128,7 @@ TEST_F(DiscardableMemoryProviderTest, CreateLockedMemoryZeroSize) {
   EXPECT_EQ(0u, BytesAllocated());
 }
 
-TEST_F(DiscardableMemoryProviderTest, LockAfterUnlock) {
+TEST_F(DiscardableMemoryManagerTest, LockAfterUnlock) {
   size_t size = 1024;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
@@ -144,7 +144,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterUnlock) {
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
-TEST_F(DiscardableMemoryProviderTest, LockAfterPurge) {
+TEST_F(DiscardableMemoryManagerTest, LockAfterPurge) {
   size_t size = 1024;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
@@ -167,7 +167,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurge) {
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
-TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
+TEST_F(DiscardableMemoryManagerTest, LockAfterPurgeAndCannotReallocate) {
   size_t size = 1024;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
@@ -187,7 +187,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
-TEST_F(DiscardableMemoryProviderTest, Overflow) {
+TEST_F(DiscardableMemoryManagerTest, Overflow) {
   {
     size_t size = 1024;
     const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
@@ -218,11 +218,11 @@ class PermutationTestData {
   unsigned ordering_[3];
 };
 
-class DiscardableMemoryProviderPermutationTest
-    : public DiscardableMemoryProviderTestBase,
+class DiscardableMemoryManagerPermutationTest
+    : public DiscardableMemoryManagerTestBase,
       public testing::TestWithParam<PermutationTestData> {
  public:
-  DiscardableMemoryProviderPermutationTest() {}
+  DiscardableMemoryManagerPermutationTest() {}
 
  protected:
   // Use discardable memory in order specified by ordering parameter.
@@ -253,7 +253,7 @@ class DiscardableMemoryProviderPermutationTest
 
 // Verify that memory was discarded in the correct order after applying
 // memory pressure.
-TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedModeratePressure) {
+TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedModeratePressure) {
   CreateAndUseDiscardableMemory();
 
   SetBytesToKeepUnderModeratePressure(1024);
@@ -271,7 +271,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedModeratePressure) {
 
 // Verify that memory was discarded in the correct order after changing
 // memory limit.
-TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedExceedLimit) {
+TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedExceedLimit) {
   CreateAndUseDiscardableMemory();
 
   SetBytesToKeepUnderModeratePressure(1024);
@@ -285,7 +285,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedExceedLimit) {
 
 // Verify that no more memory than necessary was discarded after changing
 // memory limit.
-TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedAmount) {
+TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedAmount) {
   SetBytesToKeepUnderModeratePressure(2048);
   SetDiscardableMemoryLimit(4096);
 
@@ -299,7 +299,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedAmount) {
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable(0)));
 }
 
-TEST_P(DiscardableMemoryProviderPermutationTest,
+TEST_P(DiscardableMemoryManagerPermutationTest,
        CriticalPressureFreesAllUnlocked) {
   CreateAndUseDiscardableMemory();
 
@@ -315,8 +315,8 @@ TEST_P(DiscardableMemoryProviderPermutationTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(DiscardableMemoryProviderPermutationTests,
-                        DiscardableMemoryProviderPermutationTest,
+INSTANTIATE_TEST_CASE_P(DiscardableMemoryManagerPermutationTests,
+                        DiscardableMemoryManagerPermutationTest,
                         ::testing::Values(PermutationTestData(0, 1, 2),
                                           PermutationTestData(0, 2, 1),
                                           PermutationTestData(1, 0, 2),
@@ -324,7 +324,7 @@ INSTANTIATE_TEST_CASE_P(DiscardableMemoryProviderPermutationTests,
                                           PermutationTestData(2, 0, 1),
                                           PermutationTestData(2, 1, 0)));
 
-TEST_F(DiscardableMemoryProviderTest, NormalDestruction) {
+TEST_F(DiscardableMemoryManagerTest, NormalDestruction) {
   {
     size_t size = 1024;
     const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
@@ -334,7 +334,7 @@ TEST_F(DiscardableMemoryProviderTest, NormalDestruction) {
   EXPECT_EQ(0u, BytesAllocated());
 }
 
-TEST_F(DiscardableMemoryProviderTest, DestructionWhileLocked) {
+TEST_F(DiscardableMemoryManagerTest, DestructionWhileLocked) {
   {
     size_t size = 1024;
     const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
@@ -349,7 +349,7 @@ TEST_F(DiscardableMemoryProviderTest, DestructionWhileLocked) {
 
 #if !defined(NDEBUG) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // Death tests are not supported with Android APKs.
-TEST_F(DiscardableMemoryProviderTest, UnlockedMemoryAccessCrashesInDebugMode) {
+TEST_F(DiscardableMemoryManagerTest, UnlockedMemoryAccessCrashesInDebugMode) {
   size_t size = 1024;
   const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
@@ -363,10 +363,10 @@ TEST_F(DiscardableMemoryProviderTest, UnlockedMemoryAccessCrashesInDebugMode) {
 }
 #endif
 
-class ThreadedDiscardableMemoryProviderTest
-    : public DiscardableMemoryProviderTest {
+class ThreadedDiscardableMemoryManagerTest
+    : public DiscardableMemoryManagerTest {
  public:
-  ThreadedDiscardableMemoryProviderTest()
+  ThreadedDiscardableMemoryManagerTest()
       : memory_usage_thread_("memory_usage_thread"),
         thread_sync_(true, false) {
   }
@@ -395,14 +395,14 @@ class ThreadedDiscardableMemoryProviderTest
   WaitableEvent thread_sync_;
 };
 
-TEST_F(ThreadedDiscardableMemoryProviderTest, UseMemoryOnThread) {
+TEST_F(ThreadedDiscardableMemoryManagerTest, UseMemoryOnThread) {
   memory_usage_thread_.message_loop()->PostTask(
       FROM_HERE,
-      Bind(&ThreadedDiscardableMemoryProviderTest::UseMemoryHelper,
+      Bind(&ThreadedDiscardableMemoryManagerTest::UseMemoryHelper,
            Unretained(this)));
   memory_usage_thread_.message_loop()->PostTask(
       FROM_HERE,
-      Bind(&ThreadedDiscardableMemoryProviderTest::SignalHelper,
+      Bind(&ThreadedDiscardableMemoryManagerTest::SignalHelper,
            Unretained(this)));
   thread_sync_.Wait();
 }

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MEMORY_DISCARDABLE_MEMORY_PROVIDER_H_
-#define BASE_MEMORY_DISCARDABLE_MEMORY_PROVIDER_H_
+#ifndef BASE_MEMORY_DISCARDABLE_MEMORY_MANAGER_H_
+#define BASE_MEMORY_DISCARDABLE_MEMORY_MANAGER_H_
 
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
@@ -29,22 +29,22 @@ struct hash<const base::DiscardableMemory*> {
 namespace base {
 namespace internal {
 
-// The DiscardableMemoryProvider manages a collection of emulated
+// The DiscardableMemoryManager manages a collection of emulated
 // DiscardableMemory instances. It is used on platforms that do not support
 // discardable memory natively. It keeps track of all DiscardableMemory
 // instances (in case they need to be purged), and the total amount of
 // allocated memory (in case this forces a purge).
 //
-// When notified of memory pressure, the provider either purges the LRU
+// When notified of memory pressure, the manager either purges the LRU
 // memory -- if the pressure is moderate -- or all discardable memory
 // if the pressure is critical.
 //
 // NB - this class is an implementation detail. It has been exposed for testing
 // purposes. You should not need to use this class directly.
-class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
+class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
  public:
-  DiscardableMemoryProvider();
-  ~DiscardableMemoryProvider();
+  DiscardableMemoryManager();
+  ~DiscardableMemoryManager();
 
   // Call this to register memory pressure listener. Must be called on a
   // thread with a MessageLoop current.
@@ -61,10 +61,10 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   // Sets the amount of memory to keep when we're under moderate pressure.
   void SetBytesToKeepUnderModeratePressure(size_t bytes);
 
-  // Adds the given discardable memory to the provider's collection.
+  // Adds the given discardable memory to the manager's collection.
   void Register(const DiscardableMemory* discardable, size_t bytes);
 
-  // Removes the given discardable memory from the provider's collection.
+  // Removes the given discardable memory from the manager's collection.
   void Unregister(const DiscardableMemory* discardable);
 
   // Returns NULL if an error occurred. Otherwise, returns the backing buffer
@@ -74,14 +74,14 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
       const DiscardableMemory* discardable, bool* purged);
 
   // Release a previously acquired backing buffer. This gives the buffer back
-  // to the provider where it can be purged if necessary.
+  // to the manager where it can be purged if necessary.
   void Release(const DiscardableMemory* discardable,
                scoped_ptr<uint8, FreeDeleter> memory);
 
   // Purges all discardable memory.
   void PurgeAll();
 
-  // Returns true if discardable memory has been added to the provider's
+  // Returns true if discardable memory has been added to the manager's
   // collection. This should only be used by tests.
   bool IsRegisteredForTest(const DiscardableMemory* discardable) const;
 
@@ -141,10 +141,10 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   // pressure.
   scoped_ptr<MemoryPressureListener> memory_pressure_listener_;
 
-  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryProvider);
+  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryManager);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_MEMORY_DISCARDABLE_MEMORY_PROVIDER_H_
+#endif  // BASE_MEMORY_DISCARDABLE_MEMORY_MANAGER_H_

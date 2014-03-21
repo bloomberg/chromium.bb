@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/discardable_memory_provider.h"
+#include "base/memory/discardable_memory_manager.h"
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -24,7 +24,7 @@ static const size_t kDefaultBytesToKeepUnderModeratePressure =
 
 }  // namespace
 
-DiscardableMemoryProvider::DiscardableMemoryProvider()
+DiscardableMemoryManager::DiscardableMemoryManager()
     : allocations_(AllocationMap::NO_AUTO_EVICT),
       bytes_allocated_(0),
       discardable_memory_limit_(kDefaultDiscardableMemoryLimit),
@@ -32,40 +32,40 @@ DiscardableMemoryProvider::DiscardableMemoryProvider()
           kDefaultBytesToKeepUnderModeratePressure) {
 }
 
-DiscardableMemoryProvider::~DiscardableMemoryProvider() {
+DiscardableMemoryManager::~DiscardableMemoryManager() {
   DCHECK(allocations_.empty());
   DCHECK_EQ(0u, bytes_allocated_);
 }
 
-void DiscardableMemoryProvider::RegisterMemoryPressureListener() {
+void DiscardableMemoryManager::RegisterMemoryPressureListener() {
   AutoLock lock(lock_);
   DCHECK(base::MessageLoop::current());
   DCHECK(!memory_pressure_listener_);
   memory_pressure_listener_.reset(
       new MemoryPressureListener(
-          base::Bind(&DiscardableMemoryProvider::OnMemoryPressure,
+          base::Bind(&DiscardableMemoryManager::OnMemoryPressure,
                      Unretained(this))));
 }
 
-void DiscardableMemoryProvider::UnregisterMemoryPressureListener() {
+void DiscardableMemoryManager::UnregisterMemoryPressureListener() {
   AutoLock lock(lock_);
   DCHECK(memory_pressure_listener_);
   memory_pressure_listener_.reset();
 }
 
-void DiscardableMemoryProvider::SetDiscardableMemoryLimit(size_t bytes) {
+void DiscardableMemoryManager::SetDiscardableMemoryLimit(size_t bytes) {
   AutoLock lock(lock_);
   discardable_memory_limit_ = bytes;
   EnforcePolicyWithLockAcquired();
 }
 
-void DiscardableMemoryProvider::SetBytesToKeepUnderModeratePressure(
+void DiscardableMemoryManager::SetBytesToKeepUnderModeratePressure(
     size_t bytes) {
   AutoLock lock(lock_);
   bytes_to_keep_under_moderate_pressure_ = bytes;
 }
 
-void DiscardableMemoryProvider::Register(
+void DiscardableMemoryManager::Register(
     const DiscardableMemory* discardable, size_t bytes) {
   AutoLock lock(lock_);
   // A registered memory listener is currently required. This DCHECK can be
@@ -77,7 +77,7 @@ void DiscardableMemoryProvider::Register(
   allocations_.Put(discardable, Allocation(bytes));
 }
 
-void DiscardableMemoryProvider::Unregister(
+void DiscardableMemoryManager::Unregister(
     const DiscardableMemory* discardable) {
   AutoLock lock(lock_);
   AllocationMap::iterator it = allocations_.Peek(discardable);
@@ -93,7 +93,7 @@ void DiscardableMemoryProvider::Unregister(
   allocations_.Erase(it);
 }
 
-scoped_ptr<uint8, FreeDeleter> DiscardableMemoryProvider::Acquire(
+scoped_ptr<uint8, FreeDeleter> DiscardableMemoryManager::Acquire(
     const DiscardableMemory* discardable,
     bool* purged) {
   AutoLock lock(lock_);
@@ -134,7 +134,7 @@ scoped_ptr<uint8, FreeDeleter> DiscardableMemoryProvider::Acquire(
   return memory.Pass();
 }
 
-void DiscardableMemoryProvider::Release(
+void DiscardableMemoryManager::Release(
     const DiscardableMemory* discardable,
     scoped_ptr<uint8, FreeDeleter> memory) {
   AutoLock lock(lock_);
@@ -149,31 +149,31 @@ void DiscardableMemoryProvider::Release(
   EnforcePolicyWithLockAcquired();
 }
 
-void DiscardableMemoryProvider::PurgeAll() {
+void DiscardableMemoryManager::PurgeAll() {
   AutoLock lock(lock_);
   PurgeLRUWithLockAcquiredUntilUsageIsWithin(0);
 }
 
-bool DiscardableMemoryProvider::IsRegisteredForTest(
+bool DiscardableMemoryManager::IsRegisteredForTest(
     const DiscardableMemory* discardable) const {
   AutoLock lock(lock_);
   AllocationMap::const_iterator it = allocations_.Peek(discardable);
   return it != allocations_.end();
 }
 
-bool DiscardableMemoryProvider::CanBePurgedForTest(
+bool DiscardableMemoryManager::CanBePurgedForTest(
     const DiscardableMemory* discardable) const {
   AutoLock lock(lock_);
   AllocationMap::const_iterator it = allocations_.Peek(discardable);
   return it != allocations_.end() && it->second.memory;
 }
 
-size_t DiscardableMemoryProvider::GetBytesAllocatedForTest() const {
+size_t DiscardableMemoryManager::GetBytesAllocatedForTest() const {
   AutoLock lock(lock_);
   return bytes_allocated_;
 }
 
-void DiscardableMemoryProvider::OnMemoryPressure(
+void DiscardableMemoryManager::OnMemoryPressure(
     MemoryPressureListener::MemoryPressureLevel pressure_level) {
   switch (pressure_level) {
     case MemoryPressureListener::MEMORY_PRESSURE_MODERATE:
@@ -187,18 +187,18 @@ void DiscardableMemoryProvider::OnMemoryPressure(
   NOTREACHED();
 }
 
-void DiscardableMemoryProvider::Purge() {
+void DiscardableMemoryManager::Purge() {
   AutoLock lock(lock_);
 
   PurgeLRUWithLockAcquiredUntilUsageIsWithin(
       bytes_to_keep_under_moderate_pressure_);
 }
 
-void DiscardableMemoryProvider::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
+void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
     size_t limit) {
   TRACE_EVENT1(
       "base",
-      "DiscardableMemoryProvider::PurgeLRUWithLockAcquiredUntilUsageIsWithin",
+      "DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin",
       "limit", limit);
 
   lock_.AssertAcquired();
@@ -219,7 +219,7 @@ void DiscardableMemoryProvider::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
   }
 }
 
-void DiscardableMemoryProvider::EnforcePolicyWithLockAcquired() {
+void DiscardableMemoryManager::EnforcePolicyWithLockAcquired() {
   PurgeLRUWithLockAcquiredUntilUsageIsWithin(discardable_memory_limit_);
 }
 
