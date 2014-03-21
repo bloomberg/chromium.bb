@@ -102,7 +102,7 @@ private:
     void permissionDenied();
 
     void resolve();
-    void reject(PassRefPtr<DOMError>);
+    void reject(PassRefPtrWillBeRawPtr<DOMError>);
     void resolveNow();
     void rejectNow();
     // Called when the promise is resolved or rejected.
@@ -118,7 +118,7 @@ private:
     bool m_sysExEnabled;
     AsyncMethodRunner<MIDIAccess> m_asyncResolveRunner;
     AsyncMethodRunner<MIDIAccess> m_asyncRejectRunner;
-    RefPtr<DOMError> m_error;
+    RefPtrWillBeMember<DOMError> m_error;
 };
 
 } // namespace WebCore

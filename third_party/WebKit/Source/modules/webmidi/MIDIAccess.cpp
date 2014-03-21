@@ -235,7 +235,7 @@ void MIDIAccess::resolve()
     m_asyncResolveRunner.runAsync();
 }
 
-void MIDIAccess::reject(PassRefPtr<DOMError> error)
+void MIDIAccess::reject(PassRefPtrWillBeRawPtr<DOMError> error)
 {
     m_error = error;
     m_asyncRejectRunner.runAsync();
@@ -248,7 +248,8 @@ void MIDIAccess::resolveNow()
 
 void MIDIAccess::rejectNow()
 {
-    m_resolver->reject(m_error.release().get(), executionContext());
+    m_resolver->reject(m_error.get(), executionContext());
+    m_error.clear();
 }
 
 void MIDIAccess::doPostAction(State state)
@@ -267,6 +268,7 @@ void MIDIAccess::trace(Visitor* visitor)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
+    visitor->trace(m_error);
 }
 
 } // namespace WebCore
