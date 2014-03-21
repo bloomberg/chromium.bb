@@ -29,6 +29,44 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
 
+namespace {
+
+void SetAppDetailsForWindow(const extensions::Extension* app,
+                            const base::FilePath& profile_path,
+                            const base::string16& app_model_id,
+                            HWND hwnd) {
+  // Set the relaunch data so "Pin this program to taskbar" has the app's
+  // information.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+
+  GURL url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
+  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
+      url, app->id(), profile_path);
+  command_line.SetProgram(chrome_exe);
+
+  // Set window's icon to the one in the web app path. This was created when the
+  // app was installed. The icon cache would have been refreshed at that time.
+  base::string16 title = base::UTF8ToUTF16(app->name());
+  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
+      profile_path, app->id(), url);
+  base::FilePath icon_file = web_app_path
+      .Append(web_app::internals::GetSanitizedFileName(title))
+      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
+
+  ui::win::SetAppDetailsForWindow(
+    app_model_id,
+    icon_file.value(),
+    command_line.GetCommandLineString(),
+    title,
+    hwnd);
+}
+
+}  // namespace
+
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
     : weak_ptr_factory_(this) {}
 
@@ -90,7 +128,24 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
 
   ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
 
-  SetAppDetailsForWindow();
+  // Set the Application Model ID so that windows are grouped correctly.
+  const extensions::Extension* app = app_window()->extension();
+  std::string app_name =
+      web_app::GenerateApplicationNameFromExtensionId(app->id());
+  base::string16 app_name_wide = base::UTF8ToWide(app_name);
+  HWND hwnd = GetNativeAppWindowHWND();
+  Profile* profile =
+      Profile::FromBrowserContext(app_window()->browser_context());
+  app_model_id_ =
+      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
+                                                profile->GetPath());
+
+  // This needs to be on a a blocking pool because CommandLineArgsForLauncher
+  // calls base::PathExists to check the user data dir.
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&SetAppDetailsForWindow,
+                 app, profile->GetPath(), app_model_id_, hwnd));
 
   UpdateShelfMenu();
 }
@@ -144,47 +199,4 @@ void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
   }
 
   jumplist_updater.CommitUpdate();
-}
-
-void ChromeNativeAppWindowViewsWin::SetAppDetailsForWindow() {
-  // Set the Application Model ID so that windows are grouped correctly.
-  const extensions::Extension* app = app_window()->extension();
-  std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(app->id());
-  base::string16 app_name_wide = base::UTF8ToWide(app_name);
-  HWND hwnd = GetNativeAppWindowHWND();
-  Profile* profile =
-      Profile::FromBrowserContext(app_window()->browser_context());
-  app_model_id_ =
-      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
-                                                profile->GetPath());
-
-  // Set the relaunch data so "Pin this program to taskbar" has the app's
-  // information.
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-
-  GURL url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
-  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      url, app->id(), profile->GetPath());
-  command_line.SetProgram(chrome_exe);
-
-  // Set window's icon to the one in the web app path. This was created when the
-  // app was installed. The icon cache would have been refreshed at that time.
-  base::string16 title = base::UTF8ToUTF16(app->name());
-  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
-      profile->GetPath(), app->id(), url);
-  base::FilePath icon_file = web_app_path
-      .Append(web_app::internals::GetSanitizedFileName(title))
-      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-
-  ui::win::SetAppDetailsForWindow(
-      app_model_id_,
-      icon_file.value(),
-      command_line.GetCommandLineString(),
-      title,
-      hwnd);
 }

@@ -32,9 +32,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   // Overridden from apps::NativeAppWindow:
   virtual void UpdateShelfMenu() OVERRIDE;
 
-  // Calls ui::win::SetAppDetailsForWindow with the required strings.
-  void SetAppDetailsForWindow();
-
   base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
 
   // The Windows Application User Model ID identifying the app.
