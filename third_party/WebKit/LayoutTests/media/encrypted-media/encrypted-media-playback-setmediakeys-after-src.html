@@ -12,6 +12,9 @@
         <div id="log"></div>
         <p>Test playback of encrypted media using Clear Key key system.</p>
         <script>
+            // Timeout for all tests to run.
+            setup({ timeout: 60000 });
+
             async_test(function(test)
             {
                 var video = document.getElementById("testVideo");
@@ -76,7 +79,8 @@
                 video.src = "../content/test-encrypted.webm";
                 video.setMediaKeys(mediaKeys);
                 video.play();
-            }, "Playback using Clear Key key system, calling setMediaKeys() after setting src attribute.");
+            }, "Playback using Clear Key key system, calling setMediaKeys() after setting src attribute.",
+            { timeout: 60000 });
         </script>
     </body>
 </html>

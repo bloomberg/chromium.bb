@@ -8,6 +8,9 @@
     <body>
         <div id="log"></div>
         <script>
+            // Timeout for all tests to run.
+            setup({ timeout: 60000 });
+
             // Generate a distinct test for each type in |types|.
             function test_type_support(types, expectation, description)
             {
@@ -18,7 +21,8 @@
                         assert_true(type.length == 1 || type.length == 2);
                         assert_equals(MediaKeys.isTypeSupported.apply(
                             this, type), expectation, 'isTypeSupported');
-                    },  description + ": '" + type.join("', '") + "'");
+                    },  description + ": '" + type.join("', '") + "'",
+                    { timeout: 60000 });
                 }
             };
 

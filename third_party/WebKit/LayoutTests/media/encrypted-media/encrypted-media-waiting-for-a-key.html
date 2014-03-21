@@ -11,6 +11,9 @@
         <video id="testVideo"></video>
         <div id="log"></div>
         <script>
+            // Timeout for all tests to run.
+            setup({ timeout: 60000 });
+
             async_test(function(test)
             {
                 var video = document.getElementById("testVideo");
@@ -92,7 +95,7 @@
                 video.src = "../content/test-encrypted.webm";
                 video.setMediaKeys(mediaKeys);
                 video.play();
-            }, "Waiting for a key.");
+            }, "Waiting for a key.", { timeout: 60000 });
         </script>
     </body>
 </html>

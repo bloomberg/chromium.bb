@@ -12,6 +12,9 @@
         <div id="log"></div>
         <p>Test that needkey event is fired on an encrypted media file.</p>
         <script>
+            // Timeout for all tests to run.
+            setup({ timeout: 60000 });
+
             var expectedInitData = stringToUint8Array('0123456789012345');
 
             // Will get 2 identical events, one for audio, one for video.
@@ -35,7 +38,7 @@
 
                 waitForEventAndRunStep("needkey", video, onNeedKey, test);
                 video.src = "../content/test-encrypted.webm";
-            }, "Needkey fired on encrypted media file.");
+            }, "Needkey fired on encrypted media file.", { timeout: 60000 });
         </script>
     </body>
 </html>
