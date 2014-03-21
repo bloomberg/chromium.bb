@@ -48,7 +48,7 @@ void Microtask::performCheckpoint()
 {
     V8PerIsolateData* isolateData = V8PerIsolateData::current();
     ASSERT(isolateData);
-    if (isolateData->performingMicrotaskCheckpoint())
+    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
 
