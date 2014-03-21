@@ -285,5 +285,10 @@ DWORD IATPatchFunction::Unpatch() {
   return error;
 }
 
+void* IATPatchFunction::original_function() const {
+  DCHECK(is_patched());
+  return original_function_;
+}
+
 }  // namespace win
 }  // namespace base

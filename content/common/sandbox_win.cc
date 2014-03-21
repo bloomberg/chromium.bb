@@ -403,13 +403,15 @@ bool ProcessDebugFlags(CommandLine* command_line, bool is_in_sandbox) {
 #ifndef OFFICIAL_BUILD
 base::win::IATPatchFunction g_iat_patch_duplicate_handle;
 
-BOOL (WINAPI *g_iat_orig_duplicate_handle)(HANDLE source_process_handle,
-                                           HANDLE source_handle,
-                                           HANDLE target_process_handle,
-                                           LPHANDLE target_handle,
-                                           DWORD desired_access,
-                                           BOOL inherit_handle,
-                                           DWORD options);
+typedef BOOL (WINAPI *DuplicateHandleFunctionPtr)(HANDLE source_process_handle,
+                                                  HANDLE source_handle,
+                                                  HANDLE target_process_handle,
+                                                  LPHANDLE target_handle,
+                                                  DWORD desired_access,
+                                                  BOOL inherit_handle,
+                                                  DWORD options);
+
+DuplicateHandleFunctionPtr g_iat_orig_duplicate_handle;
 
 NtQueryObject g_QueryObject = NULL;
 
@@ -547,10 +549,13 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
     DWORD result = ::GetModuleFileNameW(module, module_name, MAX_PATH);
     if (result && (result != MAX_PATH)) {
       ResolveNTFunctionPtr("NtQueryObject", &g_QueryObject);
-      g_iat_orig_duplicate_handle = ::DuplicateHandle;
-      g_iat_patch_duplicate_handle.Patch(
+      result = g_iat_patch_duplicate_handle.Patch(
           module_name, "kernel32.dll", "DuplicateHandle",
           DuplicateHandlePatch);
+      CHECK(result == 0);
+      g_iat_orig_duplicate_handle =
+          reinterpret_cast<DuplicateHandleFunctionPtr>(
+              g_iat_patch_duplicate_handle.original_function());
     }
   }
 #endif

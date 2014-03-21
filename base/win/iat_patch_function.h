@@ -57,6 +57,8 @@ class BASE_EXPORT IATPatchFunction {
     return (NULL != intercept_function_);
   }
 
+  void* original_function() const;
+
  private:
   HMODULE module_handle_;
   void* intercept_function_;
