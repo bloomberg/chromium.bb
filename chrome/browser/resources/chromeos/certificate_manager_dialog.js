@@ -38,7 +38,7 @@ function load() {
   $('cert-manager-header').hidden = true;
 
   OptionsPage.isDialog = true;
-  CertificateManager.getInstance().initializePage();
+  CertificateManager.getInstance().initializePage(true);
   OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
     CertificateManager.getInstance());
   OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
