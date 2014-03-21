@@ -53,6 +53,8 @@ const char kInvalidSessionIdError[] = "Invalid session id: \"*\".";
 const char kNoBrowserToRestoreSession[] =
     "There are no browser windows to restore the session.";
 const char kSessionSyncError[] = "Synced sessions are not available.";
+const char kRestoreInIncognitoError[] =
+    "Can not restore sessions in incognito mode.";
 
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
@@ -560,6 +562,11 @@ bool SessionsRestoreFunction::RunImpl() {
       GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!browser) {
     SetError(kNoBrowserToRestoreSession);
+    return false;
+  }
+
+  if (GetProfile() != GetProfile()->GetOriginalProfile()) {
+    SetError(kRestoreInIncognitoError);
     return false;
   }
 
