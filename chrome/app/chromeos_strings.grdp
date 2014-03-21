@@ -1788,6 +1788,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
     Searching for devices...
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCAN_STOPPED">
+    Device scan stopped.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES">
     No devices
   </message>

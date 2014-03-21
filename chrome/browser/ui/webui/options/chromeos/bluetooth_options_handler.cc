@@ -85,6 +85,7 @@ void BluetoothOptionsHandler::GetLocalizedValues(
     { "bluetoothNoDevicesFound",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND },
     { "bluetoothScanning", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING },
+    { "bluetoothScanStopped", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCAN_STOPPED },
     { "bluetoothDeviceConnecting", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING },
     { "bluetoothConnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT },
     { "bluetoothDisconnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT },
@@ -168,6 +169,21 @@ void BluetoothOptionsHandler::AdapterPoweredChanged(
   base::FundamentalValue checked(powered);
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.setBluetoothState", checked);
+
+  // If the "Add device" overlay is visible, dismiss it.
+  if (!powered) {
+    web_ui()->CallJavascriptFunction(
+        "options.BluetoothOptions.dismissOverlay");
+  }
+}
+
+void BluetoothOptionsHandler::AdapterDiscoveringChanged(
+    device::BluetoothAdapter* adapter,
+    bool discovering) {
+  DCHECK(adapter == adapter_.get());
+  base::FundamentalValue discovering_value(discovering);
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothOptions.updateDiscoveryState", discovering_value);
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
@@ -198,10 +214,11 @@ void BluetoothOptionsHandler::InitializePage() {
   // Show or hide the bluetooth settings and update the checkbox based
   // on the current present/powered state.
   AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
+
   // Automatically start device discovery if the "Add Bluetooth Device"
   // overlay is visible.
   web_ui()->CallJavascriptFunction(
-      "options.BluetoothOptions.updateDiscovery");
+      "options.BluetoothOptions.startDeviceDiscovery");
 }
 
 void BluetoothOptionsHandler::InitializeAdapter(
@@ -254,6 +271,11 @@ void BluetoothOptionsHandler::OnStartDiscoverySession(
 void BluetoothOptionsHandler::FindDevicesError() {
   VLOG(1) << "Failed to start discovery.";
   ReportError("bluetoothStartDiscoveryFailed", std::string());
+  if (!adapter_.get())
+    return;
+  base::FundamentalValue discovering(adapter_->IsDiscovering());
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothOptions.updateDiscoveryState", discovering);
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(

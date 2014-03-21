@@ -140,6 +140,8 @@ class BluetoothOptionsHandler
                                      bool present) OVERRIDE;
   virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                      bool powered) OVERRIDE;
+  virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
+                                         bool discovering) OVERRIDE;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
                            device::BluetoothDevice* device) OVERRIDE;
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,

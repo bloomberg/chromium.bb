@@ -23,12 +23,14 @@
   -webkit-box-pack: justify;
 }
 
-#bluetooth-options .button-strip #bluetooth-scanning-label {
+#bluetooth-options .button-strip #bluetooth-scanning-label,
+#bluetooth-options .button-strip #bluetooth-scan-stopped-label {
   -webkit-box-flex: 1;
   display: block;
 }
 
-#bluetooth-scanning-label {
+#bluetooth-scanning-label,
+#bluetooth-scan-stopped-label {
   -webkit-margin-start: 5px;
   color: #999;
 }
