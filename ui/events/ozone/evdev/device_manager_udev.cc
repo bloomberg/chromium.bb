@@ -42,14 +42,12 @@ void UdevLog(struct udev* udev,
              const char* fn,
              const char* format,
              va_list args) {
-  std::string message = base::StringPrintf("libudev: %s: ", fn);
-  base::StringAppendV(&message, format, args);
   if (priority <= SYS_LOG_ERR)
-    LOG(ERROR) << message;
+    LOG(ERROR) << "libudev: " << fn << ": " << base::StringPrintV(format, args);
   else if (priority <= SYS_LOG_INFO)
-    VLOG(1) << message;
+    VLOG(1) << "libudev: " << fn << ": " << base::StringPrintV(format, args);
   else  // SYS_LOG_DEBUG
-    VLOG(2) << message;
+    VLOG(2) << "libudev: " << fn << ": " << base::StringPrintV(format, args);
 }
 
 // Create libudev context.
