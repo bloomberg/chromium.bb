@@ -70,12 +70,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Constructs the app icon grid view. |delegate| is the delegate of this
   // view, which usually is the hosting AppListView. |pagination_model| is
-  // the paging info shared within the launcher UI. |start_page_contents| is
-  // the contents for the launcher start page. It could be NULL if the start
-  // page is not available.
+  // the paging info shared within the launcher UI.
   AppsGridView(AppsGridViewDelegate* delegate,
-               PaginationModel* pagination_model,
-               content::WebContents* start_page_contents);
+               PaginationModel* pagination_model);
   virtual ~AppsGridView();
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
@@ -343,9 +340,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // buffer area surrounding it.
   bool IsPointWithinDragBuffer(const gfx::Point& point) const;
 
-  // Handles start page layout and transition animation.
-  void LayoutStartPage();
-
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -448,7 +442,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
-  views::WebView* start_page_view_;  // Owned by views hierarchy.
 
   gfx::Size icon_size_;
   int cols_;

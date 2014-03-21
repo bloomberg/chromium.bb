@@ -6741,12 +6741,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
           Enable the App Launcher. Upon enabling, creates operating system shortcuts to the App Launcher.
         </message>
-        <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_NAME" desc="Name of the flag to enable the start page of app launcher.">
-          Enable the App Launcher start page.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_DESCRIPTION" desc="Description of the flag to enable the start page of app launcher.">
-          Enable the App Launcher start page. If enabled, App Launcher will show a start page in addition to the apps grid.
-        </message>
         <message name="IDS_FLAGS_DISABLE_APP_LIST_FOLDER" desc="Name of the flag to disable app list folder.">
           Disable App Launcher folders.
         </message>

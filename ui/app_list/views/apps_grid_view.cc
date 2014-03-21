@@ -318,14 +318,12 @@ class SynchronousDrag : public ui::DragSourceWin {
 #endif  // defined(OS_WIN)
 
 AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
-                           PaginationModel* pagination_model,
-                           content::WebContents* start_page_contents)
+                           PaginationModel* pagination_model)
     : model_(NULL),
       item_list_(NULL),
       delegate_(delegate),
       pagination_model_(pagination_model),
       page_switcher_view_(new PageSwitcher(pagination_model)),
-      start_page_view_(NULL),
       cols_(0),
       rows_per_page_(0),
       selected_view_(NULL),
@@ -347,13 +345,6 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
 
   pagination_model_->AddObserver(this);
   AddChildView(page_switcher_view_);
-
-  if (start_page_contents) {
-    start_page_view_ =
-        new views::WebView(start_page_contents->GetBrowserContext());
-    start_page_view_->SetWebContents(start_page_contents);
-    AddChildView(start_page_view_);
-  }
 }
 
 AppsGridView::~AppsGridView() {
@@ -824,8 +815,6 @@ void AppsGridView::Layout() {
   rect.set_y(rect.bottom() - page_switcher_height);
   rect.set_height(page_switcher_height);
   page_switcher_view_->SetBoundsRect(rect);
-
-  LayoutStartPage();
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -902,9 +891,9 @@ void AppsGridView::Update() {
 }
 
 void AppsGridView::UpdatePaging() {
-  int total_page = start_page_view_ ? 1 : 0;
-  if (view_model_.view_size() && tiles_per_page())
-    total_page += (view_model_.view_size() - 1) / tiles_per_page() + 1;
+  int total_page = view_model_.view_size() && tiles_per_page()
+                       ? (view_model_.view_size() - 1) / tiles_per_page() + 1
+                       : 0;
 
   pagination_model_->SetTotalPages(total_page);
 }
@@ -949,19 +938,11 @@ views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
 
 AppsGridView::Index AppsGridView::GetIndexFromModelIndex(
     int model_index) const {
-  int page = model_index / tiles_per_page();
-  if (start_page_view_)
-    ++page;
-
-  return Index(page, model_index % tiles_per_page());
+  return Index(model_index / tiles_per_page(), model_index % tiles_per_page());
 }
 
 int AppsGridView::GetModelIndexFromIndex(const Index& index) const {
-  int model_index = index.page * tiles_per_page() + index.slot;
-  if (start_page_view_)
-    model_index -= tiles_per_page();
-
-  return model_index;
+  return index.page * tiles_per_page() + index.slot;
 }
 
 void AppsGridView::SetSelectedItemByIndex(const Index& index) {
@@ -983,11 +964,8 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
 }
 
 bool AppsGridView::IsValidIndex(const Index& index) const {
-  const int item_page_start = start_page_view_ ? 1 : 0;
-  return index.page >= item_page_start &&
-         index.page < pagination_model_->total_pages() &&
-         index.slot >= 0 &&
-         index.slot < tiles_per_page() &&
+  return index.page >= 0 && index.page < pagination_model_->total_pages() &&
+         index.slot >= 0 && index.slot < tiles_per_page() &&
          GetModelIndexFromIndex(index) < view_model_.view_size();
 }
 
@@ -1827,29 +1805,6 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
                            event.flags());
   }
-}
-
-void AppsGridView::LayoutStartPage() {
-  if (!start_page_view_)
-    return;
-
-  gfx::Rect start_page_bounds(GetLocalBounds());
-  start_page_bounds.set_height(start_page_bounds.height() -
-                               page_switcher_view_->height());
-
-  const int page_width = width() + kPagePadding;
-  const int current_page = pagination_model_->selected_page();
-  if (current_page > 0)
-    start_page_bounds.Offset(-page_width, 0);
-
-  const PaginationModel::Transition& transition =
-      pagination_model_->transition();
-  if (current_page == 0 || transition.target_page == 0) {
-    const int dir = transition.target_page > current_page ? -1 : 1;
-    start_page_bounds.Offset(transition.progress * page_width * dir, 0);
-  }
-
-  start_page_view_->SetBoundsRect(start_page_bounds);
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {

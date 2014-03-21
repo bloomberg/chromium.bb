@@ -33,8 +33,7 @@ class AppsContainerView : public views::View,
  public:
   AppsContainerView(AppListMainView* app_list_main_view,
                     PaginationModel* pagination_model,
-                    AppListModel* model,
-                    content::WebContents* start_page_contents);
+                    AppListModel* model);
   virtual ~AppsContainerView();
 
   // Shows the active folder content specified by |folder_item|.

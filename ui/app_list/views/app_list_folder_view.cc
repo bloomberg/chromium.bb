@@ -42,8 +42,7 @@ const int kOutOfFolderContainerBubbleDelta = 30;
 
 AppListFolderView::AppListFolderView(AppsContainerView* container_view,
                                      AppListModel* model,
-                                     AppListMainView* app_list_main_view,
-                                     content::WebContents* start_page_contents)
+                                     AppListMainView* app_list_main_view)
     : container_view_(container_view),
       app_list_main_view_(app_list_main_view),
       folder_header_view_(new FolderHeaderView(this)),
@@ -56,7 +55,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
   items_grid_view_ =
-      new AppsGridView(app_list_main_view_, pagination_model_.get(), NULL);
+      new AppsGridView(app_list_main_view_, pagination_model_.get());
   items_grid_view_->set_is_root_level(false);
   items_grid_view_->SetLayout(
       kPreferredIconDimension,

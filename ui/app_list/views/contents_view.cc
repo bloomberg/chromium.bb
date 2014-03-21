@@ -58,10 +58,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
-  content::WebContents* start_page_contents =
-      view_delegate ? view_delegate->GetStartPageContents() : NULL;
-  apps_container_view_ = new AppsContainerView(
-      app_list_main_view, pagination_model, model, start_page_contents);
+  apps_container_view_ =
+      new AppsContainerView(app_list_main_view, pagination_model, model);
   AddChildView(apps_container_view_);
   view_model_->Add(apps_container_view_, kIndexAppsContainer);
 

@@ -1190,9 +1190,6 @@ const char kSetToken[]                      = "set-token";
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
 
-// If true the app list will show the start page webui.
-const char kShowAppListStartPage[]          = "show-app-list-start-page";
-
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 

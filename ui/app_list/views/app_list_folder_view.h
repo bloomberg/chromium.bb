@@ -13,10 +13,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace views {
 class ViewModel;
 }
@@ -39,8 +35,7 @@ class AppListFolderView : public views::View,
  public:
   AppListFolderView(AppsContainerView* container_view,
                     AppListModel* model,
-                    AppListMainView* app_list_main_view,
-                    content::WebContents* start_page_contents);
+                    AppListMainView* app_list_main_view);
   virtual ~AppListFolderView();
 
   void SetAppListFolderItem(AppListFolderItem* folder);

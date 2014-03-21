@@ -145,8 +145,8 @@ void StartPageService::ToggleSpeechRecognition() {
 }
 
 content::WebContents* StartPageService::GetStartPageContents() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kShowAppListStartPage) ? contents_.get() : NULL;
+  return app_list::switches::IsExperimentalAppListEnabled() ? contents_.get()
+                                                            : NULL;
 }
 
 content::WebContents* StartPageService::GetSpeechRecognitionContents() {
