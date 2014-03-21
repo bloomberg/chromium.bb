@@ -46,23 +46,17 @@ readonly GDB_SHA1SUM="79b61152813e5730fa670c89e5fc3c04b670b02c"
 readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_14"
 readonly EGLIBC_REVISION="20996"
 
-readonly DOWNLOAD_QEMU_URL="http://download.savannah.gnu.org/releases/qemu/qemu-0.12.5.tar.gz"
+readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0-rc0.tar.bz2"
 
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_mips-trusted
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86_linux_mips/mips_trusted
 
 readonly TMP=$(pwd)/toolchain/tmp/crosstool-trusted
 
 readonly BUILD_DIR=${TMP}/build
 
-readonly PATCH_MIPS32=$(readlink -f ../third_party/qemu/qemu-0.12.5.patch_mips)
-
 readonly JAIL_MIPS32=${INSTALL_ROOT}/sysroot
 
 readonly CROSS_TARBALL="chromesdk_linux_mipsel"
-
-# These are simple compiler wrappers to force 32bit builds.
-readonly  CC32=$(readlink -f pnacl/scripts/mygcc32)
-readonly  CXX32=$(readlink -f pnacl/scripts/myg++32)
 
 ######################################################################
 # Helper
@@ -649,7 +643,7 @@ FixLibs() {
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu-mips.nacl"
-  local tarball="qemu-0.12.5.tar.gz"
+  local tarball="qemu-2.0.0-rc0.tar.bz2"
 
   Banner "Building qemu in ${tmpdir}"
 
@@ -661,23 +655,14 @@ BuildAndInstallQemu() {
   wget -c ${DOWNLOAD_QEMU_URL}
 
   SubBanner "Untarring"
-  tar zxf  ${tarball}
-  cd qemu-0.12.5
-  SubBanner "Patching"
-  patch -p1 < ${PATCH_MIPS32}
-
-  echo
-  echo "NOTE: on 64 bit systems you will need to the following 32bit libs:"
-  echo "lib32z1-dev"
-  echo
+  tar xf ${tarball}
+  cd qemu-2.0.0-rc0
 
   SubBanner "Configuring"
   env -i PATH=/usr/bin/:/bin \
     ./configure \
-    --cc=${CC32} \
     --disable-system \
     --enable-linux-user \
-    --disable-darwin-user \
     --disable-bsd-user \
     --target-list=mipsel-linux-user \
     --disable-sdl \

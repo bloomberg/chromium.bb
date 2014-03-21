@@ -6,6 +6,7 @@ libasound2
 libasound2-dev
 libatk1.0-0
 libatk1.0-dev
+libattr1
 libxau6
 libxau-dev
 libavahi-client3
@@ -16,6 +17,8 @@ libbz2-1.0
 libbz2-dev
 libcairo2
 libcairo2-dev
+libcap2
+libcap-dev
 libcups2
 libcups2-dev
 libdbus-1-3
