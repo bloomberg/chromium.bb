@@ -204,7 +204,7 @@ public:
     // ---------- End state management methods -----------------
 
     // Get the contents of the image buffer
-    bool readPixels(SkBitmap*, int, int, SkCanvas::Config8888 = SkCanvas::kNative_Premul_Config8888);
+    bool readPixels(const SkImageInfo&, void* pixels, size_t rowBytes, int x, int y);
 
     // Sets up the paint for the current fill style.
     void setupPaintForFilling(SkPaint*) const;

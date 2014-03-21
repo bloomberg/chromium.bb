@@ -300,25 +300,16 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext*
 
     RefPtr<Uint8ClampedArray> result = Uint8ClampedArray::createUninitialized(rect.width() * rect.height() * 4);
 
-    unsigned char* data = result->data();
-
     if (rect.x() < 0
         || rect.y() < 0
         || rect.maxX() > size.width()
         || rect.maxY() > size.height())
         result->zeroFill();
 
-    unsigned destBytesPerRow = 4 * rect.width();
-    SkBitmap destBitmap;
-    destBitmap.installPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()), data, destBytesPerRow);
+    SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
+    SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
-    SkCanvas::Config8888 config8888;
-    if (multiplied == Premultiplied)
-        config8888 = SkCanvas::kRGBA_Premul_Config8888;
-    else
-        config8888 = SkCanvas::kRGBA_Unpremul_Config8888;
-
-    context->readPixels(&destBitmap, rect.x(), rect.y(), config8888);
+    context->readPixels(info, result->data(), 4 * rect.width(), rect.x(), rect.y());
     return result.release();
 }
 
