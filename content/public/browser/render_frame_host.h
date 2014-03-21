@@ -50,8 +50,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
 
-  // Returns the assigned name of the frame, the id of the iframe tag declaring
-  // it. For example, <iframe id="thisistheframename">[...]</iframe>. It is
+  // Returns the assigned name of the frame, the name of the iframe tag
+  // declaring it. For example, <iframe name="framename">[...]</iframe>. It is
   // quite possible for a frame to have no name, in which case GetFrameName will
   // return an empty string.
   virtual const std::string& GetFrameName() = 0;
