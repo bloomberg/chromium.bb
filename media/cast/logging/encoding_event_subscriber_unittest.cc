@@ -31,8 +31,6 @@ class EncodingEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
-            task_runner_,
             GetLoggingConfigWithRawEventsAndStatsEnabled())),
         first_rtp_timestamp_(0) {}
 

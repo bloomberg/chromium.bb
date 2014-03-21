@@ -17,14 +17,10 @@ StandaloneCastEnvironment::StandaloneCastEnvironment(
           NULL,
           NULL,
           NULL,
-          NULL,
-          NULL,
           logging_config),
       main_thread_("StandaloneCastEnvironment Main"),
-      audio_encode_thread_("StandaloneCastEnvironment Audio Encode"),
-      audio_decode_thread_("StandaloneCastEnvironment Audio Decode"),
-      video_encode_thread_("StandaloneCastEnvironment Video Encode"),
-      video_decode_thread_("StandaloneCastEnvironment Video Decode"),
+      audio_thread_("StandaloneCastEnvironment Audio"),
+      video_thread_("StandaloneCastEnvironment Video"),
       transport_thread_("StandaloneCastEnvironment Transport") {
 #define CREATE_TASK_RUNNER(name, options)   \
   name##_thread_.StartWithOptions(options); \
@@ -32,10 +28,8 @@ StandaloneCastEnvironment::StandaloneCastEnvironment(
 
   CREATE_TASK_RUNNER(main,
                      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  CREATE_TASK_RUNNER(audio_encode, base::Thread::Options());
-  CREATE_TASK_RUNNER(audio_decode, base::Thread::Options());
-  CREATE_TASK_RUNNER(video_encode, base::Thread::Options());
-  CREATE_TASK_RUNNER(video_decode, base::Thread::Options());
+  CREATE_TASK_RUNNER(audio, base::Thread::Options());
+  CREATE_TASK_RUNNER(video, base::Thread::Options());
   CREATE_TASK_RUNNER(transport, base::Thread::Options());
 
 #undef CREATE_TASK_RUNNER
@@ -48,10 +42,8 @@ StandaloneCastEnvironment::~StandaloneCastEnvironment() {
 void StandaloneCastEnvironment::Shutdown() {
   DCHECK(CalledOnValidThread());
   main_thread_.Stop();
-  audio_encode_thread_.Stop();
-  audio_decode_thread_.Stop();
-  video_encode_thread_.Stop();
-  video_decode_thread_.Stop();
+  audio_thread_.Stop();
+  video_thread_.Stop();
   transport_thread_.Stop();
 }
 

@@ -150,8 +150,6 @@ class RtcpTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
-            task_runner_,
             logging_config_)),
         sender_to_receiver_(testing_clock_),
         receiver_to_sender_(cast_environment_, testing_clock_),

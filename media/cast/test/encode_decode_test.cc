@@ -73,12 +73,10 @@ class EncodeDecodeTest : public ::testing::Test {
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
         // CastEnvironment will only be used by the vp8 decoder; Enable only the
-        // video decoder and main threads.
+        // video and main threads.
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
-            NULL,
-            NULL,
             NULL,
             task_runner_,
             NULL,

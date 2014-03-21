@@ -121,14 +121,11 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
-  // There's no need to decode so no thread assigned for decoding.
   cast_environment_ = new CastEnvironment(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
       base::MessageLoopProxy::current(),
       g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
-      NULL,
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
-      NULL,
       base::MessageLoopProxy::current(),
       logging_config);
 

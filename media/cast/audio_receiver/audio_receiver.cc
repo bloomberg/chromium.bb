@@ -177,7 +177,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       DecodedAudioCallbackData decoded_data = queued_decoded_callbacks_.front();
       queued_decoded_callbacks_.pop_front();
       cast_environment_->PostTask(
-          CastEnvironment::AUDIO_DECODER, FROM_HERE,
+          CastEnvironment::AUDIO, FROM_HERE,
           base::Bind(&AudioReceiver::DecodeAudioFrameThread,
                      base::Unretained(this), decoded_data.number_of_10ms_blocks,
                      decoded_data.desired_frequency, decoded_data.callback));
@@ -215,7 +215,7 @@ void AudioReceiver::GetRawAudioFrame(
   DCHECK(audio_decoder_) << "Invalid function call in this configuration";
   // TODO(pwestin): we can skip this function by posting direct to the decoder.
   cast_environment_->PostTask(
-      CastEnvironment::AUDIO_DECODER, FROM_HERE,
+      CastEnvironment::AUDIO, FROM_HERE,
       base::Bind(&AudioReceiver::DecodeAudioFrameThread, base::Unretained(this),
                  number_of_10ms_blocks, desired_frequency, callback));
 }
@@ -223,7 +223,7 @@ void AudioReceiver::GetRawAudioFrame(
 void AudioReceiver::DecodeAudioFrameThread(
     int number_of_10ms_blocks, int desired_frequency,
     const AudioFrameDecodedCallback callback) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO));
   // TODO(mikhal): Allow the application to allocate this memory.
   scoped_ptr<PcmAudioFrame> audio_frame(new PcmAudioFrame());
 

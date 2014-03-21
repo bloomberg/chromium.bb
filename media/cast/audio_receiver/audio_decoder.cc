@@ -62,7 +62,7 @@ bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
                                     int desired_frequency,
                                     PcmAudioFrame* audio_frame,
                                     uint32* rtp_timestamp) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO));
   // We don't care about the race case where a packet arrives at the same time
   // as this function in called. The data will be there the next time this
   // function is called.

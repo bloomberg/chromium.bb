@@ -83,8 +83,6 @@ class VideoReceiverTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            task_runner_,
                             GetLoggingConfigWithRawEventsAndStatsEnabled());
     receiver_.reset(new PeerVideoReceiver(
         cast_environment_, config_, &mock_transport_, target_delay_cb_));

@@ -164,8 +164,6 @@ class RtcpReceiverTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
-            task_runner_,
             GetDefaultCastReceiverLoggingConfig())),
         rtcp_receiver_(new RtcpReceiver(cast_environment_,
                                         &mock_sender_feedback_,

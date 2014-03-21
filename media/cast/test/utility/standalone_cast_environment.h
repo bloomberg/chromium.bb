@@ -27,10 +27,8 @@ class StandaloneCastEnvironment : public CastEnvironment,
   virtual ~StandaloneCastEnvironment();
 
   base::Thread main_thread_;
-  base::Thread audio_encode_thread_;
-  base::Thread audio_decode_thread_;
-  base::Thread video_encode_thread_;
-  base::Thread video_decode_thread_;
+  base::Thread audio_thread_;
+  base::Thread video_thread_;
   base::Thread transport_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(StandaloneCastEnvironment);

@@ -97,8 +97,6 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            task_runner_,
                             GetDefaultCastSenderLoggingConfig());
   }
 

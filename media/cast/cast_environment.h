@@ -24,16 +24,11 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
     // The main thread is where the cast system is configured and where timers
     // and network IO is performed.
     MAIN,
-    // The audio encoder thread is where all send side audio processing is done,
-    // primarily encoding but also re-sampling.
-    AUDIO_ENCODER,
-    // The audio decoder thread is where all receive side audio processing is
-    // done, primarily decoding but also error concealment and re-sampling.
-    AUDIO_DECODER,
-    // The video encoder thread is where the video encode processing is done.
-    VIDEO_ENCODER,
-    // The video decoder thread is where the video decode processing is done.
-    VIDEO_DECODER,
+    // The audio thread is where all send side audio processing is done,
+    // primarily encoding / decoding but also re-sampling.
+    AUDIO,
+    // The video encoder thread is where the video processing is done.
+    VIDEO,
     // The transport thread is where the transport processing is done.
     TRANSPORT,
   };
@@ -41,10 +36,8 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   CastEnvironment(
       scoped_ptr<base::TickClock> clock,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> audio_decode_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> video_decode_thread_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy,
       const CastLoggingConfig& logging_config);
 
@@ -69,17 +62,18 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
 
   // Logging is not thread safe. Its methods should always be called from the
   // main thread.
+  // TODO(hubbe): Logging should be a thread-safe interface.
   LoggingImpl* Logging() const { return logging_.get(); }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       ThreadId identifier) const;
 
-  bool HasAudioEncoderThread() {
-    return audio_encode_thread_proxy_ ? true : false;
+  bool HasAudioThread() {
+    return audio_thread_proxy_ ? true : false;
   }
 
-  bool HasVideoEncoderThread() {
-    return video_encode_thread_proxy_ ? true : false;
+  bool HasVideoThread() {
+    return video_thread_proxy_ ? true : false;
   }
 
  protected:
@@ -87,10 +81,8 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
 
   // Subclasses may override these.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
-  scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_proxy_;
-  scoped_refptr<base::SingleThreadTaskRunner> audio_decode_thread_proxy_;
-  scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_proxy_;
-  scoped_refptr<base::SingleThreadTaskRunner> video_decode_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy_;
 
  private:

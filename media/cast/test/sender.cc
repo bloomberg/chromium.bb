@@ -467,16 +467,14 @@ int main(int argc, char** argv) {
   transport_video_config.base.ssrc = video_config.sender_ssrc;
   transport_video_config.base.rtp_config = video_config.rtp_config;
 
-  // Enable main and send side threads only. Enable raw event and stats logging.
+  // Enable raw event and stats logging.
   // Running transport on the main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::CastEnvironment(
           make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
           io_message_loop.message_loop_proxy(),
           audio_thread.message_loop_proxy(),
-          NULL,
           video_thread.message_loop_proxy(),
-          NULL,
           io_message_loop.message_loop_proxy(),
           media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()));
 

@@ -350,7 +350,7 @@ void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,
     NOTREACHED();
     return;
   }
-  cast_environment_->PostTask(CastEnvironment::AUDIO_ENCODER,
+  cast_environment_->PostTask(CastEnvironment::AUDIO,
                               FROM_HERE,
                               base::Bind(&AudioEncoder::ImplBase::EncodeAudio,
                                          impl_,

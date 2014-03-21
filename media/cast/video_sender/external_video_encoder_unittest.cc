@@ -94,8 +94,6 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            task_runner_,
                             GetDefaultCastSenderLoggingConfig());
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment_,

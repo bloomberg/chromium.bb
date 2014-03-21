@@ -61,8 +61,6 @@ class AudioSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            task_runner_,
                             logging_config);
     audio_config_.codec = transport::kOpus;
     audio_config_.use_external_encoder = false;

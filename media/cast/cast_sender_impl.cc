@@ -95,7 +95,7 @@ void CastSenderImpl::InitializeAudio(
     const CastInitializationCallback& cast_initialization_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(audio_config.use_external_encoder ||
-        cast_environment_->HasAudioEncoderThread());
+        cast_environment_->HasAudioThread());
 
   audio_sender_.reset(
       new AudioSender(cast_environment_, audio_config, transport_sender_));
@@ -116,7 +116,7 @@ void CastSenderImpl::InitializeVideo(
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(video_config.use_external_encoder ||
-        cast_environment_->HasVideoEncoderThread());
+        cast_environment_->HasVideoThread());
 
   video_sender_.reset(new VideoSender(cast_environment_,
                                       video_config,

@@ -23,7 +23,7 @@ typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
 void InitializeVp8EncoderOnEncoderThread(
     const scoped_refptr<CastEnvironment>& environment,
     Vp8Encoder* vp8_encoder) {
-  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
+  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
   vp8_encoder->Initialize();
 }
 
@@ -34,7 +34,7 @@ void EncodeVideoFrameOnEncoderThread(
     const base::TimeTicks& capture_time,
     const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
     const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
-  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
+  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
   if (dynamic_config.key_frame_requested) {
     vp8_encoder->GenerateKeyFrame();
   }
@@ -74,7 +74,7 @@ VideoEncoderImpl::VideoEncoderImpl(
       skip_count_(0) {
   if (video_config.codec == transport::kVp8) {
     vp8_encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
-    cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER,
+    cast_environment_->PostTask(CastEnvironment::VIDEO,
                                 FROM_HERE,
                                 base::Bind(&InitializeVp8EncoderOnEncoderThread,
                                            cast_environment,
@@ -92,7 +92,7 @@ VideoEncoderImpl::~VideoEncoderImpl() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (vp8_encoder_) {
     cast_environment_->PostTask(
-        CastEnvironment::VIDEO_ENCODER,
+        CastEnvironment::VIDEO,
         FROM_HERE,
         base::Bind(&base::DeletePointer<Vp8Encoder>, vp8_encoder_.release()));
   }
@@ -117,7 +117,7 @@ bool VideoEncoderImpl::EncodeVideoFrame(
       kVideoFrameSentToEncoder,
       GetVideoRtpTimestamp(capture_time),
       kFrameIdUnknown);
-  cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER,
+  cast_environment_->PostTask(CastEnvironment::VIDEO,
                               FROM_HERE,
                               base::Bind(&EncodeVideoFrameOnEncoderThread,
                                          cast_environment_,

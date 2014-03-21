@@ -30,7 +30,7 @@ Vp8Decoder::Vp8Decoder(scoped_refptr<CastEnvironment> cast_environment)
     : cast_environment_(cast_environment) {
   // Make sure that we initialize the decoder from the correct thread.
   cast_environment_->PostTask(
-      CastEnvironment::VIDEO_DECODER,
+      CastEnvironment::VIDEO,
       FROM_HERE,
       base::Bind(&Vp8Decoder::InitDecoder, base::Unretained(this)));
 }
@@ -61,7 +61,7 @@ void Vp8Decoder::InitDecoder() {
 bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
                         const base::TimeTicks render_time,
                         const VideoFrameDecodedCallback& frame_decoded_cb) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO));
   const int frame_id_int = static_cast<int>(encoded_frame->frame_id);
   VLOG(2) << "VP8 decode frame:" << frame_id_int
           << " sized:" << encoded_frame->data.size();

@@ -172,7 +172,7 @@ void VideoReceiver::DecodeVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   // Hand the ownership of the encoded frame to the decode thread.
-  cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER,
+  cast_environment_->PostTask(CastEnvironment::VIDEO,
                               FROM_HERE,
                               base::Bind(&VideoReceiver::DecodeVideoFrameThread,
                                          base::Unretained(this),
@@ -186,7 +186,7 @@ void VideoReceiver::DecodeVideoFrameThread(
     scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_callback) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO));
   DCHECK(video_decoder_);
 
   if (!(video_decoder_->DecodeVideoFrame(

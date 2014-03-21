@@ -86,8 +86,11 @@ class AudioReceiverTest : public ::testing::Test {
     logging_config.enable_raw_data_collection = true;
 
     cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+        task_runner_,
+        task_runner_,
+        task_runner_,
+        task_runner_,
         logging_config);
 
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();

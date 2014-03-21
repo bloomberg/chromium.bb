@@ -409,13 +409,9 @@ class End2EndTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
-            task_runner_,
             logging_config_)),
         cast_environment_receiver_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
-            task_runner_,
-            task_runner_,
             task_runner_,
             task_runner_,
             task_runner_,
