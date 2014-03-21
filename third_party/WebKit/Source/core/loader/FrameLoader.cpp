@@ -763,7 +763,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     const KURL& url = request.resourceRequest().url();
     if (!action.shouldOpenInNewWindow() && shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
         m_documentLoader->setTriggeringAction(action);
-        loadInSameDocument(url, nullptr, newLoadType == FrameLoadTypeStandard ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
+        loadInSameDocument(url, nullptr, newLoadType == FrameLoadTypeStandard && !shouldTreatURLAsSameAsCurrent(url) ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
         return;
     }
     bool sameURL = url == m_documentLoader->urlForHistory();
@@ -1399,6 +1399,11 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         ASSERT_NOT_REACHED();
         return false;
     }
+}
+
+bool FrameLoader::shouldTreatURLAsSameAsCurrent(const KURL& url) const
+{
+    return m_currentItem && url == m_currentItem->url();
 }
 
 bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
