@@ -411,7 +411,8 @@ class StatsManager(object):
     self.config_target = config_target
 
 
-  def Gather(self, start_date, sort_by_build_number=True):
+  def Gather(self, start_date, sort_by_build_number=True,
+             starting_build_number=0):
     cros_build_lib.Info('Gathering data for %s since %s', self.config_target,
                         start_date)
     urls = cbuildbot_metadata.GetMetadataURLsSince(self.config_target,
@@ -428,7 +429,11 @@ class StatsManager(object):
       cros_build_lib.Info('Sorting by build number now.')
       self.builds = sorted(self.builds, key=lambda b: b.build_number,
                            reverse=True)
-
+    if starting_build_number:
+      cros_build_lib.Info('Filtering to include builds after %s (inclusive).',
+                          starting_build_number)
+      self.builds = filter(lambda b: b.build_number >= starting_build_number,
+                           self.builds)
   def Summarize(self):
     if self.builds:
       cros_build_lib.Info('%d total runs included, from build %d to %d.',
@@ -769,6 +774,9 @@ def GetParser():
   mode.add_argument('--past-day', action='store_true', default=False,
                     help='Limit scope to the past day up to now.')
 
+  parser.add_argument('--starting-build', action='store', type=int, default=0,
+                      help='Filter to builds after given number (inclusive).')
+
   parser.add_argument('--save', action='store_true', default=False,
                       help='Save results to DB, if applicable.')
   parser.add_argument('--email', action='store', type=str, default=None,
@@ -826,7 +834,7 @@ def main(argv):
 
   # Now run through all the stats gathering that is requested.
   for stats_mgr in stats_managers:
-    stats_mgr.Gather(start_date)
+    stats_mgr.Gather(start_date, starting_build_number=options.starting_build)
     stats_mgr.Summarize()
 
     if options.save:
