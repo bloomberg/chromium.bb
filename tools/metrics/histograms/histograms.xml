@@ -12171,21 +12171,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.PacketReceived_Ack" units="SequenceNumber">
+<histogram name="Net.QuicSession.PacketLossRate" units="1/10th Percent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
-    Each bucket contains the number of packets with a corresponding sequence
-    number that were received by the client, and hence the client ACKed the
-    packet.
+    The ratio of the number of missing packets, to the maximum packet sequence
+    number received,  for QUIC connections longer than 21 packets received via
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.PacketReceived_Nack" units="SequenceNumber">
+<histogram name="Net.QuicSession.PacketReceived" units="SequenceNumber">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
-    Each bucket contains the number of packets with a corresponding sequence
-    number were not received by the client, but for which there were later
-    packet sequence numbers received, and hence the client NACKed the packet.
+    Each bucket corresponds to a specific packet sequence number that was sent
+    by a server to Chrome at the start of a QUIC connection. This histogram is
+    compared, bucket by bucket, with a second histogram to compute the ratio for
+    each bucket (each packet sequence number).
   </summary>
 </histogram>
 
@@ -40228,53 +40228,68 @@ other types of suffix sets.
 
 <fieldtrial name="Net.QuicSession.21CumulativePackets" separator="_">
   <group name="First21"
-      label="Only the first group of 21 packets in a connection are recorded."/>
+      label="Only the first group of 21 packets in a connection via"/>
   <group name="Some21s"
       label="After the first 21, this records data for some groups of 21
-             consecutive sequence nmubers."/>
+             consecutive sequence nmubers, arriving via."/>
   <affected-histogram name="Net.QuicSession.21CumulativePacketsReceived"/>
 </fieldtrial>
 
 <fieldtrial name="Net.QuicSession.6PacketPatterns" separator="_">
   <group name="First6"
-      label="Only the first group of 6 packets in a connection are recorded."/>
+      label="Only the first group of 6 packets in a connection via"/>
   <group name="Some6s"
-      label="After the first 6, this records patters for some groups of 6
-             consecutive sequence numbers."/>
+      label="After the first 6, this records patterns for some groups of 6
+             consecutive sequence numbers, arriving via."/>
   <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived"/>
 </fieldtrial>
 
 <fieldtrial name="Net.QuicSession.PacketReceived" separator="_">
-  <group name="CONNECTION_UNKNOWN" label="Connections via WiFi are tallied."/>
+  <group name="Ack"
+      label="Only packets that were received by Chrome as well being part of
+             connections via"/>
+  <group name="Nack"
+      label="Only packets that were missed by Chrome as well being part of
+             connections via"/>
+  <group name="IsAnAck"
+      label="Only packets that were probably solo ACK packets when recieved
+             by Chrome as well being part of connections via"/>
+  <group name="IsNotAck"
+      label="Only packets that were probably NOT solo ACK packets when
+             recieved by Chrome as well being part of connections via"/>
+  <affected-histogram name="Net.QuicSession.PacketReceived"/>
+</fieldtrial>
+
+<fieldtrial name="Net.QuicSession.PacketReceived_CONNECTION_TYPE" separator="_">
+  <group name="CONNECTION_UNKNOWN" label="WiFi are tallied."/>
   <group name="CONNECTION_ETHERNET"
-      label="Connections via ethernet are tallied, but this may include
-             connections to a WiFi bridge."/>
+      label="ethernet are tallied, but this may include connections to a WiFi
+             bridge."/>
   <group name="CONNECTION_WIFI"
-      label="Connections via WiFi are tallied, but this may include
-             connections to a mobile hotspot. Also check similar histograms
-             that end in WIFI_802.11* for more details on some platforms."/>
+      label="WiFi are tallied, but this may include connections to a mobile
+             hotspot. Also check similar histograms that end in WIFI_802.11*
+             for more details on some platforms."/>
   <group name="CONNECTION_WIFI_ANCIENT"
-      label="Connections via 802.11 that are no longer standard are tallied."/>
-  <group name="CONNECTION_WIFI_802.11a"
-      label="Connections via 802.11a are tallied."/>
-  <group name="CONNECTION_WIFI_802.11b"
-      label="Connections via 802.11b are tallied."/>
-  <group name="CONNECTION_WIFI_802.11g"
-      label="Connections via 802.11g are tallied."/>
-  <group name="CONNECTION_WIFI_802.11n"
-      label="Connections via 802.11n are tallied."/>
-  <group name="CONNECTION_2G" label="Connections via mobile 2G are tallied."/>
-  <group name="CONNECTION_3G" label="Connections via mobile 3G are tallied."/>
-  <group name="CONNECTION_4G" label="Connections via mobile 4G are tallied."/>
+      label="802.11 that are no longer standard are tallied."/>
+  <group name="CONNECTION_WIFI_802.11a" label="802.11a are tallied."/>
+  <group name="CONNECTION_WIFI_802.11b" label="802.11b are tallied."/>
+  <group name="CONNECTION_WIFI_802.11g" label="802.11g are tallied."/>
+  <group name="CONNECTION_WIFI_802.11n" label="802.11n are tallied."/>
+  <group name="CONNECTION_2G" label="mobile 2G are tallied."/>
+  <group name="CONNECTION_3G" label="mobile 3G are tallied."/>
+  <group name="CONNECTION_4G" label="mobile 4G are tallied."/>
   <group name="CONNECTION_NONE"
-      label="Connections via NO(?) network are tallied (should be empty)."/>
+      label="NO(?) network are tallied (should be empty)."/>
   <affected-histogram
       name="Net.QuicSession.21CumulativePacketsReceived_First21"/>
   <affected-histogram
       name="Net.QuicSession.21CumulativePacketsReceived_Some21s"/>
   <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived_First6"/>
   <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived_Some6s"/>
+  <affected-histogram name="Net.QuicSession.PacketLossRate"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_Ack"/>
+  <affected-histogram name="Net.QuicSession.PacketReceived_IsAnAck"/>
+  <affected-histogram name="Net.QuicSession.PacketReceived_IsNotAck"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_Nack"/>
 </fieldtrial>
 

@@ -302,9 +302,11 @@ const char* GetConnectionDescriptionString() {
 QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
     : net_log_(net_log),
       last_received_packet_sequence_number_(0),
+      last_received_packet_size_(0),
       largest_received_packet_sequence_number_(0),
       largest_received_missing_packet_sequence_number_(0),
-      out_of_order_recieved_packet_count_(0),
+      num_out_of_order_received_packets_(0),
+      num_packets_received_(0),
       num_truncated_acks_sent_(0),
       num_truncated_acks_received_(0),
       connection_description_(GetConnectionDescriptionString()) {
@@ -312,7 +314,7 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
 
 QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderPacketsReceived",
-                       out_of_order_recieved_packet_count_);
+                       num_out_of_order_received_packets_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksSent",
                        num_truncated_acks_sent_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
@@ -406,6 +408,7 @@ void QuicConnectionLogger:: OnPacketRetransmitted(
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                                             const IPEndPoint& peer_address,
                                             const QuicEncryptedPacket& packet) {
+  last_received_packet_size_ = packet.length();
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
       base::Bind(&NetLogQuicPacketCallback, &self_address, &peer_address,
@@ -421,6 +424,7 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
       base::Bind(&NetLogQuicPacketHeaderCallback, &header));
+  ++num_packets_received_;
   if (largest_received_packet_sequence_number_ <
       header.packet_sequence_number) {
     QuicPacketSequenceNumber delta = header.packet_sequence_number -
@@ -433,10 +437,10 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
     }
     largest_received_packet_sequence_number_ = header.packet_sequence_number;
   }
-  if (header.packet_sequence_number < packets_received_.size())
-    packets_received_[header.packet_sequence_number] = true;
+  if (header.packet_sequence_number < received_packets_.size())
+    received_packets_[header.packet_sequence_number] = true;
   if (header.packet_sequence_number < last_received_packet_sequence_number_) {
-    ++out_of_order_recieved_packet_count_;
+    ++num_out_of_order_received_packets_;
     UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderGapReceived",
                          last_received_packet_sequence_number_ -
                              header.packet_sequence_number);
@@ -454,6 +458,11 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_ACK_FRAME_RECEIVED,
       base::Bind(&NetLogQuicAckFrameCallback, &frame));
+
+  const size_t kApproximateLargestSoloAckBytes = 100;
+  if (last_received_packet_sequence_number_ < received_acks_.size() &&
+      last_received_packet_size_ < kApproximateLargestSoloAckBytes)
+    received_acks_[last_received_packet_sequence_number_] = true;
 
   if (frame.received_info.is_truncated)
     ++num_truncated_acks_received_;
@@ -582,12 +591,12 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
                     NetLog::StringCallback("version", &quic_version));
 }
 
-base::HistogramBase* QuicConnectionLogger::GetAckHistogram(
-    const char* ack_or_nack) const {
+base::HistogramBase* QuicConnectionLogger::GetPacketSequenceNumberHistogram(
+    const char* statistic_name) const {
   string prefix("Net.QuicSession.PacketReceived_");
   return base::LinearHistogram::FactoryGet(
-      prefix + ack_or_nack + connection_description_,
-      1, packets_received_.size(), packets_received_.size() + 1,
+      prefix + statistic_name + connection_description_,
+      1, received_packets_.size(), received_packets_.size() + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -627,45 +636,102 @@ base::HistogramBase* QuicConnectionLogger::Get21CumulativeHistogram(
 // static
 void QuicConnectionLogger::AddTo21CumulativeHistogram(
     base::HistogramBase* histogram,
-    int bit_mask_21_packets) {
-  DCHECK_LT(bit_mask_21_packets, 1 << 21);
+    int bit_mask_of_packets,
+    int valid_bits_in_mask) {
+  DCHECK_LE(valid_bits_in_mask, 21);
+  DCHECK_LT(bit_mask_of_packets, 1 << 21);
+  const int blank_bits_in_mask = 21 - valid_bits_in_mask;
+  DCHECK_EQ(bit_mask_of_packets & ((1 << blank_bits_in_mask) - 1), 0);
+  bit_mask_of_packets >>= blank_bits_in_mask;
   int bits_so_far = 0;
   int range_start = 0;
-  for (int i = 1; i <= 21; ++i) {
-    bits_so_far += bit_mask_21_packets & 1;
-    bit_mask_21_packets >>= 1;
+  for (int i = 1; i <= valid_bits_in_mask; ++i) {
+    bits_so_far += bit_mask_of_packets & 1;
+    bit_mask_of_packets >>= 1;
     DCHECK_LT(range_start + bits_so_far, kBoundingSampleInCumulativeHistogram);
     histogram->Add(range_start + bits_so_far);
     range_start += i + 1;
   }
 }
 
+void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
+  // For short connections under 22 packets in length, we'll rely on the
+  // Net.QuicSession.21CumulativePacketsReceived_* histogram to indicate packet
+  // loss rates.  This way we avoid tremendously anomalous contributions to our
+  // histogram.  (e.g., if we only got 5 packets, but lost 1, we'd otherwise
+  // record a 20% loss in this histogram!). We may still get some strange data
+  // (1 loss in 22 is still high :-/).
+  if (largest_received_packet_sequence_number_ <= 21)
+    return;
+
+  QuicPacketSequenceNumber divisor = largest_received_packet_sequence_number_;
+  QuicPacketSequenceNumber numerator = divisor - num_packets_received_;
+  if (divisor < 100000)
+    numerator *= 1000;
+  else
+    divisor /= 1000;
+  string prefix("Net.QuicSession.PacketLossRate_");
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      prefix + connection_description_, 1, 1000, 75,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(numerator / divisor);
+}
+
 void QuicConnectionLogger::RecordLossHistograms() const {
   if (largest_received_packet_sequence_number_ == 0)
     return;  // Connection was never used.
-  base::HistogramBase* packet_ack_histogram = GetAckHistogram("Ack_");
-  base::HistogramBase* packet_nack_histogram = GetAckHistogram("Nack_");
-  base::HistogramBase* six_packet_histogram = Get6PacketHistogram("Some6s_");
-  base::HistogramBase* twenty_one_cumulative_packet_histogram =
+  RecordAggregatePacketLossRate();
+
+  base::HistogramBase* is_not_ack_histogram =
+      GetPacketSequenceNumberHistogram("IsNotAck_");
+  base::HistogramBase* is_an_ack_histogram =
+      GetPacketSequenceNumberHistogram("IsAnAck_");
+  base::HistogramBase* packet_arrived_histogram =
+      GetPacketSequenceNumberHistogram("Ack_");
+  base::HistogramBase* packet_missing_histogram =
+      GetPacketSequenceNumberHistogram("Nack_");
+  base::HistogramBase* ongoing_cumulative_packet_histogram =
       Get21CumulativeHistogram("Some21s_");
+  base::HistogramBase* first_cumulative_packet_histogram =
+      Get21CumulativeHistogram("First21_");
+  base::HistogramBase* six_packet_histogram = Get6PacketHistogram("Some6s_");
+
+  DCHECK_EQ(received_packets_.size(), received_acks_.size());
   const QuicPacketSequenceNumber last_index =
-      std::min<QuicPacketSequenceNumber>(
-          packets_received_.size() - 1,
+      std::min<QuicPacketSequenceNumber>(received_packets_.size() - 1,
           largest_received_packet_sequence_number_);
+  const QuicPacketSequenceNumber index_of_first_21_contribution =
+      std::min<QuicPacketSequenceNumber>(21, last_index);
   // Bit pattern of consecutively received packets that is maintained as we scan
-  // through the packets_received_ vector. Less significant bits correpsond to
+  // through the received_packets_ vector. Less significant bits correspond to
   // less recent packets, and only the low order 21 bits are ever defined.
   // Bit is 1 iff corresponding packet was received.
   int packet_pattern_21 = 0;
   // Zero is an invalid packet sequence number.
-  DCHECK(!packets_received_[0]);
+  DCHECK(!received_packets_[0]);
   for (size_t i = 1; i <= last_index; ++i) {
+    if (received_acks_[i])
+      is_an_ack_histogram->Add(i);
+    else
+      is_not_ack_histogram->Add(i);
+
     packet_pattern_21 >>= 1;
-    if (packets_received_[i]) {
-      packet_ack_histogram->Add(i);
+    if (received_packets_[i]) {
+      packet_arrived_histogram->Add(i);
       packet_pattern_21 |= (1 << 20);  // Turn on the 21st bit.
     } else {
-      packet_nack_histogram->Add(i);
+      packet_missing_histogram->Add(i);
+    }
+
+    if (i == index_of_first_21_contribution) {
+      AddTo21CumulativeHistogram(first_cumulative_packet_histogram,
+                                 packet_pattern_21, i);
+    }
+    // We'll just record for non-overlapping ranges, to reduce histogramming
+    // cost for now.  Each call does 21 separate histogram additions.
+    if (i > 21 || i % 21 == 0) {
+      AddTo21CumulativeHistogram(ongoing_cumulative_packet_histogram,
+                                 packet_pattern_21, 21);
     }
 
     if (i < 6)
@@ -680,20 +746,6 @@ void QuicConnectionLogger::RecordLossHistograms() const {
     // not very expensive.
     if (i % 3 == 0)
       six_packet_histogram->Add(recent_6_mask);
-
-    if (i < 21)
-      continue;
-    if (i == 21) {
-      AddTo21CumulativeHistogram(Get21CumulativeHistogram("First21_"),
-                                 packet_pattern_21);
-      continue;
-    }
-    // We'll just record for non-overlapping ranges, to reduce histogramming
-    // cost for now.  Each call does 21 separate histogram additions.
-    if (i % 21 != 0)
-      continue;
-    AddTo21CumulativeHistogram(twenty_one_cumulative_packet_histogram,
-                               packet_pattern_21);
   }
 }
 
