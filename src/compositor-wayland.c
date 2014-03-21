@@ -211,13 +211,13 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 
 	fd = os_create_anonymous_file(height * stride);
 	if (fd < 0) {
-		perror("os_create_anonymous_file");
+		weston_log("could not create an anonymous file buffer: %m\n");
 		return NULL;
 	}
 
 	data = mmap(NULL, height * stride, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
-		perror("mmap");
+		weston_log("could not mmap %d memory for data: %m\n", height * stride);
 		close(fd);
 		return NULL;
 	}
