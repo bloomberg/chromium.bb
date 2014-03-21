@@ -5,6 +5,7 @@
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,7 +19,10 @@ class URLRequestContextGetter;
 
 namespace invalidation {
 
-P2PInvalidationService::P2PInvalidationService(Profile* profile) {
+P2PInvalidationService::P2PInvalidationService(
+    Profile* profile,
+    scoped_ptr<InvalidationAuthProvider> auth_provider)
+    : auth_provider_(auth_provider.Pass()) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*CommandLine::ForCurrentProcess());
   notifier_options.request_context_getter = profile->GetRequestContext();
@@ -78,6 +82,11 @@ void P2PInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> caller) {
   base::DictionaryValue value;
   caller.Run(value);
+}
+
+InvalidationAuthProvider*
+P2PInvalidationService::GetInvalidationAuthProvider() {
+  return auth_provider_.get();
 }
 
 }  // namespace invalidation

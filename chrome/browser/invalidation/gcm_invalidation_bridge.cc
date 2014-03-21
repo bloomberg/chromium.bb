@@ -7,8 +7,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
+#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -147,20 +147,18 @@ void GCMInvalidationBridge::Core::OnIncomingMessage(
   message_callback_.Run(message, echo_token);
 }
 
-GCMInvalidationBridge::GCMInvalidationBridge(Profile* profile)
+GCMInvalidationBridge::GCMInvalidationBridge(
+    gcm::GCMProfileService* gcm_profile_service,
+    InvalidationAuthProvider* auth_provider)
     : OAuth2TokenService::Consumer("gcm_network_channel"),
-      profile_(profile),
+      gcm_profile_service_(gcm_profile_service),
+      auth_provider_(auth_provider),
       subscribed_for_incoming_messages_(false),
       weak_factory_(this) {}
 
 GCMInvalidationBridge::~GCMInvalidationBridge() {
-  if (subscribed_for_incoming_messages_) {
-    gcm::GCMProfileService* gcm_profile_service =
-        gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-    DCHECK(gcm_profile_service);
-
-    gcm_profile_service->RemoveAppHandler(kInvalidationsAppId);
-  }
+  if (subscribed_for_incoming_messages_)
+    gcm_profile_service_->RemoveAppHandler(kInvalidationsAppId);
 }
 
 scoped_ptr<syncer::GCMNetworkChannelDelegate>
@@ -194,15 +192,11 @@ void GCMInvalidationBridge::RequestToken(
                    error,
                    access_token));
   }
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   request_token_callback_ = callback;
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  std::string account_id = signin_manager->GetAuthenticatedAccountId();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  access_token_request_ = token_service->StartRequest(account_id, scopes, this);
+  access_token_request_ = auth_provider_->GetTokenService()->StartRequest(
+      auth_provider_->GetAccountId(), scopes, this);
 }
 
 void GCMInvalidationBridge::OnGetTokenSuccess(
@@ -239,29 +233,23 @@ void GCMInvalidationBridge::OnGetTokenFailure(
 }
 
 void GCMInvalidationBridge::InvalidateToken(const std::string& token) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   DCHECK(CalledOnValidThread());
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  std::string account_id = signin_manager->GetAuthenticatedAccountId();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  token_service->InvalidateToken(account_id, scopes, token);
+  auth_provider_->GetTokenService()->InvalidateToken(
+      auth_provider_->GetAccountId(), scopes, token);
 }
 
 void GCMInvalidationBridge::Register(
     syncer::GCMNetworkChannelDelegate::RegisterCallback callback) {
   DCHECK(CalledOnValidThread());
   // No-op if GCMClient is disabled.
-  gcm::GCMProfileService* gcm_profile_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-  if (gcm_profile_service == NULL)
+  if (gcm_profile_service_ == NULL)
     return;
 
   std::vector<std::string> sender_ids;
   sender_ids.push_back(kInvalidationsSenderId);
-  gcm_profile_service->Register(
+  gcm_profile_service_->Register(
       kInvalidationsAppId,
       sender_ids,
       base::Bind(&GCMInvalidationBridge::RegisterFinished,
@@ -285,13 +273,11 @@ void GCMInvalidationBridge::RegisterFinished(
 
 void GCMInvalidationBridge::SubscribeForIncomingMessages() {
   // No-op if GCMClient is disabled.
-  gcm::GCMProfileService* gcm_profile_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-  if (gcm_profile_service == NULL)
+  if (gcm_profile_service_ == NULL)
     return;
 
   DCHECK(!subscribed_for_incoming_messages_);
-  gcm_profile_service->AddAppHandler(kInvalidationsAppId, this);
+  gcm_profile_service_->AddAppHandler(kInvalidationsAppId, this);
   subscribed_for_incoming_messages_ = true;
 }
 

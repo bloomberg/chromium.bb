@@ -10,7 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "sync/notifier/invalidator_registrar.h"
 #include "sync/notifier/mock_ack_handler.h"
 
@@ -25,6 +27,27 @@ class Invalidation;
 namespace invalidation {
 
 class InvalidationLogger;
+
+// Fake invalidation auth provider implementation.
+class FakeInvalidationAuthProvider : public InvalidationAuthProvider {
+ public:
+  FakeInvalidationAuthProvider();
+  virtual ~FakeInvalidationAuthProvider();
+
+  // InvalidationAuthProvider:
+  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+  virtual std::string GetAccountId() OVERRIDE;
+  virtual bool ShowLoginUI() OVERRIDE;
+
+  FakeProfileOAuth2TokenService* fake_token_service() {
+    return &token_service_;
+  }
+
+ private:
+  FakeProfileOAuth2TokenService token_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeInvalidationAuthProvider);
+};
 
 // An InvalidationService that emits invalidations only when
 // its EmitInvalidationForTest method is called.
@@ -48,6 +71,7 @@ class FakeInvalidationService : public InvalidationService {
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) OVERRIDE;
+  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
 
   void SetInvalidatorState(syncer::InvalidatorState state);
 
@@ -65,6 +89,7 @@ class FakeInvalidationService : public InvalidationService {
   std::string client_id_;
   syncer::InvalidatorRegistrar invalidator_registrar_;
   syncer::MockAckHandler mock_ack_handler_;
+  FakeInvalidationAuthProvider auth_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationService);
 };

@@ -27,7 +27,8 @@ class P2PInvalidationService
     : public base::NonThreadSafe,
       public InvalidationService {
  public:
-  explicit P2PInvalidationService(Profile* profile);
+  P2PInvalidationService(Profile* profile,
+                         scoped_ptr<InvalidationAuthProvider> auth_provider);
   virtual ~P2PInvalidationService();
 
   // Overrides KeyedService method.
@@ -47,6 +48,7 @@ class P2PInvalidationService
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) OVERRIDE;
+  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
 
   void UpdateCredentials(const std::string& username,
                          const std::string& password);
@@ -54,6 +56,7 @@ class P2PInvalidationService
   void SendInvalidation(const syncer::ObjectIdSet& ids);
 
  private:
+  scoped_ptr<InvalidationAuthProvider> auth_provider_;
   scoped_ptr<syncer::P2PInvalidator> invalidator_;
   std::string invalidator_id_;
 

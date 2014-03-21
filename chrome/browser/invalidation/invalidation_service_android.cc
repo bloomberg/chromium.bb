@@ -68,6 +68,11 @@ void InvalidationServiceAndroid::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> return_callback) {
 }
 
+InvalidationAuthProvider*
+InvalidationServiceAndroid::GetInvalidationAuthProvider() {
+  return NULL;
+}
+
 void InvalidationServiceAndroid::Observe(
     int type,
     const content::NotificationSource& source,
