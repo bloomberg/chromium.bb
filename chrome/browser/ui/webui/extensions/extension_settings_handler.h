@@ -106,6 +106,21 @@ class ExtensionSettingsHandler
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
+  // Loads an unpacked extension from |path|.
+  void LoadUnpackedExtension(const base::FilePath& path);
+
+  // Returns the index of the given FilePath in the vector of currently loading
+  // extensions. Returns -1 if not found.
+  int IndexOfLoadingPath(const base::FilePath& path);
+
+  // Adds |path| to the vector of currently loading extensions. Registers
+  // for the load retry notification if vector is empty before call.
+  void AddLoadingPath(const base::FilePath& path);
+
+  // Removes |path| from the vector of currently loading extensions. Unregisters
+  // for the load retry notification if vector is empty after call.
+  void RemoveLoadingPath(const base::FilePath& path);
+
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
@@ -211,6 +226,15 @@ class ExtensionSettingsHandler
   void OnRequirementsChecked(std::string extension_id,
                              std::vector<std::string> requirement_errors);
 
+  // Handles the load retry notification sent from
+  // ExtensionService::ReportExtensionLoadError. Attempts to retry loading
+  // extension from |path| if retry is true, otherwise removes |path| from the
+  // vector of currently loading extensions.
+  //
+  // Does nothing if |path| is not a currently loading extension this object is
+  // tracking.
+  void HandleLoadRetryMessage(bool retry, const base::FilePath& path);
+
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
 
@@ -223,6 +247,10 @@ class ExtensionSettingsHandler
   // Used to start the |load_extension_dialog_| in the last directory that was
   // loaded.
   base::FilePath last_unpacked_directory_;
+
+  // Used to keep track of FilePaths for all extensions in the process of
+  // loading for the purpose of retrying on load failure.
+  std::vector<base::FilePath> loading_extension_directories_;
 
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;

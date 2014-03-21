@@ -2456,10 +2456,22 @@ void ExtensionService::ReportExtensionLoadError(
       content::Details<const std::string>(&error));
 
   std::string path_str = base::UTF16ToUTF8(extension_path.LossyDisplayName());
-  base::string16 message = base::UTF8ToUTF16(base::StringPrintf(
-      "Could not load extension from '%s'. %s",
-      path_str.c_str(), error.c_str()));
-  ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
+  bool retry = false;
+  std::string retry_prompt;
+  if (be_noisy)
+    retry_prompt = "\n\nWould you like to retry?";
+
+  base::string16 message = base::UTF8ToUTF16(
+      base::StringPrintf("Could not load extension from '%s'. %s%s",
+                         path_str.c_str(),
+                         error.c_str(),
+                         retry_prompt.c_str()));
+  ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy, &retry);
+  std::pair<bool, const base::FilePath&> details(retry, extension_path);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,
+      content::Source<Profile>(profile_),
+      content::Details<std::pair<bool, const base::FilePath&> >(&details));
 }
 
 void ExtensionService::DidCreateRenderViewForBackgroundPage(

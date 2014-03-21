@@ -843,7 +843,8 @@ void DeveloperPrivateEnableFunction::OnRequirementsChecked(
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
         base::UTF8ToUTF16(JoinString(requirements_errors, ' ')),
-        true /* be noisy */);
+        true,   // Be noisy.
+        NULL);  // Caller expects no response.
   }
   Release();
 }

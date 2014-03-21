@@ -552,11 +552,51 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
 }
 
+void ExtensionSettingsHandler::LoadUnpackedExtension(
+    const base::FilePath& path) {
+  UnpackedInstaller::Create(extension_service_)->Load(path);
+}
+
+int ExtensionSettingsHandler::IndexOfLoadingPath(const base::FilePath& path) {
+  for (size_t i = 0; i < loading_extension_directories_.size(); ++i) {
+    if (path == loading_extension_directories_[i])
+      return i;
+  }
+  return -1;
+}
+
+void ExtensionSettingsHandler::AddLoadingPath(const base::FilePath& path) {
+  DCHECK(IndexOfLoadingPath(path) == -1);
+
+  if (loading_extension_directories_.empty()) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,
+                   content::Source<Profile>(profile));
+  }
+  loading_extension_directories_.push_back(path);
+}
+
+void ExtensionSettingsHandler::RemoveLoadingPath(const base::FilePath& path) {
+  int index = IndexOfLoadingPath(path);
+  DCHECK(index != -1);
+
+  loading_extension_directories_.erase(loading_extension_directories_.begin() +
+                                       index);
+  if (loading_extension_directories_.empty()) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,
+                      content::Source<Profile>(profile));
+  }
+}
+
 void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
                                             int index,
                                             void* params) {
   last_unpacked_directory_ = base::FilePath(path);
-  UnpackedInstaller::Create(extension_service_)->Load(path);
+  AddLoadingPath(last_unpacked_directory_);
+  LoadUnpackedExtension(path);
 }
 
 void ExtensionSettingsHandler::MultiFilesSelected(
@@ -595,7 +635,7 @@ void ExtensionSettingsHandler::Observe(
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
       source_profile = content::Source<Profile>(source).ptr();
       if (!profile->IsSameProfile(source_profile))
-          return;
+        return;
       MaybeUpdateAfterNotification();
       break;
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
@@ -606,7 +646,20 @@ void ExtensionSettingsHandler::Observe(
       MaybeUpdateAfterNotification();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOAD_RETRY: {
+      std::pair<bool, const base::FilePath&>* retry_and_path =
+          content::Details<std::pair<bool, const base::FilePath&> >(details)
+              .ptr();
+      HandleLoadRetryMessage(retry_and_path->first, retry_and_path->second);
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const base::FilePath& path =
+          content::Details<const Extension>(details).ptr()->path();
+      if (IndexOfLoadingPath(path) != -1)
+        RemoveLoadingPath(path);
+      // Fall through.
+    }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
@@ -691,6 +744,7 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 
   for (std::vector<const Extension*>::iterator iter =
        unpacked_extensions.begin(); iter != unpacked_extensions.end(); ++iter) {
+    AddLoadingPath((*iter)->path());
     extension_service_->ReloadExtension((*iter)->id());
   }
 }
@@ -830,6 +884,10 @@ void ExtensionSettingsHandler::HandleReloadMessage(
     const base::ListValue* args) {
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
+  const Extension* extension =
+      extension_service_->GetInstalledExtension(extension_id);
+  if (extension)
+    AddLoadingPath(extension->path());
   extension_service_->ReloadExtension(extension_id);
 }
 
@@ -1249,9 +1307,21 @@ void ExtensionSettingsHandler::OnRequirementsChecked(
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
         base::UTF8ToUTF16(JoinString(requirement_errors, ' ')),
-        true /* be noisy */);
+        true,   // Be noisy.
+        NULL);  // Caller expects no response.
   }
   requirements_checker_.reset();
+}
+
+void ExtensionSettingsHandler::HandleLoadRetryMessage(
+    bool retry,
+    const base::FilePath& path) {
+  if (IndexOfLoadingPath(path) == -1)
+    return;  // Not an extension we're tracking.
+  if (retry)
+    LoadUnpackedExtension(path);
+  else
+    RemoveLoadingPath(path);
 }
 
 }  // namespace extensions
