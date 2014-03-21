@@ -93,6 +93,8 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
 
+  virtual void SetForwardProtocolEvents(bool enabled) OVERRIDE;
+
   virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
 
   void set_fail_initial_download(bool should_fail);

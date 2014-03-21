@@ -60,6 +60,9 @@ void JsSyncManagerObserver::OnActionableError(
                 JsEventDetails(&details));
 }
 
+void JsSyncManagerObserver::OnProtocolEvent(
+    const ProtocolEvent& event) { }
+
 void JsSyncManagerObserver::OnMigrationRequested(ModelTypeSet types) { }
 
 void JsSyncManagerObserver::OnInitializationComplete(

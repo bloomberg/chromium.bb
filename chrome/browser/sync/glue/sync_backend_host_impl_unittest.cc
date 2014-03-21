@@ -82,6 +82,7 @@ class MockSyncFrontend : public SyncFrontend {
                void(syncer::ModelTypeSet, bool));
   MOCK_METHOD0(OnEncryptionComplete, void());
   MOCK_METHOD1(OnMigrationNeededForTypes, void(syncer::ModelTypeSet));
+  MOCK_METHOD1(OnProtocolEvent, void(const syncer::ProtocolEvent&));
   MOCK_METHOD1(OnExperimentsChanged,
       void(const syncer::Experiments&));
   MOCK_METHOD1(OnActionableError,

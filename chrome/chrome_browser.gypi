@@ -2360,6 +2360,8 @@
         'browser/sync/profile_sync_service_model_type_selection_android.h',
         'browser/sync/profile_sync_service_observer.cc',
         'browser/sync/profile_sync_service_observer.h',
+        'browser/sync/protocol_event_observer.cc',
+        'browser/sync/protocol_event_observer.h',
         'browser/sync/sessions2/notification_service_sessions_router.cc',
         'browser/sync/sessions2/notification_service_sessions_router.h',
         'browser/sync/sessions2/session_data_type_controller2.cc',

@@ -30,6 +30,7 @@
 
 namespace syncer {
 class ModelSafeWorker;
+class ProtocolEvent;
 
 namespace sessions {
 
@@ -109,6 +110,8 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   void SendSyncCycleEndEventNotification(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   void SendEventNotification(SyncCycleEvent::EventCause cause);
+
+  void SendProtocolEvent(const ProtocolEvent& event);
 
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }

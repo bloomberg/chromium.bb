@@ -562,6 +562,13 @@ void ProfileSyncService::OnSyncConfigureRetry() {
   NotifyObservers();
 }
 
+void ProfileSyncService::OnProtocolEvent(
+    const syncer::ProtocolEvent& event) {
+  FOR_EACH_OBSERVER(browser_sync::ProtocolEventObserver,
+                    protocol_event_observers_,
+                    OnProtocolEvent(event));
+}
+
 void ProfileSyncService::OnDataTypeRequestsSyncStartup(
     syncer::ModelType type) {
   DCHECK(syncer::UserTypes().Has(type));
@@ -935,6 +942,10 @@ void ProfileSyncService::OnBackendInitialized(
 
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
+
+  if (protocol_event_observers_.might_have_observers()) {
+    backend_->SetForwardProtocolEvents(true);
+  }
 
   // If we have a cached passphrase use it to decrypt/encrypt data now that the
   // backend is initialized. We want to call this before notifying observers in
@@ -2068,6 +2079,24 @@ void ProfileSyncService::AddObserver(
 void ProfileSyncService::RemoveObserver(
     ProfileSyncServiceBase::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ProfileSyncService::AddProtocolEventObserver(
+    browser_sync::ProtocolEventObserver* observer) {
+  protocol_event_observers_.AddObserver(observer);
+  if (backend_) {
+    backend_->SetForwardProtocolEvents(
+        protocol_event_observers_.might_have_observers());
+  }
+}
+
+void ProfileSyncService::RemoveProtocolEventObserver(
+    browser_sync::ProtocolEventObserver* observer) {
+  protocol_event_observers_.RemoveObserver(observer);
+  if (backend_) {
+    backend_->SetForwardProtocolEvents(
+        protocol_event_observers_.might_have_observers());
+  }
 }
 
 bool ProfileSyncService::HasObserver(

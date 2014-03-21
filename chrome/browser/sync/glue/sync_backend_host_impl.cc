@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/internal_api/public/base_transaction.h"
+#include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/internal_components_factory_impl.h"
@@ -474,6 +475,14 @@ SyncedDeviceTracker* SyncBackendHostImpl::GetSyncedDeviceTracker() const {
   return core_->synced_device_tracker();
 }
 
+void SyncBackendHostImpl::SetForwardProtocolEvents(bool forward) {
+  DCHECK(initialized());
+  registrar_->sync_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHostCore::SetForwardProtocolEvents,
+                 core_, forward));
+}
+
 void SyncBackendHostImpl::InitCore(scoped_ptr<DoInitializeOptions> options) {
   registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoInitialize,
@@ -742,6 +751,14 @@ void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
   DVLOG(1) << "Connection status changed: "
            << syncer::ConnectionStatusToString(status);
   frontend_->OnConnectionStatusChange(status);
+}
+
+void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
+    syncer::ProtocolEvent* event) {
+  scoped_ptr<syncer::ProtocolEvent> scoped_event(event);
+  if (!frontend_)
+    return;
+  frontend_->OnProtocolEvent(*scoped_event);
 }
 
 base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {

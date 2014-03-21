@@ -124,6 +124,8 @@ void AllStatus::OnThrottledTypesChanged(ModelTypeSet throttled_types) {
 
 void AllStatus::OnMigrationRequested(ModelTypeSet) {}
 
+void AllStatus::OnProtocolEvent(const ProtocolEvent&) {}
+
 SyncStatus AllStatus::status() const {
   base::AutoLock lock(mutex_);
   return status_;

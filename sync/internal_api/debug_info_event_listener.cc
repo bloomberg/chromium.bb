@@ -118,6 +118,8 @@ void DebugInfoEventListener::OnActionableError(
 
 void DebugInfoEventListener::OnMigrationRequested(ModelTypeSet types) {}
 
+void DebugInfoEventListener::OnProtocolEvent(const ProtocolEvent& event) {}
+
 void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_pb::DebugEventInfo event_info;

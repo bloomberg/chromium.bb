@@ -46,6 +46,7 @@ class AllStatus : public SyncEngineEventListener {
   virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE;
   virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE;
   virtual void OnMigrationRequested(ModelTypeSet types) OVERRIDE;
+  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE;
 
   SyncStatus status() const;
 

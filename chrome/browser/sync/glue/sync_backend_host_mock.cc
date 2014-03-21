@@ -110,6 +110,8 @@ base::MessageLoop* SyncBackendHostMock::GetSyncLoopForTesting() {
   return NULL;
 }
 
+void SyncBackendHostMock::SetForwardProtocolEvents(bool enabled) {}
+
 void SyncBackendHostMock::set_fail_initial_download(bool should_fail) {
   fail_initial_download_ = should_fail;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/events/commit_request_event.h"
+#include "sync/internal_api/public/events/commit_request_event.h"
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"

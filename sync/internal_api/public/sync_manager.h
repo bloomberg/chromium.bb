@@ -20,6 +20,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
+#include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -43,6 +44,7 @@ class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
 class SyncEncryptionHandler;
+class ProtocolEvent;
 class SyncScheduler;
 struct UserShare;
 class CancelationSignal;
@@ -195,6 +197,8 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
         const SyncProtocolError& sync_protocol_error) = 0;
 
     virtual void OnMigrationRequested(ModelTypeSet types) = 0;
+
+    virtual void OnProtocolEvent(const ProtocolEvent& event) = 0;
 
    protected:
     virtual ~Observer();

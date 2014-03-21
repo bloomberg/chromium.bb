@@ -744,6 +744,7 @@ void SyncSchedulerImpl::Unthrottle() {
   // We're no longer throttled, so clear the wait interval.
   wait_interval_.reset();
   NotifyRetryTime(base::Time());
+  NotifyThrottledTypesChanged(nudge_tracker_.GetThrottledTypes());
 
   // We treat this as a 'canary' in the sense that it was originally scheduled
   // to run some time ago, failed, and we now want to retry, versus a job that
@@ -815,6 +816,7 @@ void SyncSchedulerImpl::OnThrottled(const base::TimeDelta& throttle_duration) {
   wait_interval_.reset(new WaitInterval(WaitInterval::THROTTLED,
                                         throttle_duration));
   NotifyRetryTime(base::Time::Now() + wait_interval_->length);
+  NotifyThrottledTypesChanged(ModelTypeSet::All());
 }
 
 void SyncSchedulerImpl::OnTypesThrottled(

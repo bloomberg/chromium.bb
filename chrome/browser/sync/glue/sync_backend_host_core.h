@@ -102,6 +102,7 @@ class SyncBackendHostCore
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
   virtual void OnMigrationRequested(syncer::ModelTypeSet types) OVERRIDE;
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
@@ -208,6 +209,8 @@ class SyncBackendHostCore
     return synced_device_tracker_.get();
   }
 
+  void SetForwardProtocolEvents(bool forward);
+
   // Delete the sync data folder to cleanup backend data.  Happens the first
   // time sync is enabled for a user (to prevent accidentally reusing old
   // sync databases), as well as shutdown when you're no longer syncing.
@@ -284,6 +287,9 @@ class SyncBackendHostCore
   // Matches the value of SyncPref's HasSyncSetupCompleted() flag at init time.
   // Should not be used for anything except for UMAs and logging.
   const bool has_sync_setup_completed_;
+
+  // Set when we've been asked to forward sync protocol events to the frontend.
+  bool forward_protocol_events_;
 
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 

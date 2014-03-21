@@ -10,6 +10,8 @@
 #include "sync/engine/commit_util.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
+#include "sync/internal_api/public/events/commit_request_event.h"
+#include "sync/internal_api/public/events/commit_response_event.h"
 #include "sync/sessions/sync_session.h"
 
 namespace syncer {
@@ -97,10 +99,25 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   DVLOG(1) << "Sending commit message.";
+
+  CommitRequestEvent request_event(
+      base::Time::Now(),
+      message_.commit().entries_size(),
+      request_types,
+      message_);
+  session->SendProtocolEvent(request_event);
+
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
       &message_, &response_, session);
   TRACE_EVENT_END0("sync", "PostCommit");
+
+  // TODO(rlarocque): Use result that includes errors captured later?
+  CommitResponseEvent response_event(
+      base::Time::Now(),
+      post_result,
+      response_);
+  session->SendProtocolEvent(response_event);
 
   if (post_result != SYNCER_OK) {
     LOG(WARNING) << "Post commit failed";

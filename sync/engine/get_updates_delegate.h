@@ -5,6 +5,7 @@
 #ifndef SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 #define SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 
+#include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/sessions/nudge_tracker.h"
@@ -31,6 +32,10 @@ class SYNC_EXPORT_PRIVATE GetUpdatesDelegate {
   virtual void ApplyUpdates(
       sessions::StatusController* session,
       UpdateHandlerMap* update_handler_map) const = 0;
+
+  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+      base::Time timestamp,
+      const sync_pb::ClientToServerMessage& request) const = 0;
 };
 
 // Functionality specific to the normal GetUpdate request.
@@ -48,6 +53,9 @@ class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 
+  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+      base::Time timestamp,
+      const sync_pb::ClientToServerMessage& request) const OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesDelegate);
 
@@ -74,6 +82,9 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 
+  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+      base::Time timestamp,
+      const sync_pb::ClientToServerMessage& request) const OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesDelegate);
 
@@ -98,6 +109,9 @@ class SYNC_EXPORT_PRIVATE PollGetUpdatesDelegate : public GetUpdatesDelegate {
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 
+  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+      base::Time timestamp,
+      const sync_pb::ClientToServerMessage& request) const OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(PollGetUpdatesDelegate);
 };

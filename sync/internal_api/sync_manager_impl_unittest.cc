@@ -29,6 +29,7 @@
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
+#include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "sync/internal_api/public/read_node.h"
@@ -646,10 +647,9 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                     syncer::ModelTypeSet));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
-  MOCK_METHOD1(OnActionableError,
-               void(const SyncProtocolError&));  // NOLINT
-  MOCK_METHOD1(OnMigrationRequested,
-               void(syncer::ModelTypeSet));  // NOLINT
+  MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));  // NOLINT
+  MOCK_METHOD1(OnMigrationRequested, void(syncer::ModelTypeSet));  // NOLINT
+  MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));  // NOLINT
 };
 
 class SyncEncryptionHandlerObserverMock

@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/protocol_event_observer.h"
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -273,6 +274,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool HasObserver(
       ProfileSyncServiceBase::Observer* observer) const OVERRIDE;
 
+
+  void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
+  void RemoveProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer);
+
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
 
@@ -365,6 +371,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
           debug_info_listener,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
@@ -911,6 +918,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
 
   ObserverList<ProfileSyncServiceBase::Observer> observers_;
+  ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
 
   syncer::SyncJsController sync_js_controller_;
 

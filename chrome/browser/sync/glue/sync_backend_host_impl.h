@@ -124,6 +124,7 @@ class SyncBackendHostImpl
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
+  virtual void SetForwardProtocolEvents(bool forward) OVERRIDE;
   virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
 
  protected:
@@ -165,6 +166,11 @@ class SyncBackendHostImpl
   // Downloading of control types failed and will be retried. Invokes the
   // frontend's sync configure retry method.
   void HandleControlTypesDownloadRetry();
+
+  // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
+  // call to SetForwardProtocolEvents() explicitly requested that we start
+  // forwarding these events.
+  void HandleProtocolEventOnFrontendLoop(syncer::ProtocolEvent* event);
 
   SyncFrontend* frontend() { return frontend_; }
 

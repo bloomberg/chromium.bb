@@ -89,5 +89,11 @@ void SyncSession::SendEventNotification(SyncCycleEvent::EventCause cause) {
                     OnSyncCycleEvent(event));
 }
 
+void SyncSession::SendProtocolEvent(const ProtocolEvent& event) {
+  FOR_EACH_OBSERVER(SyncEngineEventListener,
+                    *(context_->listeners()),
+                    OnProtocolEvent(event));
+}
+
 }  // namespace sessions
 }  // namespace syncer

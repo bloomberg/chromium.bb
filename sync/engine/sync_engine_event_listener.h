@@ -13,6 +13,7 @@ namespace syncer {
 
 struct SyncProtocolError;
 struct SyncCycleEvent;
+class ProtocolEvent;
 
 class SYNC_EXPORT_PRIVATE SyncEngineEventListener {
  public:
@@ -35,6 +36,9 @@ class SYNC_EXPORT_PRIVATE SyncEngineEventListener {
 
   // This event is sent when the server requests a migration.
   virtual void OnMigrationRequested(ModelTypeSet migration_types) = 0;
+
+  // Emits events when sync communicates with the server.
+  virtual void OnProtocolEvent(const ProtocolEvent& event) = 0;
 
  protected:
   virtual ~SyncEngineEventListener();

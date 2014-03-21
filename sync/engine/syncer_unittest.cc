@@ -152,6 +152,7 @@ class SyncerTest : public testing::Test,
   }
   virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE {}
   virtual void OnReceivedMigrationRequest(ModelTypeSet types) OVERRIDE {}
+  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE {}
   virtual void OnSyncProtocolError(const SyncProtocolError& error) OVERRIDE {}
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {

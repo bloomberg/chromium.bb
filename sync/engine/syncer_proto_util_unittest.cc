@@ -39,13 +39,11 @@ class MockDelegate : public sessions::SyncSession::Delegate {
    MockDelegate() {}
    ~MockDelegate() {}
 
-  MOCK_METHOD0(IsSyncingCurrentlySilenced, bool());
   MOCK_METHOD1(OnReceivedShortPollIntervalUpdate, void(const base::TimeDelta&));
   MOCK_METHOD1(OnReceivedLongPollIntervalUpdate ,void(const base::TimeDelta&));
   MOCK_METHOD1(OnReceivedSessionsCommitDelay, void(const base::TimeDelta&));
   MOCK_METHOD1(OnReceivedClientInvalidationHintBufferSize, void(int));
   MOCK_METHOD1(OnSyncProtocolError, void(const SyncProtocolError&));
-  MOCK_METHOD1(OnSilencedUntil, void(const base::TimeTicks&));
 };
 
 // Builds a ClientToServerResponse with some data type ids, including

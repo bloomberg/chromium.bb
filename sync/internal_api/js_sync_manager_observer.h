@@ -42,6 +42,7 @@ class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
       syncer::ModelTypeSet restored_types) OVERRIDE;
   virtual void OnActionableError(
       const SyncProtocolError& sync_protocol_error) OVERRIDE;
+  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE;
   virtual void OnMigrationRequested(
       syncer::ModelTypeSet types) OVERRIDE;
 

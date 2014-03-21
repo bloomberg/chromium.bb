@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -316,6 +317,18 @@ void SyncBackendHostCore::OnMigrationRequested(syncer::ModelTypeSet types) {
       types);
 }
 
+void SyncBackendHostCore::OnProtocolEvent(
+    const syncer::ProtocolEvent& event) {
+  // TODO(rlarocque): Find a way to pass event_clone as a scoped_ptr.
+  if (forward_protocol_events_) {
+    scoped_ptr<syncer::ProtocolEvent> event_clone(event.Clone());
+    host_.Call(
+        FROM_HERE,
+        &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
+        event_clone.release());
+  }
+}
+
 void SyncBackendHostCore::DoOnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
@@ -590,6 +603,11 @@ void SyncBackendHostCore::DoRetryConfiguration(
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::RetryConfigurationOnFrontendLoop,
              retry_callback);
+}
+
+void SyncBackendHostCore::SetForwardProtocolEvents(bool enabled) {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+  forward_protocol_events_ = enabled;
 }
 
 void SyncBackendHostCore::DeleteSyncDataFolder() {

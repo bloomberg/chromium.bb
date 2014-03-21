@@ -15,6 +15,7 @@
 namespace syncer {
 class DataTypeDebugInfoListener;
 class JsBackend;
+class ProtocolEvent;
 }  // namespace syncer
 
 namespace sync_pb {
@@ -52,6 +53,14 @@ class SyncFrontend {
   // Configure ran into some kind of error. But it is scheduled to be
   // retried.
   virtual void OnSyncConfigureRetry() = 0;
+
+  // Informs the frontned of some network event.  These notifications are
+  // disabled by default and must be enabled through an explicit request to the
+  // SyncBackendHost.
+  //
+  // It's disabld by default to avoid copying data across threads when no one
+  // is listening for it.
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) = 0;
 
   // The status of the connection to the sync server has changed.
   virtual void OnConnectionStatusChange(
