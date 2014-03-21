@@ -340,6 +340,11 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
       this,
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<content::WebContents>(web_contents()));
+  notification_registrar_.Remove(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_CHANGED,
+      content::Source<content::NavigationController>(
+           &web_contents()->GetController()));
 
   web_contents()->SetDelegate(NULL);
 
