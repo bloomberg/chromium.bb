@@ -33,44 +33,6 @@
 #endif
 #endif
 
-namespace {
-
-// Compares two VideoCaptureFormat by checking smallest frame_size area, then
-// by _largest_ frame_rate. Used to order a VideoCaptureFormats vector.
-bool IsCaptureFormatSmaller(const media::VideoCaptureFormat& format1,
-                            const media::VideoCaptureFormat& format2) {
-  if (format1.frame_size.GetArea() == format2.frame_size.GetArea())
-    return format1.frame_rate > format2.frame_rate;
-  return format1.frame_size.GetArea() < format2.frame_size.GetArea();
-}
-
-bool IsCaptureFormatSizeEqual(const media::VideoCaptureFormat& format1,
-                              const media::VideoCaptureFormat& format2) {
-  return format1.frame_size.GetArea() == format2.frame_size.GetArea();
-}
-
-// This function receives a list of capture formats, removes duplicated
-// resolutions while keeping the highest frame rate for each, and forcing I420
-// pixel format.
-void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
-  if (formats->empty())
-    return;
-  std::sort(formats->begin(), formats->end(), IsCaptureFormatSmaller);
-  // Due to the ordering imposed, the largest frame_rate is kept while removing
-  // duplicated resolutions.
-  media::VideoCaptureFormats::iterator last =
-      std::unique(formats->begin(), formats->end(), IsCaptureFormatSizeEqual);
-  formats->erase(last, formats->end());
-  // Mark all formats as I420, since this is what the renderer side will get
-  // anyhow: the actual pixel format is decided at the device level.
-  for (media::VideoCaptureFormats::iterator it = formats->begin();
-       it != formats->end(); ++it) {
-    it->pixel_format = media::PIXEL_FORMAT_I420;
-  }
-}
-
-}  // namespace
-
 namespace content {
 
 VideoCaptureManager::DeviceEntry::DeviceEntry(
@@ -497,7 +459,6 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
             *it, &(device_info.supported_formats));
         break;
     }
-    ConsolidateCaptureFormats(&device_info.supported_formats);
     new_devices_info_cache.push_back(device_info);
   }
   return new_devices_info_cache;

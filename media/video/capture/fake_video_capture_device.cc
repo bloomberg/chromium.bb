@@ -20,8 +20,6 @@ namespace media {
 static const int kFakeCaptureTimeoutMs = 50;
 static const int kFakeCaptureBeepCycle = 20;  // Visual beep every 1s.
 static const int kFakeCaptureCapabilityChangePeriod = 30;
-// TODO(mcasas): Do not rely on this static variable http://crbug.com/323913.
-static VideoCaptureFormats g_internal_supported_formats;
 enum { kNumberOfFakeDevices = 2 };
 
 bool FakeVideoCaptureDevice::fail_next_create_ = false;
@@ -31,12 +29,6 @@ base::subtle::Atomic32 FakeVideoCaptureDevice::number_of_devices_ =
 // static
 size_t FakeVideoCaptureDevice::NumberOfFakeDevices(void) {
   return number_of_devices_;
-}
-
-//static
-void FakeVideoCaptureDevice::SetSupportedFormats(
-    const VideoCaptureFormats& new_formats) {
-  g_internal_supported_formats = new_formats;
 }
 
 // static
@@ -56,10 +48,7 @@ void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
 void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
     VideoCaptureFormats* supported_formats) {
-  if (!g_internal_supported_formats.empty()){
-    *supported_formats = g_internal_supported_formats;
-    return;
-  }
+
   const size_t supported_sizes_length = 3;
   const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
                                        gfx::Size(640, 480),

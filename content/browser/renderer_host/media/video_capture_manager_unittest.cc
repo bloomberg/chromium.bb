@@ -27,36 +27,6 @@ using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::SaveArg;
 
-namespace {
-
-// Compose a list of some resolutions, each with some frame rates and I420
-// pixel format, then repeat the same sequence with MJPEG format.
-void GetListOfSupportedFormatsForTest(media::VideoCaptureFormats* formats) {
-  const gfx::Size supported_sizes[] = {gfx::Size(352, 288),
-                                       gfx::Size(176, 144),
-                                       gfx::Size(960, 720)};
-  const size_t supported_sizes_length = arraysize(supported_sizes);
-  const int supported_frame_rates[] = {10, 25, 16, 29};
-  const size_t supported_frame_rates_length = arraysize(supported_frame_rates);
-  formats->clear();
-  for (size_t i = 0; i < supported_sizes_length; ++i) {
-    for (size_t j = 0; j < supported_frame_rates_length; ++j) {
-      formats->push_back(media::VideoCaptureFormat(supported_sizes[i],
-                                                   supported_frame_rates[j],
-                                                   media::PIXEL_FORMAT_I420));
-    }
-  }
-  for (size_t i = 0; i < supported_sizes_length; ++i) {
-    for (size_t j = 0; j < supported_frame_rates_length; ++j) {
-      formats->push_back(media::VideoCaptureFormat(supported_sizes[i],
-                                                   supported_frame_rates[j],
-                                                   media::PIXEL_FORMAT_MJPEG));
-    }
-  }
-}
-
-}  // namespace
-
 namespace content {
 
 // Listener class used to track progress of VideoCaptureManager test.
@@ -478,61 +448,6 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   StopClient(client_id);
 
   // Wait to check callbacks before removing the listener
-  message_loop_->RunUntilIdle();
-  vcm_->Unregister();
-}
-
-// Test that reordering the supported formats of the device produces what we
-// expect on a particular test list fed via GetListOfSupportedFormatsForTest().
-TEST_F(VideoCaptureManagerTest, ConsolidateCaptureFormats) {
-  StreamDeviceInfoArray devices;
-  int video_session_id = 0;
-  media::VideoCaptureFormats supported_formats;
-  supported_formats.clear();
-
-  // Populate a test-specific supported formats list and copy it into the
-  // FakeVideoCaptureDevice.
-  GetListOfSupportedFormatsForTest(&supported_formats);
-  media::FakeVideoCaptureDevice::SetSupportedFormats(supported_formats);
-
-  InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .WillOnce(SaveArg<1>(&devices));
-  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
-  message_loop_->RunUntilIdle();
-
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
-  video_session_id = vcm_->Open(devices.front());
-  message_loop_->RunUntilIdle();
-
-  supported_formats.clear();
-  EXPECT_TRUE(
-      vcm_->GetDeviceSupportedFormats(video_session_id, &supported_formats));
-
-  // Check that the returned size and contents are exactly what we feed from the
-  // test supported formats populate callback, reordered and consolidated. The
-  // consolidated format list should not include duplicated resolutions, only
-  // the max frame rate per resolution and only I420 pixel format.
-  ASSERT_EQ(supported_formats.size(), 3u);
-  EXPECT_EQ(supported_formats[0].frame_size.width(), 176);
-  EXPECT_EQ(supported_formats[0].frame_size.height(), 144);
-  EXPECT_EQ(supported_formats[0].frame_rate, 29);
-  EXPECT_EQ(supported_formats[0].pixel_format, media::PIXEL_FORMAT_I420);
-  EXPECT_EQ(supported_formats[1].frame_size.width(), 352);
-  EXPECT_EQ(supported_formats[1].frame_size.height(), 288);
-  EXPECT_EQ(supported_formats[1].frame_rate, 29);
-  EXPECT_EQ(supported_formats[1].pixel_format, media::PIXEL_FORMAT_I420);
-  EXPECT_EQ(supported_formats[2].frame_size.width(), 960);
-  EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
-  EXPECT_EQ(supported_formats[2].frame_rate, 29);
-  EXPECT_EQ(supported_formats[2].pixel_format, media::PIXEL_FORMAT_I420);
-
-  // Clean up the test supported_formats inside FakeVideoCaptureDevice.
-  supported_formats.clear();
-  media::FakeVideoCaptureDevice::SetSupportedFormats(supported_formats);
-
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
-  vcm_->Close(video_session_id);
   message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
