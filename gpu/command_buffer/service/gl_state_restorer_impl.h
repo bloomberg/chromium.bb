@@ -27,6 +27,7 @@ class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
    virtual bool IsInitialized() OVERRIDE;
    virtual void RestoreState(const gfx::GLStateRestorer* prev_state) OVERRIDE;
    virtual void RestoreAllTextureUnitBindings() OVERRIDE;
+   virtual void RestoreActiveTextureUnitBinding(unsigned int target) OVERRIDE;
    virtual void RestoreFramebufferBindings() OVERRIDE;
 
  private:

@@ -581,6 +581,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
       const ContextState* prev_state) const OVERRIDE {
     state_.RestoreAllTextureUnitBindings(prev_state);
   }
+  virtual void RestoreActiveTextureUnitBinding(
+      unsigned int target) const OVERRIDE {
+    state_.RestoreActiveTextureUnitBinding(target);
+  }
   virtual void RestoreAttribute(unsigned index) const OVERRIDE {
     state_.RestoreAttribute(index);
   }

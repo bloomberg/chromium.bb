@@ -46,6 +46,38 @@ GLuint GetArbServiceId(const TextureUnit& unit) {
       ? unit.bound_texture_rectangle_arb->service_id() : 0;
 }
 
+GLuint GetServiceId(const TextureUnit& unit, GLuint target) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+      return Get2dServiceId(unit);
+    case GL_TEXTURE_CUBE_MAP:
+      return GetCubeServiceId(unit);
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return GetArbServiceId(unit);
+    case GL_TEXTURE_EXTERNAL_OES:
+      return GetOesServiceId(unit);
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+bool TargetIsSupported(const FeatureInfo* feature_info, GLuint target) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+      return true;
+    case GL_TEXTURE_CUBE_MAP:
+      return true;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return feature_info->feature_flags().arb_texture_rectangle;
+    case GL_TEXTURE_EXTERNAL_OES:
+      return feature_info->feature_flags().oes_egl_image_external;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 }  // anonymous namespace.
 
 TextureUnit::TextureUnit()
@@ -145,6 +177,13 @@ void ContextState::RestoreAllTextureUnitBindings(
     RestoreTextureUnitBindings(ii, prev_state);
   }
   RestoreActiveTexture();
+}
+
+void ContextState::RestoreActiveTextureUnitBinding(unsigned int target) const {
+  DCHECK_LT(active_texture_unit, texture_units.size());
+  const TextureUnit& texture_unit = texture_units[active_texture_unit];
+  if (TargetIsSupported(feature_info_, target))
+    glBindTexture(target, GetServiceId(texture_unit, target));
 }
 
 void ContextState::RestoreAttribute(GLuint attrib_index) const {

@@ -34,6 +34,11 @@ void GLStateRestorerImpl::RestoreAllTextureUnitBindings() {
   decoder_->RestoreAllTextureUnitBindings(NULL);
 }
 
+void GLStateRestorerImpl::RestoreActiveTextureUnitBinding(unsigned int target) {
+  DCHECK(decoder_.get());
+  decoder_->RestoreActiveTextureUnitBinding(target);
+}
+
 void GLStateRestorerImpl::RestoreFramebufferBindings() {
   DCHECK(decoder_.get());
   decoder_->RestoreFramebufferBindings();

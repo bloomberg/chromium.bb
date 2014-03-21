@@ -59,7 +59,7 @@ ScopedTextureBinder::~ScopedTextureBinder() {
   if (state_restorer_) {
     DCHECK(!!GLContext::GetCurrent());
     DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
-    state_restorer_->RestoreAllTextureUnitBindings();
+    state_restorer_->RestoreActiveTextureUnitBinding(target_);
   } else {
     glBindTexture(target_, old_id_);
   }

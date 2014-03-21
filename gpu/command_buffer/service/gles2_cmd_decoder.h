@@ -141,6 +141,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void RestoreActiveTexture() const = 0;
   virtual void RestoreAllTextureUnitBindings(
       const ContextState* prev_state) const = 0;
+  virtual void RestoreActiveTextureUnitBinding(unsigned int target) const = 0;
   virtual void RestoreAttribute(unsigned index) const = 0;
   virtual void RestoreBufferBindings() const = 0;
   virtual void RestoreFramebufferBindings() const = 0;
