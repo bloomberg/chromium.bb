@@ -170,7 +170,8 @@
         '../build/android/cpufeatures.gypi',
       ],
     }],
-    [ 'target_arch == "arm" or target_arch == "mipsel"', {
+    [ 'target_arch == "arm" or target_arch == "arm64" or \
+       target_arch == "mipsel"', {
       'sources!': [
         '../third_party/skia/src/opts/opts_check_SSE2.cpp'
       ],
