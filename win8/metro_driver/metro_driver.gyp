@@ -22,6 +22,12 @@
             'AdditionalDependencies': [
               'D2D1.lib',
               'D3D11.lib',
+              'runtimeobject.lib',
+            ],
+            'DelayLoadDLLs': [
+              'API-MS-WIN-CORE-WINRT-ERROR-L1-1-0.DLL',
+              'API-MS-WIN-CORE-WINRT-L1-1-0.DLL',
+              'API-MS-WIN-CORE-WINRT-STRING-L1-1-0.DLL',
             ],
           },
           'VCCLCompilerTool': {
@@ -76,6 +82,7 @@
             'display_properties.h',
             'metro_driver.cc',
             'metro_driver.h',
+            'metro_driver_win7.cc',
             'stdafx.h',
             'winrt_utils.cc',
             'winrt_utils.h',
