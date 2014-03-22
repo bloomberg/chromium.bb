@@ -2092,8 +2092,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     webViewHelper.webView()->setPageScaleFactor(0.5, WebPoint());
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
-    bitmap.allocPixels();
+    ASSERT_TRUE(bitmap.allocN32Pixels(200, 200));
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 

@@ -64,9 +64,7 @@ public:
         , m_size(size)
     {
         m_nativeImage = NativeImageSkia::create();
-        m_nativeImage->bitmap().setConfig(SkBitmap::kARGB_8888_Config,
-                                          size.width(), size.height(), 0);
-        m_nativeImage->bitmap().allocPixels();
+        EXPECT_TRUE(m_nativeImage->bitmap().allocN32Pixels(size.width(), size.height()));
     }
 
     virtual IntSize size() const OVERRIDE

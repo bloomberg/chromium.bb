@@ -285,10 +285,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
 
     // Set canvas background to red with alpha.
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, kWidth, kHeight);
-    bitmap.allocPixels();
-    SkBitmapDevice device(bitmap);
-    SkCanvas canvas(&device);
+    ASSERT_TRUE(bitmap.allocN32Pixels(kWidth, kHeight));
+    SkCanvas canvas(bitmap);
     canvas.clear(kAlphaRed);
     webView->paint(&canvas, WebRect(0, 0, kWidth, kHeight));
 
