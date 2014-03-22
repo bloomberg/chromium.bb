@@ -67,6 +67,12 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
                              0,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  // Although this is default true, users will not send back information to
+  // Google unless they have opted in to Hotwording at which point they must
+  // also confirm that they wish this preference to be true or opt out of it.
+  prefs->RegisterBooleanPref(prefs::kHotwordAudioLoggingEnabled,
+                             true,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(

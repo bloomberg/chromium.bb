@@ -22,6 +22,10 @@
 
     // Whether the hotword extension is available to be enabled
     boolean available;
+
+    // Whether the sound of "Ok, Google" plus a few seconds before is sent
+    // back to Google.
+    boolean audioLoggingEnabled;
   };
 
   callback GenericDoneCallback = void ();

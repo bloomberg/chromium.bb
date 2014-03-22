@@ -63,6 +63,17 @@ void RecordAvailabilityMetrics(
                             NUM_HOTWORD_EXTENSION_AVAILABILITY_METRICS);
 }
 
+void RecordLoggingMetrics(Profile* profile) {
+  // If the user is not opted in to hotword voice search, the audio logging
+  // metric is not valid so it is not recorded.
+  if (!profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Hotword.HotwordAudioLogging",
+      profile->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled));
+}
+
 ExtensionService* GetExtensionService(Profile* profile) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -183,6 +194,7 @@ bool HotwordService::IsServiceAvailable() {
       service->GetExtensionById(extension_misc::kHotwordExtensionId, true);
 
   RecordAvailabilityMetrics(service, extension);
+  RecordLoggingMetrics(profile_);
 
   return extension && IsHotwordAllowed();
 }

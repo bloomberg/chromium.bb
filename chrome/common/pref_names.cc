@@ -2070,6 +2070,10 @@ const char kHotwordSearchEnabled[] = "hotword.search_enabled";
 // longer shown.
 const char kHotwordOptInPopupTimesShown[] = "hotword.opt_in_popup_times_shown";
 
+// A boolean pref that controls whether the sound of "Ok, Google" plus a few
+// seconds of audio data before is sent back to improve voice search.
+const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";
+
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

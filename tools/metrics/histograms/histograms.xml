@@ -6968,6 +6968,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Hotword.AudioLoggingEnabled" enum="BooleanEnabled">
+  <summary>
+    The state of the hotword audio logging preference. This value is emitted
+    each time the hotword availability is requested by the extension if the user
+    is also opted in to hotword voice search. This check typically happens each
+    time a hotword search is initiated.
+  </summary>
+</histogram>
+
 <histogram name="Hotword.Enabled" enum="HotwordPrefState">
   <owner>rlp@chromium.org</owner>
   <summary>

@@ -6,3 +6,7 @@
 #hotword-confirm-overlay {
   width: 500px;
 }
+
+#feedback-bar input {
+  bottom: 6px;
+}

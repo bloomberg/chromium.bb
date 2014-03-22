@@ -88,8 +88,9 @@ bool HotwordPrivateGetStatusFunction::RunImpl() {
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
-  result.enabled =
-      prefs->GetBoolean(prefs::kHotwordSearchEnabled);
+  result.enabled = prefs->GetBoolean(prefs::kHotwordSearchEnabled);
+  result.audio_logging_enabled =
+      prefs->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
 
   SetResult(result.ToValue().release());
   return true;

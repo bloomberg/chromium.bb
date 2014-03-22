@@ -257,6 +257,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
     { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
     { "hotwordRetryDownloadButton", IDS_HOTWORD_RETRY_DOWNLOAD_BUTTON },
+    { "hotwordAudioLoggingEnable", IDS_HOTWORD_AUDIO_LOGGING_ENABLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -478,7 +479,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
   values->SetString("hotwordLearnMoreURL", chrome::kHotwordLearnMoreURL);
   RegisterTitle(values, "hotwordConfirmOverlay",
-                IDS_HOTWORD_SEARCH_PREF_CHKBOX);
+                IDS_HOTWORD_CONFIRM_BUBBLE_TITLE);
 
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
