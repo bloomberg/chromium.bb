@@ -107,7 +107,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     switch (state) {
       case STATE_INITIALIZE: {
         if (!cached->IsEmpty() && !cached->signature().empty() &&
-            crypto_config_->proof_verifier()) {
+            server_key_.is_https()) {
+          DCHECK(crypto_config_->proof_verifier());
           // If the cached state needs to be verified, do it now.
           next_state_ = STATE_VERIFY_PROOF;
         } else {
@@ -126,7 +127,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
           crypto_config_->FillInchoateClientHello(
-              server_key_.host(),
+              server_key_,
               session()->connection()->supported_versions().front(),
               cached, &crypto_negotiated_params_, &out);
           // Pad the inchoate client hello to fill up a packet.
@@ -152,7 +153,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         session()->config()->ToHandshakeMessage(&out);
         error = crypto_config_->FillClientHello(
-            server_key_.host(),
+            server_key_,
             session()->connection()->connection_id(),
             session()->connection()->supported_versions().front(),
             cached,
@@ -214,10 +215,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         if (!cached->proof_valid()) {
-          ProofVerifier* verifier = crypto_config_->proof_verifier();
-          if (!verifier) {
-            // If no verifier is set then we don't check the certificates.
-            SetProofValid(cached);
+          if (!server_key_.is_https()) {
+            // We don't check the certificates for insecure QUIC connections.
+            SetCachedProofValid(cached);
           } else if (!cached->signature().empty()) {
             next_state_ = STATE_VERIFY_PROOF;
             break;
@@ -274,7 +274,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         if (generation_counter_ != cached->generation_counter()) {
           next_state_ = STATE_VERIFY_PROOF;
         } else {
-          SetProofValid(cached);
+          SetCachedProofValid(cached);
           cached->SetProofVerifyDetails(verify_details_.release());
           next_state_ = STATE_SEND_CHLO;
         }
@@ -352,7 +352,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   }
 }
 
-void QuicCryptoClientStream::SetProofValid(
+void QuicCryptoClientStream::SetCachedProofValid(
     QuicCryptoClientConfig::CachedState* cached) {
   cached->SetProofValid();
   if (visitor_) {

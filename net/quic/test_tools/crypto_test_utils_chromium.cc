@@ -42,15 +42,15 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
 }
 
 // static
-ProofVerifyContext* CryptoTestUtils::ProofVerifyContextForTesting() {
-  return new ProofVerifyContextChromium(BoundNetLog());
-}
-
-// static
 ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
   TestProofVerifierChromium* proof_verifier = new TestProofVerifierChromium(
       CertVerifier::CreateDefault(), "quic_root.crt");
   return proof_verifier;
+}
+
+// static
+ProofVerifyContext* CryptoTestUtils::ProofVerifyContextForTesting() {
+  return new ProofVerifyContextChromium(BoundNetLog());
 }
 
 }  // namespace test

@@ -5,6 +5,7 @@
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "net/quic/crypto/cert_compressor.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/common_cert_set.h"
@@ -256,19 +257,19 @@ void QuicCryptoClientConfig::SetDefaults() {
 
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
     const QuicSessionKey& server_key) {
-  map<QuicSessionKey, CachedState*>::const_iterator it =
-      cached_states_.find(server_key);
+  CachedStateMap::const_iterator it = cached_states_.find(server_key);
   if (it != cached_states_.end()) {
     return it->second;
   }
 
   CachedState* cached = new CachedState;
   cached_states_.insert(make_pair(server_key, cached));
+  PopulateFromCanonicalConfig(server_key, cached);
   return cached;
 }
 
 void QuicCryptoClientConfig::FillInchoateClientHello(
-    const string& server_hostname,
+    const QuicSessionKey& server_key,
     const QuicVersion preferred_version,
     const CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
@@ -278,8 +279,8 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 
   // Server name indication. We only send SNI if it's a valid domain name, as
   // per the spec.
-  if (CryptoUtils::IsValidSNI(server_hostname)) {
-    out->SetStringPiece(kSNI, server_hostname);
+  if (CryptoUtils::IsValidSNI(server_key.host())) {
+    out->SetStringPiece(kSNI, server_key.host());
   }
   out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));
 
@@ -287,7 +288,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }
 
-  if (proof_verifier_.get()) {
+  if (server_key.is_https()) {
     // Don't request ECDSA proofs on platforms that do not support ECDSA
     // certificates.
     bool disableECDSA = false;
@@ -324,7 +325,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 }
 
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
-    const string& server_hostname,
+    const QuicSessionKey& server_key,
     QuicConnectionId connection_id,
     const QuicVersion preferred_version,
     const CachedState* cached,
@@ -335,7 +336,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     string* error_details) const {
   DCHECK(error_details != NULL);
 
-  FillInchoateClientHello(server_hostname, preferred_version, cached,
+  FillInchoateClientHello(server_key, preferred_version, cached,
                           out_params, out);
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
@@ -455,7 +456,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     hkdf_input.append(cached->server_config());
 
     string key, signature;
-    if (!channel_id_signer_->Sign(server_hostname, hkdf_input,
+    if (!channel_id_signer_->Sign(server_key.host(), hkdf_input,
                                   &key, &signature)) {
       *error_details = "Channel ID signature failed";
       return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
@@ -678,6 +679,45 @@ void QuicCryptoClientConfig::InitializeFrom(
   }
   CachedState* cached = LookupOrCreate(server_key);
   cached->InitializeFrom(*canonical_cached);
+}
+
+void QuicCryptoClientConfig::AddCanonicalSuffix(const std::string& suffix) {
+  canoncial_suffixes_.push_back(suffix);
+}
+
+void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
+    const QuicSessionKey& server_key,
+    CachedState* server_state) {
+  DCHECK(server_state->IsEmpty());
+  unsigned i = 0;
+  for (; i < canoncial_suffixes_.size(); ++i) {
+    if (EndsWith(server_key.host(), canoncial_suffixes_[i], false)) {
+      break;
+    }
+  }
+  if (i == canoncial_suffixes_.size())
+    return;
+
+  QuicSessionKey suffix_server_key(
+      canoncial_suffixes_[i], server_key.port(), server_key.is_https());
+  if (!ContainsKey(canonical_server_map_, suffix_server_key)) {
+    // This is the first host we've seen which matches the suffix, so make it
+    // canonical.
+    canonical_server_map_[suffix_server_key] = server_key;
+    return;
+  }
+
+  const QuicSessionKey& canonical_server_key =
+      canonical_server_map_[suffix_server_key];
+  CachedState* canonical_state = cached_states_[canonical_server_key];
+  if (!canonical_state->proof_valid()) {
+    return;
+  }
+
+  // Update canonical version to point at the "most recent" entry.
+  canonical_server_map_[suffix_server_key] = server_key;
+
+  server_state->InitializeFrom(*canonical_state);
 }
 
 }  // namespace net

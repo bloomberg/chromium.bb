@@ -41,12 +41,8 @@ const int kDefaultServerPort = 443;
 
 class QuicStreamFactoryPeer {
  public:
-  static QuicCryptoClientConfig* GetOrCreateCryptoConfig(
-      QuicStreamFactory* factory,
-      const HostPortPair& host_port_pair,
-      bool is_https) {
-    QuicSessionKey server_key(host_port_pair, is_https);
-    return factory->GetOrCreateCryptoConfig(server_key);
+  static QuicCryptoClientConfig* GetCryptoConfig(QuicStreamFactory* factory) {
+    return &factory->crypto_config_;
   }
 
   static bool HasActiveSession(QuicStreamFactory* factory,
@@ -92,14 +88,15 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
       : random_generator_(0),
         maker_(GetParam(), 0),
         clock_(new MockClock()),
+        cert_verifier_(CertVerifier::CreateDefault()),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
+                 cert_verifier_.get(),
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_, kDefaultMaxPacketSize,
                  SupportedVersions(GetParam()), true, true),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
-        is_https_(false),
-        cert_verifier_(CertVerifier::CreateDefault()) {
+        is_https_(false) {
     factory_.set_require_confirmation(false);
   }
 
@@ -137,7 +134,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
               request.Request(destination,
                               is_https_,
                               "GET",
-                              cert_verifier_.get(),
                               net_log_,
                               callback_.callback()));
 
@@ -181,10 +177,10 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   MockRandom random_generator_;
   QuicTestPacketMaker maker_;
   MockClock* clock_;  // Owned by factory_.
+  scoped_ptr<CertVerifier> cert_verifier_;
   QuicStreamFactory factory_;
   HostPortPair host_port_pair_;
   bool is_https_;
-  scoped_ptr<CertVerifier> cert_verifier_;
   BoundNetLog net_log_;
   TestCompletionCallback callback_;
 };
@@ -209,7 +205,6 @@ TEST_P(QuicStreamFactoryTest, Create) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -228,7 +223,6 @@ TEST_P(QuicStreamFactoryTest, Create) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
@@ -254,7 +248,6 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -267,7 +260,6 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
             request2.Request(host_port_pair_,
                              !is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -306,7 +298,6 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -318,7 +309,6 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
             request2.Request(server2,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
@@ -356,7 +346,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -368,7 +357,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
             request2.Request(server2,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
@@ -387,7 +375,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
             request3.Request(server2,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback3.callback()));
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
@@ -435,7 +422,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
             request.Request(server1,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -447,7 +433,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
             request2.Request(server2,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
@@ -500,7 +485,6 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
             request.Request(server1,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -512,7 +496,6 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
             request2.Request(server2,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
@@ -545,7 +528,6 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -570,7 +552,6 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -618,7 +599,6 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
     int rv = request.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback());
     if (i == 0) {
@@ -639,7 +619,6 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             CompletionCallback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -670,7 +649,6 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -692,7 +670,6 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -714,7 +691,6 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
               request.Request(host_port_pair_,
                               is_https_,
                               "GET",
-                              cert_verifier_.get(),
                               net_log_,
                               callback_.callback()));
   }
@@ -782,7 +758,6 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -806,7 +781,6 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
 
@@ -846,7 +820,6 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -871,7 +844,6 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
 
@@ -911,7 +883,6 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -936,7 +907,6 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
 
@@ -976,7 +946,6 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
             request.Request(host_port_pair_,
                             is_https_,
                             "GET",
-                            cert_verifier_.get(),
                             net_log_,
                             callback_.callback()));
 
@@ -1001,7 +970,6 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
             request2.Request(host_port_pair_,
                              is_https_,
                              "GET",
-                             cert_verifier_.get(),
                              net_log_,
                              callback_.callback()));
 
@@ -1027,13 +995,11 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     r2_host_name.append(cannoncial_suffixes[i]);
 
     HostPortPair host_port_pair1(r1_host_name, 80);
-    QuicCryptoClientConfig* crypto_config1 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
-            &factory_, host_port_pair1, is_https_);
-    DCHECK(crypto_config1);
+    QuicCryptoClientConfig* crypto_config =
+        QuicStreamFactoryPeer::GetCryptoConfig(&factory_);
     QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config1->LookupOrCreate(server_key1);
+        crypto_config->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -1043,13 +1009,9 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     cached1->SetProofValid();
 
     HostPortPair host_port_pair2(r2_host_name, 80);
-    QuicCryptoClientConfig* crypto_config2 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
-            &factory_, host_port_pair2, is_https_);
-    DCHECK(crypto_config2);
     QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config2->LookupOrCreate(server_key2);
+        crypto_config->LookupOrCreate(server_key2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->proof_valid());
   }
@@ -1067,13 +1029,11 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     r4_host_name.append(cannoncial_suffixes[i]);
 
     HostPortPair host_port_pair1(r3_host_name, 80);
-    QuicCryptoClientConfig* crypto_config1 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
-            &factory_, host_port_pair1, is_https_);
-    DCHECK(crypto_config1);
+    QuicCryptoClientConfig* crypto_config =
+        QuicStreamFactoryPeer::GetCryptoConfig(&factory_);
     QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config1->LookupOrCreate(server_key1);
+        crypto_config->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -1083,13 +1043,9 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     cached1->SetProofInvalid();
 
     HostPortPair host_port_pair2(r4_host_name, 80);
-    QuicCryptoClientConfig* crypto_config2 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
-            &factory_, host_port_pair2, is_https_);
-    DCHECK(crypto_config2);
     QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config2->LookupOrCreate(server_key2);
+        crypto_config->LookupOrCreate(server_key2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->source_address_token().empty());
     EXPECT_FALSE(cached2->proof_valid());

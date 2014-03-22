@@ -56,7 +56,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoClientConfig config;
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
-  config.FillInchoateClientHello("www.google.com", QuicVersionMax(), &state,
+  QuicSessionKey server_key("www.google.com", 80, false);
+  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
                                  &params, &msg);
 
   QuicTag cver;

@@ -98,7 +98,7 @@ class CryptoTestUtils {
   static ProofVerifier* ProofVerifierForTesting();
 
   // Returns a |ProofVerifyContext| that must be used with the verifier
-  // returned by ||ProofVerifierForTesting.
+  // returned by |ProofVerifierForTesting|.
   static ProofVerifyContext* ProofVerifyContextForTesting();
 
   // MockCommonCertSets returns a CommonCertSets that contains a single set with

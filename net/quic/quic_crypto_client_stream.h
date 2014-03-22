@@ -104,9 +104,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // |in| may be NULL if the call did not result from a received message.
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
 
-  // Called to set the proof of |cache| valid.  Also invokes the visitor's
+  // Called to set the proof of |cached| valid.  Also invokes the visitor's
   // OnProofValid() method.
-  void SetProofValid(QuicCryptoClientConfig::CachedState* cached);
+  void SetCachedProofValid(QuicCryptoClientConfig::CachedState* cached);
 
   Visitor* visitor_;
 

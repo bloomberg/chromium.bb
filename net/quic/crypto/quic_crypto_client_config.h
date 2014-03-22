@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // |out_params->cached_certs|. |preferred_version| is the version of the
   // QUIC protocol that this client chose to use initially. This allows the
   // server to detect downgrade attacks.
-  void FillInchoateClientHello(const std::string& server_hostname,
+  void FillInchoateClientHello(const QuicSessionKey& server_key,
                                const QuicVersion preferred_version,
                                const CachedState* cached,
                                QuicCryptoNegotiatedParameters* out_params,
@@ -151,7 +151,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // FillClientHello sets |out| to be a CHLO message based on the configuration
   // of this object. This object must have cached enough information about
-  // |server_hostname| in order to perform a handshake. This can be checked
+  // the server's hostname in order to perform a handshake. This can be checked
   // with the |IsComplete| member of |CachedState|.
   //
   // |clock| and |rand| are used to generate the nonce and |out_params| is
@@ -159,7 +159,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // accept. |preferred_version| is the version of the QUIC protocol that this
   // client chose to use initially. This allows the server to detect downgrade
   // attacks.
-  QuicErrorCode FillClientHello(const std::string& server_hostname,
+  QuicErrorCode FillClientHello(const QuicSessionKey& server_key,
                                 QuicConnectionId connection_id,
                                 const QuicVersion preferred_version,
                                 const CachedState* cached,
@@ -218,10 +218,34 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                       const QuicSessionKey& canonical_server_key,
                       QuicCryptoClientConfig* canonical_crypto_config);
 
+  // Adds |suffix| as a domain suffix for which the server's crypto config
+  // is expected to be shared among servers with the domain suffix. If a server
+  // matches this suffix, then the server config from another server with the
+  // suffix will be used to initialize the cached state for this server.
+  void AddCanonicalSuffix(const std::string& suffix);
+
  private:
+  typedef std::map<QuicSessionKey, CachedState*> CachedStateMap;
+
+  // If the suffix of the hostname in |server_key| is in |canoncial_suffixes_|,
+  // then populate |cached| with the canonical cached state from
+  // |canonical_server_map_| for that suffix.
+  void PopulateFromCanonicalConfig(const QuicSessionKey& server_key,
+                                   CachedState* cached);
+
   // cached_states_ maps from the server_key to the cached information about
   // that server.
-  std::map<QuicSessionKey, CachedState*> cached_states_;
+  CachedStateMap cached_states_;
+
+  // Contains a map of servers which could share the same server config. Map
+  // from a canonical host suffix/port/scheme to a representative server with
+  // the canonical suffix, which has a plausible set of initial certificates
+  // (or at least server public key).
+  std::map<QuicSessionKey, QuicSessionKey> canonical_server_map_;
+
+  // Contains list of suffixes (for exmaple ".c.youtube.com",
+  // ".googlevideo.com") of canoncial hostnames.
+  std::vector<std::string> canoncial_suffixes_;
 
   scoped_ptr<ProofVerifier> proof_verifier_;
   scoped_ptr<ChannelIDSigner> channel_id_signer_;
