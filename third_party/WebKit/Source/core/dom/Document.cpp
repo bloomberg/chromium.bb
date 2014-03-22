@@ -816,11 +816,6 @@ void Document::setImport(HTMLImport* import)
     m_import = import;
 }
 
-void Document::didLoadAllImports()
-{
-    executeScriptsWaitingForResourcesIfNeeded();
-}
-
 bool Document::haveImportsLoaded() const
 {
     return !m_import || !m_import->state().shouldBlockScriptExecution();
@@ -2849,19 +2844,36 @@ LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
     return 0;
 }
 
+void Document::didLoadAllImports()
+{
+    if (!haveStylesheetsLoaded())
+        return;
+
+    didLoadAllScriptBlockingResources();
+}
+
 void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
 
     styleResolverChanged(RecalcStyleDeferred, hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
+
+    if (m_import)
+        m_import->didRemoveAllPendingStylesheet();
+    if (!haveImportsLoaded())
+        return;
+
+    didLoadAllScriptBlockingResources();
+}
+
+void Document::didLoadAllScriptBlockingResources()
+{
     executeScriptsWaitingForResourcesIfNeeded();
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
         view()->scrollToFragment(m_url);
-
-    if (m_import)
-        m_import->didRemoveAllPendingStylesheet();
 }
+
 
 void Document::executeScriptsWaitingForResourcesIfNeeded()
 {

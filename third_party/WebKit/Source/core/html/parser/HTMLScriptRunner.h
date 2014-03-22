@@ -68,8 +68,13 @@ private:
 
     LocalFrame* frame() const;
 
+    enum PendingScriptType {
+        PendingScriptBlockingParser,
+        PendingScriptDeferred
+    };
+
     void executeParsingBlockingScript();
-    void executePendingScriptAndDispatchEvent(PendingScript&);
+    void executePendingScriptAndDispatchEvent(PendingScript&, PendingScriptType);
     void executeParsingBlockingScripts();
 
     void requestParsingBlockingScript(Element*);

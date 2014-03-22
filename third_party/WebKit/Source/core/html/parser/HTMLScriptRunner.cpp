@@ -113,10 +113,10 @@ void HTMLScriptRunner::executeParsingBlockingScript()
     ASSERT(isPendingScriptReady(m_parserBlockingScript));
 
     InsertionPointRecord insertionPointRecord(m_host->inputStream());
-    executePendingScriptAndDispatchEvent(m_parserBlockingScript);
+    executePendingScriptAndDispatchEvent(m_parserBlockingScript, PendingScriptBlockingParser);
 }
 
-void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript)
+void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript, PendingScriptType pendingScriptType)
 {
     bool errorOccurred = false;
     ScriptSourceCode sourceCode = sourceFromPendingScript(pendingScript, errorOccurred);
@@ -125,8 +125,15 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     if (pendingScript.resource() && pendingScript.watchingForLoad())
         stopWatchingForLoad(pendingScript);
 
-    if (!isExecutingScript())
+    if (!isExecutingScript()) {
         Microtask::performCheckpoint();
+        if (pendingScriptType == PendingScriptBlockingParser) {
+            m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
+            // The parser cannot be unblocked as a microtask requested another resource
+            if (m_hasScriptsWaitingForResources)
+                return;
+        }
+    }
 
     // Clear the pending script before possible rentrancy from executeScript()
     RefPtr<Element> element = pendingScript.releaseElementAndClear();
@@ -223,7 +230,7 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
             return false;
         }
         PendingScript first = m_scriptsToExecuteAfterParsing.takeFirst();
-        executePendingScriptAndDispatchEvent(first);
+        executePendingScriptAndDispatchEvent(first, PendingScriptDeferred);
         // FIXME: What is this m_document check for?
         if (!m_document)
             return false;
