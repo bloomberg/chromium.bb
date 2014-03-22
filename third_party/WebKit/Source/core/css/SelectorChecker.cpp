@@ -490,18 +490,20 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
     bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.behaviorAtBoundary, context.scope);
 
+    // Only :host and :ancestor should match the host: http://drafts.csswg.org/css-scoping/#host-element
+    if (elementIsHostInItsShadowTree && !selector.isHostPseudoClass())
+        return false;
+
     if (selector.m_match == CSSSelector::Tag)
-        return SelectorChecker::tagMatches(element, selector.tagQName()) && !elementIsHostInItsShadowTree;
+        return SelectorChecker::tagMatches(element, selector.tagQName());
 
     if (selector.m_match == CSSSelector::Class)
-        return element.hasClass() && element.classNames().contains(selector.value()) && !elementIsHostInItsShadowTree;
+        return element.hasClass() && element.classNames().contains(selector.value());
 
     if (selector.m_match == CSSSelector::Id)
-        return element.hasID() && element.idForStyleResolution() == selector.value() && !elementIsHostInItsShadowTree;
+        return element.hasID() && element.idForStyleResolution() == selector.value();
 
     if (selector.isAttributeSelector()) {
-        if (elementIsHostInItsShadowTree)
-            return false;
         if (!anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector.m_match), selector))
             return false;
     }

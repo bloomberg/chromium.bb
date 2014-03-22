@@ -63,7 +63,7 @@ shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-debug('Test that :not(*) in a shadow tree can match without :host.');
+debug('Test that :not(*) in a shadow tree cannot match without :host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -74,8 +74,23 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));
 
-shouldHaveBorderColor('host', 'rgb(0, 128, 0)');
+shouldHaveBorderColor('host', 'rgb(0, 0, 0)');
 shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+debug('Test that :first-child in a shadow tree cannot match without :host.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':first-child { border: 1px solid green; }')),
+            createDOM('content', {})),
+        createDOM('div', {'id': 'host-child'},
+            document.createTextNode('Hello, Host!'))));
+
+shouldHaveBorderColor('host', 'rgb(0, 0, 0)');
 
 cleanUp();
 

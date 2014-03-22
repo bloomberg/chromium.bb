@@ -233,6 +233,7 @@ public:
     void setFunctionArgumentSelector(CSSParserSelector* selector) { m_functionArgumentSelector = selector; }
     bool isDistributedPseudoElement() const { return m_selector->isDistributedPseudoElement(); }
     CSSParserSelector* findDistributedPseudoElementSelector() const;
+    bool hasHostPseudoSelector() const;
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
     bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }

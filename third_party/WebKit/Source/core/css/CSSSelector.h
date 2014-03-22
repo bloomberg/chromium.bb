@@ -386,7 +386,7 @@ inline bool CSSSelector::isCustomPseudoElement() const
 
 inline bool CSSSelector::isHostPseudoClass() const
 {
-    return m_match == PseudoClass && m_pseudoType == PseudoHost;
+    return m_match == PseudoClass && (m_pseudoType == PseudoHost || m_pseudoType == PseudoAncestor);
 }
 
 inline bool CSSSelector::isSiblingSelector() const

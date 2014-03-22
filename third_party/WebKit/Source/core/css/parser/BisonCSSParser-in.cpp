@@ -1934,9 +1934,11 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
     if (specifiers->needsCrossingTreeScopeBoundary())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
 
-    if (tag == anyQName())
+    // *:host never matches, so we can't discard the * otherwise we can't tell the
+    // difference between *:host and just :host.
+    if (tag == anyQName() && !specifiers->hasHostPseudoSelector())
         return specifiers;
-    if (!(specifiers->pseudoType() == CSSSelector::PseudoCue))
+    if (specifiers->pseudoType() != CSSSelector::PseudoCue)
         specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
     return specifiers;
 }

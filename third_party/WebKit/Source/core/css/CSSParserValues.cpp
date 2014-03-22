@@ -258,4 +258,14 @@ CSSParserSelector* CSSParserSelector::findDistributedPseudoElementSelector() con
     return 0;
 }
 
+bool CSSParserSelector::hasHostPseudoSelector() const
+{
+    CSSParserSelector* selector = const_cast<CSSParserSelector*>(this);
+    do {
+        if (selector->pseudoType() == CSSSelector::PseudoHost || selector->pseudoType() == CSSSelector::PseudoAncestor)
+            return true;
+    } while ((selector = selector->tagHistory()));
+    return false;
+}
+
 } // namespace WebCore
