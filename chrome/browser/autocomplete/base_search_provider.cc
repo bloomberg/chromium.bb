@@ -448,8 +448,10 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (!suggestion.annotation().empty())
     match.description = suggestion.annotation();
 
+  // suggestion.match_contents() should have already been collapsed.
   match.allowed_to_be_default_match =
-      (input.text() == suggestion.match_contents());
+      (base::CollapseWhitespace(input.text(), false) ==
+       suggestion.match_contents());
 
   // When the user forced a query, we need to make sure all the fill_into_edit
   // values preserve that property.  Otherwise, if the user starts editing a
@@ -795,6 +797,8 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
   const bool allow_navsuggest = input.type() != AutocompleteInput::FORCED_QUERY;
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  const base::string16& trimmed_input =
+      base::CollapseWhitespace(input.text(), false);
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
@@ -843,9 +847,11 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
 
       // TODO(kochi): Improve calculator suggestion presentation.
       results->suggest_results.push_back(SuggestResult(
-          suggestion, match_type, match_contents, match_contents_prefix,
-          annotation, suggest_query_params, deletion_url, is_keyword_result,
-          relevance, relevances != NULL, should_prefetch, input.text()));
+          base::CollapseWhitespace(suggestion, false), match_type,
+          base::CollapseWhitespace(match_contents, false),
+          match_contents_prefix, annotation, suggest_query_params,
+          deletion_url, is_keyword_result, relevance, relevances != NULL,
+          should_prefetch, trimmed_input));
     }
   }
   SortResults(is_keyword_result, relevances, results);

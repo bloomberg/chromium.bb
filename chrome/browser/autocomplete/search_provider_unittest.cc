@@ -364,7 +364,8 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   ASSERT_GE(provider_->matches().size(), 1u);
   EXPECT_TRUE(FindMatchWithDestination(GURL(
       default_t_url_->url_ref().ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(text))),
+          TemplateURLRef::SearchTermsArgs(base::CollapseWhitespace(
+              text, false)))),
       wyt_match));
 }
 
@@ -741,10 +742,12 @@ TEST_F(SearchProviderTest, AutocompleteMultipleVisitsImmediately) {
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
 }
 
-// Autocompletion should work at a word boundary after a space.
+// Autocompletion should work at a word boundary after a space, and should
+// offer a suggestion for the trimmed search query.
 TEST_F(SearchProviderTest, AutocompleteAfterSpace) {
-  GURL term_url(AddSearchToHistory(default_t_url_, ASCIIToUTF16("two searches"),
-                                   2));
+  AddSearchToHistory(default_t_url_, ASCIIToUTF16("two  searches "), 2);
+  GURL suggested_url(default_t_url_->url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("two searches"))));
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteMatch wyt_match;
@@ -752,9 +755,11 @@ TEST_F(SearchProviderTest, AutocompleteAfterSpace) {
                                                       &wyt_match));
   ASSERT_EQ(2u, provider_->matches().size());
   AutocompleteMatch term_match;
-  EXPECT_TRUE(FindMatchWithDestination(term_url, &term_match));
+  EXPECT_TRUE(FindMatchWithDestination(suggested_url, &term_match));
   EXPECT_GT(term_match.relevance, wyt_match.relevance);
   EXPECT_TRUE(term_match.allowed_to_be_default_match);
+  EXPECT_EQ(ASCIIToUTF16("searches"), term_match.inline_autocompletion);
+  EXPECT_EQ(ASCIIToUTF16("two searches"), term_match.fill_into_edit);
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
 }
 
@@ -914,33 +919,41 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
                    ASCIIToUTF16("k foo") ) } },
 
     // Make sure extra whitespace after the keyword doesn't change the
-    // keyword verbatim query.
+    // keyword verbatim query.  Also verify that interior consecutive
+    // whitespace gets trimmed.
     { ASCIIToUTF16("k   foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    true,
                    ASCIIToUTF16("k foo")),
-        ResultInfo(GURL("http://defaultturl/k%20%20%20foo"),
+        ResultInfo(GURL("http://defaultturl/k%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    false,
-                   ASCIIToUTF16("k   foo")) } },
+                   ASCIIToUTF16("k foo")) } },
     // Leading whitespace should be stripped before SearchProvider gets the
     // input; hence there are no tests here about how it handles those inputs.
 
-    // But whitespace elsewhere in the query string should matter to both
-    // matches.
+    // Verify that interior consecutive whitespace gets trimmed in either case.
     { ASCIIToUTF16("k  foo  bar"), 2,
-      { ResultInfo(GURL("http://keyword/foo%20%20bar"),
+      { ResultInfo(GURL("http://keyword/foo%20bar"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    true,
-                   ASCIIToUTF16("k foo  bar")),
-        ResultInfo(GURL("http://defaultturl/k%20%20foo%20%20bar"),
+                   ASCIIToUTF16("k foo bar")),
+        ResultInfo(GURL("http://defaultturl/k%20foo%20bar"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    false,
-                   ASCIIToUTF16("k  foo  bar")) } },
-    // Note in the above test case we don't test trailing whitespace because
-    // SearchProvider still doesn't handle this well.  See related bugs:
-    // 102690, 99239, 164635.
+                   ASCIIToUTF16("k foo bar")) } },
+
+    // Verify that trailing whitespace gets trimmed.
+    { ASCIIToUTF16("k foo bar  "), 2,
+      { ResultInfo(GURL("http://keyword/foo%20bar"),
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
+                   ASCIIToUTF16("k foo bar")),
+        ResultInfo(GURL("http://defaultturl/k%20foo%20bar"),
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
+                   ASCIIToUTF16("k foo bar")) } },
 
     // Keywords can be prefixed by certain things that should get ignored
     // when constructing the keyword match.
@@ -979,11 +992,12 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    true,
                    ASCIIToUTF16("k")) } },
+    // Ditto.  Trailing whitespace shouldn't make a difference.
     { ASCIIToUTF16("k "), 1,
-      { ResultInfo(GURL("http://defaultturl/k%20"),
+      { ResultInfo(GURL("http://defaultturl/k"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    true,
-                   ASCIIToUTF16("k ")) } }
+                   ASCIIToUTF16("k")) } }
 
     // The fact that verbatim queries to keyword are handled by KeywordProvider
     // not SearchProvider is tested in

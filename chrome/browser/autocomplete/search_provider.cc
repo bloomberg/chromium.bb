@@ -822,11 +822,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   if (verbatim_relevance > 0) {
+    const base::string16& trimmed_verbatim =
+        base::CollapseWhitespace(input_.text(), false);
     SuggestResult verbatim(
-        input_.text(), AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        input_.text(), base::string16(), base::string16(), std::string(),
+        trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        trimmed_verbatim, base::string16(), base::string16(), std::string(),
         std::string(), false, verbatim_relevance, relevance_from_server, false,
-        input_.text());
+        trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, &map);
   }
@@ -844,11 +846,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       const int keyword_verbatim_relevance =
           GetKeywordVerbatimRelevance(&keyword_relevance_from_server);
       if (keyword_verbatim_relevance > 0) {
+        const base::string16& trimmed_verbatim =
+            base::CollapseWhitespace(keyword_input_.text(), false);
         SuggestResult verbatim(
-            keyword_input_.text(), AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-            keyword_input_.text(), base::string16(), base::string16(),
+            trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            trimmed_verbatim, base::string16(), base::string16(),
             std::string(), std::string(), true, keyword_verbatim_relevance,
-            keyword_relevance_from_server, false, keyword_input_.text());
+            keyword_relevance_from_server, false, trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
                       did_not_accept_keyword_suggestion, false, &map);
       }
@@ -1061,12 +1065,18 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
   const bool prevent_search_history_inlining =
       OmniboxFieldTrial::SearchHistoryPreventInlining(
           input_.current_page_classification());
+  const base::string16& trimmed_input =
+      base::CollapseWhitespace(input_text, false);
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {
+    const base::string16& trimmed_suggestion =
+        base::CollapseWhitespace(i->term, false);
+
     // Don't autocomplete multi-word queries that have only been seen once
     // unless the user has typed more than one word.
     bool prevent_inline_autocomplete = base_prevent_inline_autocomplete ||
-        (!input_multiple_words && (i->visits < 2) && HasMultipleWords(i->term));
+        (!input_multiple_words && (i->visits < 2) &&
+         HasMultipleWords(trimmed_suggestion));
 
     // Don't autocomplete search terms that would normally be treated as URLs
     // when typed. For example, if the user searched for "google.com" and types
@@ -1081,9 +1091,10 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     //  * When the user has typed the whole term, the "what you typed" history
     //    match will outrank us for URL-like inputs anyway, so we need not do
     //    anything special.
-    if (!prevent_inline_autocomplete && classifier && (i->term != input_text)) {
+    if (!prevent_inline_autocomplete && classifier &&
+        (trimmed_suggestion != trimmed_input)) {
       AutocompleteMatch match;
-      classifier->Classify(i->term, false, false,
+      classifier->Classify(trimmed_suggestion, false, false,
                            input_.current_page_classification(), &match, NULL);
       prevent_inline_autocomplete =
           !AutocompleteMatch::IsSearchType(match.type);
@@ -1093,9 +1104,9 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     scored_results.push_back(SuggestResult(
-        i->term, AutocompleteMatchType::SEARCH_HISTORY, i->term,
-        base::string16(), base::string16(), std::string(), std::string(),
-        is_keyword, relevance, false, false, input_text));
+        trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
+        trimmed_suggestion, base::string16(), base::string16(), std::string(),
+        std::string(), is_keyword, relevance, false, false, trimmed_input));
   }
 
   // History returns results sorted for us.  However, we may have docked some

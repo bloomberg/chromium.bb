@@ -196,6 +196,7 @@ class BaseSearchProvider : public AutocompleteProvider,
     // The contents to be displayed as prefix of match contents.
     // Used for postfix suggestions to display a leading ellipsis (or some
     // equivalent character) to indicate omitted text.
+    // Only used to pass this information to about:omnibox's "Additional Info".
     base::string16 match_contents_prefix_;
 
     // Optional annotation for the |match_contents_| for disambiguation.
