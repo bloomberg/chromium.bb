@@ -91,6 +91,7 @@ bool ReadProcMaps(std::string* proc_maps) {
 
 bool ParseProcMaps(const std::string& input,
                    std::vector<MappedMemoryRegion>* regions_out) {
+  CHECK(regions_out);
   std::vector<MappedMemoryRegion> regions;
 
   // This isn't async safe nor terribly efficient, but it doesn't need to be at
@@ -101,8 +102,10 @@ bool ParseProcMaps(const std::string& input,
   for (size_t i = 0; i < lines.size(); ++i) {
     // Due to splitting on '\n' the last line should be empty.
     if (i == lines.size() - 1) {
-      if (!lines[i].empty())
+      if (!lines[i].empty()) {
+        DLOG(WARNING) << "Last line not empty";
         return false;
+      }
       break;
     }
 
@@ -125,6 +128,7 @@ bool ParseProcMaps(const std::string& input,
     if (sscanf(line, "%" SCNxPTR "-%" SCNxPTR " %4c %llx %hhx:%hhx %ld %n",
                &region.start, &region.end, permissions, &region.offset,
                &dev_major, &dev_minor, &inode, &path_index) < 7) {
+      DPLOG(WARNING) << "sscanf failed for line: " << line;
       return false;
     }
 
