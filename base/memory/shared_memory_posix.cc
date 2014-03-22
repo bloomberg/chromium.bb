@@ -270,7 +270,6 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   }
   return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
 }
-
 #endif  // !defined(OS_ANDROID)
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {
@@ -385,7 +384,6 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
 
   return true;
 }
-#endif
 
 // For the given shmem named |mem_name|, return a filename to mmap()
 // (and possibly create).  Modifies |filename|.  Return false on
@@ -413,6 +411,7 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   *path = temp_dir.AppendASCII(name_base + ".shmem." + mem_name);
   return true;
 }
+#endif  // !defined(OS_ANDROID)
 
 void SharedMemory::LockOrUnlockCommon(int function) {
   DCHECK_GE(mapped_file_, 0);

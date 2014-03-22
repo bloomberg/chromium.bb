@@ -261,10 +261,12 @@ class BASE_EXPORT SharedMemory {
 
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL)
+#if !defined(OS_ANDROID)
   bool PrepareMapFile(ScopedFILE fp, ScopedFD readonly);
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
-  void LockOrUnlockCommon(int function);
 #endif
+  void LockOrUnlockCommon(int function);
+#endif  // defined(OS_POSIX) && !defined(OS_NACL)
   enum ShareMode {
     SHARE_READONLY,
     SHARE_CURRENT_MODE,
