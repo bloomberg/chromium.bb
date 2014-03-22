@@ -597,6 +597,8 @@ void DefaultState::CenterWindow(WindowState* window_state) {
     center_in_parent.ClampToCenteredSize(window->bounds().size());
     window_state->SetBoundsDirectAnimated(center_in_parent);
   }
+  // Centering window is treated as if a user moved and resized the window.
+  window_state->set_bounds_changed_by_user(true);
 }
 
 }  // namespace wm

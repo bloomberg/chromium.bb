@@ -6,6 +6,7 @@
 
 #include "ash/screen_util.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -29,7 +30,13 @@ TEST_F(WindowUtilTest, CenterWindow) {
   UpdateDisplay("500x400, 600x400");
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_FALSE(window_state->bounds_changed_by_user());
+
   wm::CenterWindow(window.get());
+  // Centring window is considered as a user's action.
+  EXPECT_TRUE(window_state->bounds_changed_by_user());
   EXPECT_EQ("200,126 100x100", window->bounds().ToString());
   EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
