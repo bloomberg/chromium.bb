@@ -414,7 +414,7 @@ TEST_F(GCMClientImplTest, RegisterApp) {
   EXPECT_TRUE(ExistsRegistration(kAppId));
 }
 
-TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
+TEST_F(GCMClientImplTest, RegisterAppFromCache) {
   EXPECT_FALSE(ExistsRegistration(kAppId));
 
   std::vector<std::string> senders;
