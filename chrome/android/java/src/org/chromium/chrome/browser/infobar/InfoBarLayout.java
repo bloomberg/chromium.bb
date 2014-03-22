@@ -144,7 +144,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
 
         // Set up the close button.
         mCloseButton.setId(R.id.infobar_close_button);
-        mCloseButton.setImageResource(R.drawable.infobar_dismiss);
+        mCloseButton.setImageResource(R.drawable.dismiss);
         mCloseButton.setBackgroundResource(R.drawable.infobar_close_bg);
         mCloseButton.setOnClickListener(this);
 

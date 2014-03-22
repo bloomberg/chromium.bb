@@ -4,40 +4,33 @@
 
 package org.chromium.chrome.browser.banners;
 
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.PackageManager;
+import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.R;
-import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
 /**
  * Manages an AppBannerView for a Tab and its ContentView.
  *
  * The AppBannerManager manages a single AppBannerView, dismissing it when the user navigates to a
- * new page or creating a new one when it detects that the current webpage is requesting a banner
- * to be built.  The actual observation of the WebContents (which triggers the automatic creation
- * and removal of banners, among other things) is done by the native-side AppBannerManager.
+ * new page or creating a new one when it detects that the current webpage is requesting a banner to
+ * be built. The actual observation of the WebContents (which triggers the automatic creation and
+ * removal of banners, among other things) is done by the native-side AppBannerManager.
  *
  * This Java-side class owns its native-side counterpart, which is basically used to grab resources
  * from the network.
  */
-public class AppBannerManager implements AppBannerView.Observer, InstallerDelegate.Observer,
-        AppDetailsDelegate.Observer, IntentCallback {
+@JNINamespace("banners")
+public class AppBannerManager implements AppBannerView.Observer, AppDetailsDelegate.Observer {
     private static final String TAG = "AppBannerManager";
 
     /** Retrieves information about a given package. */
@@ -129,7 +122,7 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
     @CalledByNative
     private void prepareBanner(String url, String packageName) {
         // Get rid of whatever banner is there currently.
-        if (mBannerView != null) dismissCurrentBanner();
+        if (mBannerView != null) dismissCurrentBanner(AppBannerMetricsIds.DISMISS_ERROR);
 
         if (sAppDetailsDelegate == null || !isBannerForCurrentPage(url)) return;
 
@@ -155,129 +148,74 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
      * Called when all the data required to show a banner has finally been retrieved.
      * Creates the banner and shows it, as long as the banner is still meant for the current page.
      * @param imageUrl URL of the icon.
-     * @param appIcon  Bitmap containing the icon itself.
+     * @param appIcon Bitmap containing the icon itself.
+     * @return Whether or not the banner was created.
      */
     @CalledByNative
-    private void createBanner(String imageUrl, Bitmap appIcon) {
-        if (mAppData == null || !isBannerForCurrentPage(mAppData.siteUrl())) return;
+    private boolean createBanner(String imageUrl, Bitmap appIcon) {
+        if (mAppData == null || !isBannerForCurrentPage(mAppData.siteUrl())) return false;
 
         if (!TextUtils.equals(mAppData.imageUrl(), imageUrl)) {
             resetState();
-            return;
+            return false;
         }
 
         mAppData.setIcon(new BitmapDrawable(mContentView.getContext().getResources(), appIcon));
         mBannerView = AppBannerView.create(mContentView, this, mAppData);
+        return true;
     }
 
     /**
-     * Dismisses whatever banner is currently being displayed.
-     * This is treated as an automatic dismissal and not one that blocks the banner from appearing
-     * in the future.
+     * Dismisses whatever banner is currently being displayed. This is treated as an automatic
+     * dismissal and not one that blocks the banner from appearing in the future.
+     * @param dismissalType What triggered the dismissal.
      */
     @CalledByNative
-    private void dismissCurrentBanner() {
-        if (mBannerView != null) mBannerView.dismiss();
+    private void dismissCurrentBanner(int dismissalType) {
+        if (mBannerView != null) mBannerView.dismiss(dismissalType);
         resetState();
     }
 
     @Override
-    public void onButtonClicked(AppBannerView banner) {
+    public void onBannerRemoved(AppBannerView banner) {
         if (mBannerView != banner) return;
-
-        if (mAppData.installState() == AppData.INSTALL_STATE_NOT_INSTALLED) {
-            // The user initiated an install.
-            WindowAndroid window = mTab.getWindowAndroid();
-            if (window.showIntent(mAppData.installIntent(), this, R.string.low_memory_error)) {
-                // Temporarily hide the banner.
-                mBannerView.createVerticalSnapAnimation(false);
-            } else {
-                Log.e(TAG, "Failed to fire install intent.");
-                dismissCurrentBanner();
-            }
-        } else if (mAppData.installState() == AppData.INSTALL_STATE_INSTALLED) {
-            // The app is installed.  Open it.
-            String packageName = mAppData.packageName();
-            PackageManager packageManager = mContentView.getContext().getPackageManager();
-            Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
-            try {
-                mContentView.getContext().startActivity(appIntent);
-            } catch (ActivityNotFoundException e) {
-                Log.e(TAG, "Failed to find app package: " + packageName);
-            }
-            dismissCurrentBanner();
-        }
-    }
-
-    @Override
-    public void onBannerClicked(AppBannerView banner) {
-        if (mContentView == null || mBannerView == null || mBannerView != banner) {
-            return;
-        }
-
-        try {
-            // Send the user to the app's Play store page.
-            IntentSender sender = banner.getAppData().detailsIntent().getIntentSender();
-            mContentView.getContext().startIntentSender(sender, new Intent(), 0, 0, 0);
-        } catch (IntentSender.SendIntentException e) {
-            Log.e(TAG, "Failed to launch details intent.");
-        }
-
-        dismissCurrentBanner();
-    }
-
-    @Override
-    public void onIntentCompleted(WindowAndroid window, int resultCode,
-            ContentResolver contentResolver, Intent data) {
-        if (mContentView == null || mBannerView == null || mBannerView.getAppData() != mAppData) {
-            return;
-        }
-
-        mBannerView.createVerticalSnapAnimation(true);
-        if (resultCode == Activity.RESULT_OK) {
-            // The user chose to install the app.  Watch the PackageManager to see when it finishes
-            // installing it.
-            mAppData.beginTrackingInstallation(mContentView.getContext(), this);
-            mBannerView.updateButtonState();
-        }
-    }
-
-    @Override
-    public void onInstallFinished(InstallerDelegate monitor, boolean success) {
-        if (mBannerView == null || mAppData == null || mAppData.installTask() != monitor) return;
-
-        if (success) {
-            // Let the user open the app from here.
-            mAppData.setInstallState(AppData.INSTALL_STATE_INSTALLED);
-            mBannerView.updateButtonState();
-        } else {
-            dismissCurrentBanner();
-        }
-    }
-
-    @Override
-    public void onBannerDismissed(AppBannerView banner) {
-        if (mBannerView != banner) return;
-
-        // If the user swiped the banner off of the screen, block it from being shown again.
-        boolean swipedAway = Math.abs(banner.getTranslationX()) >= banner.getWidth();
-        if (swipedAway) {
-            nativeBlockBanner(mNativePointer, mAppData.siteUrl(), mAppData.packageName());
-        }
-
         resetState();
+    }
+
+    @Override
+    public void onBannerBlocked(AppBannerView banner, String url, String packageName) {
+        if (mBannerView != banner) return;
+        nativeBlockBanner(mNativePointer, url, packageName);
+    }
+
+    @Override
+    public void onBannerDismissEvent(AppBannerView banner, int eventType) {
+        if (mBannerView != banner) return;
+        nativeRecordDismissEvent(eventType);
+    }
+
+    @Override
+    public void onBannerInstallEvent(AppBannerView banner, int eventType) {
+        if (mBannerView != banner) return;
+        nativeRecordInstallEvent(eventType);
+    }
+
+    @Override
+    public boolean onFireIntent(AppBannerView banner, PendingIntent intent) {
+        if (mBannerView != banner) return false;
+        return mTab.getWindowAndroid().showIntent(intent, banner, R.string.low_memory_error);
     }
 
     /**
      * Resets all of the state, killing off any running tasks.
      */
     private void resetState() {
-        if (mAppData != null) {
-            mAppData.destroy();
-            mAppData = null;
+        if (mBannerView != null) {
+            mBannerView.destroy();
+            mBannerView = null;
         }
 
-        mBannerView = null;
+        mAppData = null;
     }
 
     /**
@@ -292,9 +230,13 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
     private static native boolean nativeIsEnabled();
     private native long nativeInit();
     private native void nativeDestroy(long nativeAppBannerManager);
-    private native void nativeReplaceWebContents(
-            long nativeAppBannerManager, WebContents webContents);
+    private native void nativeReplaceWebContents(long nativeAppBannerManager,
+            WebContents webContents);
     private native void nativeBlockBanner(
             long nativeAppBannerManager, String url, String packageName);
     private native boolean nativeFetchIcon(long nativeAppBannerManager, String imageUrl);
+
+    // UMA tracking.
+    private static native void nativeRecordDismissEvent(int metric);
+    private static native void nativeRecordInstallEvent(int metric);
 }

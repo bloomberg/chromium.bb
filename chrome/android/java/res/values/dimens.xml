@@ -52,6 +52,8 @@
     <dimen name="app_banner_button_padding_sides">12dp</dimen>
     <dimen name="app_banner_button_padding_above_below">0dp</dimen>
 
+    <dimen name="app_banner_close_button_padding">12dp</dimen>
+
     <dimen name="app_banner_icon_size">80dp</dimen>
     <dimen name="app_banner_icon_margin_end">8dp</dimen>
 

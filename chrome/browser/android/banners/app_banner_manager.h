@@ -53,6 +53,9 @@ struct LoadCommittedDetails;
  * Java side manages what happens in these situations, which will usually result
  * in dropping the old banner request on the floor.
  */
+
+namespace banners {
+
 class AppBannerManager : public chrome::BitmapFetcherDelegate,
                          public MetaTagObserver {
  public:
@@ -101,5 +104,7 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
 
 // Register native methods
 bool RegisterAppBannerManager(JNIEnv* env);
+
+}  // namespace banners
 
 #endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_MANAGER_H_

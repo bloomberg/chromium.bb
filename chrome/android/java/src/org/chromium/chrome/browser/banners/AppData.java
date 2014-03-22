@@ -5,20 +5,12 @@
 package org.chromium.chrome.browser.banners;
 
 import android.app.PendingIntent;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.os.Looper;
 
 /**
  * Stores information about a particular app.
  */
 public class AppData {
-    // Installation states.
-    static final int INSTALL_STATE_NOT_INSTALLED = 0;
-    static final int INSTALL_STATE_INSTALLING = 1;
-    static final int INSTALL_STATE_INSTALLED = 2;
-
     // Immutable data about this app.
     private final String mSiteUrl;
     private final String mPackageName;
@@ -33,10 +25,6 @@ public class AppData {
 
     // Data that can be updated asynchronously.
     private Drawable mIcon;
-    private int mInstallState;
-
-    // Task that watches the package manager for installation progress.
-    private InstallerDelegate mInstallTask;
 
     /**
      * Creates a new AppData for the given page and package.
@@ -46,7 +34,6 @@ public class AppData {
     public AppData(String siteUrl, String packageName) {
         mSiteUrl = siteUrl;
         mPackageName = packageName;
-        mInstallState = INSTALL_STATE_NOT_INSTALLED;
     }
 
     /**
@@ -124,22 +111,6 @@ public class AppData {
     }
 
     /**
-     * Returns the state of the install.
-     * @return INSTALL_STATE_* representing the current phase of the installation.
-     */
-    int installState() {
-        return mInstallState;
-    }
-
-    /**
-     * Returns the task tracking the installation.
-     * @return The InstallerDelegate that is tracking the app's installation.
-     */
-    InstallerDelegate installTask() {
-        return mInstallTask;
-    }
-
-    /**
      * Stores all of the data about the given app after it's been retrieved.
      * @param title             App title.
      * @param imageUrl          URL where the icon is located.
@@ -164,35 +135,5 @@ public class AppData {
      */
     void setIcon(Drawable icon) {
         mIcon = icon;
-    }
-
-    /**
-     * Sets the install state.
-     * @param installState Current state of the installation.
-     */
-    void setInstallState(int installState) {
-        mInstallState = installState;
-    }
-
-    /**
-     * Begins tracking the installation of the package.
-     * @param context  Context to grab the PackageManager from.
-     * @param observer Observer to notify when the app has finished installing.
-     */
-    void beginTrackingInstallation(Context context, InstallerDelegate.Observer observer) {
-        PackageManager pm = context.getPackageManager();
-        mInstallTask = new InstallerDelegate(Looper.getMainLooper(), pm, observer, mPackageName);
-        mInstallTask.start();
-        mInstallState = AppData.INSTALL_STATE_INSTALLING;
-    }
-
-    /**
-     * Clean up any pending operations.
-     */
-    void destroy() {
-        if (mInstallTask != null) {
-            mInstallTask.cancel();
-            mInstallTask = null;
-        }
     }
 }

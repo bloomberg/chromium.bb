@@ -7,7 +7,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
+#include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_settings_helper.h"
+#include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +27,8 @@ using base::android::ConvertUTF8ToJavaString;
 namespace {
 const char kBannerTag[] = "google-play-id";
 }
+
+namespace banners {
 
 AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj)
     : MetaTagObserver(kBannerTag),
@@ -64,7 +69,7 @@ void AppBannerManager::DidNavigateMainFrame(
   ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
   if (jobj.is_null())
     return;
-  Java_AppBannerManager_dismissCurrentBanner(env, jobj.obj());
+  Java_AppBannerManager_dismissCurrentBanner(env, jobj.obj(), DISMISS_NAVIGATE);
 }
 
 void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
@@ -78,10 +83,12 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
     ScopedJavaLocalRef<jstring> jimage_url(
         ConvertUTF8ToJavaString(env, url.spec()));
     ScopedJavaLocalRef<jobject> jimage = gfx::ConvertToJavaBitmap(bitmap);
-    Java_AppBannerManager_createBanner(env,
-                                       jobj.obj(),
-                                       jimage_url.obj(),
-                                       jimage.obj());
+    bool displayed = Java_AppBannerManager_createBanner(env,
+                                                        jobj.obj(),
+                                                        jimage_url.obj(),
+                                                        jimage.obj());
+    if (displayed)
+      banners::TrackDisplayEvent(DISPLAY_CREATED);
   } else {
     DVLOG(1) << "Failed to retrieve image: " << url;
   }
@@ -92,6 +99,7 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
 void AppBannerManager::HandleMetaTagContent(const std::string& tag_content,
                                             const GURL& expected_url) {
   DCHECK(web_contents());
+  banners::TrackDisplayEvent(DISPLAY_BANNER_REQUESTED);
 
   if (!AppBannerSettingsHelper::IsAllowed(web_contents(),
                                           expected_url,
@@ -130,6 +138,14 @@ bool AppBannerManager::FetchIcon(JNIEnv* env,
   return true;
 }
 
+void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {
+  banners::TrackDismissEvent(metric);
+}
+
+void RecordInstallEvent(JNIEnv* env, jclass clazz, jint metric) {
+  banners::TrackInstallEvent(metric);
+}
+
 jlong Init(JNIEnv* env, jobject obj) {
   AppBannerManager* manager = new AppBannerManager(env, obj);
   return reinterpret_cast<intptr_t>(manager);
@@ -144,3 +160,5 @@ jboolean IsEnabled(JNIEnv* env, jclass clazz) {
 bool RegisterAppBannerManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+}  // namespace banners

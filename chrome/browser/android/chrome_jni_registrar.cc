@@ -90,7 +90,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "AccountManagementScreenHelper", AccountManagementScreenHelper::Register },
   { "AndroidProfileOAuth2TokenService",
     AndroidProfileOAuth2TokenService::Register },
-  { "AppBannerManager", RegisterAppBannerManager },
+  { "AppBannerManager", banners::RegisterAppBannerManager },
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },
   { "AutofillDialogControllerAndroid",
     autofill::AutofillDialogControllerAndroid::

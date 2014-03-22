@@ -5,16 +5,27 @@
 package org.chromium.chrome.browser.banners;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,6 +33,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentView;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
 /**
  * Lays out a banner for showing info about an app on the Play Store.
@@ -49,35 +62,55 @@ import org.chromium.ui.base.LocalizationUtils;
  * to account for less screen real estate.  This means that all of the View's widgets and cached
  * dimensions must be rebuilt from scratch.
  */
-public class AppBannerView extends SwipableOverlayView implements View.OnClickListener {
+public class AppBannerView extends SwipableOverlayView
+        implements View.OnClickListener, InstallerDelegate.Observer, IntentCallback {
+    private static final String TAG = "AppBannerView";
+
     /**
      * Class that is alerted about things happening to the BannerView.
      */
     public static interface Observer {
         /**
-         * Called when the banner is dismissed.
+         * Called when the banner is removed from the hierarchy.
          * @param banner Banner being dismissed.
          */
-        public void onBannerDismissed(AppBannerView banner);
+        public void onBannerRemoved(AppBannerView banner);
 
         /**
-         * Called when the install button has been clicked.
-         * @param banner Banner firing the event.
+         * Called when the user manually closes a banner.
+         * @param banner      Banner being blocked.
+         * @param url         URL of the page that requested the banner.
+         * @param packageName Name of the app's package.
          */
-        public void onButtonClicked(AppBannerView banner);
+        public void onBannerBlocked(AppBannerView banner, String url, String packageName);
 
         /**
-         * Called when something other than the button is clicked.
-         * @param banner Banner firing the event.
+         * Called when the banner begins to be dismissed.
+         * @param banner      Banner being closed.
+         * @param dismissType Type of dismissal performed.
          */
-        public void onBannerClicked(AppBannerView banner);
+        public void onBannerDismissEvent(AppBannerView banner, int dismissType);
+
+        /**
+         * Called when an install event has occurred.
+         */
+        public void onBannerInstallEvent(AppBannerView banner, int eventType);
+
+        /**
+         * Called when the banner needs to have an Activity started for a result.
+         * @param banner Banner firing the event.
+         * @param intent Intent to fire.
+         */
+        public boolean onFireIntent(AppBannerView banner, PendingIntent intent);
     }
+
+    // Installation states.
+    private static final int INSTALL_STATE_NOT_INSTALLED = 0;
+    private static final int INSTALL_STATE_INSTALLING = 1;
+    private static final int INSTALL_STATE_INSTALLED = 2;
 
     // XML layout for the BannerView.
     private static final int BANNER_LAYOUT = R.layout.app_banner_view;
-
-    // Maximum distance the finger can travel before dismissing the highlight.
-    private static final float HIGHLIGHT_DISTANCE = 20;
 
     // True if the layout is in left-to-right layout mode (regular mode).
     private final boolean mIsLayoutLTR;
@@ -85,16 +118,17 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     // Class to alert about BannerView events.
     private AppBannerView.Observer mObserver;
 
+    // Information about the package.  Shouldn't ever be null after calling {@link #initialize()}.
+    private AppData mAppData;
+
     // Views comprising the app banner.
     private ImageView mIconView;
     private TextView mTitleView;
-    private Button mButtonView;
+    private Button mInstallButtonView;
     private RatingView mRatingView;
     private View mLogoView;
     private View mBannerHighlightView;
-
-    // Information about the package.
-    private AppData mAppData;
+    private ImageButton mCloseButtonView;
 
     // Dimension values.
     private int mDefinedMaxWidth;
@@ -103,6 +137,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     private int mMarginLeft;
     private int mMarginRight;
     private int mMarginBottom;
+    private int mTouchSlop;
 
     // Highlight variables.
     private boolean mIsBannerPressed;
@@ -110,6 +145,11 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
 
     // Initial padding values.
     private final Rect mBackgroundDrawablePadding;
+
+    // Install tracking.
+    private boolean mWasInstallDialogShown;
+    private InstallerDelegate mInstallTask;
+    private int mInstallState;
 
     /**
      * Creates a BannerView and adds it to the given ContentView.
@@ -142,6 +182,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mBackgroundDrawablePadding.right = ApiCompatibilityUtils.getPaddingEnd(this);
         mBackgroundDrawablePadding.top = getPaddingTop();
         mBackgroundDrawablePadding.bottom = getPaddingBottom();
+
+        mInstallState = INSTALL_STATE_NOT_INSTALLED;
     }
 
     /**
@@ -178,38 +220,106 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         // Pull out all of the controls we are expecting.
         mIconView = (ImageView) findViewById(R.id.app_icon);
         mTitleView = (TextView) findViewById(R.id.app_title);
-        mButtonView = (Button) findViewById(R.id.app_install_button);
+        mInstallButtonView = (Button) findViewById(R.id.app_install_button);
         mRatingView = (RatingView) findViewById(R.id.app_rating);
         mLogoView = findViewById(R.id.store_logo);
         mBannerHighlightView = findViewById(R.id.banner_highlight);
+        mCloseButtonView = (ImageButton) findViewById(R.id.close_button);
 
         assert mIconView != null;
         assert mTitleView != null;
-        assert mButtonView != null;
+        assert mInstallButtonView != null;
         assert mLogoView != null;
         assert mRatingView != null;
         assert mBannerHighlightView != null;
+        assert mCloseButtonView != null;
 
-        // Set up the button to fire an event.
-        mButtonView.setOnClickListener(this);
+        // Set up the buttons to fire an event.
+        mInstallButtonView.setOnClickListener(this);
+        mCloseButtonView.setOnClickListener(this);
 
         // Configure the controls with the package information.
         mTitleView.setText(mAppData.title());
         mIconView.setImageDrawable(mAppData.icon());
         mRatingView.initialize(mAppData.rating());
 
-        // Update the button state.
-        updateButtonState();
+        // Determine how much the user can drag sideways before their touch is considered a scroll.
+        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+
+        // Set up the install button.
+        updateButtonAppearance();
     }
 
     @Override
     public void onClick(View view) {
-        if (mObserver != null && view == mButtonView) mObserver.onButtonClicked(this);
+        if (mObserver == null) return;
+
+        // Only allow the button to be clicked when the banner's in a neutral position.
+        if (Math.abs(getTranslationX()) > ZERO_THRESHOLD
+                || Math.abs(getTranslationY()) > ZERO_THRESHOLD) {
+            return;
+        }
+
+        if (view == mInstallButtonView) {
+            // Ignore button clicks when the app is installing.
+            if (mInstallState == INSTALL_STATE_INSTALLING) return;
+
+            mInstallButtonView.setEnabled(false);
+
+            if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
+                // The user initiated an install. Track it happening only once.
+                if (!mWasInstallDialogShown) {
+                    mObserver.onBannerInstallEvent(this, AppBannerMetricsIds.INSTALL_TRIGGERED);
+                    mWasInstallDialogShown = true;
+                }
+
+                if (mObserver.onFireIntent(this, mAppData.installIntent())) {
+                    // Temporarily hide the banner.
+                    createVerticalSnapAnimation(false);
+                } else {
+                    Log.e(TAG, "Failed to fire install intent.");
+                    dismiss(AppBannerMetricsIds.DISMISS_ERROR);
+                }
+            } else if (mInstallState == INSTALL_STATE_INSTALLED) {
+                // The app is installed. Open it.
+                String packageName = mAppData.packageName();
+                PackageManager packageManager = getContext().getPackageManager();
+                Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
+                try {
+                    getContext().startActivity(appIntent);
+                } catch (ActivityNotFoundException e) {
+                    Log.e(TAG, "Failed to find app package: " + packageName);
+                }
+
+                dismiss(AppBannerMetricsIds.DISMISS_APP_OPEN);
+            }
+        } else if (view == mCloseButtonView) {
+            if (mObserver != null) {
+                mObserver.onBannerBlocked(this, mAppData.siteUrl(), mAppData.packageName());
+            }
+
+            dismiss(AppBannerMetricsIds.DISMISS_CLOSE_BUTTON);
+        }
+    }
+
+    @Override
+    protected void onViewSwipedAway() {
+        if (mObserver == null) return;
+        mObserver.onBannerDismissEvent(this, AppBannerMetricsIds.DISMISS_BANNER_SWIPE);
+        mObserver.onBannerBlocked(this, mAppData.siteUrl(), mAppData.packageName());
     }
 
     @Override
     protected void onViewClicked() {
-        if (mObserver != null) mObserver.onBannerClicked(this);
+        // Send the user to the app's Play store page.
+        try {
+            IntentSender sender = mAppData.detailsIntent().getIntentSender();
+            getContext().startIntentSender(sender, new Intent(), 0, 0, 0);
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(TAG, "Failed to launch details intent.");
+        }
+
+        dismiss(AppBannerMetricsIds.DISMISS_BANNER_CLICK);
     }
 
     @Override
@@ -218,6 +328,41 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mInitialXForHighlight = event.getRawX();
         mIsBannerPressed = true;
         mBannerHighlightView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onIntentCompleted(WindowAndroid window, int resultCode,
+            ContentResolver contentResolver, Intent data) {
+        if (isDismissed()) return;
+
+        createVerticalSnapAnimation(true);
+        if (resultCode == Activity.RESULT_OK) {
+            // The user chose to install the app. Watch the PackageManager to see when it finishes
+            // installing it.
+            mObserver.onBannerInstallEvent(this, AppBannerMetricsIds.INSTALL_STARTED);
+
+            PackageManager pm = getContext().getPackageManager();
+            mInstallTask =
+                    new InstallerDelegate(Looper.getMainLooper(), pm, this, mAppData.packageName());
+            mInstallTask.start();
+            mInstallState = INSTALL_STATE_INSTALLING;
+        }
+        updateButtonAppearance();
+    }
+
+
+    @Override
+    public void onInstallFinished(InstallerDelegate monitor, boolean success) {
+        if (isDismissed() || mInstallTask != monitor) return;
+
+        if (success) {
+            // Let the user open the app from here.
+            mObserver.onBannerInstallEvent(this, AppBannerMetricsIds.INSTALL_COMPLETED);
+            mInstallState = INSTALL_STATE_INSTALLED;
+            updateButtonAppearance();
+        } else {
+            dismiss(AppBannerMetricsIds.DISMISS_INSTALL_TIMEOUT);
+        }
     }
 
     @Override
@@ -234,46 +379,66 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      */
     @Override
     boolean removeFromParent() {
-        boolean removed = super.removeFromParent();
-        if (removed) mObserver.onBannerDismissed(this);
-        return removed;
+        if (super.removeFromParent()) {
+            mObserver.onBannerRemoved(this);
+            destroy();
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Returns data for the app the banner is being shown for.
-     * @return The AppData being used by the banner.
+     * Dismisses the banner.
+     * @param eventType Event that triggered the dismissal.  See {@link AppBannerMetricsIds}.
      */
-    AppData getAppData() {
-        return mAppData;
+    public void dismiss(int eventType) {
+        if (isDismissed() || mObserver == null) return;
+
+        dismiss(eventType == AppBannerMetricsIds.DISMISS_CLOSE_BUTTON);
+        mObserver.onBannerDismissEvent(this, eventType);
+    }
+
+    /**
+     * Destroys the Banner.
+     */
+    public void destroy() {
+        if (!isDismissed()) dismiss(AppBannerMetricsIds.DISMISS_ERROR);
+
+        if (mInstallTask != null) {
+            mInstallTask.cancel();
+            mInstallTask = null;
+        }
     }
 
     /**
      * Updates the text and color of the button displayed on the button.
      */
-    void updateButtonState() {
-        if (mButtonView == null) return;
+    void updateButtonAppearance() {
+        if (mInstallButtonView == null) return;
 
         Resources res = getResources();
         int fgColor;
         String text;
-        if (mAppData.installState() == AppData.INSTALL_STATE_INSTALLED) {
-            ApiCompatibilityUtils.setBackgroundForView(mButtonView,
+        if (mInstallState == INSTALL_STATE_INSTALLED) {
+            ApiCompatibilityUtils.setBackgroundForView(mInstallButtonView,
                     res.getDrawable(R.drawable.app_banner_button_open));
             fgColor = res.getColor(R.color.app_banner_open_button_fg);
             text = res.getString(R.string.app_banner_open);
         } else {
-            ApiCompatibilityUtils.setBackgroundForView(mButtonView,
+            ApiCompatibilityUtils.setBackgroundForView(mInstallButtonView,
                     res.getDrawable(R.drawable.app_banner_button_install));
             fgColor = res.getColor(R.color.app_banner_install_button_fg);
-            if (mAppData.installState() == AppData.INSTALL_STATE_NOT_INSTALLED) {
+            if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
                 text = mAppData.installButtonText();
             } else {
                 text = res.getString(R.string.app_banner_installing);
             }
         }
 
-        mButtonView.setTextColor(fgColor);
-        mButtonView.setText(text);
+        mInstallButtonView.setTextColor(fgColor);
+        mInstallButtonView.setText(text);
+        mInstallButtonView.setEnabled(mInstallState != INSTALL_STATE_INSTALLING);
     }
 
     /**
@@ -296,7 +461,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
             // scrolls a bit to the side.
             float xDifference = Math.abs(event.getRawX() - mInitialXForHighlight);
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL
-                    || (action == MotionEvent.ACTION_MOVE && xDifference > HIGHLIGHT_DISTANCE)) {
+                    || (action == MotionEvent.ACTION_MOVE && xDifference > mTouchSlop)) {
                 mIsBannerPressed = false;
                 mBannerHighlightView.setVisibility(View.INVISIBLE);
             }
@@ -304,6 +469,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
 
         return super.onTouchEvent(event);
     }
+
     /**
      * Fade the banner back into view.
      */
@@ -321,6 +487,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        setAlpha(0.0f);
         setVisibility(INVISIBLE);
     }
 
@@ -333,6 +500,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     protected void onConfigurationChanged(Configuration config) {
         super.onConfigurationChanged(config);
 
+        if (isDismissed()) return;
+
         // If the card's maximum width hasn't changed, the individual views can't have, either.
         int newDefinedWidth = getResources().getDimensionPixelSize(R.dimen.app_banner_max_width);
         if (mDefinedMaxWidth == newDefinedWidth) return;
@@ -342,7 +511,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         while (getChildCount() > 0) removeViewAt(0);
         mIconView = null;
         mTitleView = null;
-        mButtonView = null;
+        mInstallButtonView = null;
         mRatingView = null;
         mLogoView = null;
         mBannerHighlightView = null;
@@ -364,7 +533,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      * DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
      * DPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPD
      * DP......                               cPD
-     * DP...... TITLE-------------------------cPD
+     * DP...... TITLE----------------------- XcPD
      * DP.ICON. *****                         cPD
      * DP...... LOGO                    BUTTONcPD
      * DP...... cccccccccccccccccccccccccccccccPD
@@ -384,7 +553,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      * 3) The install button occupies the bottom-right of the banner.
      * 4) The Google Play logo occupies the space to the left of the button.
      * 5) The rating is assigned space above the logo and below the title.
-     * 6) The title is assigned whatever space is left and sits on top of the tallest stack of
+     * 6) The close button (if visible) sits in the top right of the banner.
+     * 7) The title is assigned whatever space is left and sits on top of the tallest stack of
      *    controls.
      *
      * See {@link #android.view.View.onMeasure(int, int)} for the parameters.
@@ -434,11 +604,12 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         // 2) The app title + control padding + star rating + store logo.
         // 3) The app title + control padding + install button.
         // The control padding is extra padding that applies only to the non-icon widgets.
+        // The close button does not get counted as part of a stack.
         int iconStackHeight = getHeightWithMargins(mIconView);
         int logoStackHeight = getHeightWithMargins(mTitleView) + mPaddingControls
                 + getHeightWithMargins(mRatingView) + getHeightWithMargins(mLogoView);
         int buttonStackHeight = getHeightWithMargins(mTitleView) + mPaddingControls
-                + getHeightWithMargins(mButtonView);
+                + getHeightWithMargins(mInstallButtonView);
         int biggestStackHeight =
                 Math.max(iconStackHeight, Math.max(logoStackHeight, buttonStackHeight));
 
@@ -451,7 +622,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         final int contentWidth =
                 maxControlWidth - getWidthWithMargins(mIconView) - mPaddingControls;
         final int contentHeight = biggestStackHeight - mPaddingControls;
-        measureChildForSpace(mButtonView, contentWidth, contentHeight);
+        measureChildForSpace(mInstallButtonView, contentWidth, contentHeight);
         measureChildForSpace(mLogoView, contentWidth, contentHeight);
 
         // Measure the star rating, which sits below the title and above the logo.
@@ -459,10 +630,18 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         final int ratingHeight = contentHeight - getHeightWithMargins(mLogoView);
         measureChildForSpace(mRatingView, ratingWidth, ratingHeight);
 
-        // The app title spans the top of the banner and sits on top of the other controls.
-        int biggerStack = Math.max(getHeightWithMargins(mButtonView),
+        // The close button sits to the right of the title and above the install button.
+        final int closeWidth = contentWidth;
+        final int closeHeight = contentHeight - getHeightWithMargins(mInstallButtonView);
+        measureChildForSpace(mCloseButtonView, closeWidth, closeHeight);
+
+        // The app title spans the top of the banner and sits on top of the other controls, and to
+        // the left of the close button. The computation for the width available to the title is
+        // complicated by how the button sits in the corner and absorbs the padding that would
+        // normally be there.
+        int biggerStack = Math.max(getHeightWithMargins(mInstallButtonView),
                 getHeightWithMargins(mLogoView) + getHeightWithMargins(mRatingView));
-        final int titleWidth = contentWidth;
+        final int titleWidth = contentWidth - getWidthWithMargins(mCloseButtonView) + mPaddingCard;
         final int titleHeight = contentHeight - biggerStack;
         measureChildForSpace(mTitleView, titleWidth, titleHeight);
 
@@ -494,6 +673,18 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
 
         // The highlight overlay covers the entire banner (minus drop shadow padding).
         mBannerHighlightView.layout(start, top, end, bottom);
+
+        // Lay out the close button in the top-right corner.  Padding that would normally go to the
+        // card is applied to the close button so that it has a bigger touch target.
+        if (mCloseButtonView.getVisibility() == VISIBLE) {
+            int closeWidth = mCloseButtonView.getMeasuredWidth();
+            int closeTop =
+                    top + ((MarginLayoutParams) mCloseButtonView.getLayoutParams()).topMargin;
+            int closeBottom = closeTop + mCloseButtonView.getMeasuredHeight();
+            int closeRight = mIsLayoutLTR ? end : (getMeasuredWidth() - end + closeWidth);
+            int closeLeft = closeRight - closeWidth;
+            mCloseButtonView.layout(closeLeft, closeTop, closeRight, closeBottom);
+        }
 
         // Apply the padding for the rest of the widgets.
         top += mPaddingCard;
@@ -538,11 +729,11 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mLogoView.layout(logoLeft, logoTop, logoLeft + logoWidth, logoBottom);
 
         // Lay out the install button in the bottom-right corner.
-        int buttonHeight = mButtonView.getMeasuredHeight();
-        int buttonWidth = mButtonView.getMeasuredWidth();
+        int buttonHeight = mInstallButtonView.getMeasuredHeight();
+        int buttonWidth = mInstallButtonView.getMeasuredWidth();
         int buttonRight = mIsLayoutLTR ? end : (getMeasuredWidth() - end + buttonWidth);
         int buttonLeft = buttonRight - buttonWidth;
-        mButtonView.layout(buttonLeft, bottom - buttonHeight, buttonRight, bottom);
+        mInstallButtonView.layout(buttonLeft, bottom - buttonHeight, buttonRight, bottom);
     }
 
     /**

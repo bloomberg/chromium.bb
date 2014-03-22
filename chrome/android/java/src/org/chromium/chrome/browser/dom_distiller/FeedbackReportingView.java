@@ -128,8 +128,8 @@ public class FeedbackReportingView extends SwipableOverlayView {
      * {@link org.chromium.chrome.browser.dom_distiller.FeedbackReporter}.
      */
     @Override
-    protected void dismiss() {
-        super.dismiss();
+    protected boolean dismiss(boolean horizontally) {
+        return super.dismiss(horizontally);
     }
 
     @Override
@@ -138,5 +138,9 @@ public class FeedbackReportingView extends SwipableOverlayView {
 
     @Override
     protected void onViewPressed(MotionEvent event) {
+    }
+
+    @Override
+    protected void onViewSwipedAway() {
     }
 }

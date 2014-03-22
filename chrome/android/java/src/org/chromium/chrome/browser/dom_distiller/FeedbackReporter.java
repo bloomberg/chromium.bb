@@ -79,7 +79,7 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
      */
     @CalledByNative
     private void dismissOverlay() {
-        if (mFeedbackReportingView != null) mFeedbackReportingView.dismiss();
+        if (mFeedbackReportingView != null) mFeedbackReportingView.dismiss(true);
         mOverlayUrl = null;
         mFeedbackReportingView = null;
     }
