@@ -361,7 +361,7 @@ void RenderLayerClipper::parentClipRects(const ClipRectsContext& clipRectsContex
 
 RenderLayer* RenderLayerClipper::clippingRootForPainting() const
 {
-    if (m_renderer->hasCompositedLayerMapping())
+    if (m_renderer->hasCompositedLayerMapping() || m_renderer->groupedMapping())
         return const_cast<RenderLayer*>(m_renderer->layer());
 
     const RenderLayer* current = m_renderer->layer();
@@ -371,9 +371,7 @@ RenderLayer* RenderLayerClipper::clippingRootForPainting() const
 
         current = current->compositingContainer();
         ASSERT(current);
-        if (current->transform()
-            || (current->compositingState() == PaintsIntoOwnBacking)
-        )
+        if (current->transform() || (current->compositingState() == PaintsIntoOwnBacking) || current->groupedMapping())
             return const_cast<RenderLayer*>(current);
     }
 

@@ -112,7 +112,8 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
 
 const uint64_t CompositingReasonComboSquashableReasons =
     CompositingReasonOverlap
-    | CompositingReasonAssumedOverlap;
+    | CompositingReasonAssumedOverlap
+    | CompositingReasonOverflowScrollingParent;
 
 typedef uint64_t CompositingReasons;
 

@@ -891,6 +891,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     updateRenderingContext();
     updateShouldFlattenTransform();
     updateChildrenTransform();
+    updateScrollParent(m_owningLayer.scrollParent());
     registerScrollingLayers();
 
     updateCompositingReasons();
@@ -1417,9 +1418,12 @@ static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLay
 
 void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 {
+    if (!scrollParent && m_squashedLayers.size())
+        scrollParent = m_squashedLayers[0].renderLayer->scrollParent();
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-        GraphicsLayer* topmostLayer = localRootForOwningLayer();
+        GraphicsLayer* topmostLayer = childForSuperlayers();
+        updateScrollParentForGraphicsLayer(m_squashingContainmentLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
         updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
         updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
     }

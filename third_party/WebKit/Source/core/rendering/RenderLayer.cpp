@@ -195,6 +195,10 @@ RenderLayerCompositor* RenderLayer::compositor() const
 
 void RenderLayer::contentChanged(ContentChangeType changeType)
 {
+    // updateLayerCompositingState will query compositingReasons for accelerated overflow scrolling.
+    // This is tripped by LayoutTests/compositing/content-changed-chicken-egg.html
+    DisableCompositingQueryAsserts disabler;
+
     // This can get called when video becomes accelerated, so the layers may change.
     if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
         compositor()->updateLayerCompositingState(this);
