@@ -15,7 +15,7 @@
             android:layout_marginTop="@dimen/action_bar_title_top_margin"
             android:singleLine="true"
             android:ellipsize="end"
-            android:text="@string/product_name"
+            android:text="@string/mode_me2me"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textSize="@dimen/action_bar_title_text_size"/>
     <TextView android:id="@+id/account_name"
