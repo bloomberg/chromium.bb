@@ -164,6 +164,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(USE_AURA) || defined(OS_ANDROID)
     // TODO: crbug.com/311404 Make layout tests work w/ delegated renderer.
     command_line.AppendSwitch(switches::kDisableDelegatedRenderer);
+    command_line.AppendSwitch(cc::switches::kCompositeToMailbox);
 #endif
 
     command_line.AppendSwitch(switches::kEnableFileCookies);
