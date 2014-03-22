@@ -80,7 +80,7 @@ private:
     LayoutUnit computeUsedBreadthOfSpecifiedLength(GridTrackSizingDirection, const Length&) const;
     void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
-    void growGrid(GridTrackSizingDirection);
+    void growGrid(GridTrackSizingDirection, size_t maximumPosition);
     void insertItemIntoGrid(RenderBox*, size_t rowTrack, size_t columnTrack);
     void insertItemIntoGrid(RenderBox*, const GridCoordinate&);
     void placeItemsOnGrid();
