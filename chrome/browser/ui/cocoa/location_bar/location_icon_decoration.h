@@ -25,14 +25,11 @@ class LocationIconDecoration : public ImageDecoration {
   virtual NSImage* GetDragImage() OVERRIDE;
   virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
 
-  // Get the point where the page info bubble should point within the
-  // decoration's frame, in the |owner_|'s coordinates.
-  NSPoint GetBubblePointInFrame(NSRect frame);
-
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
  private:
   NSRect drag_frame_;

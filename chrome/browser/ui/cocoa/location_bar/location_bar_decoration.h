@@ -85,6 +85,11 @@ class LocationBarDecoration {
   // Gets the font used to draw text in the decoration.
   virtual NSFont* GetFont() const;
 
+  // Helper to get where the bubble point should land. |frame| specifies the
+  // decorations' image rectangle. Defaults to |frame.origin| if not overriden.
+  // The return value is in the same coordinate system as |frame|.
+  virtual NSPoint GetBubblePointInFrame(NSRect frame);
+
   static void DrawLabel(NSString* label,
                         NSDictionary* attributes,
                         const NSRect& frame);

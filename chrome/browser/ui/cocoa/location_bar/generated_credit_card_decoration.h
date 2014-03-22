@@ -27,15 +27,12 @@ class GeneratedCreditCardDecoration : public ImageDecoration {
   // Called when this decoration should update its visible status.
   void Update();
 
-  // Get the point where the bookmark bubble should point within the
-  // decoration's frame.
-  NSPoint GetBubblePointInFrame(NSRect frame);
-
   // Implement |LocationBarDecoration|.
   // N.B. - this is identical to LocationBarDecorationView's OnClick
   // and canHandleClick.
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
  private:
   // Helper to get the GeneratedCreditCardBubbleController associated with the

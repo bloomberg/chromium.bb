@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class AutocompleteTextFieldCell;
+class LocationBarDecoration;
 
 // AutocompleteTextField intercepts UI actions for forwarding to
 // OmniboxViewMac (*), and provides a custom look.  It works
@@ -161,6 +162,9 @@ class AutocompleteTextFieldObserver {
 
 - (NSString*)suggestText;
 - (NSColor*)suggestColor;
+
+// Obtain the bubble anchor point for |decoration|. In window coordinates.
+- (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration;
 
 @end
 

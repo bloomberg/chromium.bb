@@ -352,47 +352,24 @@ bool LocationBarViewMac::IsStarEnabled() const {
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   DCHECK(IsStarEnabled());
-
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame = [cell frameForDecoration:star_decoration_.get()
-                                        inFrame:[field_ bounds]];
-  const NSPoint point = star_decoration_->GetBubblePointInFrame(frame);
-  return [field_ convertPoint:point toView:nil];
+  return [field_ bubblePointForDecoration:star_decoration_.get()];
 }
 
 NSPoint LocationBarViewMac::GetTranslateBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame = [cell frameForDecoration:translate_decoration_.get()
-                                        inFrame:[field_ bounds]];
-  const NSPoint point = translate_decoration_->GetBubblePointInFrame(frame);
-  return [field_ convertPoint:point toView:nil];
+  return [field_ bubblePointForDecoration:translate_decoration_.get()];
 }
 
 NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ cell];
   if (ev_bubble_decoration_->IsVisible()) {
-    const NSRect frame = [cell frameForDecoration:ev_bubble_decoration_.get()
-                                          inFrame:[field_ bounds]];
-    const NSPoint point = ev_bubble_decoration_->GetBubblePointInFrame(frame);
-    return [field_ convertPoint:point toView:nil];
+    return [field_ bubblePointForDecoration:ev_bubble_decoration_.get()];
   } else {
-    const NSRect frame =
-        [cell frameForDecoration:location_icon_decoration_.get()
-                         inFrame:[field_ bounds]];
-    const NSPoint point =
-        location_icon_decoration_->GetBubblePointInFrame(frame);
-    return [field_ convertPoint:point toView:nil];
+    return [field_ bubblePointForDecoration:location_icon_decoration_.get()];
   }
 }
 
 NSPoint LocationBarViewMac::GetGeneratedCreditCardBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame =
-      [cell frameForDecoration:generated_credit_card_decoration_.get()
-                       inFrame:[field_ bounds]];
-  const NSPoint point =
-      generated_credit_card_decoration_->GetBubblePointInFrame(frame);
-  return [field_ convertPoint:point toView:nil];
+  return
+      [field_ bubblePointForDecoration:generated_credit_card_decoration_.get()];
 }
 
 void LocationBarViewMac::OnDecorationsChanged() {

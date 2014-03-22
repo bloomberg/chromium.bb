@@ -72,6 +72,14 @@ NSFont* LocationBarDecoration::GetFont() const {
   return OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL);
 }
 
+NSPoint LocationBarDecoration::GetBubblePointInFrame(NSRect frame) {
+  // Clients that use a bubble should implement this. Can't be abstract
+  // because too many LocationBarDecoration subclasses don't use a bubble.
+  // Can't live on subclasses only because it needs to be on a shared API.
+  NOTREACHED();
+  return frame.origin;
+}
+
 // static
 void LocationBarDecoration::DrawLabel(NSString* label,
                                       NSDictionary* attributes,

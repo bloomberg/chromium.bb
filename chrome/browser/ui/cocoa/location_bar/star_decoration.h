@@ -24,14 +24,11 @@ class StarDecoration : public ImageDecoration {
   // Returns true if the star is lit.
   bool starred() const { return starred_; }
 
-  // Get the point where the bookmark bubble should point within the
-  // decoration's frame.
-  NSPoint GetBubblePointInFrame(NSRect frame);
-
   // Implement |LocationBarDecoration|.
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
  private:
   // For bringing up bookmark bar.

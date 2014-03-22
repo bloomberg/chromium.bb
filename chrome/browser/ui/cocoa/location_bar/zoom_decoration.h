@@ -38,7 +38,6 @@ class ZoomDecoration : public ImageDecoration,
  private:
   friend ZoomDecorationTest;
 
-  NSPoint GetBubblePointInFrame(NSRect frame);
   bool IsAtDefaultZoom() const;
   bool ShouldShowDecoration() const;
 
@@ -46,6 +45,7 @@ class ZoomDecoration : public ImageDecoration,
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
   // ZoomBubbleControllerDelegate implementation.
   virtual content::WebContents* GetWebContents() OVERRIDE;

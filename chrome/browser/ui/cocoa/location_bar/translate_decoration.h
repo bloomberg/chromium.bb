@@ -23,16 +23,13 @@ class TranslateDecoration : public ImageDecoration {
   // Toggles the icon on or off.
   void SetLit(bool on);
 
-  // Get the point where the translate bubble should point within the
-  // decoration's frame.
-  NSPoint GetBubblePointInFrame(NSRect frame);
-
- private:
   // Implement |LocationBarDecoration|
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
+ private:
   // For showing the translate bubble up.
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 

@@ -49,16 +49,13 @@ class PageActionDecoration : public ImageDecoration,
   void SetToolTip(NSString* tooltip);
   void SetToolTip(std::string tooltip);
 
-  // Get the point where extension info bubbles should point within
-  // the given decoration frame.
-  NSPoint GetBubblePointInFrame(NSRect frame);
-
   // Overridden from |LocationBarDecoration|
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
   virtual NSMenu* GetMenu() OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
   // Activate the page action in its default frame.
   void ActivatePageAction();

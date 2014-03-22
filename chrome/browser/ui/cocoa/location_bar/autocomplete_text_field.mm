@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -250,6 +251,13 @@
 
 - (NSColor*)suggestColor {
   return suggestColor_;
+}
+
+- (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration {
+  const NSRect frame =
+      [[self cell] frameForDecoration:decoration inFrame:[self bounds]];
+  const NSPoint point = decoration->GetBubblePointInFrame(frame);
+  return [self convertPoint:point toView:nil];
 }
 
 // TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
