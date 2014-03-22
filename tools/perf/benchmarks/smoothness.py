@@ -78,7 +78,7 @@ class SmoothnessGpuRasterizationKeyMobileSites(test.Test):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')
     options.AppendExtraBrowserArgs('--enable-impl-side-painting')
-    options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
+    options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
 
 class SmoothnessGpuRasterizationKeySilkCases(test.Test):
@@ -91,7 +91,7 @@ class SmoothnessGpuRasterizationKeySilkCases(test.Test):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')
     options.AppendExtraBrowserArgs('--enable-impl-side-painting')
-    options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
+    options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
 
 class SmoothnessFastPathGpuRasterizationKeySilkCases(
