@@ -8,11 +8,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
+#include "chrome/common/url_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -142,18 +144,31 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   }
 #endif
 
-  void ClickElement(const std::string& selector) {
-    EXPECT_TRUE(content::ExecuteScriptInFrame(
+  static bool FrameHasSettingsSourceHost(content::RenderFrameHost* frame) {
+    return frame->GetLastCommittedURL().DomainIs(
+        chrome::kChromeUISettingsFrameHost);
+  }
+
+  content::RenderFrameHost* SettingsFrame() {
+    // NB: The utility function content::FrameHasSourceUrl can't be used because
+    // the settings frame navigates itself to chrome://settings-frame/settings
+    // to indicate that it's showing the top-level settings. Therefore, just
+    // match the host.
+    return content::FrameMatchingPredicate(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        "//div[@id='settings']/iframe",
+        base::Bind(&CertificateManagerBrowserTest::FrameHasSettingsSourceHost));
+  }
+
+  void ClickElement(const std::string& selector) {
+    EXPECT_TRUE(content::ExecuteScript(
+        SettingsFrame(),
         "document.querySelector(\"" + selector + "\").click()"));
   }
 
   bool HasElement(const std::string& selector) {
     bool result;
-    EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "//div[@id='settings']/iframe",
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        SettingsFrame(),
         "window.domAutomationController.send("
         "    !!document.querySelector('" + selector + "'));",
         &result));
