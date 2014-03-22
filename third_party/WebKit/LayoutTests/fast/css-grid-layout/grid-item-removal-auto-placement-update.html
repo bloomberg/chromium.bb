@@ -20,30 +20,31 @@ function testRemoval(gridElementID, autoFlowElementID, size)
 
     autoFlowElement.setAttribute("data-expected-width", size.width);
     autoFlowElement.setAttribute("data-expected-height", size.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, document.getElementById("test-output"));
 }
 
 function testRemovals()
 {
-    checkLayout("#autoFlowColumnElement");
+    var testOutput = document.getElementById("test-output");
+    checkLayout("#autoFlowColumnElement", testOutput);
     testRemoval("gridAutoFlowColumn", "autoFlowColumnElement", { 'width': '100', 'height': '100' });
     testRemoval("gridAutoFlowColumn", "autoFlowColumnElement", { 'width': '100', 'height': '50' });
     testRemoval("gridAutoFlowColumn", "autoFlowColumnElement", { 'width': '50', 'height': '100' });
     testRemoval("gridAutoFlowColumn", "autoFlowColumnElement", { 'width': '50', 'height': '50' });
 
-    checkLayout("#autoFlowRowElement");
+    checkLayout("#autoFlowRowElement", testOutput);
     testRemoval("gridAutoFlowRow", "autoFlowRowElement", { 'width': '100', 'height': '100' });
     testRemoval("gridAutoFlowRow", "autoFlowRowElement", { 'width': '100', 'height': '50' });
     testRemoval("gridAutoFlowRow", "autoFlowRowElement", { 'width': '50', 'height': '50' });
     testRemoval("gridAutoFlowRow", "autoFlowRowElement", { 'width': '50', 'height': '50' });
 
-    checkLayout("#gridAutoFlowColumnWithAutoItems");
+    checkLayout("#gridAutoFlowColumnWithAutoItems", testOutput);
     testRemoval("gridAutoFlowColumnWithAutoItems", "autoFlowRowElementWithAutoItems", { 'width': '100', 'height': '100' });
     testRemoval("gridAutoFlowColumnWithAutoItems", "autoFlowRowElementWithAutoItems", { 'width': '100', 'height': '50' });
     testRemoval("gridAutoFlowColumnWithAutoItems", "autoFlowRowElementWithAutoItems", { 'width': '50', 'height': '100' });
     testRemoval("gridAutoFlowColumnWithAutoItems", "autoFlowRowElementWithAutoItems", { 'width': '50', 'height': '50' });
 
-    checkLayout("#gridAutoFlowRowWithAutoAndFixedItems");
+    checkLayout("#gridAutoFlowRowWithAutoAndFixedItems", testOutput);
     testRemoval("gridAutoFlowRowWithAutoAndFixedItems", "autoFlowRowElementWithAutoAndFixedItems", { 'width': '100', 'height': '100' });
     testRemoval("gridAutoFlowRowWithAutoAndFixedItems", "autoFlowRowElementWithAutoAndFixedItems", { 'width': '100', 'height': '50' });
     testRemoval("gridAutoFlowRowWithAutoAndFixedItems", "autoFlowRowElementWithAutoAndFixedItems", { 'width': '100', 'height': '50' });
@@ -94,6 +95,8 @@ window.addEventListener("load", testRemovals, false);
         <div class="sizedToGridArea autoRowAutoColumn" id="autoFlowRowElementWithAutoAndFixedItems" data-expected-width="100" data-expected-height="100">XXXXX XXXXX XXXXX</div>
     </div>
 </div>
+
+<div id="test-output"></div>
 
 </body>
 </html>

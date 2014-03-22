@@ -16,7 +16,7 @@ function testPosition(gridElementID, position, size)
     gridItem.style.gridRow = position.row;
     gridItem.setAttribute("data-expected-width", size.width);
     gridItem.setAttribute("data-expected-height", size.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, document.getElementById("test-output"));
 }
 
 function updateImplicitGridColumn()
@@ -120,6 +120,8 @@ window.addEventListener("load", updateImplicitGridColumn, false);
 <div style="width: 1000px; height: 1000px">
     <div class="grid gridFixedContent" id="unconstrainedGrid"><div class="sizedToGridArea">XXXXXX XXXXXX</div></div>
 </div>
+
+<div id="test-output"></div>
 
 </body>
 </html>

@@ -24,12 +24,12 @@ function updateAndCheck(gridElementID, defaultSizing, gridItemSize)
     gridItem.setAttribute("data-expected-width", gridItemSize.width);
     gridItem.setAttribute("data-expected-height", gridItemSize.height);
 
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, document.getElementById("test-output"));
 }
 
 function updateGridAutoRowsColumns()
 {
-    checkLayout('.grid');
+    checkLayout('.grid', document.getElementById("test-output"));
 
     // The constrained example is always sized to the min width so we don't test max width.
     updateAndCheck("constrainedGrid", { 'rows': 'minmax(20em, 15px)', 'columns': '50px' }, { 'width': '50px', 'height': '200px' });
@@ -83,6 +83,8 @@ window.addEventListener("load", updateGridAutoRowsColumns, false);
         <div class="sizedToGridArea secondRowSecondColumn" data-offset-x="10" data-offset-y="20" data-expected-width="50" data-expected-height="30">XXXXX XXXXXX</div>
     </div>
 </div>
+
+<div id="test-output"></div>
 
 </body>
 </html>

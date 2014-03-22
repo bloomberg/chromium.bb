@@ -11,7 +11,7 @@ function testLayout(gridElementID, gridTracks, size)
     var gridItem = gridElement.firstChild.nextSibling;
     gridItem.setAttribute("data-expected-width", size.width);
     gridItem.setAttribute("data-expected-height", size.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, document.getElementById("test-output"));
 }
 
 function updateRowsColumns()
@@ -63,5 +63,8 @@ window.addEventListener("load", updateRowsColumns, false);
         <div class="sizedToGridArea">XXXXX XXXXXX</div>
     </div>
 </div>
+
+<div id="test-output"></div>
+
 </body>
 </html>

@@ -43,6 +43,7 @@
 <script>
 function testRemoval(gridElementID, size1, size2, size3)
 {
+    var testOutput = document.getElementById("test-output");
     var gridElement = document.getElementById(gridElementID);
     var gridItem1 = gridElement.firstChild.nextSibling;
     var gridItem2 = gridItem1.nextSibling.nextSibling;
@@ -53,19 +54,19 @@ function testRemoval(gridElementID, size1, size2, size3)
     gridItem2.setAttribute("data-expected-height", size1.height);
     gridItem3.setAttribute("data-expected-width", size1.width);
     gridItem3.setAttribute("data-expected-height", size1.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, testOutput);
 
     gridElement.removeChild(gridItem1);
     gridItem2.setAttribute("data-expected-width", size2.width);
     gridItem2.setAttribute("data-expected-height", size2.height);
     gridItem3.setAttribute("data-expected-width", size2.width);
     gridItem3.setAttribute("data-expected-height", size2.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, testOutput);
 
     gridElement.removeChild(gridItem2);
     gridItem3.setAttribute("data-expected-width", size3.width);
     gridItem3.setAttribute("data-expected-height", size3.height);
-    checkLayout("#" + gridElementID);
+    checkLayout("#" + gridElementID, testOutput);
 }
 
 function testRemovals()
@@ -278,6 +279,8 @@ window.addEventListener("load", testRemovals, false);
         <div class="firstRowFirstColumn">XX XX XX XX XX XX</div>
     </div>
 </div>
+
+<div id="test-output"></div>
 
 </body>
 </html>

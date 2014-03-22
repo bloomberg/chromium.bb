@@ -1,14 +1,6 @@
 This test checks that grid-auto-{row|column} updates properly recomputes the grid items' sizes.
 XXXXX XXXXXX
-PASS
-PASS
-PASS
-PASS
-PASS
-PASS
-PASS
-PASS
-PASS
+XXXXX XXXXXX
 XXXXX XXXXXX
 PASS
 PASS
@@ -19,7 +11,15 @@ PASS
 PASS
 PASS
 PASS
-XXXXX XXXXXX
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
+PASS
 PASS
 PASS
 PASS
