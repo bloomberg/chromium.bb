@@ -80,17 +80,21 @@ std::string GetVersionFromString(const std::string& version_string) {
 
 namespace gpu {
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 
   scoped_refptr<gfx::GLSurface> surface(InitializeGLSurface());
-  if (!surface.get())
-    return false;
+  if (!surface.get()) {
+    LOG(ERROR) << "Could not create surface for info collection.";
+    return kCollectInfoFatalFailure;
+  }
 
   scoped_refptr<gfx::GLContext> context(InitializeGLContext(surface.get()));
-  if (!context.get())
-    return false;
+  if (!context.get()) {
+    LOG(ERROR) << "Could not create context for info collection.";
+    return kCollectInfoFatalFailure;
+  }
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
   gpu_info->gl_vendor = GetGLString(GL_VENDOR);
@@ -103,6 +107,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
     gpu_info->gl_ws_version = window_system_binding_info.version;
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
+    gpu_info->direct_rendering = window_system_binding_info.direct_rendering;
   }
 
   bool supports_robustness =
@@ -150,6 +155,7 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
 
   basic_gpu_info->can_lose_context = context_gpu_info.can_lose_context;
   basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
+  basic_gpu_info->direct_rendering = context_gpu_info.direct_rendering;
   basic_gpu_info->finalized = context_gpu_info.finalized;
   basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
 }

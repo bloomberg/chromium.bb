@@ -138,6 +138,10 @@ struct GPU_EXPORT GPUInfo {
 
   bool software_rendering;
 
+  // Whether the driver uses direct rendering. True on most platforms, false on
+  // X11 when using remote X.
+  bool direct_rendering;
+
   // Whether the gpu process is running in a sandbox.
   bool sandboxed;
 

@@ -414,6 +414,12 @@ bool GpuControlList::IntInfo::IsValid() const {
   return op_ != kUnknown;
 }
 
+GpuControlList::BoolInfo::BoolInfo(bool value) : value_(value) {}
+
+bool GpuControlList::BoolInfo::Contains(bool value) const {
+  return value_ == value;
+}
+
 // static
 GpuControlList::ScopedGpuControlListEntry
 GpuControlList::GpuControlListEntry::GetEntryFromValue(
@@ -744,6 +750,12 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  bool direct_rendering;
+  if (value->GetBoolean("direct_rendering", &direct_rendering)) {
+    entry->SetDirectRenderingInfo(direct_rendering);
+    dictionary_entry_count++;
+  }
+
   if (top_level) {
     const base::ListValue* feature_value = NULL;
     if (value->GetList("features", &feature_value)) {
@@ -970,6 +982,10 @@ bool GpuControlList::GpuControlListEntry::SetGpuCountInfo(
   return gpu_count_info_->IsValid();
 }
 
+void GpuControlList::GpuControlListEntry::SetDirectRenderingInfo(bool value) {
+  direct_rendering_info_.reset(new BoolInfo(value));
+}
+
 bool GpuControlList::GpuControlListEntry::SetFeatures(
     const std::vector<std::string>& feature_strings,
     const FeatureMap& feature_map,
@@ -1118,6 +1134,9 @@ bool GpuControlList::GpuControlListEntry::Contains(
   }
   if (gpu_count_info_.get() != NULL &&
       !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
+    return false;
+  if (direct_rendering_info_.get() != NULL &&
+      !direct_rendering_info_->Contains(gpu_info.direct_rendering))
     return false;
   if (cpu_brand_.get() != NULL) {
     base::CPU cpu_info;

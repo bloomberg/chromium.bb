@@ -452,7 +452,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
   return found;
 }
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
@@ -462,12 +462,13 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "swiftshader") {
       gpu_info->software_rendering = true;
-      return false;
+      return kCollectInfoNonFatalFailure;
     }
   }
 
-  if (!CollectGraphicsInfoGL(gpu_info))
-    return false;
+  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
+  if (result != kCollectInfoSuccess)
+    return result;
 
   // ANGLE's renderer strings are of the form:
   // ANGLE (<adapter_identifier> Direct3D<version> vs_x_x ps_x_x)
@@ -517,7 +518,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
     gpu_info->finalized = true;
   }
 
-  return true;
+  return kCollectInfoSuccess;
 }
 
 GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
@@ -549,7 +550,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
 
   DCHECK(gpu_info);
@@ -590,7 +591,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   if (id.length() <= 20)
-    return false;
+    return kCollectInfoNonFatalFailure;
 
   int vendor_id = 0, device_id = 0;
   base::string16 vendor_id_string = id.substr(8, 4);
@@ -601,7 +602,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->gpu.device_id = device_id;
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
   if (!CollectDriverInfoD3D(id, gpu_info))
-    return false;
+    return kCollectInfoNonFatalFailure;
 
   // Collect basic information about supported D3D11 features. Delay for 45
   // seconds so as not to regress performance tests.
@@ -623,20 +624,20 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     }
   }
 
-  return true;
+  return kCollectInfoSuccess;
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoGL");
 
   if (!gpu_info->driver_version.empty())
-    return true;
+    return kCollectInfoSuccess;
 
   std::string gl_version_string = gpu_info->gl_version_string;
 
-  return RE2::PartialMatch(gl_version_string,
-                           "([\\d\\.]+)$",
-                           &gpu_info->driver_version);
+  bool parsed = RE2::PartialMatch(
+      gl_version_string, "([\\d\\.]+)$", &gpu_info->driver_version);
+  return parsed ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
 }
 
 void MergeGPUInfo(GPUInfo* basic_gpu_info,

@@ -157,7 +157,7 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
 
 }  // namespace anonymous
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
@@ -182,7 +182,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string model_name;
@@ -193,10 +193,11 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->machine_model += " " + base::IntToString(model_major) +
                              "." + base::IntToString(model_minor);
 
-  return CollectPCIVideoCardInfo(gpu_info);
+  bool result = CollectPCIVideoCardInfo(gpu_info);
+  return result ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Extract the OpenGL driver version string from the GL_VERSION string.
@@ -206,9 +207,9 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   std::string gl_version_string = gpu_info->gl_version_string;
   size_t pos = gl_version_string.find_last_of('-');
   if (pos == std::string::npos)
-    return false;
+    return kCollectInfoNonFatalFailure;
   gpu_info->driver_version = gl_version_string.substr(pos + 1);
-  return true;
+  return kCollectInfoSuccess;
 }
 
 void MergeGPUInfo(GPUInfo* basic_gpu_info,

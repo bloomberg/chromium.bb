@@ -84,7 +84,7 @@ ScopedRestoreNonOwnedEGLContext::~ScopedRestoreNonOwnedEGLContext() {
 
 namespace gpu {
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
@@ -95,7 +95,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDNotSupported;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   gpu_info->finalized = true;
 
@@ -107,12 +107,12 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   gpu_info->driver_version = GetDriverVersionFromString(
       gpu_info->gl_version_string);
   gpu_info->gpu.vendor_string = gpu_info->gl_vendor;
   gpu_info->gpu.device_string = gpu_info->gl_renderer;
-  return true;
+  return kCollectInfoSuccess;
 }
 
 void MergeGPUInfo(GPUInfo* basic_gpu_info,

@@ -770,6 +770,8 @@ void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
 
   if (!initialized_)
     GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
+  else if (!in_process_)
+    GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
 void GpuProcessHost::OnChannelEstablished(

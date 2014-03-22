@@ -254,6 +254,17 @@ class GPU_EXPORT GpuControlList {
     int value2_;
   };
 
+  class GPU_EXPORT BoolInfo {
+   public:
+    explicit BoolInfo(bool value);
+
+    // Determines if a given bool is included in the BoolInfo.
+    bool Contains(bool value) const;
+
+   private:
+    bool value_;
+  };
+
   class GPU_EXPORT MachineModelInfo {
    public:
     MachineModelInfo(const std::string& name_op,
@@ -413,6 +424,8 @@ class GPU_EXPORT GpuControlList {
                          const std::string& int_string,
                          const std::string& int_string2);
 
+    void SetDirectRenderingInfo(bool value);
+
     bool SetFeatures(const std::vector<std::string>& features,
                      const FeatureMap& feature_map,
                      bool supports_feature_type_all);
@@ -453,6 +466,7 @@ class GPU_EXPORT GpuControlList {
     scoped_ptr<FloatInfo> perf_overall_info_;
     scoped_ptr<MachineModelInfo> machine_model_info_;
     scoped_ptr<IntInfo> gpu_count_info_;
+    scoped_ptr<BoolInfo> direct_rendering_info_;
     std::set<int> features_;
     std::vector<ScopedGpuControlListEntry> exceptions_;
   };

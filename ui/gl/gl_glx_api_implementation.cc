@@ -81,6 +81,7 @@ bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info) {
     info->version = version;
   if (extensions)
     info->extensions = extensions;
+  info->direct_rendering = !!glXIsDirect(display, glXGetCurrentContext());
   return true;
 }
 

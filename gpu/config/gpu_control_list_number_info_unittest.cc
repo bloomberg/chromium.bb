@@ -14,6 +14,7 @@ class NumberInfoTest : public testing::Test {
 
   typedef GpuControlList::FloatInfo FloatInfo;
   typedef GpuControlList::IntInfo IntInfo;
+  typedef GpuControlList::BoolInfo BoolInfo;
 };
 
 TEST_F(NumberInfoTest, ValidFloatInfo) {
@@ -203,6 +204,19 @@ TEST_F(NumberInfoTest, IntComparison) {
     EXPECT_TRUE(info.Contains(4));
     EXPECT_FALSE(info.Contains(6));
     EXPECT_FALSE(info.Contains(2));
+  }
+}
+
+TEST_F(NumberInfoTest, Bool) {
+  {
+    BoolInfo info(true);
+    EXPECT_TRUE(info.Contains(true));
+    EXPECT_FALSE(info.Contains(false));
+  }
+  {
+    BoolInfo info(false);
+    EXPECT_FALSE(info.Contains(true));
+    EXPECT_TRUE(info.Contains(false));
   }
 }
 

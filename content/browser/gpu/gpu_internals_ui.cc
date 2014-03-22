@@ -157,6 +157,10 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.gl_ws_version));
   basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
                                              gpu_info.gl_ws_extensions));
+  std::string direct_rendering = gpu_info.direct_rendering ? "Yes" : "No";
+  basic_info->Append(
+      NewDescriptionValuePair("Direct rendering", direct_rendering));
+
   std::string reset_strategy =
       base::StringPrintf("0x%04x", gpu_info.gl_reset_notification_strategy);
   basic_info->Append(NewDescriptionValuePair(

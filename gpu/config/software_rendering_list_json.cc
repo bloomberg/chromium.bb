@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.1",
+  "version": "7.2",
   "entries": [
     {
       "id": 1,
@@ -1032,8 +1032,19 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_video_decode"
       ]
+    },
+    {
+      "id": 93,
+      "description": "GLX indirect rendering (X remoting) is not supported",
+      "cr_bugs": [72373],
+      "os": {
+        "type": "linux"
+      },
+      "direct_rendering": false,
+      "features": [
+        "all"
+      ]
     }
-
   ]
 }
 

@@ -250,8 +250,19 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::TimeTicks before_collect_context_graphics_info =
           base::TimeTicks::Now();
 #if !defined(OS_MACOSX)
-      if (!gpu::CollectContextGraphicsInfo(&gpu_info))
-        VLOG(1) << "gpu::CollectGraphicsInfo failed";
+      gpu::CollectInfoResult result =
+          gpu::CollectContextGraphicsInfo(&gpu_info);
+      switch (result) {
+        case gpu::kCollectInfoFatalFailure:
+          LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
+          dead_on_arrival = true;
+          break;
+        case gpu::kCollectInfoNonFatalFailure:
+          VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+          break;
+        case gpu::kCollectInfoSuccess:
+          break;
+      }
       GetContentClient()->SetGpuInfo(gpu_info);
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)

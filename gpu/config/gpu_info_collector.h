@@ -18,6 +18,18 @@ enum GpuIDResult {
   kGpuIDNotSupported
 };
 
+// Result for the various Collect*Info* functions below.
+// Fatal failures are for cases where we can't create a context at all or
+// something, making the use of the GPU impossible.
+// Non-fatal failures are for cases where we could gather most info, but maybe
+// some is missing (e.g. unable to parse a version string or to detect the exact
+// model).
+enum CollectInfoResult {
+  kCollectInfoFatalFailure,
+  kCollectInfoNonFatalFailure,
+  kCollectInfoSuccess
+};
+
 // Collect GPU vendor_id and device ID.
 GPU_EXPORT GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id);
 
@@ -25,12 +37,11 @@ GPU_EXPORT GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id);
 // the danger of crashing), including vendor_id and device_id.
 // This is called at browser process startup time.
 // The subset each platform collects may be different.
-GPU_EXPORT bool CollectBasicGraphicsInfo(GPUInfo* gpu_info);
+GPU_EXPORT CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info);
 
 // Create a GL/DirectX context and collect related info.
 // This is called at GPU process startup time.
-// Returns true on success.
-GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
+GPU_EXPORT CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info);
 
 #if defined(OS_WIN)
 // Collect the DirectX Disagnostics information about the attached displays.
@@ -38,10 +49,10 @@ GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
 #endif  // OS_WIN
 
 // Create a GL context and collect GL strings and versions.
-GPU_EXPORT bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
+GPU_EXPORT CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info);
 
 // Each platform stores the driver version on the GL_VERSION string differently
-GPU_EXPORT bool CollectDriverInfoGL(GPUInfo* gpu_info);
+GPU_EXPORT CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info);
 
 // Merge GPUInfo from CollectContextGraphicsInfo into basic GPUInfo.
 // This is platform specific, depending on which info are collected at which

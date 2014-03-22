@@ -8,7 +8,7 @@
 
 namespace gpu {
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
@@ -19,14 +19,14 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDNotSupported;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
-  return true;
+  return kCollectInfoSuccess;
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   NOTIMPLEMENTED();
-  return false;
+  return kCollectInfoNonFatalFailure;
 }
 
 void MergeGPUInfo(GPUInfo* basic_gpu_info,

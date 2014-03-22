@@ -27,10 +27,12 @@ enum GLImplementation {
   kGLImplementationMockGL
 };
 
-struct GLWindowSystemBindingInfo {
+struct GL_EXPORT GLWindowSystemBindingInfo {
+  GLWindowSystemBindingInfo();
   std::string vendor;
   std::string version;
   std::string extensions;
+  bool direct_rendering;
 };
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls);

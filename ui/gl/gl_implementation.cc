@@ -161,4 +161,7 @@ DisableNullDrawGLBindings::~DisableNullDrawGLBindings() {
   SetNullDrawGLBindingsEnabledGL(initial_enabled_);
 }
 
+GLWindowSystemBindingInfo::GLWindowSystemBindingInfo()
+    : direct_rendering(true) {}
+
 }  // namespace gfx

@@ -77,7 +77,7 @@ std::string CollectDriverVersionNVidia() {
   }
   int event_base = 0, error_base = 0;
   if (!XNVCTRLQueryExtension(display, &event_base, &error_base)) {
-    LOG(INFO) << "NVCtrl extension does not exist.";
+    VLOG(1) << "NVCtrl extension does not exist.";
     return std::string();
   }
   int screen_count = ScreenCount(display);
@@ -164,7 +164,7 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
 
 }  // namespace anonymous
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
@@ -183,10 +183,9 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 #endif
   }
 
+  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
   gpu_info->finalized = true;
-  bool rt = CollectGraphicsInfoGL(gpu_info);
-
-  return rt;
+  return result;
 }
 
 GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
@@ -203,7 +202,7 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   return kGpuIDFailure;
 }
 
-bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   bool rt = CollectPCIVideoCardInfo(gpu_info);
@@ -238,10 +237,10 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
       break;
   }
 
-  return rt;
+  return rt ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string gl_version_string = gpu_info->gl_version_string;
@@ -252,18 +251,18 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   // In linux, the gl version string might be in the format of
   //   GLVersion DriverVendor DriverVersion
   if (pieces.size() < 3)
-    return false;
+    return kCollectInfoNonFatalFailure;
 
   std::string driver_version = pieces[2];
   size_t pos = driver_version.find_first_not_of("0123456789.");
   if (pos == 0)
-    return false;
+    return kCollectInfoNonFatalFailure;
   if (pos != std::string::npos)
     driver_version = driver_version.substr(0, pos);
 
   gpu_info->driver_vendor = pieces[1];
   gpu_info->driver_version = driver_version;
-  return true;
+  return kCollectInfoSuccess;
 }
 
 void MergeGPUInfo(GPUInfo* basic_gpu_info,
