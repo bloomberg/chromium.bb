@@ -64,6 +64,8 @@
         'keyboard_controller_observer.h',
         'keyboard_controller_proxy.cc',
         'keyboard_controller_proxy.h',
+        'keyboard_layout_manager.h',
+        'keyboard_layout_manager.cc',
         'keyboard_export.h',
         'keyboard_switches.cc',
         'keyboard_switches.h',

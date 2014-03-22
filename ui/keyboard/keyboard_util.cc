@@ -43,9 +43,39 @@ bool g_accessibility_keyboard_enabled = false;
 
 base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 
+// The ratio between the height of the keyboard and the screen when using the
+// usability keyboard.
+const float kUsabilityKeyboardHeightRatio = 1.0f;
+
+// The default ratio between the height of the keyboard and the screen.
+const float kDefaultKeyboardHeightRatio = 0.3f;
+
+// The ratio between the height of the keyboard and the screen when using the
+// accessibility keyboard.
+const float kAccessibilityKeyboardHeightRatio = 0.3f;
+
+float GetKeyboardHeightRatio(){
+  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
+    return kUsabilityKeyboardHeightRatio;
+  } else if (keyboard::GetAccessibilityKeyboardEnabled()) {
+    return kAccessibilityKeyboardHeightRatio;
+  }
+  return kDefaultKeyboardHeightRatio;
+}
+
 }  // namespace
 
 namespace keyboard {
+
+gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
+    const gfx::Rect& window_bounds) {
+  const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
+  return gfx::Rect(
+      window_bounds.x(),
+      window_bounds.y() + window_bounds.height() * (1 - kKeyboardHeightRatio),
+      window_bounds.width(),
+      window_bounds.height() * kKeyboardHeightRatio);
+}
 
 void SetAccessibilityKeyboardEnabled(bool enabled) {
   g_accessibility_keyboard_enabled = enabled;

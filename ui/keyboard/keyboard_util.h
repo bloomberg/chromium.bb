@@ -38,6 +38,10 @@ enum KeyboardControlEvent {
   KEYBOARD_CONTROL_MAX,
 };
 
+// Gets the default keyboard bounds from |window_bounds|.
+KEYBOARD_EXPORT gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
+    const gfx::Rect& window_bounds);
+
 // Sets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
 

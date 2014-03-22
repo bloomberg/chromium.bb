@@ -31,7 +31,6 @@ namespace keyboard {
 class CallbackAnimationObserver;
 class KeyboardControllerObserver;
 class KeyboardControllerProxy;
-class KeyboardLayoutManager;
 
 // Provides control of the virtual keyboard, including providing a container
 // and controlling visibility.

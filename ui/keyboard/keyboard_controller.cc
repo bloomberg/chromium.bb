@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
@@ -20,6 +19,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/masked_window_targeter.h"
@@ -40,34 +40,6 @@ const int kAnimationDurationMs = 200;
 // hide animation finishes.
 const float kAnimationStartOrAfterHideOpacity = 0.2f;
 
-// The ratio between the height of the keyboard and the screen when using the
-// usability keyboard.
-const float kUsabilityKeyboardHeightRatio = 1.0f;
-
-// The default ratio between the height of the keyboard and the screen.
-const float kDefaultKeyboardHeightRatio = 0.3f;
-
-// The ratio between the height of the keyboard and the screen when using the
-// accessibility keyboard.
-const float kAccessibilityKeyboardHeightRatio = 0.3f;
-
-float GetKeyboardHeightRatio(){
-  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    return kUsabilityKeyboardHeightRatio;
-  } else if (keyboard::GetAccessibilityKeyboardEnabled()) {
-    return kAccessibilityKeyboardHeightRatio;
-  }
-  return kDefaultKeyboardHeightRatio;
-}
-gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
-  const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
-  return gfx::Rect(
-      window_bounds.x(),
-      window_bounds.y() + window_bounds.height() * (1 - kKeyboardHeightRatio),
-      window_bounds.width(),
-      window_bounds.height() * kKeyboardHeightRatio);
-}
-
 // Event targeter for the keyboard container.
 class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
  public:
@@ -84,7 +56,7 @@ class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
   virtual bool GetHitTestMask(aura::Window* window,
                               gfx::Path* mask) const OVERRIDE {
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
-        KeyboardBoundsFromWindowBounds(window->bounds());
+        keyboard::DefaultKeyboardBoundsFromWindowBounds(window->bounds());
     mask->addRect(RectToSkRect(keyboard_bounds));
     return true;
   }
@@ -133,7 +105,7 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
   virtual bool HasHitTestMask() const OVERRIDE { return true; }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
-        KeyboardBoundsFromWindowBounds(bounds_);
+        keyboard::DefaultKeyboardBoundsFromWindowBounds(bounds_);
     mask->addRect(RectToSkRect(keyboard_bounds));
   }
   virtual void DidRecreateLayer(ui::Layer* old_layer,
@@ -207,54 +179,6 @@ void CallbackAnimationObserver::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* seq) {
   animator_->RemoveObserver(this);
 }
-
-// LayoutManager for the virtual keyboard container.  Manages a single window
-// (the virtual keyboard) and keeps it positioned at the bottom of the
-// owner window.
-class KeyboardLayoutManager : public aura::LayoutManager {
- public:
-  explicit KeyboardLayoutManager(KeyboardController* controller)
-      : controller_(controller), keyboard_(NULL) {
-  }
-
-  // Overridden from aura::LayoutManager
-  virtual void OnWindowResized() OVERRIDE {
-    if (keyboard_ && !controller_->proxy()->resizing_from_contents())
-      ResizeKeyboardToDefault(keyboard_);
-  }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    DCHECK(!keyboard_);
-    keyboard_ = child;
-    ResizeKeyboardToDefault(keyboard_);
-  }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {}
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-    // SetChildBounds can be invoked by resizing from the container or by
-    // resizing from the contents (through window.resizeTo call in JS).
-    // The flag resizing_from_contents() is used to determine the keyboard is
-    // resizing from which.
-    if (controller_->proxy()->resizing_from_contents()) {
-      controller_->NotifyKeyboardBoundsChanging(requested_bounds);
-      SetChildBoundsDirect(child, requested_bounds);
-    }
-  }
-
- private:
-  void ResizeKeyboardToDefault(aura::Window* child) {
-    gfx::Rect keyboard_bounds = KeyboardBoundsFromWindowBounds(
-        controller_->GetContainerWindow()->bounds());
-    SetChildBoundsDirect(child, keyboard_bounds);
-  }
-
-  KeyboardController* controller_;
-  aura::Window* keyboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutManager);
-};
 
 KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy),
