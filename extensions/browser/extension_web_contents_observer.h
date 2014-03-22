@@ -45,6 +45,9 @@ class ExtensionWebContentsObserver : public content::WebContentsObserver {
   // NULL if the render view host is not for a valid extension.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);
 
+  // Updates ViewType for RenderViewHost based on GetViewType(web_contents()).
+  void NotifyRenderViewType(content::RenderViewHost* render_view_host);
+
   // Returns the extension or app ID associated with a render view host. Returns
   // the empty string if the render view host is not for a valid extension.
   static std::string GetExtensionId(content::RenderViewHost* render_view_host);

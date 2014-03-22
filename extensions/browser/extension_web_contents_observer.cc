@@ -21,14 +21,15 @@ namespace extensions {
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      browser_context_(web_contents->GetBrowserContext()) {}
+      browser_context_(web_contents->GetBrowserContext()) {
+  NotifyRenderViewType(web_contents->GetRenderViewHost());
+}
 
 ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {}
 
 void ExtensionWebContentsObserver::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  render_view_host->Send(new ExtensionMsg_NotifyRenderViewType(
-      render_view_host->GetRoutingID(), GetViewType(web_contents())));
+  NotifyRenderViewType(render_view_host);
 
   const Extension* extension = GetExtension(render_view_host);
   if (!extension)
@@ -79,6 +80,14 @@ void ExtensionWebContentsObserver::RenderViewCreated(
     case Manifest::TYPE_THEME:
     case Manifest::TYPE_SHARED_MODULE:
       break;
+  }
+}
+
+void ExtensionWebContentsObserver::NotifyRenderViewType(
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host) {
+    render_view_host->Send(new ExtensionMsg_NotifyRenderViewType(
+        render_view_host->GetRoutingID(), GetViewType(web_contents())));
   }
 }
 
