@@ -26,13 +26,13 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
   // Must be called before any other methods.
   void Init(scoped_refptr<DataPipe> data_pipe);
 
+  // |Dispatcher| public methods:
   virtual Type GetType() const OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<DataPipeProducerDispatcher>;
   virtual ~DataPipeProducerDispatcher();
 
-  // |Dispatcher| implementation/overrides:
+  // |Dispatcher| protected methods:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual void CloseImplNoLock() OVERRIDE;
   virtual scoped_refptr<Dispatcher>

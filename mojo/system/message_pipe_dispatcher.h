@@ -28,6 +28,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
+  // |Dispatcher| public methods:
   virtual Type GetType() const OVERRIDE;
 
   // Creates a |MessagePipe| with a local endpoint (at port 0) and a proxy
@@ -45,7 +46,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
  private:
   friend class MessagePipeDispatcherTransport;
 
-  friend class base::RefCountedThreadSafe<MessagePipeDispatcher>;
   virtual ~MessagePipeDispatcher();
 
   // Gets a dumb pointer to |message_pipe_|. This must be called under the
@@ -56,7 +56,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Similarly for the port.
   unsigned GetPortNoLock() const;
 
-  // |Dispatcher| implementation/overrides:
+  // |Dispatcher| protected methods:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual void CloseImplNoLock() OVERRIDE;
   virtual scoped_refptr<Dispatcher>

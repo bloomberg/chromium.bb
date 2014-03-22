@@ -22,8 +22,6 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
  protected:
   SimpleDispatcher();
-
-  friend class base::RefCountedThreadSafe<SimpleDispatcher>;
   virtual ~SimpleDispatcher();
 
   // To be called by subclasses when the state changes (so
@@ -39,7 +37,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   virtual MojoWaitFlags SatisfiedFlagsNoLock() const = 0;
   virtual MojoWaitFlags SatisfiableFlagsNoLock() const = 0;
 
-  // |Dispatcher| implementation/overrides:
+  // |Dispatcher| protected methods:
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,

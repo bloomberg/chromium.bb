@@ -173,9 +173,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   };
 
  protected:
-  Dispatcher();
-
   friend class base::RefCountedThreadSafe<Dispatcher>;
+
+  Dispatcher();
   virtual ~Dispatcher();
 
   // These are to be overridden by subclasses (if necessary). They are called

@@ -30,17 +30,17 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementCtorCallCount();
   }
 
+  // |Dispatcher| private methods:
   virtual Type GetType() const OVERRIDE {
     return kTypeUnknown;
   }
 
  private:
-  friend class base::RefCountedThreadSafe<MockDispatcher>;
   virtual ~MockDispatcher() {
     info_->IncrementDtorCallCount();
   }
 
-  // |Dispatcher| implementation/overrides:
+  // |Dispatcher| protected methods:
   virtual void CloseImplNoLock() OVERRIDE {
     info_->IncrementCloseCallCount();
     lock().AssertAcquired();
