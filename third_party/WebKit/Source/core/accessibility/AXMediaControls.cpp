@@ -77,22 +77,6 @@ MediaControlElementType AccessibilityMediaControl::controlType() const
     return mediaControlElementType(renderer()->node());
 }
 
-void AccessibilityMediaControl::accessibilityText(Vector<AccessibilityText>& textOrder)
-{
-    String description = accessibilityDescription();
-    if (!description.isEmpty())
-        textOrder.append(AccessibilityText(description, AlternativeText));
-
-    String title = this->title();
-    if (!title.isEmpty())
-        textOrder.append(AccessibilityText(title, AlternativeText));
-
-    String helptext = helpText();
-    if (!helptext.isEmpty())
-        textOrder.append(AccessibilityText(helptext, HelpText));
-}
-
-
 String AccessibilityMediaControl::title() const
 {
     // FIXME: the ControlsPanel container should never be visible in the

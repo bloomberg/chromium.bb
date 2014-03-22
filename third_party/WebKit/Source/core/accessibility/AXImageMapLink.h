@@ -71,7 +71,6 @@ private:
 
     virtual void detachFromParent() OVERRIDE;
 
-    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
     virtual bool isImageMapLink() const OVERRIDE { return true; }
 };
 

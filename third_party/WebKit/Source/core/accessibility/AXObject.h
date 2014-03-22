@@ -418,7 +418,6 @@ public:
     virtual float valueForRange() const { return 0.0f; }
     virtual float maxValueForRange() const { return 0.0f; }
     virtual float minValueForRange() const { return 0.0f; }
-    const AtomicString& placeholderValue() const;
     virtual void selectedChildren(AccessibilityChildrenVector&) { }
     virtual String stringValue() const { return String(); }
 
@@ -459,7 +458,6 @@ public:
     virtual bool ariaLiveRegionBusy() const { return false; }
 
     // Accessibility Text.
-    virtual void accessibilityText(Vector<AccessibilityText>&) { };
     virtual String textUnderElement() const { return String(); }
 
     // Accessibility Text - (To be deprecated).

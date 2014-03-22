@@ -50,7 +50,6 @@ public:
 protected:
     explicit AccessibilityMediaControl(RenderObject*);
     MediaControlElementType controlType() const;
-    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE FINAL;
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 

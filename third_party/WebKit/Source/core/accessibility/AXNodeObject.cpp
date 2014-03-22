@@ -1043,18 +1043,6 @@ AccessibilityRole AXNodeObject::ariaRoleAttribute() const
     return m_ariaRole;
 }
 
-void AXNodeObject::accessibilityText(Vector<AccessibilityText>& textOrder)
-{
-    titleElementText(textOrder);
-    alternativeText(textOrder);
-    visibleText(textOrder);
-    helpText(textOrder);
-
-    String placeholder = placeholderValue();
-    if (!placeholder.isEmpty())
-        textOrder.append(AccessibilityText(placeholder, PlaceholderText));
-}
-
 // When building the textUnderElement for an object, determine whether or not
 // we should include the inner text of this given descendant object or skip it.
 static bool shouldUseAccessiblityObjectInnerText(AXObject* obj)
@@ -1689,110 +1677,6 @@ void AXNodeObject::changeValueByPercent(float percentChange)
     setValue(String::number(value));
 
     axObjectCache()->postNotification(node(), AXObjectCache::AXValueChanged, true);
-}
-
-void AXNodeObject::helpText(Vector<AccessibilityText>& textOrder) const
-{
-    const AtomicString& ariaHelp = getAttribute(aria_helpAttr);
-    if (!ariaHelp.isEmpty())
-        textOrder.append(AccessibilityText(ariaHelp, HelpText));
-
-    String describedBy = ariaDescribedByAttribute();
-    if (!describedBy.isEmpty())
-        textOrder.append(AccessibilityText(describedBy, SummaryText));
-
-    // Add help type text that is derived from ancestors.
-    for (Node* curr = node(); curr; curr = curr->parentNode()) {
-        const AtomicString& summary = getAttribute(summaryAttr);
-        if (!summary.isEmpty())
-            textOrder.append(AccessibilityText(summary, SummaryText));
-
-        // The title attribute should be used as help text unless it is already being used as descriptive text.
-        const AtomicString& title = getAttribute(titleAttr);
-        if (!title.isEmpty())
-            textOrder.append(AccessibilityText(title, TitleTagText));
-
-        // Only take help text from an ancestor element if its a group or an unknown role. If help was
-        // added to those kinds of elements, it is likely it was meant for a child element.
-        AXObject* axObj = axObjectCache()->getOrCreate(curr);
-        if (!axObj)
-            return;
-
-        AccessibilityRole role = axObj->roleValue();
-        if (role != GroupRole && role != UnknownRole)
-            break;
-    }
-}
-
-void AXNodeObject::titleElementText(Vector<AccessibilityText>& textOrder)
-{
-    Node* node = this->node();
-    if (!node)
-        return;
-
-    if (isHTMLInputElement(*node) || AXObject::isARIAInput(ariaRoleAttribute()) || isControl()) {
-        HTMLLabelElement* label = labelForElement(toElement(node));
-        if (label) {
-            AXObject* labelObject = axObjectCache()->getOrCreate(label);
-            textOrder.append(AccessibilityText(label->innerText(), LabelByElementText, labelObject));
-            return;
-        }
-    }
-
-    AXObject* titleUIElement = this->titleUIElement();
-    if (titleUIElement)
-        textOrder.append(AccessibilityText(String(), LabelByElementText, titleUIElement));
-}
-
-void AXNodeObject::visibleText(Vector<AccessibilityText>& textOrder) const
-{
-    Node* node = this->node();
-    if (!node)
-        return;
-
-    if (isHTMLInputElement(*node)) {
-        HTMLInputElement& input = toHTMLInputElement(*node);
-        if (input.isTextButton()) {
-            textOrder.append(AccessibilityText(input.valueWithDefault(), VisibleText));
-            return;
-        }
-    }
-
-    // If this node isn't rendered, there's no inner text we can extract from a select element.
-    if (!isAXRenderObject() && isHTMLSelectElement(*node))
-        return;
-
-    bool useTextUnderElement = false;
-
-    switch (roleValue()) {
-    case PopUpButtonRole:
-        // Native popup buttons should not use their button children's text as a title. That value is retrieved through stringValue().
-        if (isHTMLSelectElement(*node))
-            break;
-    case ButtonRole:
-    case ToggleButtonRole:
-    case CheckBoxRole:
-    case ListBoxOptionRole:
-    case MenuButtonRole:
-    case MenuItemRole:
-    case RadioButtonRole:
-    case TabRole:
-        useTextUnderElement = true;
-        break;
-    default:
-        break;
-    }
-
-    // If it's focusable but it's not content editable or a known control type, then it will appear to
-    // the user as a single atomic object, so we should use its text as the default title.
-    if (isHeading() || isLink() || isGenericFocusableElement())
-        useTextUnderElement = true;
-
-    if (useTextUnderElement) {
-        String text = textUnderElement();
-        if (!text.isEmpty())
-            textOrder.append(AccessibilityText(text, ChildrenText));
-    }
 }
 
 } // namespace WebCore

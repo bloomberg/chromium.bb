@@ -160,7 +160,6 @@ protected:
     virtual AccessibilityRole ariaRoleAttribute() const OVERRIDE FINAL;
 
     // Accessibility Text.
-    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
     virtual String textUnderElement() const OVERRIDE;
 
     // Accessibility Text - (To be deprecated).
@@ -207,9 +206,6 @@ private:
     void alternativeText(Vector<AccessibilityText>&) const;
     void ariaLabeledByText(Vector<AccessibilityText>&) const;
     void changeValueByPercent(float percentChange);
-    void helpText(Vector<AccessibilityText>&) const;
-    void titleElementText(Vector<AccessibilityText>&);
-    void visibleText(Vector<AccessibilityText>&) const;
     float stepValueForRange() const;
 };
 

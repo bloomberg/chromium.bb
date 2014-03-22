@@ -395,15 +395,6 @@ AccessibilityButtonState AXObject::checkboxOrRadioValue() const
     return ButtonStateOff;
 }
 
-const AtomicString& AXObject::placeholderValue() const
-{
-    const AtomicString& placeholder = getAttribute(placeholderAttr);
-    if (!placeholder.isEmpty())
-        return placeholder;
-
-    return nullAtom;
-}
-
 bool AXObject::ariaIsMultiline() const
 {
     return equalIgnoringCase(getAttribute(aria_multilineAttr), "true");
