@@ -166,49 +166,51 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     return result;
   }
 
-  Result CanConnectAndSendMessages(const std::string& extension_id) {
-    return CanConnectAndSendMessages(browser(), extension_id, "");
+  Result CanConnectAndSendMessagesToMainFrame(const std::string& extension_id,
+                                              const char* message = NULL) {
+    return CanConnectAndSendMessagesToFrame(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        extension_id,
+        message);
   }
 
-  Result CanConnectAndSendMessages(const std::string& extension_id,
-                                   const char* frame_xpath,
-                                   const char* message) {
-    return CanConnectAndSendMessages(browser(), extension_id, frame_xpath,
-                                     message);
+  Result CanConnectAndSendMessagesToIFrame(const std::string& extension_id,
+                                           const char* message = NULL) {
+    content::RenderFrameHost* frame = content::FrameMatchingPredicate(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::Bind(&content::FrameIsChildOfMainFrame));
+    return CanConnectAndSendMessagesToFrame(frame, extension_id, message);
   }
 
-  Result CanConnectAndSendMessages(Browser* browser,
-                                   const std::string& extension_id) {
-    return CanConnectAndSendMessages(browser, extension_id, "");
-  }
-
-  Result CanConnectAndSendMessages(const std::string& extension_id,
-                                   const char* frame_xpath) {
-    return CanConnectAndSendMessages(browser(), extension_id, frame_xpath);
-  }
-
-  Result CanConnectAndSendMessages(Browser* browser,
-                                   const std::string& extension_id,
-                                   const char* frame_xpath,
-                                   const char* message = NULL) {
+  Result CanConnectAndSendMessagesToFrame(content::RenderFrameHost* frame,
+                                          const std::string& extension_id,
+                                          const char* message) {
     int result;
     std::string args = "'" + extension_id + "'";
     if (message)
       args += std::string(", '") + message + "'";
-    CHECK(content::ExecuteScriptInFrameAndExtractInt(
-        browser->tab_strip_model()->GetActiveWebContents(),
-        frame_xpath,
+    CHECK(content::ExecuteScriptAndExtractInt(
+        frame,
         base::StringPrintf("assertions.canConnectAndSendMessages(%s)",
                            args.c_str()),
         &result));
     return static_cast<Result>(result);
   }
 
-  testing::AssertionResult AreAnyNonWebApisDefined() {
-    return AreAnyNonWebApisDefined("");
+  testing::AssertionResult AreAnyNonWebApisDefinedForMainFrame() {
+    return AreAnyNonWebApisDefinedForFrame(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   }
 
-  testing::AssertionResult AreAnyNonWebApisDefined(const char* frame_xpath) {
+  testing::AssertionResult AreAnyNonWebApisDefinedForIFrame() {
+    content::RenderFrameHost* frame = content::FrameMatchingPredicate(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::Bind(&content::FrameIsChildOfMainFrame));
+    return AreAnyNonWebApisDefinedForFrame(frame);
+  }
+
+  testing::AssertionResult AreAnyNonWebApisDefinedForFrame(
+      content::RenderFrameHost* frame) {
     // All runtime API methods are non-web except for sendRequest and connect.
     const char* non_messaging_apis[] = {
         "getBackgroundPage",
@@ -243,9 +245,8 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     as_js_array += "]";
 
     bool any_defined;
-    CHECK(content::ExecuteScriptInFrameAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        frame_xpath,
+    CHECK(content::ExecuteScriptAndExtractBool(
+        frame,
         "assertions.areAnyRuntimePropertiesDefined(" + as_js_array + ")",
         &any_defined));
     return any_defined ?
@@ -425,12 +426,14 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
   const char kFakeId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(kFakeId));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+            CanConnectAndSendMessagesToMainFrame(kFakeId));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   ui_test_utils::NavigateToURL(browser(), google_com_url());
-  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(kFakeId));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+            CanConnectAndSendMessagesToMainFrame(kFakeId));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 }
 
 // Tests two extensions on the same sites: one web connectable, one not.
@@ -443,13 +446,14 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   const Extension* chromium_connectable = LoadChromiumConnectableExtension();
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(OK,
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   ui_test_utils::NavigateToURL(browser(), google_com_url());
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
-            CanConnectAndSendMessages(chromium_connectable->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   // Install the non-connectable extension. Nothing can connect to it.
   const Extension* not_connectable = LoadNotConnectableExtension();
@@ -458,13 +462,13 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // Namespace will be defined here because |chromium_connectable| can connect
   // to it - so this will be the "cannot establish connection" error.
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(not_connectable->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+            CanConnectAndSendMessagesToMainFrame(not_connectable->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   ui_test_utils::NavigateToURL(browser(), google_com_url());
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
-            CanConnectAndSendMessages(not_connectable->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+            CanConnectAndSendMessagesToMainFrame(not_connectable->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 }
 
 // See http://crbug.com/297866
@@ -478,11 +482,12 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   // If the background page closes after receipt of the message, it will still
   // reply to this message...
-  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id(),
-                                          "",
-                                          close_background_message()));
+  EXPECT_EQ(OK,
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id(),
+                                                 close_background_message()));
   // and be re-opened by receipt of a subsequent message.
-  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
+  EXPECT_EQ(OK,
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
 }
 
 // Tests a web connectable extension that doesn't receive TLS channel id.
@@ -599,18 +604,20 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   const Extension* not_connectable = LoadNotConnectableExtension();
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
+  EXPECT_EQ(OK,
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(not_connectable->id()));
+            CanConnectAndSendMessagesToMainFrame(not_connectable->id()));
 
   DisableExtension(chromium_connectable->id());
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(chromium_connectable->id()));
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
 
   EnableExtension(chromium_connectable->id());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
+  EXPECT_EQ(OK,
+            CanConnectAndSendMessagesToMainFrame(chromium_connectable->id()));
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(not_connectable->id()));
+            CanConnectAndSendMessagesToMainFrame(not_connectable->id()));
 }
 
 // Tests connection from incognito tabs when the user denies the connection
@@ -630,6 +637,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoDeny) {
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       profile()->GetOffTheRecordProfile(),
       chromium_org_url());
+  content::RenderFrameHost* incognito_frame = incognito_browser->
+      tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
   // No connection because incognito-enabled hasn't been set for the extension,
   // and the user denied our interactive request.
@@ -638,18 +647,18 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoDeny) {
         IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
 
     EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-              CanConnectAndSendMessages(incognito_browser, id));
+              CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
     EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
 
     // Try again. User has already denied.
     EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-              CanConnectAndSendMessages(incognito_browser, id));
+              CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
     EXPECT_EQ(0, alert_tracker.GetAndResetAlertCount());
   }
 
   // Allowing the extension in incognito mode will bypass the deny.
   ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(id, true);
-  EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
 }
 
 // Tests connection from incognito tabs when the user accepts the connection
@@ -665,6 +674,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoAllow) {
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       profile()->GetOffTheRecordProfile(),
       chromium_org_url());
+  content::RenderFrameHost* incognito_frame = incognito_browser->
+      tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
   // Connection allowed even with incognito disabled, because the user accepted
   // the interactive request.
@@ -672,17 +683,17 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoAllow) {
     IncognitoConnectability::ScopedAlertTracker alert_tracker(
         IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
 
-    EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
     EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
 
     // Try again. User has already allowed.
-    EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
     EXPECT_EQ(0, alert_tracker.GetAndResetAlertCount());
   }
 
   // Allowing the extension in incognito mode will continue to allow.
   ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(id, true);
-  EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame, id, NULL));
 }
 
 // Tests a connection from an iframe within a tab which doesn't have
@@ -694,14 +705,14 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   const Extension* extension = LoadChromiumConnectableExtension();
 
   ui_test_utils::NavigateToURL(browser(), google_com_url());
-  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(extension->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+            CanConnectAndSendMessagesToMainFrame(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   ASSERT_TRUE(AppendIframe(chromium_org_url()));
 
-  const char* frame_xpath = "//iframe[1]";
-  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id(), frame_xpath));
-  EXPECT_FALSE(AreAnyNonWebApisDefined(frame_xpath));
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToIFrame(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForIFrame());
 }
 
 // Tests connection from an iframe without permission within a tab that does.
@@ -713,15 +724,14 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   const Extension* extension = LoadChromiumConnectableExtension();
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToMainFrame(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   ASSERT_TRUE(AppendIframe(google_com_url()));
 
-  const char* frame_xpath = "//iframe[1]";
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
-            CanConnectAndSendMessages(extension->id(), frame_xpath));
-  EXPECT_FALSE(AreAnyNonWebApisDefined(frame_xpath));
+            CanConnectAndSendMessagesToIFrame(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForIFrame());
 }
 
 // Tests externally_connectable between a web page and an extension with a
@@ -930,13 +940,13 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, HostedAppOnWebsite) {
 
   // The presence of the hosted app shouldn't give the ability to send messages.
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(""));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessagesToMainFrame(""));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 
   // Once a connectable extension is installed, it should.
   const Extension* extension = LoadChromiumConnectableExtension();
-  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id()));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+  EXPECT_EQ(OK, CanConnectAndSendMessagesToMainFrame(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefinedForMainFrame());
 }
 
 // Tests that an invalid extension ID specified in a hosted app does not crash
@@ -954,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR ,
-            CanConnectAndSendMessages("invalid"));
+            CanConnectAndSendMessagesToMainFrame("invalid"));
 }
 
 #endif  // !defined(OS_WIN) - http://crbug.com/350517.
