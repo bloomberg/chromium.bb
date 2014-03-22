@@ -144,14 +144,6 @@ class Rtcp {
                            uint32 last_ntp_seconds,
                            uint32 last_ntp_fraction);
 
-  void SendRtcpFromRtpSenderOnTransportThread(
-      uint32 packet_type_flags,
-      const transport::RtcpSenderInfo& sender_info,
-      const transport::RtcpDlrrReportBlock& dlrr,
-      const transport::RtcpSenderLogMessage& sender_log,
-      uint32 sending_ssrc,
-      std::string c_name);
-
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
   const base::TimeDelta rtcp_interval_;

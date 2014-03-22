@@ -91,31 +91,13 @@ void AudioSender::SendEncodedAudioFrame(
     const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   InitializeTimers();
-  cast_environment_->PostTask(
-      CastEnvironment::TRANSPORT,
-      FROM_HERE,
-      base::Bind(&AudioSender::SendEncodedAudioFrameToTransport,
-                 base::Unretained(this),
-                 base::Passed(&audio_frame),
-                 recorded_time));
-}
-
-void AudioSender::SendEncodedAudioFrameToTransport(
-    scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-    const base::TimeTicks& recorded_time) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
   transport_sender_->InsertCodedAudioFrame(audio_frame.get(), recorded_time);
 }
 
 void AudioSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  cast_environment_->PostTask(
-      CastEnvironment::TRANSPORT,
-      FROM_HERE,
-      base::Bind(&AudioSender::ResendPacketsOnTransportThread,
-                 base::Unretained(this),
-                 missing_frames_and_packets));
+  transport_sender_->ResendPackets(true, missing_frames_and_packets);
 }
 
 void AudioSender::IncomingRtcpPacket(scoped_ptr<Packet> packet) {
@@ -153,12 +135,6 @@ void AudioSender::SendRtcpReport() {
   rtp_stats_.UpdateInfo(cast_environment_->Clock()->NowTicks());
   rtcp_.SendRtcpFromRtpSender(empty_msg, rtp_stats_.sender_info());
   ScheduleNextRtcpReport();
-}
-
-void AudioSender::ResendPacketsOnTransportThread(
-    const transport::MissingFramesAndPacketsMap& missing_packets) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
-  transport_sender_->ResendPackets(true, missing_packets);
 }
 
 }  // namespace cast

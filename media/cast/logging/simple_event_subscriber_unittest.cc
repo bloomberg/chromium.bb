@@ -25,7 +25,6 @@ class SimpleEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
             GetLoggingConfigWithRawEventsAndStatsEnabled())) {
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }

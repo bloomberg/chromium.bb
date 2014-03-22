@@ -79,7 +79,6 @@ class EncodeDecodeTest : public ::testing::Test {
             task_runner_,
             NULL,
             task_runner_,
-            NULL,
             GetDefaultCastReceiverLoggingConfig())),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
     testing_clock_->Advance(

@@ -32,7 +32,6 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
             GetLoggingConfigWithRawEventsAndStatsEnabled())) {}
 
   virtual ~ReceiverRtcpEventSubscriberTest() {}

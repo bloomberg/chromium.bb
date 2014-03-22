@@ -16,12 +16,10 @@ StandaloneCastEnvironment::StandaloneCastEnvironment(
           NULL,
           NULL,
           NULL,
-          NULL,
           logging_config),
       main_thread_("StandaloneCastEnvironment Main"),
       audio_thread_("StandaloneCastEnvironment Audio"),
-      video_thread_("StandaloneCastEnvironment Video"),
-      transport_thread_("StandaloneCastEnvironment Transport") {
+      video_thread_("StandaloneCastEnvironment Video") {
 #define CREATE_TASK_RUNNER(name, options)   \
   name##_thread_.StartWithOptions(options); \
   CastEnvironment::name##_thread_proxy_ = name##_thread_.message_loop_proxy()
@@ -30,7 +28,6 @@ StandaloneCastEnvironment::StandaloneCastEnvironment(
                      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   CREATE_TASK_RUNNER(audio, base::Thread::Options());
   CREATE_TASK_RUNNER(video, base::Thread::Options());
-  CREATE_TASK_RUNNER(transport, base::Thread::Options());
 
 #undef CREATE_TASK_RUNNER
 }
@@ -44,7 +41,6 @@ void StandaloneCastEnvironment::Shutdown() {
   main_thread_.Stop();
   audio_thread_.Stop();
   video_thread_.Stop();
-  transport_thread_.Stop();
 }
 
 }  // namespace cast

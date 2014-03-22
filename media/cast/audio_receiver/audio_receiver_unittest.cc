@@ -90,7 +90,6 @@ class AudioReceiverTest : public ::testing::Test {
         task_runner_,
         task_runner_,
         task_runner_,
-        task_runner_,
         logging_config);
 
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();

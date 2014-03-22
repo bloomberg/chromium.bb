@@ -179,22 +179,9 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
-  cast_environment_->PostTask(
-      CastEnvironment::TRANSPORT,
-      FROM_HERE,
-      base::Bind(&VideoSender::SendEncodedVideoFrameToTransport,
-                 base::Unretained(this),
-                 base::Passed(&encoded_frame),
-                 capture_time));
+  transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
   UpdateFramesInFlight();
   InitializeTimers();
-}
-
-void VideoSender::SendEncodedVideoFrameToTransport(
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-    const base::TimeTicks& capture_time) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
-  transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
 }
 
 void VideoSender::IncomingRtcpPacket(scoped_ptr<Packet> packet) {
@@ -404,13 +391,8 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       ResendFrame(static_cast<uint32>(resend_frame));
     }
   } else {
-    cast_environment_->PostTask(
-        CastEnvironment::TRANSPORT,
-        FROM_HERE,
-        base::Bind(&VideoSender::ResendPacketsOnTransportThread,
-                   base::Unretained(this),
-                   cast_feedback.missing_frames_and_packets_));
-
+    transport_sender_->ResendPackets(
+        false, cast_feedback.missing_frames_and_packets_);
     uint32 new_bitrate = 0;
     if (congestion_control_.OnNack(rtt, &new_bitrate)) {
       video_encoder_->SetBitRate(new_bitrate);
@@ -469,19 +451,8 @@ void VideoSender::ResendFrame(uint32 resend_frame_id) {
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
   missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));
-  cast_environment_->PostTask(
-      CastEnvironment::TRANSPORT,
-      FROM_HERE,
-      base::Bind(&VideoSender::ResendPacketsOnTransportThread,
-                 base::Unretained(this),
-                 missing_frames_and_packets));
-}
-
-void VideoSender::ResendPacketsOnTransportThread(
-    const transport::MissingFramesAndPacketsMap& missing_packets) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-  transport_sender_->ResendPackets(false, missing_packets);
+  transport_sender_->ResendPackets(false, missing_frames_and_packets);
 }
 
 }  // namespace cast

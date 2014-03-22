@@ -475,7 +475,6 @@ int main(int argc, char** argv) {
           io_message_loop.message_loop_proxy(),
           audio_thread.message_loop_proxy(),
           video_thread.message_loop_proxy(),
-          io_message_loop.message_loop_proxy(),
           media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()));
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =

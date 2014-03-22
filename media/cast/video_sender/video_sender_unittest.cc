@@ -88,7 +88,6 @@ class VideoSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
                             logging_config);
     transport::CastTransportVideoConfig transport_config;
     net::IPEndPoint dummy_endpoint;

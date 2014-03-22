@@ -95,7 +95,6 @@ class VideoEncoderImplTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
                             GetDefaultCastSenderLoggingConfig());
   }
 

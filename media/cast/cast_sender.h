@@ -59,8 +59,8 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
   friend class base::RefCountedThreadSafe<AudioFrameInput>;
 };
 
-// The provided CastTransportSender and the CastSender should be called from the
-// main thread.
+// All methods of CastSender must be called on the main thread.
+// Provided CastTransportSender will also be called on the main thread.
 class CastSender {
  public:
   static scoped_ptr<CastSender> Create(

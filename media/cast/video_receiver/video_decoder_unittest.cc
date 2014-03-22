@@ -51,7 +51,6 @@ class VideoDecoderTest : public ::testing::Test {
                                 task_runner_,
                                 task_runner_,
                                 task_runner_,
-                                task_runner_,
                                 GetDefaultCastReceiverLoggingConfig())),
         test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.

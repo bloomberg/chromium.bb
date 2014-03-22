@@ -26,12 +26,10 @@ CastEnvironment::CastEnvironment(
     scoped_refptr<SingleThreadTaskRunner> main_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> audio_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> video_thread_proxy,
-    scoped_refptr<SingleThreadTaskRunner> transport_thread_proxy,
     const CastLoggingConfig& logging_config)
     : main_thread_proxy_(main_thread_proxy),
       audio_thread_proxy_(audio_thread_proxy),
       video_thread_proxy_(video_thread_proxy),
-      transport_thread_proxy_(transport_thread_proxy),
       clock_(clock.Pass()),
       logging_(new LoggingImpl(logging_config)) {}
 
@@ -67,8 +65,6 @@ scoped_refptr<SingleThreadTaskRunner> CastEnvironment::GetTaskRunner(
       return audio_thread_proxy_;
     case CastEnvironment::VIDEO:
       return video_thread_proxy_;
-    case CastEnvironment::TRANSPORT:
-      return transport_thread_proxy_;
     default:
       NOTREACHED() << "Invalid Thread identifier";
       return NULL;
@@ -86,9 +82,6 @@ bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
     case CastEnvironment::VIDEO:
       return video_thread_proxy_ &&
              video_thread_proxy_->RunsTasksOnCurrentThread();
-    case CastEnvironment::TRANSPORT:
-      return transport_thread_proxy_ &&
-             transport_thread_proxy_->RunsTasksOnCurrentThread();
     default:
       NOTREACHED() << "Invalid thread identifier";
       return false;

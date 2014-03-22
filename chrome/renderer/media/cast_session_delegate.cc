@@ -126,7 +126,6 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
       base::MessageLoopProxy::current(),
       g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
-      base::MessageLoopProxy::current(),
       logging_config);
 
   // Rationale for using unretained: The callback cannot be called after the

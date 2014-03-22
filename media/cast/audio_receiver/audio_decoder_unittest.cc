@@ -35,7 +35,6 @@ class AudioDecoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            task_runner_,
                             GetDefaultCastReceiverLoggingConfig());
   }
   virtual ~AudioDecoderTest() {}

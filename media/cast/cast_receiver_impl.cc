@@ -99,7 +99,7 @@ CastReceiverImpl::CastReceiverImpl(
     : pacer_(cast_environment->Clock(),
              cast_environment->Logging(),
              packet_sender,
-             cast_environment->GetTaskRunner(CastEnvironment::TRANSPORT)),
+             cast_environment->GetTaskRunner(CastEnvironment::MAIN)),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment,
                       video_config,

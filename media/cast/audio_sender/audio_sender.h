@@ -52,15 +52,8 @@ class AudioSender : public base::NonThreadSafe,
  private:
   friend class LocalRtcpAudioSenderFeedback;
 
-  void SendEncodedAudioFrameToTransport(
-      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-      const base::TimeTicks& recorded_time);
-
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
-
-  void ResendPacketsOnTransportThread(
-      const transport::MissingFramesAndPacketsMap& missing_packets);
 
   void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
                        base::TimeTicks time_sent,

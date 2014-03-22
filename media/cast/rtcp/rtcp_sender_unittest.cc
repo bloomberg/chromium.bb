@@ -80,7 +80,6 @@ class RtcpSenderTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
             GetDefaultCastSenderLoggingConfig())),
         rtcp_sender_(new RtcpSender(cast_environment_,
                                     &test_transport_,

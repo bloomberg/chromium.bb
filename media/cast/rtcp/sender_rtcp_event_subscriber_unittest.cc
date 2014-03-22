@@ -31,7 +31,6 @@ class SenderRtcpEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            task_runner_,
             GetLoggingConfigWithRawEventsAndStatsEnabled())),
         event_subscriber_(kMaxEventEntries) {
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);

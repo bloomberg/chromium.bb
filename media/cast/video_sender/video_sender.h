@@ -101,14 +101,7 @@ class VideoSender : public base::NonThreadSafe,
       scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
       const base::TimeTicks& capture_time);
 
-  void SendEncodedVideoFrameToTransport(
-      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-      const base::TimeTicks& capture_time);
-
   void InitializeTimers();
-
-  void ResendPacketsOnTransportThread(
-      const transport::MissingFramesAndPacketsMap& missing_packets);
 
   base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;

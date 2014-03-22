@@ -29,8 +29,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
     AUDIO,
     // The video encoder thread is where the video processing is done.
     VIDEO,
-    // The transport thread is where the transport processing is done.
-    TRANSPORT,
   };
 
   CastEnvironment(
@@ -38,7 +36,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy,
       const CastLoggingConfig& logging_config);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
@@ -83,7 +80,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
-  scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy_;
 
  private:
   friend class base::RefCountedThreadSafe<CastEnvironment>;

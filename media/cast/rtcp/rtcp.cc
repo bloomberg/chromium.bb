@@ -310,22 +310,10 @@ void Rtcp::SendRtcpFromRtpSender(
     dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
   }
 
-  cast_environment_->PostTask(
-      CastEnvironment::TRANSPORT, FROM_HERE,
-      base::Bind(&Rtcp::SendRtcpFromRtpSenderOnTransportThread,
-                 base::Unretained(this), packet_type_flags, sender_info, dlrr,
-                 sender_log_message, local_ssrc_, c_name_));
+  transport_sender_->SendRtcpFromRtpSender(
+      packet_type_flags, sender_info, dlrr, sender_log_message, local_ssrc_,
+      c_name_);
   UpdateNextTimeToSendRtcp();
-}
-
-void Rtcp::SendRtcpFromRtpSenderOnTransportThread(
-    uint32 packet_type_flags, const transport::RtcpSenderInfo& sender_info,
-    const transport::RtcpDlrrReportBlock& dlrr,
-    const transport::RtcpSenderLogMessage& sender_log, uint32 sending_ssrc,
-    std::string c_name) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
-  transport_sender_->SendRtcpFromRtpSender(packet_type_flags, sender_info, dlrr,
-                                           sender_log, sending_ssrc, c_name);
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {

@@ -29,7 +29,6 @@ class StandaloneCastEnvironment : public CastEnvironment,
   base::Thread main_thread_;
   base::Thread audio_thread_;
   base::Thread video_thread_;
-  base::Thread transport_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(StandaloneCastEnvironment);
 };
