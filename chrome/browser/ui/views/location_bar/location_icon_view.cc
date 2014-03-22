@@ -37,19 +37,28 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!event.IsOnlyMiddleMouseButton() &&
-      !chrome::ShouldDisplayOriginChip() &&
-      !chrome::ShouldDisplayOriginChipV2())
-    page_info_helper_.ProcessEvent(event);
+  if (event.IsOnlyMiddleMouseButton())
+    return;
+  OnClickOrTap(event);
 }
 
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
-  if (!chrome::ShouldDisplayOriginChip() &&
-      !chrome::ShouldDisplayOriginChipV2() &&
-      (event->type() == ui::ET_GESTURE_TAP)) {
-    page_info_helper_.ProcessEvent(*event);
-    event->SetHandled();
-  }
+  if (event->type() != ui::ET_GESTURE_TAP)
+    return;
+  OnClickOrTap(*event);
+  event->SetHandled();
+}
+
+void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
+  // Do not show page info if the user has been editing the location bar or the
+  // location bar is at the NTP.  Also skip showing the page info if the
+  // toolbar-based origin chip is being shown because it is responsible for
+  // showing the page info instead.
+  if (page_info_helper_.location_bar()->omnibox_view()->IsEditingOrEmpty() ||
+      chrome::ShouldDisplayOriginChip())
+    return;
+
+  page_info_helper_.ProcessEvent(event);
 }
 
 void LocationIconView::ShowTooltip(bool show) {

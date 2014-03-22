@@ -52,6 +52,14 @@
 
 namespace {
 
+// NOTE(jdonnelly): This use of this process-wide variable assumes that there's
+// never more than one website settings popup shown and that it's associated
+// with the current window. If this assumption fails in the future, we'll need
+// to return a weak pointer from ShowPopup so callers can associate it with the
+// current window (or other context) and check if the popup they care about is
+// showing.
+bool is_popup_showing = false;
+
 // Padding values for sections on the connection tab.
 const int kConnectionSectionPaddingBottom = 16;
 const int kConnectionSectionPaddingLeft = 18;
@@ -139,6 +147,9 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
  public:
   explicit InternalPageInfoPopupView(views::View* anchor_view);
   virtual ~InternalPageInfoPopupView();
+
+  // views::BubbleDelegateView:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
@@ -248,6 +259,10 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
 InternalPageInfoPopupView::~InternalPageInfoPopupView() {
 }
 
+void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
+  is_popup_showing = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebsiteSettingsPopupView
 ////////////////////////////////////////////////////////////////////////////////
@@ -262,12 +277,18 @@ void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
                                          const GURL& url,
                                          const content::SSLStatus& ssl,
                                          Browser* browser) {
+  is_popup_showing = true;
   if (InternalChromePage(url)) {
     new InternalPageInfoPopupView(anchor_view);
   } else {
     new WebsiteSettingsPopupView(anchor_view, profile, web_contents, url, ssl,
                                  browser);
   }
+}
+
+// static
+bool WebsiteSettingsPopupView::IsPopupShowing() {
+  return is_popup_showing;
 }
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
@@ -355,6 +376,7 @@ void WebsiteSettingsPopupView::OnPermissionChanged(
 }
 
 void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
+  is_popup_showing = false;
   presenter_->OnUIClosing();
 }
 

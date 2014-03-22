@@ -53,6 +53,8 @@ class WebsiteSettingsPopupView
                         const content::SSLStatus& ssl,
                         Browser* browser);
 
+  static bool IsPopupShowing();
+
  private:
   WebsiteSettingsPopupView(views::View* anchor_view,
                            Profile* profile,
@@ -65,7 +67,7 @@ class WebsiteSettingsPopupView
   virtual void OnPermissionChanged(
       PermissionSelectorView* selector) OVERRIDE;
 
-  // views::BubbleDelegate implementation.
+  // views::BubbleDelegateView implementation.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // views::ButtonListener implementation.

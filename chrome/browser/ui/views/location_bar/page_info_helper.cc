@@ -26,24 +26,13 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   if (!owner_->HitTestPoint(event.location()))
     return;
 
-  // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty() &&
-      !chrome::ShouldDisplayOriginChip() &&
-      !chrome::ShouldDisplayOriginChipV2())
-    return;
-
   WebContents* tab = location_bar_->GetWebContents();
   if (!tab)
     return;
   const NavigationController& controller = tab->GetController();
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   NavigationEntry* nav_entry = controller.GetVisibleEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return;
-  }
-
+  DCHECK(nav_entry);
   location_bar_->delegate()->ShowWebsiteSettings(
       tab, nav_entry->GetURL(), nav_entry->GetSSL());
 }
