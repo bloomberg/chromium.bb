@@ -152,6 +152,9 @@ Page::Page(PageClients& pageClients)
 
 Page::~Page()
 {
+    // Disable all agents prior to resetting the frame view.
+    m_inspectorController->inspectedPageDestroyed();
+
     m_mainFrame->setView(nullptr);
     allPages().remove(this);
     if (ordinaryPages().contains(this))
