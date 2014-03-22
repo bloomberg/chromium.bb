@@ -174,6 +174,41 @@ void EmptyCapability<Traits>::SaveTo(
 }
 
 template <class Option, class Traits>
+ValueCapability<Option, Traits>::ValueCapability() {
+  Reset();
+}
+
+template <class Option, class Traits>
+ValueCapability<Option, Traits>::~ValueCapability() {}
+
+template <class Option, class Traits>
+bool ValueCapability<Option, Traits>::IsValid() const {
+  return Traits::IsValid(value());
+}
+
+template <class Option, class Traits>
+bool ValueCapability<Option, Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  Reset();
+  const base::DictionaryValue* option_value =
+      description.GetItem(Traits::GetCapabilityPath());
+  if (!option_value)
+    return false;
+  Option option;
+  if (!Traits::Load(*option_value, &option))
+    return false;
+  set_value(option);
+  return IsValid();
+}
+
+template <class Option, class Traits>
+void ValueCapability<Option, Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  DCHECK(IsValid());
+  Traits::Save(value(), description->CreateItem(Traits::GetCapabilityPath()));
+}
+
+template <class Option, class Traits>
 TicketItem<Option, Traits>::TicketItem() {
   Reset();
 }

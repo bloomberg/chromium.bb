@@ -35,6 +35,10 @@ const char kCdd[] =
 "    }, {"
 "      'content_type': 'image/jpeg'"
 "    } ],"
+"    'pwg_raster_config' : {"
+"      'document_sheet_back' : 'MANUAL_TUMBLE',"
+"      'reverse_order_streaming': true"
+"    },"
 "    'color': {"
 "      'option': [ {"
 "        'is_default': true,"
@@ -193,6 +197,10 @@ const char kCjt[] =
 "{"
 "  'version': '1.0',"
 "  'print': {"
+"    'pwg_raster_config' : {"
+"      'document_sheet_back' : 'MANUAL_TUMBLE',"
+"      'reverse_order_streaming': true"
+"    },"
 "    'color': {"
 "      'type': 'STANDARD_MONOCHROME'"
 "    },"
@@ -258,6 +266,7 @@ TEST(PrinterDescriptionTest, CddInit) {
   EXPECT_EQ(NormalizeJson(kDefaultCdd), NormalizeJson(description.ToString()));
 
   ContentTypesCapability content_types;
+  PwgRasterConfigCapability pwg_raster;
   ColorCapability color;
   DuplexCapability duplex;
   OrientationCapability orientation;
@@ -271,6 +280,7 @@ TEST(PrinterDescriptionTest, CddInit) {
   ReverseCapability reverse;
 
   EXPECT_FALSE(content_types.LoadFrom(description));
+  EXPECT_FALSE(pwg_raster.LoadFrom(description));
   EXPECT_FALSE(color.LoadFrom(description));
   EXPECT_FALSE(duplex.LoadFrom(description));
   EXPECT_FALSE(orientation.LoadFrom(description));
@@ -302,6 +312,7 @@ TEST(PrinterDescriptionTest, CddSetAll) {
   CloudDeviceDescription description;
 
   ContentTypesCapability content_types;
+  PwgRasterConfigCapability pwg_raster_config;
   ColorCapability color;
   DuplexCapability duplex;
   OrientationCapability orientation;
@@ -316,6 +327,12 @@ TEST(PrinterDescriptionTest, CddSetAll) {
 
   content_types.AddOption("image/pwg-raster");
   content_types.AddOption("image/jpeg");
+
+  PwgRasterConfig custom_raster;
+  custom_raster.document_sheet_back = MANUAL_TUMBLE;
+  custom_raster.reverse_order_streaming = true;
+  custom_raster.rotate_all_pages = false;
+  pwg_raster_config.set_value(custom_raster);
 
   color.AddDefaultOption(Color(STANDARD_COLOR), true);
   color.AddOption(Color(STANDARD_MONOCHROME));
@@ -365,6 +382,7 @@ TEST(PrinterDescriptionTest, CddSetAll) {
   media.SaveTo(&description);
   collate.SaveTo(&description);
   reverse.SaveTo(&description);
+  pwg_raster_config.SaveTo(&description);
 
   EXPECT_EQ(NormalizeJson(kCdd), NormalizeJson(description.ToString()));
 }
@@ -374,6 +392,7 @@ TEST(PrinterDescriptionTest, CddGetAll) {
   ASSERT_TRUE(description.InitFromString(NormalizeJson(kCdd)));
 
   ContentTypesCapability content_types;
+  PwgRasterConfigCapability pwg_raster_config;
   ColorCapability color;
   DuplexCapability duplex;
   OrientationCapability orientation;
@@ -399,9 +418,14 @@ TEST(PrinterDescriptionTest, CddGetAll) {
   EXPECT_TRUE(collate.LoadFrom(description));
   EXPECT_TRUE(reverse.LoadFrom(description));
   EXPECT_TRUE(media.LoadFrom(description));
+  EXPECT_TRUE(pwg_raster_config.LoadFrom(description));
 
   EXPECT_TRUE(content_types.Contains("image/pwg-raster"));
   EXPECT_TRUE(content_types.Contains("image/jpeg"));
+
+  EXPECT_EQ(MANUAL_TUMBLE, pwg_raster_config.value().document_sheet_back);
+  EXPECT_TRUE(pwg_raster_config.value().reverse_order_streaming);
+  EXPECT_FALSE(pwg_raster_config.value().rotate_all_pages);
 
   EXPECT_TRUE(color.Contains(Color(STANDARD_COLOR)));
   EXPECT_TRUE(color.Contains(Color(STANDARD_MONOCHROME)));
@@ -453,6 +477,7 @@ TEST(PrinterDescriptionTest, CjtInit) {
   CloudDeviceDescription description;
   EXPECT_EQ(NormalizeJson(kDefaultCjt), NormalizeJson(description.ToString()));
 
+  PwgRasterConfigTicketItem pwg_raster_config;
   ColorTicketItem color;
   DuplexTicketItem duplex;
   OrientationTicketItem orientation;
@@ -465,6 +490,7 @@ TEST(PrinterDescriptionTest, CjtInit) {
   CollateTicketItem collate;
   ReverseTicketItem reverse;
 
+  EXPECT_FALSE(pwg_raster_config.LoadFrom(description));
   EXPECT_FALSE(color.LoadFrom(description));
   EXPECT_FALSE(duplex.LoadFrom(description));
   EXPECT_FALSE(orientation.LoadFrom(description));
@@ -487,6 +513,7 @@ TEST(PrinterDescriptionTest, CjtInvalid) {
 TEST(PrinterDescriptionTest, CjtSetAll) {
   CloudDeviceDescription description;
 
+  PwgRasterConfigTicketItem pwg_raster_config;
   ColorTicketItem color;
   DuplexTicketItem duplex;
   OrientationTicketItem orientation;
@@ -499,6 +526,11 @@ TEST(PrinterDescriptionTest, CjtSetAll) {
   CollateTicketItem collate;
   ReverseTicketItem reverse;
 
+  PwgRasterConfig custom_raster;
+  custom_raster.document_sheet_back = MANUAL_TUMBLE;
+  custom_raster.reverse_order_streaming = true;
+  custom_raster.rotate_all_pages = false;
+  pwg_raster_config.set_value(custom_raster);
   color.set_value(Color(STANDARD_MONOCHROME));
   duplex.set_value(NO_DUPLEX);
   orientation.set_value(LANDSCAPE);
@@ -514,6 +546,7 @@ TEST(PrinterDescriptionTest, CjtSetAll) {
   collate.set_value(false);
   reverse.set_value(true);
 
+  pwg_raster_config.SaveTo(&description);
   color.SaveTo(&description);
   duplex.SaveTo(&description);
   orientation.SaveTo(&description);
@@ -544,7 +577,9 @@ TEST(PrinterDescriptionTest, CjtGetAll) {
   PageRangeTicketItem page_range;
   CollateTicketItem collate;
   ReverseTicketItem reverse;
+  PwgRasterConfigTicketItem pwg_raster_config;
 
+  EXPECT_TRUE(pwg_raster_config.LoadFrom(description));
   EXPECT_TRUE(color.LoadFrom(description));
   EXPECT_TRUE(duplex.LoadFrom(description));
   EXPECT_TRUE(orientation.LoadFrom(description));
@@ -558,6 +593,9 @@ TEST(PrinterDescriptionTest, CjtGetAll) {
   EXPECT_TRUE(reverse.LoadFrom(description));
   EXPECT_TRUE(media.LoadFrom(description));
 
+  EXPECT_EQ(MANUAL_TUMBLE, pwg_raster_config.value().document_sheet_back);
+  EXPECT_TRUE(pwg_raster_config.value().reverse_order_streaming);
+  EXPECT_FALSE(pwg_raster_config.value().rotate_all_pages);
   EXPECT_EQ(color.value(), Color(STANDARD_MONOCHROME));
   EXPECT_EQ(duplex.value(), NO_DUPLEX);
   EXPECT_EQ(orientation.value(), LANDSCAPE);

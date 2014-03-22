@@ -193,6 +193,33 @@ class EmptyCapability {
   DISALLOW_COPY_AND_ASSIGN(EmptyCapability);
 };
 
+// Represents an item that is of a specific value type.
+// Ex: "<CAPABILITY_NAME>": {<VALUE>}
+// Option specifies data type for <VALUE>.
+// Traits specifies how <VALUE> is stored in JSON and semantic validation.
+template <class Option, class Traits>
+class ValueCapability {
+ public:
+  ValueCapability();
+  ~ValueCapability();
+
+  bool LoadFrom(const CloudDeviceDescription& description);
+  void SaveTo(CloudDeviceDescription* description) const;
+
+  void Reset() { value_ = Option(); }
+
+  bool IsValid() const;
+
+  const Option& value() const { return value_; }
+
+  void set_value(const Option& value) { value_ = value; }
+
+ private:
+  Option value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValueCapability);
+};
+
 // Represents CJT items.
 // Ex: "<CAPABILITY_NAME>": {<VALUE>}
 // Option specifies data type for <VALUE>.

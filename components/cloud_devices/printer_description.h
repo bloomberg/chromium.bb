@@ -19,6 +19,21 @@ namespace printer {
 
 typedef std::string ContentType;
 
+enum DocumentSheetBack {
+  NORMAL,
+  ROTATED,
+  MANUAL_TUMBLE,
+  FLIPPED
+};
+
+struct PwgRasterConfig {
+  PwgRasterConfig();
+
+  DocumentSheetBack document_sheet_back;
+  bool reverse_order_streaming;
+  bool rotate_all_pages;
+};
+
 enum ColorType {
   STANDARD_COLOR,
   STANDARD_MONOCHROME,
@@ -320,6 +335,7 @@ struct Interval {
 typedef std::vector<Interval> PageRange;
 
 class ContentTypeTraits;
+class PwgRasterConfigTraits;
 class ColorTraits;
 class DuplexTraits;
 class OrientationTraits;
@@ -330,9 +346,10 @@ class MediaTraits;
 class CopiesTraits;
 class PageRangeTraits;
 class CollateTraits;
-class ReverseTraits;
 
 typedef ListCapability<ContentType, ContentTypeTraits> ContentTypesCapability;
+typedef ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>
+    PwgRasterConfigCapability;
 typedef SelectionCapability<Color, ColorTraits> ColorCapability;
 typedef SelectionCapability<DuplexType, DuplexTraits> DuplexCapability;
 typedef SelectionCapability<OrientationType,
@@ -346,6 +363,8 @@ typedef EmptyCapability<class PageRangeTraits> PageRangeCapability;
 typedef BooleanCapability<class CollateTraits> CollateCapability;
 typedef BooleanCapability<class ReverseTraits> ReverseCapability;
 
+typedef TicketItem<PwgRasterConfig, PwgRasterConfigTraits>
+    PwgRasterConfigTicketItem;
 typedef TicketItem<Color, ColorTraits> ColorTicketItem;
 typedef TicketItem<DuplexType, DuplexTraits> DuplexTicketItem;
 typedef TicketItem<OrientationType, OrientationTraits> OrientationTicketItem;
