@@ -254,7 +254,6 @@ void BluetoothProfileChromeOS::OnRegisterProfileError(
 void BluetoothProfileChromeOS::OnUnregisterProfile() {
   VLOG(1) << object_path_.value() << ": Profile unregistered";
   object_path_ = dbus::ObjectPath("");
-  adapter_ = NULL;
   delete this;
 }
 
@@ -268,7 +267,6 @@ void BluetoothProfileChromeOS::OnUnregisterProfileError(
   LOG(WARNING) << object_path_.value() << ": Failed to unregister profile: "
                << error_name << ": " << error_message;
   object_path_ = dbus::ObjectPath("");
-  adapter_ = NULL;
   delete this;
 }
 
