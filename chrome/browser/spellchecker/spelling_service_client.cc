@@ -254,8 +254,11 @@ void SpellingServiceClient::OnURLFetchComplete(
     fetcher->GetResponseAsString(&data);
     success = ParseResponse(data, &results);
   }
-  callback_data->callback.Run(success, callback_data->text, results);
   spellcheck_fetchers_.erase(fetcher.get());
+
+  // The callback may release the last (transitive) dependency on |this|. It
+  // MUST be the last function called.
+  callback_data->callback.Run(success, callback_data->text, results);
 }
 
 net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
