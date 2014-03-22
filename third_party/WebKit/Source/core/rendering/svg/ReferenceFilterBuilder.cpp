@@ -32,6 +32,7 @@
 #include "SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
@@ -80,9 +81,11 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     if (svgStyle) {
         // If a layout has been performed, then we can use the fast path to get this attribute
         eColorInterpolation = svgStyle->colorInterpolationFilters();
+    } else if (!svgElement->presentationAttributeStyle()) {
+        return false;
     } else {
         // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtrWillBeRawPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(AtomicString(SVGNames::color_interpolation_filtersAttr.toString()));
+        RefPtrWillBeRawPtr<CSSValue> cssValue = svgElement->presentationAttributeStyle()->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
         if (cssValue.get() && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
             eColorInterpolation = (EColorInterpolation)primitiveValue;
