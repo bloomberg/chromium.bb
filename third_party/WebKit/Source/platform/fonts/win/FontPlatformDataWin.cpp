@@ -37,13 +37,10 @@
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/win/HWndDC.h"
 #include "public/platform/Platform.h"
 #include "public/platform/win/WebSandboxSupport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <mlang.h>
-#include <objidl.h>
 #include <windows.h>
 
 namespace WebCore {

@@ -46,10 +46,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringImpl.h"
 
-#include <usp10.h>
-
-typedef struct HFONT__ *HFONT;
-
 namespace WebCore {
 
 class FontDescription;
