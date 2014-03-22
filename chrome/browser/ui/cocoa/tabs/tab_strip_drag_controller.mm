@@ -225,8 +225,12 @@ const NSTimeInterval kTearDuration = 0.333;
 
   // Create or identify the dragged controller.
   if (!draggedController_) {
-    // Get rid of any placeholder remaining in the original source window.
-    [sourceController_ removePlaceholder];
+    // We don't want to remove the source window's placeholder here because the
+    // new tab button may briefly flash in and out if we remove and add back the
+    // placeholder.
+    // Instead, we will remove the placeholder later when the target window
+    // actually changes.
+    targetController_ = sourceController_;
 
     // Detach from the current window and put it in a new window. If there are
     // no more tabs remaining after detaching, the source window is about to
