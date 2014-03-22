@@ -34,6 +34,11 @@ const size_t kDefaultDataPipeCapacityBytes = 1024 * 1024;  // 1 MB.
 // alignment of elements will depend on this and the element size.)
 const size_t kDataPipeBufferAlignmentBytes = 16;
 
+// TODO(vtl): Set this hard limit appropriately (e.g., higher on 64-bit). (This
+// will also entail some auditing to make sure I'm not messing up my checks
+// anywhere.)
+const size_t kMaxSharedMemoryNumBytes = 1024 * 1024 * 1024;  // 1 GB.
+
 }  // namespace system
 }  // namespace mojo
 

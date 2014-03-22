@@ -187,15 +187,16 @@ MojoResult Dispatcher::DuplicateBufferHandle(
   return DuplicateBufferHandleImplNoLock(options, new_dispatcher);
 }
 
-MojoResult Dispatcher::MapBuffer(uint64_t offset,
-                                 uint64_t num_bytes,
-                                 void** buffer,
-                                 MojoMapBufferFlags flags) {
+MojoResult Dispatcher::MapBuffer(
+    uint64_t offset,
+    uint64_t num_bytes,
+    MojoMapBufferFlags flags,
+    scoped_ptr<RawSharedBuffer::Mapping>* mapping) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return MapBufferImplNoLock(offset, num_bytes, buffer, flags);
+  return MapBufferImplNoLock(offset, num_bytes, flags, mapping);
 }
 
 MojoResult Dispatcher::AddWaiter(Waiter* waiter,
@@ -322,10 +323,11 @@ MojoResult Dispatcher::DuplicateBufferHandleImplNoLock(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::MapBufferImplNoLock(uint64_t /*offset*/,
-                                           uint64_t /*num_bytes*/,
-                                           void** /*buffer*/,
-                                           MojoMapBufferFlags /*flags*/) {
+MojoResult Dispatcher::MapBufferImplNoLock(
+    uint64_t /*offset*/,
+    uint64_t /*num_bytes*/,
+    MojoMapBufferFlags /*flags*/,
+    scoped_ptr<RawSharedBuffer::Mapping>* /*mapping*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.

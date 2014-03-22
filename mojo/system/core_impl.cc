@@ -17,6 +17,8 @@
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
+#include "mojo/system/raw_shared_buffer.h"
+#include "mojo/system/shared_buffer_dispatcher.h"
 #include "mojo/system/waiter.h"
 
 namespace mojo {
@@ -507,9 +509,44 @@ MojoResult CoreImpl::CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  if (options) {
+    // The |struct_size| field must be valid to read.
+    if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    // And then |options| must point to at least |options->struct_size| bytes.
+    if (!VerifyUserPointer<void>(options, options->struct_size))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+  if (!VerifyUserPointer<MojoHandle>(shared_buffer_handle, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoResult result =
+      SharedBufferDispatcher::ValidateOptions(options, &validated_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  scoped_refptr<SharedBufferDispatcher> dispatcher;
+  result = SharedBufferDispatcher::Create(validated_options, num_bytes,
+                                          &dispatcher);
+  if (result != MOJO_RESULT_OK) {
+    DCHECK(!dispatcher);
+    return result;
+  }
+
+  MojoHandle h;
+  {
+    base::AutoLock locker(handle_table_lock_);
+
+    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
+    // (outside the table lock).
+    h = AddDispatcherNoLock(dispatcher);
+    if (h == MOJO_HANDLE_INVALID)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  *shared_buffer_handle = h;
+  return MOJO_RESULT_OK;
 }
 
 MojoResult CoreImpl::DuplicateBufferHandle(
@@ -520,6 +557,7 @@ MojoResult CoreImpl::DuplicateBufferHandle(
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
+  // Don't verify |options| here; that's the dispatcher's job.
   if (!VerifyUserPointer<MojoHandle>(new_buffer_handle, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -553,17 +591,26 @@ MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  MojoResult result = dispatcher->MapBuffer(offset, num_bytes, buffer, flags);
+  if (!VerifyUserPointer<void*>(buffer, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_ptr<RawSharedBuffer::Mapping> mapping;
+  MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;
 
-  // TODO(vtl): Record the mapping.
+  DCHECK(mapping);
+  *buffer = mapping->base();
+
+  // TODO(vtl): FIXME -- Record the mapping somewhere, so that it can be
+  // unmapped properly. For now, just leak it.
+  ignore_result(mapping.release());
 
   return MOJO_RESULT_OK;
 }
 
 MojoResult CoreImpl::UnmapBuffer(void* buffer) {
-  // TODO(vtl)
+  // TODO(vtl): FIXME
   NOTIMPLEMENTED();
   return MOJO_RESULT_UNIMPLEMENTED;
 }

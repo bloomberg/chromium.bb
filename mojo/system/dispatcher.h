@@ -12,8 +12,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
+// TODO(vtl): We need this since we can't forward declare
+// |RawSharedBuffer::Mapping|. Maybe fix this.
+#include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -48,7 +52,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     kTypeUnknown = 0,
     kTypeMessagePipe,
     kTypeDataPipeProducer,
-    kTypeDataPipeConsumer
+    kTypeDataPipeConsumer,
+    kTypeSharedBuffer
   };
   virtual Type GetType() const = 0;
 
@@ -100,8 +105,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       scoped_refptr<Dispatcher>* new_dispatcher);
   MojoResult MapBuffer(uint64_t offset,
                        uint64_t num_bytes,
-                       void** buffer,
-                       MojoMapBufferFlags flags);
+                       MojoMapBufferFlags flags,
+                       scoped_ptr<RawSharedBuffer::Mapping>* mapping);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |flags| with result |wake_result| (which
@@ -218,10 +223,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   virtual MojoResult DuplicateBufferHandleImplNoLock(
       const MojoDuplicateBufferHandleOptions* options,
       scoped_refptr<Dispatcher>* new_dispatcher);
-  virtual MojoResult MapBufferImplNoLock(uint64_t offset,
-                                         uint64_t num_bytes,
-                                         void** buffer,
-                                         MojoMapBufferFlags flags);
+  virtual MojoResult MapBufferImplNoLock(
+      uint64_t offset,
+      uint64_t num_bytes,
+      MojoMapBufferFlags flags,
+      scoped_ptr<RawSharedBuffer::Mapping>* mapping);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);

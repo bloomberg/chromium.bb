@@ -152,6 +152,8 @@
         'system/raw_shared_buffer.h',
         'system/raw_shared_buffer_posix.cc',
         'system/raw_shared_buffer_win.cc',
+        'system/shared_buffer_dispatcher.cc',
+        'system/shared_buffer_dispatcher.h',
         'system/simple_dispatcher.cc',
         'system/simple_dispatcher.h',
         'system/waiter.cc',

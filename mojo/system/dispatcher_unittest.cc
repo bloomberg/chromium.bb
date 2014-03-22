@@ -182,11 +182,13 @@ class ThreadSafetyStressThread : public base::SimpleThread {
                   dispatcher_->DuplicateBufferHandle(NULL, &unused));
         break;
       }
-      case MAP_BUFFER:
+      case MAP_BUFFER: {
+        scoped_ptr<RawSharedBuffer::Mapping> unused;
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->MapBuffer(0u, 0u, NULL,
-                                         MOJO_MAP_BUFFER_FLAG_NONE));
+                  dispatcher_->MapBuffer(0u, 0u, MOJO_MAP_BUFFER_FLAG_NONE,
+                                         &unused));
         break;
+      }
       case ADD_WAITER: {
         MojoResult r = dispatcher_->AddWaiter(&waiter_,
                                               MOJO_WAIT_FLAG_EVERYTHING, 0);
