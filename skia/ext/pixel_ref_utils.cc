@@ -313,12 +313,23 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                           const SkPaint&) SK_OVERRIDE {}
 
  protected:
+#ifdef SK_SUPPORT_LEGACY_READPIXELSCONFIG
   virtual bool onReadPixels(const SkBitmap& bitmap,
                             int x,
                             int y,
                             SkCanvas::Config8888 config8888) SK_OVERRIDE {
     return false;
   }
+#endif
+
+  virtual bool onReadPixels(const SkImageInfo& info,
+                            void* pixels,
+                            size_t rowBytes,
+                            int x,
+                            int y) SK_OVERRIDE {
+    return false;
+  }
+
   virtual bool onWritePixels(const SkImageInfo& info,
                              const void* pixels,
                              size_t rowBytes,
