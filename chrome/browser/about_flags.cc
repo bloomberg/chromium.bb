@@ -409,9 +409,11 @@ const Experiment::Choice kTouchScrollingModeChoices[] = {
 // comment to the end of the feature name, like so:
 //   "my-special-feature",  // FLAGS:RECORD_UMA
 //
-// After doing that, run //tools/metrics/actions/extract_actions.py (see
-// instructions at the top of that file for details) to update the
-// chromeactions.txt file, which will enable UMA to record your feature flag.
+// After doing that, run
+//   tools/metrics/actions/extract_actions.py
+// to add the metric to actions.xml (which will enable UMA to record your
+// feature flag), then update the <owner>s and <description> sections. Make sure
+// to include the actions.xml file when you upload your code for review!
 //
 // After your feature has shipped under a flag, you can locate the metrics under
 // the action name AboutFlags_internal-action-name. Actions are recorded once
