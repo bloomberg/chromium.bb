@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          function simpleTimestampOffsetTest(value, expected, description)
+          {
+              mediasource_test(function(test, mediaElement, mediaSource)
+              {
+                  var segmentInfo = MediaSourceUtil.SEGMENT_INFO;
+                  var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
+
+                  if (expected == 'TypeMismatchError')  {
+                      assert_throws('TypeMismatchError',
+                          function() { sourceBuffer.timestampOffset = value; },
+                          'setting timestampOffset to ' + description + ' throws an exception.');
+                  } else {
+                      sourceBuffer.timestampOffset = value;
+                      assert_equals(sourceBuffer.timestampOffset, expected);
+                  }
+
+                  test.done();
+              }, 'Test setting SourceBuffer.timestampOffset to ' + description + '.');
+          }
+
+          simpleTimestampOffsetTest(10.5, 10.5, 'a positive number');
+          simpleTimestampOffsetTest(-10.4, -10.4, 'a negative number');
+          simpleTimestampOffsetTest(0, 0, 'zero');
+          simpleTimestampOffsetTest(Number.POSITIVE_INFINITY, 'TypeMismatchError', 'positive infinity');
+          simpleTimestampOffsetTest(Number.NEGATIVE_INFINITY, 'TypeMismatchError', 'negative infinity');
+          simpleTimestampOffsetTest(Number.NaN, 'TypeMismatchError', 'NaN');
+          simpleTimestampOffsetTest(undefined, 'TypeMismatchError', 'undefined');
+          simpleTimestampOffsetTest(null, 0, 'null');
+          simpleTimestampOffsetTest(false, 0, 'false');
+          simpleTimestampOffsetTest(true, 1, 'true');
+          simpleTimestampOffsetTest('10.5', 10.5, 'a number string');
+          simpleTimestampOffsetTest('', 0, 'an empty string');
+        </script>
+    </body>
+</html>

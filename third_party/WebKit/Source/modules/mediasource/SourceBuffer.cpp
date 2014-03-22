@@ -175,6 +175,12 @@ double SourceBuffer::timestampOffset() const
 
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
 {
+    // Enforce throwing an exception on restricted double values.
+    if (!std::isfinite(offset)) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::notAFiniteNumber(offset));
+        return;
+    }
+
     // Section 3.1 timestampOffset attribute setter steps.
     // 1. Let new timestamp offset equal the new value being assigned to this attribute.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw an
