@@ -41,10 +41,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/unicode/Unicode.h"
 
-#if OS(WIN)
-#include "platform/win/HWndDC.h"
-#endif
-
 namespace WebCore {
 
 // This is the largest VDMX table which we'll try to load and parse.

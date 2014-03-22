@@ -165,9 +165,7 @@ public:
     CFDictionaryRef getCFStringAttributes(TypesettingFeatures, FontOrientation) const;
 #endif
 
-#if OS(MACOSX) || USE(HARFBUZZ)
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
-#endif
 
     bool applyTransforms(GlyphBufferGlyph*, GlyphBufferAdvance*, size_t, TypesettingFeatures) const
     {
@@ -249,9 +247,7 @@ private:
     mutable HashMap<unsigned, RetainPtr<CFDictionaryRef> > m_CFStringAttributes;
 #endif
 
-#if OS(MACOSX) || USE(HARFBUZZ)
     mutable OwnPtr<HashMap<String, bool> > m_combiningCharacterSequenceSupport;
-#endif
 };
 
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const

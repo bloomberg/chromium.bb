@@ -37,6 +37,7 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 #if OS(MACOSX)
@@ -45,10 +46,7 @@
 typedef struct CGFont* CGFontRef;
 #endif
 
-#if OS(MACOSX) || OS(POSIX) || OS(WIN)
-#include "wtf/RefPtr.h"
 class SkTypeface;
-#endif
 
 namespace WebCore {
 
@@ -69,11 +67,10 @@ private:
 #if OS(MACOSX)
     explicit FontCustomPlatformData(CGFontRef, PassRefPtr<SkTypeface>);
     RetainPtr<CGFontRef> m_cgFont;
-    RefPtr<SkTypeface> m_typeface;
-#elif OS(POSIX) || OS(WIN)
+#else
     explicit FontCustomPlatformData(PassRefPtr<SkTypeface>);
-    RefPtr<SkTypeface> m_typeface;
 #endif
+    RefPtr<SkTypeface> m_typeface;
 };
 
 } // namespace WebCore
