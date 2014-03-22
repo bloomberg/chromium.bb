@@ -67,13 +67,7 @@ enum MessageType {
   SEND_ERROR,        // Error sending a message.
 };
 
-// MCS endpoints. SSL Key pinning is done automatically due to the *.google.com
-// pinning rule.
-// Note: modifying the endpoints will affect the ability to compare the
-// GCM.CurrentEnpoint histogram across versions.
-const char kMCSEndpointMain[] = "https://mtalk.google.com:5228";
-const char kMCSEndpointFallback[] = "https://mtalk.google.com:443";
-
+const char kMCSEndpoint[] = "https://mtalk.google.com:5228";
 const int kMaxRegistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
@@ -195,11 +189,8 @@ void GCMClientImpl::InitializeMCSClient(
             GetNetworkSessionParams();
     DCHECK(network_session_params);
     network_session_ = new net::HttpNetworkSession(*network_session_params);
-    std::vector<GURL> endpoints;
-    endpoints.push_back(GURL(kMCSEndpointMain));
-    endpoints.push_back(GURL(kMCSEndpointFallback));
     connection_factory_.reset(new ConnectionFactoryImpl(
-        endpoints,
+        GURL(kMCSEndpoint),
         kDefaultBackoffPolicy,
         network_session_,
         net_log_.net_log()));

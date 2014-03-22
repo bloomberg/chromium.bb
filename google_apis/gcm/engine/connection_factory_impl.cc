@@ -41,13 +41,11 @@ bool ShouldRestorePreviousBackoff(const base::TimeTicks& login_time,
 }  // namespace
 
 ConnectionFactoryImpl::ConnectionFactoryImpl(
-    const std::vector<GURL>& mcs_endpoints,
+    const GURL& mcs_endpoint,
     const net::BackoffEntry::Policy& backoff_policy,
     scoped_refptr<net::HttpNetworkSession> network_session,
     net::NetLog* net_log)
-  : mcs_endpoints_(mcs_endpoints),
-    next_endpoint_(0),
-    last_successful_endpoint_(0),
+  : mcs_endpoint_(mcs_endpoint),
     backoff_policy_(backoff_policy),
     network_session_(network_session),
     bound_net_log_(
@@ -56,7 +54,6 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     connecting_(false),
     logging_in_(false),
     weak_ptr_factory_(this) {
-  DCHECK_GE(mcs_endpoints_.size(), 1U);
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
@@ -187,20 +184,12 @@ void ConnectionFactoryImpl::OnIPAddressChanged() {
   // necessary, so no need to call again.
 }
 
-GURL ConnectionFactoryImpl::GetCurrentEndpoint() const {
-  // Note that IsEndpointReachable() returns false anytime connecting_ is true,
-  // so while connecting this always uses |next_endpoint_|.
-  if (IsEndpointReachable())
-    return mcs_endpoints_[last_successful_endpoint_];
-  return mcs_endpoints_[next_endpoint_];
-}
-
 void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(connecting_);
   DCHECK(!socket_handle_.socket());
 
   int status = network_session_->proxy_service()->ResolveProxy(
-      GetCurrentEndpoint(),
+      mcs_endpoint_,
       &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -245,28 +234,13 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
     CloseSocket();
     backoff_entry_->InformOfRequest(false);
     UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
-
-    // If there are other endpoints available, use the next endpoint on the
-    // subsequent retry.
-    next_endpoint_++;
-    if (next_endpoint_ >= mcs_endpoints_.size())
-      next_endpoint_ = 0;
     Connect();
     return;
   }
 
   UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", true);
-  UMA_HISTOGRAM_COUNTS("GCM.ConnectionEndpoint", next_endpoint_);
-  UMA_HISTOGRAM_BOOLEAN("GCM.ConnectedViaProxy",
-                        !(proxy_info_.is_empty() || proxy_info_.is_direct()));
   ReportSuccessfulProxyConnection();
 
-  // Reset the endpoint back to the default.
-  // TODO(zea): consider prioritizing endpoints more intelligently based on
-  // which ones succeed most for this client? Although that will affect
-  // measuring the success rate of the default endpoint vs fallback.
-  last_successful_endpoint_ = next_endpoint_;
-  next_endpoint_ = 0;
   connecting_ = false;
   logging_in_ = true;
   DVLOG(1) << "MCS endpoint socket connection success, starting login.";
@@ -326,7 +300,7 @@ void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
   net::SSLConfig ssl_config;
   network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
   status = net::InitSocketHandleForTlsConnect(
-      net::HostPortPair::FromURL(GetCurrentEndpoint()),
+      net::HostPortPair::FromURL(mcs_endpoint_),
       network_session_.get(),
       proxy_info_,
       ssl_config,
@@ -400,7 +374,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   }
 
   int status = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      GetCurrentEndpoint(), &proxy_info_,
+      mcs_endpoint_, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,

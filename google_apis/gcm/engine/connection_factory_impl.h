@@ -32,7 +32,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
     public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   ConnectionFactoryImpl(
-      const std::vector<GURL>& mcs_endpoints,
+      const GURL& mcs_endpoint,
       const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
       net::NetLog* net_log);
@@ -53,11 +53,6 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
   virtual void OnIPAddressChanged() OVERRIDE;
-
-  // Returns the server to which the factory is currently connected, or if
-  // a connection is currently pending, the server to which the next connection
-  // attempt will be made.
-  GURL GetCurrentEndpoint() const;
 
  protected:
   // Implementation of Connect(..). If not in backoff, uses |login_request_|
@@ -94,12 +89,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   void CloseSocket();
 
-  // The MCS endpoints to make connections to, sorted in order of priority.
-  const std::vector<GURL> mcs_endpoints_;
-  // Index to the endpoint for which a connection should be attempted next.
-  size_t next_endpoint_;
-  // Index to the endpoint that was last successfully connected.
-  size_t last_successful_endpoint_;
+  // The MCS endpoint to make connections to.
+  const GURL mcs_endpoint_;
 
   // The backoff policy to use.
   const net::BackoffEntry::Policy backoff_policy_;
