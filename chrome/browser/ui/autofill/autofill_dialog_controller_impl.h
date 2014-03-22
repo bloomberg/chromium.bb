@@ -468,17 +468,13 @@ class AutofillDialogControllerImpl
   base::string16 ExtraSuggestionTextForSection(DialogSection section) const;
   gfx::Image ExtraSuggestionIconForSection(DialogSection section);
 
-  // Loads profiles that can suggest data for |type|. |field_contents| is the
-  // part the user has already typed. |inputs| is the rest of section.
-  // Identifying info is loaded into the last three outparams as well as
-  // |popup_guids_|.
-  void GetProfileSuggestions(
-      ServerFieldType type,
-      const base::string16& field_contents,
-      const DetailInputs& inputs,
-      std::vector<base::string16>* popup_values,
-      std::vector<base::string16>* popup_labels,
-      std::vector<base::string16>* popup_icons);
+  // Suggests address completions using the downloaded i18n validation rules.
+  // Stores the suggestions in |i18n_validator_suggestions_|.
+  void GetI18nValidatorSuggestions(DialogSection section,
+                                   ServerFieldType type,
+                                   std::vector<base::string16>* popup_values,
+                                   std::vector<base::string16>* popup_labels,
+                                   std::vector<base::string16>* popup_icons);
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
@@ -726,6 +722,9 @@ class AutofillDialogControllerImpl
 
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;
+
+  // The autofill suggestions based on downloaded i18n validation rules.
+  std::vector< ::i18n::addressinput::AddressData> i18n_validator_suggestions_;
 
   // The controller for the currently showing popup (which helps users when
   // they're manually filling the dialog).

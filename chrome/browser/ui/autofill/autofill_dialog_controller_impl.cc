@@ -1959,7 +1959,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   ScopedViewUpdates updates(view_.get());
 
   if (type == ADDRESS_BILLING_COUNTRY || type == ADDRESS_HOME_COUNTRY) {
-    const FieldValueMap snapshot = TakeUserInputSnapshot();
+    const FieldValueMap& snapshot = TakeUserInputSnapshot();
 
     // Clobber the inputs because the view's already been updated.
     RebuildInputsForCountry(section, field_contents, true);
@@ -2008,6 +2008,9 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
         &popup_labels,
         &popup_icons,
         &popup_guids_);
+
+    GetI18nValidatorSuggestions(section, type, &popup_values, &popup_labels,
+                                &popup_icons);
   }
 
   if (popup_values.empty()) {
@@ -2021,7 +2024,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?
   std::vector<int> popup_ids;
-  for (size_t i = 0; i < popup_guids_.size(); ++i) {
+  for (size_t i = 0; i < popup_values.size(); ++i) {
     popup_ids.push_back(i);
   }
 
@@ -2271,17 +2274,22 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   const ServerFieldType popup_input_type = popup_input_type_;
 
   ScopedViewUpdates updates(view_.get());
-  const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
-
   scoped_ptr<DataModelWrapper> wrapper;
-  if (common::IsCreditCardType(popup_input_type)) {
-    wrapper.reset(new AutofillCreditCardWrapper(
-        GetManager()->GetCreditCardByGUID(pair.first)));
+
+  if (static_cast<size_t>(identifier) < popup_guids_.size()) {
+    const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
+    if (common::IsCreditCardType(popup_input_type)) {
+      wrapper.reset(new AutofillCreditCardWrapper(
+          GetManager()->GetCreditCardByGUID(pair.first)));
+    } else {
+      wrapper.reset(new AutofillProfileWrapper(
+          GetManager()->GetProfileByGUID(pair.first),
+          AutofillType(popup_input_type),
+          pair.second));
+    }
   } else {
-    wrapper.reset(new AutofillProfileWrapper(
-        GetManager()->GetProfileByGUID(pair.first),
-        AutofillType(popup_input_type),
-        pair.second));
+    wrapper.reset(new I18nAddressDataWrapper(
+        &i18n_validator_suggestions_[identifier - popup_guids_.size()]));
   }
 
   // If the user hasn't switched away from the default country and |wrapper|'s
@@ -3230,6 +3238,57 @@ CountryComboboxModel* AutofillDialogControllerImpl::
     return shipping_country_combobox_model_.get();
 
   return NULL;
+}
+
+void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
+    DialogSection section,
+    ServerFieldType type,
+    std::vector<base::string16>* popup_values,
+    std::vector<base::string16>* popup_labels,
+    std::vector<base::string16>* popup_icons) {
+  AddressField focused_field;
+  if (!i18ninput::FieldForType(type, &focused_field))
+    return;
+
+  FieldValueMap inputs;
+  view_->GetUserInput(section, &inputs);
+
+  AutofillProfile profile;
+  FillFormGroupFromOutputs(inputs, &profile);
+
+  AddressData user_input;
+  i18ninput::CreateAddressData(
+      base::Bind(&GetInfoFromProfile, profile), &user_input);
+
+  static const size_t kSuggestionsLimit = 10;
+  AddressValidator::Status status = GetValidator()->GetSuggestions(
+      user_input, focused_field, kSuggestionsLimit,
+      &i18n_validator_suggestions_);
+
+  if (status != AddressValidator::SUCCESS)
+    return;
+
+  for (size_t i = 0; i < i18n_validator_suggestions_.size(); ++i) {
+    popup_values->push_back(base::UTF8ToUTF16(
+        i18n_validator_suggestions_[i].GetFieldValue(focused_field)));
+
+    // Disambiguate the suggestion by showing the smallest administrative
+    // region of the suggested address:
+    //    ADMIN_AREA > LOCALITY > DEPENDENT_LOCALITY
+    popup_labels->push_back(base::string16());
+    for (int field = ::i18n::addressinput::DEPENDENT_LOCALITY;
+         field >= ::i18n::addressinput::ADMIN_AREA;
+         --field) {
+      const std::string& field_value =
+          i18n_validator_suggestions_[i].GetFieldValue(
+              static_cast<AddressField>(field));
+      if (focused_field != field && !field_value.empty()) {
+        popup_labels->back().assign(base::UTF8ToUTF16(field_value));
+        break;
+      }
+    }
+  }
+  popup_icons->resize(popup_values->size());
 }
 
 DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(

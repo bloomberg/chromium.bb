@@ -271,6 +271,11 @@ class AddressValidatorImpl : public AddressValidator {
 
     assert(ruleset_it->second != NULL);
 
+    // Do not suggest anything if the user input is empty.
+    if (user_input.GetFieldValue(focused_field).empty()) {
+      return SUCCESS;
+    }
+
     // Initialize the prefix search index lazily.
     if (!ruleset_it->second->prefix_search_index_ready()) {
       ruleset_it->second->BuildPrefixSearchIndex();
@@ -394,6 +399,7 @@ class AddressValidatorImpl : public AddressValidator {
       }
 
       AddressData suggestion;
+      suggestion.country_code = user_input.country_code;
       suggestion.postal_code = user_input.postal_code;
 
       // Traverse the tree of rulesets from the most specific |ruleset| to the

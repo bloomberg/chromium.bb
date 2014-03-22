@@ -160,6 +160,62 @@ ServerFieldType TypeForField(AddressField address_field,
   return UNKNOWN_TYPE;
 }
 
+bool FieldForType(ServerFieldType server_type,
+                  ::i18n::addressinput::AddressField* field) {
+  switch (server_type) {
+    case ADDRESS_BILLING_COUNTRY:
+    case ADDRESS_HOME_COUNTRY:
+      if (field)
+        *field = ::i18n::addressinput::COUNTRY;
+      return true;
+    case ADDRESS_BILLING_STATE:
+    case ADDRESS_HOME_STATE:
+      if (field)
+        *field = ::i18n::addressinput::ADMIN_AREA;
+      return true;
+    case ADDRESS_BILLING_CITY:
+    case ADDRESS_HOME_CITY:
+      if (field)
+        *field = ::i18n::addressinput::LOCALITY;
+      return true;
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      if (field)
+        *field = ::i18n::addressinput::DEPENDENT_LOCALITY;
+      return true;
+    case ADDRESS_BILLING_SORTING_CODE:
+    case ADDRESS_HOME_SORTING_CODE:
+      if (field)
+        *field = ::i18n::addressinput::SORTING_CODE;
+      return true;
+    case ADDRESS_BILLING_ZIP:
+    case ADDRESS_HOME_ZIP:
+      if (field)
+        *field = ::i18n::addressinput::POSTAL_CODE;
+      return true;
+    case ADDRESS_BILLING_STREET_ADDRESS:
+    case ADDRESS_BILLING_LINE1:
+    case ADDRESS_BILLING_LINE2:
+    case ADDRESS_HOME_STREET_ADDRESS:
+    case ADDRESS_HOME_LINE1:
+    case ADDRESS_HOME_LINE2:
+      if (field)
+        *field = ::i18n::addressinput::STREET_ADDRESS;
+      return true;
+    case COMPANY_NAME:
+      if (field)
+        *field = ::i18n::addressinput::ORGANIZATION;
+      return true;
+    case NAME_BILLING_FULL:
+    case NAME_FULL:
+      if (field)
+        *field = ::i18n::addressinput::RECIPIENT;
+      return true;
+    default:
+      return false;
+  }
+}
+
 void CreateAddressData(
     const base::Callback<base::string16(const AutofillType&)>& get_info,
     AddressData* address_data) {

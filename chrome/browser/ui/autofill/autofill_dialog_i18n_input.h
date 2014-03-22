@@ -46,6 +46,12 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile);
 ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
                              common::AddressType address_type);
 
+// Sets |field| to the corresponding address field for the Autofill
+// |server_type|. Returns |true| if |server_type| can be represented as an
+// address field. The |field| parameter can be NULL.
+bool FieldForType(ServerFieldType server_type,
+                  ::i18n::addressinput::AddressField* field);
+
 // Creates an AddressData object for internationalized address display or
 // validation using |get_info| for field values.
 void CreateAddressData(

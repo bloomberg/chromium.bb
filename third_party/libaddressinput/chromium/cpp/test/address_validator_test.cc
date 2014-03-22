@@ -498,5 +498,28 @@ TEST_F(AddressValidatorTest, SuggestLatinNameWhenUserInputIsLatin) {
   EXPECT_EQ("Gangwon", suggestions[0].administrative_area);
 }
 
+TEST_F(AddressValidatorTest, NoSuggestionsForEmptyAddress) {
+  AddressData address;
+  address.country_code = "US";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->GetSuggestions(address, POSTAL_CODE, 999, &suggestions));
+  EXPECT_TRUE(suggestions.empty());
+}
+
+TEST_F(AddressValidatorTest, SuggestionIncludesCountry) {
+  AddressData address;
+  address.country_code = "US";
+  address.postal_code = "90291";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("US", suggestions[0].country_code);
+}
+
 }  // namespace addressinput
 }  // namespace i18n

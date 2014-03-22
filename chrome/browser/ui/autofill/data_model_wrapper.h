@@ -18,6 +18,12 @@ namespace gfx {
 class Image;
 }
 
+namespace i18n {
+namespace addressinput {
+struct AddressData;
+}
+}
+
 namespace autofill {
 
 class AutofillDataModel;
@@ -203,6 +209,21 @@ class FullWalletShippingWrapper : public DataModelWrapper {
   wallet::FullWallet* full_wallet_;
 
   DISALLOW_COPY_AND_ASSIGN(FullWalletShippingWrapper);
+};
+
+// A DataModelWrapper for ::i18n::addressinput::AddressData objects.
+class I18nAddressDataWrapper : public DataModelWrapper {
+ public:
+  explicit I18nAddressDataWrapper(
+      const ::i18n::addressinput::AddressData* address);
+  virtual ~I18nAddressDataWrapper();
+
+  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+
+ private:
+  const ::i18n::addressinput::AddressData* address_;
+
+  DISALLOW_COPY_AND_ASSIGN(I18nAddressDataWrapper);
 };
 
 }  // namespace autofill

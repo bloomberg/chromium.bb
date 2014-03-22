@@ -3352,6 +3352,10 @@ TEST_F(AutofillDialogControllerTest, CountriesWithDependentLocalityHidden) {
 TEST_F(AutofillDialogControllerTest, DontSuggestHiddenCountries) {
   SwitchToAutofill();
 
+  FieldValueMap outputs;
+  outputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("US");
+  controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
+
   AutofillProfile cn_profile(test::GetVerifiedProfile());
   cn_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Chinese User"));
   cn_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
@@ -3384,6 +3388,10 @@ TEST_F(AutofillDialogControllerTest, DontSuggestHiddenCountries) {
 
 TEST_F(AutofillDialogControllerTest, SuggestCountrylessProfiles) {
   SwitchToAutofill();
+
+  FieldValueMap outputs;
+  outputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("US");
+  controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
 
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("The Man Without a Country"));

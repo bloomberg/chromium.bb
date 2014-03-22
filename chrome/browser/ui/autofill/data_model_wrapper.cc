@@ -14,6 +14,7 @@
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -337,6 +338,28 @@ base::string16 FullWalletShippingWrapper::GetInfo(
     const AutofillType& type) const {
   return full_wallet_->shipping_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
+}
+
+I18nAddressDataWrapper::I18nAddressDataWrapper(
+    const ::i18n::addressinput::AddressData* address)
+    : address_(address) {}
+
+I18nAddressDataWrapper::~I18nAddressDataWrapper() {}
+
+base::string16 I18nAddressDataWrapper::GetInfo(const AutofillType& type) const {
+  ::i18n::addressinput::AddressField field;
+  if (!i18ninput::FieldForType(type.GetStorableType(), &field))
+    return base::string16();
+
+  if (field == ::i18n::addressinput::STREET_ADDRESS)
+    return base::string16();
+
+  if (field == ::i18n::addressinput::COUNTRY) {
+    return AutofillCountry(address_->country_code,
+                           g_browser_process->GetApplicationLocale()).name();
+  }
+
+  return base::UTF8ToUTF16(address_->GetFieldValue(field));
 }
 
 }  // namespace autofill
