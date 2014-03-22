@@ -14,7 +14,7 @@ from chromite.scripts import cros_list_modified_packages as workon
 from chromite.scripts import cros_setup_toolchains as toolchain
 from chromite import cros
 
-_HOST_PKGS = ('chromeos-base/hard-host-depends', 'world',)
+_HOST_PKGS = ('virtual/target-sdk', 'world',)
 
 
 def GetToolchainPackages():

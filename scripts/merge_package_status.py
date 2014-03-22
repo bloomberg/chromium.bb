@@ -48,7 +48,7 @@ def ProcessTargets(targets, reverse_cros=False):
   For example:
   chromeos chromeos-dev -> chromeos-dev
   chromeos chromeos-dev world -> chromeos-dev world
-  world hard-host-depends -> hard-host-depends world
+  world virtual/target-sdk -> virtual/target-sdk world
 
   The one chromeos target always comes back first, with targets
   otherwise sorted alphabetically.  The chromeos target that is

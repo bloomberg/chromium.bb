@@ -86,8 +86,8 @@ def RefreshPackageStatus(board, csv_root, test,
                             ['--to-csv=%s' % crostest_csv,
                              'chromeos', 'chromeos-dev', 'chromeos-test'])
 
-  # Run all host targets (world, hard-host-depends) for the host.
-  oper.Info('Getting package status for all host targets.')
+  # Run all host targets for the sdk.
+  oper.Info('Getting package status for all host (sdk) targets.')
   cpu_host_baseline = ['cros_portage_upgrade', '--host']
 
   hostworld_csv = '%s/world-host.csv' % csv_root
@@ -98,7 +98,7 @@ def RefreshPackageStatus(board, csv_root, test,
   hosthhd_csv = '%s/hhd-host.csv' % csv_root
   cros_build_lib.RunCommand(cpu_host_baseline +
                             ['--to-csv=%s' % hosthhd_csv,
-                             'hard-host-depends'])
+                             'virtual/target-sdk'])
 
   # Merge all csv tables into one.
   oper.Info('Merging all package status files into one.')
