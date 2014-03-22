@@ -167,7 +167,7 @@ NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 ifeq ($(CONFIG),Debug)
 EXECUTABLES=$(OUTDIR)/$(1)_x86_32.nexe $(OUTDIR)/$(1)_x86_64.nexe $(OUTDIR)/$(1)_arm.nexe
 else
-EXECUTABLES=$(OUTDIR)/$(1).pexe
+EXECUTABLES=$(OUTDIR)/$(1).pexe $(OUTDIR)/$(1)_unstripped.bc
 endif
 
 define NMF_RULE

@@ -58,7 +58,15 @@ Example of a ``program`` for Portable Native Client:
     "program": {
       "pnacl-translate": {
         // url is required
-        "url": "url_to_my_pexe"
+        "url": "url_to_my_pexe",
+
+        // optlevel is optional
+        "optlevel": 2
+      },
+      // pnacl-debug is optional
+      "pnacl-debug": {
+        // url is required
+        "url": "url_to_my_bitcode_bc",
 
         // optlevel is optional
         "optlevel": 0
@@ -77,6 +85,11 @@ as first load speed, an application could specify an ``optlevel``
 of ``0``. Note that ``optlevel`` is only a *hint*. In the future, the
 Portable Native Client translator and runtime may *automatically* choose
 an ``optlevel`` to best balance load time and application performance.
+
+A ``pnacl-debug`` section can specify an unfinalized pnacl llvm bitcode file
+for debugging. The ``url`` provided in this section will be used when Native
+Client debugging is enabled with either the ``--enable-nacl-debug`` Chrome
+command line switch, or via ``about://flags``.
 
 
 Example of a ``program`` for statically linked Native Client executables

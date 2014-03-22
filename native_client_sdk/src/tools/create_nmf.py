@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Tool for automatically creating .nmf files from .nexe/.pexe executables.
+"""Tool for automatically creating .nmf files from .nexe/.pexe/.bc executables.
 
 As well as creating the nmf file this tool can also find and stage
 any shared libraries dependencies that the executables might have.
@@ -49,6 +49,7 @@ FILES_KEY = 'files'  # Key of the files section in an nmf file
 PNACL_OPTLEVEL_KEY = 'optlevel' # key for PNaCl optimization level
 PORTABLE_KEY = 'portable' # key for portable section of manifest
 TRANSLATE_KEY = 'pnacl-translate' # key for translatable objects
+TRANSLATE_DEBUG_KEY = 'pnacl-debug' # key for translatable debug objects
 
 
 def DebugPrint(message):
@@ -174,7 +175,8 @@ class NmfUtils(object):
   def __init__(self, main_files=None, objdump=None,
                lib_path=None, extra_files=None, lib_prefix=None,
                nexe_prefix=None, no_arch_prefix=None, remap=None,
-               pnacl_optlevel=None, nmf_root=None):
+               pnacl_optlevel=None, pnacl_debug_optlevel=None,
+               nmf_root=None):
     """Constructor
 
     Args:
@@ -190,8 +192,9 @@ class NmfUtils(object):
       no_arch_prefix: Don't prefix shared libraries by lib32/lib64.
       remap: Remaps the library name in the manifest.
       pnacl_optlevel: Optimization level for PNaCl translation.
+      pnacl_debug_optlevel: Optimization level for debug PNaCl translation.
       nmf_root: Directory of the NMF. All urls are relative to this directory.
-      """
+    """
     assert len(main_files) > 0
     self.objdump = objdump
     self.main_files = main_files
@@ -203,8 +206,9 @@ class NmfUtils(object):
     self.nexe_prefix = nexe_prefix or ''
     self.no_arch_prefix = no_arch_prefix
     self.remap = remap or {}
-    self.pnacl = main_files[0].endswith('pexe')
+    self.pnacl = main_files[0].endswith(('.pexe', '.bc'))
     self.pnacl_optlevel = pnacl_optlevel
+    self.pnacl_debug_optlevel = pnacl_debug_optlevel
     if nmf_root is not None:
       self.nmf_root = nmf_root
     else:
@@ -327,12 +331,25 @@ class NmfUtils(object):
     manifest = {}
     manifest[PROGRAM_KEY] = {}
     manifest[PROGRAM_KEY][PORTABLE_KEY] = {}
-    translate_dict =  {
-      "url": os.path.basename(self.main_files[0]),
-    }
-    if self.pnacl_optlevel is not None:
-      translate_dict[PNACL_OPTLEVEL_KEY] = self.pnacl_optlevel
-    manifest[PROGRAM_KEY][PORTABLE_KEY][TRANSLATE_KEY] = translate_dict
+    portable = manifest[PROGRAM_KEY][PORTABLE_KEY]
+    for filename in self.main_files:
+      translate_dict =  {
+          'url': os.path.basename(filename),
+      }
+      if filename.endswith('.pexe'):
+        if self.pnacl_optlevel is not None:
+          translate_dict[PNACL_OPTLEVEL_KEY] = self.pnacl_optlevel
+        if TRANSLATE_KEY in portable:
+          raise Error('Multiple .pexe files')
+        portable[TRANSLATE_KEY] = translate_dict
+      elif filename.endswith('.bc'):
+        if self.pnacl_debug_optlevel is not None:
+          translate_dict[PNACL_OPTLEVEL_KEY] = self.pnacl_debug_optlevel
+        if TRANSLATE_DEBUG_KEY in portable:
+          raise Error('Multiple .bc files')
+        portable[TRANSLATE_DEBUG_KEY] = translate_dict
+      else:
+        raise Error('Unexpected executable type: %s' % filename)
     self.manifest = manifest
 
   def _GenerateManifest(self):
@@ -562,6 +579,10 @@ def main(argv):
   parser.add_option('-O', '--pnacl-optlevel',
                     help='Set the optimization level to N in PNaCl manifests',
                     metavar='N')
+  parser.add_option('--pnacl-debug-optlevel',
+                    help='Set the optimization level to N for debugging '
+                         'sections in PNaCl manifests',
+                    metavar='N')
   parser.add_option('-v', '--verbose',
                     help='Verbose output', action='store_true')
   parser.add_option('-d', '--debug-mode',
@@ -620,6 +641,10 @@ def main(argv):
       sys.stderr.write(
           'warning: PNaCl optlevel %d is unsupported (< 0 or > 3)\n' %
           pnacl_optlevel)
+  if options.pnacl_debug_optlevel is not None:
+    pnacl_debug_optlevel = int(options.pnacl_debug_optlevel)
+  else:
+    pnacl_debug_optlevel = pnacl_optlevel
 
   nmf_root = None
   if options.output:
@@ -634,6 +659,7 @@ def main(argv):
                  no_arch_prefix=options.no_arch_prefix,
                  remap=remap,
                  pnacl_optlevel=pnacl_optlevel,
+                 pnacl_debug_optlevel=pnacl_debug_optlevel,
                  nmf_root=nmf_root)
 
   if not options.output:

@@ -214,6 +214,29 @@ class TestNmfUtils(unittest.TestCase):
 
     return nmf, pexes
 
+  def _CreateBitCode(self, **kwargs):
+    """Copy test.bc from the DATA_DIR to a temporary directory.
+
+    Args:
+      kwargs: Keyword arguments to pass through to create_nmf.NmfUtils
+          constructor.
+
+    Returns:
+      A tuple with 2 elements:
+        * The generated NMF as a dictionary (i.e. parsed by json.loads)
+        * A list of the generated .bc paths
+    """
+    bc_name = 'test.bc'
+    src_bc = os.path.join(DATA_DIR, bc_name)
+    dst_bc = os.path.join(self.tempdir, bc_name)
+    shutil.copy(src_bc, dst_bc)
+
+    bcs = [dst_bc]
+    nmf_utils = self._CreateNmfUtils(bcs, **kwargs)
+    nmf = json.loads(nmf_utils.GetJson())
+
+    return nmf, bcs
+
   def assertManifestEquals(self, manifest, expected):
     """Compare two manifest dictionaries.
 
@@ -554,6 +577,20 @@ class TestNmfUtils(unittest.TestCase):
           'pnacl-translate': {
             'url': 'test.pexe',
             'optlevel': 2,
+          }
+        }
+      }
+    }
+    self.assertManifestEquals(nmf, expected_manifest)
+
+  def testBitCode(self):
+    nmf, _ = self._CreateBitCode(pnacl_debug_optlevel=0)
+    expected_manifest = {
+      'program': {
+        'portable': {
+          'pnacl-debug': {
+            'url': 'test.bc',
+            'optlevel': 0,
           }
         }
       }
