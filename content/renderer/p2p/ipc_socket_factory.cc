@@ -524,7 +524,7 @@ bool AsyncAddressResolverImpl::GetResolvedAddress(
 
   for (size_t i = 0; i < addresses_.size(); ++i) {
     if (family == addresses_[i].family()) {
-      addr->SetIP(addresses_[i]);
+      addr->SetResolvedIP(addresses_[i]);
       addr->SetPort(port_);
       return true;
     }
