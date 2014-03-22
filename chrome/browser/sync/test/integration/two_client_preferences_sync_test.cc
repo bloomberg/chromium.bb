@@ -5,7 +5,6 @@
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
@@ -26,7 +25,6 @@ using preferences_helper::IntegerPrefMatches;
 using preferences_helper::Int64PrefMatches;
 using preferences_helper::ListPrefMatches;
 using preferences_helper::StringPrefMatches;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class TwoClientPreferencesSyncTest : public SyncTest {
  public:
@@ -97,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisablePreferences) {
 
   GetClient(1)->DisableSyncForDatatype(syncer::PREFERENCES);
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   GetClient(1)->EnableSyncForDatatype(syncer::PREFERENCES);
@@ -116,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisableSync) {
 
   GetClient(1)->DisableSyncForAllDatatypes();
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   ChangeBooleanPref(1, prefs::kShowHomeButton);

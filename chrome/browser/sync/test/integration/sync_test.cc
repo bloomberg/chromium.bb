@@ -34,13 +34,9 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -83,8 +79,6 @@ const char kSyncPasswordForTest[] = "sync-password-for-test";
 const char kSyncServerCommandLine[] = "sync-server-command-line";
 }
 
-namespace {
-
 // Helper class that checks whether a sync test server is running or not.
 class SyncServerStatusChecker : public net::URLFetcherDelegate {
  public:
@@ -103,25 +97,6 @@ class SyncServerStatusChecker : public net::URLFetcherDelegate {
 
  private:
   bool running_;
-};
-
-bool IsEncryptionComplete(const ProfileSyncService* service) {
-  return service->EncryptEverythingEnabled() && !service->encryption_pending();
-}
-
-// Helper class to wait for encryption to complete.
-class EncryptionChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit EncryptionChecker(ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
-    return IsEncryptionComplete(service());
-  }
-
-  virtual std::string GetDebugMessage() const OVERRIDE {
-    return "Encryption";
-  }
 };
 
 void SetProxyConfigCallback(
@@ -145,8 +120,6 @@ KeyedService* BuildP2PInvalidationService(content::BrowserContext* context) {
               ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
               LoginUIServiceFactory::GetForProfile(profile))));
 }
-
-}  // namespace
 
 SyncTest::SyncTest(TestType test_type)
     : test_type_(test_type),
@@ -325,7 +298,6 @@ bool SyncTest::SetupClients() {
   profiles_.resize(num_clients_);
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
-  invalidation_forwarders_.resize(num_clients_);
   for (int i = 0; i < num_clients_; ++i) {
     InitializeInstance(i);
   }
@@ -372,17 +344,13 @@ void SyncTest::InitializeInstance(int index) {
   }
 
   clients_[index] =
-      ProfileSyncServiceHarness::Create(
+      ProfileSyncServiceHarness::CreateForIntegrationTest(
           GetProfile(index),
           username_,
-          password_);
+          password_,
+          p2p_invalidation_service);
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
-
-  // Start listening for and emitting notificaitons of commits.
-  invalidation_forwarders_[index] =
-      new P2PInvalidationForwarder(clients_[index]->service(),
-                                   p2p_invalidation_service);
 
   test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
@@ -428,7 +396,6 @@ void SyncTest::CleanUpOnMainThread() {
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().
   CHECK_EQ(0U, chrome::GetTotalBrowserCount());
-  invalidation_forwarders_.clear();
   clients_.clear();
 }
 
@@ -701,29 +668,11 @@ void SyncTest::DisableNetwork(Profile* profile) {
 }
 
 bool SyncTest::EnableEncryption(int index) {
-  ProfileSyncService* service = GetClient(index)->service();
-
-  if (::IsEncryptionComplete(service))
-    return true;
-
-  service->EnableEncryptEverything();
-
-  // In order to kick off the encryption we have to reconfigure. Just grab the
-  // currently synced types and use them.
-  const syncer::ModelTypeSet synced_datatypes =
-      service->GetPreferredDataTypes();
-  bool sync_everything = synced_datatypes.Equals(syncer::ModelTypeSet::All());
-  service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
-
-  // Wait some time to let the enryption finish.
-  EncryptionChecker checker(service);
-  checker.Await();
-
-  return !checker.TimedOut();
+  return GetClient(index)->EnableEncryption();
 }
 
 bool SyncTest::IsEncryptionComplete(int index) {
-  return ::IsEncryptionComplete(GetClient(index)->service());
+  return GetClient(index)->IsEncryptionComplete();
 }
 
 bool SyncTest::AwaitQuiescence() {
