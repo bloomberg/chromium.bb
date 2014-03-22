@@ -59,6 +59,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
+#include "core/editing/markup.h"
 #include "core/events/BeforeLoadEvent.h"
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
@@ -1496,9 +1497,15 @@ void Node::setTextContent(const String& text)
         case ELEMENT_NODE:
         case ATTRIBUTE_NODE:
         case DOCUMENT_FRAGMENT_NODE: {
+            // FIXME: Merge this logic into replaceChildrenWithText.
             RefPtr<ContainerNode> container = toContainerNode(this);
+            // No need to do anything if the text is identical.
+            if (container->hasOneTextChild() && toText(container->firstChild())->data() == text)
+                return;
             ChildListMutationScope mutation(*this);
             container->removeChildren();
+            // Note: This API will not insert empty text nodes:
+            // http://dom.spec.whatwg.org/#dom-node-textcontent
             if (!text.isEmpty())
                 container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
             return;

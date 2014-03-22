@@ -1006,11 +1006,13 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
         return;
     }
 
+    // FIXME: This is wrong if containerNode->firstChild() has more than one ref!
     if (containerNode->hasOneTextChild() && fragment->hasOneTextChild()) {
         toText(containerNode->firstChild())->setData(toText(fragment->firstChild())->data());
         return;
     }
 
+    // FIXME: No need to replace the child it is a text node and its contents are already == text.
     if (containerNode->hasOneChild()) {
         containerNode->replaceChild(fragment, containerNode->firstChild(), exceptionState);
         return;
@@ -1027,13 +1029,25 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
 
     ChildListMutationScope mutation(*containerNode);
 
+    // FIXME: This is wrong if containerNode->firstChild() has more than one ref! Example:
+    // <div>foo</div>
+    // <script>
+    // var oldText = div.firstChild;
+    // console.log(oldText.data); // foo
+    // div.innerText = "bar";
+    // console.log(oldText.data); // bar!?!
+    // </script>
+    // I believe this is an intentional benchmark cheat from years ago.
+    // We should re-visit if we actually want this still.
     if (containerNode->hasOneTextChild()) {
         toText(containerNode->firstChild())->setData(text);
         return;
     }
 
+    // NOTE: This method currently always creates a text node, even if that text node will be empty.
     RefPtr<Text> textNode = Text::create(containerNode->document(), text);
 
+    // FIXME: No need to replace the child it is a text node and its contents are already == text.
     if (containerNode->hasOneChild()) {
         containerNode->replaceChild(textNode.release(), containerNode->firstChild(), exceptionState);
         return;

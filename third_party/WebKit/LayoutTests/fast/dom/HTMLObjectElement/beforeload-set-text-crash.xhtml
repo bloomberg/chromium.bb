@@ -14,7 +14,8 @@ function setText() {
         finishJSTest();
     }
     gc(); // Because we are recursively entering into setText, can't gc() after this command.
-    document.getElementById("object").textContent = "A";
+    // textContent will ignore setting identical text, so use count.
+    document.getElementById("object").textContent = count;
 }
 document.execCommand("SelectAll");
 document.getElementById("object").textContent = "A";
