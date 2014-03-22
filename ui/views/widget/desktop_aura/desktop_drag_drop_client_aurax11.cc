@@ -519,6 +519,7 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   if (ContainsKey(pending_drop_, source_window)) {
     // We were waiting on the status message so we could send the XdndDrop.
     SendXdndDrop(source_window);
+    pending_drop_.erase(source_window);
     return;
   }
 
