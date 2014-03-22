@@ -533,3 +533,12 @@ if not env.Bit('nacl_disable_shared') and not env.Bit('nacl_static_link'):
   node = env.CommandSelLdrTestNacl('pic_constant.out', nexe)
   env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                          'run_pic_constant_test')
+
+WRAP_LINK_FLAGS = ['-Wl,--wrap=foo', '-Wl,--wrap=bar']
+env.ComponentLibrary('wrap_lib', ['wrap_lib1.c', 'wrap_lib2.c'])
+nexe = env.ComponentProgram('wrap', ['wrap_main.c'],
+                            EXTRA_LINKFLAGS=WRAP_LINK_FLAGS,
+                            EXTRA_LIBS=['wrap_lib', '${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('wrap.out', nexe,
+                                 stdout_golden=env.File('wrap.stdout'))
+env.AddNodeToTestSuite(node, ['toolchain_tests','small_tests'], 'run_wrap_test')
