@@ -56,15 +56,6 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderX11);
 };
 
-// Scale and rotate the cursor's bitmap and hotpoint.
-// |bitmap_in_out| and |hotpoint_in_out| are used as
-// both input and output.
-UI_BASE_EXPORT void ScaleAndRotateCursorBitmapAndHotpoint(
-    float scale,
-    gfx::Display::Rotation rotation,
-    SkBitmap* bitmap_in_out,
-    gfx::Point* hotpoint_in_out);
-
 }  // namespace ui
 
 #endif  // UI_BASE_CURSOR_CURSOR_LOADER_X11_H_

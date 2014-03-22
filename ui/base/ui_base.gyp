@@ -129,6 +129,8 @@
         'cursor/cursor_loader_x11.h',
         'cursor/cursor_ozone.cc',
         'cursor/cursor_mac.mm',
+        'cursor/cursor_util.cc',
+        'cursor/cursor_util.h',
         'cursor/cursor_win.cc',
         'cursor/cursor_x11.cc',
         'cursor/cursors_aura.cc',

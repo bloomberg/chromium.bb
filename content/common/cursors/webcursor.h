@@ -180,7 +180,7 @@ class CONTENT_EXPORT WebCursor {
   HCURSOR external_cursor_;
 #endif
 
-#if defined(USE_AURA) && defined(USE_X11)
+#if defined(USE_AURA) && (defined(USE_X11) || defined(USE_OZONE))
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
   float device_scale_factor_;

@@ -171,7 +171,7 @@
     'common/cursors/webcursor_gtk.cc',
     'common/cursors/webcursor_gtk_data.h',
     'common/cursors/webcursor_mac.mm',
-    'common/cursors/webcursor_null.cc',
+    'common/cursors/webcursor_ozone.cc',
     'common/cursors/webcursor_win.cc',
     'common/database_messages.h',
     'common/date_time_suggestion.h',
@@ -450,11 +450,6 @@
       'sources!': [
         'common/cursors/webcursor_mac.mm',
         'common/cursors/webcursor_win.cc',
-      ],
-    }],
-    ['use_ozone==0', {
-      'sources!': [
-        'common/cursors/webcursor_null.cc',
       ],
     }],
     ['OS=="ios"', {

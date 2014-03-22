@@ -9,11 +9,13 @@
 namespace ui {
 
 void Cursor::RefCustomCursor() {
-  CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
+  if (platform_cursor_)
+    CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
 }
 
 void Cursor::UnrefCustomCursor() {
-  CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+  if (platform_cursor_)
+    CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
 }
 
 }  // namespace ui
