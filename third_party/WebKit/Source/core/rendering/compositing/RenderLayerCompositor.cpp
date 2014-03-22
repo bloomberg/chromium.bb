@@ -163,9 +163,10 @@ private:
 };
 
 struct CompositingRecursionData {
-    CompositingRecursionData(RenderLayer* compAncestor, RenderLayer* mostRecentCompositedLayer, bool testOverlap)
+    CompositingRecursionData(RenderLayer* compAncestor, RenderLayer* mostRecentCompositedLayer, RenderLayerCompositor::BoundsUpdateType boundsUpdateType, bool testOverlap)
         : m_compositingAncestor(compAncestor)
         , m_mostRecentCompositedLayer(mostRecentCompositedLayer)
+        , m_recomputeLayerBoundsUpdateType(boundsUpdateType)
         , m_subtreeIsCompositing(false)
         , m_hasUnisolatedCompositedBlendingDescendant(false)
         , m_testingOverlap(testOverlap)
@@ -178,6 +179,7 @@ struct CompositingRecursionData {
     CompositingRecursionData(const CompositingRecursionData& other)
         : m_compositingAncestor(other.m_compositingAncestor)
         , m_mostRecentCompositedLayer(other.m_mostRecentCompositedLayer)
+        , m_recomputeLayerBoundsUpdateType(other.m_recomputeLayerBoundsUpdateType)
         , m_subtreeIsCompositing(other.m_subtreeIsCompositing)
         , m_hasUnisolatedCompositedBlendingDescendant(other.m_hasUnisolatedCompositedBlendingDescendant)
         , m_testingOverlap(other.m_testingOverlap)
@@ -189,6 +191,7 @@ struct CompositingRecursionData {
 
     RenderLayer* m_compositingAncestor;
     RenderLayer* m_mostRecentCompositedLayer; // in paint order regardless of hierarchy.
+    RenderLayerCompositor::BoundsUpdateType m_recomputeLayerBoundsUpdateType;
     bool m_subtreeIsCompositing;
     bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
@@ -205,6 +208,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_needsToRecomputeCompositingRequirements(false)
     , m_needsToUpdateLayerTreeGeometry(false)
     , m_pendingUpdateType(GraphicsLayerUpdater::DoNotForceUpdate)
+    , m_recomputeLayerBoundsUpdateType(DoNotForceUpdate)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
@@ -369,17 +373,23 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         m_needsToRecomputeCompositingRequirements = true;
         // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
         m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
+        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
+        m_recomputeLayerBoundsUpdateType = ForceUpdate;
         break;
     case CompositingUpdateOnScroll:
         m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
         m_needsToUpdateLayerTreeGeometry = true;
         // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
         m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
+        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
+        m_recomputeLayerBoundsUpdateType = ForceUpdate;
         break;
     case CompositingUpdateOnCompositedScroll:
         m_needsToUpdateLayerTreeGeometry = true;
         // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
         m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
+        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
+        m_recomputeLayerBoundsUpdateType = ForceUpdate;
         break;
     case CompositingUpdateAfterCanvasContextChange:
         m_needsToUpdateLayerTreeGeometry = true;
@@ -442,6 +452,14 @@ bool RenderLayerCompositor::hasUnresolvedDirtyBits()
     return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsToUpdateLayerTreeGeometry || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType != GraphicsLayerUpdater::DoNotForceUpdate;
 }
 
+static void assertNeedsRecomputeBoundsBitsCleared(RenderLayer* updateRoot)
+{
+    // We don't do overlap testing on the root layer, so we never compute its absolute bounding box.
+    ASSERT(updateRoot->isRootLayer() || !updateRoot->needsToRecomputeBounds());
+    for (RenderLayer* child = updateRoot->firstChild(); child; child = child->nextSibling())
+        assertNeedsRecomputeBoundsBitsCleared(child);
+}
+
 void RenderLayerCompositor::updateCompositingLayersInternal()
 {
     if (isMainFrame() && m_renderView.frameView())
@@ -474,7 +492,8 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
     if (needCompositingRequirementsUpdate) {
         // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
         // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
-        CompositingRecursionData recursionData(updateRoot, 0, true);
+        CompositingRecursionData recursionData(updateRoot, 0, m_recomputeLayerBoundsUpdateType, true);
+        m_recomputeLayerBoundsUpdateType = DoNotForceUpdate;
         bool layersChanged = false;
         bool saw3DTransform = false;
         {
@@ -488,6 +507,9 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
             Vector<RenderLayer*> unclippedDescendants;
             IntRect absoluteDecendantBoundingBox;
             computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, saw3DTransform, unclippedDescendants, absoluteDecendantBoundingBox);
+#if !ASSERT_DISABLED
+            assertNeedsRecomputeBoundsBitsCleared(updateRoot);
+#endif
         }
 
         {
@@ -893,7 +915,7 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
     setCompositingLayersNeedRebuild();
 }
 
-void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, IntRect& layerBounds)
+void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, const IntRect& layerBounds)
 {
     if (layer->isRootLayer())
         return;
@@ -971,13 +993,21 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     IntRect absBounds;
     if (overlapMap && !layer->isRootLayer()) {
-        absBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(layer->overlapBounds()));
+        if (currentRecursionData.m_recomputeLayerBoundsUpdateType == ForceUpdate || layer->needsToRecomputeBounds()) {
+            // FIXME: If the absolute bounds didn't change, then we don't need to ForceUpdate descendant RenderLayers.
+            currentRecursionData.m_recomputeLayerBoundsUpdateType = ForceUpdate;
+            absBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(layer->overlapBounds()));
+            layer->setAbsoluteBoundingBox(absBounds);
+        } else {
+            absBounds = layer->absoluteBoundingBox();
+        }
         // Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
         // but removing this code will make JSGameBench sad.
         // See https://codereview.chromium.org/13912020/
         if (absBounds.isEmpty())
             absBounds.setSize(IntSize(1, 1));
     }
+
     absoluteDecendantBoundingBox = absBounds;
 
     if (overlapMap && currentRecursionData.m_testingOverlap && !requiresCompositingOrSquashing(directReasons))
@@ -1040,9 +1070,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                     //        negative z-index child's bounds to the new overlap context.
                     if (overlapMap) {
                         overlapMap->geometryMap().pushMappingsToAncestor(curNode->layer(), layer);
-                        IntRect childAbsBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(curNode->layer()->overlapBounds()));
+                        // The above call to computeCompositinRequirements will have already updated this layer's absolute bounding box.
                         overlapMap->beginNewOverlapTestingContext();
-                        addToOverlapMap(*overlapMap, curNode->layer(), childAbsBounds);
+                        ASSERT(!curNode->layer()->needsToRecomputeBounds());
+                        addToOverlapMap(*overlapMap, curNode->layer(), curNode->layer()->absoluteBoundingBox());
                         overlapMap->finishCurrentOverlapTestingContext();
                         overlapMap->geometryMap().popMappingsToAncestor(layer);
                     }
@@ -1117,8 +1148,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // If the original layer is composited, the reflection needs to be, too.
     if (layer->reflectionInfo()) {
         // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
+        RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+        reflectionLayer->clearNeedsToRecomputeBounds();
         CompositingReasons reflectionCompositingReason = willBeCompositedOrSquashed ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
-        layer->reflectionInfo()->reflectionLayer()->setCompositingReasons(layer->reflectionInfo()->reflectionLayer()->compositingReasons() | reflectionCompositingReason);
+        reflectionLayer->setCompositingReasons(reflectionLayer->compositingReasons() | reflectionCompositingReason);
     }
 
     // Subsequent layers in the parent's stacking context may also need to composite.

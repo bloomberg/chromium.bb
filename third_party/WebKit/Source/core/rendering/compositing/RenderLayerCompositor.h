@@ -62,6 +62,11 @@ enum CompositingUpdateType {
 class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    enum BoundsUpdateType {
+        DoNotForceUpdate,
+        ForceUpdate,
+    };
+
     // FIXME: This constructor should take a reference.
     explicit RenderLayerCompositor(RenderView&);
     virtual ~RenderLayerCompositor();
@@ -272,7 +277,7 @@ private:
 
     void recursiveRepaintLayer(RenderLayer*);
 
-    void addToOverlapMap(OverlapMap&, RenderLayer*, IntRect& layerBounds);
+    void addToOverlapMap(OverlapMap&, RenderLayer*, const IntRect& layerBounds);
 
     // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
     // finish all deferred work.
@@ -348,6 +353,8 @@ private:
     mutable bool m_needsToRecomputeCompositingRequirements;
     bool m_needsToUpdateLayerTreeGeometry;
     GraphicsLayerUpdater::UpdateType m_pendingUpdateType;
+
+    RenderLayerCompositor::BoundsUpdateType m_recomputeLayerBoundsUpdateType;
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;

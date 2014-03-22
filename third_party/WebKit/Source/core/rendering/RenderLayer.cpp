@@ -126,6 +126,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_containsDirtyOverlayScrollbars(false)
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
+    , m_needsToRecomputeBounds(true)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -1213,6 +1214,17 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
     }
 
     return 0;
+}
+
+void RenderLayer::clearNeedsToRecomputeBounds()
+{
+    m_needsToRecomputeBounds = false;
+}
+
+void RenderLayer::setAbsoluteBoundingBox(const IntRect& rect)
+{
+    m_absoluteBoundingBox = rect;
+    clearNeedsToRecomputeBounds();
 }
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
@@ -3422,11 +3434,6 @@ LayoutRect RenderLayer::boundingBox(const RenderLayer* ancestorLayer, CalculateL
     return result;
 }
 
-IntRect RenderLayer::absoluteBoundingBox() const
-{
-    return pixelSnappedIntRect(boundingBox(root()));
-}
-
 LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot, CalculateLayerBoundsFlags flags) const
 {
     if (!isSelfPaintingLayer())
@@ -3961,8 +3968,13 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
+    // FIXME: We could avoid doing this ancestor walk by keeping a childNeedsToRecomputeBounds bit
+    // and using that along with needsToRecomputeBounds to set this bit in a later layer tree walk
+    // e.g. during assignLayersToBackings or computeCompositingRequirements.
     if (RenderLayer* compositingLayer = enclosingCompositingLayer())
         compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
+    // FIXME: We only need to set this if something changed that can change our absolute bounding rect.
+    m_needsToRecomputeBounds = true;
 
     const RenderStyle* newStyle = renderer()->style();
 

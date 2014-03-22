@@ -298,10 +298,6 @@ public:
 
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
     LayoutRect boundingBox(const RenderLayer* rootLayer, CalculateLayerBoundsFlags = 0, const LayoutPoint* offsetFromRoot = 0) const;
-    // Bounding box in the coordinates of this layer.
-    LayoutRect localBoundingBox(CalculateLayerBoundsFlags = 0) const;
-    // Pixel snapped bounding box relative to the root.
-    IntRect absoluteBoundingBox() const;
 
     // Bounds used for layer overlap testing in RenderLayerCompositor.
     LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : localBoundingBox(); }
@@ -484,6 +480,10 @@ public:
 
     void clearAncestorDependentPropertyCache();
 
+    const IntRect& absoluteBoundingBox() { ASSERT(!m_needsToRecomputeBounds); return m_absoluteBoundingBox; }
+    void setAbsoluteBoundingBox(const IntRect&);
+    void clearNeedsToRecomputeBounds();
+    bool needsToRecomputeBounds() { return m_needsToRecomputeBounds; }
 
 private:
     class AncestorDependentPropertyCache {
@@ -509,6 +509,9 @@ private:
     };
 
     void ensureAncestorDependentPropertyCache() const;
+
+    // Bounding box in the coordinates of this layer.
+    LayoutRect localBoundingBox(CalculateLayerBoundsFlags = 0) const;
 
     bool hasOverflowControls() const;
 
@@ -710,6 +713,7 @@ private:
     const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
 
     unsigned m_hasFilterInfo : 1;
+    unsigned m_needsToRecomputeBounds : 1;
 
     RenderLayerModelObject* m_renderer;
 
@@ -731,6 +735,8 @@ private:
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;
     LayoutUnit m_staticBlockPosition;
+
+    IntRect m_absoluteBoundingBox;
 
     OwnPtr<TransformationMatrix> m_transform;
 
