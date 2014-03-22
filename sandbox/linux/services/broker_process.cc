@@ -25,6 +25,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/process_metrics.h"
+#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
@@ -33,6 +34,22 @@
 #endif
 
 namespace {
+
+bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
+
+// A little open(2) wrapper to handle some oddities for us. In the general case
+// make a direct system call since we want to keep in control of the broker
+// process' system calls profile to be able to loosely sandbox it.
+int sys_open(const char* pathname, int flags) {
+  // Always pass a defined |mode| in case flags mistakenly contains O_CREAT.
+  const int mode = 0;
+  if (IsRunningOnValgrind()) {
+    // Valgrind does not support AT_FDCWD, just use libc's open() in this case.
+    return open(pathname, flags, mode);
+  } else {
+    return syscall(__NR_openat, AT_FDCWD, pathname, flags, mode);
+  }
+}
 
 static const size_t kMaxMessageLength = 4096;
 
@@ -433,9 +450,7 @@ void BrokerProcess::OpenFileForIPC(const std::string& requested_filename,
 
   if (safe_to_open_file) {
     CHECK(file_to_open);
-    // We're doing a 2-parameter open, so we don't support O_CREAT. It doesn't
-    // hurt to always pass a third argument though.
-    int opened_fd = syscall(__NR_open, file_to_open, flags, 0);
+    int opened_fd = sys_open(file_to_open, flags);
     if (opened_fd < 0) {
       write_pickle->WriteInt(-errno);
     } else {
