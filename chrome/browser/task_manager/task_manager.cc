@@ -20,7 +20,7 @@
 #include "chrome/browser/task_manager/background_resource_provider.h"
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
-#include "chrome/browser/task_manager/extension_process_resource_provider.h"
+#include "chrome/browser/task_manager/extension_information.h"
 #include "chrome/browser/task_manager/guest_resource_provider.h"
 #include "chrome/browser/task_manager/panel_information.h"
 #include "chrome/browser/task_manager/resource_provider.h"
@@ -258,8 +258,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
           new task_manager::PanelInformation())));
   AddResourceProvider(
       new task_manager::ChildProcessResourceProvider(task_manager));
-  AddResourceProvider(
-      new task_manager::ExtensionProcessResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WebContentsResourceProvider(
+      task_manager,
+      scoped_ptr<WebContentsInformation>(
+          new task_manager::ExtensionInformation())));
   AddResourceProvider(new task_manager::GuestResourceProvider(task_manager));
 
 #if !defined(OS_CHROMEOS) && defined(ENABLE_NOTIFICATIONS)
