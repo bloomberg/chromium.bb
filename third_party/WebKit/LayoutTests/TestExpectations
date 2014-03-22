@@ -950,5 +950,3 @@ crbug.com/354787 [ Mac Win ] plugins/transformed-events.html [ Failure ]
 crbug.com/354791 [ Mac ] transitions/webkit-clip-path-equality.html [ Pass Failure ]
 crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.html [ Pass Failure ]
 
-crbug.com/354849 [ XP ] fast/css/css2-system-fonts.html [ Failure ]
-
