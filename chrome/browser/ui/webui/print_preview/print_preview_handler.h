@@ -253,15 +253,18 @@ class PrintPreviewHandler
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
       std::string print_ticket,
+      std::string capabilities,
       gfx::Size page_size,
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   bool PrivetUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   void StartPrivetLocalPrint(const std::string& print_ticket,
+                             const std::string& capabilities,
                              const gfx::Size& page_size);
   void SendPrivetCapabilitiesError(const std::string& id);
   void PrintToPrivetPrinter(const std::string& printer_name,
                             const std::string& print_ticket,
+                            const std::string& capabilities,
                             const gfx::Size& page_size);
   bool CreatePrivetHTTP(
       const std::string& name,

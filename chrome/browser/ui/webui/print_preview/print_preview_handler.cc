@@ -722,6 +722,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   if (print_with_privet && PrivetPrintingEnabled()) {
     std::string printer_name;
     std::string print_ticket;
+    std::string capabilities;
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet", page_count);
     ReportUserActionHistogram(PRINT_WITH_PRIVET);
 
@@ -729,16 +730,18 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     int height = 0;
     if (!settings->GetString(printing::kSettingDeviceName, &printer_name) ||
         !settings->GetString(printing::kSettingTicket, &print_ticket) ||
+        !settings->GetString(printing::kSettingCapabilities, &capabilities) ||
         !settings->GetInteger(printing::kSettingPageWidth, &width) ||
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
-        width <= 0 || height <=0) {
+        width <= 0 || height <= 0) {
       NOTREACHED();
       base::FundamentalValue http_code_value(-1);
       web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
       return;
     }
 
-    PrintToPrivetPrinter(printer_name, print_ticket, gfx::Size(width, height));
+    PrintToPrivetPrinter(
+        printer_name, print_ticket, capabilities, gfx::Size(width, height));
     return;
   }
 #endif
@@ -1402,21 +1405,23 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 
 void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
     std::string print_ticket,
+    std::string capabilities,
     gfx::Size page_size,
     scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
   if (!PrivetUpdateClient(http_client.Pass()))
     return;
 
-  StartPrivetLocalPrint(print_ticket, page_size);
+  StartPrivetLocalPrint(print_ticket, capabilities, page_size);
 }
 
-void PrintPreviewHandler::StartPrivetLocalPrint(
-    const std::string& print_ticket,
-    const gfx::Size& page_size) {
+void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
+                                                const std::string& capabilities,
+                                                const gfx::Size& page_size) {
   privet_local_print_operation_ =
       privet_http_client_->CreateLocalPrintOperation(this);
 
   privet_local_print_operation_->SetTicket(print_ticket);
+  privet_local_print_operation_->SetCapabilities(capabilities);
 
   scoped_refptr<base::RefCountedBytes> data;
   base::string16 title;
@@ -1480,14 +1485,17 @@ void PrintPreviewHandler::SendPrivetCapabilitiesError(
       name_value);
 }
 
-void PrintPreviewHandler::PrintToPrivetPrinter(
-    const std::string& device_name,
-    const std::string& ticket,
-    const gfx::Size& page_size) {
+void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
+                                               const std::string& ticket,
+                                               const std::string& capabilities,
+                                               const gfx::Size& page_size) {
   CreatePrivetHTTP(
       device_name,
       base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
-                 base::Unretained(this), ticket, page_size));
+                 base::Unretained(this),
+                 ticket,
+                 capabilities,
+                 page_size));
 }
 
 bool PrintPreviewHandler::CreatePrivetHTTP(

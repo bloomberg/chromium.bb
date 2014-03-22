@@ -283,7 +283,7 @@ cr.define('print_preview', function() {
         'requestID': -1,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'pageWidth': documentInfo.pageSize.width,
-        'pageHeight': documentInfo.pageSize.height,
+        'pageHeight': documentInfo.pageSize.height
       };
 
       if (!destination.isLocal) {
@@ -309,6 +309,7 @@ cr.define('print_preview', function() {
 
       if (destination.isPrivet) {
         ticket['ticket'] = printTicketStore.createPrintTicket(destination);
+        ticket['capabilities'] = JSON.stringify(destination.capabilities);
       }
 
       if (opt_isOpenPdfInPreview) {

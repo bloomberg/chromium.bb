@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "components/cloud_devices/cloud_device_description.h"
 #include "printing/pdf_render_settings.h"
 
 namespace local_discovery {
@@ -204,6 +205,8 @@ class PrivetLocalPrintOperationImpl
 
   virtual void SetData(base::RefCountedBytes* data) OVERRIDE;
 
+  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
+
   virtual void SetTicket(const std::string& ticket) OVERRIDE;
 
   virtual void SetUsername(const std::string& user) OVERRIDE;
@@ -254,7 +257,9 @@ class PrivetLocalPrintOperationImpl
 
   ResponseCallback current_response_;
 
-  std::string ticket_;
+  cloud_devices::CloudDeviceDescription ticket_;
+  cloud_devices::CloudDeviceDescription capabilities_;
+
   scoped_refptr<base::RefCountedBytes> data_;
   base::FilePath pwg_file_path_;
 

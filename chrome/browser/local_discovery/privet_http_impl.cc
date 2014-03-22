@@ -545,7 +545,7 @@ void PrivetLocalPrintOperationImpl::DoCreatejob() {
 
   url_fetcher_= privet_client_->CreateURLFetcher(
       CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
-  url_fetcher_->SetUploadData(kPrivetContentTypeCJT, ticket_);
+  url_fetcher_->SetUploadData(kPrivetContentTypeCJT, ticket_.ToString());
 
   url_fetcher_->Start();
 }
@@ -606,7 +606,7 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
 }
 
 void PrivetLocalPrintOperationImpl::StartPrinting() {
-  if (has_extended_workflow_ && !ticket_.empty() && jobid_.empty()) {
+  if (has_extended_workflow_ && jobid_.empty()) {
     DoCreatejob();
   } else {
     DoSubmitdoc();
@@ -762,7 +762,13 @@ void PrivetLocalPrintOperationImpl::SetData(base::RefCountedBytes* data) {
 
 void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
   DCHECK(!started_);
-  ticket_ = ticket;
+  ticket_.InitFromString(ticket);
+}
+
+void PrivetLocalPrintOperationImpl::SetCapabilities(
+    const std::string& capabilities) {
+  DCHECK(!started_);
+  capabilities_.InitFromString(capabilities);
 }
 
 void PrivetLocalPrintOperationImpl::SetUsername(const std::string& user) {

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "net/base/host_port_pair.h"
@@ -185,6 +187,19 @@ const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
 const char kSampleEmptyJSONResponse[] = "{}";
 
+const char kSampleCDD[] = "{ \"version\" : \"1.0\" }";
+
+// Return the representation of the given JSON that would be outputted by
+// JSONWriter. This ensures the same JSON values are represented by the same
+// string.
+std::string NormalizeJson(const std::string& json) {
+  std::string result = json;
+  scoped_ptr<base::Value> value(base::JSONReader::Read(result));
+  DCHECK(value);
+  base::JSONWriter::Write(value.get(), &result);
+  return result;
+}
+
 class MockTestURLFetcherFactoryDelegate
     : public net::TestURLFetcher::DelegateForTests {
  public:
@@ -244,6 +259,25 @@ class PrivetHTTPTest : public ::testing::Test {
 
     EXPECT_EQ(data, fetcher->upload_data());
     if (data != fetcher->upload_data()) return false;
+
+    return SuccessfulResponseToURL(url, response);
+  }
+
+  bool SuccessfulResponseToURLAndJSONData(const GURL& url,
+                                          const std::string& data,
+                                          const std::string& response) {
+    net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
+
+    if (!fetcher)
+      return false;
+
+    std::string normalized_data = NormalizeJson(data);
+    std::string normalized_upload_data = NormalizeJson(fetcher->upload_data());
+    EXPECT_EQ(normalized_data, normalized_upload_data);
+    if (normalized_data != normalized_upload_data)
+      return false;
 
     return SuccessfulResponseToURL(url, response);
   }
@@ -849,7 +883,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetTicket(kSampleCDD);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
@@ -865,9 +899,9 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
       SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
                               kSampleCapabilitiesResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      "Sample print ticket",
+      kSampleCDD,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
@@ -885,7 +919,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname(
       "123456789:123456789:123456789:123456789:123456789:123456789:123456789:");
-  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetTicket(kSampleCDD);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
@@ -900,9 +934,9 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
       SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
                               kSampleCapabilitiesResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      "Sample print ticket",
+      kSampleCDD,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
@@ -921,7 +955,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
 TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetTicket(kSampleCDD);
   local_print_operation_->SetData(
       RefCountedBytesFromString("sample/path/"));
   local_print_operation_->Start();
@@ -937,9 +971,9 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
       SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
                               kSampleCapabilitiesResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      "Sample print ticket",
+      kSampleCDD,
       kSampleCreatejobResponse));
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
@@ -963,7 +997,7 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
 TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetTicket(kSampleCDD);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
@@ -979,9 +1013,9 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      "Sample print ticket",
+      kSampleCDD,
       kSampleCreatejobResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(

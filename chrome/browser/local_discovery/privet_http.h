@@ -141,6 +141,8 @@ class PrivetLocalPrintOperation {
   // Optional attributes for /submitdoc. Call before calling |Start()|
   // |ticket| should be in CJT format.
   virtual void SetTicket(const std::string& ticket) = 0;
+  // |capabilities| should be in CDD format.
+  virtual void SetCapabilities(const std::string& capabilities) = 0;
   // Username and jobname are for display only.
   virtual void SetUsername(const std::string& username) = 0;
   virtual void SetJobname(const std::string& jobname) = 0;
