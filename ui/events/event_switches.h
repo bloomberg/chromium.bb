@@ -20,6 +20,10 @@ EVENTS_BASE_EXPORT extern const char kTouchEventsDisabled[];
 EVENTS_BASE_EXPORT extern const char kTouchDevices[];
 #endif
 
+#if defined(USE_XI2_MT)
+EVENTS_BASE_EXPORT extern const char kTouchCalibration[];
+#endif
+
 }  // namespace switches
 
 #endif  // UI_EVENTS_EVENTS_SWITCHES_H_

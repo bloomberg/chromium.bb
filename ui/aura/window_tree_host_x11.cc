@@ -39,6 +39,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/x/device_data_manager.h"

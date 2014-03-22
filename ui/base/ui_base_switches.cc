@@ -68,9 +68,4 @@ const char kTouchOptimizedUIDisabled[] = "disabled";
 const char kTabletUI[] = "tablet-ui";
 #endif
 
-#if defined(USE_XI2_MT)
-// The calibration factors given as "<left>,<right>,<top>,<bottom>".
-const char kTouchCalibration[] = "touch-calibration";
-#endif
-
 }  // namespace switches
