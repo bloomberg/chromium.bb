@@ -211,8 +211,7 @@ MediaQueryExp::MediaQueryExp(const String& mediaFeature, PassRefPtrWillBeRawPtr<
 {
 }
 
-// FIXME - create should not return a null.
-PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::create(const String& mediaFeature, CSSParserValueList* valueList)
+PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String& mediaFeature, CSSParserValueList* valueList)
 {
     ASSERT(!mediaFeature.isNull());
 

@@ -1598,7 +1598,7 @@ CSSParserValue& BisonCSSParser::sinkFloatingValue(CSSParserValue& value)
 
 MediaQueryExp* BisonCSSParser::createFloatingMediaQueryExp(const AtomicString& mediaFeature, CSSParserValueList* values)
 {
-    m_floatingMediaQueryExp = MediaQueryExp::create(mediaFeature, values);
+    m_floatingMediaQueryExp = MediaQueryExp::createIfValid(mediaFeature, values);
     return m_floatingMediaQueryExp.get();
 }
 

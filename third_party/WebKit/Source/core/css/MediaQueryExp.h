@@ -40,7 +40,7 @@ class CSSParserValueList;
 class MediaQueryExp : public NoBaseWillBeGarbageCollectedFinalized<MediaQueryExp> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<MediaQueryExp> create(const String& mediaFeature, CSSParserValueList*);
+    static PassOwnPtrWillBeRawPtr<MediaQueryExp> createIfValid(const String& mediaFeature, CSSParserValueList*);
     ~MediaQueryExp();
 
     const String& mediaFeature() const { return m_mediaFeature; }

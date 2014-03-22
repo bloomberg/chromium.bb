@@ -207,7 +207,7 @@ PassOwnPtrWillBeRawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
 
 bool MediaQueryData::addExpression()
 {
-    OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::create(m_mediaFeature, &m_valueList);
+    OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, &m_valueList);
     bool isValid = !!expression;
     m_expressions->append(expression.release());
     m_valueList.clear();
