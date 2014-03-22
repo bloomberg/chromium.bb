@@ -34,15 +34,8 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
-#include "core/css/invalidation/StyleInvalidator.h"
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderStyle.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/rendering/RenderObject.h"
 #include "wtf/BitVector.h"
 
 namespace WebCore {
@@ -116,7 +109,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
         // FIXME: next up: Tag and Id.
-        if (component->m_match == CSSSelector::Class) {
+        if (component->m_match == CSSSelector::Class || component->isAttributeSelector()) {
             if (!foundDescendantRelation)
                 foundIdent = true;
         } else if (!isSkippableComponentForInvalidation(*component)) {
@@ -138,7 +131,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
     return foundIdent ? AddFeatures : UseLocalStyleChange;
 }
 
-void extractClassIdOrTag(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName)
+void extractClassIdTagOrAttribute(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName, Vector<AtomicString>& attributes)
 {
     if (selector.m_match == CSSSelector::Tag)
         tagName = selector.tagQName().localName();
@@ -146,6 +139,8 @@ void extractClassIdOrTag(const CSSSelector& selector, Vector<AtomicString>& clas
         id = selector.value();
     else if (selector.m_match == CSSSelector::Class)
         classes.append(selector.value());
+    else if (selector.isAttributeSelector())
+        attributes.append(selector.attribute().localName());
 }
 
 RuleFeatureSet::RuleFeatureSet()
@@ -153,7 +148,16 @@ RuleFeatureSet::RuleFeatureSet()
 {
 }
 
-RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
+DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& selector)
+{
+    if (selector.m_match == CSSSelector::Class)
+        return &ensureClassInvalidationSet(selector.value());
+    if (selector.isAttributeSelector())
+        return &ensureAttributeInvalidationSet(selector.attribute().localName());
+    return 0;
+}
+
+RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const CSSSelector& selector)
 {
     InvalidationSetMode mode = supportsClassDescendantInvalidation(selector);
     if (mode != AddFeatures)
@@ -162,37 +166,39 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateClassInvalidationSets(
     Vector<AtomicString> classes;
     AtomicString id;
     AtomicString tagName;
+    Vector<AtomicString> attributes;
 
     const CSSSelector* lastSelector = &selector;
     for (; lastSelector; lastSelector = lastSelector->tagHistory()) {
-        extractClassIdOrTag(*lastSelector, classes, id, tagName);
-        if (lastSelector->m_match == CSSSelector::Class)
-            ensureClassInvalidationSet(lastSelector->value());
+        extractClassIdTagOrAttribute(*lastSelector, classes, id, tagName, attributes);
+        // Initialize the entry in the invalidation set map, if supported.
+        invalidationSetForSelector(*lastSelector);
+
         if (lastSelector->relation() != CSSSelector::SubSelector)
             break;
     }
 
     if (!lastSelector)
         return AddFeatures;
-
     for (const CSSSelector* current = lastSelector->tagHistory(); current; current = current->tagHistory()) {
-        if (current->m_match == CSSSelector::Class) {
-            DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(current->value());
+        if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
             if (!id.isEmpty())
-                invalidationSet.addId(id);
+                invalidationSet->addId(id);
             if (!tagName.isEmpty())
-                invalidationSet.addTagName(tagName);
-            for (Vector<AtomicString>::const_iterator it = classes.begin(); it != classes.end(); ++it) {
-                invalidationSet.addClass(*it);
-            }
+                invalidationSet->addTagName(tagName);
+            for (Vector<AtomicString>::const_iterator it = classes.begin(); it != classes.end(); ++it)
+                invalidationSet->addClass(*it);
+            for (Vector<AtomicString>::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+                invalidationSet->addAttribute(*it);
         }
     }
     return AddFeatures;
 }
 
-void RuleFeatureSet::addAttributeInASelector(const AtomicString& attributeName)
+void RuleFeatureSet::addContentAttr(const AtomicString& attributeName)
 {
-    m_metadata.attrsInRules.add(attributeName);
+    DescendantInvalidationSet& invalidationSet = ensureAttributeInvalidationSet(attributeName);
+    invalidationSet.setWholeSubtreeInvalid();
 }
 
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
@@ -200,7 +206,7 @@ void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
     FeatureMetadata metadata;
     InvalidationSetMode mode = UseSubtreeStyleChange;
     if (m_targetedStyleRecalcEnabled)
-        mode = updateClassInvalidationSets(ruleData.selector());
+        mode = updateInvalidationSets(ruleData.selector());
 
     collectFeaturesFromSelector(ruleData.selector(), metadata, mode);
     m_metadata.add(metadata);
@@ -219,6 +225,13 @@ DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const Atom
     return *addResult.storedValue->value;
 }
 
+DescendantInvalidationSet& RuleFeatureSet::ensureAttributeInvalidationSet(const AtomicString& attributeName)
+{
+    InvalidationSetMap::AddResult addResult = m_attributeInvalidationSets.add(attributeName, nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = DescendantInvalidationSet::create();
+    return *addResult.storedValue->value;
+}
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
 {
     collectFeaturesFromSelector(selector, m_metadata, UseSubtreeStyleChange);
@@ -231,12 +244,11 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (current->m_match == CSSSelector::Id) {
             metadata.idsInRules.add(current->value());
-        } else if (current->m_match == CSSSelector::Class && mode != AddFeatures) {
-            DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(current->value());
+        } else if (mode != AddFeatures && (current->m_match == CSSSelector::Class || current->isAttributeSelector())) {
+            DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current);
+            ASSERT(invalidationSet);
             if (mode == UseSubtreeStyleChange)
-                invalidationSet.setWholeSubtreeInvalid();
-        } else if (current->isAttributeSelector()) {
-            metadata.attrsInRules.add(current->attribute().localName());
+                invalidationSet->setWholeSubtreeInvalid();
         }
         if (current->pseudoType() == CSSSelector::PseudoFirstLine)
             metadata.usesFirstLineRules = true;
@@ -276,15 +288,11 @@ void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
     HashSet<AtomicString>::const_iterator end = other.idsInRules.end();
     for (HashSet<AtomicString>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
         idsInRules.add(*it);
-    end = other.attrsInRules.end();
-    for (HashSet<AtomicString>::const_iterator it = other.attrsInRules.begin(); it != end; ++it)
-        attrsInRules.add(*it);
 }
 
 void RuleFeatureSet::FeatureMetadata::clear()
 {
     idsInRules.clear();
-    attrsInRules.clear();
     usesFirstLineRules = false;
     foundSiblingSelector = false;
     maxDirectAdjacentSelectors = 0;
@@ -292,9 +300,10 @@ void RuleFeatureSet::FeatureMetadata::clear()
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
-    for (InvalidationSetMap::const_iterator it = other.m_classInvalidationSets.begin(); it != other.m_classInvalidationSets.end(); ++it) {
+    for (InvalidationSetMap::const_iterator it = other.m_classInvalidationSets.begin(); it != other.m_classInvalidationSets.end(); ++it)
         ensureClassInvalidationSet(it->key).combine(*it->value);
-    }
+    for (InvalidationSetMap::const_iterator it = other.m_attributeInvalidationSets.begin(); it != other.m_attributeInvalidationSets.end(); ++it)
+        ensureAttributeInvalidationSet(it->key).combine(*it->value);
 
     m_metadata.add(other.m_metadata);
 
@@ -308,6 +317,7 @@ void RuleFeatureSet::clear()
     uncommonAttributeRules.clear();
     m_metadata.clear();
     m_classInvalidationSets.clear();
+    m_attributeInvalidationSets.clear();
     m_pendingInvalidationMap.clear();
 }
 
@@ -349,6 +359,14 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
             continue;
         // Class was removed.
         addClassToInvalidationSet(oldClasses[i], element);
+    }
+}
+
+void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element* element)
+{
+    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName())) {
+        ensurePendingInvalidationList(element).append(invalidationSet);
+        element->setNeedsStyleInvalidation();
     }
 }
 

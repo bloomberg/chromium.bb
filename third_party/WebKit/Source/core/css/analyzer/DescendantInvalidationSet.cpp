@@ -69,6 +69,12 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
         for (HashSet<AtomicString>::const_iterator it = other.m_tagNames->begin(); it != end; ++it)
             addTagName(*it);
     }
+
+    if (other.m_attributes) {
+        HashSet<AtomicString>::const_iterator end = other.m_attributes->end();
+        for (HashSet<AtomicString>::const_iterator it = other.m_attributes->begin(); it != end; ++it)
+            addAttribute(*it);
+    }
 }
 
 HashSet<AtomicString>& DescendantInvalidationSet::ensureClassSet()
@@ -92,6 +98,13 @@ HashSet<AtomicString>& DescendantInvalidationSet::ensureTagNameSet()
     return *m_tagNames;
 }
 
+HashSet<AtomicString>& DescendantInvalidationSet::ensureAttributeSet()
+{
+    if (!m_attributes)
+        m_attributes = adoptPtr(new HashSet<AtomicString>);
+    return *m_attributes;
+}
+
 void DescendantInvalidationSet::addClass(const AtomicString& className)
 {
     if (wholeSubtreeInvalid())
@@ -113,12 +126,27 @@ void DescendantInvalidationSet::addTagName(const AtomicString& tagName)
     ensureTagNameSet().add(tagName);
 }
 
+void DescendantInvalidationSet::addAttribute(const AtomicString& attribute)
+{
+    if (wholeSubtreeInvalid())
+        return;
+    ensureAttributeSet().add(attribute);
+}
+
 void DescendantInvalidationSet::getClasses(Vector<AtomicString>& classes) const
 {
     if (!m_classes)
         return;
     for (HashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it)
         classes.append(*it);
+}
+
+void DescendantInvalidationSet::getAttributes(Vector<AtomicString>& attributes) const
+{
+    if (!m_attributes)
+        return;
+    for (HashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it)
+        attributes.append(*it);
 }
 
 void DescendantInvalidationSet::setWholeSubtreeInvalid()
@@ -130,6 +158,7 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
     m_classes = nullptr;
     m_ids = nullptr;
     m_tagNames = nullptr;
+    m_attributes = nullptr;
 }
 
 } // namespace WebCore

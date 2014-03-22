@@ -33,18 +33,24 @@ StyleInvalidator::StyleInvalidator(Document& document)
 void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
 {
     invalidationSet.getClasses(m_invalidationClasses);
+    invalidationSet.getAttributes(m_invalidationAttributes);
     m_foundInvalidationSet = true;
 }
 
 bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& element)
 {
-    if (!element.hasClass())
-        return false;
-
-    const SpaceSplitString& classNames = element.classNames();
-    for (Vector<AtomicString>::const_iterator it = m_invalidationClasses.begin(); it != m_invalidationClasses.end(); ++it) {
-        if (classNames.contains(*it))
-            return true;
+    if (element.hasClass()) {
+        const SpaceSplitString& classNames = element.classNames();
+        for (Vector<AtomicString>::const_iterator it = m_invalidationClasses.begin(); it != m_invalidationClasses.end(); ++it) {
+            if (classNames.contains(*it))
+                return true;
+        }
+    }
+    if (element.hasAttributes()) {
+        for (Vector<AtomicString>::const_iterator it = m_invalidationAttributes.begin(); it != m_invalidationAttributes.end(); ++it) {
+            if (element.hasAttribute(*it))
+                return true;
+        }
     }
 
     return false;

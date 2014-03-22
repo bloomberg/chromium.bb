@@ -2896,11 +2896,6 @@ void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeV
         scope.addLabel(newForAttributeValue, toHTMLLabelElement(this));
 }
 
-static bool hasSelectorForAttribute(Document* document, const AtomicString& localName)
-{
-    return document->ensureStyleResolver().ensureUpdatedRuleFeatureSet().hasSelectorForAttribute(localName);
-}
-
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (isIdAttributeName(name)) {
@@ -2914,8 +2909,8 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     }
 
     if (oldValue != newValue) {
-        if (inActiveDocument() && hasSelectorForAttribute(&document(), name.localName()))
-            setNeedsStyleRecalc(SubtreeStyleChange);
+        if (inActiveDocument())
+            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForAttributeChange(name, this);
 
         if (isUpgradedCustomElement())
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);

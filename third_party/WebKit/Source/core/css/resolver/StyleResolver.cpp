@@ -626,7 +626,7 @@ static inline void resetDirectionAndWritingModeOnDocument(Document& document)
 static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
 {
     for (size_t i = 0; i < contentAttrValues.size(); ++i)
-        features.addAttributeInASelector(contentAttrValues[i]);
+        features.addContentAttr(contentAttrValues[i]);
 }
 
 // Start loading resources referenced by this style.

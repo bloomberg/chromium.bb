@@ -29,6 +29,7 @@ private:
         bool foundInvalidationSet() { return m_foundInvalidationSet; }
 
         Vector<AtomicString> m_invalidationClasses;
+        Vector<AtomicString> m_invalidationAttributes;
         bool m_foundInvalidationSet;
     };
 
@@ -36,6 +37,7 @@ private:
     public:
         RecursionCheckpoint(RecursionData* data)
             : m_prevClassLength(data->m_invalidationClasses.size()),
+            m_prevAttributeLength(data->m_invalidationAttributes.size()),
             m_prevFoundInvalidationSet(data->m_foundInvalidationSet),
             m_data(data)
         { }
@@ -47,6 +49,7 @@ private:
 
     private:
         int m_prevClassLength;
+        int m_prevAttributeLength;
         bool m_prevFoundInvalidationSet;
         RecursionData* m_data;
     };
