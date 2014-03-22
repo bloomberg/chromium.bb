@@ -648,8 +648,7 @@ void Node::setNeedsStyleInvalidation()
 
 void Node::markAncestorsWithChildNeedsStyleInvalidation()
 {
-    Node* node = this;
-    for (; node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
+    for (Node* node = parentOrShadowHostNode(); node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
         node->setChildNeedsStyleInvalidation();
     if (document().childNeedsStyleInvalidation())
         document().scheduleStyleRecalc();

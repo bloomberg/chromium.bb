@@ -18,10 +18,8 @@ namespace WebCore {
 
 void StyleInvalidator::invalidate()
 {
-    if (Element* documentElement = m_document.documentElement()) {
-        if (documentElement->childNeedsStyleInvalidation())
-            invalidate(*documentElement);
-    }
+    if (Element* documentElement = m_document.documentElement())
+        invalidate(*documentElement);
     m_document.clearChildNeedsStyleInvalidation();
     m_document.clearNeedsStyleInvalidation();
     m_pendingInvalidationMap.clear();
