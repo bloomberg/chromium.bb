@@ -118,6 +118,7 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
+#include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/notifications/NotificationController.h"
@@ -388,6 +389,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     m_page = adoptPtr(new Page(pageClients));
     provideUserMediaTo(*m_page, &m_userMediaClientImpl);
+    MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideMIDITo(*m_page, m_midiClientProxy.get());
 #if ENABLE(INPUT_SPEECH)
     provideSpeechInputTo(*m_page, m_speechInputClient.get());

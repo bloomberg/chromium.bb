@@ -53,6 +53,8 @@
       'LinkHighlight.h',
       'LocalFileSystemClient.cpp',
       'LocalFileSystemClient.h',
+      'MediaKeysClientImpl.cpp',
+      'MediaKeysClientImpl.h',
       'MIDIClientProxy.cpp',
       'MIDIClientProxy.h',
       'NotificationPresenterImpl.cpp',

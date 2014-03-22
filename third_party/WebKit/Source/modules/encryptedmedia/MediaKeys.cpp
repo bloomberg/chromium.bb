@@ -28,10 +28,13 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
+#include "modules/encryptedmedia/MediaKeysClient.h"
+#include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
@@ -70,7 +73,9 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
 
     // 3. Let cdm be the content decryption module corresponding to keySystem.
     // 4. Load cdm if necessary.
-    OwnPtr<blink::WebContentDecryptionModule> cdm = adoptPtr(blink::Platform::current()->createContentDecryptionModule(keySystem));
+    Document* document = toDocument(context);
+    MediaKeysController* controller = MediaKeysController::from(document->page());
+    OwnPtr<blink::WebContentDecryptionModule> cdm = controller->createContentDecryptionModule(context, keySystem);
     if (!cdm) {
         exceptionState.throwDOMException(NotSupportedError, "A content decryption module could not be loaded for the '" + keySystem + "' key system.");
         return nullptr;

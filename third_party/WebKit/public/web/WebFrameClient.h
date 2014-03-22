@@ -53,6 +53,7 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCachedURLRequest;
+class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDataSource;
 class WebDOMEvent;
@@ -88,6 +89,9 @@ public:
 
     // May return null.
     virtual WebMediaPlayer* createMediaPlayer(WebLocalFrame*, const WebURL&, WebMediaPlayerClient*) { return 0; }
+
+    // May return null.
+    virtual WebContentDecryptionModule* createContentDecryptionModule(WebLocalFrame*, const WebSecurityOrigin&, const WebString& keySystem) { return 0; }
 
     // May return null.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) { return 0; }

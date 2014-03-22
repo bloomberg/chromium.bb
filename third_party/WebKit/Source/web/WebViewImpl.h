@@ -37,6 +37,7 @@
 #include "DragClientImpl.h"
 #include "EditorClientImpl.h"
 #include "InspectorClientImpl.h"
+#include "MediaKeysClientImpl.h"
 #include "NotificationPresenterImpl.h"
 #include "PageOverlayList.h"
 #include "PageScaleConstraintsSet.h"
@@ -748,6 +749,7 @@ private:
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 
     UserMediaClientImpl m_userMediaClientImpl;
+    MediaKeysClientImpl m_mediaKeysClientImpl;
     OwnPtr<MIDIClientProxy> m_midiClientProxy;
     OwnPtr<NavigatorContentUtilsClientImpl> m_navigatorContentUtilsClient;
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;
