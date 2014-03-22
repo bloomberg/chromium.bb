@@ -10,6 +10,21 @@
 
 namespace mojo {
 
+// In order to allocate a Mojom-defined structure or mojo::Array<T> (including
+// mojo::String), an AllocationScope must first be allocated. Typically,
+// AllocationScope is placed on the stack before calls to build structs and
+// arrays. Such structs and arrays are valid so long as the corresponding
+// AllocationScope remains alive.
+//
+// AllocationScope instantiates a Buffer and sets it in thread local storage.
+// This Buffer instance can be retrieved using Buffer::current().
+//
+// EXAMPLE:
+//
+//   mojo::AllocationScope scope;
+//   mojo::String s = "hello world";
+//   some_interface->SomeMethod(s);
+//
 class AllocationScope {
  public:
   AllocationScope() {}

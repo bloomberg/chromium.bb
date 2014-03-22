@@ -18,8 +18,7 @@ class {{struct.name}} {
 
   template <typename U>
   {{struct.name}}& operator=(const U& u) {
-    *this =
-        mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, mojo::Buffer::current());
+    *this = mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, mojo::Buffer::current());
     return *this;
   }
 

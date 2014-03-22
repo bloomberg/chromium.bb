@@ -18,8 +18,11 @@ class Buffer {
   Buffer();
   virtual ~Buffer();
 
+  // A destructor may optionally be assigned to the allocation. Destructors run
+  // (in LIFO order) when the Buffer instance is destroyed.
   virtual void* Allocate(size_t num_bytes, Destructor func = NULL) = 0;
 
+  // Returns the current Buffer from thread local storage. May be NULL.
   static Buffer* current();
 
  private:

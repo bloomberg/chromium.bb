@@ -15,8 +15,8 @@ namespace mojo {
 
 // Message is a holder for the data and handles to be sent over a MessagePipe.
 // Message owns its data and handles, but a consumer of Message is free to
-// mutate the data and handles members. The message's data is comprised of a
-// header followed by payload.
+// mutate the data and handles. The message's data is comprised of a header
+// followed by payload.
 class Message {
  public:
   Message();

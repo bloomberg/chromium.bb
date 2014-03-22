@@ -47,7 +47,7 @@ def GetCppType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Interface<%s>::Handle" % kind.name
+    return "%sHandle" % kind.name
   if isinstance(kind, mojom.Enum):
     return "int32_t"
   if kind.spec == 's':
@@ -60,7 +60,7 @@ def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Interface<%s>::Handle" % kind.name
+    return "%sHandle" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   return _kind_to_cpp_type[kind]
@@ -71,7 +71,7 @@ def GetCppResultWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Interface<%s>::ScopedHandle" % kind.name
+    return "Scoped%sHandle" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -90,7 +90,7 @@ def GetCppWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Passable<typename mojo::Interface<%s>::Handle>" % kind.name
+    return "mojo::Passable<%sHandle>" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   if mojom_generator.IsHandleKind(kind):
@@ -103,7 +103,7 @@ def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Interface<%s>::ScopedHandle" % kind.name
+    return "Scoped%sHandle" % kind.name
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':
@@ -127,7 +127,7 @@ def GetCppFieldType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Interface<%s>::Handle" % kind.name
+    return "%sHandle" % kind.name
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':

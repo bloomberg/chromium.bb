@@ -27,5 +27,8 @@ class {{interface.name}} {
 {%- endfor %}
 };
 
+// A typesafe variant of MessagePipeHandle.
 typedef mojo::Interface<{{interface.name}}>::Handle {{interface.name}}Handle;
+
+// A typesafe variant of ScopedMessagePipeHandle.
 typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name}}Handle;
