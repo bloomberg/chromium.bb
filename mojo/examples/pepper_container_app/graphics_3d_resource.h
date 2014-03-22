@@ -19,7 +19,6 @@ class Graphics3DResource : public ppapi::Resource,
                            public ppapi::thunk::PPB_Graphics3D_API {
  public:
   explicit Graphics3DResource(PP_Instance instance);
-  virtual ~Graphics3DResource();
 
   bool IsBoundGraphics() const;
   void BindGraphics();
@@ -60,6 +59,8 @@ class Graphics3DResource : public ppapi::Resource,
   virtual uint32_t InsertSyncPoint() OVERRIDE;
 
  private:
+  virtual ~Graphics3DResource();
+
   static void ContextLostThunk(void* closure);
   static void DrawAnimationFrameThunk(void* closure);
   void ContextLost();

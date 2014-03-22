@@ -32,10 +32,6 @@ Graphics3DResource::Graphics3DResource(PP_Instance instance)
                                     this);
 }
 
-Graphics3DResource::~Graphics3DResource() {
-  MojoGLES2DestroyContext(context_);
-}
-
 bool Graphics3DResource::IsBoundGraphics() const {
   PluginInstance* plugin_instance =
       MojoPpapiGlobals::Get()->GetInstance(pp_instance());
@@ -149,6 +145,10 @@ void Graphics3DResource::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 uint32_t Graphics3DResource::InsertSyncPoint() {
   NOTIMPLEMENTED();
   return 0;
+}
+
+Graphics3DResource::~Graphics3DResource() {
+  MojoGLES2DestroyContext(context_);
 }
 
 void Graphics3DResource::ContextLostThunk(void* closure) {

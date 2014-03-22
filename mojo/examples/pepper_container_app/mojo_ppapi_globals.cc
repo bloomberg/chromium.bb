@@ -31,7 +31,6 @@ class MojoPpapiGlobals::MainThreadMessageLoopResource
       base::MessageLoopProxy* main_thread_message_loop)
       : MessageLoopShared(ForMainThread()),
         main_thread_message_loop_(main_thread_message_loop) {}
-  virtual ~MainThreadMessageLoopResource() {}
 
   // ppapi::MessageLoopShared implementation.
   virtual void PostClosure(const tracked_objects::Location& from_here,
@@ -68,6 +67,8 @@ class MojoPpapiGlobals::MainThreadMessageLoopResource
   }
 
  private:
+  virtual ~MainThreadMessageLoopResource() {}
+
   scoped_refptr<base::MessageLoopProxy> main_thread_message_loop_;
   DISALLOW_COPY_AND_ASSIGN(MainThreadMessageLoopResource);
 };
