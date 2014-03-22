@@ -81,6 +81,9 @@ public:
     const HashSet<SVGFontFaceElement*>& svgFontFaceElements() const { return m_svgFontFaceElements; }
     void registerSVGFontFaceElement(SVGFontFaceElement*);
     void unregisterSVGFontFaceElement(SVGFontFaceElement*);
+
+    void registerPendingSVGFontFaceElementsForRemoval(PassRefPtr<SVGFontFaceElement>);
+    void removePendingSVGFontFaceElementsForRemoval();
 #endif
 
 private:
@@ -88,6 +91,8 @@ private:
     HashSet<SVGSVGElement*> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
 #if ENABLE(SVG_FONTS)
     HashSet<SVGFontFaceElement*> m_svgFontFaceElements;
+    // SVGFontFaceElements that are pending and scheduled for removal.
+    HashSet<RefPtr<SVGFontFaceElement> > m_pendingSVGFontFaceElementsForRemoval;
 #endif
     HashMap<AtomicString, RenderSVGResourceContainer*> m_resources;
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResources; // Resources that are pending.

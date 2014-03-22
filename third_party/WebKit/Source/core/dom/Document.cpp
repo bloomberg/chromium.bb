@@ -1825,6 +1825,10 @@ void Document::updateStyle(StyleRecalcChange change)
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
 
+#if ENABLE(SVG_FONTS)
+    if (svgExtensions())
+        accessSVGExtensions().removePendingSVGFontFaceElementsForRemoval();
+#endif
     InspectorInstrumentation::didRecalculateStyle(cookie);
 }
 

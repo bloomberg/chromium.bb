@@ -26,6 +26,7 @@
 #include "core/dom/Document.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "wtf/TemporaryChange.h"
@@ -430,6 +431,17 @@ void SVGDocumentExtensions::unregisterSVGFontFaceElement(SVGFontFaceElement* ele
     ASSERT(m_svgFontFaceElements.contains(element));
     m_svgFontFaceElements.remove(element);
 }
+
+void SVGDocumentExtensions::registerPendingSVGFontFaceElementsForRemoval(PassRefPtr<SVGFontFaceElement> font)
+{
+    m_pendingSVGFontFaceElementsForRemoval.add(font);
+}
+
+void SVGDocumentExtensions::removePendingSVGFontFaceElementsForRemoval()
+{
+    m_pendingSVGFontFaceElementsForRemoval.clear();
+}
+
 #endif
 
 }

@@ -62,7 +62,7 @@ void SVGFontData::initializeFontData(SimpleFontData* fontData, float fontSize)
     ASSERT(fontData);
 
     SVGFontFaceElement* svgFontFaceElement = this->svgFontFaceElement();
-    ASSERT(svgFontFaceElement);
+    ASSERT(svgFontFaceElement && svgFontFaceElement->inDocument());
 
     SVGFontElement* svgFontElement = svgFontFaceElement->associatedFontElement();
     ASSERT(svgFontElement);
@@ -123,6 +123,13 @@ float SVGFontData::widthForSVGGlyph(Glyph glyph, float fontSize) const
 {
     SVGFontFaceElement* svgFontFaceElement = this->svgFontFaceElement();
     ASSERT(svgFontFaceElement);
+    // RenderView::clearSelection is invoked while removing some element, e.g.
+    // Document::nodeWillBeRemoved => FrameSelection::nodeWillBeRemoved => RenderView::clearSelection.
+    // Since recalc style has not been executed yet, RenderStyle might have some reference to
+    // SVGFontFaceElement which was also removed.
+    // In this case, use default horizontalAdvanceX instead of associatedFontElement's one.
+    if (!svgFontFaceElement->inDocument())
+        return m_horizontalAdvanceX * scaleEmToUnits(fontSize, svgFontFaceElement->unitsPerEm());
 
     SVGFontElement* associatedFontElement = svgFontFaceElement->associatedFontElement();
     ASSERT(associatedFontElement);
@@ -155,7 +162,7 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
         arabicForms = charactersWithArabicForm(remainingTextInRun, mirror);
 
     SVGFontFaceElement* svgFontFaceElement = this->svgFontFaceElement();
-    ASSERT(svgFontFaceElement);
+    ASSERT(svgFontFaceElement && svgFontFaceElement->inDocument());
 
     SVGFontElement* associatedFontElement = svgFontFaceElement->associatedFontElement();
     ASSERT(associatedFontElement);
@@ -226,7 +233,7 @@ bool SVGFontData::fillSVGGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
     ASSERT(fontData->isSVGFont());
 
     SVGFontFaceElement* fontFaceElement = this->svgFontFaceElement();
-    ASSERT(fontFaceElement);
+    ASSERT(fontFaceElement && fontFaceElement->inDocument());
 
     SVGFontElement* fontElement = fontFaceElement->associatedFontElement();
     ASSERT(fontElement);
