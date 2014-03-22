@@ -95,11 +95,15 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     EXPECT_TRUE(machine.cpu().has_vendor_name());
     EXPECT_TRUE(machine.cpu().has_brand());
     EXPECT_TRUE(machine.has_ram());
-    ASSERT_TRUE(machine.has_graphics_card());
-    EXPECT_TRUE(machine.graphics_card().has_vendor_id());
-    EXPECT_TRUE(machine.graphics_card().has_device_id());
     EXPECT_TRUE(machine.has_browser_build());
     EXPECT_TRUE(machine.has_browser_feature());
+    if (content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
+      ASSERT_TRUE(machine.has_graphics_card());
+      EXPECT_TRUE(machine.graphics_card().has_vendor_id());
+      EXPECT_TRUE(machine.graphics_card().has_device_id());
+    } else {
+      EXPECT_FALSE(machine.has_graphics_card());
+    }
 
     ASSERT_TRUE(fingerprint->has_transient_state());
     const Fingerprint::TransientState& transient_state =
@@ -173,11 +177,6 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
-  // This test hangs when there is no GPU process.
-  // http://crbug.com/327272
-  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
-    return;
-
   content::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;

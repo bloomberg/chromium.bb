@@ -360,7 +360,8 @@ FingerprintDataLoader::FingerprintDataLoader(
                                   weak_ptr_factory_.GetWeakPtr()));
 
   // Load GPU data if needed.
-  if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
+  if (gpu_data_manager_->GpuAccessAllowed(NULL) &&
+      !gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
     gpu_observer_.Add(gpu_data_manager_);
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
   }
@@ -425,7 +426,8 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
   // If all of the data has been loaded, or if the |timeout_timer_| has expired,
   // fill the fingerprint and clean up.
   if (!timeout_timer_.IsRunning() ||
-      (gpu_data_manager_->IsCompleteGpuInfoAvailable() &&
+      ((!gpu_data_manager_->GpuAccessAllowed(NULL) ||
+        gpu_data_manager_->IsCompleteGpuInfoAvailable()) &&
        fonts_ &&
        !waiting_on_plugins_ &&
        (geoposition_.Validate() ||
