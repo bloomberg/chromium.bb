@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 #define UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 
+#include <vector>
+
 #include "ui/display/display_constants.h"
 #include "ui/display/display_export.h"
 
@@ -70,6 +72,11 @@ class DISPLAY_EXPORT NativeDisplayDelegate {
   // Sets HDCP state of output.
   virtual bool SetHDCPState(const ui::DisplaySnapshot& output,
                             ui::HDCPState state) = 0;
+
+  // Gets the available list of color calibrations.
+  virtual std::vector<ui::ColorCalibrationProfile>
+      GetAvailableColorCalibrationProfiles(
+          const ui::DisplaySnapshot& output) = 0;
 
   // Sets the color calibration of |output| to |new_profile|.
   virtual bool SetColorCalibrationProfile(

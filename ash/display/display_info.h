@@ -163,6 +163,9 @@ class ASH_EXPORT DisplayInfo {
   // |available_color_profiles_|.
   void SetColorProfile(ui::ColorCalibrationProfile profile);
 
+  // Returns true if |profile| is in |available_color_profiles_|.
+  bool IsColorProfileAvailable(ui::ColorCalibrationProfile profile) const;
+
   const std::vector<ui::ColorCalibrationProfile>&
       available_color_profiles() const {
     return available_color_profiles_;

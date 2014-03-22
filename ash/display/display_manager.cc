@@ -508,6 +508,9 @@ void DisplayManager::SetColorCalibrationProfile(
     int64 display_id,
     ui::ColorCalibrationProfile profile) {
 #if defined(OS_CHROMEOS)
+  if (!display_info_[display_id].IsColorProfileAvailable(profile))
+    return;
+
   if (delegate_)
     delegate_->PreDisplayConfigurationChange(false);
   if (Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(

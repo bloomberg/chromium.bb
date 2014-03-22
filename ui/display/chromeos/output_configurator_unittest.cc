@@ -254,6 +254,12 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
     return true;
   }
 
+  virtual std::vector<ui::ColorCalibrationProfile>
+  GetAvailableColorCalibrationProfiles(
+      const DisplaySnapshot& output) OVERRIDE {
+    return std::vector<ui::ColorCalibrationProfile>();
+  }
+
   virtual bool SetColorCalibrationProfile(
       const DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) OVERRIDE {

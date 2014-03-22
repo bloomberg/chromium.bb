@@ -158,15 +158,17 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     ids.insert(id);
 
     displays.push_back(DisplayInfo(id, name, has_overscan));
-    displays.back().set_device_scale_factor(device_scale_factor);
-    displays.back().SetBounds(display_bounds);
-    displays.back().set_native(true);
-    displays.back().set_display_modes(display_modes);
-    displays.back().set_touch_support(
+    DisplayInfo& new_info = displays.back();
+    new_info.set_device_scale_factor(device_scale_factor);
+    new_info.SetBounds(display_bounds);
+    new_info.set_native(true);
+    new_info.set_display_modes(display_modes);
+    new_info.set_touch_support(
         output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
                                       gfx::Display::TOUCH_SUPPORT_AVAILABLE);
-    displays.back().set_available_color_profiles(
-        output.available_color_profiles);
+    new_info.set_available_color_profiles(
+        Shell::GetInstance()->output_configurator()->
+        GetAvailableColorCalibrationProfiles(id));
   }
 
   // DisplayManager can be null during the boot.

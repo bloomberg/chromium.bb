@@ -83,6 +83,9 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
                             HDCPState* state) OVERRIDE;
   virtual bool SetHDCPState(const DisplaySnapshot& output,
                             HDCPState state) OVERRIDE;
+  virtual std::vector<ColorCalibrationProfile>
+      GetAvailableColorCalibrationProfiles(
+          const DisplaySnapshot& output) OVERRIDE;
   virtual bool SetColorCalibrationProfile(
       const DisplaySnapshot& output,
       ColorCalibrationProfile new_profile) OVERRIDE;

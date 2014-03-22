@@ -384,9 +384,6 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   const DisplayMode* native_mode = NULL;
   std::vector<const DisplayMode*> display_modes;
 
-  // TODO(mukai|marcheu): check the system status and fill the correct list of
-  // available color profiles.
-
   for (int i = 0; i < info->nmode; ++i) {
     const RRMode mode = info->modes[i];
     if (modes_.find(mode) != modes_.end()) {
@@ -605,6 +602,15 @@ bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
     XFree(props);
 
   return ret;
+}
+
+
+std::vector<ColorCalibrationProfile>
+NativeDisplayDelegateX11::GetAvailableColorCalibrationProfiles(
+    const DisplaySnapshot& output) {
+  // TODO(mukai|marcheu): Checks the system data and fills the result.
+  // Note that the order would be Dynamic -> Standard -> Movie -> Reading.
+  return std::vector<ColorCalibrationProfile>();
 }
 
 bool NativeDisplayDelegateX11::SetColorCalibrationProfile(

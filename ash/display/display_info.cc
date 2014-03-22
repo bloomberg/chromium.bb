@@ -305,11 +305,15 @@ std::string DisplayInfo::ToFullString() const {
 }
 
 void DisplayInfo::SetColorProfile(ui::ColorCalibrationProfile profile) {
-  if (std::find(available_color_profiles_.begin(),
-                available_color_profiles_.end(),
-                profile) != available_color_profiles_.end()) {
+  if (IsColorProfileAvailable(profile))
     color_profile_ = profile;
-  }
+}
+
+bool DisplayInfo::IsColorProfileAvailable(
+    ui::ColorCalibrationProfile profile) const {
+  return std::find(available_color_profiles_.begin(),
+                   available_color_profiles_.end(),
+                   profile) != available_color_profiles_.end();
 }
 
 }  // namespace internal

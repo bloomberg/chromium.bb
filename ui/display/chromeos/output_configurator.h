@@ -47,7 +47,6 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
   struct DisplayState {
     DisplayState();
-    ~DisplayState();
 
     DisplaySnapshot* display;  // Not owned.
 
@@ -61,8 +60,6 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
     // Mode used when displaying the same desktop on multiple outputs.
     const DisplayMode* mirror_mode;
-
-    std::vector<ui::ColorCalibrationProfile> available_color_profiles;
   };
 
   typedef std::vector<DisplayState> DisplayStateList;
@@ -261,6 +258,11 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   bool EnableOutputProtection(OutputProtectionClientId client_id,
                               int64 display_id,
                               uint32_t desired_protection_mask);
+
+  // Checks the available color profiles for |display_id| and fills the result
+  // into |profiles|.
+  std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
+      int64 display_id);
 
   // Updates the color calibration to |new_profile|.
   bool SetColorCalibrationProfile(
