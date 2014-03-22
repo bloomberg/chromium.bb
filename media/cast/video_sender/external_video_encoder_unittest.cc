@@ -10,7 +10,6 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/fake_video_encode_accelerator.h"
 #include "media/cast/test/utility/video_utility.h"
@@ -23,6 +22,24 @@ namespace cast {
 using testing::_;
 
 namespace {
+
+void CreateVideoEncodeAccelerator(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_ptr<VideoEncodeAccelerator> fake_vea,
+    const ReceiveVideoEncodeAcceleratorCallback& callback) {
+  callback.Run(task_runner, fake_vea.Pass());
+}
+
+void CreateSharedMemory(
+    size_t size, const ReceiveVideoEncodeMemoryCallback& callback) {
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  if (!shm->CreateAndMapAnonymous(size)) {
+    NOTREACHED();
+    return;
+  }
+  callback.Run(shm.Pass());
+}
+
 class TestVideoEncoderCallback
     : public base::RefCountedThreadSafe<TestVideoEncoderCallback> {
  public:
@@ -94,10 +111,15 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             GetDefaultCastSenderLoggingConfig());
-    video_encoder_.reset(new ExternalVideoEncoder(
-        cast_environment_,
-        video_config_,
-        new test::FakeGpuVideoAcceleratorFactories(task_runner_)));
+    scoped_ptr<VideoEncodeAccelerator> fake_vea(
+        new test::FakeVideoEncodeAccelerator());
+    video_encoder_.reset(
+        new ExternalVideoEncoder(cast_environment_,
+                                 video_config_,
+                                 base::Bind(&CreateVideoEncodeAccelerator,
+                                            task_runner_,
+                                            base::Passed(&fake_vea)),
+                                 base::Bind(&CreateSharedMemory)));
   }
 
   virtual ~ExternalVideoEncoderTest() {}

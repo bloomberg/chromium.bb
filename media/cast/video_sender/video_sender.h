@@ -18,8 +18,6 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/sender_rtcp_event_subscriber.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
-#include "media/video/video_encode_accelerator.h"
 
 namespace media {
 class VideoFrame;
@@ -44,7 +42,8 @@ class VideoSender : public base::NonThreadSafe,
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
-              const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+              const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+              const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
               const CastInitializationCallback& cast_initialization_cb,
               transport::CastTransportSender* const transport_sender);
 

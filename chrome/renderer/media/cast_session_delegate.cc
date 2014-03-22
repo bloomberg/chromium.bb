@@ -38,6 +38,20 @@ const int kMaxVideoEventEntries = kMaxSerializedBytes / 150;
 // Assume serialized log data for each frame will take up to 75 bytes.
 const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
 
+void CreateVideoEncodeAccelerator(const base::Callback<
+    void(scoped_refptr<base::SingleThreadTaskRunner>,
+         scoped_ptr<media::VideoEncodeAccelerator>)>& callback) {
+  NOTIMPLEMENTED();
+  // Delegate the call to content API on the render thread.
+}
+
+void CreateVideoEncodeMemory(
+    size_t size,
+    const base::Callback<void(scoped_ptr<base::SharedMemory>)>&) {
+  NOTIMPLEMENTED();
+  // Delegate the call to content API on the render thread.
+}
+
 }  // namespace
 
 CastSessionDelegate::CastSessionDelegate()
@@ -103,13 +117,12 @@ void CastSessionDelegate::StartVideo(
   transport_config.codec = config.codec;
   transport_config.base.rtp_config = config.rtp_config;
   cast_transport_->InitializeVideo(transport_config);
-  // TODO(mikhal): Pass in a valid GpuVideoAcceleratorFactories to support
-  // hardware video encoding.
   cast_sender_->InitializeVideo(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,
                  weak_factory_.GetWeakPtr()),
-      NULL /* GPU*/);
+      base::Bind(&CreateVideoEncodeAccelerator),
+      base::Bind(&CreateVideoEncodeMemory));
 }
 
 void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {

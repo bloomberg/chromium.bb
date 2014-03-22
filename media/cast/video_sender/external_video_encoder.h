@@ -10,7 +10,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/video_sender/video_encoder.h"
-#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace media {
 class VideoFrame;
@@ -28,7 +28,8 @@ class ExternalVideoEncoder : public VideoEncoder {
   ExternalVideoEncoder(
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
-      scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories);
+      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb);
 
   virtual ~ExternalVideoEncoder();
 
@@ -50,6 +51,12 @@ class ExternalVideoEncoder : public VideoEncoder {
   virtual void GenerateKeyFrame() OVERRIDE;
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
   virtual int NumberOfSkippedFrames() const OVERRIDE;
+
+  // Called when a VEA is created.
+  void OnCreateVideoEncodeAccelerator(
+      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
+      scoped_ptr<media::VideoEncodeAccelerator> vea);
 
  protected:
   void EncoderInitialized();

@@ -33,7 +33,8 @@ class CastSenderImpl : public CastSender {
   virtual void InitializeVideo(
       const VideoSenderConfig& video_config,
       const CastInitializationCallback& cast_initialization_cb,
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
+      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
       OVERRIDE;
 
   virtual ~CastSenderImpl();

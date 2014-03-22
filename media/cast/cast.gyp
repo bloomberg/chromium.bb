@@ -66,8 +66,6 @@
             'rtp_receiver/rtp_parser/rtp_parser_unittest.cc',
             'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
-            'test/fake_gpu_video_accelerator_factories.cc',
-            'test/fake_gpu_video_accelerator_factories.h',
             'test/fake_single_thread_task_runner.cc',
             'test/fake_single_thread_task_runner.h',
             'test/fake_video_encode_accelerator.cc',

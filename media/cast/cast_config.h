@@ -12,10 +12,14 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/transport/cast_transport_config.h"
 
 namespace media {
+class VideoEncodeAccelerator;
+
 namespace cast {
 
 enum RtcpMode {
@@ -136,6 +140,18 @@ typedef transport::PacketList PacketList;
 
 typedef base::Callback<void(CastInitializationStatus)>
     CastInitializationCallback;
+
+typedef base::Callback<void(scoped_refptr<base::SingleThreadTaskRunner>,
+                            scoped_ptr<media::VideoEncodeAccelerator>)>
+    ReceiveVideoEncodeAcceleratorCallback;
+typedef base::Callback<void(const ReceiveVideoEncodeAcceleratorCallback&)>
+    CreateVideoEncodeAcceleratorCallback;
+
+typedef base::Callback<void(scoped_ptr<base::SharedMemory>)>
+    ReceiveVideoEncodeMemoryCallback;
+typedef base::Callback<void(size_t size,
+                            const ReceiveVideoEncodeMemoryCallback&)>
+    CreateVideoEncodeMemoryCallback;
 
 }  // namespace cast
 }  // namespace media

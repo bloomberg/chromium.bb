@@ -10,8 +10,9 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/simple_event_subscriber.h"
-#include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/fake_video_encode_accelerator.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender_impl.h"
@@ -31,6 +32,23 @@ static const int kHeight = 240;
 
 using testing::_;
 using testing::AtLeast;
+
+void CreateVideoEncodeAccelerator(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_ptr<VideoEncodeAccelerator> fake_vea,
+    const ReceiveVideoEncodeAcceleratorCallback& callback) {
+  callback.Run(task_runner, fake_vea.Pass());
+}
+
+void CreateSharedMemory(
+    size_t size, const ReceiveVideoEncodeMemoryCallback& callback) {
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  if (!shm->CreateAndMapAnonymous(size)) {
+    NOTREACHED();
+    return;
+  }
+  callback.Run(shm.Pass());
+}
 
 class TestPacketSender : public transport::PacketSender {
  public:
@@ -62,12 +80,14 @@ class PeerVideoSender : public VideoSender {
   PeerVideoSender(
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+      const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
       const CastInitializationCallback& cast_initialization_cb,
       transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment,
                     video_config,
-                    gpu_factories,
+                    create_vea_cb,
+                    create_video_encode_mem_cb,
                     cast_initialization_cb,
                     transport_sender) {}
   using VideoSender::OnReceivedCastFeedback;
@@ -134,18 +154,24 @@ class VideoSenderTest : public ::testing::Test {
     video_config.codec = transport::kVp8;
 
     if (external) {
-      video_sender_.reset(new PeerVideoSender(
-          cast_environment_,
-          video_config,
-          new test::FakeGpuVideoAcceleratorFactories(task_runner_),
-          base::Bind(&VideoSenderTest::InitializationResult,
-                     base::Unretained(this)),
-          transport_sender_.get()));
+      scoped_ptr<VideoEncodeAccelerator> fake_vea(
+          new test::FakeVideoEncodeAccelerator());
+      video_sender_.reset(
+          new PeerVideoSender(cast_environment_,
+                              video_config,
+                              base::Bind(&CreateVideoEncodeAccelerator,
+                                         task_runner_,
+                                         base::Passed(&fake_vea)),
+                              base::Bind(&CreateSharedMemory),
+                              base::Bind(&VideoSenderTest::InitializationResult,
+                                         base::Unretained(this)),
+                              transport_sender_.get()));
     } else {
       video_sender_.reset(
           new PeerVideoSender(cast_environment_,
                               video_config,
-                              NULL,
+                              CreateDefaultVideoEncodeAcceleratorCallback(),
+                              CreateDefaultVideoEncodeMemoryCallback(),
                               base::Bind(&VideoSenderTest::InitializationResult,
                                          base::Unretained(this)),
                               transport_sender_.get()));

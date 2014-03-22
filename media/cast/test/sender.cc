@@ -22,6 +22,7 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
@@ -495,7 +496,11 @@ int main(int argc, char** argv) {
       media::cast::CastSender::Create(cast_environment, transport_sender.get());
 
   cast_sender->InitializeVideo(
-      video_config, base::Bind(&InitializationResult), NULL);
+      video_config,
+      base::Bind(&InitializationResult),
+      media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
+      media::cast::CreateDefaultVideoEncodeMemoryCallback());
+
   cast_sender->InitializeAudio(audio_config, base::Bind(&InitializationResult));
 
   transport_sender->SetPacketReceiver(cast_sender->packet_receiver());

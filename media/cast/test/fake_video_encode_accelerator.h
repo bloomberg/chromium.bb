@@ -18,6 +18,7 @@ namespace test {
 class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
   FakeVideoEncodeAccelerator();
+  virtual ~FakeVideoEncodeAccelerator();
 
   virtual void Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
@@ -36,8 +37,6 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   virtual void Destroy() OVERRIDE;
 
  private:
-  virtual ~FakeVideoEncodeAccelerator();
-
   VideoEncodeAccelerator::Client* client_;
   bool first_;
 

@@ -47,7 +47,8 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+    const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     const CastInitializationCallback& cast_initialization_cb,
     transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
@@ -77,9 +78,10 @@ VideoSender::VideoSender(
   DCHECK_GT(max_unacked_frames_, 0) << "Invalid argument";
 
   if (video_config.use_external_encoder) {
-    CHECK(gpu_factories);
-    video_encoder_.reset(new ExternalVideoEncoder(
-        cast_environment, video_config, gpu_factories));
+    video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
+                                                  video_config,
+                                                  create_vea_cb,
+                                                  create_video_encode_mem_cb));
   } else {
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment, video_config, max_unacked_frames_));

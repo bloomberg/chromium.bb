@@ -20,6 +20,13 @@ AudioReceiverConfig GetDefaultAudioReceiverConfig();
 // name.
 VideoReceiverConfig GetDefaultVideoReceiverConfig();
 
+// Returns a callback that does nothing.
+CreateVideoEncodeAcceleratorCallback
+    CreateDefaultVideoEncodeAcceleratorCallback();
+
+// Returns a callback that does nothing.
+CreateVideoEncodeMemoryCallback CreateDefaultVideoEncodeMemoryCallback();
+
 }  // namespace cast
 }  // namespace media
 

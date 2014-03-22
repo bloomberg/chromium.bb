@@ -18,11 +18,13 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/multi_channel_resampler.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "ui/gfx/geometry/size.h"
 
 using media::cast::AudioSenderConfig;
 using media::cast::VideoSenderConfig;

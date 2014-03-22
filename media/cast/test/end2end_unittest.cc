@@ -28,6 +28,7 @@
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
@@ -514,8 +515,10 @@ class End2EndTest : public ::testing::Test {
     // Initializing audio and video senders.
     cast_sender_->InitializeAudio(audio_sender_config_,
                                   base::Bind(&AudioInitializationStatus));
-    cast_sender_->InitializeVideo(
-        video_sender_config_, base::Bind(&VideoInitializationStatus), NULL);
+    cast_sender_->InitializeVideo(video_sender_config_,
+                                  base::Bind(&VideoInitializationStatus),
+                                  CreateDefaultVideoEncodeAcceleratorCallback(),
+                                  CreateDefaultVideoEncodeMemoryCallback());
 
     receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver());
     sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver());

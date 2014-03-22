@@ -4,7 +4,23 @@
 
 #include "media/cast/test/utility/default_config.h"
 
+#include "base/bind.h"
 #include "media/cast/transport/cast_transport_config.h"
+
+namespace {
+
+void CreateVideoEncodeAccelerator(
+    const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback) {
+  // Do nothing.
+}
+
+void CreateVideoEncodeMemory(
+    size_t size,
+    const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
+  // Do nothing.
+}
+
+}  // namespace
 
 namespace media {
 namespace cast {
@@ -31,6 +47,15 @@ VideoReceiverConfig GetDefaultVideoReceiverConfig() {
   config.use_external_decoder = false;
   config.codec = media::cast::transport::kVp8;
   return config;
+}
+
+CreateVideoEncodeAcceleratorCallback
+CreateDefaultVideoEncodeAcceleratorCallback() {
+  return base::Bind(&CreateVideoEncodeAccelerator);
+}
+
+CreateVideoEncodeMemoryCallback CreateDefaultVideoEncodeMemoryCallback() {
+  return base::Bind(&CreateVideoEncodeMemory);
 }
 
 }  // namespace cast
