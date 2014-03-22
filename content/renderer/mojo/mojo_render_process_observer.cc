@@ -9,8 +9,6 @@
 #include "content/common/mojo/mojo_channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
-#include "content/renderer/web_ui_mojo.h"
 
 namespace content {
 
@@ -48,25 +46,6 @@ void MojoRenderProcessObserver::OnChannelCreated(
   DCHECK(!channel_init_.get());
   channel_init_.reset(new MojoChannelInit);
   channel_init_->Init(handle, ChildProcess::current()->io_message_loop_proxy());
-  if (!channel_init_->is_handle_valid())
-    return;
-
-  ScopedRenderProcessHostMojoHandle render_process_host_handle(
-      RenderProcessHostMojoHandle(
-          channel_init_->bootstrap_message_pipe().release().value()));
-  render_process_host_mojo_.reset(render_process_host_handle.Pass(), this);
-}
-
-void MojoRenderProcessObserver::SetWebUIHandle(
-    int32 view_routing_id,
-    mojo::ScopedMessagePipeHandle web_ui_handle) {
-  RenderView* render_view = RenderView::FromRoutingID(view_routing_id);
-  if (!render_view)
-    return;
-  WebUIMojo* web_ui_mojo = WebUIMojo::Get(render_view);
-  if (!web_ui_mojo)
-    return;
-  web_ui_mojo->SetBrowserHandle(web_ui_handle.Pass());
 }
 
 }  // namespace content

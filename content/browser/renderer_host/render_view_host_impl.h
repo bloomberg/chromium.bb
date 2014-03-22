@@ -239,10 +239,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DisableFullscreenEncryptedMediaPlayback() OVERRIDE;
 #endif
 
-#if defined(USE_MOJO)
-  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) OVERRIDE;
-#endif
-
   void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
     delegate_ = d;

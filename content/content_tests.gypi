@@ -921,22 +921,6 @@
           ],
         },
         {
-          'target_name': 'web_ui_test_mojo_bindings',
-          'type': 'static_library',
-          'dependencies': [
-            '../mojo/mojo.gyp:mojo_bindings',
-            '../mojo/mojo.gyp:mojo_system',
-          ],
-          'sources': [
-            'test/data/web_ui_test_mojo_bindings.mojom',
-          ],
-          'includes': [ '../mojo/public/bindings/mojom_bindings_generator.gypi' ],
-          'export_dependent_settings': [
-            '../mojo/mojo.gyp:mojo_bindings',
-            '../mojo/mojo.gyp:mojo_system',
-          ],
-        },
-        {
           'target_name': 'content_browsertests',
           'type': '<(gtest_target_type)',
           'dependencies': [
@@ -1041,7 +1025,6 @@
             'browser/web_contents/web_contents_impl_browsertest.cc',
             'browser/web_contents/web_contents_view_aura_browsertest.cc',
             'browser/webkit_browsertest.cc',
-            'browser/webui/web_ui_mojo_browsertest.cc',
             'browser/worker_host/test/worker_browsertest.cc',
             'child/site_isolation_policy_browsertest.cc',
             'common/gpu/client/context_provider_command_buffer_browsertest.cc',
@@ -1076,19 +1059,6 @@
             ['chromeos==0', {
               'sources!': [
                 'browser/web_contents/touch_editable_impl_aura_browsertest.cc',
-              ],
-            }],
-            ['use_mojo==0', {
-              'sources!': [
-                'browser/webui/web_ui_mojo_browsertest.cc',
-              ],
-            }, {  # use_mojo==1
-              'dependencies': [
-                'web_ui_test_mojo_bindings',
-                '../mojo/mojo.gyp:mojo_bindings',
-                '../mojo/mojo.gyp:mojo_environment_chromium',
-                '../mojo/mojo.gyp:mojo_system',
-                '../mojo/mojo.gyp:mojo_system_impl',
               ],
             }],
             ['OS=="win"', {

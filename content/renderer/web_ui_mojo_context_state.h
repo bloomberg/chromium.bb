@@ -39,7 +39,7 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
   virtual ~WebUIMojoContextState();
 
   // Called once the mojo::Handle is available.
-  void SetHandle(mojo::ScopedMessagePipeHandle handle);
+  void SetHandle(mojo::ScopedHandle handle);
 
   // Returns true if at least one module was added.
   bool module_added() const { return module_added_; }

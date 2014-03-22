@@ -48,14 +48,14 @@ WebUIMojo::WebUIMojo(RenderView* render_view)
   CreateContextState();
 }
 
-void WebUIMojo::SetBrowserHandle(mojo::ScopedMessagePipeHandle handle) {
+WebUIMojo::~WebUIMojo() {
+}
+
+void WebUIMojo::OnSetBrowserHandle(MojoHandle handle) {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   WebUIMojoContextState* state = GetContextState();
   if (state)
-    state->SetHandle(handle.Pass());
-}
-
-WebUIMojo::~WebUIMojo() {
+    state->SetHandle(mojo::MakeScopedHandle(mojo::Handle(handle)));
 }
 
 void WebUIMojo::CreateContextState() {

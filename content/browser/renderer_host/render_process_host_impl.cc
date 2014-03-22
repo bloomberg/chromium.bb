@@ -161,7 +161,9 @@
 #endif
 
 #if defined(USE_MOJO)
-#include "content/browser/renderer_host/render_process_host_mojo_impl.h"
+#include "content/common/mojo/mojo_channel_init.h"
+#include "content/common/mojo/mojo_messages.h"
+#include "mojo/embedder/platform_channel_pair.h"
 #endif
 
 extern bool g_exited_main_message_loop;
@@ -328,6 +330,17 @@ class RendererSandboxedProcessLauncherDelegate
   int ipc_fd_;
 #endif  // OS_POSIX
 };
+
+#if defined(USE_MOJO)
+base::PlatformFile PlatformFileFromScopedPlatformHandle(
+    mojo::embedder::ScopedPlatformHandle handle) {
+#if defined(OS_POSIX)
+  return handle.release().fd;
+#elif defined(OS_WIN)
+  return handle.release().handle;
+#endif
+}
+#endif
 
 }  // namespace
 
@@ -1928,10 +1941,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   ClearTransportDIBCache();
 
-#if defined(USE_MOJO)
-  render_process_host_mojo_.reset();
-#endif
-
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
   if (delayed_cleanup_needed_)
@@ -2074,11 +2083,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   if (WebRTCInternals::GetInstance()->aec_dump_enabled())
     EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
 #endif
-
-#if defined(USE_MOJO)
-  if (render_process_host_mojo_.get())
-    render_process_host_mojo_->OnProcessLaunched();
-#endif
 }
 
 scoped_refptr<AudioRendererHost>
@@ -2153,12 +2157,24 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
 }
 
 #if defined(USE_MOJO)
-void RenderProcessHostImpl::SetWebUIHandle(
-int32 view_routing_id,
-mojo::ScopedMessagePipeHandle handle) {
-  if (!render_process_host_mojo_)
-    render_process_host_mojo_.reset(new RenderProcessHostMojoImpl(this));
-  render_process_host_mojo_->SetWebUIHandle(view_routing_id, handle.Pass());
+void RenderProcessHostImpl::CreateMojoChannel() {
+  if (mojo_channel_init_.get())
+    return;
+
+  mojo::embedder::PlatformChannelPair channel_pair;
+  mojo_channel_init_.reset(new MojoChannelInit);
+  mojo_channel_init_->Init(
+      PlatformFileFromScopedPlatformHandle(channel_pair.PassServerHandle()),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  if (mojo_channel_init_->is_handle_valid()) {
+    base::ProcessHandle process_handle = run_renderer_in_process() ?
+        base::Process::Current().handle() :
+        child_process_launcher_->GetHandle();
+    base::PlatformFile client_file =
+        PlatformFileFromScopedPlatformHandle(channel_pair.PassClientHandle());
+    Send(new MojoMsg_ChannelCreated(
+             IPC::GetFileHandleForProcess(client_file, process_handle, true)));
+  }
 }
 #endif
 

@@ -1085,10 +1085,8 @@
     'browser/renderer_host/render_message_filter.h',
     'browser/renderer_host/render_process_host_impl.cc',
     'browser/renderer_host/render_process_host_impl.h',
-    'browser/renderer_host/render_process_host_mojo_impl.cc',
-    'browser/renderer_host/render_process_host_mojo_impl.h',
     'browser/renderer_host/render_sandbox_host_linux.cc',
-    'browser/renderer_host/render_process_host_impl.h',
+    'browser/renderer_host/render_sandbox_host_linux.h',
     'browser/renderer_host/render_view_host_delegate.cc',
     'browser/renderer_host/render_view_host_delegate.h',
     'browser/renderer_host/render_view_host_factory.cc',
@@ -1380,14 +1378,7 @@
     }],
     ['use_mojo==1', {
       'dependencies': [
-        '../mojo/mojo.gyp:mojo_bindings',
         '../mojo/mojo.gyp:mojo_system',
-        'content_common_mojo_bindings',
-      ],
-    }, {  # use_mojo==0
-      'sources!': [
-        'browser/renderer_host/render_process_host_mojo_impl.cc',
-        'browser/renderer_host/render_process_host_mojo_impl.h',
       ],
     }],
     ['OS=="ios"', {

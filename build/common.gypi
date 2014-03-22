@@ -1762,9 +1762,6 @@
       ['toolkit_views==1', {
         'grit_defines': ['-D', 'toolkit_views'],
       }],
-      ['use_mojo==1', {
-        'grit_defines': ['-D', 'use_mojo'],
-      }],
       ['toolkit_uses_gtk==1', {
         'grit_defines': ['-D', 'toolkit_uses_gtk'],
       }],

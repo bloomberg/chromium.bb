@@ -34,10 +34,6 @@
         <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />
         <include name="IDR_UTILITY_SANDBOX_PROFILE" file="utility/utility.sb" type="BINDATA" />
       </if>
-      <if expr="use_mojo">
-        <include name="IDR_MOJO_CODEC_JS" file="../mojo/public/bindings/js/codec.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MOJO_CONNECTOR_JS" file="../mojo/public/bindings/js/connector.js" flattenhtml="true" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>

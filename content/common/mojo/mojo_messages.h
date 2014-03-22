@@ -11,7 +11,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
-#include "ipc/ipc_platform_file.h"
 #include "ipc/param_traits_macros.h"
 
 #undef IPC_MESSAGE_EXPORT

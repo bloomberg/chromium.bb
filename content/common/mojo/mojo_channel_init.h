@@ -31,19 +31,11 @@ class CONTENT_EXPORT MojoChannelInit {
   MojoChannelInit();
   ~MojoChannelInit();
 
-  // Initializes mojo. This is done implicitly when creating a MojoChannelInit,
-  // but can be done explicitly as necessary.
-  static void InitMojo();
-
   // Inits the channel. This takes ownership of |file|.
   void Init(base::PlatformFile file,
             scoped_refptr<base::TaskRunner> io_thread_task_runner);
 
   bool is_handle_valid() const { return bootstrap_message_pipe_.is_valid(); }
-
-  mojo::ScopedMessagePipeHandle bootstrap_message_pipe() {
-    return bootstrap_message_pipe_.Pass();
-  }
 
  private:
   // Invoked on the main thread once the channel has been established.

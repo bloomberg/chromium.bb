@@ -10,35 +10,15 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_client.h"
-#include "grit/content_resources.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(USE_MOJO)
-#include "mojo/public/bindings/js/constants.h"
-#endif
-
 namespace content {
 
-// static
 WebUIDataSource* WebUIDataSource::Create(const std::string& source_name) {
   return new WebUIDataSourceImpl(source_name);
 }
 
-#if defined(USE_MOJO)
-// static
-WebUIDataSource* WebUIDataSource::AddMojoDataSource(
-    BrowserContext* browser_context) {
-  WebUIDataSource* mojo_source = Create("mojo");
-  mojo_source->AddResourcePath(mojo::kCodecModuleName, IDR_MOJO_CODEC_JS);
-  mojo_source->AddResourcePath(mojo::kConnectorModuleName,
-                               IDR_MOJO_CONNECTOR_JS);
-  URLDataManager::AddWebUIDataSource(browser_context, mojo_source);
-  return mojo_source;
-}
-#endif
-
-// static
 void WebUIDataSource::Add(BrowserContext* browser_context,
                           WebUIDataSource* source) {
   URLDataManager::AddWebUIDataSource(browser_context, source);

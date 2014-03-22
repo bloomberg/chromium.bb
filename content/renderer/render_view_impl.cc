@@ -238,10 +238,6 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #endif
 
-#if defined(USE_MOJO)
-#include "content/renderer/web_ui_mojo.h"
-#endif
-
 using blink::WebAXObject;
 using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;
@@ -3515,12 +3511,7 @@ void RenderViewImpl::OnPostMessageEvent(
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    // WebUIExtensionData deletes itself when we're destroyed.
     new WebUIExtensionData(this);
-#if defined(USE_MOJO)
-    // WebUIMojo deletes itself when we're destroyed.
-    new WebUIMojo(this);
-#endif
   }
 
   enabled_bindings_ |= enabled_bindings_flags;
