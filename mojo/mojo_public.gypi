@@ -248,6 +248,8 @@
         'public/bindings/callback.h',
         'public/bindings/error_handler.h',
         'public/bindings/interface.h',
+        'public/bindings/js/constants.cc',
+        'public/bindings/js/constants.h',
         'public/bindings/message.h',
         'public/bindings/passable.h',
         'public/bindings/remote_ptr.h',

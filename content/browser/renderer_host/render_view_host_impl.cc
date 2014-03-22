@@ -735,6 +735,26 @@ void RenderViewHostImpl::DisableFullscreenEncryptedMediaPlayback() {
 }
 #endif
 
+#if defined(USE_MOJO)
+void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
+  // Never grant any bindings to browser plugin guests.
+  if (GetProcess()->IsGuest()) {
+    NOTREACHED() << "Never grant bindings to a guest process.";
+    return;
+  }
+
+  if ((enabled_bindings_ & BINDINGS_POLICY_WEB_UI) == 0) {
+    NOTREACHED() << "You must grant bindings before setting the handle";
+    return;
+  }
+
+  DCHECK(renderer_initialized_);
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->SetWebUIHandle(GetRoutingID(), handle.Pass());
+}
+#endif
+
 void RenderViewHostImpl::DragTargetDragEnter(
     const DropData& drop_data,
     const gfx::Point& client_pt,

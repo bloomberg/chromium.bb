@@ -10,7 +10,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace gin {
 class PerContextData;
@@ -30,6 +30,9 @@ class WebUIMojo
  public:
   explicit WebUIMojo(RenderView* render_view);
 
+  // Sets the handle to the current WebUI.
+  void SetBrowserHandle(mojo::ScopedMessagePipeHandle handle);
+
  private:
   class MainFrameObserver : public RenderFrameObserver {
    public:
@@ -47,10 +50,6 @@ class WebUIMojo
   };
 
   virtual ~WebUIMojo();
-
-  // Invoked from ViewMsg_SetBrowserHandle. Passes handle to current
-  // MojoWebUIContextState.
-  void OnSetBrowserHandle(MojoHandle handle);
 
   void CreateContextState();
   void DestroyContextState(v8::Handle<v8::Context> context);
