@@ -31,6 +31,8 @@ struct FrameMsg_Navigate_Params;
 namespace blink {
 class WebInputEvent;
 class WebMouseEvent;
+class WebContentDecryptionModule;
+class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -191,6 +193,10 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
+  virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
+      blink::WebFrame* frame,
+      const blink::WebSecurityOrigin& security_origin,
+      const blink::WebString& key_system);
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebFrame* frame,
       blink::WebApplicationCacheHostClient* client);

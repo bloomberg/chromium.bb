@@ -15,15 +15,33 @@
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
 #endif
 
+namespace blink {
+class WebFrame;
+}
+
 namespace content {
 
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
     const base::string16& key_system) {
+  blink::WebSecurityOrigin no_origin;
+  return WebContentDecryptionModuleImpl::Create(NULL, no_origin, key_system);
+}
+
+WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
+    blink::WebFrame* frame,
+    const blink::WebSecurityOrigin& security_origin,
+    const base::string16& key_system) {
+  // TODO(jrummell): Use |security_origin| rather than using the document URL.
+  // TODO(jrummell): Once the other Create() method is removed, validate |frame|
+  // and |security_origin|.
+  DCHECK(!key_system.empty());
+
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII key systems.
   if (!IsStringASCII(key_system)) {
@@ -34,11 +52,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
   if (!adapter->Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
-          // TODO(jrummell): Figure out how to get a WebFrame from Blink (or
-          // something equivalent) so the plugin can actually get created.
-          // http://crbug.com/250049
-          base::Bind(&PepperCdmWrapperImpl::Create,
-                     static_cast<blink::WebFrame*>(NULL)),
+          base::Bind(&PepperCdmWrapperImpl::Create, frame),
 #endif
           base::UTF16ToASCII(key_system))) {
     return NULL;

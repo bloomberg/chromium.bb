@@ -52,6 +52,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
+#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1142,6 +1143,16 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   // related client objects here or referencing them in the RenderView. Needs
   // more work to understand where the proper place for those objects is.
   return render_view_->CreateMediaPlayer(this, frame, url, client);
+}
+
+blink::WebContentDecryptionModule*
+RenderFrameImpl::createContentDecryptionModule(
+    blink::WebFrame* frame,
+    const blink::WebSecurityOrigin& security_origin,
+    const blink::WebString& key_system) {
+  DCHECK(!frame_ || frame_ == frame);
+  return WebContentDecryptionModuleImpl::Create(
+      frame, security_origin, key_system);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(

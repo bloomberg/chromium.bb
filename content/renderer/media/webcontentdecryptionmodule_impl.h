@@ -12,6 +12,11 @@
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 
+namespace blink {
+class WebFrame;
+class WebSecurityOrigin;
+}
+
 namespace media {
 class Decryptor;
 class MediaKeys;
@@ -25,7 +30,13 @@ class WebContentDecryptionModuleSessionImpl;
 class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
+  // TODO(jrummell): Remove this method once all callers have updated to pass
+  // |frame| and |securityOrigin|.
   static WebContentDecryptionModuleImpl* Create(
+      const base::string16& key_system);
+  static WebContentDecryptionModuleImpl* Create(
+      blink::WebFrame* frame,
+      const blink::WebSecurityOrigin& security_origin,
       const base::string16& key_system);
 
   virtual ~WebContentDecryptionModuleImpl();
