@@ -8,6 +8,7 @@ import os
 import re
 
 import cloud_storage_test_base
+import pixel_expectations
 
 from telemetry import test
 from telemetry.core import bitmap
@@ -149,3 +150,6 @@ class Pixel(cloud_storage_test_base.TestBase):
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set
+
+  def CreateExpectations(self, page_set):
+    return pixel_expectations.PixelExpectations()
