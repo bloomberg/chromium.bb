@@ -49,6 +49,7 @@
       'sources': [
         '<(proto_in_dir)/key.proto',
         '<(proto_in_dir)/rpc.proto',
+        '<(proto_in_dir)/signed_secret.proto',
       ],
       'includes': ['../common-mk/protoc.gypi'],
     },
