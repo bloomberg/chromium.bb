@@ -69,7 +69,6 @@ TEST(SSLConfigServiceTest, ConfigUpdatesNotifyObservers) {
   SSLConfig initial_config;
   initial_config.rev_checking_enabled = true;
   initial_config.false_start_enabled = false;
-  initial_config.unrestricted_ssl3_fallback_enabled = false;
   initial_config.version_min = SSL_PROTOCOL_VERSION_SSL3;
   initial_config.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
 
@@ -84,10 +83,6 @@ TEST(SSLConfigServiceTest, ConfigUpdatesNotifyObservers) {
   mock_service->SetSSLConfig(initial_config);
 
   initial_config.false_start_enabled = true;
-  EXPECT_CALL(observer, OnSSLConfigChanged()).Times(1);
-  mock_service->SetSSLConfig(initial_config);
-
-  initial_config.unrestricted_ssl3_fallback_enabled = true;
   EXPECT_CALL(observer, OnSSLConfigChanged()).Times(1);
   mock_service->SetSSLConfig(initial_config);
 

@@ -203,7 +203,6 @@ extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableTranslateNewUX[];
-extern const char kEnableUnrestrictedSSL3Fallback[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];

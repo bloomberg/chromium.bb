@@ -44,7 +44,6 @@ SSLConfig::SSLConfig()
       false_start_enabled(true),
       signed_cert_timestamps_enabled(true),
       require_forward_secrecy(false),
-      unrestricted_ssl3_fallback_enabled(false),
       send_client_cert(false),
       verify_ev_cert(false),
       version_fallback(false),
@@ -149,9 +148,7 @@ void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,
       (orig_config.channel_id_enabled != new_config.channel_id_enabled) ||
       (orig_config.false_start_enabled != new_config.false_start_enabled) ||
       (orig_config.require_forward_secrecy !=
-       new_config.require_forward_secrecy) ||
-      (orig_config.unrestricted_ssl3_fallback_enabled !=
-       new_config.unrestricted_ssl3_fallback_enabled);
+       new_config.require_forward_secrecy);
 
   if (config_changed)
     NotifySSLConfigChange();

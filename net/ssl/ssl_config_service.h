@@ -107,13 +107,6 @@ struct NET_EXPORT SSLConfig {
   // that could be extended if needed.
   bool require_forward_secrecy;
 
-  // If |unrestricted_ssl3_fallback_enabled| is true, SSL 3.0 fallback will be
-  // enabled for all sites.
-  // If |unrestricted_ssl3_fallback_enabled| is false, SSL 3.0 fallback will be
-  // disabled for a site pinned to the Google pin list (indicating that it is a
-  // Google site).
-  bool unrestricted_ssl3_fallback_enabled;
-
   // TODO(wtc): move the following members to a new SSLParams structure.  They
   // are not SSL configuration settings.
 
