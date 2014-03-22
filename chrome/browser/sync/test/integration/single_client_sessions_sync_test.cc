@@ -8,6 +8,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "sync/util/time.h"
@@ -20,6 +21,7 @@ using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
 using sessions_helper::WindowsMatch;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 using typed_urls_helper::GetUrlFromClient;
 
 class SingleClientSessionsSyncTest : public SyncTest {
@@ -48,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0,
                                         GURL("http://127.0.0.1/bubba"),
                                         old_windows.GetMutable()));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   // Get foreign session data from client 0.
   SyncedSessionVector sessions;

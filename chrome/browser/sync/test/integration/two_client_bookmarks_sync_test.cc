@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "ui/base/layout.h"
@@ -38,6 +39,9 @@ using bookmarks_helper::SetURL;
 using bookmarks_helper::SortChildren;
 using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
+using sync_integration_test_util::AwaitPassphraseAccepted;
+using sync_integration_test_util::AwaitPassphraseRequired;
 
 const std::string kGenericURL = "http://www.host.ext:1234/path/filename";
 const std::wstring kGenericURLTitle = L"URL Title";
@@ -1567,7 +1571,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);
@@ -1613,7 +1617,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, L"bar", bar_url) != NULL);
   ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, L"other", other_url) != NULL);
 
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   ASSERT_TRUE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1621,7 +1625,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_FALSE(HasNodeWithURL(1, other_url));
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1850,7 +1854,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(0)->service()));
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(IsEncryptionComplete(0));
@@ -1864,9 +1868,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_FALSE(AllModelsMatch());
 
   // Set the passphrase. Everything should resolve.
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(1)->service()));
   ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllModelsMatch());
   ASSERT_EQ(0,

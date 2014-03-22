@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SingleClientDictionarySyncTest : public SyncTest {
  public:
@@ -22,10 +25,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientDictionarySyncTest, Sanity) {
 
   std::string word = "foo";
   ASSERT_TRUE(dictionary_helper::AddWord(0, word));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 
   ASSERT_TRUE(dictionary_helper::RemoveWord(0, word));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 }
