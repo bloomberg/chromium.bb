@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "mojo/public/bindings/buffer.h"
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/fixed_buffer.h"
@@ -110,6 +112,24 @@ TEST(FixedBufferTest, Leak) {
   memset(ptr, 1, 8);
   free(buf_ptr);
 }
+
+#ifdef NDEBUG
+TEST(FixedBufferTest, TooBig) {
+  Environment env;
+
+  internal::FixedBuffer buf(24);
+
+  // A little bit too large.
+  EXPECT_EQ(reinterpret_cast<void*>(0), buf.Allocate(32));
+
+  // Move the cursor forward.
+  EXPECT_NE(reinterpret_cast<void*>(0), buf.Allocate(16));
+
+  // A lot too large, leading to possible integer overflow.
+  EXPECT_EQ(reinterpret_cast<void*>(0),
+            buf.Allocate(std::numeric_limits<size_t>::max() - 8u));
+}
+#endif
 
 }  // namespace
 }  // namespace test

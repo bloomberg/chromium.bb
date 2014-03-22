@@ -31,11 +31,10 @@ void* FixedBuffer::Allocate(size_t delta, Destructor dtor) {
 
   delta = internal::Align(delta);
 
-  // TODO(darin): Using <assert.h> is probably not going to cut it.
-  assert(delta > 0);
-  assert(cursor_ + delta <= size_);
-  if (cursor_ + delta > size_)
+  if (delta == 0 || delta > size_ - cursor_) {
+    assert(false);
     return NULL;
+  }
 
   char* result = ptr_ + cursor_;
   cursor_ += delta;
