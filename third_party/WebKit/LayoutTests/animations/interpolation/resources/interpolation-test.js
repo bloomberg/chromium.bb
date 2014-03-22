@@ -53,6 +53,7 @@
 (function() {
   var webkitPrefix = 'webkitAnimation' in document.documentElement.style ? '-webkit-' : '';
   var isRefTest = false;
+  var webAnimationsTest = typeof Element.prototype.animate === 'function';
   var startEvent = webkitPrefix ? 'webkitAnimationStart' : 'animationstart';
   var endEvent = webkitPrefix ? 'webkitAnimationEnd' : 'animationend';
   var testCount = 0;
@@ -69,9 +70,21 @@
       '  background: gold;\n' +
       '}\n';
   var fragment = document.createDocumentFragment();
+  var fragmentAttachedListeners = [];
   var style = document.createElement('style');
+  var cssTests = document.createElement('div');
+  cssTests.id = 'css-tests';
+  cssTests.textContent = 'CSS Animations:';
   var afterTestCallback = null;
   fragment.appendChild(style);
+  fragment.appendChild(cssTests);
+
+  if (webAnimationsTest) {
+    var waTests = document.createElement('div');
+    waTests.id = 'web-animations-tests';
+    waTests.textContent = 'Web Animations API:';
+    fragment.appendChild(waTests);
+  }
 
   var updateScheduled = false;
   function maybeScheduleUpdate() {
@@ -83,6 +96,7 @@
       updateScheduled = false;
       style.innerHTML = cssText;
       document.body.appendChild(fragment);
+      fragmentAttachedListeners.forEach(function(listener) {listener();});
     }, 0);
   }
 
@@ -96,13 +110,17 @@
       }
       style.parentNode.removeChild(style);
     } else {
-      var resultString = '';
+      var cssResultString = 'CSS Animations:\n';
+      var waResultString = 'Web Animations API:\n';
       for (var i = 0; i < targets.length; i++) {
-        resultString += targets[i].getResultString() + '\n';
+        if (targets[i].testType === 'css') {
+          cssResultString += targets[i].getResultString() + '\n';
+        } else {
+          waResultString += targets[i].getResultString() + '\n';
+        }
       }
-      var results = document.createElement('div');
-      results.style.whiteSpace = 'pre';
-      results.textContent = resultString;
+      var results = document.createElement('pre');
+      results.textContent = cssResultString + (webAnimationsTest ? '\n' + waResultString : '');
       results.id = 'results';
       document.body.appendChild(results);
     }
@@ -156,8 +174,26 @@
     }));
   }
 
-  function describeTest(params) {
-    return params.property + ': from [' + params.from + '] to [' + params.to + ']';
+  function createTestContainer(description, className) {
+    var testContainer = document.createElement('div');
+    testContainer.setAttribute('description', description);
+    testContainer.classList.add('test');
+    if (className) {
+      testContainer.classList.add(className);
+    }
+    return testContainer;
+  }
+
+  function convertPropertyToCamelCase(property) {
+    return property.replace(/^-/, '').replace(/-\w/g, function(m) {return m[1].toUpperCase();});
+  }
+
+  function describeCSSTest(params) {
+    return 'CSS ' + params.property + ': from [' + params.from + '] to [' + params.to + ']';
+  }
+
+  function describeWATest(params) {
+    return 'element.animate() ' + convertPropertyToCamelCase(params.property) + ': from [' + params.from + '] to [' + params.to + ']';
   }
 
   function assertInterpolation(params, expectations) {
@@ -170,15 +206,22 @@
     }
     var testId = defineKeyframes(params);
     var nextCaseId = 0;
-    var testContainer = document.createElement('div');
-    testContainer.setAttribute('description', describeTest(params));
-    testContainer.classList.add('test');
-    testContainer.classList.add(testId);
-    fragment.appendChild(testContainer);
+    var cssTestContainer = createTestContainer(describeCSSTest(params), testId);
+    cssTests.appendChild(cssTestContainer);
+    if (webAnimationsTest) {
+      var waTestContainer = createTestContainer(describeWATest(params), testId);
+      waTests.appendChild(waTestContainer);
+    }
     expectations.forEach(function(expectation) {
-      testContainer.appendChild(makeInterpolationTest(
-          expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
+      cssTestContainer.appendChild(makeInterpolationTest(
+          'css', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
     });
+    if (webAnimationsTest) {
+      expectations.forEach(function(expectation) {
+        waTestContainer.appendChild(makeInterpolationTest(
+            'web-animations', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
+      });
+    }
     maybeScheduleUpdate();
   }
 
@@ -192,14 +235,21 @@
     return testId;
   }
 
-  function normalizeValue(value) {
+  function roundNumbers(value) {
     return value.
         // Round numbers to two decimal places.
         replace(/-?\d*\.\d+/g, function(n) {
           return (parseFloat(n).toFixed(2)).
-              replace(/\.0*$/, '').
+              replace(/\.\d+/, function(m) {
+                return m.replace(/0+$/, '');
+              }).
+              replace(/\.$/, '').
               replace(/^-0$/, '0');
-        }).
+        });
+  }
+
+  function normalizeValue(value) {
+    return roundNumbers(value).
         // Place whitespace between tokens.
         replace(/([\w\d.]+|[^\s])/g, '$1 ').
         replace(/\s+/g, ' ');
@@ -243,7 +293,7 @@
     return value;
   }
 
-  function makeInterpolationTest(fraction, testId, caseId, params, expectation) {
+  function makeInterpolationTest(testType, fraction, testId, caseId, params, expectation) {
     console.assert(expectation === undefined || !isRefTest);
     var targetContainer = createTargetContainer(caseId);
     var target = targetContainer.querySelector('.target') || targetContainer;
@@ -255,6 +305,7 @@
       replica.classList.add('replica');
       replica.style.setProperty(params.property, expectation);
     }
+    target.testType = testType;
     target.getResultString = function() {
       if (!CSS.supports(params.property, expectation)) {
         return 'FAIL: [' + params.property + ': ' + expectation + '] is not supported';
@@ -262,15 +313,16 @@
       var value = getComputedStyle(this).getPropertyValue(params.property);
       var result = '';
       var reason = '';
+      var property = testType === 'css' ? params.property : convertPropertyToCamelCase(params.property);
       if (expectation !== undefined) {
         var parsedExpectation = getComputedStyle(replica).getPropertyValue(params.property);
         var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
         result = pass ? 'PASS: ' : 'FAIL: ';
         reason = pass ? '' : ', expected [' + expectation + ']' +
-            (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(parsedExpectation) + '])');
+            (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(roundNumbers(parsedExpectation)) + '])');
         value = pass ? expectation : sanitizeUrls(value);
       }
-      return result + params.property + ' from [' + params.from + '] to ' +
+      return result + property + ' from [' + params.from + '] to ' +
           '[' + params.to + '] was [' + value + ']' +
           ' at ' + fraction + reason;
     };
@@ -278,13 +330,29 @@
       this.style[params.property] = getComputedStyle(this).getPropertyValue(params.property);
     };
     var easing = createEasing(fraction);
-    cssText += '.' + testId + ' .' + caseId + '.active {\n' +
-        '  ' + webkitPrefix + 'animation: ' + testId + ' ' + durationSeconds + 's forwards;\n' +
-        '  ' + webkitPrefix + 'animation-timing-function: ' + easing + ';\n' +
-        '  ' + webkitPrefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
-        '  ' + webkitPrefix + 'animation-delay: ' + delaySeconds + 's;\n' +
-        '}\n';
     testCount++;
+    if (testType === 'css') {
+      cssText += '.' + testId + ' .' + caseId + '.active {\n' +
+          '  ' + webkitPrefix + 'animation: ' + testId + ' ' + durationSeconds + 's forwards;\n' +
+          '  ' + webkitPrefix + 'animation-timing-function: ' + easing + ';\n' +
+          '  ' + webkitPrefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
+          '  ' + webkitPrefix + 'animation-delay: ' + delaySeconds + 's;\n' +
+          '}\n';
+    } else {
+      var keyframes = [{}, {}];
+      keyframes[0][convertPropertyToCamelCase(params.property)] = params.from;
+      keyframes[1][convertPropertyToCamelCase(params.property)] = params.to;
+      fragmentAttachedListeners.push(function() {
+        target.animate(keyframes, {
+            fill: 'forwards',
+            duration: 1,
+            easing: easing,
+            delay: -0.5,
+            iterations: 0.5,
+          });
+        animationEnded();
+      });
+    }
     var testFragment = document.createDocumentFragment();
     testFragment.appendChild(targetContainer);
     replica && testFragment.appendChild(replicaContainer);
@@ -318,7 +386,7 @@
     return !finished && animationEventCount === testCount;
   }
 
-  function endEventListener() {
+  function animationEnded() {
     animationEventCount++;
     if (!isLastAnimationEvent()) {
       return;
@@ -328,7 +396,7 @@
 
   if (window.internals) {
     durationSeconds = 0;
-    document.documentElement.addEventListener(endEvent, endEventListener);
+    document.documentElement.addEventListener(endEvent, animationEnded);
   } else if (webkitPrefix) {
     durationSeconds = 1e9;
     iterationCount = 1;
@@ -341,7 +409,7 @@
       setTimeout(finishTest, 0);
     });
   } else {
-    document.documentElement.addEventListener(endEvent, endEventListener);
+    document.documentElement.addEventListener(endEvent, animationEnded);
   }
 
   if (!window.testRunner) {
