@@ -136,6 +136,17 @@ static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* 
     return contentsRect(renderer).contains(backgroundRect(renderer));
 }
 
+static blink::WebLayer* platformLayerForPlugin(RenderObject* renderer)
+{
+    if (!renderer->isEmbeddedObject())
+        return 0;
+    Widget* widget = toRenderEmbeddedObject(renderer)->widget();
+    if (!widget || !widget->isPluginView())
+        return 0;
+    return toPluginView(widget)->platformLayer();
+
+}
+
 static inline bool isAcceleratedContents(RenderObject* renderer)
 {
     return isAcceleratedCanvas(renderer)
@@ -530,9 +541,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (isDirectlyCompositedImage())
         updateImageContents();
 
-    if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing()) {
-        PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
-        m_graphicsLayer->setContentsToPlatformLayer(pluginView->platformLayer());
+    if (blink::WebLayer* layer = platformLayerForPlugin(renderer)) {
+        m_graphicsLayer->setContentsToPlatformLayer(layer);
     } else if (renderer->node() && renderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(renderer->node())->contentFrame()) {
         blink::WebLayer* layer = toHTMLFrameOwnerElement(renderer->node())->contentFrame()->remotePlatformLayer();
         if (layer)
