@@ -119,20 +119,8 @@ public:
     {
     }
 
-    float* add(const TextRun& run, float entry, bool hasKerningOrLigatures, bool hasWordSpacingOrLetterSpacing, GlyphOverflow* glyphOverflow)
+    float* add(const TextRun& run, float entry)
     {
-        // The width cache is not really profitable unless we're doing expensive glyph transformations.
-        if (!hasKerningOrLigatures)
-            return 0;
-        // Word spacing and letter spacing can change the width of a word.
-        if (hasWordSpacingOrLetterSpacing)
-            return 0;
-        // Since this is just a width cache, we don't have enough information to satisfy glyph queries.
-        if (glyphOverflow)
-            return 0;
-        // If we allow tabs and a tab occurs inside a word, the width of the word varies based on its position on the line.
-        if (run.allowTabs())
-            return 0;
         if (static_cast<unsigned>(run.length()) > SmallStringKey::capacity())
             return 0;
 

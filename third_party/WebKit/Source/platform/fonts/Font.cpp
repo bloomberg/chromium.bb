@@ -151,7 +151,14 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
 
     bool hasKerningOrLigatures = fontDescription().typesettingFeatures() & (Kerning | Ligatures);
     bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing() || fontDescription().letterSpacing();
-    float* cacheEntry = m_fontFallbackList->widthCache().add(run, std::numeric_limits<float>::quiet_NaN(), hasKerningOrLigatures, hasWordSpacingOrLetterSpacing, glyphOverflow);
+    bool isCacheable = (codePathToUse == ComplexPath || hasKerningOrLigatures)
+        && !hasWordSpacingOrLetterSpacing // Word spacing and letter spacing can change the width of a word.
+        && !glyphOverflow // Since this is just a width cache, we don't have enough information to satisfy glyph queries.
+        && !run.allowTabs(); // If we allow tabs and a tab occurs inside a word, the width of the word varies based on its position on the line.
+
+    float* cacheEntry = isCacheable
+        ? m_fontFallbackList->widthCache().add(run, std::numeric_limits<float>::quiet_NaN())
+        : 0;
     if (cacheEntry && !std::isnan(*cacheEntry))
         return *cacheEntry;
 
