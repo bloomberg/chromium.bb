@@ -140,10 +140,10 @@ CSSPrimitiveValue::UnitTable createUnitTable()
     return table;
 }
 
-CSSPrimitiveValue::UnitTable& CSSPrimitiveValue::getUnitTable()
+CSSPrimitiveValue::UnitTypes CSSPrimitiveValue::fromName(const String& unit)
 {
     DEFINE_STATIC_LOCAL(UnitTable, unitTable, (createUnitTable()));
-    return unitTable;
+    return unitTable.get(unit.lower());
 }
 
 CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(CSSPrimitiveValue::UnitTypes type)

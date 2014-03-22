@@ -49,7 +49,7 @@ void MediaQueryToken::convertToDimensionWithUnit(String unit)
 {
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
-    m_unit = CSSPrimitiveValue::getUnitTable().get(unit.lower());
+    m_unit = CSSPrimitiveValue::fromName(unit);
 }
 
 void MediaQueryToken::convertToPercentage()

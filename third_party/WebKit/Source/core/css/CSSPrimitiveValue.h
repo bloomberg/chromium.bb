@@ -150,7 +150,7 @@ public:
     static UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes);
 
     typedef HashMap<String, CSSPrimitiveValue::UnitTypes> UnitTable;
-    static UnitTable& getUnitTable();
+    static UnitTypes fromName(const String& unit);
 
     bool isAngle() const
     {
