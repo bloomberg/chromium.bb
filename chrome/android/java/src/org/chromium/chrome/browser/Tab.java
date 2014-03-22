@@ -270,6 +270,16 @@ public class Tab implements NavigationClient {
                         description, failingUrl);
             }
         }
+
+        @Override
+        public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
+                boolean isMainFrame, String validatedUrl, boolean isErrorPage,
+                boolean isIframeSrcdoc) {
+            for (TabObserver observer : mObservers) {
+                observer.onDidStartProvisionalLoadForFrame(Tab.this, frameId, parentFrameId,
+                        isMainFrame, validatedUrl, isErrorPage, isIframeSrcdoc);
+            }
+        }
     }
 
     /**
