@@ -56,7 +56,7 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
       int process_id,
       ServiceWorkerContextWrapper* context_wrapper,
       EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id),
+      : ServiceWorkerDispatcherHost(process_id, NULL),
         bad_messages_received_count_(0),
         helper_(helper) {
     Init(context_wrapper);
