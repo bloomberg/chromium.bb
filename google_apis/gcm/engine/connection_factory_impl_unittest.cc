@@ -19,6 +19,7 @@ namespace gcm {
 namespace {
 
 const char kMCSEndpoint[] = "http://my.server";
+const char kMCSEndpoint2[] = "http://my.alt.server";
 
 const int kBackoffDelayMs = 1;
 const int kBackoffMultiplier = 2;
@@ -49,6 +50,13 @@ const net::BackoffEntry::Policy kTestBackoffPolicy = {
   // Don't use initial delay unless the last request was an error.
   false,
 };
+
+std::vector<GURL> BuildEndpoints() {
+  std::vector<GURL> endpoints;
+  endpoints.push_back(GURL(kMCSEndpoint));
+  endpoints.push_back(GURL(kMCSEndpoint2));
+  return endpoints;
+}
 
 // Helper for calculating total expected exponential backoff delay given an
 // arbitrary number of failed attempts. See BackoffEntry::CalculateReleaseTime.
@@ -132,7 +140,7 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
 
 TestConnectionFactoryImpl::TestConnectionFactoryImpl(
     const base::Closure& finished_callback)
-    : ConnectionFactoryImpl(GURL(kMCSEndpoint),
+    : ConnectionFactoryImpl(BuildEndpoints(),
                             net::BackoffEntry::Policy(),
                             NULL,
                             NULL),
@@ -254,9 +262,11 @@ TEST_F(ConnectionFactoryImplTest, ConnectSuccess) {
   factory()->SetConnectResult(net::OK);
   factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+  EXPECT_EQ(factory()->GetCurrentEndpoint(), BuildEndpoints()[0]);
 }
 
-// A connection failure should result in backoff.
+// A connection failure should result in backoff, and attempting the fallback
+// endpoint next.
 TEST_F(ConnectionFactoryImplTest, ConnectFail) {
   factory()->Initialize(
       ConnectionFactory::BuildLoginRequestCallback(),
@@ -265,6 +275,7 @@ TEST_F(ConnectionFactoryImplTest, ConnectFail) {
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
   factory()->Connect();
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
+  EXPECT_EQ(factory()->GetCurrentEndpoint(), BuildEndpoints()[1]);
 }
 
 // A connection success after a failure should reset backoff.
