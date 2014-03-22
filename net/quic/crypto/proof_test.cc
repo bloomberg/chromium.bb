@@ -24,78 +24,7 @@ using std::vector;
 
 namespace net {
 namespace test {
-
-TEST(ProofTest, Verify) {
-  // TODO(rtenneti): Enable testing of ProofVerifier.
-#if 0
-  scoped_ptr<ProofSource> source(CryptoTestUtils::ProofSourceForTesting());
-  scoped_ptr<ProofVerifier> verifier(
-      CryptoTestUtils::ProofVerifierForTesting());
-
-  const string server_config = "server config bytes";
-  const string hostname = "test.example.com";
-  const vector<string>* certs;
-  const vector<string>* first_certs;
-  string error_details, signature, first_signature;
-  CertVerifyResult cert_verify_result;
-  ProofVerifyContext verify_context;
-
-  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
-                               &first_certs, &first_signature));
-  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
-                               &certs, &signature));
-
-  // Check that the proof source is caching correctly:
-  ASSERT_EQ(first_certs, certs);
-  ASSERT_EQ(signature, first_signature);
-
-  int rv;
-  TestCompletionCallback callback;
-  rv = verifier->VerifyProof(hostname, server_config, *certs, signature,
-                             &error_details, &cert_verify_result,
-                             verify_context, callback.callback());
-
-  rv = callback.GetResult(rv);
-  ASSERT_EQ(OK, rv);
-  ASSERT_EQ("", error_details);
-  ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
-
-  rv = verifier->VerifyProof("foo.com", server_config, *certs, signature,
-                             &error_details, &cert_verify_result,
-                             verify_context, callback.callback());
-  rv = callback.GetResult(rv);
-  ASSERT_EQ(ERR_FAILED, rv);
-  ASSERT_NE("", error_details);
-
-  rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
-                             *certs, signature, &error_details,
-                             &cert_verify_result, verify_context,
-                             callback.callback());
-  rv = callback.GetResult(rv);
-  ASSERT_EQ(ERR_FAILED, rv);
-  ASSERT_NE("", error_details);
-
-  const string corrupt_signature = "1" + signature;
-  rv = verifier->VerifyProof(hostname, server_config, *certs,
-                             corrupt_signature, &error_details,
-                             &cert_verify_result, verify_context,
-                             callback.callback());
-  rv = callback.GetResult(rv);
-  ASSERT_EQ(ERR_FAILED, rv);
-  ASSERT_NE("", error_details);
-
-  vector<string> wrong_certs;
-  for (size_t i = 1; i < certs->size(); i++) {
-    wrong_certs.push_back((*certs)[i]);
-  }
-  rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                             &error_details, &cert_verify_result,
-                             verify_context, callback.callback());
-  rv = callback.GetResult(rv);
-  ASSERT_EQ(ERR_FAILED, rv);
-  ASSERT_NE("", error_details);
-#endif  // 0
-}
+namespace {
 
 // TestProofVerifierCallback is a simple callback for a ProofVerifier that
 // signals a TestCompletionCallback when called and stores the results from the
@@ -126,12 +55,12 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 
 // RunVerification runs |verifier->VerifyProof| and asserts that the result
 // matches |expected_ok|.
-static void RunVerification(ProofVerifier* verifier,
-                            const string& hostname,
-                            const string& server_config,
-                            const vector<string>& certs,
-                            const string& proof,
-                            bool expected_ok) {
+void RunVerification(ProofVerifier* verifier,
+                     const string& hostname,
+                     const string& server_config,
+                     const vector<string>& certs,
+                     const string& proof,
+                     bool expected_ok) {
   scoped_ptr<ProofVerifyDetails> details;
   TestCompletionCallback comp_callback;
   bool ok;
@@ -161,10 +90,12 @@ static void RunVerification(ProofVerifier* verifier,
   }
 }
 
-static string PEMCertFileToDER(const string& file_name) {
+// Reads the certificate named "quic_" + |file_name| in the test data directory.
+// The certificate must be PEM encoded. Returns the DER-encoded certificate.
+string LoadTestCert(const string& file_name) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
-      ImportCertFromFile(certs_dir, file_name);
+      ImportCertFromFile(certs_dir, "quic_" + file_name);
   CHECK_NE(static_cast<X509Certificate*>(NULL), cert);
 
   string der_bytes;
@@ -172,12 +103,58 @@ static string PEMCertFileToDER(const string& file_name) {
   return der_bytes;
 }
 
+}  // namespace
+
+// TODO(rtenneti): Enable testing of ProofVerifier.
+TEST(ProofTest, DISABLED_Verify) {
+  scoped_ptr<ProofSource> source(CryptoTestUtils::ProofSourceForTesting());
+  scoped_ptr<ProofVerifier> verifier(
+      CryptoTestUtils::ProofVerifierForTesting());
+
+  const string server_config = "server config bytes";
+  const string hostname = "test.example.com";
+  const vector<string>* certs;
+  const vector<string>* first_certs;
+  string error_details, signature, first_signature;
+
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &first_certs, &first_signature));
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &certs, &signature));
+
+  // Check that the proof source is caching correctly:
+  ASSERT_EQ(first_certs, certs);
+  ASSERT_EQ(signature, first_signature);
+
+  RunVerification(
+      verifier.get(), hostname, server_config, *certs, signature, true);
+
+  RunVerification(
+      verifier.get(), "foo.com", server_config, *certs, signature, false);
+
+  RunVerification(
+      verifier.get(), server_config.substr(1, string::npos), server_config,
+      *certs, signature, false);
+
+  const string corrupt_signature = "1" + signature;
+  RunVerification(
+      verifier.get(), hostname, server_config, *certs, corrupt_signature,
+      false);
+
+  vector<string> wrong_certs;
+  for (size_t i = 1; i < certs->size(); i++) {
+    wrong_certs.push_back((*certs)[i]);
+  }
+  RunVerification(
+      verifier.get(), "foo.com", server_config, wrong_certs, corrupt_signature,
+      false);
+}
+
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
 TEST(ProofTest, VerifyRSAKnownAnswerTest) {
   // These sample signatures were generated by running the Proof.Verify test
   // and dumping the bytes of the |signature| output of ProofSource::GetProof().
-  // sLen = special value -2 used by OpenSSL.
   static const unsigned char signature_data_0[] = {
     0x31, 0xd5, 0xfb, 0x40, 0x30, 0x75, 0xd2, 0x7d, 0x61, 0xf9, 0xd7, 0x54,
     0x30, 0x06, 0xaf, 0x54, 0x0d, 0xb0, 0x0a, 0xda, 0x63, 0xca, 0x7e, 0x9e,
@@ -256,11 +233,10 @@ TEST(ProofTest, VerifyRSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
-  CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);
-  certs[0] = PEMCertFileToDER("quic_test.example.com.crt");
-  certs[1] = PEMCertFileToDER("quic_intermediate.crt");
+  certs[0] = LoadTestCert("test.example.com.crt");
+  certs[1] = LoadTestCert("intermediate.crt");
 
   // Signatures are nondeterministic, so we test multiple signatures on the
   // same server_config.
@@ -339,11 +315,10 @@ TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
-  CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);
-  certs[0] = PEMCertFileToDER("quic_test_ecc.example.com.crt");
-  certs[1] = PEMCertFileToDER("quic_intermediate.crt");
+  certs[0] = LoadTestCert("test_ecc.example.com.crt");
+  certs[1] = LoadTestCert("intermediate.crt");
 
   // Signatures are nondeterministic, so we test multiple signatures on the
   // same server_config.
