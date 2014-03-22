@@ -17,8 +17,14 @@ function insertStyleSheet(css)
     return styleElement;
 }
 
-function cssStr(count) {
+function cssStrWithClassSelectors(count) {
     var selector = '.a' + count + ' .b' + count + ' { color: red } ';
+    // Intentionally repeat the same classes many times, to test duplicate optimizations.
+    return selector + selector + selector + selector + selector + selector + selector;
+}
+
+function cssStrWithAttributeSelectors(count) {
+    var selector = '[attrA' + count + '="1"]' + ' [attrB' + count + '="1"]' + ' { color: red } ';
     // Intentionally repeat the same classes many times, to test duplicate optimizations.
     return selector + selector + selector + selector + selector + selector + selector;
 }
@@ -28,7 +34,10 @@ function runFunction()
     var numRules = 1000;
     var arr = new Array(numRules);
     for (var i = 0 ; i < numRules; i++) {
-        arr[i] = cssStr(i);
+        arr[i] = cssStrWithClassSelectors(i);
+    }
+    for (var i = 0 ; i < numRules; i++) {
+        arr[numRules + i] = cssStrWithAttributeSelectors(i);
     }
     var styleElement = insertStyleSheet(arr.join(' '));
 
