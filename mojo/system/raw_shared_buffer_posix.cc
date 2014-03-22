@@ -39,7 +39,7 @@ void RawSharedBuffer::Mapping::Unmap() {
 
 // RawSharedBuffer -------------------------------------------------------------
 
-bool RawSharedBuffer::Init() {
+bool RawSharedBuffer::InitNoLock() {
   DCHECK(!handle_.is_valid());
 
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -89,8 +89,11 @@ bool RawSharedBuffer::Init() {
   return true;
 }
 
-scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImpl(size_t offset,
-                                                              size_t length) {
+scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImplNoLock(
+    size_t offset,
+    size_t length) {
+  lock_.AssertAcquired();
+
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
   size_t real_offset = offset - offset_rounding;
   size_t real_length = length + offset_rounding;

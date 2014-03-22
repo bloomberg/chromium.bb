@@ -7,18 +7,17 @@
 namespace mojo {
 namespace system {
 
-RawSharedBuffer::~RawSharedBuffer() {
-}
-
 // static
-scoped_ptr<RawSharedBuffer> RawSharedBuffer::Create(size_t num_bytes) {
+RawSharedBuffer* RawSharedBuffer::Create(size_t num_bytes) {
   if (!num_bytes)
-    return scoped_ptr<RawSharedBuffer>();
+    return NULL;
 
-  scoped_ptr<RawSharedBuffer> rv(new RawSharedBuffer(num_bytes));
-  if (!rv->Init())
-    return scoped_ptr<RawSharedBuffer>();
-  return rv.Pass();
+  RawSharedBuffer* rv = new RawSharedBuffer(num_bytes);
+  // No need to take the lock since we haven't given the object to anyone yet.
+  if (!rv->InitNoLock())
+    return NULL;
+
+  return rv;
 }
 
 scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::Map(size_t offset,
@@ -31,10 +30,14 @@ scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::Map(size_t offset,
   if (length > num_bytes_ - offset)
     return scoped_ptr<Mapping>();
 
-  return MapImpl(offset, length);
+  base::AutoLock locker(lock_);
+  return MapImplNoLock(offset, length);
 }
 
 RawSharedBuffer::RawSharedBuffer(size_t num_bytes) : num_bytes_(num_bytes) {
+}
+
+RawSharedBuffer::~RawSharedBuffer() {
 }
 
 }  // namespace system

@@ -4,6 +4,7 @@
 
 #include "mojo/system/raw_shared_buffer.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +19,7 @@ TEST(RawSharedBufferTest, Basic) {
   const int kFudge = 1234567890;
 
   // Make some memory.
-  scoped_ptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kNumBytes));
+  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kNumBytes));
   ASSERT_TRUE(buffer);
 
   // Map it all, scribble some stuff, and then unmap it.
@@ -92,7 +93,7 @@ TEST(RawSharedBufferTest, InvalidArguments) {
   EXPECT_FALSE(RawSharedBuffer::Create(0));
 
   // Invalid mappings:
-  scoped_ptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
+  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
   ASSERT_TRUE(buffer);
 
   // Zero length not allowed.
