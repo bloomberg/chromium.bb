@@ -3061,11 +3061,12 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   int frame_;
 };
 
-TEST_F(LayerTreeHostTestNumFramesPending, DelegatingRenderer) {
+// Flaky on all platforms: http://crbug.com/327498
+TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_DelegatingRenderer) {
   RunTest(true, true, true);
 }
 
-TEST_F(LayerTreeHostTestNumFramesPending, GLRenderer) {
+TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_GLRenderer) {
   RunTest(true, false, true);
 }
 
