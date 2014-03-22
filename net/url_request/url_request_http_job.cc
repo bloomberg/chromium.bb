@@ -25,6 +25,7 @@
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -58,6 +59,7 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   // FilterContext implementation.
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual bool GetURL(GURL* gurl) const OVERRIDE;
+  virtual bool GetContentDisposition(std::string* disposition) const OVERRIDE;
   virtual base::Time GetRequestTime() const OVERRIDE;
   virtual bool IsCachedContent() const OVERRIDE;
   virtual bool IsDownload() const OVERRIDE;
@@ -94,6 +96,13 @@ bool URLRequestHttpJob::HttpFilterContext::GetURL(GURL* gurl) const {
     return false;
   *gurl = job_->request()->url();
   return true;
+}
+
+bool URLRequestHttpJob::HttpFilterContext::GetContentDisposition(
+    std::string* disposition) const {
+  HttpResponseHeaders* headers = job_->GetResponseHeaders();
+  void *iter = NULL;
+  return headers->EnumerateHeader(&iter, "Content-Disposition", disposition);
 }
 
 base::Time URLRequestHttpJob::HttpFilterContext::GetRequestTime() const {

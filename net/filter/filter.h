@@ -74,6 +74,10 @@ class NET_EXPORT_PRIVATE FilterContext {
   // Return false if gurl is not present.
   virtual bool GetURL(GURL* gurl) const = 0;
 
+  // What Content-Disposition header came with this data?
+  // Return false if no header was present.
+  virtual bool GetContentDisposition(std::string* disposition) const = 0;
+
   // When was this data requested from a server?
   virtual base::Time GetRequestTime() const = 0;
 

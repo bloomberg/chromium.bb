@@ -27,6 +27,13 @@ bool MockFilterContext::GetURL(GURL* gurl) const {
   return true;
 }
 
+bool MockFilterContext::GetContentDisposition(std::string* disposition) const {
+  if (content_disposition_.empty())
+    return false;
+  *disposition = content_disposition_;
+  return true;
+}
+
 // What was this data requested from a server?
 base::Time MockFilterContext::GetRequestTime() const {
   return request_time_;

@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "net/filter/gzip_filter.h"
 #include "net/filter/sdch_filter.h"
 
@@ -170,11 +171,14 @@ void Filter::FixupEncodingTypes(
       encoding_types->clear();
 
     GURL url;
+    std::string disposition;
     success = filter_context.GetURL(&url);
     DCHECK(success);
-    base::FilePath filename =
-        base::FilePath().AppendASCII(url.ExtractFileName());
-    base::FilePath::StringType extension = filename.Extension();
+    filter_context.GetContentDisposition(&disposition);
+    // Don't supply a MIME type here, since that may cause disk IO.
+    base::FilePath filepath = GenerateFileName(url, disposition, "UTF-8", "",
+                                               "", "");
+    base::FilePath::StringType extension = filepath.Extension();
 
     if (filter_context.IsDownload()) {
       // We don't want to decompress gzipped files when the user explicitly

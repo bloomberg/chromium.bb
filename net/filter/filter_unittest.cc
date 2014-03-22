@@ -82,6 +82,23 @@ TEST(FilterTest, ApacheGzip) {
   EXPECT_EQ(Filter::FILTER_TYPE_GZIP, encoding_types.front());
 }
 
+TEST(FilterTest, GzipContentDispositionFilename) {
+  MockFilterContext filter_context;
+  filter_context.SetSdchResponse(false);
+
+  const std::string kGzipMime("application/x-tar");
+  const std::string kContentDisposition("attachment; filename=\"foo.tgz\"");
+  const std::string kURL("http://foo.com/getfoo.php");
+  std::vector<Filter::FilterType> encoding_types;
+
+  encoding_types.push_back(Filter::FILTER_TYPE_GZIP);
+  filter_context.SetMimeType(kGzipMime);
+  filter_context.SetURL(GURL(kURL));
+  filter_context.SetContentDisposition(kContentDisposition);
+  Filter::FixupEncodingTypes(filter_context, &encoding_types);
+  ASSERT_EQ(0U, encoding_types.size());
+}
+
 TEST(FilterTest, SdchEncoding) {
   // Handle content encodings including SDCH.
   const std::string kTextHtmlMime("text/html");
