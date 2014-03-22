@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Clear Key Playback with Multiple Sessions</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../w3c-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <video id="testVideo"></video>
+        <div id="log"></div>
+        <p>Test playback of encrypted media using Clear Key key system with multiple sessions.</p>
+        <script>
+            setup({ timeout: 60000 });  // Timeout for all tests to run.
+
+            async_test(function(test)
+            {
+                var video = document.getElementById("testVideo");
+                var mediaKeys = new MediaKeys("org.w3.clearkey");
+                var audioMediaKeySession = null;
+                var videoMediaKeySession = null;
+                var audioKeyProvided = false;
+                var videoKeyProvided = false;
+
+                // The 2 streams use different key ids and different keys.
+                var audioKeyId = "1234567890123456";
+                var audioKey = new Uint8Array([0x30, 0x30, 0x62, 0xF1, 0x68, 0x14, 0xD2, 0x7B,
+                                               0x68, 0xEF, 0x12, 0x2A, 0xFC, 0xE4, 0xAE, 0x0A]);
+                var videoKeyId = "0123456789012345";
+                var videoKey = new Uint8Array([0x7A, 0x7A, 0x62, 0xF1, 0x68, 0x14, 0xD2, 0x7B,
+                                               0x68, 0xEF, 0x12, 0x2A, 0xFC, 0xE4, 0xAE, 0x0A]);
+
+                function onNeedKey(event)
+                {
+                    var keyId = String.fromCharCode.apply(null, event.initData);
+                    var newSession = mediaKeys.createSession(event.contentType, event.initData);
+                    if (keyId == videoKeyId) {
+                        assert_equals(videoMediaKeySession, null);
+                        videoMediaKeySession = newSession;
+                    } else {
+                        assert_equals(keyId, audioKeyId);
+                        assert_equals(audioMediaKeySession, null);
+                        audioMediaKeySession = newSession;
+                    }
+                    waitForEventAndRunStep("message", newSession, onMessage, test);
+                }
+
+                function onMessage(event)
+                {
+                    var keyId = event.message;
+                    if (event.target == videoMediaKeySession) {
+                        assert_equals(String.fromCharCode.apply(null, keyId), videoKeyId);
+                        var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, videoKey)));
+                        videoMediaKeySession.update(jwkSet);
+                        videoKeyProvided = true;
+                    } else {
+                        assert_equals(event.target, audioMediaKeySession);
+                        assert_equals(String.fromCharCode.apply(null, keyId), audioKeyId);
+                        var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, audioKey)));
+                        audioMediaKeySession.update(jwkSet);
+                        audioKeyProvided = true;
+                    }
+                }
+
+                function onPlaying(event)
+                {
+                    // Video should not start playing until both keys have been
+                    // provided.
+                    assert_true(videoKeyProvided);
+                    assert_true(audioKeyProvided);
+
+                    // Not using waitForEventAndRunStep() to avoid too many
+                    // EVENT(onTimeUpdate) logs.
+                    video.addEventListener("timeupdate", onTimeUpdate, true);
+                }
+
+                function onTimeUpdate(event)
+                {
+                    if (event.target.currentTime < 0.2)
+                        return;
+
+                    test.done();
+                }
+
+                waitForEventAndRunStep("needkey", video, onNeedKey, test);
+                waitForEventAndRunStep("playing", video, onPlaying, test);
+
+                video.src = "../content/test-encrypted-different-av-keys.webm";
+                video.setMediaKeys(mediaKeys);
+                video.play();
+            }, "Playback using Clear Key key system with multiple sessions.",
+            { timeout: 60000 });
+        </script>
+    </body>
+</html>
