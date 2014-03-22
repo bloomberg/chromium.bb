@@ -255,10 +255,11 @@ const RasterShapeIntervals& RasterShape::marginIntervals() const
     if (!shapeMargin())
         return *m_intervals;
 
-    int shapeMarginInt = clampToPositiveInteger(ceil(shapeMargin()));
-    int maxShapeMarginInt = std::max(m_marginRectSize.width(), m_marginRectSize.height()) * sqrt(2);
-    if (!m_marginIntervals)
-        m_marginIntervals = m_intervals->computeShapeMarginIntervals(std::min(shapeMarginInt, maxShapeMarginInt));
+    int marginBoundaryRadius = std::min(clampToInteger(ceil(shapeMargin())), std::max(m_imageSize.width(), m_imageSize.height()));
+    if (!m_marginIntervals) {
+        ASSERT(marginBoundaryRadius >= 0);
+        m_marginIntervals = m_intervals->computeShapeMarginIntervals(marginBoundaryRadius);
+    }
 
     return *m_marginIntervals;
 }
