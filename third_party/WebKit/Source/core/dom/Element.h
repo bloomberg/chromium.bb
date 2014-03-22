@@ -84,31 +84,8 @@ enum ElementFlags {
     ContainsFullScreenElement = 1 << 4,
     IsInTopLayer = 1 << 5,
     HasPendingResources = 1 << 6,
-    ChildrenAffectedByFocus = 1 << 7,
-    ChildrenAffectedByHover = 1 << 8,
-    ChildrenAffectedByActive = 1 << 9,
-    ChildrenAffectedByDrag = 1 << 10,
-    ChildrenAffectedByFirstChildRules = 1 << 11,
-    ChildrenAffectedByLastChildRules = 1 << 12,
-    ChildrenAffectedByDirectAdjacentRules = 1 << 13,
-    ChildrenAffectedByIndirectAdjacentRules = 1 << 14,
-    ChildrenAffectedByForwardPositionalRules = 1 << 15,
-    ChildrenAffectedByBackwardPositionalRules = 1 << 16,
 
-    NumberOfElementFlags = 17, // Required size of bitfield used to store the flags.
-
-    // If any of these flags are set we cannot share style.
-    ElementFlagsPreventingStyleSharing =
-        ChildrenAffectedByFocus
-        | ChildrenAffectedByHover
-        | ChildrenAffectedByActive
-        | ChildrenAffectedByDrag
-        | ChildrenAffectedByFirstChildRules
-        | ChildrenAffectedByLastChildRules
-        | ChildrenAffectedByDirectAdjacentRules
-        | ChildrenAffectedByIndirectAdjacentRules
-        | ChildrenAffectedByForwardPositionalRules
-        | ChildrenAffectedByBackwardPositionalRules,
+    NumberOfElementFlags = 7, // Required size of bitfield used to store the flags.
 };
 
 class Element : public ContainerNode {
@@ -367,45 +344,11 @@ public:
     bool styleAffectedByEmpty() const { return hasElementFlag(StyleAffectedByEmpty); }
     void setStyleAffectedByEmpty() { setElementFlag(StyleAffectedByEmpty); }
 
-    bool childrenAffectedByFocus() const { return hasElementFlag(ChildrenAffectedByFocus); }
-    void setChildrenAffectedByFocus() { setElementFlag(ChildrenAffectedByFocus); }
-
-    bool childrenAffectedByHover() const { return hasElementFlag(ChildrenAffectedByHover); }
-    void setChildrenAffectedByHover() { setElementFlag(ChildrenAffectedByHover); }
-
-    bool childrenAffectedByActive() const { return hasElementFlag(ChildrenAffectedByActive); }
-    void setChildrenAffectedByActive() { setElementFlag(ChildrenAffectedByActive); }
-
-    bool childrenAffectedByDrag() const { return hasElementFlag(ChildrenAffectedByDrag); }
-    void setChildrenAffectedByDrag() { setElementFlag(ChildrenAffectedByDrag); }
-
-    bool childrenAffectedByPositionalRules() const { return hasElementFlag(ChildrenAffectedByForwardPositionalRules) || hasElementFlag(ChildrenAffectedByBackwardPositionalRules); }
-
-    bool childrenAffectedByFirstChildRules() const { return hasElementFlag(ChildrenAffectedByFirstChildRules); }
-    void setChildrenAffectedByFirstChildRules() { setElementFlag(ChildrenAffectedByFirstChildRules); }
-
-    bool childrenAffectedByLastChildRules() const { return hasElementFlag(ChildrenAffectedByLastChildRules); }
-    void setChildrenAffectedByLastChildRules() { setElementFlag(ChildrenAffectedByLastChildRules); }
-
-    bool childrenAffectedByDirectAdjacentRules() const { return hasElementFlag(ChildrenAffectedByDirectAdjacentRules); }
-    void setChildrenAffectedByDirectAdjacentRules() { setElementFlag(ChildrenAffectedByDirectAdjacentRules); }
-
-    bool childrenAffectedByIndirectAdjacentRules() const { return hasElementFlag(ChildrenAffectedByIndirectAdjacentRules); }
-    void setChildrenAffectedByIndirectAdjacentRules() { setElementFlag(ChildrenAffectedByIndirectAdjacentRules); }
-
-    bool childrenAffectedByForwardPositionalRules() const { return hasElementFlag(ChildrenAffectedByForwardPositionalRules); }
-    void setChildrenAffectedByForwardPositionalRules() { setElementFlag(ChildrenAffectedByForwardPositionalRules); }
-
-    bool childrenAffectedByBackwardPositionalRules() const { return hasElementFlag(ChildrenAffectedByBackwardPositionalRules); }
-    void setChildrenAffectedByBackwardPositionalRules() { setElementFlag(ChildrenAffectedByBackwardPositionalRules); }
-
     void setIsInCanvasSubtree(bool value) { setElementFlag(IsInCanvasSubtree, value); }
     bool isInCanvasSubtree() const { return hasElementFlag(IsInCanvasSubtree); }
 
     unsigned childIndex() const { return hasRareData() ? rareDataChildIndex() : 0; }
     void setChildIndex(unsigned);
-
-    bool childrenSupportStyleSharing() const { return !hasElementFlag(ElementFlagsPreventingStyleSharing); }
 
     bool isUpgradedCustomElement() { return customElementState() == Upgraded; }
     bool isUnresolvedCustomElement() { return customElementState() == WaitingForUpgrade; }
@@ -466,8 +409,6 @@ public:
 
     virtual void didBecomeFullscreenElement() { }
     virtual void willStopBeingFullscreenElement() { }
-
-    using Node::isFinishedParsingChildren; // make public for SelectorChecker
 
     // Called by the parser when this element's close tag is reached,
     // signaling that all child tags have been parsed and added.

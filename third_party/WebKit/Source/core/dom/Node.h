@@ -172,7 +172,7 @@ public:
     virtual NodeType nodeType() const = 0;
     ContainerNode* parentNode() const;
     Element* parentElement() const;
-    Node* parentElementOrShadowRoot() const;
+    ContainerNode* parentElementOrShadowRoot() const;
     Node* previousSibling() const { return m_previous; }
     Node* nextSibling() const { return m_next; }
     PassRefPtr<NodeList> childNodes();
@@ -672,6 +672,8 @@ public:
     void setAlreadySpellChecked(bool flag) { setFlag(flag, AlreadySpellCheckedFlag); }
     bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }
 
+    bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
+
 private:
     enum NodeFlags {
         IsTextFlag = 1,
@@ -786,7 +788,6 @@ protected:
 
     void markAncestorsWithChildNeedsStyleRecalc();
 
-    bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
     void setIsFinishedParsingChildren(bool value) { setFlag(value, IsFinishedParsingChildrenFlag); }
 
 private:

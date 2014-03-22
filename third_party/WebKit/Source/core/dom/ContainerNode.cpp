@@ -997,6 +997,53 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
     dispatchChildInsertionEvents(child);
 }
 
+bool ContainerNode::hasRestyleFlagInternal(DynamicRestyleFlags mask) const
+{
+    return rareData()->hasRestyleFlag(mask);
+}
+
+bool ContainerNode::hasRestyleFlagsInternal() const
+{
+    return rareData()->hasRestyleFlags();
+}
+
+void ContainerNode::setRestyleFlag(DynamicRestyleFlags mask)
+{
+    ASSERT(isElementNode() || isShadowRoot());
+    ensureRareData().setRestyleFlag(mask);
+}
+
+void ContainerNode::checkForChildrenAdjacentRuleChanges()
+{
+    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
+    bool hasIndirectAdjacentRules = childrenAffectedByIndirectAdjacentRules();
+
+    if (!hasDirectAdjacentRules && !hasIndirectAdjacentRules)
+        return;
+
+    unsigned forceCheckOfNextElementCount = 0;
+    bool forceCheckOfAnyElementSibling = false;
+    Document& document = this->document();
+
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->isElementNode())
+            continue;
+        Element* element = toElement(child);
+        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
+
+        if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
+            element->setNeedsStyleRecalc(SubtreeStyleChange);
+
+        if (forceCheckOfNextElementCount)
+            forceCheckOfNextElementCount--;
+
+        if (childRulesChanged && hasDirectAdjacentRules)
+            forceCheckOfNextElementCount = document.styleEngine()->maxDirectAdjacentSelectors();
+
+        forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
+    }
+}
+
 PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (localName.isNull())

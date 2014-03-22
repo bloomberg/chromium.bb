@@ -58,7 +58,4 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
 COMPILE_ASSERT(Page::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), Frame_limit_should_fit_in_rare_data_count);
 
-// Ensure all element flags fit in NodeRareData::m_elementFlags.
-COMPILE_ASSERT(static_cast<unsigned>(NumberOfElementFlags) == static_cast<unsigned>(NodeRareData::ElementFlagsBits), Element_flags_should_fit_in_node_rare_data);
-
 } // namespace WebCore

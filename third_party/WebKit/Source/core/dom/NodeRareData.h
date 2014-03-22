@@ -255,13 +255,17 @@ public:
         m_connectedFrameCount -= amount;
     }
 
-    bool hasFlag(ElementFlags mask) const { return m_elementFlags & mask; }
-    void setFlag(ElementFlags mask, bool value) { m_elementFlags = (m_elementFlags & ~mask) | (-(int32_t)value & mask); }
-    void clearFlag(ElementFlags mask) { m_elementFlags &= ~mask; }
+    bool hasElementFlag(ElementFlags mask) const { return m_elementFlags & mask; }
+    void setElementFlag(ElementFlags mask, bool value) { m_elementFlags = (m_elementFlags & ~mask) | (-(int32_t)value & mask); }
+    void clearElementFlag(ElementFlags mask) { m_elementFlags &= ~mask; }
+
+    bool hasRestyleFlag(DynamicRestyleFlags mask) const { return m_restyleFlags & mask; }
+    void setRestyleFlag(DynamicRestyleFlags mask) { m_restyleFlags |= mask; RELEASE_ASSERT(m_restyleFlags); }
+    bool hasRestyleFlags() const { return m_restyleFlags; }
+    void clearRestyleFlags() { m_restyleFlags = 0; }
 
     enum {
         ConnectedFrameCountBits = 10, // Must fit Page::maxNumberOfFrames.
-        ElementFlagsBits = 17, // Must fit the ElementFlags enumeration.
     };
 
 protected:
@@ -269,6 +273,7 @@ protected:
         : NodeRareDataBase(renderer)
         , m_connectedFrameCount(0)
         , m_elementFlags(0)
+        , m_restyleFlags(0)
     { }
 
 private:
@@ -276,7 +281,8 @@ private:
     OwnPtr<NodeMutationObserverData> m_mutationObserverData;
 
     unsigned m_connectedFrameCount : ConnectedFrameCountBits;
-    unsigned m_elementFlags : ElementFlagsBits;
+    unsigned m_elementFlags : NumberOfElementFlags;
+    unsigned m_restyleFlags : NumberOfDynamicRestyleFlags;
 };
 
 inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)

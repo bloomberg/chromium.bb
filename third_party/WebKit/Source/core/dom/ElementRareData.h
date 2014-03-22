@@ -48,20 +48,19 @@ public:
     PseudoElement* pseudoElement(PseudoId) const;
 
     void resetStyleState();
-    void resetDynamicRestyleObservations();
 
     short tabIndex() const { return m_tabindex; }
 
     void setTabIndexExplicitly(short index)
     {
         m_tabindex = index;
-        setFlag(TabIndexWasSetExplicitly, true);
+        setElementFlag(TabIndexWasSetExplicitly, true);
     }
 
     void clearTabIndexExplicitly()
     {
         m_tabindex = 0;
-        clearFlag(TabIndexWasSetExplicitly);
+        clearElementFlag(TabIndexWasSetExplicitly);
     }
 
     unsigned childIndex() const { return m_childIndex; }
@@ -220,22 +219,8 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
 
 inline void ElementRareData::resetStyleState()
 {
-    clearFlag(StyleAffectedByEmpty);
+    clearElementFlag(StyleAffectedByEmpty);
     setChildIndex(0);
-}
-
-inline void ElementRareData::resetDynamicRestyleObservations()
-{
-    clearFlag(ChildrenAffectedByFocus);
-    clearFlag(ChildrenAffectedByHover);
-    clearFlag(ChildrenAffectedByActive);
-    clearFlag(ChildrenAffectedByDrag);
-    clearFlag(ChildrenAffectedByFirstChildRules);
-    clearFlag(ChildrenAffectedByLastChildRules);
-    clearFlag(ChildrenAffectedByDirectAdjacentRules);
-    clearFlag(ChildrenAffectedByIndirectAdjacentRules);
-    clearFlag(ChildrenAffectedByForwardPositionalRules);
-    clearFlag(ChildrenAffectedByBackwardPositionalRules);
 }
 
 } // namespace

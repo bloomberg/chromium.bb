@@ -63,7 +63,6 @@
 #include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
-#include "core/dom/SiblingRuleHelper.h"
 #include "core/dom/Text.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
@@ -230,22 +229,21 @@ inline ElementRareData& Element::ensureElementRareData()
 
 bool Element::hasElementFlagInternal(ElementFlags mask) const
 {
-    ASSERT(hasRareData());
-    return elementRareData()->hasFlag(mask);
+    return elementRareData()->hasElementFlag(mask);
 }
 
 void Element::setElementFlag(ElementFlags mask, bool value)
 {
     if (!hasRareData() && !value)
         return;
-    ensureElementRareData().setFlag(mask, value);
+    ensureElementRareData().setElementFlag(mask, value);
 }
 
 void Element::clearElementFlag(ElementFlags mask)
 {
     if (!hasRareData())
         return;
-    elementRareData()->clearFlag(mask);
+    elementRareData()->clearElementFlag(mask);
 }
 
 void Element::clearTabIndexExplicitlyIfNeeded()
@@ -1423,7 +1421,7 @@ void Element::attach(const AttachContext& context)
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
-        data->resetDynamicRestyleObservations();
+        data->clearRestyleFlags();
         // Only clear the style state if we're not going to reuse the style from recalcStyle.
         if (!context.resolvedStyle)
             data->resetStyleState();
@@ -1450,10 +1448,10 @@ void Element::attach(const AttachContext& context)
 
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
-        if (data->hasFlag(NeedsFocusAppearanceUpdateSoonAfterAttach)) {
+        if (data->hasElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach)) {
             if (isFocusable() && document().focusedElement() == this)
                 document().updateFocusAppearanceSoon(false /* don't restore selection */);
-            data->clearFlag(NeedsFocusAppearanceUpdateSoonAfterAttach);
+            data->clearElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach);
         }
         if (!renderer()) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
@@ -1479,7 +1477,7 @@ void Element::detach(const AttachContext& context)
         if (!document().inStyleRecalc()) {
             data->resetStyleState();
             data->clearComputedStyle();
-            data->resetDynamicRestyleObservations();
+            data->clearRestyleFlags();
         }
 
         if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
@@ -1681,7 +1679,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     updatePseudoElement(BEFORE, change);
 
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
-        SiblingRuleHelper(this).checkForChildrenAdjacentRuleChanges();
+        checkForChildrenAdjacentRuleChanges();
 
     if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
         // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid

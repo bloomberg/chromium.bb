@@ -76,6 +76,21 @@ private:
 #endif
 };
 
+enum DynamicRestyleFlags {
+    ChildrenAffectedByFocus = 1 << 0,
+    ChildrenAffectedByHover = 1 << 1,
+    ChildrenAffectedByActive = 1 << 2,
+    ChildrenAffectedByDrag = 1 << 3,
+    ChildrenAffectedByFirstChildRules = 1 << 4,
+    ChildrenAffectedByLastChildRules = 1 << 5,
+    ChildrenAffectedByDirectAdjacentRules = 1 << 6,
+    ChildrenAffectedByIndirectAdjacentRules = 1 << 7,
+    ChildrenAffectedByForwardPositionalRules = 1 << 8,
+    ChildrenAffectedByBackwardPositionalRules = 1 << 9,
+
+    NumberOfDynamicRestyleFlags = 10,
+};
+
 class ContainerNode : public Node {
 public:
     virtual ~ContainerNode();
@@ -127,6 +142,42 @@ public:
     virtual void setActive(bool = true) OVERRIDE;
     virtual void setHovered(bool = true) OVERRIDE;
 
+    bool childrenAffectedByFocus() const { return hasRestyleFlag(ChildrenAffectedByFocus); }
+    void setChildrenAffectedByFocus() { setRestyleFlag(ChildrenAffectedByFocus); }
+
+    bool childrenAffectedByHover() const { return hasRestyleFlag(ChildrenAffectedByHover); }
+    void setChildrenAffectedByHover() { setRestyleFlag(ChildrenAffectedByHover); }
+
+    bool childrenAffectedByActive() const { return hasRestyleFlag(ChildrenAffectedByActive); }
+    void setChildrenAffectedByActive() { setRestyleFlag(ChildrenAffectedByActive); }
+
+    bool childrenAffectedByDrag() const { return hasRestyleFlag(ChildrenAffectedByDrag); }
+    void setChildrenAffectedByDrag() { setRestyleFlag(ChildrenAffectedByDrag); }
+
+    bool childrenAffectedByPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByForwardPositionalRules) || hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
+
+    bool childrenAffectedByFirstChildRules() const { return hasRestyleFlag(ChildrenAffectedByFirstChildRules); }
+    void setChildrenAffectedByFirstChildRules() { setRestyleFlag(ChildrenAffectedByFirstChildRules); }
+
+    bool childrenAffectedByLastChildRules() const { return hasRestyleFlag(ChildrenAffectedByLastChildRules); }
+    void setChildrenAffectedByLastChildRules() { setRestyleFlag(ChildrenAffectedByLastChildRules); }
+
+    bool childrenAffectedByDirectAdjacentRules() const { return hasRestyleFlag(ChildrenAffectedByDirectAdjacentRules); }
+    void setChildrenAffectedByDirectAdjacentRules() { setRestyleFlag(ChildrenAffectedByDirectAdjacentRules); }
+
+    bool childrenAffectedByIndirectAdjacentRules() const { return hasRestyleFlag(ChildrenAffectedByIndirectAdjacentRules); }
+    void setChildrenAffectedByIndirectAdjacentRules() { setRestyleFlag(ChildrenAffectedByIndirectAdjacentRules); }
+
+    bool childrenAffectedByForwardPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByForwardPositionalRules); }
+    void setChildrenAffectedByForwardPositionalRules() { setRestyleFlag(ChildrenAffectedByForwardPositionalRules); }
+
+    bool childrenAffectedByBackwardPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
+    void setChildrenAffectedByBackwardPositionalRules() { setRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
+
+    void checkForChildrenAdjacentRuleChanges();
+
+    bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
+
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see core/dom/Node.h for more notification methods)
 
@@ -155,6 +206,12 @@ private:
     void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
     void willRemoveChild(Node& child);
+
+    bool hasRestyleFlag(DynamicRestyleFlags mask) const { return hasRareData() && hasRestyleFlagInternal(mask); }
+    bool hasRestyleFlags() const { return hasRareData() && hasRestyleFlagsInternal(); }
+    void setRestyleFlag(DynamicRestyleFlags);
+    bool hasRestyleFlagInternal(DynamicRestyleFlags) const;
+    bool hasRestyleFlagsInternal() const;
 
     inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild, ExceptionState&) const;
     inline bool checkAcceptChild(const Node* newChild, const Node* oldChild, ExceptionState&) const;
@@ -252,7 +309,7 @@ inline Node& Node::highestAncestor() const
     return *highest;
 }
 
-inline Node* Node::parentElementOrShadowRoot() const
+inline ContainerNode* Node::parentElementOrShadowRoot() const
 {
     ContainerNode* parent = parentNode();
     return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
