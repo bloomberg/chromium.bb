@@ -50,7 +50,7 @@ class IOSurfaceImageTransportSurface
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool SupportsPostSubBuffer() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
@@ -281,11 +281,8 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   return true;
 }
 
-std::string IOSurfaceImageTransportSurface::GetExtensions() {
-  std::string extensions = gfx::GLSurface::GetExtensions();
-  extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_post_sub_buffer";
-  return extensions;
+bool IOSurfaceImageTransportSurface::SupportsPostSubBuffer() {
+  return true;
 }
 
 gfx::Size IOSurfaceImageTransportSurface::GetSize() {

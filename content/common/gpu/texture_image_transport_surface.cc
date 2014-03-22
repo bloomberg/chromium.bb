@@ -268,11 +268,8 @@ bool TextureImageTransportSurface::PostSubBuffer(
   return true;
 }
 
-std::string TextureImageTransportSurface::GetExtensions() {
-  std::string extensions = gfx::GLSurface::GetExtensions();
-  extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_post_sub_buffer";
-  return extensions;
+bool TextureImageTransportSurface::SupportsPostSubBuffer() {
+  return true;
 }
 
 gfx::Size TextureImageTransportSurface::GetSize() {

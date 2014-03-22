@@ -615,13 +615,8 @@ void* NativeViewGLSurfaceGLX::GetHandle() {
   return reinterpret_cast<void*>(GetDrawableHandle());
 }
 
-std::string NativeViewGLSurfaceGLX::GetExtensions() {
-  std::string extensions = GLSurface::GetExtensions();
-  if (gfx::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer) {
-    extensions += extensions.empty() ? "" : " ";
-    extensions += "GL_CHROMIUM_post_sub_buffer";
-  }
-  return extensions;
+bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
+  return gfx::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer;
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {

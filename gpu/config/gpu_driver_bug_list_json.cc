@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.7",
+  "version": "4.8",
   "entries": [
     {
       "id": 1,
@@ -907,6 +907,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "multi_gpu_style": "optimus",
       "features": [
         "force_gl_finish_after_compositing"
+      ]
+    },
+    {
+      "id": 68,
+      "description": "Disable partial swaps on linux drivers",
+      "cr_bugs": [339493],
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
     }
   ]

@@ -33,7 +33,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool SupportsPostSubBuffer() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  private:
@@ -171,11 +171,8 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   return true;
 }
 
-std::string NativeViewGLSurfaceOSMesa::GetExtensions() {
-  std::string extensions = gfx::GLSurfaceOSMesa::GetExtensions();
-  extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_post_sub_buffer";
-  return extensions;
+bool NativeViewGLSurfaceOSMesa::SupportsPostSubBuffer() {
+  return true;
 }
 
 bool NativeViewGLSurfaceOSMesa::PostSubBuffer(

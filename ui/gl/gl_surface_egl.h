@@ -62,7 +62,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual EGLSurface GetHandle() OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool SupportsPostSubBuffer() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
 

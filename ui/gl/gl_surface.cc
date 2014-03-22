@@ -177,18 +177,8 @@ bool GLSurface::DeferDraws() {
   return false;
 }
 
-std::string GLSurface::GetExtensions() {
-  return std::string();
-}
-
-bool GLSurface::HasExtension(const char* name) {
-  std::string extensions = GetExtensions();
-  extensions += " ";
-
-  std::string delimited_name(name);
-  delimited_name += " ";
-
-  return extensions.find(delimited_name) != std::string::npos;
+bool GLSurface::SupportsPostSubBuffer() {
+  return false;
 }
 
 unsigned int GLSurface::GetBackingFrameBufferObject() {
@@ -294,8 +284,8 @@ bool GLSurfaceAdapter::PostSubBuffer(int x, int y, int width, int height) {
   return surface_->PostSubBuffer(x, y, width, height);
 }
 
-std::string GLSurfaceAdapter::GetExtensions() {
-  return surface_->GetExtensions();
+bool GLSurfaceAdapter::SupportsPostSubBuffer() {
+  return surface_->SupportsPostSubBuffer();
 }
 
 gfx::Size GLSurfaceAdapter::GetSize() {

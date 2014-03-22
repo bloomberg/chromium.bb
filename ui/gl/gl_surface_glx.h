@@ -60,7 +60,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool SupportsPostSubBuffer() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
