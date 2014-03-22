@@ -8,14 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_dispatcher.h"
-#include "base/run_loop.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/message_box_view.h"
@@ -207,7 +202,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     const base::string16& no_text) {
 #if defined(OS_WIN)
   // GPU-based dialogs can't be used early on; fallback to a Windows MessageBox.
-  if (!ui::ContextFactory::GetInstance()) {
+  if (!base::MessageLoop::current()->is_running()) {
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
                                 title, GetMessageBoxFlagsFromType(type));
     return (result == IDYES || result == IDOK) ?
