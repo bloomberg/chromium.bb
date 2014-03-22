@@ -28,8 +28,7 @@ namespace cast {
 // Subclasses complete the implementation by handling the actual encoding
 // details.
 class AudioEncoder::ImplBase
-    : public base::RefCountedThreadSafe<AudioEncoder::ImplBase>,
-      public base::SupportsWeakPtr<ImplBase> {
+    : public base::RefCountedThreadSafe<AudioEncoder::ImplBase> {
  public:
   ImplBase(const scoped_refptr<CastEnvironment>& cast_environment,
            transport::AudioCodec codec,
@@ -43,8 +42,7 @@ class AudioEncoder::ImplBase
         callback_(callback),
         buffer_fill_end_(0),
         frame_id_(0),
-        rtp_timestamp_(0),
-        weak_factory_(this) {
+        rtp_timestamp_(0) {
     DCHECK_GT(num_channels_, 0);
     DCHECK_GT(samples_per_10ms_, 0);
     DCHECK_EQ(sampling_rate % 100, 0);
@@ -97,7 +95,7 @@ class AudioEncoder::ImplBase
         cast_environment_->PostTask(CastEnvironment::MAIN,
                                     FROM_HERE,
                                     base::Bind(&ImplBase::LogAudioFrameEvent,
-                                               weak_factory_.GetWeakPtr(),
+                                               this,
                                                audio_frame->rtp_timestamp,
                                                audio_frame->frame_id,
                                                kAudioFrameReceived));
@@ -107,7 +105,7 @@ class AudioEncoder::ImplBase
           cast_environment_->PostTask(CastEnvironment::MAIN,
                                       FROM_HERE,
                                       base::Bind(&ImplBase::LogAudioFrameEvent,
-                                                 weak_factory_.GetWeakPtr(),
+                                                 this,
                                                  audio_frame->rtp_timestamp,
                                                  audio_frame->frame_id,
                                                  kAudioFrameEncoded));
@@ -166,9 +164,6 @@ class AudioEncoder::ImplBase
   // For audio, rtp_timestamp is computed as the sum of the audio samples seen
   // so far.
   uint32 rtp_timestamp_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<ImplBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
