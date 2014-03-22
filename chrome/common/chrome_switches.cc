@@ -1468,9 +1468,6 @@ const char kRelauncherProcess[]             = "relauncher";
 const char kEnablePermissionsBubbles[]      = "enable-permissions-bubbles";
 
 #if defined(OS_WIN)
-// Enables support to debug printing subsystem.
-const char kDebugPrint[]                    = "debug-print";
-
 // Fallback to XPS. By default connector uses CDD.
 const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 
@@ -1503,6 +1500,11 @@ const char kWaitForMutex[]                  = "wait-for-mutex";
 
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]           = "windows8-search";
+#endif
+
+#if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
+// Enables support to debug printing subsystem.
+const char kDebugPrint[] = "debug-print";
 #endif
 
 #ifndef NDEBUG

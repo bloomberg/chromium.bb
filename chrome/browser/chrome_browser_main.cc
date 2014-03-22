@@ -173,7 +173,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "net/base/net_util.h"
-#include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/win/dpi.h"
 #endif  // defined(OS_WIN)
@@ -183,6 +182,10 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/keystone_glue.h"
+#endif
+
+#if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
+#include "printing/printed_document.h"
 #endif
 
 #if defined(ENABLE_RLZ)
@@ -1397,7 +1400,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
     InstallJankometer(parsed_command_line());
 
-#if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {
     base::FilePath path =
         parsed_command_line().GetSwitchValuePath(switches::kDebugPrint);

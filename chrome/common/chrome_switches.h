@@ -416,7 +416,6 @@ extern const char kRelauncherProcess[];
 #endif
 
 #if defined(OS_WIN)
-extern const char kDebugPrint[];
 extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kForceDesktop[];
@@ -426,6 +425,10 @@ extern const char kViewerConnect[];
 extern const char kViewerLaunchViaAppId[];
 extern const char kWaitForMutex[];
 extern const char kWindows8Search[];
+#endif
+
+#if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
+extern const char kDebugPrint[];
 #endif
 
 #ifndef NDEBUG
