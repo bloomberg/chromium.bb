@@ -551,5 +551,21 @@
         'examples/media_stream_video/media_stream_video.cc',
       ],
     },
+    {
+      'target_name': 'ppapi_example_gles2_spinning_cube',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi.gyp:ppapi_gles2',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        'examples/gles2_spinning_cube/gles2_spinning_cube.cc',
+        'examples/gles2_spinning_cube/spinning_cube.cc',
+        'examples/gles2_spinning_cube/spinning_cube.h',
+      ],
+    },
   ],
 }

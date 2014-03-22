@@ -35,6 +35,7 @@
         'mojo_common_unittests',
         'mojo_js',
         'mojo_js_unittests',
+        'mojo_pepper_container_app',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
         'mojo_public_environment_unittests',
