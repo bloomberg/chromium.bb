@@ -506,9 +506,7 @@ void MessagePopupCollection::DecrementDeferCounter() {
 // deferred tasks are even able to run)
 // Then, see if there is vacant space for new toasts.
 void MessagePopupCollection::DoUpdateIfPossible() {
-  // |work_area_| can be set from some tests and those test expectations should
-  // not be reset here.
-  if (!screen_ && work_area_.IsEmpty()) {
+  if (!screen_) {
     gfx::Display display;
     if (!parent_) {
       // On Win+Aura, we don't have a parent since the popups currently show up
@@ -523,8 +521,11 @@ void MessagePopupCollection::DoUpdateIfPossible() {
     screen_->AddObserver(this);
 
     display_id_ = display.id();
-    work_area_ = display.work_area();
-    ComputePopupAlignment(work_area_, display.bounds());
+    // |work_area_| can be set already and it should not be overwritten here.
+    if (work_area_.IsEmpty()) {
+      work_area_ = display.work_area();
+      ComputePopupAlignment(work_area_, display.bounds());
+    }
   }
 
   if (defer_counter_ > 0)
