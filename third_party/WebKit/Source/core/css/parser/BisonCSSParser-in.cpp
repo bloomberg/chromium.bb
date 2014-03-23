@@ -1208,19 +1208,6 @@ bool BisonCSSParser::parseDeclaration(MutableStylePropertySet* declaration, cons
     return ok;
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const String& string)
-{
-    ASSERT(!m_mediaList);
-
-    // can't use { because tokenizer state switches from mediaquery to initial state when it sees { token.
-    // instead insert one " " (which is caught by maybe_space in CSSGrammar.y)
-    setupParser("@-internal-medialist ", string, "");
-    cssyyparse(this);
-
-    ASSERT(m_mediaList);
-    return m_mediaList.release();
-}
-
 static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
