@@ -162,6 +162,8 @@ public:
 
     virtual bool canPlay() const OVERRIDE FINAL;
 
+    void togglePlayState();
+
     PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
     PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyAtom, exceptionState); }
     PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyAtom, emptyAtom, exceptionState); }
@@ -403,7 +405,9 @@ private:
     void prepareMediaFragmentURI();
     void applyMediaFragmentURI();
 
+    virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
     virtual void* preDispatchEventHandler(Event*) OVERRIDE FINAL;
+    virtual void defaultEventHandler(Event*) OVERRIDE FINAL;
 
     void changeNetworkStateFromLoadingToIdle();
 

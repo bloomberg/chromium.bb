@@ -91,6 +91,7 @@ public:
 
     virtual bool canPlay() const OVERRIDE;
 
+    bool isRestrained() const;
     bool isBlocked() const;
 
     void clearExecutionContext() { m_executionContext = 0; }

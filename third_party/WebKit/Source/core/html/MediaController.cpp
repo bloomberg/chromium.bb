@@ -485,20 +485,51 @@ void MediaController::bringElementUpToSpeed(HTMLMediaElement* element)
     element->seek(currentTime(), IGNORE_EXCEPTION);
 }
 
+bool MediaController::isRestrained() const
+{
+    ASSERT(!m_mediaElements.isEmpty());
+
+    // A MediaController is a restrained media controller if the MediaController is a playing media
+    // controller,
+    if (m_paused)
+        return false;
+
+    bool anyAutoplayingAndPaused = false;
+    bool allPaused = true;
+    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
+        HTMLMediaElement* element = m_mediaElements[index];
+
+        // and none of its slaved media elements are blocked media elements,
+        if (element->isBlocked())
+            return false;
+
+        if (element->isAutoplaying() && element->paused())
+            anyAutoplayingAndPaused = true;
+
+        if (!element->paused())
+            allPaused = false;
+    }
+
+    // but either at least one of its slaved media elements whose autoplaying flag is true still has
+    // its paused attribute set to true, or, all of its slaved media elements have their paused
+    // attribute set to true.
+    return anyAutoplayingAndPaused || allPaused;
+}
+
 bool MediaController::isBlocked() const
 {
+    ASSERT(!m_mediaElements.isEmpty());
+
     // A MediaController is a blocked media controller if the MediaController is a paused media
     // controller,
     if (m_paused)
         return true;
 
-    if (m_mediaElements.isEmpty())
-        return false;
-
     bool allPaused = true;
     for (size_t index = 0; index < m_mediaElements.size(); ++index) {
         HTMLMediaElement* element = m_mediaElements[index];
-        //  or if any of its slaved media elements are blocked media elements,
+
+        // or if any of its slaved media elements are blocked media elements,
         if (element->isBlocked())
             return true;
 

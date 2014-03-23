@@ -15,8 +15,10 @@ onload = function() {
     video.src = mediaFile;
     video.addEventListener('canplaythrough', canplaythrough);
     video.addEventListener('webkitfullscreenchange', fullscreenChanged);
-    video.onclick  = function() {
+    video.onclick = function(event) {
         video.webkitRequestFullscreen();
+        // cancel the activation behavior (click to play/pause)
+        event.preventDefault();
     };
 }
 </script>

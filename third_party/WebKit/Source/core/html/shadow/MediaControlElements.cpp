@@ -77,6 +77,17 @@ const AtomicString& MediaControlPanelElement::shadowPseudoId() const
     return id;
 }
 
+void MediaControlPanelElement::defaultEventHandler(Event* event)
+{
+    // Suppress the media element activation behavior (toggle play/pause) when
+    // any part of the control panel is clicked.
+    if (event->type() == EventTypeNames::click) {
+        event->setDefaultHandled();
+        return;
+    }
+    HTMLDivElement::defaultEventHandler(event);
+}
+
 void MediaControlPanelElement::startTimer()
 {
     stopTimer();
