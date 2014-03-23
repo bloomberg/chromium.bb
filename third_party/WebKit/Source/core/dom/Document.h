@@ -1113,8 +1113,6 @@ private:
 
     void executeScriptsWaitingForResourcesIfNeeded();
 
-    void recalcStyleForLayoutIgnoringPendingStylesheets();
-
     PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 
     void loadEventDelayTimerFired(Timer<Document>*);
