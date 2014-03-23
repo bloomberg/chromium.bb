@@ -395,8 +395,8 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         bool onlyScrolledCompositedLayers = scrollsOverflow()
             && !layer()->hasVisibleNonLayerContent()
             && !layer()->hasNonCompositedChild()
-            && !m_box->isMarquee()
-            && layer()->renderer()->selectionRect().isEmpty();
+            && !layer()->hasBlockSelectionGapBounds()
+            && !m_box->isMarquee();
 
         if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
             requiresRepaint = false;

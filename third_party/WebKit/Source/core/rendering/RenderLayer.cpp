@@ -3330,6 +3330,11 @@ void RenderLayer::repaintBlockSelectionGaps()
         renderer()->repaintRectangle(rect);
 }
 
+bool RenderLayer::hasBlockSelectionGapBounds() const
+{
+    return !m_blockSelectionGapsBounds.isEmpty();
+}
+
 bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot) const
 {
     // Always examine the canvas and the root.
