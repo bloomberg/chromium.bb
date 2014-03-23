@@ -65,6 +65,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_hideFullscreenControlsTimer(this, &MediaControls::hideFullscreenControlsTimerFired)
     , m_isFullscreen(false)
     , m_isMouseOverControls(false)
+    , m_isPausedForScrubbing(false)
 {
 }
 
@@ -176,7 +177,7 @@ void MediaControls::reset()
     m_durationDisplay->setInnerText(RenderTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
     m_durationDisplay->setCurrentValue(duration);
 
-    m_playButton->updateDisplayType();
+    updatePlayState();
 
     updateCurrentTimeDisplay();
 
@@ -233,9 +234,7 @@ void MediaControls::playbackStarted()
     m_currentTimeDisplay->show();
     m_durationDisplay->hide();
 
-    if (m_overlayPlayButton)
-        m_overlayPlayButton->updateDisplayType();
-    m_playButton->updateDisplayType();
+    updatePlayState();
     m_timeline->setPosition(mediaControllerInterface().currentTime());
     updateCurrentTimeDisplay();
 
@@ -254,14 +253,39 @@ void MediaControls::playbackProgressed()
 
 void MediaControls::playbackStopped()
 {
-    if (m_overlayPlayButton)
-        m_overlayPlayButton->updateDisplayType();
-    m_playButton->updateDisplayType();
+    updatePlayState();
     m_timeline->setPosition(mediaControllerInterface().currentTime());
     updateCurrentTimeDisplay();
     makeOpaque();
 
     stopHideFullscreenControlsTimer();
+}
+
+void MediaControls::updatePlayState()
+{
+    if (m_isPausedForScrubbing)
+        return;
+
+    if (m_overlayPlayButton)
+        m_overlayPlayButton->updateDisplayType();
+    m_playButton->updateDisplayType();
+}
+
+void MediaControls::beginScrubbing()
+{
+    if (!mediaControllerInterface().paused()) {
+        m_isPausedForScrubbing = true;
+        mediaControllerInterface().pause();
+    }
+}
+
+void MediaControls::endScrubbing()
+{
+    if (m_isPausedForScrubbing) {
+        m_isPausedForScrubbing = false;
+        if (mediaControllerInterface().paused())
+            mediaControllerInterface().play();
+    }
 }
 
 void MediaControls::updateCurrentTimeDisplay()

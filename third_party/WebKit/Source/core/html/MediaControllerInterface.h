@@ -51,9 +51,6 @@ public:
 
     virtual bool hasAudio() const = 0;
 
-    virtual void beginScrubbing() = 0;
-    virtual void endScrubbing() = 0;
-
     virtual bool canPlay() const = 0;
 };
 

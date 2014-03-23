@@ -2132,33 +2132,6 @@ void HTMLMediaElement::setMuted(bool muted)
     scheduleEvent(EventTypeNames::volumechange);
 }
 
-void HTMLMediaElement::beginScrubbing()
-{
-    WTF_LOG(Media, "HTMLMediaElement::beginScrubbing - paused() is %s", boolString(paused()));
-
-    if (!paused()) {
-        if (ended()) {
-            // Because a media element stays in non-paused state when it reaches end, playback resumes
-            // when the slider is dragged from the end to another position unless we pause first. Do
-            // a "hard pause" so an event is generated, since we want to stay paused after scrubbing finishes.
-            pause();
-        } else {
-            // Not at the end but we still want to pause playback so the media engine doesn't try to
-            // continue playing during scrubbing. Pause without generating an event as we will
-            // unpause after scrubbing finishes.
-            setPausedInternal(true);
-        }
-    }
-}
-
-void HTMLMediaElement::endScrubbing()
-{
-    WTF_LOG(Media, "HTMLMediaElement::endScrubbing - m_pausedInternal is %s", boolString(m_pausedInternal));
-
-    if (m_pausedInternal)
-        setPausedInternal(false);
-}
-
 // The spec says to fire periodic timeupdate events (those sent while playing) every
 // "15 to 250ms", we choose the slowest frequency
 static const double maxTimeupdateEventFrequency = 0.25;

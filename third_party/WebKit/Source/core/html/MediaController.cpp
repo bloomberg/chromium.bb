@@ -596,22 +596,6 @@ bool MediaController::hasAudio() const
     return false;
 }
 
-void MediaController::beginScrubbing()
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->beginScrubbing();
-    if (m_playbackState == PLAYING)
-        m_clock->stop();
-}
-
-void MediaController::endScrubbing()
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->endScrubbing();
-    if (m_playbackState == PLAYING)
-        m_clock->start();
-}
-
 bool MediaController::canPlay() const
 {
     if (m_paused)

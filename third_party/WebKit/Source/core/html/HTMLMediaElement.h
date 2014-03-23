@@ -157,9 +157,6 @@ public:
     virtual bool muted() const OVERRIDE FINAL;
     virtual void setMuted(bool) OVERRIDE FINAL;
 
-    virtual void beginScrubbing() OVERRIDE FINAL;
-    virtual void endScrubbing() OVERRIDE FINAL;
-
     virtual bool canPlay() const OVERRIDE FINAL;
 
     void togglePlayState();

@@ -358,18 +358,17 @@ PassRefPtr<MediaControlTimelineElement> MediaControlTimelineElement::create(Medi
 
 void MediaControlTimelineElement::defaultEventHandler(Event* event)
 {
-    // Left button is 0. Rejects mouse events not from left button.
-    if (event->isMouseEvent() && toMouseEvent(event)->button())
+    if (event->isMouseEvent() && toMouseEvent(event)->button() != LeftButton)
         return;
 
     if (!inDocument() || !document().isActive())
         return;
 
     if (event->type() == EventTypeNames::mousedown)
-        mediaControllerInterface().beginScrubbing();
+        mediaControls().beginScrubbing();
 
     if (event->type() == EventTypeNames::mouseup)
-        mediaControllerInterface().endScrubbing();
+        mediaControls().endScrubbing();
 
     MediaControlInputElement::defaultEventHandler(event);
 

@@ -86,9 +86,6 @@ public:
 
     virtual bool hasAudio() const OVERRIDE;
 
-    virtual void beginScrubbing() OVERRIDE;
-    virtual void endScrubbing() OVERRIDE;
-
     virtual bool canPlay() const OVERRIDE;
 
     bool isRestrained() const;
