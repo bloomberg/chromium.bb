@@ -42,8 +42,8 @@ class FontDescription;
 class StyleRule;
 
 class StyleResolverState {
-STACK_ALLOCATED();
-WTF_MAKE_NONCOPYABLE(StyleResolverState);
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
     StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0);
     ~StyleResolverState();
@@ -158,7 +158,7 @@ private:
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
 
-    CSSValue* m_lineHeightValue;
+    RawPtrWillBeMember<CSSValue> m_lineHeightValue;
 
     FontBuilder m_fontBuilder;
 
@@ -170,7 +170,7 @@ private:
     CSSToStyleMap m_styleMap;
     Vector<AtomicString> m_contentAttrValues;
 
-    StyleRule* m_currentRule;
+    RawPtrWillBeMember<StyleRule> m_currentRule;
 };
 
 } // namespace WebCore

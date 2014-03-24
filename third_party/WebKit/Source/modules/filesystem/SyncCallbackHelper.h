@@ -54,7 +54,7 @@ struct HelperResultType {
     DISALLOW_ALLOCATION();
 public:
     typedef PassRefPtrWillBeRawPtr<ResultType> ReturnType;
-    typedef RefPtrWillBeRawPtr<ResultType> StorageType;
+    typedef RefPtrWillBeMember<ResultType> StorageType;
 
     static ReturnType createFromCallbackArg(CallbackArg argument)
     {
@@ -154,7 +154,7 @@ private:
     bool m_completed;
 };
 
-struct EmptyType : public RefCounted<EmptyType> {
+struct EmptyType : public RefCountedWillBeGarbageCollected<EmptyType> {
     static PassRefPtrWillBeRawPtr<EmptyType> create(EmptyType*)
     {
         return nullptr;

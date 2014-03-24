@@ -59,6 +59,7 @@ class TrackBase;
 class VoidCallback;
 
 class Dictionary {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
     Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*);
@@ -90,8 +91,8 @@ public:
     bool get(const String&, RefPtr<MediaKeyError>&) const;
     bool get(const String&, RefPtr<TrackBase>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
-    bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResult>&) const;
-    bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResultList>&) const;
+    bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResult>&) const;
+    bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResultList>&) const;
     bool get(const String&, RefPtrWillBeMember<Gamepad>&) const;
     bool get(const String&, RefPtr<MediaStream>&) const;
     bool get(const String&, RefPtr<EventTarget>&) const;
@@ -99,7 +100,7 @@ public:
     bool get(const String&, Dictionary&) const;
     bool get(const String&, Vector<String>&) const;
     bool get(const String&, ArrayValue&) const;
-    bool get(const String&, RefPtrWillBeRawPtr<DOMError>&) const;
+    bool get(const String&, RefPtrWillBeMember<DOMError>&) const;
     bool get(const String&, OwnPtr<VoidCallback>&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;
 
@@ -178,13 +179,7 @@ public:
 
     bool hasProperty(const String&) const;
 
-    // Only allow inline allocation.
-    void* operator new(size_t, NotNullTag, void* location) { return location; }
-
 private:
-    // Disallow new allocation.
-    void* operator new(size_t);
-
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
 
     v8::Handle<v8::Value> m_options;

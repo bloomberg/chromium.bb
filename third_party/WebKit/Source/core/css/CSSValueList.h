@@ -93,7 +93,7 @@ public:
     CSSValue* second() const { return item(1); }
     size_t length() const { return m_list ? m_list->length() : 0; }
 private:
-    CSSValueList* m_list;
+    RawPtrWillBeMember<CSSValueList> m_list;
 };
 
 // Wrapper that can be used to iterate over any CSSValue. Non-list values and 0 behave as zero-length lists.

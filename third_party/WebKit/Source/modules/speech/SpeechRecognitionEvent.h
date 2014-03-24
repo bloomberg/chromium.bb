@@ -38,12 +38,11 @@ namespace WebCore {
 class Document;
 
 class SpeechRecognitionEventInit : public EventInit {
-    DISALLOW_ALLOCATION();
 public:
     SpeechRecognitionEventInit();
 
     unsigned long resultIndex;
-    RefPtrWillBeRawPtr<SpeechRecognitionResultList> results;
+    RefPtrWillBeMember<SpeechRecognitionResultList> results;
 };
 
 class SpeechRecognitionEvent FINAL : public Event {

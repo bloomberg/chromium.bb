@@ -382,7 +382,7 @@ private:
     int m_inParseShorthand;
     CSSPropertyID m_currentShorthand;
     bool m_implicitShorthand;
-    RefPtrWillBeRawPtr<CSSCalcValue> m_parsedCalculation;
+    RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
 
     // FIXME: There is probably a small set of APIs we could expose for these
     // classes w/o needing to make them friends.

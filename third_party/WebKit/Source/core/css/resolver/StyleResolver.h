@@ -99,7 +99,7 @@ public:
     // Stores value=propertySet.getPropertyCSSValue(id).get().
     CSSPropertyValue(CSSPropertyID, const StylePropertySet&);
     CSSPropertyID property;
-    CSSValue* value;
+    RawPtrWillBeMember<CSSValue> value;
 };
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.

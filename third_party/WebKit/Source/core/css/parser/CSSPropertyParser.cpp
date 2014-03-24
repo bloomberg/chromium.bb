@@ -5328,13 +5328,13 @@ public:
     CSSPropertyID property;
     CSSPropertyParser* m_parser;
 
-    RefPtrWillBeRawPtr<CSSValueList> values;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> x;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> y;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> style;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> color;
+    RefPtrWillBeMember<CSSValueList> values;
+    RefPtrWillBeMember<CSSPrimitiveValue> x;
+    RefPtrWillBeMember<CSSPrimitiveValue> y;
+    RefPtrWillBeMember<CSSPrimitiveValue> blur;
+    RefPtrWillBeMember<CSSPrimitiveValue> spread;
+    RefPtrWillBeMember<CSSPrimitiveValue> style;
+    RefPtrWillBeMember<CSSPrimitiveValue> color;
 
     bool allowX;
     bool allowY;
@@ -5844,10 +5844,10 @@ private:
     bool m_allowFill;
     bool m_allowFinalCommit;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_top;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_right;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_bottom;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_left;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_top;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_right;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_left;
 
     bool m_fill;
 };
@@ -5961,10 +5961,10 @@ private:
     bool m_allowNumber;
     bool m_allowFinalCommit;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_top;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_right;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_bottom;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_left;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_top;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_right;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_left;
 };
 
 bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
