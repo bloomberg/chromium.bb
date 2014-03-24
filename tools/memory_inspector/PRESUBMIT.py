@@ -11,7 +11,9 @@ details on the presubmit API built into gcl.
 
 def CommonChecks(input_api, output_api):
   output = []
-  output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
+  blacklist = [r'classification_rules.*']
+  output.extend(input_api.canned_checks.RunPylint(
+      input_api, output_api, black_list=blacklist))
   output.extend(input_api.canned_checks.RunUnitTests(
       input_api,
       output_api,

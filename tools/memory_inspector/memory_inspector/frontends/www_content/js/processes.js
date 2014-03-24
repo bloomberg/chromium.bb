@@ -27,6 +27,8 @@ this.onDomReady_ = function() {
   $('#device_tabs').on('tabsactivate', this.redrawDevStats_.bind(this));
 
   // Initialize the toolbar.
+  $('#ps-quick_snapshot').button({icons:{primary: 'ui-icon-image'}})
+      .click(this.snapshotSelectedProcess_.bind(this));
   $('#ps-dump_mmaps').button({icons:{primary: 'ui-icon-calculator'}})
       .click(this.dumpSelectedProcessMmaps_.bind(this));
 
@@ -34,6 +36,7 @@ this.onDomReady_ = function() {
   this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
   google.visualization.events.addListener(
       this.psTable_, 'select', this.onPsTableRowSelect_.bind(this));
+  $('#ps-table').on('dblclick', this.snapshotSelectedProcess_.bind(this));
 
   // Create the device stats charts.
   this.memChart_ = new google.visualization.PieChart($('#os-mem_chart')[0]);
@@ -48,6 +51,13 @@ this.onDomReady_ = function() {
 
 this.getSelectedProcessURI = function() {
   return this.selProcUri_;
+};
+
+this.snapshotSelectedProcess_ = function() {
+  if (!this.selProcUri_)
+    return alert('Must select a process!');
+  mmap.dumpMmaps(this.selProcUri_, true);
+  rootUi.showTab('prof');
 };
 
 this.dumpSelectedProcessMmaps_ = function() {

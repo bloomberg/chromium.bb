@@ -14,6 +14,7 @@ hierarchy keeping only the meaningful bits) format.
 
 import json
 
+from memory_inspector.classification import results
 from memory_inspector.core import backends
 from memory_inspector.core import memory_map
 from memory_inspector.core import native_heap
@@ -58,6 +59,12 @@ class Encoder(json.JSONEncoder):
 
     if isinstance(obj, (backends.DeviceStats, backends.ProcessStats)):
       return obj.__dict__
+
+    if isinstance(obj, results.AggreatedResults):
+      return {'keys': obj.keys, 'buckets': obj.total}
+
+    if isinstance(obj, results.Bucket):
+      return {obj.rule.name : {'values': obj.values, 'children': obj.children}}
 
     return json.JSONEncoder.default(self, obj)
 

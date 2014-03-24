@@ -21,13 +21,16 @@ The following HTTP status code are returned by the server:
 import collections
 import datetime
 import os
+import memory_inspector
 import mimetypes
 import json
 import re
 import urlparse
+import uuid
 import wsgiref.simple_server
 
 from memory_inspector.core import backends
+from memory_inspector.classification import mmap_classifier
 from memory_inspector.data import serialization
 from memory_inspector.data import file_storage
 
@@ -41,7 +44,11 @@ _CONTENT_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'www_content'))
 _APP_PROCESS_RE = r'^[\w.:]+$'  # Regex for matching app processes.
 _STATS_HIST_SIZE = 120  # Keep at most 120 samples of stats per process.
+_CACHE_LEN = 10  # Max length of |_cached_objs|.
 
+# |_cached_objs| keeps the state of short-lived objects that the client needs to
+# _cached_objs subsequent AJAX calls.
+_cached_objs = collections.OrderedDict()
 _persistent_storage = file_storage.Storage(_PERSISTENT_STORAGE_PATH)
 _proc_stats_history = {}  # /Android/device/PID -> deque([stats@T=0, stats@T=1])
 
@@ -131,7 +138,7 @@ def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
   if not process:
     return _HTTP_GONE, [], 'Device not found or process died'
   mmap = process.DumpMemoryMaps()
-  resp = {
+  table = {
       'cols': [
           {'label': 'Start', 'type':'string'},
           {'label': 'End', 'type':'string'},
@@ -147,7 +154,7 @@ def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
         ],
       'rows': []}
   for entry in mmap.entries:
-    resp['rows'] += [{'c': [
+    table['rows'] += [{'c': [
         {'v': '%08x' % entry.start, 'f': None},
         {'v': '%08x' % entry.end, 'f': None},
         {'v': entry.len / 1024, 'f': None},
@@ -160,7 +167,9 @@ def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
         {'v': entry.mapped_offset, 'f': None},
         {'v': '[%s]' % (','.join(map(str, entry.resident_pages))), 'f': None},
     ]}]
-  return _HTTP_OK, [], resp
+  # Store the dump in the cache. The client might need it later for profiling.
+  cache_id = _CacheObject(mmap)
+  return _HTTP_OK, [], {'table': table, 'id': cache_id}
 
 
 @AjaxHandler('/ajax/initialize/(\w+)/(\w+)$')  # /ajax/initialize/Android/a0b1c2
@@ -171,6 +180,160 @@ def _InitializeDevice(args, req_vars):  # pylint: disable=W0613
   device.Initialize()
   return _HTTP_OK, [], {
     'isNativeTracingEnabled': device.IsNativeTracingEnabled()}
+
+
+@AjaxHandler(r'/ajax/profile/create', 'POST')
+def _CreateProfile(args, req_vars):  # pylint: disable=W0613
+  """Creates (and caches) a profile from a set of dumps.
+
+  The profiling data can be retrieved afterwards using the /profile/{PROFILE_ID}
+  endpoints (below).
+  """
+  classifier = None  # A classifier module (/classification/*_classifier.py).
+  dumps = {}  # dump-time -> obj. to classify (e.g., |memory_map.Map|).
+  for arg in 'type', 'source', 'ruleset', 'id':
+    assert(arg in req_vars), 'Expecting %s argument in POST data' % arg
+
+  # Step 1: collect the memory dumps, according to what the client specified in
+  # the 'type' and 'source' POST arguments.
+
+  # Case 1: Generate a profile from a set of mmap dumps.
+  if req_vars['type'] == 'mmap':
+    classifier = mmap_classifier
+    # Case 1a: Use a cached mmap dumps.
+    if req_vars['source'] == 'cache':
+      dumps[0] = _GetCacheObject(req_vars['id'])
+    # TODO(primiano): add support for loading archived dumps from file_storage.
+  # TODO(primiano): Add support for native_heap types.
+
+  # Step 2: Load the rule-set specified by the client in the 'ruleset' POST arg.
+  # Also, perform some basic sanity checking.
+  rules_path = os.path.join(memory_inspector.ROOT_DIR, 'classification_rules',
+                            req_vars['ruleset'])
+  if not classifier:
+    return _HTTP_GONE, [], 'Classifier %s not supported.' % req_vars['type']
+  if not dumps:
+    return _HTTP_GONE, [], 'No memory dumps could be retrieved'
+  if not os.path.isfile(rules_path):
+    return _HTTP_GONE, [], 'Cannot find the rule-set %s' % rules_path
+  with open(rules_path) as f:
+    rules = mmap_classifier.LoadRules(f.read())
+
+  # Step 3: Aggregate the data using the desired classifier and generate the
+  # profile dictionary (which will be kept cached here in the server).
+  # The resulting profile will consist of 1+ snapshots (depending on the number
+  # dumps the client has requested to process) and a number of 1+ metrics
+  # (depending on the buckets' keys returned by the classifier).
+
+  # Converts the {time: dump_obj} dict into a {time: |AggregatedResult|} dict.
+  # using the classifier.
+  snapshots = collections.OrderedDict(
+    (time, classifier.Classify(d, rules)) for time, d in dumps.iteritems())
+
+  # Add the profile to the cache (and eventually discard old items).
+  # |profile_id| is the key that the client will use in subsequent requests
+  # (to the /ajax/profile/{ID}/ endpoints) to refer to this particular profile.
+  profile_id = _CacheObject(snapshots)
+
+  first_snapshot = next(snapshots.itervalues())
+
+  # |metrics| is the key set of any of the aggregated result
+  return _HTTP_OK, [], {'id': profile_id,
+                        'times': snapshots.keys(),
+                        'metrics': first_snapshot.keys,
+                        'rootBucket': first_snapshot.total.name + '/'}
+
+
+@AjaxHandler(r'/ajax/profile/(\w+)/tree/(\d+)/(\d+)')
+def _GetProfileTreeDataForSnapshot(args, req_vars):  # pylint: disable=W0613
+  """Gets the data for the tree chart for a given time and metric.
+
+  The response is formatted according to the Google Charts DataTable format.
+  """
+  snapshot_id = args[0]
+  metric_index = int(args[1])
+  time = int(args[2])
+  snapshots = _GetCacheObject(snapshot_id)
+  if not snapshots:
+    return _HTTP_GONE, [], 'Cannot find the selected profile.'
+  if time not in snapshots:
+    return _HTTP_GONE, [], 'Cannot find snapshot at T=%d.' % time
+  snapshot = snapshots[time]
+  if metric_index >= len(snapshot.keys):
+    return _HTTP_GONE, [], 'Invalid metric id %d' % metric_index
+
+  resp = {'cols': [{'label': 'bucket', 'type': 'string'},
+                   {'label': 'parent', 'type': 'string'}],
+          'rows': []}
+
+  def VisitBucketAndAddRows(bucket, parent_id=''):
+    """Recursively creates the (node, parent) visiting |ResultTree| in DFS."""
+    node_id = parent_id + bucket.name + '/'
+    node_label = '<dl><dt>%s</dt><dd>%s</dd></dl>' % (
+        bucket.name, _StrMem(bucket.values[metric_index]))
+    resp['rows'] += [{'c': [
+        {'v': node_id, 'f': node_label},
+        {'v': parent_id, 'f': None},
+    ]}]
+    for child in bucket.children:
+      VisitBucketAndAddRows(child, node_id)
+
+  VisitBucketAndAddRows(snapshot.total)
+  return _HTTP_OK, [], resp
+
+
+@AjaxHandler(r'/ajax/profile/(\w+)/time_serie/(\d+)/(.*)$')
+def _GetTimeSerieForSnapshot(args, req_vars):  # pylint: disable=W0613
+  """Gets the data for the area chart for a given metric and bucket.
+
+  The response is formatted according to the Google Charts DataTable format.
+  """
+  snapshot_id = args[0]
+  metric_index = int(args[1])
+  bucket_path = args[2]
+  snapshots = _GetCacheObject(snapshot_id)
+  if not snapshots:
+    return _HTTP_GONE, [], 'Cannot find the selected profile.'
+  if metric_index >= len(next(snapshots.itervalues()).keys):
+    return _HTTP_GONE, [], 'Invalid metric id %d' % metric_index
+
+  def FindBucketByPath(bucket, path, parent_path=''):  # Essentially a DFS.
+    cur_path = parent_path + bucket.name + '/'
+    if cur_path == path:
+      return bucket
+    for child in bucket.children:
+      res = FindBucketByPath(child, path, cur_path)
+      if res:
+        return res
+    return None
+
+  # The resulting data table will look like this (assuming len(metrics) == 2):
+  # Time  Ashmem      Dalvik     Other
+  # 0    (1024,0)  (4096,1024)  (0,0)
+  # 30   (512,512) (1024,1024)  (0,512)
+  # 60   (0,512)   (1024,0)     (512,0)
+  resp = {'cols': [], 'rows': []}
+  for time, aggregated_result in snapshots.iteritems():
+    bucket = FindBucketByPath(aggregated_result.total, bucket_path)
+    if not bucket:
+      return _HTTP_GONE, [], 'Bucket %s not found' % bucket_path
+
+    # If the user selected a non-leaf bucket, display the breakdown of its
+    # direct children. Otherwise just the leaf bucket.
+    children_buckets = bucket.children if bucket.children else [bucket]
+
+    # Create the columns (form the buckets) when processing the first snapshot.
+    if not resp['cols']:
+      resp['cols'] += [{'label': 'Time', 'type': 'string'}]
+      for child_bucket in children_buckets:
+        resp['cols'] += [{'label': child_bucket.name, 'type': 'number'}]
+
+    row = [{'v': str(time), 'f': None}]
+    for child_bucket in children_buckets:
+      row += [{'v': child_bucket.values[metric_index] / 1024, 'f': None}]
+    resp['rows'] += [{'c': row}]
+
+  return _HTTP_OK, [], resp
 
 
 @AjaxHandler(r'/ajax/ps/(\w+)/(\w+)$')  # /ajax/ps/Android/a0b1c2[?all=1]
@@ -375,6 +538,29 @@ def _GetProcess(args):
   if not device:
     return None
   return device.GetProcess(int(args[2]))
+
+
+def _CacheObject(obj_to_store):
+  """Stores an object in the server-side cache and returns its unique id."""
+  if len(_cached_objs) >= _CACHE_LEN:
+    _cached_objs.popitem(last=False)
+  obj_id = uuid.uuid4().hex
+  _cached_objs[obj_id] = obj_to_store
+  return str(obj_id)
+
+
+def _GetCacheObject(obj_id):
+  """Retrieves an object in the server-side cache by its id."""
+  return _cached_objs.get(obj_id)
+
+
+def _StrMem(nbytes):
+  """Converts a number (of bytes) into a human readable string (kb, mb)."""
+  if nbytes < 2**10:
+    return '%d B' % nbytes
+  if nbytes < 2**20:
+    return '%.1f KB' % round(nbytes / 1024.0)
+  return '%.1f MB' % (nbytes / 1048576.0)
 
 
 def _HttpRequestHandler(environ, start_response):
