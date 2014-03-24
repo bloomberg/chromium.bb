@@ -71,7 +71,7 @@ protected:
 
 class LegacyStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtr<LegacyStyleInterpolation> create(PassRefPtr<AnimatableValue> start, PassRefPtr<AnimatableValue> end, CSSPropertyID id)
+    static PassRefPtr<LegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<AnimatableValue> start, PassRefPtrWillBeRawPtr<AnimatableValue> end, CSSPropertyID id)
     {
         return adoptRef(new LegacyStyleInterpolation(InterpolableAnimatableValue::create(start), InterpolableAnimatableValue::create(end), id));
     }
@@ -81,7 +81,7 @@ public:
     virtual bool isLegacyStyleInterpolation() const OVERRIDE FINAL { return true; }
     AnimatableValue* currentValue() const
     {
-        InterpolableAnimatableValue *value = static_cast<InterpolableAnimatableValue *>(m_cachedValue.get());
+        InterpolableAnimatableValue* value = static_cast<InterpolableAnimatableValue*>(m_cachedValue.get());
         return value->value();
     }
 

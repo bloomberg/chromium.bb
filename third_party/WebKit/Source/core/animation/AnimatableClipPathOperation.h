@@ -39,14 +39,16 @@ namespace WebCore {
 class AnimatableClipPathOperation FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableClipPathOperation() { }
-    static PassRefPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)
+    static PassRefPtrWillBeRawPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)
     {
-        return adoptRef(new AnimatableClipPathOperation(operation));
+        return adoptRefWillBeNoop(new AnimatableClipPathOperation(operation));
     }
     ClipPathOperation* clipPathOperation() const { return m_operation.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:

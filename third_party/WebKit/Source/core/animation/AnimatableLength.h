@@ -63,21 +63,23 @@ public:
 
     virtual ~AnimatableLength() { }
     static bool canCreateFrom(const CSSValue*);
-    static PassRefPtr<AnimatableLength> create(CSSValue*);
-    static PassRefPtr<AnimatableLength> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(CSSValue*);
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
-        return adoptRef(new AnimatableLength(number, unitType, cssPrimitiveValue));
+        return adoptRefWillBeNoop(new AnimatableLength(number, unitType, cssPrimitiveValue));
     }
-    static PassRefPtr<AnimatableLength> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
-        return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
+        return adoptRefWillBeNoop(new AnimatableLength(calcExpression, cssPrimitiveValue));
     }
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
     Length toLength(const CSSToLengthConversionData&, NumberRange = AllValues) const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:
@@ -108,7 +110,7 @@ private:
         return m_unitType == UnitTypeViewportWidth || m_unitType == UnitTypeViewportHeight || m_unitType == UnitTypeViewportMin || m_unitType == UnitTypeViewportMax;
     }
 
-    static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
     {
         ASSERT(leftAddend && rightAddend);
         return create(CSSCalcValue::createExpressionNode(leftAddend->toCSSCalcExpressionNode(), rightAddend->toCSSCalcExpressionNode(), CalcAdd));
@@ -117,7 +119,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
     PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
-    PassRefPtr<AnimatableLength> scale(double) const;
+    PassRefPtrWillBeRawPtr<AnimatableLength> scale(double) const;
     double clampedNumber(NumberRange range) const
     {
         ASSERT(!isCalc());
@@ -153,9 +155,9 @@ private:
     double m_number;
     const NumberUnitType m_unitType;
 
-    RefPtrWillBePersistent<CSSCalcExpressionNode> m_calcExpression;
+    RefPtrWillBeMember<CSSCalcExpressionNode> m_calcExpression;
 
-    mutable RefPtrWillBePersistent<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
+    mutable RefPtrWillBeMember<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 
     friend class AnimationAnimatableLengthTest;
 };

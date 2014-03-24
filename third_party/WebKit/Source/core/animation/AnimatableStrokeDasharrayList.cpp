@@ -62,10 +62,10 @@ bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(const Animatabl
     return false;
 }
 
-PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    Vector<RefPtr<AnimatableValue> > from = m_values;
-    Vector<RefPtr<AnimatableValue> > to = toAnimatableStrokeDasharrayList(value)->m_values;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > from = m_values;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > to = toAnimatableStrokeDasharrayList(value)->m_values;
 
     // The spec states that if the sum of all values is zero, this should be
     // treated like a value of 'none', which means that a solid line is drawn.
@@ -75,7 +75,11 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const A
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
+#if ENABLE_OILPAN
+        DEFINE_STATIC_LOCAL(Persistent<AnimatableSVGLength>, zeroPixels, (AnimatableSVGLength::create(SVGLength::create())));
+#else
         DEFINE_STATIC_REF(AnimatableSVGLength, zeroPixels, AnimatableSVGLength::create(SVGLength::create()).leakRef());
+#endif
         if (from.isEmpty()) {
             from.append(zeroPixels);
             from.append(zeroPixels);
@@ -86,10 +90,15 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const A
         }
     }
 
-    Vector<RefPtr<AnimatableValue> > interpolatedValues;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > interpolatedValues;
     bool success = interpolateLists(from, to, fraction, interpolatedValues);
     ASSERT_UNUSED(success, success);
-    return adoptRef(new AnimatableStrokeDasharrayList(interpolatedValues));
+    return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(interpolatedValues));
+}
+
+void AnimatableStrokeDasharrayList::trace(Visitor* visitor)
+{
+    AnimatableRepeatable::trace(visitor);
 }
 
 } // namespace WebCore

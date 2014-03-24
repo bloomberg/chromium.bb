@@ -39,7 +39,6 @@
 
 namespace WebCore {
 
-class AnimatableValue;
 class Interpolation;
 
 class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect> {

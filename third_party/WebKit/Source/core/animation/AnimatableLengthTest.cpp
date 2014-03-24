@@ -56,12 +56,12 @@ protected:
     {
     }
 
-    PassRefPtr<AnimatableLength> create(double value, CSSPrimitiveValue::UnitTypes type)
+    PassRefPtrWillBeRawPtr<AnimatableLength> create(double value, CSSPrimitiveValue::UnitTypes type)
     {
         return AnimatableLength::create(CSSPrimitiveValue::create(value, type).get());
     }
 
-    PassRefPtr<AnimatableLength> create(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
+    PassRefPtrWillBeRawPtr<AnimatableLength> create(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
     {
         return AnimatableLength::create(createCalc(valueLeft, typeLeft, valueRight, typeRight).get());
     }
@@ -80,12 +80,12 @@ protected:
         return AnimatableLength::create(cssValue)->toCSSValue();
     }
 
-    AnimatableLength::NumberUnitType commonUnitType(PassRefPtr<AnimatableLength> a, PassRefPtr<AnimatableLength> b)
+    AnimatableLength::NumberUnitType commonUnitType(PassRefPtrWillBeRawPtr<AnimatableLength> a, PassRefPtrWillBeRawPtr<AnimatableLength> b)
     {
         return a->commonUnitType(b.get());
     }
 
-    bool isUnitlessZero(PassRefPtr<AnimatableLength> a)
+    bool isUnitlessZero(PassRefPtrWillBeRawPtr<AnimatableLength> a)
     {
         return a->isUnitlessZero();
     }
@@ -215,8 +215,8 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
 
 TEST_F(AnimationAnimatableLengthTest, Interpolate)
 {
-    RefPtr<AnimatableLength> from10px = create(10, CSSPrimitiveValue::CSS_PX);
-    RefPtr<AnimatableLength> to20pxAsInches = create(20.0 / 96, CSSPrimitiveValue::CSS_IN);
+    RefPtrWillBeRawPtr<AnimatableLength> from10px = create(10, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<AnimatableLength> to20pxAsInches = create(20.0 / 96, CSSPrimitiveValue::CSS_IN);
 
     EXPECT_REFV_EQ(create(5,  CSSPrimitiveValue::CSS_PX),
         AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(), -0.5));
@@ -234,8 +234,8 @@ TEST_F(AnimationAnimatableLengthTest, Interpolate)
     EXPECT_REFV_EQ(create(25, CSSPrimitiveValue::CSS_PX),
         AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  1.5));
 
-    RefPtr<AnimatableLength> from10em = create(10, CSSPrimitiveValue::CSS_EMS);
-    RefPtr<AnimatableLength> to20rem = create(20, CSSPrimitiveValue::CSS_REMS);
+    RefPtrWillBeRawPtr<AnimatableLength> from10em = create(10, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<AnimatableLength> to20rem = create(20, CSSPrimitiveValue::CSS_REMS);
     EXPECT_REFV_EQ(create(15, CSSPrimitiveValue::CSS_EMS, -10, CSSPrimitiveValue::CSS_REMS),
         AnimatableValue::interpolate(from10em.get(), to20rem.get(), -0.5));
     EXPECT_REFV_EQ(create(10, CSSPrimitiveValue::CSS_EMS),
@@ -252,7 +252,7 @@ TEST_F(AnimationAnimatableLengthTest, Interpolate)
         AnimatableValue::interpolate(from10em.get(), to20rem.get(),  1.5));
 
     // Zero values are typeless and hence we can don't get a calc
-    RefPtr<AnimatableLength> from0px = create(0, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<AnimatableLength> from0px = create(0, CSSPrimitiveValue::CSS_PX);
     EXPECT_REFV_EQ(create(-10, CSSPrimitiveValue::CSS_REMS),
         AnimatableValue::interpolate(from0px.get(), to20rem.get(), -0.5));
     // At t=0, interpolate always returns the "from" value.
@@ -266,7 +266,7 @@ TEST_F(AnimationAnimatableLengthTest, Interpolate)
         AnimatableValue::interpolate(from0px.get(), to20rem.get(), 1.5));
 
     // Except 0% which is special
-    RefPtr<AnimatableLength> from0percent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
+    RefPtrWillBeRawPtr<AnimatableLength> from0percent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     EXPECT_REFV_EQ(create(0, CSSPrimitiveValue::CSS_PERCENTAGE, -10, CSSPrimitiveValue::CSS_REMS),
         AnimatableValue::interpolate(from0percent.get(), to20rem.get(), -0.5));
     // At t=0, interpolate always returns the "from" value.
@@ -298,12 +298,12 @@ TEST_F(AnimationAnimatableLengthTest, Add)
         AnimatableValue::add(create(0, CSSPrimitiveValue::CSS_EMS).get(), create(20, CSSPrimitiveValue::CSS_REMS).get()));
 
     // Check you actually get the reference back for zero optimization
-    RefPtr<AnimatableLength> rems20 = create(20, CSSPrimitiveValue::CSS_REMS);
+    RefPtrWillBeRawPtr<AnimatableLength> rems20 = create(20, CSSPrimitiveValue::CSS_REMS);
     EXPECT_EQ(rems20.get(), AnimatableValue::add(create(0, CSSPrimitiveValue::CSS_EMS).get(), rems20.get()).get());
     EXPECT_EQ(rems20.get(), AnimatableValue::add(rems20.get(), create(0, CSSPrimitiveValue::CSS_EMS).get()).get());
 
     // Except 0% which is special
-    RefPtr<AnimatableLength> zeropercent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
+    RefPtrWillBeRawPtr<AnimatableLength> zeropercent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     EXPECT_REFV_EQ(create(0, CSSPrimitiveValue::CSS_PERCENTAGE, -10, CSSPrimitiveValue::CSS_REMS),
         AnimatableValue::add(zeropercent.get(), create(-10, CSSPrimitiveValue::CSS_REMS).get()));
     EXPECT_REFV_EQ(create(-10, CSSPrimitiveValue::CSS_REMS, 0, CSSPrimitiveValue::CSS_PERCENTAGE),
@@ -335,28 +335,28 @@ TEST_F(AnimationAnimatableLengthTest, IsUnitless)
 
 TEST_F(AnimationAnimatableLengthTest, CommonUnitType)
 {
-    RefPtr<AnimatableLength> length10px = create(10, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<AnimatableLength> length10px = create(10, CSSPrimitiveValue::CSS_PX);
     EXPECT_EQ(AnimatableLength::UnitTypePixels,  commonUnitType(length10px, create(1, CSSPrimitiveValue::CSS_PX).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
-    RefPtr<AnimatableLength> length0px = create(0, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<AnimatableLength> length0px = create(0, CSSPrimitiveValue::CSS_PX);
     EXPECT_EQ(AnimatableLength::UnitTypePixels,     commonUnitType(length0px, create(1, CSSPrimitiveValue::CSS_PX).get()));
     EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeFontSize,   commonUnitType(length0px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
     EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
-    RefPtr<AnimatableLength> length0percent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
+    RefPtrWillBeRawPtr<AnimatableLength> length0percent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(1, CSSPrimitiveValue::CSS_PX).get()));
     EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0percent, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(3, CSSPrimitiveValue::CSS_EMS).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
     EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0percent, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
-    RefPtr<AnimatableLength> lengthCalc = create(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM);
+    RefPtrWillBeRawPtr<AnimatableLength> lengthCalc = create(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM);
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(1, CSSPrimitiveValue::CSS_PX).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
     EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(3, CSSPrimitiveValue::CSS_EMS).get()));

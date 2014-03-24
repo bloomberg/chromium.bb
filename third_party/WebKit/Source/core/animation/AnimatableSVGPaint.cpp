@@ -39,7 +39,7 @@ bool AnimatableSVGPaint::usesDefaultInterpolationWith(const AnimatableValue* val
     return paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR;
 }
 
-PassRefPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
     if (paintType() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR && svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR) {
@@ -49,7 +49,7 @@ PassRefPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableVa
     return defaultInterpolateTo(this, value, fraction);
 }
 
-PassRefPtr<AnimatableValue> AnimatableSVGPaint::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::addWith(const AnimatableValue* value) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
     if (paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR) {

@@ -40,21 +40,23 @@ namespace WebCore {
 class AnimatableSVGPaint FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableSVGPaint() { }
-    static PassRefPtr<AnimatableSVGPaint> create(SVGPaint::SVGPaintType type, const Color& color, const String& uri)
+    static PassRefPtrWillBeRawPtr<AnimatableSVGPaint> create(SVGPaint::SVGPaintType type, const Color& color, const String& uri)
     {
         return create(type, AnimatableColorImpl(color), uri);
     }
-    static PassRefPtr<AnimatableSVGPaint> create(SVGPaint::SVGPaintType type, const AnimatableColorImpl& color, const String& uri)
+    static PassRefPtrWillBeRawPtr<AnimatableSVGPaint> create(SVGPaint::SVGPaintType type, const AnimatableColorImpl& color, const String& uri)
     {
-        return adoptRef(new AnimatableSVGPaint(type, color, uri));
+        return adoptRefWillBeNoop(new AnimatableSVGPaint(type, color, uri));
     }
     SVGPaint::SVGPaintType paintType() const { return m_type; };
     Color color() const { return m_color.toColor(); };
     const String& uri() const { return m_uri; };
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:

@@ -100,19 +100,19 @@ double AnimatableColorImpl::distanceTo(const AnimatableColorImpl& other) const
         + square(m_alpha - other.m_alpha));
 }
 
-PassRefPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
+PassRefPtrWillBeRawPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
 {
-    return adoptRef(new AnimatableColor(color, visitedLinkColor));
+    return adoptRefWillBeNoop(new AnimatableColor(color, visitedLinkColor));
 }
 
-PassRefPtr<AnimatableValue> AnimatableColor::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableColor::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableColor* color = toAnimatableColor(value);
     return create(m_color.interpolateTo(color->m_color, fraction),
         m_visitedLinkColor.interpolateTo(color->m_visitedLinkColor, fraction));
 }
 
-PassRefPtr<AnimatableValue> AnimatableColor::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableColor::addWith(const AnimatableValue* value) const
 {
     const AnimatableColor* color = toAnimatableColor(value);
     return create(m_color.addWith(color->m_color),

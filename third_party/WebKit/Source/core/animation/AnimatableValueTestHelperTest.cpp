@@ -50,14 +50,9 @@ namespace {
 
 class AnimationAnimatableValueTestHelperTest : public ::testing::Test {
 protected:
-    ::std::string PrintToString(PassRefPtr<AnimatableValue> animValue)
+    ::std::string PrintToString(PassRefPtrWillBeRawPtr<AnimatableValue> animValue)
     {
-        return PrintToString(animValue.get());
-    }
-
-    ::std::string PrintToString(const AnimatableValue* animValue)
-    {
-        return ::testing::PrintToString(*animValue);
+        return ::testing::PrintToString(*animValue.get());
     }
 };
 
@@ -104,10 +99,10 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
             )));
 
     EXPECT_THAT(
-        PrintToString(AnimatableValue::neutralValue()),
+        PrintToString(const_cast<AnimatableValue*>(AnimatableValue::neutralValue())),
         testing::StartsWith("AnimatableNeutral@"));
 
-    Vector<RefPtr<AnimatableValue> > v1;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > v1;
     v1.append(AnimatableLength::create(CSSPrimitiveValue::create(3, CSSPrimitiveValue::CSS_REMS).get()));
     v1.append(AnimatableLength::create(CSSPrimitiveValue::create(4, CSSPrimitiveValue::CSS_PT).get()));
     EXPECT_EQ(

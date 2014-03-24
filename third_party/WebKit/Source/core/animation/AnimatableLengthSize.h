@@ -38,19 +38,21 @@ namespace WebCore {
 class AnimatableLengthSize FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableLengthSize() { }
-    static PassRefPtr<AnimatableLengthSize> create(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
+    static PassRefPtrWillBeRawPtr<AnimatableLengthSize> create(PassRefPtrWillBeRawPtr<AnimatableValue> width, PassRefPtrWillBeRawPtr<AnimatableValue> height)
     {
-        return adoptRef(new AnimatableLengthSize(width, height));
+        return adoptRefWillBeNoop(new AnimatableLengthSize(width, height));
     }
     const AnimatableValue* width() const { return m_width.get(); }
     const AnimatableValue* height() const { return m_height.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLengthSize(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
+    AnimatableLengthSize(PassRefPtrWillBeRawPtr<AnimatableValue> width, PassRefPtrWillBeRawPtr<AnimatableValue> height)
         : m_width(width)
         , m_height(height)
     {
@@ -58,8 +60,8 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeLengthSize; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    RefPtr<AnimatableValue> m_width;
-    RefPtr<AnimatableValue> m_height;
+    RefPtrWillBeMember<AnimatableValue> m_width;
+    RefPtrWillBeMember<AnimatableValue> m_height;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, isLengthSize());

@@ -39,15 +39,17 @@ namespace WebCore {
 class AnimatableShadow FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableShadow() { }
-    static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList)
+    static PassRefPtrWillBeRawPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList)
     {
-        return adoptRef(new AnimatableShadow(shadowList));
+        return adoptRefWillBeNoop(new AnimatableShadow(shadowList));
     }
     ShadowList* shadowList() const { return m_shadowList.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
     explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList)

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-PassRefPtr<AnimatableLength> AnimatableLength::create(CSSValue* value)
+PassRefPtrWillBeRawPtr<AnimatableLength> AnimatableLength::create(CSSValue* value)
 {
     ASSERT(canCreateFrom(value));
     if (value->isPrimitiveValue()) {
@@ -97,7 +97,7 @@ bool AnimatableLength::usesDefaultInterpolationWith(const AnimatableValue* value
     return type == UnitTypeCalc && (isViewportUnit() || length->isViewportUnit());
 }
 
-PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLength* length = toAnimatableLength(value);
     NumberUnitType type = commonUnitType(length);
@@ -111,7 +111,7 @@ PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValu
     return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 
-PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
 {
     // Optimization for adding with 0.
     if (isUnitlessZero())
@@ -166,7 +166,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(
     return m_cachedCSSPrimitiveValue;
 }
 
-PassRefPtr<AnimatableLength> AnimatableLength::scale(double factor) const
+PassRefPtrWillBeRawPtr<AnimatableLength> AnimatableLength::scale(double factor) const
 {
     if (isCalc()) {
         return AnimatableLength::create(CSSCalcValue::createExpressionNode(
@@ -243,6 +243,12 @@ unsigned short AnimatableLength::numberTypeToPrimitiveUnit(NumberUnitType number
     }
     ASSERT_NOT_REACHED();
     return CSSPrimitiveValue::CSS_UNKNOWN;
+}
+
+void AnimatableLength::trace(Visitor* visitor)
+{
+    visitor->trace(m_calcExpression);
+    visitor->trace(m_cachedCSSPrimitiveValue);
 }
 
 } // namespace WebCore

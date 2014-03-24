@@ -41,7 +41,7 @@ bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableVa
     return AnimatableValue::usesDefaultInterpolation(lengthBox->box(), box());
 }
 
-PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
     if (lengthBox->flag() == flag()) {
@@ -52,7 +52,7 @@ PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const Anim
     return defaultInterpolateTo(this, value, fraction);
 }
 
-PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBoxAndBool::addWith(const AnimatableValue* value) const
 {
     const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
     if (lengthBox->flag() == flag()) {
@@ -67,6 +67,11 @@ bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
     return box()->equals(lengthBox->box()) && flag() == lengthBox->flag();
+}
+
+void AnimatableLengthBoxAndBool::trace(Visitor* visitor)
+{
+    visitor->trace(m_box);
 }
 
 }

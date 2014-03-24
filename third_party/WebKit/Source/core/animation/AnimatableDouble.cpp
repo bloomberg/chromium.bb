@@ -49,7 +49,7 @@ bool AnimatableDouble::usesDefaultInterpolationWith(const AnimatableValue* value
     return (m_constraint == InterpolationIsNonContinuousWithZero) && (!m_number || !other->m_number);
 }
 
-PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableDouble* other = toAnimatableDouble(value);
     ASSERT(m_constraint == other->m_constraint);
@@ -58,7 +58,7 @@ PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValu
     return AnimatableDouble::create(blend(m_number, other->m_number, fraction));
 }
 
-PassRefPtr<AnimatableValue> AnimatableDouble::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::addWith(const AnimatableValue* value) const
 {
     // Optimization for adding with 0.
     if (!m_number)

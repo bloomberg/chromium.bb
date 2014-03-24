@@ -96,12 +96,20 @@ public:
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(from);
+            visitor->trace(to);
+        }
+
         CSSPropertyID id;
-        const AnimatableValue* from;
-        const AnimatableValue* to;
+        RawPtrWillBeMember<const AnimatableValue> from;
+        RawPtrWillBeMember<const AnimatableValue> to;
         RefPtr<InertAnimation> animation;
     };
-    typedef HashMap<CSSPropertyID, NewTransition> NewTransitionMap;
+    typedef WillBePersistentHeapHashMap<CSSPropertyID, NewTransition> NewTransitionMap;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
@@ -164,11 +172,19 @@ private:
     // ParGroup to drive multiple animations from a single AnimationPlayer.
     typedef HashMap<AtomicString, HashSet<RefPtr<AnimationPlayer> > > AnimationMap;
     struct RunningTransition {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(from);
+            visitor->trace(to);
+        }
+
         Animation* transition; // The TransitionTimeline keeps the AnimationPlayers alive
-        const AnimatableValue* from;
-        const AnimatableValue* to;
+        RawPtrWillBeMember<const AnimatableValue> from;
+        RawPtrWillBeMember<const AnimatableValue> to;
     };
-    typedef HashMap<CSSPropertyID, RunningTransition > TransitionMap;
+    typedef WillBePersistentHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
     AnimationMap m_animations;
     TransitionMap m_transitions;
     OwnPtr<CSSAnimationUpdate> m_pendingUpdate;

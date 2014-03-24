@@ -50,8 +50,8 @@ namespace WebCore {
 
 bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
-    const Vector<RefPtr<AnimatableValue> >& fromValues = m_values;
-    const Vector<RefPtr<AnimatableValue> >& toValues = toAnimatableRepeatable(value)->m_values;
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& fromValues = m_values;
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& toValues = toAnimatableRepeatable(value)->m_values;
     ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
     size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
     for (size_t i = 0; i < size; ++i) {
@@ -64,7 +64,7 @@ bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* v
     return false;
 }
 
-bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue> >& fromValues, const Vector<RefPtr<AnimatableValue> >& toValues, double fraction, Vector<RefPtr<AnimatableValue> >& interpolatedValues)
+bool AnimatableRepeatable::interpolateLists(const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& fromValues, const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& toValues, double fraction, WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& interpolatedValues)
 {
     // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
     ASSERT(interpolatedValues.isEmpty());
@@ -81,18 +81,20 @@ bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue>
     return true;
 }
 
-PassRefPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    Vector<RefPtr<AnimatableValue> > interpolatedValues;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > interpolatedValues;
     bool success = interpolateLists(m_values, toAnimatableRepeatable(value)->m_values, fraction, interpolatedValues);
-    return success ? create(interpolatedValues) : defaultInterpolateTo(this, value, fraction);
+    if (success)
+        return create(interpolatedValues);
+    return defaultInterpolateTo(this, value, fraction);
 }
 
-PassRefPtr<AnimatableValue> AnimatableRepeatable::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableRepeatable::addWith(const AnimatableValue* value) const
 {
-    const Vector<RefPtr<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
     ASSERT(!m_values.isEmpty() && !otherValues.isEmpty());
-    Vector<RefPtr<AnimatableValue> > addedValues(lowestCommonMultiple(m_values.size(), otherValues.size()));
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > addedValues(lowestCommonMultiple(m_values.size(), otherValues.size()));
     for (size_t i = 0; i < addedValues.size(); ++i) {
         const AnimatableValue* left = m_values[i % m_values.size()].get();
         const AnimatableValue* right = otherValues[i % otherValues.size()].get();
@@ -103,7 +105,7 @@ PassRefPtr<AnimatableValue> AnimatableRepeatable::addWith(const AnimatableValue*
 
 bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
 {
-    const Vector<RefPtr<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
     if (m_values.size() != otherValues.size())
         return false;
     for (size_t i = 0; i < m_values.size(); ++i) {
@@ -111,6 +113,11 @@ bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
             return false;
     }
     return true;
+}
+
+void AnimatableRepeatable::trace(Visitor* visitor)
+{
+    visitor->trace(m_values);
 }
 
 } // namespace WebCore

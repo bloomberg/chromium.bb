@@ -124,7 +124,7 @@ private:
 // FIXME: Remove this when we can.
 class InterpolableAnimatableValue : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
+    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtrWillBeRawPtr<AnimatableValue> value)
     {
         return adoptPtr(new InterpolableAnimatableValue(value));
     }
@@ -135,9 +135,9 @@ public:
 
 private:
     virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
-    RefPtr<AnimatableValue> m_value;
+    RefPtrWillBePersistent<AnimatableValue> m_value;
 
-    InterpolableAnimatableValue(PassRefPtr<AnimatableValue> value)
+    InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
         : m_value(value)
     { }
 };

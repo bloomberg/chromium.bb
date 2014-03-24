@@ -168,7 +168,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
             bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(property);
             if (!startNeedsValue && !endNeedsValue)
                 continue;
-            RefPtr<AnimatableValue> snapshotValue = CSSAnimatableValueFactory::create(property, style);
+            RefPtrWillBeRawPtr<AnimatableValue> snapshotValue = CSSAnimatableValueFactory::create(property, style);
             if (startNeedsValue)
                 startKeyframe->setPropertyValue(property, snapshotValue.get());
             if (endNeedsValue)
@@ -518,7 +518,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
 void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSAnimationData* anim, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
 {
-    RefPtr<AnimatableValue> to;
+    RefPtrWillBeRawPtr<AnimatableValue> to;
     if (activeTransitions) {
         TransitionMap::const_iterator activeTransitionIter = activeTransitions->find(id);
         if (activeTransitionIter != activeTransitions->end()) {
@@ -539,7 +539,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     if (!to)
         to = CSSAnimatableValueFactory::create(id, style);
 
-    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
+    RefPtrWillBeRawPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
     // If we have multiple transitions on the same property, we will use the
     // last one since we iterate over them in order.
     if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))

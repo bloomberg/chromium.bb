@@ -32,19 +32,20 @@
 #define AnimatableValue_h
 
 #include "core/css/CSSValue.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class AnimatableValue : public RefCounted<AnimatableValue> {
+class AnimatableValue : public RefCountedWillBeGarbageCollectedFinalized<AnimatableValue> {
 public:
     virtual ~AnimatableValue() { }
 
     static const AnimatableValue* neutralValue();
 
-    static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
+    static PassRefPtrWillBeRawPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
-    static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
+    static PassRefPtrWillBeRawPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
     static double distance(const AnimatableValue* from, const AnimatableValue* to);
     static bool usesDefaultInterpolation(const AnimatableValue* from, const AnimatableValue* to)
     {
@@ -87,6 +88,8 @@ public:
         return value->type() == type();
     }
 
+    virtual void trace(Visitor*) = 0;
+
 protected:
     enum AnimatableType {
         TypeClipPathOperation,
@@ -112,17 +115,17 @@ protected:
     };
 
     virtual bool usesDefaultInterpolationWith(const AnimatableValue* value) const { return false; }
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
-    static PassRefPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
+    static PassRefPtrWillBeRawPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
 
     // For noncommutative values read A->addWith(B) to mean the value A with B composed onto it.
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const;
-    static PassRefPtr<AnimatableValue> defaultAddWith(const AnimatableValue* left, const AnimatableValue* right) { return takeConstRef(right); }
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const;
+    static PassRefPtrWillBeRawPtr<AnimatableValue> defaultAddWith(const AnimatableValue* left, const AnimatableValue* right) { return takeConstRef(right); }
 
 
 
     template <class T>
-    static PassRefPtr<T> takeConstRef(const T* value) { return PassRefPtr<T>(const_cast<T*>(value)); }
+    static PassRefPtrWillBeRawPtr<T> takeConstRef(const T* value) { return PassRefPtrWillBeRawPtr<T>(const_cast<T*>(value)); }
 
 private:
     virtual AnimatableType type() const = 0;

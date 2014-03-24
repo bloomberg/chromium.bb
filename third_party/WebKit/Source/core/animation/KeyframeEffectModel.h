@@ -73,14 +73,15 @@ public:
     PassRefPtrWillBeRawPtr<Keyframe> clone() const { return adoptRefWillBeNoop(new Keyframe(*this)); }
     PassRefPtrWillBeRawPtr<Keyframe> cloneWithOffset(double offset) const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
+
 private:
     Keyframe();
     Keyframe(const Keyframe&);
     double m_offset;
     AnimationEffect::CompositeOperation m_composite;
     RefPtr<TimingFunction> m_easing;
-    typedef HashMap<CSSPropertyID, RefPtr<AnimatableValue> > PropertyValueMap;
+    typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue> > PropertyValueMap;
     PropertyValueMap m_propertyValues;
 };
 
@@ -88,7 +89,7 @@ class KeyframeEffectModel FINAL : public AnimationEffect {
 public:
     class PropertySpecificKeyframe;
     typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
-    typedef Vector<OwnPtr<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
+    typedef WillBeHeapVector<OwnPtrWillBeMember<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
     // FIXME: Implement accumulation.
     static PassRefPtrWillBeRawPtr<KeyframeEffectModel> create(const KeyframeVector& keyframes)
     {
@@ -113,27 +114,33 @@ public:
 
     PropertySet properties() const;
 
-    class PropertySpecificKeyframe {
+    class PropertySpecificKeyframe : public NoBaseWillBeGarbageCollectedFinalized<PropertySpecificKeyframe> {
     public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, CompositeOperation);
         double offset() const { return m_offset; }
         TimingFunction* easing() const { return m_easing.get(); }
         const AnimatableValue* value() const { return m_value.get(); }
         AnimationEffect::CompositeOperation composite() const { return m_composite; }
-        PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
+        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
+
+        void trace(Visitor*);
+
     private:
         // Used by cloneWithOffset().
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>, CompositeOperation);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue>, CompositeOperation);
         double m_offset;
         RefPtr<TimingFunction> m_easing;
-        RefPtr<AnimatableValue> m_value;
+        RefPtrWillBeMember<AnimatableValue> m_value;
         AnimationEffect::CompositeOperation m_composite;
     };
 
-    class PropertySpecificKeyframeGroup {
+    class PropertySpecificKeyframeGroup : public NoBaseWillBeGarbageCollectedFinalized<PropertySpecificKeyframeGroup> {
     public:
-        void appendKeyframe(PassOwnPtr<PropertySpecificKeyframe>);
+        void appendKeyframe(PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe>);
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
+
+        void trace(Visitor*);
+
     private:
         PropertySpecificKeyframeVector m_keyframes;
         void removeRedundantKeyframes();
@@ -163,8 +170,8 @@ private:
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
-    typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
-    mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+    typedef WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
+    mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
 
     mutable RefPtr<InterpolationEffect> m_interpolationEffect;
 

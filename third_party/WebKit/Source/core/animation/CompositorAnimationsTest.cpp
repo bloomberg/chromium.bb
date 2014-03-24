@@ -150,7 +150,7 @@ public:
 
     PassRefPtrWillBeRawPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
     {
-        RefPtr<AnimatableValue> value;
+        RefPtrWillBeRawPtr<AnimatableValue> value;
         if (id == CSSPropertyWebkitTransform)
             value = AnimatableTransform::create(TransformOperations());
         else
@@ -175,7 +175,7 @@ public:
         OwnPtrWillBeRawPtr<KeyframeEffectModel::KeyframeVector> frames = adoptPtrWillBeNoop(new KeyframeEffectModel::KeyframeVector);
         for (size_t i = 0; i < values.size(); i++) {
             double offset = 1.0 / (values.size() - 1) * i;
-            RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
+            RefPtrWillBeRawPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
             frames->append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
         }
         return frames.release();

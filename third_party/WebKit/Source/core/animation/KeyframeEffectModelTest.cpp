@@ -42,17 +42,17 @@ using namespace WebCore;
 
 namespace {
 
-PassRefPtr<AnimatableValue> unknownAnimatableValue(double n)
+PassRefPtrWillBeRawPtr<AnimatableValue> unknownAnimatableValue(double n)
 {
     return AnimatableUnknown::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_UNKNOWN).get());
 }
 
-PassRefPtr<AnimatableValue> pixelAnimatableValue(double n)
+PassRefPtrWillBeRawPtr<AnimatableValue> pixelAnimatableValue(double n)
 {
     return AnimatableLength::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get());
 }
 
-KeyframeEffectModel::KeyframeVector keyframesAtZeroAndOne(PassRefPtr<AnimatableValue> zeroValue, PassRefPtr<AnimatableValue> oneValue)
+KeyframeEffectModel::KeyframeVector keyframesAtZeroAndOne(PassRefPtrWillBeRawPtr<AnimatableValue> zeroValue, PassRefPtrWillBeRawPtr<AnimatableValue> oneValue)
 {
     KeyframeEffectModel::KeyframeVector keyframes(2);
     keyframes[0] = Keyframe::create();
@@ -73,7 +73,7 @@ void expectProperty(CSSPropertyID property, PassRefPtr<Interpolation> interpolat
 void expectDoubleValue(double expectedValue, PassRefPtr<Interpolation> interpolationValue)
 {
     LegacyStyleInterpolation* interpolation = toLegacyStyleInterpolation(interpolationValue.get());
-    RefPtr<AnimatableValue> value = interpolation->currentValue();
+    RefPtrWillBeRawPtr<AnimatableValue> value = interpolation->currentValue();
 
     ASSERT_TRUE(value->isLength() || value->isUnknown());
 

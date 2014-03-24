@@ -39,15 +39,17 @@ namespace WebCore {
 class AnimatableTransform FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableTransform() { }
-    static PassRefPtr<AnimatableTransform> create(const TransformOperations&);
+    static PassRefPtrWillBeRawPtr<AnimatableTransform> create(const TransformOperations&);
     const TransformOperations& transformOperations() const
     {
         return m_transform;
     }
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
     explicit AnimatableTransform(const TransformOperations& transform)

@@ -33,18 +33,18 @@
 
 namespace WebCore {
 
-PassRefPtr<AnimatableTransform> AnimatableTransform::create(const TransformOperations& transform)
+PassRefPtrWillBeRawPtr<AnimatableTransform> AnimatableTransform::create(const TransformOperations& transform)
 {
-    return adoptRef(new AnimatableTransform(transform));
+    return adoptRefWillBeNoop(new AnimatableTransform(transform));
 }
 
-PassRefPtr<AnimatableValue> AnimatableTransform::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableTransform::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableTransform* transform = toAnimatableTransform(value);
     return AnimatableTransform::create(transform->m_transform.blend(m_transform, fraction));
 }
 
-PassRefPtr<AnimatableValue> AnimatableTransform::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableTransform::addWith(const AnimatableValue* value) const
 {
     const AnimatableTransform* transform = toAnimatableTransform(value);
     return AnimatableTransform::create(m_transform.add(transform->m_transform));

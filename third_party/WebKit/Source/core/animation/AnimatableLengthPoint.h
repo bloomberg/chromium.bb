@@ -38,19 +38,21 @@ namespace WebCore {
 class AnimatableLengthPoint FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableLengthPoint() { }
-    static PassRefPtr<AnimatableLengthPoint> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)
+    static PassRefPtrWillBeRawPtr<AnimatableLengthPoint> create(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y)
     {
-        return adoptRef(new AnimatableLengthPoint(x, y));
+        return adoptRefWillBeNoop(new AnimatableLengthPoint(x, y));
     }
     const AnimatableValue* x() const { return m_x.get(); }
     const AnimatableValue* y() const { return m_y.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLengthPoint(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)
+    AnimatableLengthPoint(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y)
         : m_x(x)
         , m_y(y)
     {
@@ -58,8 +60,8 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeLengthPoint; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    RefPtr<AnimatableValue> m_x;
-    RefPtr<AnimatableValue> m_y;
+    RefPtrWillBeMember<AnimatableValue> m_x;
+    RefPtrWillBeMember<AnimatableValue> m_y;
 };
 
 inline const AnimatableLengthPoint* toAnimatableLengthPoint(const AnimatableValue* value)

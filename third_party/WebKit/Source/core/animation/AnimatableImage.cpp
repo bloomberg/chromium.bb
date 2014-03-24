@@ -47,7 +47,7 @@ bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value)
     return false;
 }
 
-PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
@@ -60,7 +60,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
     return create(crossfadeValue);
 }
 
-PassRefPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* value) const
 {
     // FIXME: Correct procedure is defined here: http://dev.w3.org/fxtf/web-animations/#the--image--type
     return defaultAddWith(this, value);

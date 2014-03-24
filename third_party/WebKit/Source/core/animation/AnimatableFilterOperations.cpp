@@ -41,7 +41,7 @@ bool AnimatableFilterOperations::usesDefaultInterpolationWith(const AnimatableVa
     return !operations().canInterpolateWith(target->operations());
 }
 
-PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
@@ -63,7 +63,7 @@ PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const Anim
     return AnimatableFilterOperations::create(result);
 }
 
-PassRefPtr<AnimatableValue> AnimatableFilterOperations::addWith(const AnimatableValue* value) const
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::addWith(const AnimatableValue* value) const
 {
     ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableFilterOperations::addWith()");
     return defaultAddWith(this, value);

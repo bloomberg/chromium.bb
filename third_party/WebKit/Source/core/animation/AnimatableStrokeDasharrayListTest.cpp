@@ -51,8 +51,8 @@ TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
 {
     RefPtr<SVGLengthList> svgListA = createSVGLengthList(4);
     RefPtr<SVGLengthList> svgListB = createSVGLengthList(4);
-    RefPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
-    RefPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
     EXPECT_TRUE(listA->equals(listB.get()));
 
     TrackExceptionState exceptionState;

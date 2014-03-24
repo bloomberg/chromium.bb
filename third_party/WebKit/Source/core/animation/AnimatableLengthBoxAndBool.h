@@ -38,20 +38,22 @@ namespace WebCore {
 class AnimatableLengthBoxAndBool FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableLengthBoxAndBool() { }
-    static PassRefPtr<AnimatableLengthBoxAndBool> create(PassRefPtr<AnimatableValue> box, bool flag)
+    static PassRefPtrWillBeRawPtr<AnimatableLengthBoxAndBool> create(PassRefPtrWillBeRawPtr<AnimatableValue> box, bool flag)
     {
-        return adoptRef(new AnimatableLengthBoxAndBool(box, flag));
+        return adoptRefWillBeNoop(new AnimatableLengthBoxAndBool(box, flag));
     }
     const AnimatableValue* box() const { return m_box.get(); }
     bool flag() const { return m_flag; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)
+    AnimatableLengthBoxAndBool(PassRefPtrWillBeRawPtr<AnimatableValue> box, bool flag)
         : m_box(box)
         , m_flag(flag)
     {
@@ -59,7 +61,7 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeLengthBoxAndBool; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    RefPtr<AnimatableValue> m_box;
+    RefPtrWillBeMember<AnimatableValue> m_box;
     bool m_flag;
 };
 

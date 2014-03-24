@@ -145,7 +145,7 @@ PassRefPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValu
 template <CSSPropertyID property>
 void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleResolverState& state)
 {
-    const Vector<RefPtr<AnimatableValue> >& values = toAnimatableRepeatable(value)->values();
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values = toAnimatableRepeatable(value)->values();
     ASSERT(!values.isEmpty());
     FillLayer* prev = 0;
     for (size_t i = 0; i < values.size(); ++i) {
