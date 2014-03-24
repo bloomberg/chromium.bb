@@ -16,7 +16,23 @@ class NetworkState;
 
 class NetworkPortalNotificationController {
  public:
+  enum NotificationMetric {
+    NOTIFICATION_METRIC_DISPLAYED = 0,
+    NOTIFICATION_METRIC_ERROR,
+    NOTIFICATION_METRIC_COUNT
+  };
+
+  enum UserActionMetric {
+    USER_ACTION_METRIC_CLICKED,
+    USER_ACTION_METRIC_CLOSED,
+    USER_ACTION_METRIC_IGNORED,
+    USER_ACTION_METRIC_COUNT
+  };
+
   static const char kNotificationId[];
+
+  static const char kNotificationMetric[];
+  static const char kUserActionMetric[];
 
   NetworkPortalNotificationController();
   virtual ~NetworkPortalNotificationController();
