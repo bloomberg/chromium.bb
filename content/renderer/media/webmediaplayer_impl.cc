@@ -978,7 +978,7 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
 
       SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
-      if (hasVideo() && client_->needsWebLayerForVideo()) {
+      if (hasVideo()) {
         DCHECK(!video_weblayer_);
         video_weblayer_.reset(
             new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));

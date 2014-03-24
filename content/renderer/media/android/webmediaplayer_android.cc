@@ -663,7 +663,14 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   natural_size_.width = width;
   natural_size_.height = height;
   ReallocateVideoFrame();
-  CreateWebLayerIfNeeded();
+
+  // Lazily allocate compositing layer.
+  if (!video_weblayer_) {
+    video_weblayer_.reset(
+        new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+    client_->setWebLayer(video_weblayer_.get());
+  }
+
   // TODO(qinmin): This is a hack. We need the media element to stop showing the
   // poster image by forcing it to call setDisplayMode(video). Should move the
   // logic into HTMLMediaElement.cpp.
@@ -987,13 +994,6 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
         VideoFrame::ReadPixelsCB());
     SetCurrentFrameInternal(new_frame);
   }
-}
-
-void WebMediaPlayerAndroid::CreateWebLayerIfNeeded() {
-  if (!hasVideo() || video_weblayer_ || !client_->needsWebLayerForVideo())
-    return;
-  video_weblayer_.reset(new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
-  client_->setWebLayer(video_weblayer_.get());
 }
 
 void WebMediaPlayerAndroid::SetVideoFrameProviderClient(

@@ -413,7 +413,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
     GetClient()->sizeChanged();
 
-    if (video_frame_provider_.get() && GetClient()->needsWebLayerForVideo()) {
+    if (video_frame_provider_) {
       video_weblayer_.reset(
           new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
       GetClient()->setWebLayer(video_weblayer_.get());

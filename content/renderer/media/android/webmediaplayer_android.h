@@ -252,7 +252,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void Pause(bool is_media_related_action);
   void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
-  void CreateWebLayerIfNeeded();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
   void DoReleaseRemotePlaybackTexture(
