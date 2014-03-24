@@ -164,6 +164,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
         cc::InputHandler::Gesture);
     switch (scroll_status) {
       case cc::InputHandler::ScrollStarted:
+        TRACE_EVENT_INSTANT0("input",
+                             "InputHandlerProxy::handle_input gesture scroll",
+                             TRACE_EVENT_SCOPE_THREAD);
         gesture_scroll_on_impl_thread_ = true;
         return DID_HANDLE;
       case cc::InputHandler::ScrollOnMainThread:
