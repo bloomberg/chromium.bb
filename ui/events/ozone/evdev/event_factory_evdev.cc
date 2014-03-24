@@ -56,6 +56,13 @@ void OpenInputDevice(
     return;
   }
 
+  // Use monotonic timestamps for events. The touch code in particular
+  // expects event timestamps to correlate to the monotonic clock
+  // (base::TimeTicks).
+  unsigned int clk = CLOCK_MONOTONIC;
+  if (ioctl(fd, EVIOCSCLOCKID, &clk))
+    PLOG(ERROR) << "failed to set CLOCK_MONOTONIC";
+
   EventDeviceInfo devinfo;
   if (!devinfo.Initialize(fd)) {
     LOG(ERROR) << "failed to get device information for " << path.value();
