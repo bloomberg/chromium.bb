@@ -315,6 +315,15 @@ class BuilderStatus(object):
                      ' %(builder)s, version %(version)s')
 
   def __init__(self, status, message, dashboard_url=None):
+    """Constructor for BuilderStatus.
+
+    Args:
+      status: Status string (should be one of STATUS_FAILED, STATUS_PASSED,
+              STATUS_INFLIGHT, or STATUS_MISSING).
+      message: A validation_pool.ValidationFailedMessage object with details
+               of builder failure. Or, None.
+      dashboard_url: Optional url linking to builder dashboard for this build.
+    """
     self.status = status
     self.message = message
     self.dashboard_url = dashboard_url
@@ -604,8 +613,8 @@ class BuildSpecsManager(object):
             ImportError, IndexError) as e:
       # The above exceptions are listed as possible unpickling exceptions
       # by http://docs.python.org/2/library/pickle.
-      return BuilderStatus(BuilderStatus.STATUS_FAILED,
-                           'Failed with %s to unpickle status.' % e)
+      logging.warning('Failed with %r to unpickle status file.', e)
+      return BuilderStatus(BuilderStatus.STATUS_FAILED, message=None)
 
     return BuilderStatus(**status_dict)
 
