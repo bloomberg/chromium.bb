@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -456,6 +457,36 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // be collected this time.
         Runtime.getRuntime().gc();
         assertEquals(null, object.weakRefForInner.get());
+    }
+
+    /*
+     * The current Java bridge implementation doesn't reuse JS wrappers when returning
+     * the same object from a method. That looks wrong. For example, in the case of DOM,
+     * wrappers are reused, which allows JS code to attach custom properties to interface
+     * objects and use them regardless of the way the reference has been obtained:
+     * via copying a JS reference or by calling the method one more time (assuming that
+     * the method is supposed to return a reference to the same object each time).
+     * TODO(mnaganov): Fix this in the new implementation.
+     *
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Android-JavaBridge"})
+     */
+    @DisabledTest
+    public void testSameReturnedObjectUsesSameWrapper() throws Throwable {
+        class InnerObject {
+        }
+        final InnerObject innerObject = new InnerObject();
+        final Object injectedTestObject = new Object() {
+            public InnerObject getInnerObject() {
+                return innerObject;
+            }
+        };
+        injectObjectAndReload(injectedTestObject, "injectedTestObject");
+        executeJavaScript("inner1 = injectedTestObject.getInnerObject()");
+        executeJavaScript("inner2 = injectedTestObject.getInnerObject()");
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof inner1"));
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof inner2"));
+        assertEquals("true", executeJavaScriptAndGetStringResult("inner1 === inner2"));
     }
 
     @SmallTest
