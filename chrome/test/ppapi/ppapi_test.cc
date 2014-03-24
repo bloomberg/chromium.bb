@@ -31,14 +31,6 @@
 using content::DomOperationNotificationDetails;
 using content::RenderViewHost;
 
-#if defined(DISABLE_NACL)
-#define RETURN_IF_NO_NACL() do { \
-  LOG(WARNING) << "This test always passes with disable_nacl=1."; \
-  return; } while (0)
-#else
-#define RETURN_IF_NO_NACL() do { } while (0)
-#endif
-
 namespace {
 
 // Platform-specific filename relative to the chrome executable.
@@ -357,7 +349,7 @@ void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(
 }
 
 void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::SetUpCommandLine(command_line);
 
   // Enable running (non-portable) NaCl outside of the Chrome web store.
@@ -365,6 +357,7 @@ void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+#endif
 }
 
 void PPAPINaClTest::SetUpOnMainThread() {
@@ -374,40 +367,47 @@ void PPAPINaClTest::SetUpOnMainThread() {
 }
 
 void PPAPINaClTest::RunTest(const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTest(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestAndReload(const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestAndReload(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestViaHTTP(const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestViaHTTP(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestWithSSLServer(const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestWithSSLServer(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestWithWebSocketServer(const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestWithWebSocketServer(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestIfAudioOutputAvailable(
     const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestIfAudioOutputAvailable(test_case);
+#endif
 }
 
 void PPAPINaClTest::RunTestViaHTTPIfAudioOutputAvailable(
     const std::string& test_case) {
-  RETURN_IF_NO_NACL();
+#if !defined(DISABLE_NACL)
   PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(test_case);
+#endif
 }
 
 // Append the correct mode and testcase string
