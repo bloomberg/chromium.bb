@@ -390,18 +390,42 @@ int UDPSocketWin::CreateSocket(int addr_family) {
 
 bool UDPSocketWin::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
-                      reinterpret_cast<const char*>(&size), sizeof(size));
-  DCHECK(!rv) << "Could not set socket receive buffer size: " << errno;
-  return rv == 0;
+  setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
+              reinterpret_cast<const char*>(&size), sizeof(size));
+  // If the setsockopt fails, but the buffer is big enough, we will return
+  // success. It is not worth testing the return value as we still need to check
+  // via getsockopt anyway according to Windows documentation.
+  int32 actual_size = 0;
+  int option_size = sizeof(actual_size);
+  int rv = getsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
+                      reinterpret_cast<char*>(&actual_size), &option_size);
+  if (rv != 0)
+    return false;
+  if (actual_size < size) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketReceiveBufferUnchangeable",
+                                actual_size, 1000, 1000000, 50);
+  }
+  return actual_size >= size;
 }
 
 bool UDPSocketWin::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
-                      reinterpret_cast<const char*>(&size), sizeof(size));
-  DCHECK(!rv) << "Could not set socket send buffer size: " << errno;
-  return rv == 0;
+  setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
+             reinterpret_cast<const char*>(&size), sizeof(size));
+  // If the setsockopt fails, but the buffer is big enough, we will return
+  // success. It is not worth testing the return value as we still need to check
+  // via getsockopt anyway according to Windows documentation.
+  int32 actual_size = 0;
+  int option_size = sizeof(actual_size);
+  int rv = getsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
+                      reinterpret_cast<char*>(&actual_size), &option_size);
+  if (rv != 0)
+    return false;
+  if (actual_size < size) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
+                                actual_size, 1000, 1000000, 50);
+  }
+  return actual_size >= size;
 }
 
 void UDPSocketWin::AllowAddressReuse() {

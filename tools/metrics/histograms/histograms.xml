@@ -12144,6 +12144,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CreationError" enum="QuicSessionErrorCodes">
+  <owner>jar@chromium.org</owner>
+  <summary>
+    Count of errors during attempts to create a QUIC session (before even using
+    the session).
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.FinalTcpCwnd">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -12403,6 +12411,22 @@ other types of suffix sets.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The counts of the type of sockets returned by the socket pools.
+  </summary>
+</histogram>
+
+<histogram name="Net.SocketUnchangeableReceiveBuffer" units="Bytes">
+  <owner>jar@chromium.org</owner>
+  <summary>
+    The size of a socket's receive buffer when the attempt to change it via
+    setsockopt failed.
+  </summary>
+</histogram>
+
+<histogram name="Net.SocketUnchangeableSendBuffer" units="Bytes">
+  <owner>jar@chromium.org</owner>
+  <summary>
+    The size of a socket's send buffer when the attempt to change it via
+    setsockopt failed.
   </summary>
 </histogram>
 
@@ -37179,6 +37203,12 @@ other types of suffix sets.
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="PEER_GOING_AWAY"/>
   <int value="6" label="CANCELLED"/>
+</enum>
+
+<enum name="QuicSessionErrorCodes" type="int">
+  <int value="0" label="CONNECTING_SOCKET"/>
+  <int value="1" label="SETTING_RECEIVE_BUFFER"/>
+  <int value="2" label="SETTING_SEND_BUFFER"/>
 </enum>
 
 <enum name="RapporDiscardReason" type="int">

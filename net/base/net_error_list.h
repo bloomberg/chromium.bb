@@ -313,6 +313,12 @@ NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -158)
 // The SSL server sent us a fatal unrecognized_name alert.
 NET_ERROR(SSL_UNRECOGNIZED_NAME_ALERT, -159)
 
+// Failed to increase the socket's receive buffer size as requested
+NET_ERROR(SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR, -160)
+
+// Failed to increase the socket's send buffer size as requested.
+NET_ERROR(SOCKET_SET_SEND_BUFFER_SIZE_ERROR, -161)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

@@ -41,7 +41,19 @@ namespace net {
 
 namespace {
 
+enum CreateSessionFailure {
+  CREATION_ERROR_CONNECTING_SOCKET,
+  CREATION_ERROR_SETTING_RECEIVE_BUFFER,
+  CREATION_ERROR_SETTING_SEND_BUFFER,
+  CREATION_ERROR_MAX
+};
+
 const uint64 kBrokenAlternateProtocolDelaySecs = 300;
+
+void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
+                            CREATION_ERROR_MAX);
+}
 
 }  // namespace
 
@@ -671,8 +683,10 @@ int QuicStreamFactory::CreateSession(
           base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
   int rv = socket->Connect(addr);
-  if (rv != OK)
+  if (rv != OK) {
+    HistogramCreateSessionFailure(CREATION_ERROR_CONNECTING_SOCKET);
     return rv;
+  }
   UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
                        port_suggester->call_count());
   if (enable_port_selection) {
@@ -686,11 +700,17 @@ int QuicStreamFactory::CreateSession(
   // does not consume "too much" memory.  If we see bursty packet loss, we may
   // revisit this setting and test for its impact.
   const int32 kSocketBufferSize(TcpReceiver::kReceiveWindowTCP);
-  socket->SetReceiveBufferSize(kSocketBufferSize);
+  if (!socket->SetReceiveBufferSize(kSocketBufferSize)) {
+    HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
+    return ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
+  }
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
   // wrong encryption level, when the send buffer is full.
-  socket->SetSendBufferSize(kMaxPacketSize * 20); // Support 20 packets.
+  if (!socket->SetSendBufferSize(kMaxPacketSize * 20)) {
+    HistogramCreateSessionFailure(CREATION_ERROR_SETTING_SEND_BUFFER);
+    return ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
+  }
 
   scoped_ptr<QuicDefaultPacketWriter> writer(
       new QuicDefaultPacketWriter(socket.get()));
