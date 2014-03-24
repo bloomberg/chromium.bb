@@ -368,7 +368,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if interface_length and not constructor.overload_index %}
-    {# FIXME: remove this UNLIKELY: constructors are heavy, so no difference. #}
+    {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
     if (UNLIKELY(info.Length() < {{interface_length}})) {
         {{throw_type_error(constructor,
             'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
@@ -392,9 +392,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
         return;
     {% endif %}
 
-    {# FIXME: Should probably be Independent unless [ActiveDOMObject]
-              or [DependentLifetime]. #}
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
     v8SetReturnValue(info, wrapper);
 }
 {% endmacro %}
@@ -442,7 +440,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
         return;
     {% endif %}
 
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
     v8SetReturnValue(info, wrapper);
 }
 {% endmacro %}

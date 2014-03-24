@@ -83,7 +83,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtr<TestInterfaceConstructor3> impl = TestInterfaceConstructor3::create(stringArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl.release(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl.release(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

@@ -81,7 +81,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 
@@ -101,7 +101,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

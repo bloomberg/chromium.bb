@@ -128,7 +128,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::create(str);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceWillBeGarbageCollected>(impl.release(), &V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceWillBeGarbageCollected>(impl.release(), &V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

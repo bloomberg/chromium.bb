@@ -668,7 +668,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     {% endif %}
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
     v8SetReturnValue(info, wrapper);
 }
 
@@ -1293,11 +1293,6 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}
     }
     {% endif %}
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    {% set wrapper_configuration = 'WrapperConfiguration::Dependent'
-                                   if (has_visit_dom_wrapper or
-                                       is_active_dom_object or
-                                       is_dependent_lifetime) else
-                                   'WrapperConfiguration::Independent' %}
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     return wrapper;
 }

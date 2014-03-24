@@ -86,7 +86,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (exceptionState.throwIfNeeded())
         return;
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 
@@ -118,7 +118,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (exceptionState.throwIfNeeded())
         return;
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

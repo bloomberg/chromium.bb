@@ -83,10 +83,16 @@ def generate_interface(interface):
                          'bindings/v8/V8WindowShell.h',
                          'core/frame/LocalFrame.h'])
 
+    # [ActiveDOMObject]
+    is_active_dom_object = 'ActiveDOMObject' in extended_attributes
+
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
         includes.add('bindings/v8/BindingSecurity.h')
+
+    # [DependentLifetime]
+    is_dependent_lifetime = 'DependentLifetime' in extended_attributes
 
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes
@@ -124,23 +130,25 @@ def generate_interface(interface):
     # [WillBeGarbageCollected]
     is_will_be_garbage_collected = 'WillBeGarbageCollected' in extended_attributes
 
+    # [Custom=Wrap], [SetWrapperReferenceFrom]
+    has_visit_dom_wrapper = (
+        has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
+        reachable_node_function or
+        set_wrapper_reference_to_list)
+
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
-        'has_visit_dom_wrapper': (
-            # [Custom=Wrap], [SetWrapperReferenceFrom]
-            has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-            reachable_node_function or
-            set_wrapper_reference_to_list),
+        'has_visit_dom_wrapper': has_visit_dom_wrapper,
         'header_includes': header_includes,
         'interface_name': interface.name,
-        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
+        'is_active_dom_object': is_active_dom_object,
         'is_audio_buffer': is_audio_buffer,
         'is_check_security': is_check_security,
-        'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'is_dependent_lifetime': is_dependent_lifetime,
         'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
@@ -157,6 +165,11 @@ def generate_interface(interface):
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
+        'wrapper_configuration': 'WrapperConfiguration::Dependent'
+            if (has_visit_dom_wrapper or
+                is_active_dom_object or
+                is_dependent_lifetime)
+            else 'WrapperConfiguration::Independent',
     }
 
     # Constructors
