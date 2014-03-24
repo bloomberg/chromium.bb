@@ -262,10 +262,10 @@ class NET_EXPORT WebSocketChannel {
   // when the current write finishes. |fin| and |op_code| are defined as for
   // SendFrame() above, except that |op_code| may also be a control frame
   // opcode.
-  ChannelState SendIOBuffer(bool fin,
-                            WebSocketFrameHeader::OpCode op_code,
-                            const scoped_refptr<IOBuffer>& buffer,
-                            size_t size) WARN_UNUSED_RESULT;
+  ChannelState SendFrameFromIOBuffer(bool fin,
+                                     WebSocketFrameHeader::OpCode op_code,
+                                     const scoped_refptr<IOBuffer>& buffer,
+                                     size_t size) WARN_UNUSED_RESULT;
 
   // Performs the "Fail the WebSocket Connection" operation as defined in
   // RFC6455. A NotifyFailure message is sent to the renderer with |message|.

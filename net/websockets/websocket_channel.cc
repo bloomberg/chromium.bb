@@ -387,7 +387,7 @@ void WebSocketChannel::SendFrame(bool fin,
   // server is not saturated.
   scoped_refptr<IOBuffer> buffer(new IOBuffer(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
-  AllowUnused(SendIOBuffer(fin, op_code, buffer, data.size()));
+  AllowUnused(SendFrameFromIOBuffer(fin, op_code, buffer, data.size()));
   // |this| may have been deleted.
 }
 
@@ -768,7 +768,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
     case WebSocketFrameHeader::kOpCodePing:
       VLOG(1) << "Got Ping of size " << size;
       if (state_ == CONNECTED)
-        return SendIOBuffer(
+        return SendFrameFromIOBuffer(
             true, WebSocketFrameHeader::kOpCodePong, data_buffer, size);
       VLOG(3) << "Ignored ping in state " << state_;
       return CHANNEL_ALIVE;
@@ -907,7 +907,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
   return event_interface_->OnDataFrame(final, opcode_to_send, data);
 }
 
-ChannelState WebSocketChannel::SendIOBuffer(
+ChannelState WebSocketChannel::SendFrameFromIOBuffer(
     bool fin,
     WebSocketFrameHeader::OpCode op_code,
     const scoped_refptr<IOBuffer>& buffer,
@@ -985,7 +985,8 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
       FROM_HERE,
       timeout_,
       base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
-  if (SendIOBuffer(true, WebSocketFrameHeader::kOpCodeClose, body, size) ==
+  if (SendFrameFromIOBuffer(
+          true, WebSocketFrameHeader::kOpCodeClose, body, size) ==
       CHANNEL_DELETED)
     return CHANNEL_DELETED;
   return CHANNEL_ALIVE;
