@@ -944,20 +944,24 @@ class XcodeSettings(object):
     # For Mac projects, Xcode changed the default value used when ARCHS is not
     # set from "i386" to "x86_64".
     #
-    # For iOS projects, if ARCHS is unset, it defaults to "armv7 armv7s" when
-    # building for a device, and the simulator binaries are always build for
-    # "i386".
+    # For iOS projects, the value used when ARCHS is unset depends on the
+    # version of Xcode. The following array summarize the default used:
     #
-    # For new projects, ARCHS is set to $(ARCHS_STANDARD_INCLUDING_64_BIT),
-    # which correspond to "armv7 armv7s arm64", and when building the simulator
-    # the architecture is either "i386" or "x86_64" depending on the simulated
-    # device (respectively 32-bit or 64-bit device).
+    #  Xcode Version | ARCHS for simulator | ARCHS for device
+    # ---------------+---------------------+--------------------
+    #     < 5.0      | i386                | armv7 armv7s
+    #     < 5.1 (*)  | i386 x86_64         | armv7 armv7s arm64
+    #    >= 5.1 (**) | i386 x86_64         | armv7 armv7s arm64
+    #
+    # (*): the default is $(ARCHS_STANDARD_INCLUDING_64_BIT) instead of the
+    # default of $(ARCHS_STANDARD) used by previous versions of Xcode.
+    #
+    # (**): the default is back to $(ARCHS_STANDARD), but the macro has been
+    # updated to also include 64-bit architectures.
     #
     # Since the value returned by this function is only used when ARCHS is not
     # set, then on iOS we return "i386", as the default xcode project generator
     # does not set ARCHS if it is not set in the .gyp file.
-    if self.isIOS:
-      return 'i386'
     version, build = XcodeVersion()
     if version >= '0500':
       return 'x86_64'
@@ -1451,7 +1455,7 @@ def _IOSDefaultArchForSDKRoot(sdkroot):
       return {'$(ARCHS_STANDARD)': ['armv7']}
     else:
       return {'$(ARCHS_STANDARD)': ['i386']}
-  else:
+  elif xcode_version < '0510':
     if _IOSIsDeviceSDKROOT(sdkroot):
       return {
           '$(ARCHS_STANDARD)': ['armv7', 'armv7s'],
@@ -1460,6 +1464,17 @@ def _IOSDefaultArchForSDKRoot(sdkroot):
     else:
       return {
           '$(ARCHS_STANDARD)': ['i386'],
+          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['i386', 'x86_64'],
+      }
+  else:
+    if _IOSIsDeviceSDKROOT(sdkroot):
+      return {
+          '$(ARCHS_STANDARD)': ['armv7', 'armv7s', 'arm64'],
+          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['armv7', 'armv7s', 'arm64'],
+      }
+    else:
+      return {
+          '$(ARCHS_STANDARD)': ['i386', 'x86_64'],
           '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['i386', 'x86_64'],
       }
 
