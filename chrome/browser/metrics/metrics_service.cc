@@ -188,7 +188,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/compression_utils.h"
+#include "chrome/browser/metrics/machine_id_provider.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
@@ -1857,6 +1859,21 @@ void MetricsService::RegisterSyntheticFieldTrial(
   SyntheticTrialGroup trial_group = trial;
   trial_group.start_time = base::TimeTicks::Now();
   synthetic_trial_groups_.push_back(trial_group);
+}
+
+void MetricsService::CheckForClonedInstall() {
+  DCHECK(!cloned_install_detector_);
+
+  metrics::MachineIdProvider* provider =
+      metrics::MachineIdProvider::CreateInstance();
+  if (!provider)
+    return;
+
+  cloned_install_detector_.reset(
+      new metrics::ClonedInstallDetector(provider));
+
+  PrefService* local_state = g_browser_process->local_state();
+  cloned_install_detector_->CheckForClonedInstall(local_state);
 }
 
 void MetricsService::GetCurrentSyntheticFieldTrials(

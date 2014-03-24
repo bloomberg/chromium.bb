@@ -27103,6 +27103,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.MachineIdState" enum="UmaMachineIdState">
+  <sumary>
+    Tracks if the machine ID is generated successfully and if it changes from
+    one run to the next. The machine ID is a 24-bit hash of machine
+    characteristics. It is expected to change if an install of Chrome is copied
+    to multiple machines. This check happens once per browser startup.
+  </sumary>
+</histogram>
+
 <histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -39175,6 +39184,13 @@ other types of suffix sets.
 <enum name="UmaInitSequence" type="int">
   <int value="0" label="Timer fired first"/>
   <int value="1" label="Init task completed first"/>
+</enum>
+
+<enum name="UmaMachineIdState" type="int">
+  <int value="0" label="ID generation failed"/>
+  <int value="1" label="No stored value"/>
+  <int value="2" label="Machine ID changed"/>
+  <int value="3" label="Machine ID unchanged"/>
 </enum>
 
 <enum name="UmaUploadResponseStatus" type="int">

@@ -68,6 +68,10 @@ class ManifestFetchData;
 class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
 
+namespace metrics {
+class ClonedInstallDetector;
+}
+
 namespace net {
 class URLFetcher;
 }
@@ -283,6 +287,11 @@ class MetricsService
   // in must not correspond to any real field trial in the code.
   // To use this method, SyntheticTrialGroup should friend your class.
   void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
+
+  // Check if this install was cloned or imaged from another machine. If a
+  // clone is detected, reset the client id and low entropy source. This
+  // should not be called more than once.
+  void CheckForClonedInstall();
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.
@@ -621,6 +630,8 @@ class MetricsService
 
   // Field trial groups that map to Chrome configuration states.
   SyntheticTrialGroups synthetic_trial_groups_;
+
+  scoped_ptr<metrics::ClonedInstallDetector> cloned_install_detector_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);

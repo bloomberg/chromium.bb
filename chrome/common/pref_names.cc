@@ -1379,6 +1379,10 @@ const char kMetricsClientIDTimestamp[] =
 const char kMetricsReportingEnabled[] =
     "user_experience_metrics.reporting_enabled";
 
+// A machine ID used to detect when underlying hardware changes. It is only
+// stored locally and never transmitted in metrics reports.
+const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
+
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.
 #if defined(OS_ANDROID)

@@ -648,6 +648,8 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
     return;
   }
 
+  metrics->CheckForClonedInstall();
+
   if (IsMetricsReportingEnabled())
     metrics->Start();
 }

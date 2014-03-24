@@ -39,6 +39,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -242,6 +243,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
   metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
+  metrics::ClonedInstallDetector::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
