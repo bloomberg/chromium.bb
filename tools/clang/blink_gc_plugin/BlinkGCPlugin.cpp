@@ -618,8 +618,6 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (info->RequiresTraceMethod() && !info->GetTraceMethod())
       ReportClassRequiresTraceMethod(info);
 
-    CheckDispatch(info);
-
     {
       CheckFieldsVisitor visitor(options_);
       if (visitor.ContainsInvalidFields(info))
@@ -627,6 +625,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     if (info->IsGCDerived()) {
+      CheckDispatch(info);
+
       CheckGCRootsVisitor visitor;
       if (visitor.ContainsGCRoots(info))
         ReportClassContainsGCRoots(info, &visitor.gc_roots());
