@@ -353,11 +353,9 @@ div.splitter {
 }
 
 #navigation-list .root-item > div.root-eject {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/eject.png') 1x,
-    url('../images/files/ui/2x/eject.png') 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
+  background: -webkit-image-set(
+      url('../images/files/ui/eject.png') 1x,
+      url('../images/files/ui/2x/eject.png') 2x) no-repeat center;
   cursor: pointer;
   height: 20px;
   margin-right: 6px;
@@ -368,7 +366,9 @@ div.splitter {
 }
 
 #navigation-list:focus .root-item[selected] > div.root-eject {
-  -webkit-filter: brightness(0) invert();
+  background: -webkit-image-set(
+      url('../images/files/ui/eject_white.png') 1x,
+      url('../images/files/ui/2x/eject_white.png') 2x) no-repeat center;
   opacity: 1;
 }
 
