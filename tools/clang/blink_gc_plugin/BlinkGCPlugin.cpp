@@ -9,6 +9,7 @@
 // http://www.chromium.org/developers/blink-gc-plugin-errors
 
 #include "Config.h"
+#include "JsonWriter.h"
 #include "RecordInfo.h"
 
 #include "clang/AST/AST.h"
@@ -110,8 +111,9 @@ const char kDerivesNonStackAllocated[] =
     " which is not stack allocated.";
 
 struct BlinkGCPluginOptions {
-  BlinkGCPluginOptions() : enable_oilpan(false) {}
+  BlinkGCPluginOptions() : enable_oilpan(false), detect_cycles(false) {}
   bool enable_oilpan;
+  bool detect_cycles;
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;
@@ -485,7 +487,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
                         const BlinkGCPluginOptions& options)
       : instance_(instance),
         diagnostic_(instance.getDiagnostics()),
-        options_(options) {
+        options_(options),
+        json_(0) {
 
     // Only check structures in the blink, WebCore and WebKit namespaces.
     options_.checked_namespaces.insert("blink");
@@ -561,6 +564,30 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     CollectVisitor visitor;
     visitor.TraverseDecl(context.getTranslationUnitDecl());
 
+    if (options_.detect_cycles) {
+      string err;
+      // TODO: Make createDefaultOutputFile or a shorter createOutputFile work.
+      json_ = JsonWriter::from(instance_.createOutputFile(
+          "",                                      // OutputPath
+          err,                                     // Errors
+          true,                                    // Binary
+          true,                                    // RemoveFileOnSignal
+          instance_.getFrontendOpts().OutputFile,  // BaseInput
+          "graph.json",                            // Extension
+          false,                                   // UseTemporary
+          false,                                   // CreateMissingDirectories
+          0,                                       // ResultPathName
+          0));                                     // TempPathName
+      if (err.empty() && json_) {
+        json_->OpenList();
+      } else {
+        json_ = 0;
+        llvm::errs()
+            << "[blink-gc] "
+            << "Failed to create an output file for the object graph.\n";
+      }
+    }
+
     for (RecordVector::iterator it = visitor.record_decls().begin();
          it != visitor.record_decls().end();
          ++it) {
@@ -571,6 +598,12 @@ class BlinkGCPluginConsumer : public ASTConsumer {
          it != visitor.trace_decls().end();
          ++it) {
       CheckTracingMethod(*it);
+    }
+
+    if (json_) {
+      json_->CloseList();
+      delete json_;
+      json_ = 0;
     }
   }
 
@@ -634,6 +667,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       if (info->NeedsFinalization())
         CheckFinalization(info);
     }
+
+    DumpClass(info);
   }
 
   void CheckDispatch(RecordInfo* info) {
@@ -804,10 +839,109 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
+  void DumpClass(RecordInfo* info) {
+    if (!json_) return;
+
+    json_->OpenObject();
+    json_->Write("name", info->record()->getQualifiedNameAsString());
+    json_->Write("loc", GetLocString(info->record()->getLocStart()));
+    json_->CloseObject();
+
+    class DumpEdgeVisitor : public RecursiveEdgeVisitor {
+     public:
+      DumpEdgeVisitor(JsonWriter* json) : json_(json) { }
+      void DumpEdge(RecordInfo* src,
+                    RecordInfo* dst,
+                    const string& lbl,
+                    const Edge::LivenessKind& kind,
+                    const string& loc) {
+        json_->OpenObject();
+        json_->Write("src", src->record()->getQualifiedNameAsString());
+        json_->Write("dst", dst->record()->getQualifiedNameAsString());
+        json_->Write("lbl", lbl);
+        json_->Write("kind", kind);
+        json_->Write("loc", loc);
+        json_->CloseObject();
+      }
+
+      void DumpField(RecordInfo* src, FieldPoint* point, const string& loc) {
+        src_ = src;
+        point_ = point;
+        loc_ = loc;
+        point_->edge()->Accept(this);
+      }
+
+      void AtValue(Value* e) {
+        // The liveness kind of a path from the point to this value
+        // is given by the innermost place that is non-strong.
+        Edge::LivenessKind kind = Edge::kStrong;
+        if (Config::IsIgnoreCycleAnnotated(point_->field())) {
+          kind = Edge::kWeak;
+        } else {
+          for (Context::iterator it = context().begin();
+               it != context().end();
+               ++it) {
+            Edge::LivenessKind pointer_kind = (*it)->Kind();
+            if (pointer_kind != Edge::kStrong) {
+              kind = pointer_kind;
+              break;
+            }
+          }
+        }
+        DumpEdge(src_,
+                 e->value(),
+                 point_->field()->getNameAsString(),
+                 kind,
+                 loc_);
+      }
+
+     private:
+      JsonWriter* json_;
+      RecordInfo* src_;
+      FieldPoint* point_;
+      string loc_;
+    };
+
+    DumpEdgeVisitor visitor(json_);
+
+    RecordInfo::Bases& bases = info->GetBases();
+    for (RecordInfo::Bases::iterator it = bases.begin();
+         it != bases.end();
+         ++it) {
+      visitor.DumpEdge(info,
+                       it->second.info(),
+                       "<super>",
+                       Edge::kStrong,
+                       GetLocString(it->second.spec().getLocStart()));
+    }
+
+    RecordInfo::Fields& fields = info->GetFields();
+    for (RecordInfo::Fields::iterator it = fields.begin();
+         it != fields.end();
+         ++it) {
+      visitor.DumpField(info,
+                        &it->second,
+                        GetLocString(it->second.field()->getLocStart()));
+    }
+  }
+
   // Adds either a warning or error, based on the current handling of -Werror.
   DiagnosticsEngine::Level getErrorLevel() {
     return diagnostic_.getWarningsAsErrors() ? DiagnosticsEngine::Error
                                              : DiagnosticsEngine::Warning;
+  }
+
+  const string GetLocString(SourceLocation loc) {
+    const SourceManager& source_manager = instance_.getSourceManager();
+    PresumedLoc ploc = source_manager.getPresumedLoc(loc);
+    if (ploc.isInvalid())
+      return "";
+    string loc_str;
+    llvm::raw_string_ostream OS(loc_str);
+    OS << ploc.getFilename()
+       << ":" << ploc.getLine()
+       << ":" << ploc.getColumn();
+    return OS.str();
   }
 
   bool IsIgnored(RecordInfo* record) {
@@ -1132,6 +1266,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   DiagnosticsEngine& diagnostic_;
   BlinkGCPluginOptions options_;
   RecordCache cache_;
+  JsonWriter* json_;
 };
 
 class BlinkGCPluginAction : public PluginASTAction {
@@ -1152,6 +1287,8 @@ class BlinkGCPluginAction : public PluginASTAction {
     for (size_t i = 0; i < args.size() && parsed; ++i) {
       if (args[i] == "enable-oilpan") {
         options_.enable_oilpan = true;
+      } else if (args[i] == "detect-cycles") {
+        options_.detect_cycles = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";

@@ -72,8 +72,10 @@ class RecursiveEdgeVisitor : public EdgeVisitor {
 class Edge {
  public:
   enum NeedsTracingOption { kRecursive, kNonRecursive };
+  enum LivenessKind { kWeak, kStrong, kRoot };
 
   virtual ~Edge() { }
+  virtual LivenessKind Kind() = 0;
   virtual void Accept(EdgeVisitor*) = 0;
   virtual bool NeedsFinalization() = 0;
   virtual TracingStatus NeedsTracing(NeedsTracingOption) {
@@ -95,6 +97,7 @@ class Value : public Edge {
  public:
   explicit Value(RecordInfo* value) : value_(value) {};
   bool IsValue() { return true; }
+  LivenessKind Kind() { return kStrong; }
   bool NeedsFinalization();
   TracingStatus NeedsTracing(NeedsTracingOption);
   void Accept(EdgeVisitor* visitor) { visitor->VisitValue(this); }
@@ -120,6 +123,7 @@ class RawPtr : public PtrEdge {
  public:
   explicit RawPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsRawPtr() { return true; }
+  LivenessKind Kind() { return kWeak; }
   bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
@@ -131,6 +135,7 @@ class RefPtr : public PtrEdge {
  public:
   explicit RefPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsRefPtr() { return true; }
+  LivenessKind Kind() { return kStrong; }
   bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
@@ -142,6 +147,7 @@ class OwnPtr : public PtrEdge {
  public:
   explicit OwnPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsOwnPtr() { return true; }
+  LivenessKind Kind() { return kStrong; }
   bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
@@ -153,6 +159,7 @@ class Member : public PtrEdge {
  public:
   explicit Member(Edge* ptr) : PtrEdge(ptr) { }
   bool IsMember() { return true; }
+  LivenessKind Kind() { return kStrong; }
   bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Needed();
@@ -164,6 +171,7 @@ class WeakMember : public PtrEdge {
  public:
   explicit WeakMember(Edge* ptr) : PtrEdge(ptr) { }
   bool IsWeakMember() { return true; }
+  LivenessKind Kind() { return kWeak; }
   bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Needed();
@@ -175,6 +183,7 @@ class Persistent : public PtrEdge {
  public:
   explicit Persistent(Edge* ptr) : PtrEdge(ptr) { }
   bool IsPersistent() { return true; }
+  LivenessKind Kind() { return kRoot; }
   bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
@@ -196,6 +205,7 @@ class Collection : public Edge {
     }
   }
   bool IsCollection() { return true; }
+  LivenessKind Kind() { return is_root_ ? kRoot : kStrong; }
   bool on_heap() { return on_heap_; }
   bool is_root() { return is_root_; }
   Members& members() { return members_; }

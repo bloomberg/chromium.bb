@@ -8,6 +8,7 @@
 #define TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
 
 #include "clang/AST/AST.h"
+#include "clang/AST/Attr.h"
 
 const char kNewOperatorName[] = "operator new";
 const char kCreateName[] = "create";
@@ -99,6 +100,24 @@ class Config {
     return name == "GarbageCollected" ||
            IsGCFinalizedBase(name) ||
            IsGCMixinBase(name);
+  }
+
+  static bool IsAnnotated(clang::Decl* decl, const std::string& anno) {
+    clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>();
+    return attr && (attr->getAnnotation() == anno);
+  }
+
+  static bool IsStackAnnotated(clang::Decl* decl) {
+    return IsAnnotated(decl, "blink_stack_allocated");
+  }
+
+  static bool IsIgnoreAnnotated(clang::Decl* decl) {
+    return IsAnnotated(decl, "blink_gc_plugin_ignore");
+  }
+
+  static bool IsIgnoreCycleAnnotated(clang::Decl* decl) {
+    return IsAnnotated(decl, "blink_gc_plugin_ignore_cycle") ||
+           IsIgnoreAnnotated(decl);
   }
 
   static bool IsVisitor(const std::string& name) { return name == "Visitor"; }

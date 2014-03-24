@@ -19,9 +19,13 @@ $(grep LIBRARYNAME "$THIS_ABS_DIR"/../blink_gc_plugin/Makefile \
     | cut -d ' ' -f 3)
 
 FLAGS=""
-if [[ "$1" = "enable-oilpan=1" ]]; then
+for arg in "$@"; do
+  if [[ "$arg" = "enable-oilpan=1" ]]; then
     FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang enable-oilpan"
-fi
+  elif [[ "$arg" = "detect-cycles=1" ]]; then
+    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang detect-cycles"
+  fi
+done
 
 echo -Xclang -load -Xclang $CLANG_LIB_PATH/lib$LIBNAME.$LIBSUFFIX \
   -Xclang -add-plugin -Xclang blink-gc-plugin $FLAGS

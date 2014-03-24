@@ -30,6 +30,10 @@ do_testcase() {
   local output="$("${CLANG_DIR}"/bin/clang -c -Wno-c++11-extensions \
       -Xclang -load -Xclang "${CLANG_DIR}"/lib/lib${LIBNAME}.${LIB} \
       -Xclang -add-plugin -Xclang blink-gc-plugin ${flags} ${1} 2>&1)"
+  local json="${input%cpp}graph.json"
+  if [ -f "$json" ]; then
+    output="$(python ../process-graph.py -c ${json} 2>&1)"
+  fi
   local diffout="$(echo "${output}" | diff - "${2}")"
   if [ "${diffout}" = "" ]; then
     echo "PASS: ${1}"

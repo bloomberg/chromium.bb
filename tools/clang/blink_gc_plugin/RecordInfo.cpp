@@ -5,8 +5,6 @@
 #include "Config.h"
 #include "RecordInfo.h"
 
-#include "clang/AST/Attr.h"
-
 using namespace clang;
 using std::string;
 
@@ -136,14 +134,9 @@ bool RecordInfo::IsGCAllocated() {
   return IsGCDerived() || IsHeapAllocatedCollection();
 }
 
-static bool IsAnnotated(Decl* decl, const string& anno) {
-  AnnotateAttr* attr = decl->getAttr<AnnotateAttr>();
-  return attr && (attr->getAnnotation() == anno);
-}
-
 RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {
   // Ignore classes annotated with the GC_PLUGIN_IGNORE macro.
-  if (!record || IsAnnotated(record, "blink_gc_plugin_ignore"))
+  if (!record || Config::IsIgnoreAnnotated(record))
     return 0;
   Cache::iterator it = cache_.find(record);
   if (it != cache_.end())
@@ -160,17 +153,17 @@ bool RecordInfo::IsStackAllocated() {
          ++it) {
       if (it->second.info()->IsStackAllocated()) {
         is_stack_allocated_ = kTrue;
-        break;
+        return is_stack_allocated_;
       }
     }
     for (CXXRecordDecl::method_iterator it = record_->method_begin();
          it != record_->method_end();
          ++it) {
-      if (it->getNameAsString() == kNewOperatorName) {
-        if (it->isDeleted() && IsAnnotated(*it, "blink_stack_allocated")) {
-          is_stack_allocated_ = kTrue;
-          break;
-        }
+      if (it->getNameAsString() == kNewOperatorName &&
+          it->isDeleted() &&
+          Config::IsStackAnnotated(*it)) {
+        is_stack_allocated_ = kTrue;
+        return is_stack_allocated_;
       }
     }
   }
@@ -285,7 +278,7 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
        ++it) {
     FieldDecl* field = *it;
     // Ignore fields annotated with the GC_PLUGIN_IGNORE macro.
-    if (IsAnnotated(field, "blink_gc_plugin_ignore"))
+    if (Config::IsIgnoreAnnotated(field))
       continue;
     if (Edge* edge = CreateEdge(field->getType().getTypePtrOrNull())) {
       fields->insert(std::make_pair(field, FieldPoint(field, edge)));
