@@ -58,8 +58,6 @@
         [ 'OS == "ios"', { 'include_dirs': [ 'ios' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
         [ 'OS == "win"', { 'include_dirs': [ 'win' ] } ],
-        # TODO(mark): Remove usage of the deprecated auto_ptr.
-        [ 'clang == 1', { 'cflags': [ '-Wno-deprecated-declarations' ] } ],
       ],
       # open-vcdiff's logging.h introduces static initializers. This was
       # reported upstream years ago (
@@ -96,7 +94,11 @@
           ]
         }
       },
-      'cflags': [ '-include', '<(logging_dir)/sdch/<(logging_path)' ],
+      'cflags': [
+        '-include', '<(logging_dir)/sdch/<(logging_path)',
+        # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
+        '-Wno-deprecated-declarations',
+      ],
     },
   ],
 }
