@@ -4,12 +4,12 @@
 
 #include "third_party/zlib/google/zip_reader.h"
 
-#include "base/file_util.h"
+#include "base/bind.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/base/file_stream.h"
 #include "third_party/zlib/google/zip_internal.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -205,10 +205,9 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
   if (!base::CreateDirectory(output_dir_path))
     return false;
 
-  net::FileStream stream(NULL);
-  const int flags = (base::PLATFORM_FILE_CREATE_ALWAYS |
-                     base::PLATFORM_FILE_WRITE);
-  if (stream.OpenSync(output_file_path, flags) != 0)
+  base::File file(output_file_path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!file.IsValid())
     return false;
 
   bool success = true;  // This becomes false when something bad happens.
@@ -225,14 +224,14 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
       break;
     } else if (num_bytes_read > 0) {
       // Some data is read. Write it to the output file.
-      if (num_bytes_read != stream.WriteSync(buf, num_bytes_read)) {
+      if (num_bytes_read != file.WriteAtCurrentPos(buf, num_bytes_read)) {
         success = false;
         break;
       }
     }
   }
 
-  stream.CloseSync();
+  file.Close();
   unzCloseCurrentFile(zip_file_);
 
   if (current_entry_info()->last_modified() != base::Time::UnixEpoch())

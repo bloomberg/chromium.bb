@@ -8,12 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "net/base/file_stream.h"
 #include "third_party/zlib/google/zip_internal.h"
 #include "third_party/zlib/google/zip_reader.h"
 
@@ -60,18 +59,16 @@ zip_fileinfo GetFileInfoForZipping(const base::FilePath& path) {
 }
 
 bool AddFileToZip(zipFile zip_file, const base::FilePath& src_dir) {
-  net::FileStream stream(NULL);
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  if (stream.OpenSync(src_dir, flags) != 0) {
-    DLOG(ERROR) << "Could not open stream for path "
-                << src_dir.value();
+  base::File file(src_dir, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    DLOG(ERROR) << "Could not open file for path " << src_dir.value();
     return false;
   }
 
   int num_bytes;
   char buf[zip::internal::kZipBufSize];
   do {
-    num_bytes = stream.ReadSync(buf, zip::internal::kZipBufSize);
+    num_bytes = file.ReadAtCurrentPos(buf, zip::internal::kZipBufSize);
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
         DLOG(ERROR) << "Could not write data to zip for path "
