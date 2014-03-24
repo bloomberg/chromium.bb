@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -400,6 +401,39 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         profile, NULL, fake_drive_service, std::string(), cache_dir, NULL);
   }
 
+  bool AddTestHostedDocuments() {
+    const char kResourceId[] = "document:unique-id-for-multiprofile-copy-test";
+    drive::FakeDriveService* const main_service =
+        static_cast<drive::FakeDriveService*>(
+            drive::util::GetDriveServiceByProfile(browser()->profile()));
+    drive::FakeDriveService* const sub_service =
+        static_cast<drive::FakeDriveService*>(
+            drive::util::GetDriveServiceByProfile(second_profile));
+
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    scoped_ptr<google_apis::ResourceEntry> entry;
+
+    // Place a hosted document under root/test_dir of the sub profile.
+    sub_service->AddNewFileWithResourceId(
+        kResourceId,
+        "application/vnd.google-apps.document", "",
+        "folder:1_folder_resource_id", "hosted_doc", true,
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    drive::test_util::RunBlockingPoolTask();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    // Place the hosted document with no parent in the main profile, for
+    // simulating the situation that the document is shared to the main profile.
+    error = google_apis::GDATA_OTHER_ERROR;
+    main_service->AddNewFileWithResourceId(
+        kResourceId,
+        "application/vnd.google-apps.document", "", "", "hosted_doc", true,
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    drive::test_util::RunBlockingPoolTask();
+    return (error == google_apis::HTTP_CREATED);
+  }
+
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
@@ -513,6 +547,7 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
                        CrossProfileCopy) {
+  ASSERT_TRUE(AddTestHostedDocuments());
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/multi_profile_copy",
       FILE_PATH_LITERAL("manifest.json"),

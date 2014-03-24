@@ -932,7 +932,8 @@ CancelCallback FakeDriveService::AddNewDirectory(
     return CancelCallback();
   }
 
-  const EntryInfo* new_entry = AddNewEntry(kDriveFolderMimeType,
+  const EntryInfo* new_entry = AddNewEntry("",  // resource_id,
+                                           kDriveFolderMimeType,
                                            "",  // content_data
                                            parent_resource_id,
                                            directory_title,
@@ -1117,6 +1118,7 @@ CancelCallback FakeDriveService::ResumeUpload(
     DCHECK(!session->parent_resource_id.empty());
     DCHECK(!session->title.empty());
     const EntryInfo* new_entry = AddNewEntry(
+        "",  // auto generate resource id.
         session->content_type,
         content_data,
         session->parent_resource_id,
@@ -1261,6 +1263,18 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
                                   const std::string& title,
                                   bool shared_with_me,
                                   const GetResourceEntryCallback& callback) {
+  AddNewFileWithResourceId("", content_type, content_data, parent_resource_id,
+                           title, shared_with_me, callback);
+}
+
+void FakeDriveService::AddNewFileWithResourceId(
+    const std::string& resource_id,
+    const std::string& content_type,
+    const std::string& content_data,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    bool shared_with_me,
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1274,7 +1288,8 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
     return;
   }
 
-  const EntryInfo* new_entry = AddNewEntry(content_type,
+  const EntryInfo* new_entry = AddNewEntry(resource_id,
+                                           content_type,
                                            content_data,
                                            parent_resource_id,
                                            title,
@@ -1360,6 +1375,7 @@ void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change) {
 }
 
 const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
+    const std::string& given_resource_id,
     const std::string& content_type,
     const std::string& content_data,
     const std::string& parent_resource_id,
@@ -1373,7 +1389,10 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
     return NULL;
   }
 
-  std::string resource_id = GetNewResourceId();
+  const std::string resource_id =
+      given_resource_id.empty() ? GetNewResourceId() : given_resource_id;
+  if (entries_.count(resource_id))
+    return NULL;
   GURL upload_url = GURL("https://xxx/upload/" + resource_id);
 
   scoped_ptr<EntryInfo> new_entry(new EntryInfo);

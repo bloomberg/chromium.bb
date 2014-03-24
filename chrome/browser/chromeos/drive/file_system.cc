@@ -497,8 +497,6 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
                            const base::Time& last_modified_time,
                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!last_access_time.is_null());
-  DCHECK(!last_modified_time.is_null());
   DCHECK(!callback.is_null());
   touch_operation_->TouchFile(
       file_path, last_access_time, last_modified_time, callback);

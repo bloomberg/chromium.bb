@@ -5,6 +5,20 @@
 var kSecondaryDriveMountPointName = "drive-fileBrowserApiTestProfile2";
 
 /**
+ * Returns a callback that works as an error handler in file system API
+ * functions and invokes |callback| with specified message string.
+ *
+ * @param {function(string)} callback Wrapped callback function object.
+ * @param {string} message Error message.
+ * @return {function(DOMError)} Resulting callback function object.
+ */
+function fileErrorCallback(callback, message) {
+  return function(error){
+    callback(message + ": " + error.name);
+  };
+}
+
+/**
  * Copies an entry using chrome.fileBrowserPrivate.startCopy().
  *
  * @param {Entry} fromRoot Root entry of the copy source file system.
@@ -44,8 +58,8 @@ function fileCopy(fromRoot, fromPath, toRoot, toPath, newName,
           }
           copyId = startCopyId;
         });
-    }, errorCallback.bind(null, 'Error getting destination entry'));
-  }, errorCallback.bind(null, 'Error getting source entry'));
+    }, fileErrorCallback(errorCallback, 'Error getting destination entry'));
+  }, fileErrorCallback(errorCallback, 'Error getting source entry'));
 }
 
 /**
@@ -59,7 +73,7 @@ function fileCopy(fromRoot, fromPath, toRoot, toPath, newName,
 function verifyFileExists(root, path, successCallback, errorCallback) {
   root.getFile(path, {create: false},
                successCallback,
-               errorCallback.bind(null, path + ' does not exist.'));
+               fileErrorCallback(errorCallback, path + ' does not exist.'));
 }
 
 /**
@@ -78,7 +92,16 @@ function collectTests(firstRoot, secondRoot) {
              'newname.tiff',
              verifyFileExists.bind(null, firstRoot, 'root/newname.tiff',
                                    chrome.test.succeed, chrome.test.fail),
-             function(msg) {chrome.test.fail(msg);});
+             chrome.test.fail);
+  });
+
+  testsToRun.push(function crossProfileHostedDocumentCopyTest() {
+    fileCopy(secondRoot, 'root/test_dir/hosted_doc.gdoc',
+             firstRoot, 'root/',
+             'newname.gdoc',
+             verifyFileExists.bind(null, firstRoot, 'root/newname.gdoc',
+                                   chrome.test.succeed, chrome.test.fail),
+             chrome.test.fail);
   });
 
   return testsToRun;
