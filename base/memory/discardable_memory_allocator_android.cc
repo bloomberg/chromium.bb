@@ -102,22 +102,16 @@ bool CloseAshmemRegion(int fd, size_t size, void* address) {
   return close(fd) == 0;
 }
 
-DiscardableMemoryLockStatus LockAshmemRegion(int fd,
-                                             size_t off,
-                                             size_t size,
-                                             const void* address) {
+DiscardableMemoryLockStatus LockAshmemRegion(int fd, size_t off, size_t size) {
   const int result = ashmem_pin_region(fd, off, size);
-  DCHECK_EQ(0, mprotect(address, size, PROT_READ | PROT_WRITE));
   return result == ASHMEM_WAS_PURGED ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
                                      : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
 }
 
-bool UnlockAshmemRegion(int fd, size_t off, size_t size, const void* address) {
+bool UnlockAshmemRegion(int fd, size_t off, size_t size) {
   const int failed = ashmem_unpin_region(fd, off, size);
   if (failed)
     DLOG(ERROR) << "Failed to unpin memory.";
-  // This allows us to catch accesses to unlocked memory.
-  DCHECK_EQ(0, mprotect(address, size, PROT_NONE));
   return !failed;
 }
 
@@ -150,13 +144,13 @@ class DiscardableMemoryAllocator::DiscardableAshmemChunk
   virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
     DCHECK(!locked_);
     locked_ = true;
-    return LockAshmemRegion(fd_, offset_, size_, address_);
+    return LockAshmemRegion(fd_, offset_, size_);
   }
 
   virtual void Unlock() OVERRIDE {
     DCHECK(locked_);
     locked_ = false;
-    UnlockAshmemRegion(fd_, offset_, size_, address_);
+    UnlockAshmemRegion(fd_, offset_, size_);
   }
 
   virtual void* Memory() const OVERRIDE {
@@ -335,7 +329,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
 
     const size_t offset =
         static_cast<char*>(reused_chunk.start) - static_cast<char*>(base_);
-    LockAshmemRegion(fd_, offset, reused_chunk_size, reused_chunk.start);
+    LockAshmemRegion(fd_, offset, reused_chunk_size);
     scoped_ptr<DiscardableMemory> memory(
         new DiscardableAshmemChunk(this, fd_, reused_chunk.start, offset,
                                    reused_chunk_size));
@@ -481,7 +475,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
 
 DiscardableMemoryAllocator::DiscardableAshmemChunk::~DiscardableAshmemChunk() {
   if (locked_)
-    UnlockAshmemRegion(fd_, offset_, size_, address_);
+    UnlockAshmemRegion(fd_, offset_, size_);
   ashmem_region_->OnChunkDeletion(address_, size_);
 }
 
