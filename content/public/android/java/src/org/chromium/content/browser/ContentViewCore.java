@@ -1730,6 +1730,10 @@ public class ContentViewCore
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
 
+        if (mBrowserAccessibilityManager != null) {
+            return mBrowserAccessibilityManager.onHoverEvent(event);
+        }
+
         // Work around Android bug where the x, y coordinates of a hover exit
         // event are incorrect when touch exploration is on.
         if (mTouchExplorationEnabled && event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
@@ -1737,9 +1741,6 @@ public class ContentViewCore
         }
 
         mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
-        if (mBrowserAccessibilityManager != null) {
-            return mBrowserAccessibilityManager.onHoverEvent(event);
-        }
         if (mNativeContentViewCore != 0) {
             nativeSendMouseMoveEvent(mNativeContentViewCore, event.getEventTime(),
                     event.getX(), event.getY());

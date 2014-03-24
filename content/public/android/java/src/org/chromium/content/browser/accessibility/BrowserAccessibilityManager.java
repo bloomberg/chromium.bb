@@ -44,7 +44,7 @@ public class BrowserAccessibilityManager {
     private final RenderCoordinates mRenderCoordinates;
     private long mNativeObj;
     private int mAccessibilityFocusId;
-    private int mCurrentHoverId;
+    private boolean mIsHovering;
     private int mCurrentRootId;
     private final int[] mTempLocation = new int[2];
     private final View mView;
@@ -83,7 +83,7 @@ public class BrowserAccessibilityManager {
         mContentViewCore = contentViewCore;
         mContentViewCore.setBrowserAccessibilityManager(this);
         mAccessibilityFocusId = View.NO_ID;
-        mCurrentHoverId = View.NO_ID;
+        mIsHovering = false;
         mCurrentRootId = View.NO_ID;
         mView = mContentViewCore.getContainerView();
         mRenderCoordinates = mContentViewCore.getRenderCoordinates();
@@ -170,7 +170,7 @@ public class BrowserAccessibilityManager {
                 mAccessibilityFocusId = virtualViewId;
                 sendAccessibilityEvent(mAccessibilityFocusId,
                         AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
-                if (mCurrentHoverId == View.NO_ID) {
+                if (!mIsHovering) {
                     nativeScrollToMakeNodeVisible(
                             mNativeObj, mAccessibilityFocusId);
                 } else {
@@ -232,10 +232,7 @@ public class BrowserAccessibilityManager {
         }
 
         if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
-            if (mCurrentHoverId != View.NO_ID) {
-                sendAccessibilityEvent(mCurrentHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
-                mCurrentHoverId = View.NO_ID;
-            }
+            mIsHovering = false;
             if (mPendingScrollToMakeNodeVisible) {
                 nativeScrollToMakeNodeVisible(
                         mNativeObj, mAccessibilityFocusId);
@@ -244,6 +241,7 @@ public class BrowserAccessibilityManager {
             return true;
         }
 
+        mIsHovering = true;
         mUserHasTouchExplored = true;
         float x = event.getX();
         float y = event.getY();
@@ -254,10 +252,9 @@ public class BrowserAccessibilityManager {
         int cssY = (int) (mRenderCoordinates.fromPixToLocalCss(y) +
                           mRenderCoordinates.getScrollY());
         int id = nativeHitTest(mNativeObj, cssX, cssY);
-        if (mCurrentHoverId != id) {
-            sendAccessibilityEvent(mCurrentHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+        if (mAccessibilityFocusId != id) {
+            sendAccessibilityEvent(mAccessibilityFocusId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
             sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-            mCurrentHoverId = id;
         }
 
         return true;
