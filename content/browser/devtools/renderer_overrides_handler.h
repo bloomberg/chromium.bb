@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -43,6 +44,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   void ParseCaptureParameters(DevToolsProtocol::Command* command,
                               std::string* format, int* quality,
                               double* scale);
+  base::DictionaryValue* CreateScreenshotResponse(
+      const std::vector<unsigned char>& png_data);
 
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
@@ -75,6 +78,9 @@ class CONTENT_EXPORT RendererOverridesHandler
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
+      scoped_refptr<base::RefCountedBytes> png_data);
+
+  void ScreencastFrameCaptured(
       const std::string& format,
       int quality,
       const cc::CompositorFrameMetadata& metadata,

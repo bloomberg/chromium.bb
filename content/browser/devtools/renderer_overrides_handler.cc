@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -201,10 +202,9 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
 
   view_port->CopyFromCompositingSurface(
       view_bounds, snapshot_size,
-      base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
+      base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
                  weak_factory_.GetWeakPtr(),
-                 scoped_refptr<DevToolsProtocol::Command>(), format, quality,
-                 last_compositor_frame_metadata_),
+                 format, quality, last_compositor_frame_metadata_),
       SkBitmap::kARGB_8888_Config);
 }
 
@@ -219,13 +219,13 @@ void RendererOverridesHandler::ParseCaptureParameters(
   double max_height = -1;
   base::DictionaryValue* params = command->params();
   if (params) {
-    params->GetString(devtools::Page::captureScreenshot::kParamFormat,
+    params->GetString(devtools::Page::startScreencast::kParamFormat,
                       format);
-    params->GetInteger(devtools::Page::captureScreenshot::kParamQuality,
+    params->GetInteger(devtools::Page::startScreencast::kParamQuality,
                        quality);
-    params->GetDouble(devtools::Page::captureScreenshot::kParamMaxWidth,
+    params->GetDouble(devtools::Page::startScreencast::kParamMaxWidth,
                       &max_width);
-    params->GetDouble(devtools::Page::captureScreenshot::kParamMaxHeight,
+    params->GetDouble(devtools::Page::startScreencast::kParamMaxHeight,
                       &max_height);
   }
 
@@ -245,6 +245,20 @@ void RendererOverridesHandler::ParseCaptureParameters(
     *scale = 0.1;
   if (*scale > 5)
     *scale = 5;
+}
+
+base::DictionaryValue* RendererOverridesHandler::CreateScreenshotResponse(
+    const std::vector<unsigned char>& png_data) {
+  std::string base_64_data;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(&png_data[0]),
+                        png_data.size()),
+      &base_64_data);
+
+  base::DictionaryValue* response = new base::DictionaryValue();
+  response->SetString(
+      devtools::Page::captureScreenshot::kResponseData, base_64_data);
+  return response;
 }
 
 // DOM agent handlers  --------------------------------------------------------
@@ -427,43 +441,39 @@ RendererOverridesHandler::PageCaptureScreenshot(
   if (!host->GetView())
     return command->InternalErrorResponse("Unable to access the view");
 
-  std::string format;
-  int quality = kDefaultScreenshotQuality;
-  double scale = 1;
-  ParseCaptureParameters(command.get(), &format, &quality, &scale);
-
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  gfx::Size snapshot_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(view_bounds.size(), scale));
+  gfx::Rect snapshot_bounds(view_bounds.size());
+  gfx::Size snapshot_size = snapshot_bounds.size();
 
-  // Grab screen pixels if available for current platform.
-  // TODO(pfeldman): support format, scale and quality in ui::GrabViewSnapshot.
-  std::vector<unsigned char> png;
-  bool is_unscaled_png = scale == 1 && format == kPng;
-  if (is_unscaled_png && ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
-                                              &png,
-                                              gfx::Rect(snapshot_size))) {
-    std::string base64_data;
-    base::Base64Encode(
-        base::StringPiece(reinterpret_cast<char*>(&*png.begin()), png.size()),
-        &base64_data);
-    base::DictionaryValue* result = new base::DictionaryValue();
-    result->SetString(
-        devtools::Page::captureScreenshot::kResponseData, base64_data);
-    return command->SuccessResponse(result);
+  std::vector<unsigned char> png_data;
+  if (ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
+                           &png_data,
+                           snapshot_bounds)) {
+    if (png_data.size())
+      return command->SuccessResponse(CreateScreenshotResponse(png_data));
+    else
+      return command->InternalErrorResponse("Unable to capture screenshot");
   }
 
-  // Fallback to copying from compositing surface.
-  RenderWidgetHostViewPort* view_port =
-      RenderWidgetHostViewPort::FromRWHV(host->GetView());
-
-  view_port->CopyFromCompositingSurface(
-      view_bounds, snapshot_size,
+  ui::GrabViewSnapshotAsync(
+      host->GetView()->GetNativeView(),
+      snapshot_bounds,
+      base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
-                 weak_factory_.GetWeakPtr(), command, format, quality,
-                 last_compositor_frame_metadata_),
-      SkBitmap::kARGB_8888_Config);
+                 weak_factory_.GetWeakPtr(), command));
   return command->AsyncResponsePromise();
+}
+
+void RendererOverridesHandler::ScreenshotCaptured(
+    scoped_refptr<DevToolsProtocol::Command> command,
+    scoped_refptr<base::RefCountedBytes> png_data) {
+  if (png_data) {
+    SendAsyncResponse(
+        command->SuccessResponse(CreateScreenshotResponse(png_data->data())));
+  } else {
+    SendAsyncResponse(
+        command->InternalErrorResponse("Unable to capture screenshot"));
+  }
 }
 
 scoped_refptr<DevToolsProtocol::Response>
@@ -499,18 +509,14 @@ RendererOverridesHandler::PageStopScreencast(
   return command->SuccessResponse(NULL);
 }
 
-void RendererOverridesHandler::ScreenshotCaptured(
-    scoped_refptr<DevToolsProtocol::Command> command,
+void RendererOverridesHandler::ScreencastFrameCaptured(
     const std::string& format,
     int quality,
     const cc::CompositorFrameMetadata& metadata,
     bool success,
     const SkBitmap& bitmap) {
   if (!success) {
-    if (command) {
-      SendAsyncResponse(
-          command->InternalErrorResponse("Unable to capture screenshot"));
-    } else if (capture_retry_count_) {
+    if (capture_retry_count_) {
       --capture_retry_count_;
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
@@ -543,13 +549,8 @@ void RendererOverridesHandler::ScreenshotCaptured(
     encoded = false;
   }
 
-  if (!encoded) {
-    if (command) {
-      SendAsyncResponse(
-          command->InternalErrorResponse("Unable to encode screenshot"));
-    }
+  if (!encoded)
     return;
-  }
 
   std::string base_64_data;
   base::Base64Encode(
@@ -595,20 +596,11 @@ void RendererOverridesHandler::ScreenshotCaptured(
     response_metadata->Set(
         devtools::Page::ScreencastFrameMetadata::kParamViewport, viewport);
 
-    if (command) {
-      response->Set(devtools::Page::captureScreenshot::kResponseMetadata,
-                    response_metadata);
-    } else {
-      response->Set(devtools::Page::screencastFrame::kParamMetadata,
-                    response_metadata);
-    }
+    response->Set(devtools::Page::screencastFrame::kParamMetadata,
+                  response_metadata);
   }
 
-  if (command) {
-    SendAsyncResponse(command->SuccessResponse(response));
-  } else {
-    SendNotification(devtools::Page::screencastFrame::kName, response);
-  }
+  SendNotification(devtools::Page::screencastFrame::kName, response);
 }
 
 // Quota and Usage ------------------------------------------
