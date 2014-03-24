@@ -52,6 +52,15 @@ InspectorTest.nodeWithId = function(idValue, callback)
     InspectorTest.findNode(nodeIdMatches, callback);
 }
 
+InspectorTest.shadowRootByHostId = function(idValue, callback)
+{
+    function shadowRootMatches(node)
+    {
+        return node.isShadowRoot() && node.parentNode.getAttribute("id") === idValue;
+    }
+    InspectorTest.findNode(shadowRootMatches, callback);
+}
+
 InspectorTest.nodeWithClass = function(classValue, callback)
 {
     function nodeClassMatches(node)

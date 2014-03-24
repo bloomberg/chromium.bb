@@ -115,5 +115,28 @@ Call stack:
     1)  (:1)
 Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
 Script execution resumed.
+
+Running: testInsertChildIntoAuthorShadowTree
+Test that 'Subtree Modified' breakpoint on author shadow root is hit when appending a child.
+Set 'Subtree Modified' DOM breakpoint on author shadow root.
+Append childElement to author shadow root.
+Script execution paused.
+Call stack:
+    0) appendElementToAuthorShadowRoot (dom-breakpoints.html:79)
+    1)  (:1)
+Paused on a "Subtree Modified" breakpoint set on #shadow-root, because a new child was added to that node.
+Script execution resumed.
+
+Running: testReloadWithShadowElementBreakpoint
+Test that shadow DOM breakpoints are persisted between page reloads.
+Set 'Subtree Modified' DOM breakpoint on outerElement.
+Page reloaded.
+Append childElement to outerElement.
+Script execution paused.
+Call stack:
+    0) appendElementToAuthorShadowTree (dom-breakpoints.html:72)
+    1)  (:1)
+Paused on a "Subtree Modified" breakpoint set on div#outerElement, because a new child was added to that node.
+Script execution resumed.
 Debugger was disabled.
 
