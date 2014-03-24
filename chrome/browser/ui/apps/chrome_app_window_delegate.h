@@ -7,27 +7,13 @@
 
 #include "apps/app_window.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
-
-class AppWindowLinkDelegate : public content::WebContentsDelegate {
- public:
-  AppWindowLinkDelegate();
-  virtual ~AppWindowLinkDelegate();
-
- private:
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(AppWindowLinkDelegate);
-};
 
 class ChromeAppWindowDelegate : public apps::AppWindow::Delegate {
  public:
@@ -37,6 +23,8 @@ class ChromeAppWindowDelegate : public apps::AppWindow::Delegate {
   static void DisableExternalOpenForTesting();
 
  private:
+  class NewWindowContentsDelegate;
+
   // apps::AppWindow::Delegate:
   virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
   virtual apps::NativeAppWindow* CreateNativeAppWindow(
@@ -74,7 +62,7 @@ class ChromeAppWindowDelegate : public apps::AppWindow::Delegate {
       apps::AppWindow* window,
       const apps::AppWindow::CreateParams& params);
 
-  scoped_ptr<AppWindowLinkDelegate> app_window_link_delegate_;
+  scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppWindowDelegate);
 };

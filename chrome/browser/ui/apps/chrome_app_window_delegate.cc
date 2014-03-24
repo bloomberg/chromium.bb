@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 
 #if defined(USE_ASH)
@@ -42,7 +44,6 @@ bool disable_external_open_for_testing_ = false;
 // Opens a URL with Chromium (not external browser) with the right profile.
 content::WebContents* OpenURLFromTabInternal(
     content::BrowserContext* context,
-    content::WebContents* source,
     const content::OpenURLParams& params) {
   // Force all links to open in a new tab, even if they were trying to open a
   // window.
@@ -67,9 +68,9 @@ content::WebContents* OpenURLFromTabInternal(
 class OpenURLFromTabBasedOnBrowserDefault
     : public ShellIntegration::DefaultWebClientObserver {
  public:
-  OpenURLFromTabBasedOnBrowserDefault(content::WebContents* source,
+  OpenURLFromTabBasedOnBrowserDefault(scoped_ptr<content::WebContents> source,
                                       const content::OpenURLParams& params)
-      : source_(source), params_(params) {}
+      : source_(source.Pass()), params_(params) {}
 
   // Opens a URL when called with the result of if this is the default system
   // browser or not.
@@ -84,7 +85,7 @@ class OpenURLFromTabBasedOnBrowserDefault
       case ShellIntegration::STATE_PROCESSING:
         break;
       case ShellIntegration::STATE_IS_DEFAULT:
-        OpenURLFromTabInternal(profile, source_, params_);
+        OpenURLFromTabInternal(profile, params_);
         break;
       case ShellIntegration::STATE_NOT_DEFAULT:
       case ShellIntegration::STATE_UNKNOWN:
@@ -96,26 +97,42 @@ class OpenURLFromTabBasedOnBrowserDefault
   virtual bool IsOwnedByWorker() OVERRIDE { return true; }
 
  private:
-  content::WebContents* source_;
+  scoped_ptr<content::WebContents> source_;
   const content::OpenURLParams params_;
 };
 
 }  // namespace
 
-AppWindowLinkDelegate::AppWindowLinkDelegate() {}
+class ChromeAppWindowDelegate::NewWindowContentsDelegate
+    : public content::WebContentsDelegate {
+ public:
+  NewWindowContentsDelegate() {}
+  virtual ~NewWindowContentsDelegate() {}
 
-AppWindowLinkDelegate::~AppWindowLinkDelegate() {}
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
 
-// TODO(rockot): Add a test that exercises this code. See
-// http://crbug.com/254260.
-content::WebContents* AppWindowLinkDelegate::OpenURLFromTab(
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NewWindowContentsDelegate);
+};
+
+content::WebContents*
+ChromeAppWindowDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (source) {
+    // This NewWindowContentsDelegate was given ownership of the incoming
+    // WebContents by being assigned as its delegate within
+    // ChromeAppWindowDelegate::AddNewContents, but this is the first time
+    // NewWindowContentsDelegate actually sees the WebContents.
+    // Here it is captured for deletion.
+    scoped_ptr<content::WebContents> owned_source(source);
     scoped_refptr<ShellIntegration::DefaultWebClientWorker>
         check_if_default_browser_worker =
             new ShellIntegration::DefaultBrowserWorker(
-                new OpenURLFromTabBasedOnBrowserDefault(source, params));
+                new OpenURLFromTabBasedOnBrowserDefault(owned_source.Pass(),
+                                                        params));
     // Object lifetime notes: The OpenURLFromTabBasedOnBrowserDefault is owned
     // by check_if_default_browser_worker. StartCheckIsDefault() takes lifetime
     // ownership of check_if_default_browser_worker and will clean up after
@@ -125,7 +142,8 @@ content::WebContents* AppWindowLinkDelegate::OpenURLFromTab(
   return NULL;
 }
 
-ChromeAppWindowDelegate::ChromeAppWindowDelegate() {}
+ChromeAppWindowDelegate::ChromeAppWindowDelegate()
+    : new_window_contents_delegate_(new NewWindowContentsDelegate()) {}
 
 ChromeAppWindowDelegate::~ChromeAppWindowDelegate() {}
 
@@ -157,7 +175,7 @@ content::WebContents* ChromeAppWindowDelegate::OpenURLFromTab(
     content::BrowserContext* context,
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  return OpenURLFromTabInternal(context, source, params);
+  return OpenURLFromTabInternal(context, params);
 }
 
 void ChromeAppWindowDelegate::AddNewContents(content::BrowserContext* context,
@@ -167,9 +185,11 @@ void ChromeAppWindowDelegate::AddNewContents(content::BrowserContext* context,
                                              bool user_gesture,
                                              bool* was_blocked) {
   if (!disable_external_open_for_testing_) {
-    if (!app_window_link_delegate_.get())
-      app_window_link_delegate_.reset(new AppWindowLinkDelegate());
-    new_contents->SetDelegate(app_window_link_delegate_.get());
+    // We don't really want to open a window for |new_contents|, but we need to
+    // capture its intended navigation. Here we give ownership to the
+    // NewWindowContentsDelegate, which will dispose of the contents once
+    // a navigation is captured.
+    new_contents->SetDelegate(new_window_contents_delegate_.get());
     return;
   }
   chrome::ScopedTabbedBrowserDisplayer displayer(
