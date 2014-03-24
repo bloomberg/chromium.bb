@@ -105,6 +105,15 @@ TEST(CoreCppTest, Basic) {
               WaitMany(wh, wf, MOJO_DEADLINE_INDEFINITE));
   }
 
+  // |MakeScopedHandle| (just compilation tests):
+  {
+    EXPECT_FALSE(MakeScopedHandle(Handle()).is_valid());
+    EXPECT_FALSE(MakeScopedHandle(MessagePipeHandle()).is_valid());
+    EXPECT_FALSE(MakeScopedHandle(DataPipeProducerHandle()).is_valid());
+    EXPECT_FALSE(MakeScopedHandle(DataPipeConsumerHandle()).is_valid());
+    EXPECT_FALSE(MakeScopedHandle(SharedBufferHandle()).is_valid());
+  }
+
   // |MessagePipeHandle|/|ScopedMessagePipeHandle| functions:
   {
     MessagePipeHandle h_invalid;
