@@ -51,12 +51,14 @@ public class InstallerDelegateTest extends ChromeShellTestBase
     private boolean mResultFinished;
     private InstallerDelegate mResultDelegate;
     private boolean mResultSuccess;
+    private boolean mInstallStarted;
 
     @Override
     public void onInstallFinished(InstallerDelegate delegate, boolean success) {
         mResultDelegate = delegate;
         mResultSuccess = success;
         mResultFinished = true;
+        assertTrue(mInstallStarted);
     }
 
     @Override
@@ -86,6 +88,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
 
     private void startMonitoring() throws InterruptedException {
         mTestDelegate.start();
+        mInstallStarted = true;
 
         // Wait until we know that the Thread is running the InstallerDelegate task.
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -146,5 +149,15 @@ public class InstallerDelegateTest extends ChromeShellTestBase
         mTestDelegate.setTimingForTests(1, 50);
         startMonitoring();
         checkResults(false);
+    }
+
+    /**
+     * Makes sure that the runnable isn't called until returning from start().
+     */
+    public void testRunnableRaceCondition() throws InterruptedException {
+        mPackageManager.isInstalled = true;
+        mTestDelegate.setTimingForTests(1, 5000);
+        startMonitoring();
+        checkResults(true);
     }
 }

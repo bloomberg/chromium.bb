@@ -79,7 +79,7 @@ public class InstallerDelegate implements Runnable {
     public void start() {
         mTimestampStarted = SystemClock.elapsedRealtime();
         mIsRunning = true;
-        run();
+        mHandler.postDelayed(this, mMsBetweenRuns);
     }
 
     /**
