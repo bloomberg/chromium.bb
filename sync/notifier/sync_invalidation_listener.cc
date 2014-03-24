@@ -361,7 +361,7 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
 }
 
 void SyncInvalidationListener::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   DCHECK(CalledOnValidThread());
   sync_network_channel_->RequestDetailedStatus(callback);
   callback.Run(*CollectDebugData());

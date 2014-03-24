@@ -81,7 +81,7 @@ class SYNC_EXPORT Invalidator {
 
   // Requests internal detailed status to be posted back to the callback.
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) = 0;
+      base::Callback<void(const base::DictionaryValue&)> callback) const = 0;
 };
 }  // namespace syncer
 

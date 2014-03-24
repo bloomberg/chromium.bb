@@ -181,7 +181,7 @@ TiclInvalidationService::GetInvalidationAuthProvider() {
 }
 
 void TiclInvalidationService::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> return_callback) {
+    base::Callback<void(const base::DictionaryValue&)> return_callback) const {
   return_callback.Run(network_channel_options_);
   invalidator_->RequestDetailedStatus(return_callback);
 }

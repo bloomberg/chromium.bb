@@ -107,7 +107,7 @@ class NonBlockingInvalidator::Core
   void UpdateRegisteredIds(const ObjectIdSet& ids);
   void UpdateCredentials(const std::string& email, const std::string& token);
   void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback);
+      base::Callback<void(const base::DictionaryValue&)> callback) const;
 
   // InvalidationHandler implementation (all called on I/O thread by
   // InvalidationNotifier).
@@ -177,7 +177,7 @@ void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
 }
 
 void NonBlockingInvalidator::Core::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->RequestDetailedStatus(callback);
 }
@@ -285,7 +285,7 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
 }
 
 void NonBlockingInvalidator::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   base::Callback<void(const base::DictionaryValue&)> proxy_callback =
       base::Bind(&CallbackProxy::Run, base::Owned(new CallbackProxy(callback)));

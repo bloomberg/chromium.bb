@@ -65,7 +65,7 @@ InvalidationLogger* InvalidationServiceAndroid::GetInvalidationLogger() {
 }
 
 void InvalidationServiceAndroid::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> return_callback) {
+    base::Callback<void(const base::DictionaryValue&)> return_callback) const {
 }
 
 InvalidationAuthProvider*

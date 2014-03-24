@@ -203,7 +203,7 @@ void P2PInvalidator::UpdateCredentials(
 }
 
 void P2PInvalidator::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(mferreria): Make the P2P Invalidator work.
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());

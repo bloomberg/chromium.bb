@@ -107,7 +107,7 @@ class InvalidationService : public KeyedService {
 
   // Triggers requests of internal status.
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> post_caller) = 0;
+      base::Callback<void(const base::DictionaryValue&)> post_caller) const = 0;
 
   // Returns the authentication provider.
   virtual InvalidationAuthProvider* GetInvalidationAuthProvider() = 0;

@@ -74,7 +74,7 @@ void InvalidationNotifier::UpdateCredentials(
 }
 
 void InvalidationNotifier::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   DCHECK(CalledOnValidThread());
   invalidation_listener_.RequestDetailedStatus(callback);
 }

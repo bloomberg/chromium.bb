@@ -137,7 +137,7 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   void DoRegistrationUpdate();
 
   void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback);
+      base::Callback<void(const base::DictionaryValue&)> callback) const;
 
   void StopForTest();
 

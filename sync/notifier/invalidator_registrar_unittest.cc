@@ -52,7 +52,7 @@ class RegistrarInvalidator : public Invalidator {
   }
 
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> call) OVERRIDE {
+      base::Callback<void(const base::DictionaryValue&)> call) const OVERRIDE {
     // Do nothing.
   }
 

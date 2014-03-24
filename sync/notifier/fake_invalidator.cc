@@ -62,7 +62,7 @@ void FakeInvalidator::UpdateCredentials(
 }
 
 void FakeInvalidator::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
   base::DictionaryValue value;
   callback.Run(value);
 }

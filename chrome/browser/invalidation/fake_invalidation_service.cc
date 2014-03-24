@@ -68,7 +68,7 @@ InvalidationLogger* FakeInvalidationService::GetInvalidationLogger() {
 }
 
 void FakeInvalidationService::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> caller) {
+    base::Callback<void(const base::DictionaryValue&)> caller) const {
   base::DictionaryValue value;
   caller.Run(value);
 }

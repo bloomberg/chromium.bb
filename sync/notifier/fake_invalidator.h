@@ -38,7 +38,8 @@ class FakeInvalidator : public Invalidator {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
+    base::Callback<void(const base::DictionaryValue&)> callback) const
+    OVERRIDE;
 
  private:
   InvalidatorRegistrar registrar_;
