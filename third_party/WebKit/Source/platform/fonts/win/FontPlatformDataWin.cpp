@@ -35,7 +35,6 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
-#include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/Platform.h"
 #include "public/platform/win/WebSandboxSupport.h"

@@ -407,8 +407,6 @@
       'fonts/win/FontPlatformDataWin.cpp',
       'fonts/win/FontPlatformDataWin.h',
       'fonts/win/FontWin.cpp',
-      'fonts/win/SkiaFontWin.cpp',
-      'fonts/win/SkiaFontWin.h',
       'fonts/win/UniscribeHelper.cpp',
       'fonts/win/UniscribeHelper.h',
       'fonts/win/UniscribeHelperTextRun.cpp',

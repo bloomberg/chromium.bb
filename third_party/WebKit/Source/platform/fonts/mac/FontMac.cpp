@@ -163,7 +163,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
         if (textMode & TextModeFill) {
             // If we also filled, we don't want to draw shadows twice.
-            // See comment in FontChromiumWin.cpp::paintSkiaText() for more details.
+            // See comment in FontHarfBuzz.cpp::paintGlyphs() for more details.
             paint.setLooper(0);
         }
 
