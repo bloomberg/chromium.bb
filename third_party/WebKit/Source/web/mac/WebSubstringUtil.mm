@@ -29,6 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Temporary hack to avoid breaking build during WebFrame -> WebLocalFrame transition.
+#if __LP64__
+#define NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES 1
+#endif
+
 #include "config.h"
 #include "WebSubstringUtil.h"
 
