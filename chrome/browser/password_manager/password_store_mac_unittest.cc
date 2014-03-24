@@ -56,9 +56,9 @@ ACTION(QuitUIMessageLoop) {
   base::MessageLoop::current()->Quit();
 }
 
-class MockPasswordStoreMac : public PasswordStoreMac {
+class TestPasswordStoreMac : public PasswordStoreMac {
  public:
-  MockPasswordStoreMac(
+  TestPasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
       crypto::AppleKeychain* keychain,
@@ -72,9 +72,9 @@ class MockPasswordStoreMac : public PasswordStoreMac {
   using PasswordStoreMac::GetBackgroundTaskRunner;
 
  private:
-  virtual ~MockPasswordStoreMac() {}
+  virtual ~TestPasswordStoreMac() {}
 
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreMac);
+  DISALLOW_COPY_AND_ASSIGN(TestPasswordStoreMac);
 };
 
 }  // namespace
@@ -1059,7 +1059,7 @@ class PasswordStoreMacTest : public testing::Test {
 
     keychain_ = new MockAppleKeychain();
 
-    store_ = new MockPasswordStoreMac(
+    store_ = new TestPasswordStoreMac(
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current(),
         keychain_,
@@ -1075,8 +1075,6 @@ class PasswordStoreMacTest : public testing::Test {
   void WaitForStoreUpdate() {
     // Do a store-level query to wait for all the operations above to be done.
     MockPasswordStoreConsumer consumer;
-    ON_CALL(consumer, OnGetPasswordStoreResults(_))
-        .WillByDefault(QuitUIMessageLoop());
     EXPECT_CALL(consumer, OnGetPasswordStoreResults(_))
         .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
     store_->GetLogins(PasswordForm(), PasswordStore::ALLOW_PROMPT, &consumer);
@@ -1089,7 +1087,7 @@ class PasswordStoreMacTest : public testing::Test {
 
   MockAppleKeychain* keychain_;  // Owned by store_.
   LoginDatabase* login_db_;  // Owned by store_.
-  scoped_refptr<MockPasswordStoreMac> store_;
+  scoped_refptr<TestPasswordStoreMac> store_;
   base::ScopedTempDir db_dir_;
 };
 
@@ -1218,8 +1216,6 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   m_form.signon_realm = "http://m.facebook.com";
   m_form.origin = GURL("http://m.facebook.com/index.html");
   MockPasswordStoreConsumer consumer;
-  ON_CALL(consumer, OnGetPasswordStoreResults(_))
-      .WillByDefault(QuitUIMessageLoop());
   EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(DoAll(
       WithArg<0>(Invoke(&consumer, &MockPasswordStoreConsumer::CopyElements)),
       WithArg<0>(STLDeleteElements0()),
