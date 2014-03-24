@@ -5,10 +5,12 @@
 {
   'variables': {
     'conditions': [
-      ['OS=="android"', {
+      ['(OS=="android" or chromeos==1) and target_arch=="arm"', {
         'use_opus_fixed_point%': 1,
+        'use_opus_arm_optimization%': 1,
       }, {
         'use_opus_fixed_point%': 0,
+        'use_opus_arm_optimization%': 0,
       }],
     ],
   },
@@ -64,6 +66,22 @@
           ],
           'sources/': [
             ['exclude', '/float/[^/]*_FLP.(h|c)$'],
+          ],
+          'conditions': [
+            ['use_opus_arm_optimization==1', {
+              'defines': [
+                'OPUS_ARM_ASM',
+                'OPUS_ARM_INLINE_ASM',
+                'OPUS_ARM_INLINE_EDSP',
+                'OPUS_ARM_MAY_HAVE_EDSP',
+                'OPUS_ARM_MAY_HAVE_MEDIA',
+                'OPUS_ARM_MAY_HAVE_NEON',
+                'OPUS_HAVE_RTCD',
+              ],
+              'includes': [
+                'opus_srcs_arm.gypi',
+              ],
+            }],
           ],
         }],
       ],
