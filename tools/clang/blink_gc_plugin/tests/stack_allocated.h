@@ -20,7 +20,7 @@ private:
 class StackObject {
     STACK_ALLOCATED();
 private:
-    HeapObject* m_obj; // Does not need tracing.
+    Member<HeapObject> m_obj; // Does not need tracing.
 };
 
 class AnotherStackObject : public PartObject { // Invalid base.

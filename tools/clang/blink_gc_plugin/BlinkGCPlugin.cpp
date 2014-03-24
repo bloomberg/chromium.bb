@@ -454,21 +454,25 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (edge->value()->record()->isUnion())
       return;
 
-    if (!stack_allocated_host_ && edge->value()->IsStackAllocated())
+    if (!stack_allocated_host_ && edge->value()->IsStackAllocated()) {
       invalid_fields_.push_back(std::make_pair(current_, edge));
+      return;
+    }
 
     if (!Parent() || !edge->value()->IsGCAllocated())
       return;
 
-    if (Parent()->IsOwnPtr())
+    if (Parent()->IsOwnPtr() ||
+        (stack_allocated_host_ && Parent()->IsRawPtr())) {
       invalid_fields_.push_back(std::make_pair(current_, Parent()));
+      return;
+    }
 
     // Don't check raw and ref pointers in transition mode.
     if (options_.enable_oilpan)
       return;
 
-    if ((!stack_allocated_host_ && Parent()->IsRawPtr()) ||
-        Parent()->IsRefPtr())
+    if (Parent()->IsRawPtr() || Parent()->IsRefPtr())
       invalid_fields_.push_back(std::make_pair(current_, Parent()));
   }
 

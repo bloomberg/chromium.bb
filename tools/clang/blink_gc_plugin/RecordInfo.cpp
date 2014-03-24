@@ -355,6 +355,9 @@ TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
   if (IsGCAllocated())
     return TracingStatus::Needed();
 
+  if (IsStackAllocated())
+    return TracingStatus::Unneeded();
+
   for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
     if (it->second.info()->NeedsTracing(option).IsNeeded())
       return TracingStatus::Needed();
