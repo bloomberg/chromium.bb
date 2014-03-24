@@ -12,7 +12,9 @@ div#test {
 <script>
 function doWork()
 {
-    document.getElementById("test").style.display = "block";
+    var element = document.getElementById("test");
+    element.style.display = "block";
+    var unused = element.clientWidth;
 }
 
 function test()
