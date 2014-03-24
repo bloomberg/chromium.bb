@@ -381,6 +381,11 @@ void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
+void WebContentsViewGtk::HidePopupMenu() {
+  // External popup menus are only used on Mac and Android.
+  NOTIMPLEMENTED();
+}
+
 // Render view DnD -------------------------------------------------------------
 
 void WebContentsViewGtk::StartDragging(const DropData& drop_data,
