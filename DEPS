@@ -172,7 +172,7 @@ deps = {
 
   "src/third_party/brotli/src":
     Var("chromium_git") +
-    "/external/font-compression-reference.git@7f848593bd2ec83f4537b6d494a5bf55b9bd4456",
+    "/external/font-compression-reference.git@494c85cebbaaa0db345df69ffa1b639aa4652022",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@171600",
