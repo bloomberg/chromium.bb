@@ -158,7 +158,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
 bool NetworkState::InitialPropertiesReceived(
     const base::DictionaryValue& properties) {
   NET_LOG_DEBUG("InitialPropertiesReceived", path());
-  bool changed = UpdateName(properties);
+  bool changed = false;
+  if (!properties.HasKey(shill::kTypeProperty)) {
+    NET_LOG_ERROR("NetworkState has no type",
+                  shill_property_util::GetNetworkIdFromProperties(properties));
+  } else {
+    changed |= UpdateName(properties);
+  }
   bool had_ca_cert_nss = has_ca_cert_nss_;
   has_ca_cert_nss_ = IsCaCertNssSet(properties);
   changed |= had_ca_cert_nss != has_ca_cert_nss_;
