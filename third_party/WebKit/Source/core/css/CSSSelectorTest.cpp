@@ -27,7 +27,7 @@ TEST(CSSSelector, Representations)
     "#id.class { }"
     "[attr]#id { }"
     "div[attr]#id { }"
-    "video::cue { }"
+    "div::content { }"
     "div::first-line { }"
     ".a.b.c { }"
     "div:not(.a) { }" // without class a

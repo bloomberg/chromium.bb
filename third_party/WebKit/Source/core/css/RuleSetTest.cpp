@@ -123,4 +123,17 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
     ASSERT_EQ(tagStr, rules->at(0).selector().tagQName().localName());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
+{
+    CSSTestHelper helper;
+
+    helper.addCSSRules("div::content { }");
+    RuleSet& ruleSet = helper.ruleSet();
+    AtomicString str("div");
+    const TerminatedArray<RuleData>* rules = ruleSet.tagRules(str);
+    ASSERT_EQ(1u, rules->size());
+    AtomicString valueStr("content");
+    ASSERT_EQ(valueStr, rules->at(0).selector().value());
+}
+
 } // namespace WebCore

@@ -11,7 +11,7 @@
       :host > .blue {
         color: blue;
       }
-      :host content /content/ * {
+      :host > ::content > * {
         color: red;
       }
     </style>
@@ -28,7 +28,7 @@
   <pre id="console"></pre>
 </body>
 <script>
-description("Test for crbug.com/274063, cannot style /content/ with a rule that includes :host.");
+description("Test for crbug.com/274063, cannot style ::content with a rule that includes :host.");
 
 var host = document.querySelector('#host');
 var root = host.createShadowRoot();

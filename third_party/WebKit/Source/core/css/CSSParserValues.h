@@ -234,6 +234,7 @@ public:
     bool isDistributedPseudoElement() const { return m_selector->isDistributedPseudoElement(); }
     CSSParserSelector* findDistributedPseudoElementSelector() const;
     bool hasHostPseudoSelector() const;
+    bool isContentPseudoElement() const { return m_selector->isContentPseudoElement(); }
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
     bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }
