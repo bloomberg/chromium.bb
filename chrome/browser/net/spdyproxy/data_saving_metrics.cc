@@ -43,8 +43,7 @@ void AddInt64ToListPref(size_t index,
     DCHECK(rv);
   }
   value += length;
-  list_update->Set(index,
-                   base::Value::CreateStringValue(base::Int64ToString(value)));
+  list_update->Set(index, new base::StringValue(base::Int64ToString(value)));
 }
 
 int64 ListPrefInt64Value(const base::ListValue& list_update, size_t index) {

@@ -1751,8 +1751,8 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   base::ListValue* default_sites_list = new base::ListValue;
   history::MostVisitedURLList urls = top_sites_->GetPrepopulatePages();
   for (size_t i = 0; i < urls.size(); ++i) {
-    default_sites_list->Append(base::Value::CreateStringValue(
-        urls[i].url.possibly_invalid_spec()));
+    default_sites_list->Append(
+        new base::StringValue(urls[i].url.possibly_invalid_spec()));
   }
   ntp_info_->Set("default_sites", default_sites_list);
 
@@ -2110,8 +2110,7 @@ void ProcessInfoObserver::OnDetailsAvailable() {
       base::ListValue* titles = new base::ListValue();
       for (size_t title_index = 0; title_index < iterator->titles.size();
            ++title_index) {
-        titles->Append(
-            base::Value::CreateStringValue(iterator->titles[title_index]));
+        titles->Append(new base::StringValue(iterator->titles[title_index]));
       }
       proc_data->Set("titles", titles);
 

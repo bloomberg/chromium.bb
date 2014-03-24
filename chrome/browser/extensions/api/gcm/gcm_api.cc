@@ -122,7 +122,7 @@ bool GcmRegisterFunction::DoWork() {
 void GcmRegisterFunction::CompleteFunctionWithResult(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
-  SetResult(base::Value::CreateStringValue(registration_id));
+  SetResult(new base::StringValue(registration_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
@@ -174,7 +174,7 @@ bool GcmSendFunction::DoWork() {
 void GcmSendFunction::CompleteFunctionWithResult(
     const std::string& message_id,
     gcm::GCMClient::Result result) {
-  SetResult(base::Value::CreateStringValue(message_id));
+  SetResult(new base::StringValue(message_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
