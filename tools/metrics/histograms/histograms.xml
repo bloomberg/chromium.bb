@@ -21515,6 +21515,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ServicesCustomization.LoadResult"
+    enum="ServicesCustomizationLoadResult">
+  <owner>dpolukhin@chromium.org</owner>
+  <summary>
+    Records result of fetching and parsing OEM customization manifest. See
+    ServicesCustomizationDocument class for more info. Used only on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Use Search.DefaultSearchProviderType instead.
@@ -37600,6 +37609,13 @@ other types of suffix sets.
   <int value="31" label="ZOZNAM"/>
   <int value="32" label="YAHOOQC"/>
   <int value="33" label="NONE"/>
+</enum>
+
+<enum name="ServicesCustomizationLoadResult" type="int">
+  <int value="0" label="Manifest loaded successfully"/>
+  <int value="1" label="Manifest not found on server"/>
+  <int value="2" label="Manifest parsing error"/>
+  <int value="3" label="Failed to load manifest after N retries"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">

@@ -54,12 +54,17 @@ class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
 
 void NetworkPortalDetector::InitializeForTesting(
     NetworkPortalDetector* network_portal_detector) {
-  CHECK(!g_network_portal_detector_set_for_testing)
-      << "NetworkPortalDetector::InitializeForTesting is called twice";
-  CHECK(network_portal_detector);
-  delete g_network_portal_detector;
-  g_network_portal_detector = network_portal_detector;
-  g_network_portal_detector_set_for_testing = true;
+  if (network_portal_detector) {
+    CHECK(!g_network_portal_detector_set_for_testing)
+        << "NetworkPortalDetector::InitializeForTesting is called twice";
+    CHECK(network_portal_detector);
+    delete g_network_portal_detector;
+    g_network_portal_detector = network_portal_detector;
+    g_network_portal_detector_set_for_testing = true;
+  } else {
+    g_network_portal_detector = NULL;
+    g_network_portal_detector_set_for_testing = false;
+  }
 }
 
 // static

@@ -9,12 +9,15 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -80,6 +83,9 @@ const char kGoodServicesManifest[] =
     "}";
 
 const char kDummyCustomizationID[] = "test-dummy";
+
+// Note the path name must be the same as in shill stub.
+const char kStubEthernetServicePath[] = "eth1";
 
 }  // anonymous namespace
 
@@ -207,12 +213,27 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     chromeos::system::StatisticsProvider::SetTestProvider(
         &mock_statistics_provider_);
 
+    DBusThreadManager::InitializeWithStub();
+    NetworkHandler::Initialize();
+
+    NetworkPortalDetector::InitializeForTesting(&network_portal_detector_);
+    NetworkPortalDetector::CaptivePortalState online_state;
+    online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+    online_state.response_code = 204;
+    network_portal_detector_.SetDefaultNetworkPathForTesting(
+        kStubEthernetServicePath);
+    network_portal_detector_.SetDetectionResultsForTesting(
+        kStubEthernetServicePath, online_state);
+
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     ServicesCustomizationDocument::RegisterPrefs(local_state_.registry());
   }
 
   virtual void TearDown() OVERRIDE {
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
+    NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
+    NetworkPortalDetector::InitializeForTesting(NULL);
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
   }
 
@@ -240,6 +261,18 @@ class ServicesCustomizationDocumentTest : public testing::Test {
       .WillRepeatedly(Invoke(AddMimeHeader));
   }
 
+  void AddManifestNotFound(const std::string& id) {
+    GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
+                                id.c_str()));
+    factory_.SetFakeResponse(url,
+                             std::string(),
+                             net::HTTP_NOT_FOUND,
+                             net::URLRequestStatus::SUCCESS);
+    EXPECT_CALL(url_callback_, OnRequestCreate(url, _))
+      .Times(Exactly(1))
+      .WillRepeatedly(Invoke(AddMimeHeader));
+  }
+
   scoped_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder profile_builder;
     PrefServiceMockFactory factory;
@@ -258,6 +291,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
+  NetworkPortalDetectorTestImpl network_portal_detector_;
   base::ShadowingAtExitManager at_exit_manager_;
 };
 
@@ -267,6 +301,7 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
 
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
+  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   doc->StartFetching();
@@ -284,9 +319,10 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
   EXPECT_EQ(default_apps[1], "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 }
 
-TEST_F(ServicesCustomizationDocumentTest, EmptyCustomization) {
+TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
+  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   scoped_ptr<TestingProfile> profile = CreateProfile();
@@ -312,6 +348,7 @@ TEST_F(ServicesCustomizationDocumentTest, EmptyCustomization) {
       .Times(1);
 
   // Manually request a load.
+  RunUntilIdle();
   loader->StartLoading();
   Mock::VerifyAndClearExpectations(&visitor);
 
@@ -325,6 +362,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
 
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
+  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   scoped_ptr<TestingProfile> profile = CreateProfile();
@@ -357,6 +395,52 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
       .Times(2);
+  EXPECT_CALL(visitor, OnExternalProviderReady(_))
+      .Times(1);
+
+  RunUntilIdle();
+  EXPECT_TRUE(doc->IsReady());
+}
+
+TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
+  AddCustomizationIdToVp(kDummyCustomizationID);
+  AddManifestNotFound(kDummyCustomizationID);
+
+  ServicesCustomizationDocument* doc =
+      ServicesCustomizationDocument::GetInstance();
+  doc->SetZeroNetworkDelayForTesting();
+  EXPECT_FALSE(doc->IsReady());
+
+  scoped_ptr<TestingProfile> profile = CreateProfile();
+  extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
+  EXPECT_TRUE(loader);
+
+  MockExternalProviderVisitor visitor;
+  scoped_ptr<extensions::ExternalProviderImpl> provider(
+      new extensions::ExternalProviderImpl(
+          &visitor,
+          loader,
+          profile.get(),
+          extensions::Manifest::EXTERNAL_PREF,
+          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+          extensions::Extension::FROM_WEBSTORE |
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalProviderReady(_))
+      .Times(1);
+
+  // Manually request a load.
+  loader->StartLoading();
+  Mock::VerifyAndClearExpectations(&visitor);
+
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+      .Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
 
