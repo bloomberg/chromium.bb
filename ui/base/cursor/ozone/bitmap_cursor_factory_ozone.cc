@@ -5,6 +5,8 @@
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursors_aura.h"
 
 namespace ui {
 
@@ -27,9 +29,17 @@ BitmapCursorFactoryOzone::~BitmapCursorFactoryOzone() {}
 PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(int type) {
   if (type == kCursorNone)
     return NULL;  // NULL is used for hidden cursor.
-  // TODO(spang): Use ChromeOS cursor bitmaps as default cursors.
-  LOG(FATAL) << "default cursors not yet supported";
-  return NULL;  // not reached
+
+  if (!default_cursors_.count(type)) {
+    // Create new owned image cursor from default aura bitmap for this type.
+    SkBitmap bitmap;
+    gfx::Point hotspot;
+    CHECK(GetCursorBitmap(type, &bitmap, &hotspot));
+    default_cursors_[type] = new BitmapCursorOzone(bitmap, hotspot);
+  }
+
+  // Returned owned default cursor for this type.
+  return default_cursors_[type];
 }
 
 PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(

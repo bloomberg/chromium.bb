@@ -5,6 +5,8 @@
 #ifndef UI_BASE_CURSOR_OZONE_BITMAP_CURSOR_FACTORY_OZONE_H_
 #define UI_BASE_CURSOR_OZONE_BITMAP_CURSOR_FACTORY_OZONE_H_
 
+#include <map>
+
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
@@ -30,6 +32,8 @@ class UI_BASE_EXPORT BitmapCursorOzone
 
   SkBitmap bitmap_;
   gfx::Point hotspot_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapCursorOzone);
 };
 
 // CursorFactoryOzone implementation for bitmapped cursors.
@@ -57,6 +61,13 @@ class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
   // subclasses. If the cursor is hidden (kCursorNone) then cursor is NULL.
   virtual void SetBitmapCursor(gfx::AcceleratedWidget window,
                                scoped_refptr<BitmapCursorOzone> cursor);
+
+ private:
+  // Default cursors are cached & owned by the factory.
+  typedef std::map<int, scoped_refptr<BitmapCursorOzone> > DefaultCursorMap;
+  DefaultCursorMap default_cursors_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapCursorFactoryOzone);
 };
 
 }  // namespace ui
