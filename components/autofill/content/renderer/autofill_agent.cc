@@ -601,6 +601,8 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
   was_query_node_autofilled_ = element_.isAutofilled();
   node->setSuggestedValue(value.substr(0, node->maxLength()));
   node->setAutofilled(true);
+  node->setSelectionRange(node->value().length(),
+                          node->suggestedValue().length());
 }
 
 void AutofillAgent::HidePopup() {
