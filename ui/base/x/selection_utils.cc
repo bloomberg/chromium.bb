@@ -19,12 +19,16 @@ namespace ui {
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kString[] = "STRING";
 const char kText[] = "TEXT";
+const char kTextPlain[] = "text/plain";
+const char kTextPlainUtf8[] = "text/plain;charset=utf-8";
 const char kUtf8String[] = "UTF8_STRING";
 
 const char* kSelectionDataAtoms[] = {
   Clipboard::kMimeTypeHTML,
   kString,
   kText,
+  kTextPlain,
+  kTextPlainUtf8,
   kUtf8String,
   NULL
 };
@@ -34,6 +38,8 @@ std::vector< ::Atom> GetTextAtomsFrom(const X11AtomCache* atom_cache) {
   atoms.push_back(atom_cache->GetAtom(kUtf8String));
   atoms.push_back(atom_cache->GetAtom(kString));
   atoms.push_back(atom_cache->GetAtom(kText));
+  atoms.push_back(atom_cache->GetAtom(kTextPlain));
+  atoms.push_back(atom_cache->GetAtom(kTextPlainUtf8));
   return atoms;
 }
 
@@ -192,9 +198,11 @@ size_t SelectionData::GetSize() const {
 
 std::string SelectionData::GetText() const {
   if (type_ == atom_cache_.GetAtom(kUtf8String) ||
-      type_ == atom_cache_.GetAtom(kText)) {
+      type_ == atom_cache_.GetAtom(kText) ||
+      type_ == atom_cache_.GetAtom(kTextPlainUtf8)) {
     return RefCountedMemoryToString(memory_);
-  } else if (type_ == atom_cache_.GetAtom(kString)) {
+  } else if (type_ == atom_cache_.GetAtom(kString) ||
+             type_ == atom_cache_.GetAtom(kTextPlain)) {
     std::string result;
     base::ConvertToUtf8AndNormalize(RefCountedMemoryToString(memory_),
                                     base::kCodepageLatin1,
