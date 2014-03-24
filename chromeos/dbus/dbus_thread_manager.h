@@ -29,6 +29,9 @@ class DBusThreadManagerObserver;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
+class BluetoothGattCharacteristicClient;
+class BluetoothGattDescriptorClient;
+class BluetoothGattServiceClient;
 class BluetoothInputClient;
 class BluetoothProfileManagerClient;
 class CrasAudioClient;
@@ -124,6 +127,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() = 0;
   virtual BluetoothAgentManagerClient* GetBluetoothAgentManagerClient() = 0;
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() = 0;
+  virtual BluetoothGattCharacteristicClient*
+      GetBluetoothGattCharacteristicClient() = 0;
+  virtual BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient() = 0;
+  virtual BluetoothGattServiceClient* GetBluetoothGattServiceClient() = 0;
   virtual BluetoothInputClient* GetBluetoothInputClient() = 0;
   virtual BluetoothProfileManagerClient* GetBluetoothProfileManagerClient() = 0;
   virtual CrasAudioClient* GetCrasAudioClient() = 0;

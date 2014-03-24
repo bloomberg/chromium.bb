@@ -159,6 +159,11 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   static const char kJustWorksAddress[];
   static const uint32 kJustWorksClass;
 
+  static const char kLowEnergyPath[];
+  static const char kLowEnergyName[];
+  static const char kLowEnergyAddress[];
+  static const uint32 kLowEnergyClass;
+
  private:
   // Property callback passed when we create Properties* structures.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
@@ -186,6 +191,10 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   void AddInputDeviceIfNeeded(
       const dbus::ObjectPath& object_path,
       Properties* properties);
+
+  // Updates the RSSI property of fake device with object path |object_path|
+  // to |rssi|, if the fake device exists.
+  void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16 rssi);
 
   void PinCodeCallback(
       const dbus::ObjectPath& object_path,

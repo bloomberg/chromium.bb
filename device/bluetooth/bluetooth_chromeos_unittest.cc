@@ -706,16 +706,16 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
   ASSERT_EQ((size_t)1, discovery_sessions_.size());
   ASSERT_TRUE(discovery_sessions_[0]->IsActive());
 
-  // First device to appear.
+  // First two devices to appear.
   message_loop_.Run();
 
-  EXPECT_EQ(1, observer.device_added_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kLegacyAutopairAddress,
+  EXPECT_EQ(2, observer.device_added_count_);
+  EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
             observer.last_device_address_);
 
   // Next we should get another two devices...
   message_loop_.Run();
-  EXPECT_EQ(3, observer.device_added_count_);
+  EXPECT_EQ(4, observer.device_added_count_);
 
   // Okay, let's run forward until a device is actually removed...
   while (!observer.device_removed_count_)

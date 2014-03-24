@@ -106,4 +106,3 @@ std::string CanonicalUuid(std::string uuid);
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_UTILS_H_
-

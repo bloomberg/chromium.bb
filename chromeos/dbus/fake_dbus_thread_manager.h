@@ -41,6 +41,12 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   void SetBluetoothAgentManagerClient(
       scoped_ptr<BluetoothAgentManagerClient> client);
   void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);
+  void SetBluetoothGattCharacteristicClient(
+      scoped_ptr<BluetoothGattCharacteristicClient> client);
+  void SetBluetoothGattDescriptorClient(
+      scoped_ptr<BluetoothGattDescriptorClient> client);
+  void SetBluetoothGattServiceClient(
+      scoped_ptr<BluetoothGattServiceClient> client);
   void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
   void SetBluetoothProfileManagerClient(
       scoped_ptr<BluetoothProfileManagerClient> client);
@@ -78,6 +84,11 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   virtual BluetoothAgentManagerClient*
       GetBluetoothAgentManagerClient() OVERRIDE;
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE;
+  virtual BluetoothGattCharacteristicClient*
+      GetBluetoothGattCharacteristicClient() OVERRIDE;
+  virtual BluetoothGattDescriptorClient*
+      GetBluetoothGattDescriptorClient() OVERRIDE;
+  virtual BluetoothGattServiceClient* GetBluetoothGattServiceClient() OVERRIDE;
   virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE;
   virtual BluetoothProfileManagerClient*
       GetBluetoothProfileManagerClient() OVERRIDE;
@@ -115,6 +126,11 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
+  scoped_ptr<BluetoothGattCharacteristicClient>
+      bluetooth_gatt_characteristic_client_;
+  scoped_ptr<BluetoothGattDescriptorClient>
+      bluetooth_gatt_descriptor_client_;
+  scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
   scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
   scoped_ptr<CrasAudioClient> cras_audio_client_;

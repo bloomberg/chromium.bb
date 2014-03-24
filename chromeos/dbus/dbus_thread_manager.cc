@@ -14,6 +14,9 @@
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
+#include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
+#include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
@@ -71,6 +74,11 @@ class DBusClientBundle {
     bluetooth_agent_manager_client_.reset(
         BluetoothAgentManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
+    bluetooth_gatt_characteristic_client_.reset(
+        BluetoothGattCharacteristicClient::Create());
+    bluetooth_gatt_descriptor_client_.reset(
+        BluetoothGattDescriptorClient::Create());
+    bluetooth_gatt_service_client_.reset(BluetoothGattServiceClient::Create());
     bluetooth_input_client_.reset(BluetoothInputClient::Create());
     bluetooth_profile_manager_client_.reset(
         BluetoothProfileManagerClient::Create());
@@ -113,6 +121,15 @@ class DBusClientBundle {
   }
   BluetoothDeviceClient* bluetooth_device_client() {
     return bluetooth_device_client_.get();
+  }
+  BluetoothGattCharacteristicClient* bluetooth_gatt_characteristic_client() {
+    return bluetooth_gatt_characteristic_client_.get();
+  }
+  BluetoothGattDescriptorClient* bluetooth_gatt_descriptor_client() {
+    return bluetooth_gatt_descriptor_client_.get();
+  }
+  BluetoothGattServiceClient* bluetooth_gatt_service_client() {
+    return bluetooth_gatt_service_client_.get();
   }
   BluetoothInputClient* bluetooth_input_client() {
     return bluetooth_input_client_.get();
@@ -197,6 +214,10 @@ class DBusClientBundle {
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
+  scoped_ptr<BluetoothGattCharacteristicClient>
+      bluetooth_gatt_characteristic_client_;
+  scoped_ptr<BluetoothGattDescriptorClient> bluetooth_gatt_descriptor_client_;
+  scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
   scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
   scoped_ptr<CrasAudioClient> cras_audio_client_;
@@ -293,6 +314,20 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
     return client_bundle_->bluetooth_device_client();
+  }
+
+  virtual BluetoothGattCharacteristicClient*
+      GetBluetoothGattCharacteristicClient() OVERRIDE {
+    return client_bundle_->bluetooth_gatt_characteristic_client();
+  }
+
+  virtual BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient()
+      OVERRIDE {
+    return client_bundle_->bluetooth_gatt_descriptor_client();
+  }
+
+  virtual BluetoothGattServiceClient* GetBluetoothGattServiceClient() OVERRIDE {
+    return client_bundle_->bluetooth_gatt_service_client();
   }
 
   virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
@@ -520,6 +555,9 @@ void DBusThreadManager::InitializeClients() {
   InitClient(g_dbus_thread_manager->GetBluetoothAdapterClient());
   InitClient(g_dbus_thread_manager->GetBluetoothAgentManagerClient());
   InitClient(g_dbus_thread_manager->GetBluetoothDeviceClient());
+  InitClient(g_dbus_thread_manager->GetBluetoothGattCharacteristicClient());
+  InitClient(g_dbus_thread_manager->GetBluetoothGattDescriptorClient());
+  InitClient(g_dbus_thread_manager->GetBluetoothGattServiceClient());
   InitClient(g_dbus_thread_manager->GetBluetoothInputClient());
   InitClient(g_dbus_thread_manager->GetBluetoothProfileManagerClient());
   InitClient(g_dbus_thread_manager->GetCrasAudioClient());
