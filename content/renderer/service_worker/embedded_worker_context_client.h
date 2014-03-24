@@ -64,6 +64,9 @@ class EmbeddedWorkerContextClient
   // TODO: Implement DevTools related method overrides.
 
   int embedded_worker_id() const { return embedded_worker_id_; }
+  base::MessageLoopProxy* main_thread_proxy() const {
+    return main_thread_proxy_;
+  }
 
  private:
   void OnSendMessageToWorker(int thread_id,

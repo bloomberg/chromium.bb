@@ -128,7 +128,7 @@ void ServiceWorkerDispatcher::OnRegistered(int32 thread_id,
   // duplicate registration. So for now we mint a new object each
   // time.
   scoped_ptr<WebServiceWorkerImpl> worker(
-      new WebServiceWorkerImpl(registration_id));
+      new WebServiceWorkerImpl(registration_id, thread_safe_sender_));
   callbacks->onSuccess(worker.release());
   pending_callbacks_.Remove(request_id);
 }

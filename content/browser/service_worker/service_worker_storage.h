@@ -38,7 +38,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                        quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
 
-  // Finds registration for |document_url| or |pattern|.
+  // Finds registration for |document_url| or |pattern| or |registration_id|.
   // Returns SERVICE_WORKER_OK with non-null registration if registration
   // is found, or returns SERVICE_WORKER_ERROR_NOT_FOUND if no matching
   // registration is found.
@@ -46,6 +46,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                    const FindRegistrationCallback& callback);
   void FindRegistrationForPattern(const GURL& pattern,
                                   const FindRegistrationCallback& callback);
+  void FindRegistrationForId(int64 registration_id,
+                             const FindRegistrationCallback& callback);
 
   typedef base::Callback<
       void(const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
@@ -72,6 +74,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   typedef std::map<GURL, scoped_refptr<ServiceWorkerRegistration> >
       PatternToRegistrationMap;
+  typedef std::map<int64, scoped_refptr<ServiceWorkerRegistration> >
+      RegistrationIdToRegistrationMap;
 
   static bool PatternMatches(const GURL& pattern, const GURL& script_url);
 

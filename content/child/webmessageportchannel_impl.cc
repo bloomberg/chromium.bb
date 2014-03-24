@@ -59,6 +59,25 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
     ChildThread::current()->GetRouter()->RemoveRoute(route_id_);
 }
 
+// static
+std::vector<int> WebMessagePortChannelImpl::ExtractMessagePortIDs(
+    WebMessagePortChannelArray* channels) {
+  std::vector<int> message_port_ids;
+  if (channels) {
+    message_port_ids.resize(channels->size());
+    // Extract the port IDs from the source array, then free it.
+    for (size_t i = 0; i < channels->size(); ++i) {
+      WebMessagePortChannelImpl* webchannel =
+          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
+      message_port_ids[i] = webchannel->message_port_id();
+      webchannel->QueueMessages();
+      DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
+    }
+    delete channels;
+  }
+  return message_port_ids;
+}
+
 void WebMessagePortChannelImpl::setClient(WebMessagePortChannelClient* client) {
   // Must lock here since client_ is called on the main thread.
   base::AutoLock auto_lock(lock_);
@@ -98,21 +117,8 @@ void WebMessagePortChannelImpl::postMessage(
 void WebMessagePortChannelImpl::PostMessage(
     const base::string16& message,
     WebMessagePortChannelArray* channels) {
-  std::vector<int> message_port_ids(channels ? channels->size() : 0);
-  if (channels) {
-    // Extract the port IDs from the source array, then free it.
-    for (size_t i = 0; i < channels->size(); ++i) {
-      WebMessagePortChannelImpl* webchannel =
-          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
-      message_port_ids[i] = webchannel->message_port_id();
-      webchannel->QueueMessages();
-      DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
-    }
-    delete channels;
-  }
-
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(
-      message_port_id_, message, message_port_ids);
+      message_port_id_, message, ExtractMessagePortIDs(channels));
   Send(msg);
 }
 
