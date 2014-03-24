@@ -68,6 +68,9 @@ for host_os in linux mac; do
   if [ "$PLATFORM" == "${host_platform}-x86" -o "$PLATFORM" == "all" ]; then
     ${GYP} --suffix .${host_platform}-x86 ${EFLAGS} -Dtarget_arch=ia32
   fi
+  if [ "$PLATFORM" == "${host_platform}-x86_64" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-x86_64 ${EFLAGS} -Dtarget_arch=x64
+  fi
   if [ "$PLATFORM" == "${host_platform}-mips" -o "$PLATFORM" == "all" ]; then
     ${GYP} --suffix .${host_platform}-mips ${EFLAGS} -Dtarget_arch=mipsel
   fi
