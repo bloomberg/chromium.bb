@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "content/child/webkitplatformsupport_impl.h"
+#include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -46,7 +46,7 @@ class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
 class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
-    : public WebKitPlatformSupportImpl {
+    : public BlinkPlatformImpl {
  public:
   RendererWebKitPlatformSupportImpl();
   virtual ~RendererWebKitPlatformSupportImpl();

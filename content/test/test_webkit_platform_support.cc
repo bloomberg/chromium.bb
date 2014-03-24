@@ -11,7 +11,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/child/blink_platform_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
@@ -204,8 +203,7 @@ blink::WebString TestWebKitPlatformSupport::defaultLocale() {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void TestWebKitPlatformSupport::SetThemeEngine(blink::WebThemeEngine* engine) {
-  active_theme_engine_ = engine ?
-      engine : WebKitPlatformSupportChildImpl::themeEngine();
+  active_theme_engine_ = engine ? engine : BlinkPlatformImpl::themeEngine();
 }
 
 blink::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
@@ -215,31 +213,6 @@ blink::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
 
 blink::WebCompositorSupport* TestWebKitPlatformSupport::compositorSupport() {
   return &compositor_support_;
-}
-
-base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
-  return base::string16();
-}
-
-base::StringPiece TestWebKitPlatformSupport::GetDataResource(
-    int resource_id,
-    ui::ScaleFactor scale_factor) {
-  return base::StringPiece();
-}
-
-webkit_glue::ResourceLoaderBridge*
-TestWebKitPlatformSupport::CreateResourceLoader(
-    const RequestInfo& request_info) {
-  NOTREACHED();
-  return NULL;
-}
-
-WebSocketStreamHandleBridge*
-TestWebKitPlatformSupport::CreateWebSocketStreamBridge(
-    blink::WebSocketStreamHandle* handle,
-    WebSocketStreamHandleDelegate* delegate) {
-  NOTREACHED();
-  return NULL;
 }
 
 blink::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(

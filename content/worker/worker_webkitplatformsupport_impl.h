@@ -6,7 +6,7 @@
 #define CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/child/webkitplatformsupport_impl.h"
+#include "content/child/blink_platform_impl.h"
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 
@@ -28,7 +28,7 @@ class ThreadSafeSender;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
-class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
+class WorkerWebKitPlatformSupportImpl : public BlinkPlatformImpl,
                                         public blink::WebMimeRegistry {
  public:
   WorkerWebKitPlatformSupportImpl(

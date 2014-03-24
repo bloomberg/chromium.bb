@@ -15,11 +15,9 @@ struct ResourceResponseInfo;
 
 namespace content {
 
-class BlinkPlatformImpl;
-
 class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  explicit WebURLLoaderImpl(BlinkPlatformImpl* platform);
+  WebURLLoaderImpl();
   virtual ~WebURLLoaderImpl();
 
   static blink::WebURLError CreateError(const blink::WebURL& unreachable_url,
@@ -46,7 +44,6 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
  private:
   class Context;
   scoped_refptr<Context> context_;
-  BlinkPlatformImpl* platform_;
 };
 
 }  // namespace content

@@ -8,26 +8,32 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/platform_file.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
+#include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"
 #include "webkit/child/resource_loader_bridge.h"
 
+#if defined(USE_DEFAULT_RENDER_THEME)
+#include "content/child/webthemeengine_impl_default.h"
+#elif defined(OS_WIN)
+#include "content/child/webthemeengine_impl_win.h"
+#elif defined(OS_MACOSX)
+#include "content/child/webthemeengine_impl_mac.h"
+#elif defined(OS_ANDROID)
+#include "content/child/webthemeengine_impl_android.h"
+#endif
+
 namespace base {
 class MessageLoop;
 }
 
-namespace blink {
-class WebSocketStreamHandle;
-}
-
 namespace content {
-
-class WebSocketStreamHandleDelegate;
-class WebSocketStreamHandleBridge;
-struct RequestInfo;
+class FlingCurveConfiguration;
+class WebCryptoImpl;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -36,6 +42,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual ~BlinkPlatformImpl();
 
   // Platform methods (partial implementation):
+  virtual blink::WebThemeEngine* themeEngine();
+  virtual blink::WebFallbackThemeEngine* fallbackThemeEngine();
   virtual base::PlatformFile databaseOpenFile(
       const blink::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const blink::WebString& vfs_file_name,
@@ -61,9 +69,12 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
                                          size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);
+  virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
+      size_t bytes);
   virtual size_t maxDecodedImageBytes() OVERRIDE;
   virtual blink::WebURLLoader* createURLLoader();
   virtual blink::WebSocketStreamHandle* createSocketStreamHandle();
+  virtual blink::WebSocketHandle* createWebSocketHandle() OVERRIDE;
   virtual blink::WebString userAgent();
   // TODO(jam): remove this after Blink is updated
   virtual blink::WebString userAgent(const blink::WebURL& url);
@@ -71,6 +82,11 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebURL& url, blink::WebString& mimetype,
       blink::WebString& charset);
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
+  virtual blink::WebThread* createThread(const char* name);
+  virtual blink::WebThread* currentThread();
+  virtual blink::WebWaitableEvent* createWaitableEvent();
+  virtual blink::WebWaitableEvent* waitMultipleEvents(
+      const blink::WebVector<blink::WebWaitableEvent*>& events);
   virtual void decrementStatsCounter(const char* name);
   virtual void incrementStatsCounter(const char* name);
   virtual void histogramCustomCounts(
@@ -114,44 +130,42 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void setSharedTimerFireInterval(double interval_seconds);
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
+  virtual blink::WebGestureCurve* createFlingAnimationCurve(
+      int device_source,
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulative_scroll) OVERRIDE;
+  virtual void didStartWorkerRunLoop(
+      const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
+  virtual void didStopWorkerRunLoop(
+      const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
+  virtual blink::WebCrypto* crypto() OVERRIDE;
 
-
-  // Embedder functions. The following are not implemented by the glue layer and
-  // need to be specialized by the embedder.
-
-  // Gets a localized string given a message id.  Returns an empty string if the
-  // message id is not found.
-  virtual base::string16 GetLocalizedString(int message_id) = 0;
-
-  // Returns the raw data for a resource.  This resource must have been
-  // specified as BINDATA in the relevant .rc file.
-  virtual base::StringPiece GetDataResource(int resource_id,
-                                            ui::ScaleFactor scale_factor) = 0;
-
-  // Creates a ResourceLoaderBridge.
-  virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const RequestInfo& request_info) = 0;
-  // Creates a WebSocketStreamHandleBridge.
-  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
-      blink::WebSocketStreamHandle* handle,
-      WebSocketStreamHandleDelegate* delegate) = 0;
+  void SetFlingCurveParameters(const std::vector<float>& new_touchpad,
+                               const std::vector<float>& new_touchscreen);
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
  private:
+  static void DestroyCurrentThread(void*);
+
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
 
+  WebThemeEngineImpl native_theme_engine_;
+  WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::MessageLoop* main_loop_;
   base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
+  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
+  base::ThreadLocalStorage::Slot current_thread_slot_;
+  scoped_ptr<WebCryptoImpl> web_crypto_;
 };
 
 }  // namespace content

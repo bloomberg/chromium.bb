@@ -14,26 +14,6 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   TestBlinkPlatformImpl() : mock_monotonically_increasing_time_(0) {}
 
-  // webkit_glue::BlinkPlatformImpl:
-  virtual base::string16 GetLocalizedString(int) OVERRIDE {
-    return base::string16();
-  }
-
-  virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) OVERRIDE {
-    return base::StringPiece();
-  }
-
-  virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const RequestInfo&) OVERRIDE {
-    return NULL;
-  }
-
-  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
-      blink::WebSocketStreamHandle*,
-      WebSocketStreamHandleDelegate*) OVERRIDE {
-    return NULL;
-  }
-
   // Returns mock time when enabled.
   virtual double monotonicallyIncreasingTime() OVERRIDE {
     if (mock_monotonically_increasing_time_ > 0.0)

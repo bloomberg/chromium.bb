@@ -11,12 +11,10 @@
 
 namespace content {
 
-class BlinkPlatformImpl;
-
 class WebSocketStreamHandleImpl : public base::SupportsUserData,
                                   public blink::WebSocketStreamHandle {
  public:
-  explicit WebSocketStreamHandleImpl(BlinkPlatformImpl* platform);
+  WebSocketStreamHandleImpl();
   virtual ~WebSocketStreamHandleImpl();
 
   // WebSocketStreamHandle methods:
@@ -28,7 +26,6 @@ class WebSocketStreamHandleImpl : public base::SupportsUserData,
  private:
   class Context;
   scoped_refptr<Context> context_;
-  BlinkPlatformImpl* platform_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamHandleImpl);
 };

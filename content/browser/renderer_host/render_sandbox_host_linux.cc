@@ -28,7 +28,7 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "content/child/webkitplatformsupport_impl.h"
+#include "content/child/blink_platform_impl.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/set_process_title.h"
@@ -672,7 +672,7 @@ class SandboxIPCProcess  {
   const int lifeline_fd_;
   const int browser_socket_;
   std::vector<std::string> sandbox_cmd_;
-  scoped_ptr<WebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
   SkTDArray<SkString*> paths_;
 };
 
@@ -685,7 +685,7 @@ SandboxIPCProcess::~SandboxIPCProcess() {
 void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_)
     return;
-  webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(new BlinkPlatformImpl);
   blink::initializeWithoutV8(webkit_platform_support_.get());
 }
 

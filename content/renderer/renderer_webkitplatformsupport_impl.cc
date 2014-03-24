@@ -287,7 +287,7 @@ blink::WebThemeEngine* RendererWebKitPlatformSupportImpl::themeEngine() {
       GetContentClient()->renderer()->OverrideThemeEngine();
   if (theme_engine)
     return theme_engine;
-  return WebKitPlatformSupportImpl::themeEngine();
+  return BlinkPlatformImpl::themeEngine();
 }
 
 bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {

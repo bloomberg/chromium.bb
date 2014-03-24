@@ -13,7 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "content/child/blink_platform_impl.h"
+#include "content/child/child_thread.h"
+#include "content/child/socket_stream_dispatcher.h"
 #include "content/child/web_socket_stream_handle_bridge.h"
 #include "content/child/web_socket_stream_handle_delegate.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -42,7 +43,7 @@ class WebSocketStreamHandleImpl::Context
     client_ = client;
   }
 
-  void Connect(const WebURL& url, BlinkPlatformImpl* platform);
+  void Connect(const WebURL& url);
   bool Send(const WebData& data);
   void Close();
 
@@ -83,11 +84,14 @@ WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
       client_(NULL) {
 }
 
-void WebSocketStreamHandleImpl::Context::Connect(const WebURL& url,
-                                                 BlinkPlatformImpl* platform) {
+void WebSocketStreamHandleImpl::Context::Connect(const WebURL& url) {
   VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_.get());
-  bridge_ = platform->CreateWebSocketStreamBridge(handle_, this);
+
+  SocketStreamDispatcher* dispatcher =
+      ChildThread::current()->socket_stream_dispatcher();
+  bridge_ = dispatcher->CreateBridge(handle_, this);
+
   AddRef();  // Will be released by DidClose().
   bridge_->Connect(url);
 }
@@ -163,10 +167,8 @@ void WebSocketStreamHandleImpl::Context::DidFail(
 
 // WebSocketStreamHandleImpl ------------------------------------------------
 
-WebSocketStreamHandleImpl::WebSocketStreamHandleImpl(
-    BlinkPlatformImpl* platform)
-    : context_(new Context(this)),
-      platform_(platform) {
+WebSocketStreamHandleImpl::WebSocketStreamHandleImpl()
+    : context_(new Context(this)) {
 }
 
 WebSocketStreamHandleImpl::~WebSocketStreamHandleImpl() {
@@ -182,7 +184,7 @@ void WebSocketStreamHandleImpl::connect(
   DCHECK(!context_->client());
   context_->set_client(client);
 
-  context_->Connect(url, platform_);
+  context_->Connect(url);
 }
 
 bool WebSocketStreamHandleImpl::send(const WebData& data) {

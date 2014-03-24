@@ -9,8 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
+#include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
-#include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/plugin_list.h"
 #include "content/common/utility_messages.h"
@@ -91,7 +91,7 @@ void UtilityThreadImpl::Init() {
     // we run the utility thread on separate thread. This means that if any code
     // needs WebKit initialized in the utility process, they need to have
     // another path to support single process mode.
-    webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
+    webkit_platform_support_.reset(new BlinkPlatformImpl);
     blink::initialize(webkit_platform_support_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();

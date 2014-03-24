@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/child/webkitplatformsupport_impl.h"
+#include "content/child/blink_platform_impl.h"
 
 namespace content {
 
-class PpapiWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
+class PpapiWebKitPlatformSupportImpl : public BlinkPlatformImpl {
  public:
   PpapiWebKitPlatformSupportImpl();
   virtual ~PpapiWebKitPlatformSupportImpl();

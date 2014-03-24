@@ -24,11 +24,18 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "content/child/content_child_helpers.h"
+#include "content/child/fling_curve_configuration.h"
+#include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
+#include "content/child/webcrypto/webcrypto_impl.h"
+#include "content/child/websocket_bridge.h"
+#include "content/child/webthread_impl.h"
+#include "content/child/worker_task_runner.h"
 #include "content/public/common/content_client.h"
 #include "grit/blink_resources.h"
 #include "grit/webkit_resources.h"
@@ -38,10 +45,13 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebWaitableEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
+#include "content/child/fling_animator_impl_android.h"
 #endif
 
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
@@ -49,14 +59,35 @@
 #endif
 
 using blink::WebData;
+using blink::WebFallbackThemeEngine;
 using blink::WebLocalizedString;
 using blink::WebString;
 using blink::WebSocketStreamHandle;
+using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
 
+namespace content {
+
 namespace {
+
+class WebWaitableEventImpl : public blink::WebWaitableEvent {
+ public:
+  WebWaitableEventImpl() : impl_(new base::WaitableEvent(false, false)) {}
+  virtual ~WebWaitableEventImpl() {}
+
+  virtual void wait() { impl_->Wait(); }
+  virtual void signal() { impl_->Signal(); }
+
+  base::WaitableEvent* impl() {
+    return impl_.get();
+  }
+
+ private:
+  scoped_ptr<base::WaitableEvent> impl_;
+  DISALLOW_COPY_AND_ASSIGN(WebWaitableEventImpl);
+};
 
 // A simple class to cache the memory usage for a given amount of time.
 class MemoryUsageCache {
@@ -107,8 +138,6 @@ class MemoryUsageCache {
 };
 
 }  // namespace
-
-namespace content {
 
 static int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
@@ -349,17 +378,23 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0) {}
+      shared_timer_suspended_(0),
+      fling_curve_configuration_(new FlingCurveConfiguration),
+      current_thread_slot_(&DestroyCurrentThread) {}
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
 
 WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  return new WebURLLoaderImpl(this);
+  return new WebURLLoaderImpl;
 }
 
 WebSocketStreamHandle* BlinkPlatformImpl::createSocketStreamHandle() {
-  return new WebSocketStreamHandleImpl(this);
+  return new WebSocketStreamHandleImpl;
+}
+
+blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
+  return new WebSocketBridge;
 }
 
 WebString BlinkPlatformImpl::userAgent() {
@@ -386,6 +421,41 @@ WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
 WebURLError BlinkPlatformImpl::cancelledError(
     const WebURL& unreachableURL) const {
   return WebURLLoaderImpl::CreateError(unreachableURL, false, net::ERR_ABORTED);
+}
+
+blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
+  return new WebThreadImpl(name);
+}
+
+blink::WebThread* BlinkPlatformImpl::currentThread() {
+  WebThreadImplForMessageLoop* thread =
+      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
+  if (thread)
+    return (thread);
+
+  scoped_refptr<base::MessageLoopProxy> message_loop =
+      base::MessageLoopProxy::current();
+  if (!message_loop.get())
+    return NULL;
+
+  thread = new WebThreadImplForMessageLoop(message_loop.get());
+  current_thread_slot_.Set(thread);
+  return thread;
+}
+
+blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent() {
+  return new WebWaitableEventImpl();
+}
+
+blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
+    const blink::WebVector<blink::WebWaitableEvent*>& web_events) {
+  std::vector<base::WaitableEvent*> events;
+  for (size_t i = 0; i < web_events.size(); ++i)
+    events.push_back(static_cast<WebWaitableEventImpl*>(web_events[i])->impl());
+  size_t idx = base::WaitableEvent::WaitMany(
+      vector_as_array(&events), events.size());
+  DCHECK_LT(idx, web_events.size());
+  return web_events[idx];
 }
 
 void BlinkPlatformImpl::decrementStatsCounter(const char* name) {
@@ -479,13 +549,11 @@ void BlinkPlatformImpl::updateTraceEventDuration(
 
 namespace {
 
-WebData loadAudioSpatializationResource(BlinkPlatformImpl* platform,
-                                        const char* name) {
+WebData loadAudioSpatializationResource(const char* name) {
 #ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
   if (!strcmp(name, "Composite")) {
-    base::StringPiece resource =
-        platform->GetDataResource(IDR_AUDIO_SPATIALIZATION_COMPOSITE,
-                                  ui::SCALE_FACTOR_NONE);
+    base::StringPiece resource = GetContentClient()->GetDataResource(
+        IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE);
     return WebData(resource.data(), resource.size());
   }
 #endif
@@ -528,9 +596,8 @@ WebData loadAudioSpatializationResource(BlinkPlatformImpl* platform,
   if (is_azimuth_index_good && is_elevation_index_good &&
       is_resource_index_good) {
     const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
-    base::StringPiece resource =
-        platform->GetDataResource(kFirstAudioResourceIndex + resource_index,
-                                  ui::SCALE_FACTOR_NONE);
+    base::StringPiece resource = GetContentClient()->GetDataResource(
+        kFirstAudioResourceIndex + resource_index, ui::SCALE_FACTOR_NONE);
     return WebData(resource.data(), resource.size());
   }
 #endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
@@ -654,15 +721,14 @@ WebData BlinkPlatformImpl::loadResource(const char* name) {
   // Check the name prefix to see if it's an audio resource.
   if (StartsWithASCII(name, "IRC_Composite", true) ||
       StartsWithASCII(name, "Composite", true))
-    return loadAudioSpatializationResource(this, name);
+    return loadAudioSpatializationResource(name);
 
   // TODO(flackr): We should use a better than linear search here, a trie would
   // be ideal.
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (!strcmp(name, kDataResources[i].name)) {
-      base::StringPiece resource =
-          GetDataResource(kDataResources[i].id,
-                          kDataResources[i].scale_factor);
+      base::StringPiece resource = GetContentClient()->GetDataResource(
+          kDataResources[i].id, kDataResources[i].scale_factor);
       return WebData(resource.data(), resource.size());
     }
   }
@@ -676,7 +742,7 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return GetLocalizedString(message_id);
+  return GetContentClient()->GetLocalizedString(message_id);
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
@@ -689,7 +755,8 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return ReplaceStringPlaceholders(GetLocalizedString(message_id), value, NULL);
+  return ReplaceStringPlaceholders(GetContentClient()->GetLocalizedString(
+      message_id), value, NULL);
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
@@ -704,7 +771,7 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   values.push_back(value1);
   values.push_back(value2);
   return ReplaceStringPlaceholders(
-      GetLocalizedString(message_id), values, NULL);
+      GetContentClient()->GetLocalizedString(message_id), values, NULL);
 }
 
 double BlinkPlatformImpl::currentTime() {
@@ -763,6 +830,51 @@ void BlinkPlatformImpl::stopSharedTimer() {
 void BlinkPlatformImpl::callOnMainThread(
     void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
+}
+
+blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
+    int device_source,
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulative_scroll) {
+#if defined(OS_ANDROID)
+  return FlingAnimatorImpl::CreateAndroidGestureCurve(
+      velocity,
+      cumulative_scroll);
+#endif
+
+  if (device_source == blink::WebGestureEvent::Touchscreen)
+    return fling_curve_configuration_->CreateForTouchScreen(velocity,
+                                                            cumulative_scroll);
+
+  return fling_curve_configuration_->CreateForTouchPad(velocity,
+                                                       cumulative_scroll);
+}
+
+void BlinkPlatformImpl::didStartWorkerRunLoop(
+    const blink::WebWorkerRunLoop& runLoop) {
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  worker_task_runner->OnWorkerRunLoopStarted(runLoop);
+}
+
+void BlinkPlatformImpl::didStopWorkerRunLoop(
+    const blink::WebWorkerRunLoop& runLoop) {
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  worker_task_runner->OnWorkerRunLoopStopped(runLoop);
+}
+
+blink::WebCrypto* BlinkPlatformImpl::crypto() {
+  if (!web_crypto_)
+    web_crypto_.reset(new WebCryptoImpl());
+  return web_crypto_.get();
+}
+
+
+WebThemeEngine* BlinkPlatformImpl::themeEngine() {
+  return &native_theme_engine_;
+}
+
+WebFallbackThemeEngine* BlinkPlatformImpl::fallbackThemeEngine() {
+  return &fallback_theme_engine_;
 }
 
 base::PlatformFile BlinkPlatformImpl::databaseOpenFile(
@@ -881,6 +993,15 @@ bool BlinkPlatformImpl::memoryAllocatorWasteInBytes(size_t* size) {
   return base::allocator::GetAllocatorWasteSize(size);
 }
 
+blink::WebDiscardableMemory*
+BlinkPlatformImpl::allocateAndLockDiscardableMemory(size_t bytes) {
+  base::DiscardableMemoryType type =
+      base::DiscardableMemory::GetPreferredType();
+  if (type == base::DISCARDABLE_MEMORY_TYPE_EMULATED)
+    return NULL;
+  return content::WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
+}
+
 size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #if defined(OS_ANDROID)
   if (base::android::SysUtils::IsLowEndDevice()) {
@@ -894,6 +1015,12 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #else
   return noDecodedImageByteLimit;
 #endif
+}
+
+void BlinkPlatformImpl::SetFlingCurveParameters(
+    const std::vector<float>& new_touchpad,
+    const std::vector<float>& new_touchscreen) {
+  fling_curve_configuration_->SetCurveParameters(new_touchpad, new_touchscreen);
 }
 
 void BlinkPlatformImpl::SuspendSharedTimer() {
@@ -911,6 +1038,13 @@ void BlinkPlatformImpl::ResumeSharedTimer() {
     setSharedTimerFireInterval(
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }
+}
+
+// static
+void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
+  WebThreadImplForMessageLoop* impl =
+      static_cast<WebThreadImplForMessageLoop*>(thread);
+  delete impl;
 }
 
 }  // namespace content

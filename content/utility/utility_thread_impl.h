@@ -19,7 +19,7 @@ class FilePath;
 }
 
 namespace content {
-class WebKitPlatformSupportImpl;
+class BlinkPlatformImpl;
 
 // This class represents the background thread where the utility task runs.
 class UtilityThreadImpl : public UtilityThread,
@@ -58,7 +58,7 @@ class UtilityThreadImpl : public UtilityThread,
   // True if running in single process mode.
   bool single_process_;
 
-  scoped_ptr<WebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

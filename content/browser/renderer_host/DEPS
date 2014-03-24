@@ -23,6 +23,7 @@ specific_include_rules = {
     "+media/filters",
   ],
   "render_sandbox_host_linux\.cc": [
+    "+content/child/blink_platform_impl.h",
     "+third_party/WebKit/public/platform/linux/WebFontInfo.h",
     "+third_party/WebKit/public/web/WebKit.h",
   ],

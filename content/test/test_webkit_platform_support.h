@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "content/child/blink_platform_impl.h"
 #include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/webfileutilities_impl.h"
-#include "content/child/webkitplatformsupport_child_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
@@ -24,7 +24,7 @@ namespace content {
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport
     : public blink::WebUnitTestSupport,
-      public content::WebKitPlatformSupportChildImpl {
+      public BlinkPlatformImpl {
  public:
   TestWebKitPlatformSupport();
   virtual ~TestWebKitPlatformSupport();
@@ -62,16 +62,6 @@ class TestWebKitPlatformSupport
   const base::FilePath& file_system_root() const {
     return file_system_root_.path();
   }
-
-  virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
-  virtual base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) OVERRIDE;
-  virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const RequestInfo& request_info) OVERRIDE;
-  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
-      blink::WebSocketStreamHandle* handle,
-      WebSocketStreamHandleDelegate* delegate) OVERRIDE;
 
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       int device_source,
