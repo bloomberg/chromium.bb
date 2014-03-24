@@ -53,8 +53,6 @@ void SyncInternalsMessageHandler::RegisterMessages() {
       base::Bind(&SyncInternalsMessageHandler::HandleRequestListOfTypes,
                  base::Unretained(this)));
 
-  RegisterJsControllerCallback("getNotificationState");
-  RegisterJsControllerCallback("getNotificationInfo");
   RegisterJsControllerCallback("getAllNodes");
   RegisterJsControllerCallback("getClientServerTraffic");
 }
