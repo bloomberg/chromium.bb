@@ -452,4 +452,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->Unregister();
 }
 
+// TODO(mcasas): Add a test to check consolidation of the supported formats
+// provided by the device when http://crbug.com/323913 is closed.
+
 }  // namespace content
