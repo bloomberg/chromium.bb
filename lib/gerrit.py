@@ -197,7 +197,7 @@ class GerritHelper(object):
     if current_patch:
       o_params.extend(['CURRENT_COMMIT', 'CURRENT_REVISION'])
 
-    if change and cros_patch.IsGerritNumber(change) and not query_kwds:
+    if change and cros_patch.ParseGerritNumber(change) and not query_kwds:
       if dryrun:
         cros_build_lib.Info('Would have run gob_util.GetChangeDetail(%s, %s)',
                             self.host, change)
@@ -210,13 +210,21 @@ class GerritHelper(object):
         return [patch_dict]
       return [cros_patch.GerritPatch(patch_dict, self.remote, url_prefix)]
 
-    if change and git.IsSHA1(change, full=True):
+    # TODO: We should allow querying using a cros_patch.PatchQuery
+    # object directly.
+    if change and cros_patch.ParseSHA1(change):
       # Use commit:sha1 for accurate query results (crbug.com/358381).
       kwargs['commit'] = change
       change = None
-    elif change and cros_patch.IsChangeID(change, strict=True):
-      # Use change:change-id for accurate query results (crbug.com/358758).
+    elif change and cros_patch.ParseChangeID(change):
+      # Use change:change-id for accurate query results (crbug.com/357876).
       kwargs['change'] = change
+      change = None
+    elif change and cros_patch.ParseFullChangeID(change):
+      project, branch, change_id = cros_patch.ParseFullChangeID(change)
+      kwargs['change'] = change_id
+      kwargs['project'] = project
+      kwargs['branch'] = branch
       change = None
 
     if change and query_kwds.get('change'):
@@ -284,12 +292,12 @@ class GerritHelper(object):
     """Unequivocally return a gerrit change number.
 
     The argument may either be an number, which will be returned unchanged;
-    or an instance of GerritPatch, in which case the gerrit number wil be
-    extracted and converted to its 'external' (i.e., raw numeric) form.
+    or an instance of GerritPatch, in which case its gerrit number will be
+    returned.
     """
     if isinstance(change, cros_patch.GerritPatch):
-      change = cros_patch.FormatGerritNumber(change.gerrit_number,
-                                             force_external=True)
+      return change.gerrit_number
+
     return change
 
   def SetReview(self, change, msg=None, labels=None, dryrun=False):
@@ -348,7 +356,7 @@ class GerritHelper(object):
   def DeleteDraft(self, change, dryrun=False):
     """Delete a draft patch set."""
     if dryrun:
-      logging.info('Would have deleted draft patch set %s', change)
+      cros_build_lib.Info('Would have deleted draft patch set %s', change)
       return
     gob_util.DeleteDraft(self.host, self._to_changenum(change))
 
@@ -367,46 +375,21 @@ def GetGerritPatchInfo(patches):
   Raises:
     PatchException if a patch can't be found.
   """
-  parsed_patches = {}
-
-  # First, standardize 'em.
-  patches = [cros_patch.FormatPatchDep(x, sha1=False, allow_CL=True)
-             for x in patches]
-
-  # Next, split on internal vs external.
-  internal_patches = [x for x in patches if x.startswith(
-      constants.INTERNAL_CHANGE_PREFIX)]
-  external_patches = [x for x in patches if not x.startswith(
-      constants.INTERNAL_CHANGE_PREFIX)]
-
-  if internal_patches:
-    # feed it id's w/ * stripped off, but bind them back
-    # so that we can return patches in the supplied ordering.
-    # while this may seem silly, we do this to preclude the potential
-    # of a conflict between gerrit instances.  Since change-id is
-    # effectively user controlled, better safe than sorry.
-    helper = GetGerritHelper(constants.INTERNAL_REMOTE)
-    raw_ids = [x[len(constants.INTERNAL_CHANGE_PREFIX):] for
-               x in internal_patches]
-    parsed_patches.update(
-        (constants.INTERNAL_CHANGE_PREFIX + k, v) for k, v in
-        helper.QueryMultipleCurrentPatchset(raw_ids))
-
-  if external_patches:
-    helper = GetGerritHelper(constants.EXTERNAL_REMOTE)
-    parsed_patches.update(
-        helper.QueryMultipleCurrentPatchset(external_patches))
-
+  # First, convert them to PatchQuery objects for query.
+  patches = [cros_patch.ParsePatchDep(x) for x in patches]
   seen = set()
   results = []
-  for query in patches:
-    # return a unique list, while maintaining the ordering of the first
-    # seen instance of each patch.  Do this to ensure whatever ordering
-    # the user is trying to enforce, we honor; lest it break on cherry-picking
-    gpatch = parsed_patches[query]
-    if gpatch.change_id not in seen:
-      results.append(gpatch)
-      seen.add(gpatch.change_id)
+  for patch in patches:
+    helper = GetGerritHelper(patch.remote)
+    raw_ids = [x.ToGerritQueryText() for x in patches]
+    for _k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
+      # return a unique list, while maintaining the ordering of the first
+      # seen instance of each patch.  Do this to ensure whatever ordering
+      # the user is trying to enforce, we honor; lest it break on
+      # cherry-picking.
+      if change.id not in seen:
+        results.append(change)
+        seen.add(change.id)
 
   return results
 

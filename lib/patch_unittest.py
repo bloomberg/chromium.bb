@@ -51,49 +51,6 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '2'
 
 
-class TestChangeNumberOrID(cros_test_lib.TestCase):
-  """Tests that we can determine distinguish change number/ID."""
-  def TestGerritNumber(self):
-    """Tests that we can tell a Gerrit number."""
-    text = '12345'
-    self.assertTrue(cros_patch.IsGerritNumber(text))
-    self.assertFalse(cros_patch.IsChangeID(text))
-    self.assertFalse(cros_patch.IsFullChangeID(text))
-
-    text = '12345678'
-    self.assertFalse(cros_patch.IsGerritNumber(text))
-    self.assertFalse(cros_patch.IsChangeID(text))
-    self.assertFalse(cros_patch.IsFullChangeID(text))
-
-  def TestChangeID(self):
-    """Tests that we can tell a change-ID."""
-    text = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
-    self.assertFalse(cros_patch.IsGerritNumber(text))
-    self.assertTrue(cros_patch.IsChangeID(text))
-    self.assertFalse(cros_patch.IsFullChangeID(text))
-
-    text = 'i47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
-    self.assertFalse(cros_patch.IsGerritNumber(text))
-    self.assertTrue(cros_patch.IsChangeID(text))
-    self.assertFalse(cros_patch.IsChangeID(text, strict=True))
-    self.assertFalse(cros_patch.IsFullChangeID(text))
-
-    # Change-ID too short.
-    text = 'I47ea30385af60ae4cc2acc5d1a2'
-    self.assertFalse(cros_patch.IsGerritNumber(text))
-    self.assertFalse(cros_patch.IsChangeID(text))
-    self.assertFalse(cros_patch.IsChangeID(text, strict=True))
-    self.assertFalse(cros_patch.IsFullChangeID(text))
-
-  def TestFullChangeID(self):
-    """Tests that we can tell a full change-ID."""
-    text = ('chromiumos/chromite~master~'
-            'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1')
-    self.assertFalse(cros_patch.IsGerritNumber(text))
-    self.assertFalse(cros_patch.IsChangeID(text))
-    self.assertTrue(cros_patch.IsFullChangeID(text))
-
-
 class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
   """Unittests for git patch related methods."""
 
@@ -363,11 +320,14 @@ I am the first commit.
     git1 = self._MakeRepo('git1', self.source)
     patch = self.CommitChangeIdFile(git1, remote=remote)
     prefix = '*' if patch.internal else ''
-    vals = [patch.change_id, patch.sha1, getattr(patch, 'gerrit_number', None),
+    vals = [patch.sha1, getattr(patch, 'gerrit_number', None),
             getattr(patch, 'original_sha1', None)]
+    # Append full Change-ID if it exists.
+    if patch.project and patch.tracking_branch and patch.change_id:
+      vals.append('%s~%s~%s' % (
+          patch.project, patch.tracking_branch, patch.change_id))
     vals = [x for x in vals if x is not None]
-    self.assertEqual(set(prefix + x for x in vals),
-                     set(patch.LookupAliases()))
+    self.assertEqual(set(prefix + x for x in vals), set(patch.LookupAliases()))
 
   def testExternalLookupAliases(self):
     self._assertLookupAliases(constants.EXTERNAL_REMOTE)
@@ -391,7 +351,7 @@ I am the first commit.
       raw_changeid_text = 'Change-Id: %s' % (changeid,)
     if extra is None:
       extra = ''
-    commit = template % {'change-id':raw_changeid_text, 'extra':extra}
+    commit = template % {'change-id': raw_changeid_text, 'extra':extra}
 
     return self.CommitFile(repo, filename, content, commit=commit,
                            ChangeId=changeid, **kwargs)
@@ -401,14 +361,20 @@ I am the first commit.
         repo, master_id, extra=extra,
         filename='paladincheck', content=str(_GetNumber()))
     deps = patch.PaladinDependencies(repo)
-    # Assert that are parsing unique'ifies the results.
+    # Assert that our parsing unique'ifies the results.
     self.assertEqual(len(deps), len(set(deps)))
-    deps = set(deps)
-    ids = set(ids)
-    self.assertEqual(ids, deps)
-    self.assertEqual(
-        set(cros_patch.FormatPatchDep(x) for x in deps),
-        set(cros_patch.FormatPatchDep(x) for x in ids))
+    # Verify that we have the correct dependencies.
+    dep_ids = []
+    dep_ids += [(dep.remote, dep.change_id) for dep in deps
+                if dep.change_id is not None]
+    dep_ids += [(dep.remote, dep.gerrit_number) for dep in deps
+                if dep.gerrit_number is not None]
+    dep_ids += [(dep.remote, dep.sha1) for dep in deps
+                if dep.sha1 is not None]
+    for input_id in ids:
+      change_tuple = cros_patch.StripPrefix(input_id)
+      self.assertTrue(change_tuple in dep_ids)
+
     return patch
 
   def testPaladinDependencies(self):
@@ -466,6 +432,7 @@ I am the first commit.
                       git1, cid1, [], 'CQ-DEPENDS=1')
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], 'CQ_DEPEND=1')
+
 
 class TestLocalPatchGit(TestGitRepoPatch):
   """Test Local patch handling."""
@@ -591,9 +558,10 @@ class TestGerritPatch(TestGitRepoPatch):
     self.assertEqual(obj.project, json['project'])
     self.assertEqual(obj.ref, refspec)
     self.assertEqual(obj.change_id, change_id)
-    self.assertEqual(
-        obj.id,
-        cros_patch.FormatChangeId(change_id, force_internal=obj.internal))
+    self.assertEqual(obj.id, '%s%s~%s~%s' % (
+        constants.CHANGE_PREFIX[remote], json['project'],
+        json['branch'], change_id))
+
     # Now make the fetching actually work, if desired.
     if not suppress_branch:
       # Note that a push is needed here, rather than a branch; branch
@@ -626,9 +594,15 @@ class TestGerritPatch(TestGitRepoPatch):
     # Test cases with no dependencies, 1 dependency, and 2 dependencies.
     self.assertEqual(patch.GerritDependencies(), [])
     patch.patch_dict['dependsOn'] = [{'number': cid1}]
-    self.assertEqual(patch.GerritDependencies(), [convert(cid1)])
+    self.assertEqual(
+        [cros_patch.AddPrefix(x, x.gerrit_number)
+         for x in patch.GerritDependencies()],
+        [convert(cid1)])
     patch.patch_dict['dependsOn'].append({'number': cid2})
-    self.assertEqual(patch.GerritDependencies(), [convert(cid1), convert(cid2)])
+    self.assertEqual(
+        [cros_patch.AddPrefix(x, x.gerrit_number)
+         for x in patch.GerritDependencies()],
+        [convert(cid1), convert(cid2)])
 
   def testExternalGerritDependencies(self):
     self._assertGerritDependencies()
@@ -723,138 +697,82 @@ class TestFormatting(cros_test_lib.TestCase):
   """Test formatting of output."""
 
   def _assertResult(self, functor, value, expected=None, raises=False,
-                    fixup=str, **kwargs):
+                    **kwargs):
     if raises:
-      self.assertRaises2(ValueError, functor, fixup(value),
-                         msg="%s(%r), original %r, did not throw a ValueError"
-                         % (functor.__name__, fixup(value), value),  **kwargs)
+      self.assertRaises2(ValueError, functor, value,
+                         msg="%s(%r) did not throw a ValueError"
+                         % (functor.__name__, value),  **kwargs)
     else:
       self.assertEqual(functor(value, **kwargs), expected,
-                       msg="failed: %s(%r) != %r; originals: %r %r"
-                       % (functor.__name__, fixup(value), fixup(expected),
-                          value, expected))
+                       msg="failed: %s(%r) != %r"
+                       % (functor.__name__, value, expected))
 
-  def _assertBad(self, functor, values, fixup=str, allow_CL=False, **kwargs):
-    values = map(fixup, values)
-    pass_allow_CL = kwargs.pop('pass_allow', False)
-    for prefix in ([""] + (['CL:'] if allow_CL else [])):
-      if pass_allow_CL:
-        kwargs['allow_CL'] = bool(prefix)
-      for value in values:
-        self._assertResult(functor, prefix + value, raises=True, **kwargs)
+  def _assertBad(self, functor, values, **kwargs):
+    for value in values:
+      self._assertResult(functor, value, raises=True, **kwargs)
 
-      for value in values:
-        self._assertResult(functor, prefix + '*' + value, raises=True, **kwargs)
+  def _assertGood(self, functor, values, **kwargs):
+    for value, expected in values:
+      self._assertResult(functor, value, expected, **kwargs)
 
-  def _assertGood(self, functor, values, fixup=str, allow_CL=False, **kwargs):
-    pass_allow_CL = kwargs.pop('pass_allow', False)
-    values = [map(fixup, x) for x in values]
-    for prefix in ([""] + (['CL:'] if allow_CL else [])):
-      if pass_allow_CL:
-        kwargs['allow_CL'] = bool(prefix)
-      for value, expected in values:
-        self._assertResult(functor, prefix + value, expected, **kwargs)
 
-      for value, expected in values:
-        self._assertResult(functor, prefix + '*' + value, '*' + expected,
-                           **kwargs)
+  def TestGerritNumber(self):
+    """Tests that we can pasre a Gerrit number."""
+    self._assertGood(cros_patch.ParseGerritNumber,
+        [('12345',) * 2, ('12',) * 2, ('123',) * 2])
 
-  @staticmethod
-  def _ChangeIdFixup(value):
-    s = value.lstrip('iI*')
-    l = len(value)
-    return '%s%s' % (value[0:l-len(s)], s.ljust(40, "0"))
-
-  def testFormatChangeId(self):
-    fixup = self._ChangeIdFixup
     self._assertBad(
-        cros_patch.FormatChangeId,
-        ['is', '**i1325', 'iz12345', 'Iz12365', 'II', 'ii', 'I1234+'],
-        fixup=fixup, allow_CL=True)
-    # Note the lack of fixup; we're checking size handling here.
-    self._assertBad(
-        cros_patch.FormatChangeId,
-        ['I012365', 'Ia0123456'.ljust(42, '0'), 'Ia'.ljust(40, '0')],
-        allow_CL=True, strict=True)
-    self._assertGood(
-        cros_patch.FormatChangeId,
-        [('I012345', 'I012345'),
-         ('Iabcdf', 'Iabcdf'),
-         ('IABCDF', 'Iabcdf')],
-        fixup=fixup)
-
-  def testFormatGerritNumber(self):
-    self._assertBad(
-        cros_patch.FormatGerritNumber,
+        cros_patch.ParseGerritNumber,
         ['is', 'i1325', '01234567', '012345a', '**12345', '+123', '/0123'],
-        allow_CL=True)
-    self._assertGood(
-        cros_patch.FormatGerritNumber,
-        [('1',) * 2,
-         ('123',) * 2,
-         ('123456',) * 2,
-         ('001', '1')])
+        error_ok=False)
 
-  @staticmethod
-  def _Sha1Fixup(value):
-    return value.ljust(40, '0')
+  def TestChangeID(self):
+    """Tests that we can parse a change-ID."""
+    self._assertGood(cros_patch.ParseChangeID,
+        [('I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',) * 2])
 
-  def testFormatSha1(self):
-    fixup = self._Sha1Fixup
+    # Change-IDs too short/long, with unexpected characters in it.
     self._assertBad(
-        cros_patch.FormatSha1,
+        cros_patch.ParseChangeID,
+        ['is', '**i1325', 'i134'.ljust(41, '0'), 'I1234+'.ljust(41, '0'),
+         'I123'.ljust(42, '0')],
+        error_ok=False)
+
+  def TestSHA1(self):
+    """Tests that we can parse a SHA1 hash."""
+    self._assertGood(cros_patch.ParseSHA1,
+                     [('1' * 40,) * 2,
+                      ('a' * 40,) * 2,
+                      ('1a7e034'.ljust(40, '0'),) *2])
+
+    self._assertBad(
+        cros_patch.ParseSHA1,
         ['0abcg', 'Z', '**a', '+123', '1234ab' * 10],
-        fixup=fixup, allow_CL=True)
-    # Length checks.
+        error_ok=False)
+
+  def TestFullChangeID(self):
+    """Tests that we can parse a full change-ID."""
+    change_id = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+    self._assertGood(cros_patch.ParseFullChangeID,
+        [('foo~bar~%s' % change_id, ('foo', 'bar', change_id)),
+         ('foo/bar/baz~refs/heads/_my-branch_~%s' % change_id,
+          ('foo/bar/baz', '_my-branch_', change_id))])
+
     self._assertBad(
-        cros_patch.FormatSha1,
-        ['0' * 41, 'a' * 39],
-        strict=True)
-    self._assertGood(
-        cros_patch.FormatSha1,
-        [('1' * 40,) * 2,
-         ('a' * 40,) * 2,
-         ('0123456789abcdef',) * 2,
-         ('0123456789ABCDEF', '0123456789abcdef')],
-        fixup=fixup)
+        cros_patch.ParseFullChangeID,
+        ['foo', 'foo~bar', 'foo~bar~baz', 'foo~refs/bar~%s' % change_id],
+        error_ok=False)
 
-  @staticmethod
-  def _FullChangeIdFixup(value):
-    pieces = value.split('~')
-    pieces[-1] = TestFormatting._ChangeIdFixup(pieces[-1])
-    return '~'.join(pieces)
+  def testParsePatchDeps(self):
+    """Tests that we can parse the dependency specified by the user."""
+    change_id = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+    vals = ['CL:12345', 'project~branch~%s' % change_id, change_id,
+            change_id[1:]]
+    for val in vals:
+      self.assertTrue(cros_patch.ParsePatchDep(val) is not None)
 
-  def testFormatFullChangeId(self):
-    fixup = self._FullChangeIdFixup
-    self._assertBad(
-        cros_patch.FormatFullChangeId,
-        ['foo', 'foo~bar', 'foo~bar~baz', 'foo~refs/bar~*I1234'],
-        fixup=fixup, allow_CL=True)
-    self._assertGood(
-        cros_patch.FormatFullChangeId,
-        [('foo~bar~ifade', 'foo~bar~Ifade'),
-         ('foo/bar/baz~refs/heads/_my-branch_~Iface',) * 2],
-        fixup=fixup)
-
-  def testFormatPatchDeps(self):
-    sha1 = self._Sha1Fixup
-    changeId = self._ChangeIdFixup
-    # Validate control over formats allowed:
-    self._assertBad(cros_patch.FormatPatchDep,
-                    ['12345', '1234567'],
-                    gerrit_number=False, allow_CL=True, pass_allow=True)
-    self._assertBad(cros_patch.FormatPatchDep,
-                    map(changeId, ['I1234567']),
-                    changeId=False, allow_CL=True, pass_allow=True)
-    self._assertBad(cros_patch.FormatPatchDep,
-                    map(sha1, ['1234567', 'asdf1']),
-                    sha1=False, allow_CL=True, pass_allow=True)
-
-    self._assertGood(
-        cros_patch.FormatPatchDep,
-        [('12345', '12345'), ('1', '1'), ('98765', '98765'), ('001', '1'),
-         (changeId('Iabcd'),) *2,
-         (sha1('0123cde'),) *2], allow_CL=True, pass_allow=True)
+    self._assertBad(cros_patch.ParsePatchDep,
+                    ['1454623', 'I47ea3', 'i47ea3'.ljust(41, '0')])
 
 
 if __name__ == '__main__':

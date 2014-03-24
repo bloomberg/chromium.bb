@@ -1701,9 +1701,7 @@ class PreCQLauncherStage(SyncStage):
     if self._run.options.debug:
       cmd.append('--debug')
     for patch in plan:
-      number = cros_patch.FormatGerritNumber(
-          patch.gerrit_number, force_internal=patch.internal)
-      cmd += ['-g', number]
+      cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
       if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:

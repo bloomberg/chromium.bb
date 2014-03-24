@@ -473,61 +473,49 @@ class PatchSeries(object):
     trivial = False if dryrun else not self._IsContentMerging(change)
     return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
 
-  def _LookupHelper(self, query):
-    """Returns the helper for a given query."""
-    remote = constants.EXTERNAL_REMOTE
-    if query.startswith(constants.INTERNAL_CHANGE_PREFIX):
-      remote = constants.INTERNAL_REMOTE
-    return self._helper_pool.GetHelper(remote)
+  def _LookupHelper(self, patch):
+    """Returns the helper for the given cros_patch.PatchQuery object."""
+    return self._helper_pool.GetHelper(patch.remote)
 
-  def _GetGerritPatch(self, query, parent_lookup=False):
+  def _GetGerritPatch(self, query):
     """Query the configured helpers looking for a given change.
 
     Args:
       project: The gerrit project to query.
-      query: The ChangeId we're searching for.
-      parent_lookup: If True, this means we're tracing out the git parents
-        of the given change- as such limit the query purely to that
-        project/branch.
+      query: A cros_patch.PatchQuery object.
+
+    Returns:
+      A GerritPatch object.
     """
     helper = self._LookupHelper(query)
-    query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
+    query_text = query.ToGerritQueryText()
     change = helper.QuerySingleRecord(
-        query_text, must_match=not git.IsSHA1(query))
+        query_text, must_match=not git.IsSHA1(query_text))
+
     if not change:
       return
+
     # If the query was a gerrit number based query, check the projects/change-id
     # to see if we already have it locally, but couldn't map it since we didn't
     # know the gerrit number at the time of the initial injection.
-    existing = self._lookup_cache[
-        cros_patch.FormatChangeId(
-            change.change_id, force_internal=change.internal, strict=False)]
-    if cros_patch.IsGerritNumber(query) and existing is not None:
-      if (not parent_lookup or existing.project == change.project and
-          existing.tracking_branch == change.tracking_branch):
-        key = cros_patch.FormatGerritNumber(
-            str(change.gerrit_number), force_internal=change.internal,
-            strict=False)
-        self._lookup_cache.InjectCustomKey(key, existing)
-        return existing
+    existing = self._lookup_cache[change]
+    if cros_patch.ParseGerritNumber(query_text) and existing is not None:
+      keys = change.LookupAliases()
+      self._lookup_cache.InjectCustomKeys(keys, existing)
+      return existing
 
     self.InjectLookupCache([change])
     if change.IsAlreadyMerged():
       self.InjectCommittedPatches([change])
     return change
 
-  @_PatchWrapException
-  def _LookupUncommittedChanges(self, leaf, deps, parent_lookup=False,
-                                limit_to=None):
+  def _LookupUncommittedChanges(self, deps, limit_to=None):
     """Given a set of deps (changes), return unsatisfied dependencies.
 
     Args:
-      leaf: The change we're resolving for.
-      deps: A sequence of dependencies for the leaf that we need to identify
+      deps: A list of cros_patch.PatchQuery objects representing
+        sequence of dependencies for the leaf that we need to identify
         as either merged, or needing resolving.
-      parent_lookup: If True, this means we're trying to trace out the git
-        parentage of a change, thus limit the lookup to the leaf's project
-        and branch.
       limit_to: If non-None, then this must be a mapping (preferably a
         cros_patch.PatchCache for translation reasons) of which non-committed
         changes are allowed to be used for a transaction.
@@ -550,14 +538,8 @@ class PatchSeries(object):
 
       dep_change = self._lookup_cache[dep]
 
-      if (parent_lookup and dep_change is not None and
-          (leaf.project != dep_change.project or
-           leaf.tracking_branch != dep_change.tracking_branch)):
-        logging.warn('Found different CL with matching lookup key in cache')
-        dep_change = None
-
       if dep_change is None:
-        dep_change = self._GetGerritPatch(dep, parent_lookup=parent_lookup)
+        dep_change = self._GetGerritPatch(dep)
       if dep_change is None:
         continue
       if getattr(dep_change, 'IsAlreadyMerged', lambda: False)():
@@ -698,8 +680,7 @@ class PatchSeries(object):
       return
 
     # Get a list of the changes that haven't been committed.
-    # These are returned as strings (e.g., the Change ID or
-    # change number of the patch we need to look up.)
+    # These are returned as cros_patch.PatchQuery objects.
     gerrit_deps, paladin_deps = self.GetDepsForChange(change)
 
     # Only process the dependencies for each change once. We prioritize Gerrit
@@ -707,7 +688,7 @@ class PatchSeries(object):
     # required in order for the change to apply.
     if change not in seen:
       gerrit_deps = self._LookupUncommittedChanges(
-          change, gerrit_deps, limit_to=limit_to, parent_lookup=True)
+          gerrit_deps, limit_to=limit_to)
       seen.Inject(change)
       for dep in gerrit_deps:
         self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
@@ -720,7 +701,7 @@ class PatchSeries(object):
       # Process paladin deps last, so as to avoid circular dependencies between
       # gerrit dependencies and paladin dependencies.
       paladin_deps = self._LookupUncommittedChanges(
-          change, paladin_deps, limit_to=limit_to)
+          paladin_deps, limit_to=limit_to)
       for dep in paladin_deps:
         # Add the requested change (plus deps) to our plan, if it we aren't
         # already in the process of doing that.
@@ -728,11 +709,43 @@ class PatchSeries(object):
           self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
 
   @_PatchWrapException
-  def GetDepsForChange(self, change):
-    """Look up the gerrit/paladin deps for a change
+  def GetDepChangesForChange(self, change):
+    """Look up the gerrit/paladin dependency changes for |change|.
 
     Returns:
-      A tuple of the change's GerritDependencies(), and PaladinDependencies()
+      A tuple of GerritPatch objects which are change's Gerrit
+      dependencies, and Paladin dependencies.
+
+    Raises:
+      DependencyError: If we could not resolve a dependency.
+      GerritException or GOBError: If there is a failure in querying gerrit.
+    """
+    gerrit_deps, paladin_deps = self.GetDepsForChange(change)
+
+    def _DepsToChanges(deps):
+      dep_changes = []
+      unprocessed_deps = []
+      for dep in deps:
+        dep_change = self._committed_cache[dep]
+        if dep_change:
+          dep_changes.append(dep_change)
+        else:
+          unprocessed_deps.append(dep)
+
+      for dep in unprocessed_deps:
+        dep_changes.extend(self._LookupUncommittedChanges(deps))
+
+      return dep_changes
+
+    return _DepsToChanges(gerrit_deps), _DepsToChanges(paladin_deps)
+
+  @_PatchWrapException
+  def GetDepsForChange(self, change):
+    """Look up the gerrit/paladin deps for |change|.
+
+    Returns:
+      A tuple of PatchQuery objects representing change's Gerrit
+      dependencies, and Paladin dependencies.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
@@ -744,6 +757,7 @@ class PatchSeries(object):
       val = self._change_deps_cache[change] = (
           change.GerritDependencies(),
           change.PaladinDependencies(git_repo))
+
     return val
 
   def InjectCommittedPatches(self, changes):
@@ -822,7 +836,6 @@ class PatchSeries(object):
       against ToT, and Exceptions that failed inflight;  These exceptions
       are cros_patch.PatchException instances.
     """
-
     # Prefetch the changes; we need accurate change_id/id's, which is
     # guaranteed via Fetch.
     changes = list(self.FetchChanges(changes))
@@ -1708,8 +1721,7 @@ class ValidationPool(object):
     # Now, sort and print the changes.
     for change in sorted(changes, key=SortKeyForChanges):
       project = os.path.basename(change.project)
-      gerrit_number = cros_patch.FormatGerritNumber(
-          change.gerrit_number, force_internal=change.internal)
+      gerrit_number = cros_patch.AddPrefix(change, change.gerrit_number)
       s = '%s | %s | %s' % (project, change.owner, gerrit_number)
 
       # Print a count of how many times a given CL has failed the CQ.
@@ -1817,7 +1829,7 @@ class ValidationPool(object):
 
     Args:
       patch_series: A PatchSeries() object.
-      change: The change to submit.
+      change: The change (a GerritPatch object) to submit.
       errors: A dictionary. This dictionary should contain all patches that have
         encountered errors, and map them to the associated exception object.
       limit_to: The list of patches that were approved by this CQ run. We will
@@ -1877,7 +1889,7 @@ class ValidationPool(object):
     # If you see this error a lot, consider implementing a best-effort
     # attempt at reverting changes.
     for submitted_change in submitted:
-      gdeps, pdeps = patch_series.GetDepsForChange(submitted_change)
+      gdeps, pdeps = patch_series.GetDepChangesForChange(submitted_change)
       for dep in gdeps + pdeps:
         dep_error = errors.get(dep)
         if dep_error is not None:

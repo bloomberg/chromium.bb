@@ -219,9 +219,17 @@ class TestPatchSeries(MoxBase):
     return return_value
 
   def SetPatchDeps(self, patch, parents=(), cq=()):
-    patch.GerritDependencies = lambda: parents
+    """Set the dependencies of |patch|.
+
+    Args:
+      patch: The patch to process.
+      parents: A set of strings to set as parents of |patch|.
+      cq: A set of strings to set as paladin dependencies of |patch|.
+    """
+    patch.GerritDependencies = (
+        lambda: [cros_patch.ParsePatchDep(x) for x in parents])
     patch.PaladinDependencies = functools.partial(
-        self.assertPath, patch, cq)
+        self.assertPath, patch, [cros_patch.ParsePatchDep(x) for x in cq])
     patch.Fetch = functools.partial(
         self.assertPath, patch, patch.sha1)
 
@@ -553,7 +561,7 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
 class MockPatchSeries(partial_mock.PartialMock):
   """Mock the PatchSeries functions."""
   TARGET = 'chromite.buildbot.validation_pool.PatchSeries'
-  ATTRS = ('GetDepsForChange', '_GetGerritPatch', '_LookupHelper',)
+  ATTRS = ('GetDepsForChange', '_GetGerritPatch', '_LookupHelper')
 
   def __init__(self):
     partial_mock.PartialMock.__init__(self)

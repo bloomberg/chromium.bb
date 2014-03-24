@@ -5,7 +5,6 @@
 """Module that handles the processing of patches to the source tree."""
 
 import calendar
-import inspect
 import os
 import random
 import re
@@ -34,48 +33,105 @@ REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
 BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
 
 
-def IsGerritNumber(text):
-  """Returns True if |text| conforms to the Gerrit change number format.
+def ParseSHA1(text, error_ok=True):
+  """Checks if |text| conforms to the SHA1 format and parses it.
 
   Args:
     text: The string to check.
+    error_ok: If set, do not raise an exception if |text| is not a
+      valid SHA1.
+
+  Returns:
+    If |text| is a valid SHA1, returns |text|.  Otherwise,
+    returns None when |error_ok| is set and raises an exception when
+    |error_ok| is False.
   """
-  return text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH
+  valid = git.IsSHA1(text)
+  if not error_ok and not valid:
+    raise ValueError('%s is not a valid SHA1', text)
+
+  return text if valid else None
 
 
-def IsChangeID(text, strict=False):
-  """Returns True if |text| conforms to the change-ID format.
+def ParseGerritNumber(text, error_ok=True):
+  """Checks if |text| conforms to the Gerrit number format and parses it.
+
+  Args:
+    text: The string to check.
+    error_ok: If set, do not raise an exception if |text| is not a
+      valid Gerrit number.
+
+  Returns:
+    If |text| is a valid Gerrit number, returns |text|.  Otherwise,
+    returns None when |error_ok| is set and raises an exception when
+    |error_ok| is False.
+  """
+  valid = text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH
+  if not error_ok and not valid:
+    raise ValueError('%s is not a valid Gerrit number', text)
+
+  return text if valid else None
+
+
+def ParseChangeID(text, error_ok=True):
+  """Checks if |text| conforms to the change-ID format and parses it.
 
   Change-ID is a string that starts with I/i. E.g.
     I47ea30385af60ae4cc2acc5d1a283a46423bc6e1
 
   Args:
     text: The string to check.
-    strict: If True, then it's an error if the text holds an internally
-      formatted ChangeId.  Generally this is only useful if you're working w/
-      a direct git commit message and are trying to ensure the message is
-      gerrit compatible.
+    error_ok: If set, do not raise an exception if |text| is not a
+      valid change-ID.
+
+  Returns:
+    If |text| is a valid change-ID, returns |text|.  Otherwise,
+    returns None when |error_ok| is set and raises an exception when
+    |error_ok| is False.
   """
-  if strict and (not text.startswith(_GERRIT_CHANGE_ID_PREFIX) or
-                 len(text) != _GERRIT_CHANGE_ID_TOTAL_LENGTH):
-    return False
+  valid = (text.startswith(_GERRIT_CHANGE_ID_PREFIX) and
+           len(text) == _GERRIT_CHANGE_ID_TOTAL_LENGTH and
+           git.IsSHA1(text[len(_GERRIT_CHANGE_ID_PREFIX):].lower()))
 
-  return ((text.startswith(_GERRIT_CHANGE_ID_PREFIX) or
-           text.startswith(_GERRIT_CHANGE_ID_PREFIX.lower())) and
-          git.IsSHA1(text[len(_GERRIT_CHANGE_ID_PREFIX):].lower()))
+  if not error_ok and not valid:
+    raise ValueError('%s is not a valid change-ID', text)
+
+  return text if valid else None
 
 
-def IsFullChangeID(text):
-  """Returns True if |text| conforms to the full change-ID format.
+def ParseFullChangeID(text, error_ok=True):
+  """Checks if |text| conforms to the full change-ID format and parses it.
 
   Full change-ID format: project~branch~change-id. E.g.
     chromiumos/chromite~master~I47ea30385af60ae4cc2acc5d1a283a46423bc6e1
 
   Args:
     text: The string to check.
+    error_ok: If set, do not raise an exception if |text| is not a
+      valid full change-ID.
+
+  Returns:
+    If |text| is a valid full change-ID, returns (project, branch,
+    change_id).  Otherwise, returns None when |error_ok| is set and
+    raises an exception when |error_ok| is False.
   """
   fields = text.split('~')
-  return len(fields) == 3 and IsChangeID(fields[2])
+  if not len(fields) == 3:
+    if not error_ok:
+      raise ValueError('%s is not a valid full change-ID', text)
+
+    return None
+
+  project, branch, change_id = fields
+  if (not REPO_NAME_RE.match(project) or
+      not BRANCH_NAME_RE.match(branch) or
+      not ParseChangeID(change_id)):
+    if not error_ok:
+      raise ValueError('%s is not a valid full change-ID', text)
+
+    return None
+
+  return project, branch, change_id
 
 
 class PatchException(Exception):
@@ -263,12 +319,17 @@ class PatchCache(object):
   def Inject(self, *args):
     """Inject a sequence of changes into this cache."""
     for change in args:
-      for key in change.LookupAliases():
-        self.InjectCustomKey(key, change)
+      self.InjectCustomKeys(change.LookupAliases(), change)
 
-  def InjectCustomKey(self, key, change):
-    """Inject a change w/ a specific key.  Generally you want Inject instead."""
-    self._dict[str(key)] = change
+  def InjectCustomKeys(self, keys, change):
+    """Inject a change w/ a list of keys.  Generally you want Inject instead.
+
+    Args:
+      keys: A list of keys to update.
+      change: The change to update the keys to.
+    """
+    for key in keys:
+      self._dict[str(key)] = change
 
   def _GetAliases(self, value):
     if hasattr(value, 'LookupAliases'):
@@ -304,213 +365,107 @@ class PatchCache(object):
     return self.__class__(list(self))
 
 
-def _StripPrefix(text, strict, force_external, force_internal):
-  """Find and/or generate a leading '*' for internal names."""
-  caller_name = inspect.currentframe().f_back.f_code.co_name
-  if force_internal and force_external:
-    raise TypeError("%s: either force_internal or force_external can be set to"
-                    " True, but not both." % caller_name)
+def StripPrefix(text):
+  """Strips the leading '*' for internal change names.
+
+  Args:
+    text: text to examine.
+
+  Returns:
+    A tuple of the corresponding remote and the stripped text.
+  """
+  remote = constants.EXTERNAL_REMOTE
+  prefix = constants.INTERNAL_CHANGE_PREFIX
+  if text.startswith(prefix):
+    text = text[len(prefix):]
+    remote = constants.INTERNAL_REMOTE
+
+  return remote, text
+
+
+def AddPrefix(patch, text):
+  """Add the leading '*' to |text| if applicable.
+
+  Examines patch.remote and adds the prefix to text if applicable.
+
+  Args:
+    patch: A PatchQuery object to examine.
+    text: The text to add prefix to.
+
+  Returns:
+    |text| with an added prefix for internal patches; otherwise, returns text.
+  """
+  return '%s%s' % (constants.CHANGE_PREFIX[patch.remote], text)
+
+
+def ParsePatchDep(text, no_change_id=False, no_sha1=False,
+                  no_full_change_id=False, no_gerrit_number=False):
+  """Parses a given patch dependency and convert it to a PatchQuery object.
+
+  Parse user-given dependency (e.g. from the CQ-DEPEND line in the
+  commit message) and returns a PatchQuery object with the relevant
+  information of the dependency.
+
+  Args:
+    text: The text to parse.
+    no_change_id: Do not allow change-ID.
+    no_sha1: Do not allow SHA1.
+    no_full_change_id: Do not allow full change-ID.
+    no_gerrit_number: Do not allow gerrit_number.
+
+  Retruns:
+    A PatchQuery object.
+  """
+  original_text = text
   if not text:
-    raise ValueError("%s invoked w/ an empty value: %r" % (caller_name, text))
-  prefix = constants.INTERNAL_CHANGE_PREFIX if force_internal else ''
-  if text.startswith(constants.INTERNAL_CHANGE_PREFIX):
-    if strict:
-      raise ValueError(
-          "%s invoked w/ an internally-formatted argument while in strict "
-          "mode: %s" % (caller_name, text))
-    if not force_external:
-      prefix = constants.INTERNAL_CHANGE_PREFIX
-    text = text[len(constants.INTERNAL_CHANGE_PREFIX):]
-  return prefix, text
-
-
-def FormatChangeId(text, force_internal=False, force_external=False,
-                   strict=False):
-  """Format a Change-Id into a standardized form.
-
-  Use this anywhere we're accepting user input of Change-IDs.
-
-  Args:
-    text: The given Change-Id to inspect and reformat.
-    force_internal: If True, force the resultant Change-Id to be an internally
-      formatted one.
-    force_external: If True, force the resultant Change-Id to be an externally
-      formatted one; this form is the gerrit standard, thus if you need to
-      convert a ChangeId for passing directly to gerrit, this should be set to
-      True.  Note that force_internal and force_external are mutually exclusive.
-    strict: If True, then it's an error if the text holds an internally
-      formatted ChangeId.  Generally this is only useful if you're working w/
-      a direct git commit message and are trying to ensure the message is
-      gerrit compatible.
-  """
-  original_text = text
-  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  if not IsChangeID(text, strict=strict):
-    raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r" %
-                     (original_text,))
-
-  return '%s%s%s' % (prefix, _GERRIT_CHANGE_ID_PREFIX,
-                     text[len(_GERRIT_CHANGE_ID_PREFIX):].lower())
-
-
-def FormatSha1(text, force_internal=False, force_external=False, strict=False):
-  """Format a Sha1 used for dependencies into a standardized form.
-
-  Use this anywhere we're accepting user input of Sha1s for dependencies.
-
-  Args:
-    text: The given sha1 to inspect and reformat.
-    force_internal: If True, force the resultant sha1 to be an internally
-      formatted one.
-    force_external: If True, force the resultant sha1 to be an externally
-      formatted one; this form is the gerrit standard, thus if you need to
-      convert a sha1 for passing directly to git/gerrit, this should be set to
-      True.  Note that force_internal and force_external are mutually exclusive.
-    strict: If True, then it's an error if the text holds an internally
-      formatted sha1.  Generally this is only useful if you're working w/
-      a direct git commit message and are trying to ensure the message is
-      gerrit compatible.
-  """
-  original_text = text
-  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  if not git.IsSHA1(text):
-    raise ValueError("FormatSha1 invoked w/ a malformed value: %r "
-                     % (original_text,))
-
-  return '%s%s' % (prefix, text.lower())
-
-
-def FormatGerritNumber(text, force_internal=False, force_external=False,
-                       strict=False):
-  """Format a Gerrit Number used for dependencies into a standardized form.
-
-  Use this anywhere we're accepting user input of Gerrit Numbers for
-  dependencies.
-
-  Args:
-    text: The given sha1 to inspect and reformat.
-    force_internal: If True, force the resultant number to be an internally
-      formatted one.
-    force_external: If True, force the resultant number to be an externally
-      formatted one; this form is the gerrit standard, thus if you need to
-      convert a value for passing directly to gerrit, this should be set to
-      True.  Note that force_internal and force_external are mutually exclusive.
-    strict: If True, then it's an error if the text holds an internally
-      formatted number.  Generally this is only useful if you're working w/
-      a direct git commit message and are trying to ensure the message is
-      gerrit compatible.
-  """
-  original_text = text
-  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  if not IsGerritNumber(text):
-    raise ValueError(
-        "FormatGerritNumber invoked w/ a value that isn't a number or longer "
-        "than %i digits: %r" % (_MAXIMUM_GERRIT_NUMBER_LENGTH, original_text,))
-  # Force an int conversion to strip any leading zeroes.
-  text = str(int(text))
-  return '%s%s' % (prefix, text)
-
-
-def FormatFullChangeId(text, force_internal=False, force_external=False,
-                       strict=False):
-  """Format a fully-qualified Change-Id into a standardized form.
-
-  A fully-qualified change-id has the form:
-
-    project~branch~Change-Id
-
-  The Change-Id line from the commit message by itself is not guaranteed to
-  uniquely specify a gerrit change, but the fully-qualified change-id *is*
-  guaranteed to be unique.
-
-  Args:
-    text: Refer to FormatChangeId docstring.
-    force_internal: Refer to FormatChangeId docstring.
-    force_external: Refer to FormatChangeId docstring.
-    strict: If True, then it's an error if text starts with internal change
-      prefix to signify an internal change; and the Change-Id portion of text
-      must meet the 'strict' criteria of FormatChangeId.
-  """
-  err_str = "FormatFullChangeId invoked w/ a malformed change-id: %r" % text
-  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
-  fields = text.split('~')
-  if len(fields) != 3:
-    raise ValueError(err_str)
-  project, branch, changeid = fields
-  if not REPO_NAME_RE.match(project) or not BRANCH_NAME_RE.match(branch):
-    raise ValueError(err_str)
-  changeid = FormatChangeId(changeid, strict=strict)
-  return '%s%s~%s~%s' % (prefix, project, branch, changeid)
-
-
-def FormatPatchDep(text, force_internal=False, force_external=False,
-                   strict=False, sha1=True, changeId=True,
-                   gerrit_number=True, allow_CL=False, full_changeid=True):
-  """Given a patch dependency, ensure it's formatted correctly.
-
-  This should be used when the consumer doesn't care what type of dep
-  it is, just as long as it's formatted correctly (ValidationPool for
-  example).
-
-  Args:
-    text: Refer to FormatChangeId docstring.
-    force_internal: Refer to FormatChangeId docstring.
-    force_external: Refer to FormatChangeId docstring.
-    strict: See FormatChangeId for details.
-    sha1: If False, throw ValueError if the dep is a sha1.
-    changeId: If False, throw ValueError if the dep is a ChangeId.
-    gerrit_number: If False, throw ValueError if the dep is a gerrit number.
-    allow_CL: If True, allow CL: prefix; else view it as an error.
-      That format is primarily used for -g, and in CQ-DEPEND.
-    full_changeid: If False, throw ValueError if text is a fully-qualified
-      change-id.
-  """
-  if not text:
-    raise ValueError("FormatPatchDep invoked with an empty value: %r"
+    raise ValueError("ParsePatchDep invoked with an empty value: %r"
                      % (text,))
-  original_text = target_text = text
-
   # Deal w/ CL: targets.
   if text.upper().startswith("CL:"):
-    if not allow_CL:
+    if not text.startswith("CL:"):
       raise ValueError(
-          "FormatPatchDep: 'CL:' is disallowed in this context: %r"
+          "ParsePatchDep: 'CL:' must be upper case: %r"
           % (original_text,))
-    elif not text.startswith("CL:"):
-      raise ValueError(
-          "FormatPatchDep: 'CL:' must be upper case: %r"
-          % (original_text,))
-    target_text = text = text[3:]
+    text = text[3:]
 
-  if text.startswith(constants.INTERNAL_CHANGE_PREFIX):
-    text = text[len(constants.INTERNAL_CHANGE_PREFIX):]
+  # Strip the prefix to determine the remote.
+  remote, text = StripPrefix(text)
 
-  if IsFullChangeID(text):
-    if not full_changeid:
+  parsed = ParseFullChangeID(text)
+  if parsed:
+    if no_full_change_id:
       raise ValueError(
-          "FormatPatchDep: Fully-qualified change-id is not allowed in this "
-          "context: %r" % (original_text,))
-    target = FormatFullChangeId
-  elif IsChangeID(text):
-    if not changeId:
+          'ParsePatchDep: Full Change-ID is not allowed: %r.' % original_text)
+
+    project, branch, change_id = parsed
+    return PatchQuery(remote, project=project, tracking_branch=branch,
+                        change_id=change_id)
+
+  parsed = ParseChangeID(text)
+  if parsed:
+    if no_change_id:
       raise ValueError(
-          "FormatPatchDep: ChangeId isn't allowed in this context: %r"
-          % (original_text,))
-    target = FormatChangeId
-  elif IsGerritNumber(text):
-    if not gerrit_number:
+          'ParsePatchDep: Change-ID is not allowed: %r.' % original_text)
+
+    return PatchQuery(remote, change_id=parsed)
+
+  parsed = ParseGerritNumber(text)
+  if parsed:
+    if no_gerrit_number:
       raise ValueError(
-          "FormatPatchDep: Gerrit number isn't allowed in this context: %r"
-          % (original_text,))
-    target = FormatGerritNumber
-  elif not sha1:
-    raise ValueError(
-        "FormatPatchDep: sha1 isn't allowed in this context: %r"
-        % (original_text,))
-  else:
-    target = FormatSha1
-  return target(target_text, force_internal=force_internal,
-                force_external=force_external, strict=strict)
+          'ParsePatchDep: Gerrit number is not allowed: %r.' % original_text)
+
+    return PatchQuery(remote, gerrit_number=parsed)
+
+  parsed = ParseSHA1(text)
+  if parsed:
+    if no_sha1:
+      raise ValueError(
+          'ParsePatchDep: SHA1 is not allowed: %r.' % original_text)
+
+    return PatchQuery(remote, sha1=parsed)
+
+  raise ValueError('Cannot parse the dependency: %s' % original_text)
 
 
 def GetPaladinDeps(commit_message):
@@ -526,13 +481,151 @@ def GetPaladinDeps(commit_message):
       msg = 'Expected %r, but got %r' % (EXPECTED_PREFIX, prefix)
       raise ValueError(msg)
     for chunk in PATCH_RE.findall(match):
-      chunk = FormatPatchDep(chunk, sha1=False, allow_CL=True)
+      chunk = ParsePatchDep(chunk, no_sha1=True)
       if chunk not in dependencies:
         dependencies.append(chunk)
   return dependencies
 
 
-class GitRepoPatch(object):
+class PatchQuery(object):
+  """Store information about a patch.
+
+  This stores information about a patch used to query Gerrit and/or
+  our internal PatchCache. It is mostly used to describe a patch
+  dependency.
+
+  It is is intended to match a single patch. If a user specified a
+  non-full change id then it might match multiple patches. If a user
+  specified an invalid change id then it might not match any patches.
+  our internal PatchCache.
+  """
+  def __init__(self, remote, project=None, tracking_branch=None, change_id=None,
+               sha1=None, gerrit_number=None):
+    """Initializes a PatchQuery instance.
+
+    Args:
+      remote: The remote git instance path, defined in constants.CROS_REMOTES.
+      project: The name of the project that the patch applies to.
+      tracking_branch: The remote branch of the project the patch applies to.
+      change_id: The Gerrit Change-ID representing this patch.
+      sha1: The sha1 of the commit. This *must* be accurate
+      gerrit_number: The Gerrit number of the patch.
+    """
+    self.remote = remote
+    self.tracking_branch = None
+    if tracking_branch:
+      self.tracking_branch = os.path.basename(tracking_branch)
+    self.project = project
+    self.sha1 = None if sha1 is None else ParseSHA1(sha1)
+    self.change_id = None if change_id is None else ParseChangeID(change_id)
+    self.gerrit_number = (None if gerrit_number is None else
+                          ParseGerritNumber(gerrit_number))
+    self.id = self.full_change_id = None
+    self._SetFullChangeID()
+    # self.id is the only attribute with the internal prefix (*) if
+    # applicable. All other atttributes are strictly external format.
+    self._SetID()
+
+  def _SetFullChangeID(self):
+    """Set the unique full Change-ID if possible."""
+    if (self.project is not None and
+        self.tracking_branch is not None and
+        self.change_id is not None):
+      self.full_change_id = '%s~%s~%s' % (
+          self.project, self.tracking_branch, self.change_id)
+
+  def _SetID(self, override_value=None):
+    """Set the unique ID to be used internally, if possible."""
+    if override_value is not None:
+      self.id = override_value
+      return
+
+    if not self.full_change_id:
+      self._SetFullChangeID()
+
+    if self.full_change_id:
+      self.id = AddPrefix(self, self.full_change_id)
+
+    elif self.sha1:
+      # We assume sha1 is unique, but in rare cases (e.g. two branches with
+      # the same history) it is not. We don't handle that.
+      self.id = '%s%s' % (constants.CHANGE_PREFIX[self.remote], self.sha1)
+
+  def LookupAliases(self):
+    """Returns the list of lookup keys to query a PatchCache.
+
+    Each key has to be unique for the patch. If no unique key can be
+    generated yet (because of incomplete patch information), we'd
+    rather return None to avoid retrieving incorrect patch from the
+    cache.
+    """
+    l = []
+    if self.gerrit_number:
+      l.append(self.gerrit_number)
+
+    # Note that change-ID alone is not unique. Use full change-id here.
+    if self.full_change_id:
+      l.append(self.full_change_id)
+
+    # Note that in rare cases (two branches with the same history),
+    # the commit hash may not be unique. We don't handle that.
+    if self.sha1:
+      l.append(self.sha1)
+
+    return ['%s%s' % (constants.CHANGE_PREFIX[self.remote], x)
+            for x in l if x is not None]
+
+  def ToGerritQueryText(self):
+    """Generate a text used to query Gerrit.
+
+    This text may not be unique because the lack of information from
+    user-specified dependencies (crbug.com/354734). In which cases,
+    the Gerrit query would fail.
+    """
+    # Try to return a unique ID if possible.
+    if self.gerrit_number:
+      return self.gerrit_number
+    elif self.full_change_id:
+      return self.full_change_id
+    elif self.sha1:
+      # SHA1 may not not be unique, but we don't handle that here.
+      return self.sha1
+    elif self.change_id:
+      # Fall back to use Change-Id, which is not unique.
+      return self.change_id
+    else:
+      # We cannot query without at least one of the three fields. A
+      # special case is UploadedLocalPatch which has none of the
+      # above, but also is not used for query.
+      raise ValueError(
+          'We do not have enough information to generate a Gerrit query. '
+          'At least one of the following fields needs to be set: Change-Id, '
+          'Gerrit number, or sha1')
+
+  def __hash__(self):
+    """Returns a hash to be used in a set or a list."""
+    if self.id:
+      return hash(self.id)
+    else:
+      return hash((self.remote, self.project, self.tracking_branch,
+                  self.gerrit_number, self.change_id, self.sha1))
+
+  def __eq__(self, other):
+    """Defines when two PatchQuery objects are considered equal."""
+    # We allow comparing against a string to make testing easier.
+    if isinstance(other, basestring):
+      return self.id == other
+
+    if self.id is not None:
+      return self.id == other.id
+
+    return ((self.remote, self.project, self.tracking_branch,
+             self.gerrit_number, self.change_id, self.sha1) ==
+            (other.remote, other.project, other.tracking_branch,
+             other.gerrit_number, other.change_id, other.sha1))
+
+
+class GitRepoPatch(PatchQuery):
   """Representing a patch from a branch of a local or remote git repository."""
 
   # Note the selective case insensitivity; gerrit allows only this.
@@ -553,46 +646,28 @@ class GitRepoPatch(object):
     Args:
       project_url: The url of the git repo (can be local or remote) to pull the
                    patch from.
-      project: The name of the project that the patch applies to.
+      project: See PatchQuery for documentation.
       ref: The refspec to pull from the git repo.
-      tracking_branch: The remote branch of the project the patch applies to.
-      remote: The remote git instance path.
-      sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
+      tracking_branch: See PatchQuery for documentation.
+      remote: See PatchQuery for documentation.
+      sha1: The sha1 of the commit, if known. This *must* be accurate.  Can
         be None if not yet known- in which case Fetch will update it.
-      change_id: If given, this must be a strict gerrit format (external format)
-        Change-Id representing this change.
+      change_id: See PatchQuery for documentation.
     """
+    super(GitRepoPatch, self).__init__(remote, project=project,
+                                       tracking_branch=tracking_branch,
+                                       change_id = change_id,
+                                       sha1=sha1, gerrit_number=None)
+    self.project_url = project_url
     self.commit_message = None
     self._subject_line = None
-    self.project_url = project_url
-    self.project = project
     self.ref = ref
-    self.tracking_branch = os.path.basename(tracking_branch)
-    self.remote = remote
-    if sha1 is not None:
-      sha1 = FormatSha1(sha1, strict=True)
-    self.sha1 = sha1
-    # change_id must always be a valid Change-Id (strict gerrit), or None,
-    # and be in strict gerrit form (aka, external).
-    # id can be in our form; internal or external.
-    self.change_id = self.id = None
     self._is_fetched = set()
-
-    # Do the ChangeId setting now that we have a fully setup instance.
-    if change_id:
-      self._SetChangeId(change_id)
 
   @property
   def internal(self):
     """Whether patch is to an internal cros project."""
     return self.remote == constants.INTERNAL_REMOTE
-
-  def LookupAliases(self):
-    """Return the list of lookup keys this change is known by."""
-    l = [self.change_id, self.sha1]
-    return [FormatPatchDep(x, gerrit_number=False,
-                           force_internal=self.internal)
-            for x in l if x is not None]
 
   def Fetch(self, git_repo):
     """Fetch this patch into the given git repository.
@@ -614,7 +689,6 @@ class GitRepoPatch(object):
     Returns:
       The sha1 of the patch.
     """
-
     git_repo = os.path.normpath(git_repo)
     if git_repo in self._is_fetched:
       return self.sha1
@@ -630,33 +704,25 @@ class GitRepoPatch(object):
         return None, None, None
       return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
 
+    sha1 = None
     if self.sha1 is not None:
       # See if we've already got the object.
       sha1, subject, msg = _PullData(self.sha1)
-      if sha1 is not None:
-        sha1 = FormatSha1(sha1, strict=True)
-        assert sha1 == self.sha1
-        self._EnsureId(msg)
-        self.commit_message = msg
-        self._subject_line = subject
-        self._is_fetched.add(git_repo)
-        return self.sha1
 
-    git.RunGit(git_repo, ['fetch', self.project_url, self.ref])
+    if sha1 is None:
+      git.RunGit(git_repo, ['fetch', self.project_url, self.ref])
+      sha1, subject, msg = _PullData(self.sha1 or 'FETCH_HEAD')
 
-    sha1, subject, msg = _PullData(self.sha1 or 'FETCH_HEAD')
-    sha1 = FormatSha1(sha1, strict=True)
+    sha1 = ParseSHA1(sha1, error_ok=False)
 
-    # Even if we know the sha1, still do a sanity check to ensure we
-    # actually just fetched it.
-    if self.sha1 is not None:
-      if sha1 != self.sha1:
-        raise PatchException(self,
-                             'Patch %s specifies sha1 %s, yet in fetching from '
-                             '%s we could not find that sha1.  Internal error '
-                             'most likely.' % (self, self.sha1, self.ref))
-    else:
-      self.sha1 = sha1
+    if self.sha1 is not None and sha1 != self.sha1:
+      # Even if we know the sha1, still do a sanity check to ensure we
+      # actually just fetched it.
+      raise PatchException(self,
+                           'Patch %s specifies sha1 %s, yet in fetching from '
+                           '%s we could not find that sha1.  Internal error '
+                           'most likely.' % (self, self.sha1, self.ref))
+    self.sha1 = sha1
     self._EnsureId(msg)
     self.commit_message = msg
     self._subject_line = subject
@@ -840,31 +906,20 @@ class GitRepoPatch(object):
     """
     return []
 
-  def _SetChangeId(self, change_id):
-    """Set this instances change_id, and id from the given ChangeId.
-
-    Args:
-      change_id: A strict gerrit changeId to set this instance to.  The id
-        attribute is computed from this, and formatting/validation is done.
-    """
-    self.change_id = FormatChangeId(change_id, strict=True)
-    self.id = FormatChangeId(self.change_id, force_internal=self.internal)
-
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id.  This will parse the Change-Id out
     of the given commit message- if it cannot find one, it logs a warning
     and creates a fake ID.
 
-    By it's nature, that fake ID is useless- it's created to simplify API
-    usage for patch consumers.
-
-    If CQ were to see and try operating on one of these, it would fail for
-    example.
+    By its nature, that fake ID is useless- it's created to simplify
+    API usage for patch consumers. If CQ were to see and try operating
+    on one of these, it would fail for example.
     """
     if self.id is not None:
       return self.id
+
     try:
-      self._SetChangeId(self._ParseChangeId(commit_message))
+      self.change_id = self._ParseChangeId(commit_message)
     except BrokenChangeID:
       cros_build_lib.Warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
@@ -872,10 +927,9 @@ class GitRepoPatch(object):
           'will any gerrit querying.  Please add the appropriate '
           'Change-Id into the commit message to resolve this.',
           self, self.sha1)
-
-      self.id = self.sha1
-
-    return self.id
+      self._SetID(self.sha1)
+    else:
+      self._SetID()
 
   def _ParseChangeId(self, data):
     """Parse a Change-Id out of a block of text.
@@ -899,7 +953,7 @@ class GitRepoPatch(object):
     if not self._STRICT_VALID_CHANGE_ID_RE.match(change_id_match):
       raise BrokenChangeID(self, change_id_match)
 
-    return change_id_match
+    return ParseChangeID(change_id_match)
 
   def PaladinDependencies(self, git_repo):
     """Returns an ordered list of dependencies based on the Commit Message.
@@ -1144,25 +1198,33 @@ class LocalPatch(GitRepoPatch):
 
 class UploadedLocalPatch(GitRepoPatch):
   """Represents an uploaded local patch passed in using --remote-patch."""
+
   def __init__(self, project_url, project, ref, tracking_branch,
                original_branch, original_sha1, remote, carbon_copy_sha1=None):
+    """Initializes an UploadedLocalPatch instance.
+
+    Args:
+      project_url: See GitRepoPatch for documentation.
+      project: See GitRepoPatch for documentation.
+      ref: See GitRepoPatch for documentation.
+      tracking_branch: See GitRepoPatch for documentation.
+      original_branch: The tracking branch of the local patch.
+      original_sha1: The sha1 of the local commit.
+      remote: See GitRepoPatch for documentation.
+      carbon_copy_sha1: The alternative commit hash to use.
+    """
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           remote, sha1=carbon_copy_sha1)
     self.original_branch = original_branch
-
-    self._original_sha1_valid = True
-    try:
-      original_sha1 = FormatSha1(original_sha1, strict=True)
-    except ValueError:
-      self._original_sha1_valid = False
-
-    self.original_sha1 = original_sha1
+    self.original_sha1 = ParseSHA1(original_sha1)
+    self._original_sha1_valid = False if self.original_sha1 is None else True
 
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
     l = GitRepoPatch.LookupAliases(self)
     if self._original_sha1_valid:
-      l.append(FormatSha1(self.original_sha1, force_internal=self.internal))
+      l.append(AddPrefix(self, self.original_sha1))
+
     return l
 
   def __str__(self):
@@ -1213,8 +1275,7 @@ class GerritPatch(GitRepoPatch):
       self.owner, _, _ = self.owner_email.partition('@')
     else:
       self.owner = None
-    self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
-                                            strict=True)
+    self.gerrit_number = ParseGerritNumber(str(patch_dict['number']))
     prefix_str = constants.CHANGE_PREFIX[self.remote]
     self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
     self.url = patch_dict['url']
@@ -1303,28 +1364,32 @@ class GerritPatch(GitRepoPatch):
     return self.__class__, (self.patch_dict.copy(), self.remote,
                             self.url_prefix)
 
-  def LookupAliases(self):
-    """Return the list of lookup keys this change is known by."""
-    l = GitRepoPatch.LookupAliases(self)
-    l.append(FormatGerritNumber(self.gerrit_number,
-                                force_internal=self.internal))
-    return l
-
   def GerritDependencies(self):
-    """Returns the list of Gerrit change numbers that this patch depends on."""
+    """Returns the list of PatchQuery objects that this patch depends on."""
     results = []
     for d in self.patch_dict.get('dependsOn', []):
-      if 'number' in d:
-        results.append(FormatGerritNumber(d['number'],
-                                          force_internal=self.internal))
-      elif 'id' in d:
-        results.append(FormatChangeId(d['id'], force_internal=self.internal))
-      elif 'revision' in d:
-        results.append(FormatSha1(d['revision'], force_internal=self.internal))
-      else:
+      gerrit_number = d.get('number')
+      if gerrit_number is not None:
+        gerrit_number = ParseGerritNumber(gerrit_number, error_ok=False)
+
+      change_id = d.get('id')
+      if change_id is not None:
+        change_id = ParseChangeID(change_id, error_ok=False)
+
+      sha1 = d.get('revision')
+      if sha1 is not None:
+        sha1 = ParseSHA1(sha1, error_ok=False)
+
+      if not gerrit_number and not change_id and not sha1:
         raise AssertionError(
             'While processing the dependencies of change %s, no "number", "id",'
             ' or "revision" key found in: %r' % (self.gerrit_number, d))
+
+      results.append(
+          PatchQuery(self.remote, project=self.project,
+                       tracking_branch=self.tracking_branch,
+                       gerrit_number=gerrit_number,
+                       change_id=change_id, sha1=sha1))
     return results
 
   def IsAlreadyMerged(self):
@@ -1379,8 +1444,7 @@ class GerritPatch(GitRepoPatch):
     # and also validate our parsing against gerrit's in
     # the process.
     try:
-      parsed_id = FormatChangeId(self._ParseChangeId(commit_message),
-                                 strict=True)
+      parsed_id = self._ParseChangeId(commit_message)
       if parsed_id != self.change_id:
         raise AssertionError(
             'For Change-Id %s, sha %s, our parsing of the Change-Id did not '
@@ -1398,8 +1462,6 @@ class GerritPatch(GitRepoPatch):
           'Change-Id into the commit message to resolve this.',
           self, self.change_id, self.sha1)
 
-    return self.id
-
   def PatchLink(self):
     """Return a CL link for this patch."""
     return 'CL:%s' % (self.gerrit_number_str,)
@@ -1412,14 +1474,6 @@ class GerritPatch(GitRepoPatch):
     if self._subject_line:
       s += ':"%s"' % (self._subject_line,)
     return s
-
-  # Define methods to use patches in sets.  We uniquely identify patches
-  # by Gerrit change numbers.
-  def __hash__(self):
-    return hash(self.id)
-
-  def __eq__(self, other):
-    return self.id == other.id
 
 
 def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch, remote,
