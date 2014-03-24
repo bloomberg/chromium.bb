@@ -225,7 +225,6 @@ void FilterHostedDocuments(const ReadDirectoryCallback& callback,
     }
     entries.swap(filtered);
   }
-  // TODO(hashimoto): Correctly handle empty entries when has_more==true.
   callback.Run(error, entries.Pass(), has_more);
 }
 

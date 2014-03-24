@@ -733,7 +733,8 @@ void FileAPIMessageFilter::DidReadDirectory(
     const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
   if (result == base::File::FILE_OK) {
-    Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));
+    if (!entries.empty() || !has_more)
+      Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));
   } else {
     DCHECK(!has_more);
     Send(new FileSystemMsg_DidFail(request_id, result));
