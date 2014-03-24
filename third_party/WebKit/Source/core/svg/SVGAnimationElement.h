@@ -74,6 +74,10 @@ public:
     void endElement();
     void endElementAt(float offset);
 
+    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(begin, beginEvent);
+    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(end, endEvent);
+    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(repeat, repeatEvent);
+
     static bool isTargetAttributeCSSProperty(SVGElement*, const QualifiedName&);
 
     virtual bool isAdditive() const;

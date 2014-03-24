@@ -35,6 +35,10 @@ interface SVGAnimationElement : SVGElement {
     void beginElementAt([Default=Undefined] optional float offset);
     void endElement();
     void endElementAt([Default=Undefined] optional float offset);
+
+    attribute EventHandler onbegin;
+    attribute EventHandler onend;
+    attribute EventHandler onrepeat;
 };
 
 SVGAnimationElement implements SVGTests;

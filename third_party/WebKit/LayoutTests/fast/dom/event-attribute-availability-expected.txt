@@ -344,6 +344,9 @@ PASS 'onpaste' in pathelement is true
 PASS 'onreset' in pathelement is true
 PASS 'onsearch' in pathelement is true
 PASS 'onselectstart' in pathelement is true
+PASS 'onbegin' in pathelement is false
+PASS 'onend' in pathelement is false
+PASS 'onrepeat' in pathelement is false
 
 Test SVGSVGElement
 PASS 'onabort' in svgelement is true
@@ -384,6 +387,52 @@ PASS 'onpaste' in svgelement is true
 PASS 'onreset' in svgelement is true
 PASS 'onsearch' in svgelement is true
 PASS 'onselectstart' in svgelement is true
+PASS 'onbegin' in svgelement is false
+PASS 'onend' in svgelement is false
+PASS 'onrepeat' in svgelement is false
+
+Test SVGAnimationElement
+PASS 'onabort' in animateelement is true
+PASS 'onblur' in animateelement is true
+PASS 'onchange' in animateelement is true
+PASS 'onclick' in animateelement is true
+PASS 'oncontextmenu' in animateelement is true
+PASS 'ondblclick' in animateelement is true
+PASS 'ondrag' in animateelement is true
+PASS 'ondragend' in animateelement is true
+PASS 'ondragenter' in animateelement is true
+PASS 'ondragleave' in animateelement is true
+PASS 'ondragover' in animateelement is true
+PASS 'ondragstart' in animateelement is true
+PASS 'ondrop' in animateelement is true
+PASS 'onerror' in animateelement is true
+PASS 'onfocus' in animateelement is true
+PASS 'oninput' in animateelement is true
+PASS 'onkeydown' in animateelement is true
+PASS 'onkeypress' in animateelement is true
+PASS 'onkeyup' in animateelement is true
+PASS 'onload' in animateelement is true
+PASS 'onmousedown' in animateelement is true
+PASS 'onmousemove' in animateelement is true
+PASS 'onmouseout' in animateelement is true
+PASS 'onmouseover' in animateelement is true
+PASS 'onmouseup' in animateelement is true
+PASS 'onmousewheel' in animateelement is true
+PASS 'onscroll' in animateelement is true
+PASS 'onselect' in animateelement is true
+PASS 'onsubmit' in animateelement is true
+PASS 'onbeforecut' in animateelement is true
+PASS 'oncut' in animateelement is true
+PASS 'onbeforecopy' in animateelement is true
+PASS 'oncopy' in animateelement is true
+PASS 'onbeforepaste' in animateelement is true
+PASS 'onpaste' in animateelement is true
+PASS 'onreset' in animateelement is true
+PASS 'onsearch' in animateelement is true
+PASS 'onselectstart' in animateelement is true
+PASS 'onbegin' in animateelement is true
+PASS 'onend' in animateelement is true
+PASS 'onrepeat' in animateelement is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
