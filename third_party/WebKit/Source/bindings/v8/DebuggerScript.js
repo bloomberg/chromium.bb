@@ -33,9 +33,15 @@
 var DebuggerScript = {};
 
 DebuggerScript.PauseOnExceptionsState = {
-    DontPauseOnExceptions : 0,
-    PauseOnAllExceptions : 1,
+    DontPauseOnExceptions: 0,
+    PauseOnAllExceptions: 1,
     PauseOnUncaughtExceptions: 2
+};
+
+DebuggerScript.ScopeInfoDetails = {
+    AllScopes: 0,
+    FastAsyncScopes: 1,
+    NoScopes: 2
 };
 
 DebuggerScript._pauseOnExceptionsState = DebuggerScript.PauseOnExceptionsState.DontPauseOnExceptions;
@@ -199,15 +205,18 @@ DebuggerScript.setPauseOnExceptionsState = function(newState)
         Debug.clearBreakOnUncaughtException();
 }
 
-DebuggerScript.currentCallFrame = function(execState, maximumLimit)
+DebuggerScript.currentCallFrame = function(execState, data)
 {
+    var maximumLimit = data >> 2;
+    var scopeDetailsLevel = data & 3;
+
     var frameCount = execState.frameCount();
-    if (maximumLimit >= 0 && maximumLimit < frameCount)
+    if (maximumLimit && maximumLimit < frameCount)
         frameCount = maximumLimit;
     var topFrame = undefined;
     for (var i = frameCount - 1; i >= 0; i--) {
         var frameMirror = execState.frame(i);
-        topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame);
+        topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame, scopeDetailsLevel);
     }
     return topFrame;
 }
@@ -313,7 +322,7 @@ DebuggerScript.isEvalCompilation = function(eventData)
 // NOTE: This function is performance critical, as it can be run on every
 // statement that generates an async event (like addEventListener) to support
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
-DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
+DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, scopeDetailsLevel)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
@@ -326,7 +335,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     var isAtReturn = !!frameDetails.isAtReturn();
     var returnValue = isAtReturn ? frameDetails.returnValue() : undefined;
 
-    var scopeMirrors = frameMirror.allScopes();
+    var scopeMirrors = (scopeDetailsLevel === DebuggerScript.ScopeInfoDetails.NoScopes ? [] : frameMirror.allScopes());
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
     for (var i = 0; i < scopeMirrors.length; ++i) {

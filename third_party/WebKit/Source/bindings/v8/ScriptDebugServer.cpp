@@ -314,15 +314,19 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     return false;
 }
 
-PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit)
+PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit, ScopeInfoDetails scopeDetails)
 {
+    const int scopeBits = 2;
+    COMPILE_ASSERT(NoScopes < (1 << scopeBits), not_enough_bits_to_encode_ScopeInfoDetails);
+
+    int data = (maximumLimit << scopeBits) | scopeDetails;
     v8::Handle<v8::Value> currentCallFrameV8;
     if (executionState.IsEmpty()) {
         v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "currentCallFrame")));
-        currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, maximumLimit));
+        currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, data));
     } else {
-        v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(m_isolate, maximumLimit) };
-        currentCallFrameV8 = callDebuggerMethod("currentCallFrame", 2, argv);
+        v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(m_isolate, data) };
+        currentCallFrameV8 = callDebuggerMethod("currentCallFrame", WTF_ARRAY_LENGTH(argv), argv);
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
@@ -330,19 +334,29 @@ PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8:
     return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
 }
 
-ScriptValue ScriptDebugServer::currentCallFrames()
+ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDetails)
 {
     v8::HandleScope scope(m_isolate);
     v8::Handle<v8::Context> pausedContext = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
     if (pausedContext.IsEmpty())
         return ScriptValue();
 
-    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(m_executionState.newLocal(m_isolate), -1);
+    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(m_executionState.newLocal(m_isolate), 0, scopeDetails);
     if (!currentCallFrame)
         return ScriptValue();
 
     v8::Context::Scope contextScope(pausedContext);
     return ScriptValue(toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), pausedContext->GetIsolate()), pausedContext->GetIsolate());
+}
+
+ScriptValue ScriptDebugServer::currentCallFrames()
+{
+    return currentCallFramesInner(AllScopes);
+}
+
+ScriptValue ScriptDebugServer::currentCallFramesForAsyncStack()
+{
+    return currentCallFramesInner(FastAsyncScopes);
 }
 
 void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task, v8::Isolate* isolate)
@@ -463,7 +477,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
             if (!stackTrace->GetFrameCount())
                 return;
-            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
+            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1, NoScopes);
             if (executeSkipPauseRequest(listener->shouldSkipExceptionPause(topFrame), eventDetails.GetExecutionState()))
                 return;
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
@@ -476,7 +490,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> hitBreakpoints = V8ScriptRunner::callInternalFunction(getBreakpointNumbersFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
             ASSERT(hitBreakpoints->IsArray());
-            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
+            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1, NoScopes);
             ScriptDebugListener::SkipPauseRequest skipRequest;
             if (v8::Handle<v8::Array>::Cast(hitBreakpoints)->Length())
                 skipRequest = listener->shouldSkipBreakpointPause(topFrame);

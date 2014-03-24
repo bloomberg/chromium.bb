@@ -79,6 +79,7 @@ public:
 
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, ScriptObject* result);
     ScriptValue currentCallFrames();
+    ScriptValue currentCallFramesForAsyncStack();
 
     class Task {
     public:
@@ -136,8 +137,16 @@ protected:
     v8::Isolate* m_isolate;
 
 private:
+    enum ScopeInfoDetails {
+        AllScopes,
+        FastAsyncScopes,
+        NoScopes // Should be the last option.
+    };
+
+    ScriptValue currentCallFramesInner(ScopeInfoDetails);
+
     void stepCommandWithFrame(const char* functionName, const ScriptValue& frame);
-    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit, ScopeInfoDetails);
     bool executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest, v8::Handle<v8::Object> executionState);
 
     bool m_runningNestedMessageLoop;

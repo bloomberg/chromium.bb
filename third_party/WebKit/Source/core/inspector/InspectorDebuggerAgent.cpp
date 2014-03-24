@@ -671,7 +671,7 @@ void InspectorDebuggerAgent::cancelPauseOnNextStatement()
 void InspectorDebuggerAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didInstallTimer(context, timerId, singleShot, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didInstallTimer(context, timerId, singleShot, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didRemoveTimer(ExecutionContext* context, int timerId)
@@ -697,7 +697,7 @@ void InspectorDebuggerAgent::didFireTimer()
 void InspectorDebuggerAgent::didRequestAnimationFrame(Document* document, int callbackId)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRequestAnimationFrame(document, callbackId, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didRequestAnimationFrame(document, callbackId, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didCancelAnimationFrame(Document* document, int callbackId)
@@ -722,7 +722,7 @@ void InspectorDebuggerAgent::didFireAnimationFrame()
 void InspectorDebuggerAgent::didAddEventListener(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didAddEventListener(eventTarget, eventType, listener, useCapture, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didAddEventListener(eventTarget, eventType, listener, useCapture, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didRemoveEventListener(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
@@ -753,13 +753,13 @@ void InspectorDebuggerAgent::didHandleEvent()
 void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
 {
     if (m_asyncCallStackTracker.isEnabled() && async)
-        m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
     if (m_asyncCallStackTracker.isEnabled() && !m_asyncCallStackTracker.hasEnqueuedMutationRecord(context, observer))
-        m_asyncCallStackTracker.didEnqueueMutationRecord(context, observer, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didEnqueueMutationRecord(context, observer, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
@@ -783,7 +783,7 @@ void InspectorDebuggerAgent::didDeliverMutationRecords()
 void InspectorDebuggerAgent::didPostPromiseTask(ExecutionContext* context, ExecutionContextTask* task, bool isResolved)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didPostPromiseTask(context, task, isResolved, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didPostPromiseTask(context, task, isResolved, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::willPerformPromiseTask(ExecutionContext* context, ExecutionContextTask* task)
