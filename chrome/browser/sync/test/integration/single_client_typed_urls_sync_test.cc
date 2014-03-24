@@ -6,9 +6,11 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::AddUrlToHistoryWithTransition;
 using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
@@ -40,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
@@ -60,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
@@ -80,12 +82,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Now delete the URL we just added, wait for sync, and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   AssertAllProfilesHaveSameURLsAsVerifier();
@@ -106,12 +108,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   AssertAllProfilesHaveSameURLsAsVerifier();
 
   // Now delete the URL we just added, wait for sync and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   AssertAllProfilesHaveSameURLsAsVerifier();

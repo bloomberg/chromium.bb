@@ -4,10 +4,12 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 namespace {
@@ -15,6 +17,7 @@ namespace {
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::ModelMatchesVerifier;
 using syncer::sessions::SyncSessionSnapshot;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SyncExponentialBackoffTest : public SyncTest {
  public:
@@ -64,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   // Trigger a network error at the client side.
   DisableNetwork(GetProfile(0));
@@ -76,13 +79,14 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   // reach the sync server.
   ExponentialBackoffChecker exponential_backoff_checker(
       GetClient(0)->service());
-  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
+  exponential_backoff_checker.Await();
+  ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 
   // Recover from the network error.
   EnableNetwork(GetProfile(0));
 
   // Verify that sync was able to recover.
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
@@ -91,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   // Trigger a transient error on the server.
   TriggerTransientError();
@@ -103,7 +107,8 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
   // reach the sync server.
   ExponentialBackoffChecker exponential_backoff_checker(
       GetClient(0)->service());
-  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
+  exponential_backoff_checker.Await();
+  ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 }
 
 }  // namespace

@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -23,6 +24,9 @@ using passwords_helper::RemoveLogins;
 using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;
 using passwords_helper::UpdateLogin;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
+using sync_integration_test_util::AwaitPassphraseAccepted;
+using sync_integration_test_util::AwaitPassphraseRequired;
 
 using autofill::PasswordForm;
 
@@ -80,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisablePasswords) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
@@ -102,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisableSync) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
@@ -116,13 +120,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(0)->service()));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(1)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(1)->service()));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
@@ -130,12 +134,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(0)->service()));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(1)->service()));
 
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetPasswordStore(0), form);
@@ -235,14 +239,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   ASSERT_FALSE(GetClient(1)->SetupSync());
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(1)->service()));
+
+  // For some reason, the tests won't pass unless these flags are set.
+  GetClient(1)->service()->SetSetupInProgress(false);
+  GetClient(1)->service()->SetSyncSetupCompleted();
+
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(1)->service()));
 
   // Following ensures types are enabled and active (see bug 87572).
   syncer::ModelSafeRoutingInfo routes;
@@ -259,29 +268,33 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   // Setup 1 with a different passphrase, so that it fails to sync.
   ASSERT_FALSE(GetClient(1)->SetupSync());
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_FALSE(SetDecryptionPassphrase(1, kAnotherValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
 
   // Add a password on 0 while clients have different passphrases.
   PasswordForm form0 = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form0);
   AddLogin(GetPasswordStore(0), form0);
 
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
 
   // Password hasn't been synced to 1 yet.
   ASSERT_FALSE(AllProfilesContainSamePasswordFormsAsVerifier());
 
   // Update 1 with the correct passphrase, the password should now sync over.
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(AwaitPassphraseRequired(GetClient(1)->service()));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetClient(1)->service()));
+
+  // For some reason, the tests won't pass unless these flags are set.
+  GetClient(1)->service()->SetSetupInProgress(false);
+  GetClient(1)->service()->SetSyncSetupCompleted();
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());

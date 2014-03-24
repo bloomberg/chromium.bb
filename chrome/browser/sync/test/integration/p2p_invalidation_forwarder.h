@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_INVALIDATION_FORWARDER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_INVALIDATION_FORWARDER_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 
@@ -35,6 +36,8 @@ class P2PInvalidationForwarder : public ProfileSyncServiceObserver {
  private:
   ProfileSyncService* sync_service_;
   invalidation::P2PInvalidationService* invalidation_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(P2PInvalidationForwarder);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_INVALIDATION_FORWARDER_H_

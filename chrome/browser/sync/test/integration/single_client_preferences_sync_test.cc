@@ -5,10 +5,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 using preferences_helper::BooleanPrefMatches;
 using preferences_helper::ChangeBooleanPref;
+using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SingleClientPreferencesSyncTest : public SyncTest {
  public:
@@ -23,6 +25,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

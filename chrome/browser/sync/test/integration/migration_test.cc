@@ -7,6 +7,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/backend_migrator.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -135,9 +136,9 @@ class MigrationChecker : public SingleClientStatusChangeChecker,
                << syncer::ModelTypeSetToString(migrated_types_);
     }
 
-    // Nudge ProfileSyncServiceHarness to inspect the exit condition provided by
-    // AwaitMigration.
-    harness_->OnStateChanged();
+    // Manually trigger a check of the exit condition.
+    if (!expected_types_.Empty())
+      OnStateChanged();
   }
 
  private:
@@ -237,8 +238,8 @@ class MigrationTest : public SyncTest  {
     for (int i = 0; i < num_clients(); ++i) {
       MigrationChecker* checker = migration_checkers_[i];
       checker->set_expected_types(migrate_types);
-      if (!checker->IsExitConditionSatisfied())
-        ASSERT_TRUE(GetClient(i)->AwaitStatusChange(checker));
+      checker->Await();
+      ASSERT_FALSE(checker->TimedOut());
     }
   }
 

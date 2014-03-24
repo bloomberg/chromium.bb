@@ -2397,6 +2397,8 @@
         'browser/sync/test/integration/sync_datatype_helper.h',
         'browser/sync/test/integration/sync_extension_helper.cc',
         'browser/sync/test/integration/sync_extension_helper.h',
+        'browser/sync/test/integration/sync_integration_test_util.cc',
+        'browser/sync/test/integration/sync_integration_test_util.h',
         'browser/sync/test/integration/sync_test.cc',
         'browser/sync/test/integration/sync_test.h',
         'browser/sync/test/integration/themes_helper.cc',
