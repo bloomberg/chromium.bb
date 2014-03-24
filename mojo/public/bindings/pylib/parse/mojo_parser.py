@@ -42,10 +42,29 @@ def ListFromConcat(*items):
   return itemsout
 
 
+class ParseError(Exception):
+
+  def __init__(self, filename, lineno, snippet, bad_char):
+    self.filename = filename
+    self.lineno = lineno
+    self.snippet = snippet
+    self.bad_char = bad_char
+
+  def __str__(self):
+    # Report the 1-based index for lineno.
+    return "%s:%d: error: unexpected %r:\n%s" % (
+        self.filename, self.lineno + 1, self.bad_char, self.snippet)
+
+  def __repr__(self):
+    return str(self)
+
+
 class Parser(object):
 
-  def __init__(self, lexer):
+  def __init__(self, lexer, source, filename):
     self.tokens = lexer.tokens
+    self.source = source
+    self.filename = filename
 
   def p_root(self, p):
     """root : import root
@@ -320,17 +339,21 @@ class Parser(object):
     p[0] = ListFromConcat(*p[1:])
 
   def p_error(self, e):
-    print('error: %s'%e)
+    lineno = e.lineno + 1
+    snippet = self.source.split('\n')[lineno]
+    raise ParseError(self.filename, lineno, snippet, e.value)
 
 
 def Parse(filename):
+  source = open(filename).read().replace('\r', '')
+
   lexer = Lexer()
-  parser = Parser(lexer)
+  parser = Parser(lexer, source, filename)
 
   lex.lex(object=lexer)
   yacc.yacc(module=parser, debug=0, write_tables=0)
 
-  tree = yacc.parse(open(filename).read())
+  tree = yacc.parse(source)
   return tree
 
 

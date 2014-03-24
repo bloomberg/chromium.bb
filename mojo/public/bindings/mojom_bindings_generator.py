@@ -107,7 +107,11 @@ def Main():
     os.makedirs(args.output_dir)
 
   for filename in args.filename:
-    ProcessFile(args, generator_modules, filename, {})
+    try:
+      ProcessFile(args, generator_modules, filename, {})
+    except mojo_parser.ParseError, e:
+      print e
+      return 1
 
   return 0
 
