@@ -57,7 +57,7 @@ CommandBufferImpl::~CommandBufferImpl() { client_->DidDestroy(); }
 void CommandBufferImpl::Initialize(
     ScopedCommandBufferSyncClientHandle sync_client,
     const ShmHandle& shared_state) {
-  sync_client_.reset(sync_client.Pass());
+  sync_client_.reset(sync_client.Pass(), NULL);
   sync_client_->DidInitialize(DoInitialize(shared_state));
 }
 

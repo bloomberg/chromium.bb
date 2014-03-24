@@ -222,7 +222,7 @@ TEST_F(RemotePtrTest, NoPeerAttribute) {
   // This is a test to ensure the following compiles. The sample::Port interface
   // does not have an explicit Peer attribute.
   InterfacePipe<sample::Port, NoInterface> pipe;
-  RemotePtr<sample::Port> port(pipe.handle_to_self.Pass());
+  RemotePtr<sample::Port> port(pipe.handle_to_self.Pass(), NULL);
 }
 
 }  // namespace
