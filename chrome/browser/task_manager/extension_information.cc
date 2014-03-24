@@ -146,7 +146,7 @@ void ExtensionInformation::GetAll(const NewWebContentsCallback& callback) {
 
 bool ExtensionInformation::CheckOwnership(WebContents* web_contents) {
   // Don't add WebContents that belong to a guest (those are handled by
-  // GuestResourceProvider). Otherwise they will be added twice.
+  // GuestInformation). Otherwise they will be added twice.
   if (web_contents->GetRenderProcessHost()->IsGuest())
     return false;
 

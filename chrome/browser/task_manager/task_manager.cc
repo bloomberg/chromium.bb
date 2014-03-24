@@ -21,7 +21,7 @@
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 #include "chrome/browser/task_manager/extension_information.h"
-#include "chrome/browser/task_manager/guest_resource_provider.h"
+#include "chrome/browser/task_manager/guest_information.h"
 #include "chrome/browser/task_manager/panel_information.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_resource_provider.h"
@@ -262,7 +262,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::ExtensionInformation())));
-  AddResourceProvider(new task_manager::GuestResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WebContentsResourceProvider(
+      task_manager,
+      scoped_ptr<WebContentsInformation>(
+          new task_manager::GuestInformation())));
 
 #if !defined(OS_CHROMEOS) && defined(ENABLE_NOTIFICATIONS)
   ResourceProvider* provider =
