@@ -217,15 +217,6 @@
 #endif  // defined(OS_WIN)
 #endif  // !defined(CDECL)
 
-// Macro for hinting that an expression is likely to be true.
-#if !defined(LIKELY)
-#if defined(COMPILER_GCC)
-#define LIKELY(x) __builtin_expect(!!(x), 1)
-#else
-#define LIKELY(x) (x)
-#endif  // defined(COMPILER_GCC)
-#endif  // !defined(LIKELY)
-
 // Macro for hinting that an expression is likely to be false.
 #if !defined(UNLIKELY)
 #if defined(COMPILER_GCC)
