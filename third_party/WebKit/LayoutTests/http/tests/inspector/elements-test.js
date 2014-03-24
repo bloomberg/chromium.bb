@@ -73,12 +73,17 @@ InspectorTest.expandedNodeWithId = function(idValue)
     return result;
 }
 
+InspectorTest.selectNode = function(node)
+{
+    WebInspector.Revealer.reveal(node);
+}
+
 InspectorTest.selectNodeWithId = function(idValue, callback)
 {
     callback = InspectorTest.safeWrap(callback);
     function onNodeFound(node)
     {
-        WebInspector.Revealer.reveal(node);
+        InspectorTest.selectNode(node);
         callback(node);
     }
     InspectorTest.nodeWithId(idValue, onNodeFound);
