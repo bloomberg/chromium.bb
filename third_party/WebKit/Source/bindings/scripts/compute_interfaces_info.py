@@ -163,7 +163,9 @@ def compute_individual_info(idl_filename):
     implemented_as = extended_attributes.get('ImplementedAs')
     # FIXME: remove [NoHeader] once switch to Python
     this_include_path = (include_path(idl_filename, implemented_as)
-                         if 'NoHeader' not in extended_attributes else None)
+                         if ('ImplementedInBaseClass' not in extended_attributes
+                             and 'NoHeader' not in extended_attributes)
+                         else None)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)

@@ -60,6 +60,7 @@ WillBeGarbageCollected
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
+ImplementedInBaseClass
 InitializedByEventConstructor
 MeasureAs=*
 NamedConstructor=*

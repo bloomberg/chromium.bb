@@ -143,15 +143,17 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
 
     # C++ class name of the implementation, stored in [ImplementedBy], which
     # defaults to the basename of dependency IDL file.
-    # This can be overridden by [ImplementedAs] on the dependency interface.
+    # This can be overridden by [ImplementedAs] on the dependency interface,
+    # and omitted entirely by [ImplementedInBaseClass].
     # Note that [ImplementedAs] is used with different meanings on interfaces
     # and members:
     # for Blink class name and function name (or constant name), respectively.
     # Thus we do not want to copy this from the interface to the member, but
     # instead extract it and handle it separately.
-    merged_extended_attributes['ImplementedBy'] = (
-        dependency_interface.extended_attributes.get(
-            'ImplementedAs', dependency_interface_basename))
+    if 'ImplementedInBaseClass' not in dependency_interface.extended_attributes:
+        merged_extended_attributes['ImplementedBy'] = (
+            dependency_interface.extended_attributes.get(
+                'ImplementedAs', dependency_interface_basename))
 
     for attribute in dependency_interface.attributes:
         attribute.extended_attributes.update(merged_extended_attributes)
