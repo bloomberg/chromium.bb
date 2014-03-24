@@ -130,6 +130,7 @@ cr.define('options', function() {
         imageGrid.removeItem(this.oldImage_);
         this.oldImage_ = null;
       }
+      chrome.send('onChangePicturePageHidden');
     },
 
     /**

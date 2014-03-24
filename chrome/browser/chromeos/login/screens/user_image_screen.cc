@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -52,7 +51,7 @@ namespace {
 // Time histogram suffix for profile image download.
 const char kProfileDownloadReason[] = "OOBE";
 
-// Maximum ammount of time to wait for the user image to sync.
+// Maximum amount of time to wait for the user image to sync.
 // The screen is shown iff sync failed or time limit exceeded.
 const int kSyncTimeoutSeconds = 10;
 
@@ -62,15 +61,13 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
                                  UserImageScreenActor* actor)
     : WizardScreen(screen_observer),
       actor_(actor),
-      weak_factory_(this),
       accept_photo_after_decoding_(false),
       selected_image_(User::kInvalidImageIndex),
       profile_picture_enabled_(false),
       profile_picture_data_url_(content::kAboutBlankURL),
       profile_picture_absent_(false),
       is_screen_ready_(false),
-      user_has_selected_image_(false),
-      was_camera_present_(false) {
+      user_has_selected_image_(false) {
   actor_->SetDelegate(this);
   SetProfilePictureEnabled(true);
   notification_registrar_.Add(this,
@@ -103,21 +100,9 @@ void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
   image_decoder_->Start(task_runner);
 }
 
-void UserImageScreen::CheckCameraPresence() {
-  CameraDetector::StartPresenceCheck(
-      base::Bind(&UserImageScreen::OnCameraPresenceCheckDone,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void UserImageScreen::OnCameraPresenceCheckDone() {
-  bool is_camera_present = CameraDetector::camera_presence() ==
-                           CameraDetector::kCameraPresent;
-  if (actor_) {
-    if (is_camera_present != was_camera_present_) {
-      actor_->SetCameraPresent(is_camera_present);
-      was_camera_present_ = is_camera_present;
-    }
-  }
+void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
+  if (actor_)
+    actor_->SetCameraPresent(is_camera_present);
 }
 
 void UserImageScreen::HideCurtain() {

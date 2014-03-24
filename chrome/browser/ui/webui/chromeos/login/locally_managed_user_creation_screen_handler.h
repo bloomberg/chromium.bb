@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
@@ -21,9 +22,12 @@ namespace chromeos {
 
 class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
  public:
-  class Delegate {
+  class Delegate : public CameraPresenceNotifier::Observer {
    public:
     virtual ~Delegate() {}
+
+    // CameraPresenceNotifier::Observer implementation:
+    virtual void OnCameraPresenceCheckDone(bool is_camera_present) = 0;
 
     // This method is called, when actor is being destroyed. Note, if Delegate
     // is destroyed earlier then it has to call SetDelegate(NULL).
@@ -57,7 +61,6 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
 
-    virtual void CheckCameraPresence() = 0;
     virtual void OnPhotoTaken(const std::string& raw_data) = 0;
     virtual void OnImageSelected(const std::string& image_url,
                                  const std::string& image_type) = 0;
@@ -126,7 +129,6 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void HandlePhotoTaken(const std::string& image_url);
   void HandleTakePhoto();
   void HandleDiscardPhoto();
-  void HandleCheckCameraPresence();
   void HandleSelectImage(const std::string& image_url,
                          const std::string& image_type);
 

@@ -10,18 +10,6 @@ cr.define('options', function() {
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
-   * Interval between consecutive camera presence checks in msec.
-   * @const
-   */
-  var CAMERA_CHECK_INTERVAL_MS = 3000;
-
-  /**
-   * Interval between consecutive camera liveness checks in msec.
-   * @const
-   */
-  var CAMERA_LIVENESS_CHECK_MS = 3000;
-
-  /**
    * Number of frames recorded by takeVideo().
    * @const
    */
@@ -209,20 +197,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Start camera presence check.
-     * @private
-     */
-    checkCameraPresence_: function() {
-      if (this.cameraPresentCheckTimer_) {
-        window.clearTimeout(this.cameraPresentCheckTimer_);
-        this.cameraPresentCheckTimer_ = null;
-      }
-      if (!this.cameraVideo_)
-        return;
-      chrome.send('checkCameraPresence');
-    },
-
-    /**
      * Whether a camera is present or not.
      * @type {boolean}
      */
@@ -233,10 +207,6 @@ cr.define('options', function() {
       this.cameraPresent_ = value;
       if (this.cameraLive)
         this.cameraImage = null;
-      // Repeat the check after some time.
-      this.cameraPresentCheckTimer_ = window.setTimeout(
-          this.checkCameraPresence_.bind(this),
-          CAMERA_CHECK_INTERVAL_MS);
     },
 
     /**
@@ -248,14 +218,7 @@ cr.define('options', function() {
       return this.previewElement.classList.contains('online');
     },
     set cameraOnline(value) {
-      this.previewElement.classList[value ? 'add' : 'remove']('online');
-      if (value) {
-        this.cameraLiveCheckTimer_ = window.setInterval(
-            this.checkCameraLive_.bind(this), CAMERA_LIVENESS_CHECK_MS);
-      } else if (this.cameraLiveCheckTimer_) {
-        window.clearInterval(this.cameraLiveCheckTimer_);
-        this.cameraLiveCheckTimer_ = null;
-      }
+      this.previewElement.classList.toggle('online', value);
     },
 
     /**
@@ -330,18 +293,6 @@ cr.define('options', function() {
      */
     handleVideoUpdate_: function() {
       this.lastFrameTime_ = new Date().getTime();
-    },
-
-    /**
-     * Checks if camera is still live by comparing the timestamp of the last
-     * 'timeupdate' event with the current time.
-     * @private
-     */
-    checkCameraLive_: function() {
-      if (new Date().getTime() - this.lastFrameTime_ >
-          CAMERA_LIVENESS_CHECK_MS) {
-        this.cameraPresent = false;
-      }
     },
 
     /**

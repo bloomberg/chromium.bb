@@ -7,6 +7,7 @@
 #include "ash/audio/sounds.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -42,8 +43,10 @@ LocallyManagedUserCreationScreenHandler()
 
 LocallyManagedUserCreationScreenHandler::
     ~LocallyManagedUserCreationScreenHandler() {
-  if (delegate_)
+  if (delegate_) {
+    CameraPresenceNotifier::GetInstance()->RemoveObserver(delegate_);
     delegate_->OnActorDestroyed(this);
+  }
 }
 
 void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
@@ -187,15 +190,12 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
 
   AddCallback("supervisedUserPhotoTaken",
               &LocallyManagedUserCreationScreenHandler::HandlePhotoTaken);
-  AddCallback("supervisedUserPhotoTaken",
+  AddCallback("supervisedUserTakePhoto",
               &LocallyManagedUserCreationScreenHandler::HandleTakePhoto);
-  AddCallback("supervisedUserPhotoTaken",
+  AddCallback("supervisedUserDiscardPhoto",
               &LocallyManagedUserCreationScreenHandler::HandleDiscardPhoto);
   AddCallback("supervisedUserSelectImage",
               &LocallyManagedUserCreationScreenHandler::HandleSelectImage);
-  AddCallback("supervisedUserCheckCameraPresence",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleCheckCameraPresence);
   AddCallback("currentSupervisedUserPage",
               &LocallyManagedUserCreationScreenHandler::
                   HandleCurrentSupervisedUserPage);
@@ -227,10 +227,13 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 
   if (!delegate_)
     return;
-  delegate_->CheckCameraPresence();
+  CameraPresenceNotifier::GetInstance()->AddObserver(delegate_);
 }
 
-void LocallyManagedUserCreationScreenHandler::Hide() {}
+void LocallyManagedUserCreationScreenHandler::Hide() {
+  if (delegate_)
+    CameraPresenceNotifier::GetInstance()->RemoveObserver(delegate_);
+}
 
 void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
   CallJS("showIntroPage");
@@ -416,12 +419,6 @@ void LocallyManagedUserCreationScreenHandler::HandleTakePhoto() {
 
 void LocallyManagedUserCreationScreenHandler::HandleDiscardPhoto() {
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
-}
-
-void LocallyManagedUserCreationScreenHandler::HandleCheckCameraPresence() {
-  if (!delegate_)
-    return;
-  delegate_->CheckCameraPresence();
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleSelectImage(

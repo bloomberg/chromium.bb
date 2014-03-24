@@ -66,9 +66,6 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Handles 'discard-photo' button click.
   void HandleDiscardPhoto();
 
-  // Handles camera presence check request.
-  void HandleCheckCameraPresence();
-
   // Handles clicking on default user image.
   void HandleSelectImage(const std::string& image_url,
                          const std::string& image_type,

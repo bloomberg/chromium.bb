@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/camera_detector.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
@@ -76,9 +76,7 @@ const char kProfileDownloadReason[] = "Preferences";
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_url_(content::kAboutBlankURL),
-      previous_image_index_(User::kInvalidImageIndex),
-      weak_factory_(this),
-      was_camera_present_(false) {
+      previous_image_index_(User::kInvalidImageIndex) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
@@ -95,6 +93,7 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
 }
 
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
+  CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
   if (image_decoder_.get())
@@ -150,11 +149,11 @@ void ChangePictureOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("discardPhoto",
       base::Bind(&ChangePictureOptionsHandler::HandleDiscardPhoto,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("checkCameraPresence",
-      base::Bind(&ChangePictureOptionsHandler::HandleCheckCameraPresence,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onChangePicturePageShown",
       base::Bind(&ChangePictureOptionsHandler::HandlePageShown,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onChangePicturePageHidden",
+      base::Bind(&ChangePictureOptionsHandler::HandlePageHidden,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onChangePicturePageInitialized",
       base::Bind(&ChangePictureOptionsHandler::HandlePageInitialized,
@@ -244,12 +243,6 @@ void ChangePictureOptionsHandler::HandlePhotoTaken(
   image_decoder_->Start(task_runner);
 }
 
-void ChangePictureOptionsHandler::HandleCheckCameraPresence(
-    const base::ListValue* args) {
-  DCHECK(args->empty());
-  CheckCameraPresence();
-}
-
 void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
@@ -258,9 +251,14 @@ void ChangePictureOptionsHandler::HandlePageInitialized(
 
 void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
-  CheckCameraPresence();
   SendSelectedImage();
   UpdateProfileImage();
+  CameraPresenceNotifier::GetInstance()->AddObserver(this);
+}
+
+void ChangePictureOptionsHandler::HandlePageHidden(
+    const base::ListValue* args) {
+  CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
@@ -416,25 +414,16 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
   VLOG(1) << "Selected camera photo";
 }
 
-void ChangePictureOptionsHandler::CheckCameraPresence() {
-  CameraDetector::StartPresenceCheck(
-      base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
   base::FundamentalValue present_value(present);
+
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setCameraPresent",
                                    present_value);
 }
 
-void ChangePictureOptionsHandler::OnCameraPresenceCheckDone() {
-  bool is_camera_present = CameraDetector::camera_presence() ==
-                           CameraDetector::kCameraPresent;
-  if (is_camera_present != was_camera_present_) {
-    SetCameraPresent(is_camera_present);
-    was_camera_present_ = is_camera_present;
-  }
+void ChangePictureOptionsHandler::OnCameraPresenceCheckDone(
+    bool is_camera_present) {
+  SetCameraPresent(is_camera_present);
 }
 
 void ChangePictureOptionsHandler::Observe(

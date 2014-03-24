@@ -168,6 +168,8 @@
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/camera_detector.cc',
         'browser/chromeos/camera_detector.h',
+        'browser/chromeos/camera_presence_notifier.cc',
+        'browser/chromeos/camera_presence_notifier.h',
         'browser/chromeos/charger_replace/charger_link_dialog.cc',
         'browser/chromeos/charger_replace/charger_link_dialog.h',
         'browser/chromeos/charger_replace/charger_replacement_dialog.cc',

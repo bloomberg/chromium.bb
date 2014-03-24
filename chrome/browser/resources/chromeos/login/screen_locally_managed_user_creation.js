@@ -1460,7 +1460,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     handleTakePhoto_: function(e) {
       this.getScreenElement('image-grid').takePhoto();
-      chrome.send('takePhoto');
+      chrome.send('supervisedUserTakePhoto');
     },
 
     handlePhotoTaken_: function(e) {
@@ -1481,7 +1481,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     handleDiscardPhoto_: function(e) {
       var imageGrid = this.getScreenElement('image-grid');
       imageGrid.discardPhoto();
-      chrome.send('discardPhoto');
+      chrome.send('supervisedUserDiscardPhoto');
     },
 
     /**

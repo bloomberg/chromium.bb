@@ -99,7 +99,7 @@ class LocallyManagedUserCreationScreen
   // It should be removed by issue 251179.
 
   // LocallyManagedUserCreationScreenHandler::Delegate (image) implementation:
-  virtual void CheckCameraPresence() OVERRIDE;
+  virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
   virtual void OnPhotoTaken(const std::string& raw_data) OVERRIDE;
   virtual void OnImageSelected(const std::string& image_url,
                                const std::string& image_type) OVERRIDE;
@@ -111,7 +111,6 @@ class LocallyManagedUserCreationScreen
 
  private:
   void ApplyPicture();
-  void OnCameraPresenceCheckDone();
   void OnGetManagedUsers(const base::DictionaryValue* users);
 
   base::WeakPtrFactory<LocallyManagedUserCreationScreen> weak_factory_;
@@ -127,9 +126,6 @@ class LocallyManagedUserCreationScreen
   scoped_refptr<ImageDecoder> image_decoder_;
   bool apply_photo_after_decoding_;
   int selected_image_;
-
-  // True if camera was available last time.
-  bool was_camera_present_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };
