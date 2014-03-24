@@ -127,8 +127,9 @@ Timing TimingInput::convert(const Dictionary& timingInputDictionary)
     timingInputDictionary.get("iterations", iterationCount);
     setIterationCount(result, iterationCount);
 
-    double iterationDuration
-    if (timingInputDictionary.get("duration", iterationDuration)) {
+    v8::Local<v8::Value> iterationDurationValue;
+    if (timingInputDictionary.get("duration", iterationDurationValue)) {
+        double iterationDuration = iterationDurationValue->NumberValue();
         setIterationDuration(result, iterationDuration);
     }
 
