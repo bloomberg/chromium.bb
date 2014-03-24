@@ -45,11 +45,13 @@ const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
 
-// Copies properties from |entry_proto| to |properties|.
+// Copies properties from |entry_proto| to |properties|. |shared_with_me| is
+// given from the running profile.
 void FillDriveEntryPropertiesValue(
     const drive::ResourceEntry& entry_proto,
+    bool shared_with_me,
     api::file_browser_private::DriveEntryProperties* properties) {
-  properties->shared_with_me.reset(new bool(entry_proto.shared_with_me()));
+  properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
 
   if (!entry_proto.has_file_specific_info())
@@ -145,8 +147,9 @@ bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
 
   file_system->GetResourceEntry(
       file_path_,
-      base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
-                     OnGetFileInfo, this));
+      base::Bind(
+          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo,
+          this));
   return true;
 }
 
@@ -157,16 +160,73 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
     CompleteGetFileProperties(error);
     return;
   }
-
   DCHECK(entry);
+  owner_resource_entry_.swap(entry);
 
-  if (!g_browser_process->profile_manager()->IsValidProfile(
-          file_owner_profile_)) {
-    CompleteGetFileProperties(error);
+  if (GetProfile()->IsSameProfile(file_owner_profile_)) {
+    StartParseFileInfo(owner_resource_entry_->shared_with_me());
     return;
   }
 
-  FillDriveEntryPropertiesValue(*entry, properties_.get());
+  // If the running profile does not own the file, obtain the shared_with_me
+  // flag from the running profile's value.
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+    return;
+  }
+  file_system->GetPathFromResourceId(
+      owner_resource_entry_->resource_id(),
+      base::Bind(
+          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetRunningPath,
+          this));
+}
+
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetRunningPath(
+    drive::FileError error,
+    const base::FilePath& file_path) {
+  if (error != drive::FILE_ERROR_OK) {
+    // The running profile does not know the file.
+    StartParseFileInfo(false);
+    return;
+  }
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    // The drive is disable for the running profile.
+    StartParseFileInfo(false);
+    return;
+  }
+  file_system->GetResourceEntry(
+      file_path,
+      base::Bind(
+          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetShareInfo,
+          this));
+}
+
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetShareInfo(
+    drive::FileError error,
+    scoped_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK) {
+    CompleteGetFileProperties(error);
+    return;
+  }
+  DCHECK(entry);
+  StartParseFileInfo(entry->shared_with_me());
+}
+
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::StartParseFileInfo(
+    bool shared_with_me) {
+  if (!g_browser_process->profile_manager()->IsValidProfile(
+          file_owner_profile_)) {
+    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+    return;
+  }
+
+  FillDriveEntryPropertiesValue(
+      *owner_resource_entry_, shared_with_me, properties_.get());
 
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(file_owner_profile_);
@@ -180,16 +240,13 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
 
   // The properties meaningful for directories are already filled in
   // FillDriveEntryPropertiesValue().
-  if (entry.get() && !entry->has_file_specific_info()) {
-    CompleteGetFileProperties(error);
+  if (owner_resource_entry_->has_file_specific_info()) {
+    CompleteGetFileProperties(drive::FILE_ERROR_OK);
     return;
   }
 
-  // TODO(hirono): Update share_with_me property if the file and its properties
-  // come from non-running profile.
-
   const drive::FileSpecificInfo& file_specific_info =
-      entry->file_specific_info();
+      owner_resource_entry_->file_specific_info();
 
   // Get drive WebApps that can accept this file. We just need to extract the
   // doc icon for the drive app, which is set as default.

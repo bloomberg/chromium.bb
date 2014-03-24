@@ -96,6 +96,9 @@ class DummyFileSystem : public FileSystemInterface {
                              google_apis::drive::PermissionRole role,
                              const FileOperationCallback& callback) OVERRIDE {}
   virtual void Reset(const FileOperationCallback& callback) OVERRIDE {}
+  virtual void GetPathFromResourceId(const std::string& resource_id,
+                                     const GetFilePathCallback& callback)
+      OVERRIDE {}
 };
 
 }  // namespace drive

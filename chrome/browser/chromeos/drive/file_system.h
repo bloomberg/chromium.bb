@@ -160,6 +160,9 @@ class FileSystem : public FileSystemInterface,
                              google_apis::drive::PermissionRole role,
                              const FileOperationCallback& callback) OVERRIDE;
   virtual void Reset(const FileOperationCallback& callback) OVERRIDE;
+  virtual void GetPathFromResourceId(const std::string& resource_id,
+                                     const GetFilePathCallback& callback)
+      OVERRIDE;
 
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(

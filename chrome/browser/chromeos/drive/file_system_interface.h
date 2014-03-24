@@ -137,6 +137,10 @@ typedef base::Callback<void(FileError error,
 typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
+// Used to get file path.
+typedef base::Callback<void(FileError error, const base::FilePath& file_path)>
+    GetFilePathCallback;
+
 // The mode of opening a file.
 enum OpenMode {
   // Open the file if exists. If not, failed.
@@ -432,6 +436,10 @@ class FileSystemInterface {
 
   // Resets local data.
   virtual void Reset(const FileOperationCallback& callback) = 0;
+
+  // Finds a path of an entry (a file or a directory) by |resource_id|.
+  virtual void GetPathFromResourceId(const std::string& resource_id,
+                                     const GetFilePathCallback& callback) = 0;
 };
 
 }  // namespace drive

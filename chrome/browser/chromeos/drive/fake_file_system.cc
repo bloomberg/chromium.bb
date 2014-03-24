@@ -231,6 +231,12 @@ void FakeFileSystem::AddPermission(const base::FilePath& drive_file_path,
 void FakeFileSystem::Reset(const FileOperationCallback& callback) {
 }
 
+void FakeFileSystem::GetPathFromResourceId(
+    const std::string& resource_id,
+    const GetFilePathCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 // Implementation of GetFileContent.
 void FakeFileSystem::GetFileContentAfterGetResourceEntry(
     const GetFileContentInitializedCallback& initialized_callback,

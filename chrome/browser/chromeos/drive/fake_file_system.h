@@ -127,14 +127,11 @@ class FakeFileSystem : public FileSystemInterface {
                              google_apis::drive::PermissionRole role,
                              const FileOperationCallback& callback) OVERRIDE;
   virtual void Reset(const FileOperationCallback& callback) OVERRIDE;
+  virtual void GetPathFromResourceId(const std::string& resource_id,
+                                     const GetFilePathCallback& callback)
+      OVERRIDE;
 
  private:
-  // Helper of GetResourceEntryById.
-  void GetResourceEntryByIdAfterGetResourceEntry(
-      const GetResourceEntryCallback& callback,
-      google_apis::GDataErrorCode error_in,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
   // Helpers of GetFileContent.
   // How the method works:
   // 1) Gets ResourceEntry of the path.

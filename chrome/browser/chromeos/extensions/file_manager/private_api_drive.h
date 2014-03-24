@@ -47,6 +47,14 @@ class FileBrowserPrivateGetDriveEntryPropertiesFunction
   void OnGetFileInfo(drive::FileError error,
                      scoped_ptr<drive::ResourceEntry> entry);
 
+  void OnGetRunningPath(drive::FileError error,
+                        const base::FilePath& file_path);
+
+  void OnGetShareInfo(drive::FileError error,
+                      scoped_ptr<drive::ResourceEntry> entry);
+
+  void StartParseFileInfo(bool shared_with_me);
+
   void CacheStateReceived(bool success,
                           const drive::FileCacheEntry& cache_entry);
 
@@ -56,6 +64,7 @@ class FileBrowserPrivateGetDriveEntryPropertiesFunction
   Profile* file_owner_profile_;
   const scoped_ptr<extensions::api::file_browser_private::DriveEntryProperties>
       properties_;
+  scoped_ptr<drive::ResourceEntry> owner_resource_entry_;
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
