@@ -6578,9 +6578,19 @@ other types of suffix sets.
   <summary>Status code of the outcome of a GCM checkin request.</summary>
 </histogram>
 
+<histogram name="GCM.ConnectedViaProxy" enum="Boolean">
+  <owner>zea@chromium.org</owner>
+  <summary>Whether the GCM connection was made via a proxy or not.</summary>
+</histogram>
+
 <histogram name="GCM.ConnectionDisconnectErrorCode" enum="NetErrorCodes">
   <owner>zea@chromium.org</owner>
   <summary>Net error results from GCM disconnect events.</summary>
+</histogram>
+
+<histogram name="GCM.ConnectionEndpoint" enum="GCMEndpoints">
+  <owner>zea@chromium.org</owner>
+  <summary>Number of connections made to each specific MCS endpoint.</summary>
 </histogram>
 
 <histogram name="GCM.ConnectionFailureErrorCode" enum="NetErrorCodes">
@@ -6593,7 +6603,7 @@ other types of suffix sets.
   <summary>Reasons for GCM connection resets.</summary>
 </histogram>
 
-<histogram name="GCM.ConnectionSuccessRate">
+<histogram name="GCM.ConnectionSuccessRate" enum="BooleanSuccess">
   <owner>zea@chromium.org</owner>
   <summary>
     GCM connection success rate. Does not take into account login success. See
@@ -32672,6 +32682,11 @@ other types of suffix sets.
   <int value="1" label="Close command"/>
   <int value="2" label="Heartbeat failure"/>
   <int value="3" label="Socket failure"/>
+</enum>
+
+<enum name="GCMEndpoints" type="int">
+  <int value="0" label="mtalk.google.com:5228"/>
+  <int value="1" label="mtalk.google.com:443"/>
 </enum>
 
 <enum name="GCMInvalidationsIncomingMessageStatus" type="int">

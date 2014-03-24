@@ -290,9 +290,12 @@ void MCSProbe::Start() {
   file_thread_.Start();
   InitializeNetworkState();
   BuildNetworkSession();
+  std::vector<GURL> endpoints(1,
+                              GURL("https://" +
+                                   net::HostPortPair(server_host_,
+                                                     server_port_).ToString()));
   connection_factory_.reset(
-      new ConnectionFactoryImpl(GURL("https://" + net::HostPortPair(
-                                    server_host_, server_port_).ToString()),
+      new ConnectionFactoryImpl(endpoints,
                                 kDefaultBackoffPolicy,
                                 network_session_,
                                 &net_log_));
