@@ -64,17 +64,6 @@ def DeviceInfo(serial, options):
       return lambda_function(found[0])
     return 'Unknown'
 
-  if options.device_status_dashboard:
-    # Dashboard does not track install speed. Do not unnecessarily install.
-    install_speed = 'Unknown'
-  else:
-    install_output = GetCmdOutput(
-      ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT,
-       '--apk',
-       '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT
-      ])
-    install_speed = _GetData('(\d+) KB/s', install_output)
-
   ac_power = _GetData('AC powered: (\w+)', battery)
   battery_level = _GetData('level: (\d+)', battery)
   battery_temp = _GetData('temperature: (\d+)', battery,
@@ -89,7 +78,6 @@ def DeviceInfo(serial, options):
             '  Battery temp: %s' % battery_temp,
             '  IMEI slice: %s' % imei_slice,
             '  Wifi IP: %s' % device_adb.GetWifiIP(),
-            '  Install Speed: %s KB/s' % install_speed,
             '']
 
   errors = []
@@ -101,14 +89,8 @@ def DeviceInfo(serial, options):
       errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
     errors += ['Mantaray device not connected to AC power.']
-  # TODO(navabi): Insert warning once we have a better handle of what install
-  # speeds to expect. The following lines were causing too many alerts.
-  # if install_speed < 500:
-  #   errors += ['Device install speed too low. Do not use for testing.']
 
-  # Causing the device status check step fail for slow install speed or low
-  # battery currently is too disruptive to the bots (especially try bots).
-  # Turn off devices with low battery and the step does not fail.
+  # Turn off devices with low battery.
   if battery_level < 15:
     device_adb.EnableAdbRoot()
     device_adb.Shutdown()
@@ -365,8 +347,8 @@ def main():
 
   if False in fail_step_lst:
     # TODO(navabi): Build fails on device status check step if there exists any
-    # devices with critically low battery or install speed. Remove those devices
-    # from testing, allowing build to continue with good devices.
+    # devices with critically low battery. Remove those devices from testing,
+    # allowing build to continue with good devices.
     return 1
 
   if not devices:
