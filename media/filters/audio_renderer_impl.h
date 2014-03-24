@@ -179,6 +179,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
+  // Called by the AudioBufferStream when a splice buffer is demuxed.
+  void OnNewSpliceBuffer(base::TimeDelta);
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   scoped_ptr<AudioSplicer> splicer_;

@@ -29,9 +29,6 @@ static const int kMaxTimeDeltaInMilliseconds = 50;
 // in the source content. Unit is frames.
 static const int kMinGapSize = 2;
 
-// The number of milliseconds to crossfade before trimming when buffers overlap.
-static const int kCrossfadeDurationInMilliseconds = 5;
-
 // AudioBuffer::TrimStart() is not as accurate as the timestamp helper, so
 // manually adjust the duration and timestamp after trimming.
 static void AccurateTrimStart(int frames_to_trim,

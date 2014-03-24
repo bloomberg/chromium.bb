@@ -403,6 +403,11 @@ void DecoderStream<StreamType>::OnBufferReady(
     return;
   }
 
+  if (!splice_observer_cb_.is_null() && !buffer->end_of_stream() &&
+      buffer->splice_timestamp() != kNoTimestamp()) {
+    splice_observer_cb_.Run(buffer->splice_timestamp());
+  }
+
   DCHECK(status == DemuxerStream::kOk) << status;
   Decode(buffer);
 }

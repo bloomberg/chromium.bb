@@ -21,6 +21,8 @@
 
 namespace media {
 
+typedef StreamParser::BufferQueue BufferQueue;
+
 static const int kDefaultFramesPerSecond = 30;
 static const int kDefaultKeyframesPerSecond = 6;
 static const uint8 kDataA = 0x11;
@@ -29,7 +31,8 @@ static const int kDataSize = 1;
 
 class SourceBufferStreamTest : public testing::Test {
  protected:
-  SourceBufferStreamTest() {
+  SourceBufferStreamTest()
+      : accurate_durations_(false) {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
     stream_.reset(new SourceBufferStream(video_config_, log_cb()));
@@ -50,6 +53,22 @@ class SourceBufferStreamTest : public testing::Test {
     TextTrackConfig config(kTextSubtitles, "", "", "");
     stream_.reset(new SourceBufferStream(config, LogCB()));
     SetStreamInfo(2, 2);
+  }
+
+  void SetAudioStream() {
+    video_config_ = TestVideoConfig::Invalid();
+    accurate_durations_ = true;
+    AudioDecoderConfig config(kCodecVorbis,
+                              kSampleFormatPlanarF32,
+                              CHANNEL_LAYOUT_STEREO,
+                              1000,
+                              NULL,
+                              0,
+                              false);
+    stream_.reset(new SourceBufferStream(config, LogCB()));
+
+    // Equivalent to 2ms per frame.
+    SetStreamInfo(500, 500);
   }
 
   void NewSegmentAppend(int starting_position, int number_of_buffers) {
@@ -234,6 +253,7 @@ class SourceBufferStreamTest : public testing::Test {
     std::vector<std::string> timestamps;
     base::SplitString(expected, ' ', &timestamps);
     std::stringstream ss;
+    const SourceBufferStream::Type type = stream_->GetType();
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
       SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
@@ -241,10 +261,23 @@ class SourceBufferStreamTest : public testing::Test {
       if (i > 0)
         ss << " ";
 
-      if (timestamps[i] == "C") {
-        EXPECT_EQ(SourceBufferStream::kConfigChange, status);
-        stream_->GetCurrentVideoDecoderConfig();
-        ss << timestamps[i];
+      if (status == SourceBufferStream::kConfigChange) {
+        switch (type) {
+          case SourceBufferStream::kVideo:
+            stream_->GetCurrentVideoDecoderConfig();
+            break;
+          case SourceBufferStream::kAudio:
+            stream_->GetCurrentAudioDecoderConfig();
+            break;
+          case SourceBufferStream::kText:
+            stream_->GetCurrentTextTrackConfig();
+            break;
+        }
+
+        if (timestamps[i] == "C")
+          EXPECT_EQ(SourceBufferStream::kConfigChange, status);
+
+        ss << "C";
         continue;
       }
 
@@ -299,7 +332,7 @@ class SourceBufferStreamTest : public testing::Test {
 
     int keyframe_interval = frames_per_second_ / keyframes_per_second_;
 
-    SourceBufferStream::BufferQueue queue;
+    BufferQueue queue;
     for (int i = 0; i < number_of_buffers; i++) {
       int position = starting_position + i;
       bool is_keyframe = position % keyframe_interval == 0;
@@ -327,6 +360,8 @@ class SourceBufferStreamTest : public testing::Test {
         presentation_timestamp = timestamp - frame_duration_;
       }
       buffer->set_timestamp(presentation_timestamp);
+      if (accurate_durations_)
+        buffer->set_duration(frame_duration_);
 
       queue.push_back(buffer);
     }
@@ -349,8 +384,7 @@ class SourceBufferStreamTest : public testing::Test {
   // the splice frame.  If a timestamp within the preroll ends with C the config
   // id to use for that and subsequent preroll appends is incremented by one.
   // The config id for non-splice frame appends will not be affected.
-  SourceBufferStream::BufferQueue StringToBufferQueue(
-      const std::string& buffers_to_append) {
+  BufferQueue StringToBufferQueue(const std::string& buffers_to_append) {
     std::vector<std::string> timestamps;
     base::SplitString(buffers_to_append, ' ', &timestamps);
 
@@ -358,8 +392,8 @@ class SourceBufferStreamTest : public testing::Test {
 
     bool splice_frame = false;
     size_t splice_config_id = stream_->append_config_index_;
-    std::vector<scoped_refptr<StreamParserBuffer> > fade_out_preroll;
-    SourceBufferStream::BufferQueue buffers;
+    BufferQueue pre_splice_buffers;
+    BufferQueue buffers;
     for (size_t i = 0; i < timestamps.size(); i++) {
       bool is_keyframe = false;
       bool last_splice_frame = false;
@@ -400,25 +434,27 @@ class SourceBufferStreamTest : public testing::Test {
       base::TimeDelta timestamp =
           base::TimeDelta::FromMilliseconds(time_in_ms);
       buffer->set_timestamp(timestamp);
+      if (accurate_durations_)
+        buffer->set_duration(frame_duration_);
       buffer->SetDecodeTimestamp(timestamp);
 
       if (splice_frame) {
-        if (!fade_out_preroll.empty()) {
+        if (!pre_splice_buffers.empty()) {
           // Enforce strictly monotonically increasing timestamps.
           CHECK_GT(
               timestamp.InMicroseconds(),
-              fade_out_preroll.back()->GetDecodeTimestamp().InMicroseconds());
+              pre_splice_buffers.back()->GetDecodeTimestamp().InMicroseconds());
         }
         buffer->SetConfigId(splice_config_id);
-        fade_out_preroll.push_back(buffer);
+        pre_splice_buffers.push_back(buffer);
         continue;
       }
 
       if (last_splice_frame) {
-        // Forbid splice frames without preroll.
-        CHECK(!fade_out_preroll.empty());
-        buffer->SetFadeOutPreroll(fade_out_preroll);
-        fade_out_preroll.clear();
+        // Require at least one additional buffer for a splice.
+        CHECK(!pre_splice_buffers.empty());
+        buffer->ConvertToSpliceBuffer(pre_splice_buffers);
+        pre_splice_buffers.clear();
       }
 
       buffers.push_back(buffer);
@@ -431,8 +467,7 @@ class SourceBufferStreamTest : public testing::Test {
                      base::TimeDelta segment_start_timestamp,
                      bool one_by_one,
                      bool expect_success) {
-    SourceBufferStream::BufferQueue buffers =
-        StringToBufferQueue(buffers_to_append);
+    BufferQueue buffers = StringToBufferQueue(buffers_to_append);
 
     if (start_new_segment) {
       base::TimeDelta start_timestamp = segment_start_timestamp;
@@ -451,7 +486,7 @@ class SourceBufferStreamTest : public testing::Test {
 
     // Append each buffer one by one.
     for (size_t i = 0; i < buffers.size(); i++) {
-      SourceBufferStream::BufferQueue wrapper;
+      BufferQueue wrapper;
       wrapper.push_back(buffers[i]);
       EXPECT_TRUE(stream_->Append(wrapper));
     }
@@ -464,6 +499,10 @@ class SourceBufferStreamTest : public testing::Test {
   int frames_per_second_;
   int keyframes_per_second_;
   base::TimeDelta frame_duration_;
+  // TODO(dalecurtis): It's silly to have this, all tests should use accurate
+  // durations instead.  However, currently all tests are written with an
+  // expectation of 0 duration, so it's an involved change.
+  bool accurate_durations_;
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStreamTest);
 };
 
@@ -3579,6 +3618,57 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedBuffers("8 9 C");
   CheckVideoConfig(video_config_);
   CheckExpectedBuffers("10 20");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Basic) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
+  NewSegmentAppend("11K 13K 15K 17K");
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K C 11K 13K 15K 17K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_DoubleSpliceExactOverlap) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
+  NewSegmentAppend("10K 13K 15K 17K");
+
+  // Create a splice on top of the first splice.
+  NewSegmentAppend("10K");
+
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 13K C 10K 15K 17K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_DoubleSpliceEarlierOverlap) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
+  NewSegmentAppend("11K 13K 15K 17K");
+
+  // Create a splice before the first splice which would include it.
+  NewSegmentAppend("9K");
+
+  // TODO(dalecurtis/wolenetz): Technically 15K and 17K should be included here,
+  // but since the range merge algorithm doesn't use exact durations, they're
+  // currently dropped.
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 11K 13K C 9K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_DoubleSpliceLaterOverlap) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
+  NewSegmentAppend("10K 13K 15K 17K");
+
+  // Create a splice after the first splice which would include it.
+  NewSegmentAppend("11K");
+
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 13K 15K C 11K");
   CheckNoNextBuffer();
 }
 

@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_STREAM_PARSER_BUFFER_H_
 #define MEDIA_BASE_STREAM_PARSER_BUFFER_H_
 
+#include <deque>
+
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
@@ -21,6 +23,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   typedef StreamParser::TrackId TrackId;
 
   static scoped_refptr<StreamParserBuffer> CreateEOSBuffer();
+
   static scoped_refptr<StreamParserBuffer> CopyFrom(
       const uint8* data, int data_size, bool is_keyframe, Type type,
       TrackId track_id);
@@ -47,12 +50,17 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   // meaningless for EOS buffers.
   TrackId track_id() const { return track_id_; }
 
-  // Buffers to be exhausted before using the data in this DecoderBuffer.  Used
-  // to implement the Audio Splice Frame Algorithm per the MSE specification.
-  const std::vector<scoped_refptr<StreamParserBuffer> >& GetFadeOutPreroll()
-      const;
-  void SetFadeOutPreroll(
-      const std::vector<scoped_refptr<StreamParserBuffer> >& fade_out_preroll);
+  // Converts this buffer to a splice buffer.  |pre_splice_buffers| must not
+  // have any  EOS buffers and must not have any nested splice buffers.
+  //
+  // |pre_splice_buffers| will be deep copied and each copy's splice_timestamp()
+  // will be set to this buffer's splice_timestamp().  A copy of |this| will be
+  // added to the end of |splice_buffers_|.
+  //
+  // See the Audio Splice Frame Algorithm in the MSE specification for details.
+  typedef StreamParser::BufferQueue BufferQueue;
+  void ConvertToSpliceBuffer(const BufferQueue& pre_splice_buffers);
+  const BufferQueue& get_splice_buffers() const { return splice_buffers_; }
 
  private:
   StreamParserBuffer(const uint8* data, int data_size,
@@ -67,7 +75,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   Type type_;
   TrackId track_id_;
 
-  std::vector<scoped_refptr<StreamParserBuffer> > fade_out_preroll_;
+  BufferQueue splice_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamParserBuffer);
 };

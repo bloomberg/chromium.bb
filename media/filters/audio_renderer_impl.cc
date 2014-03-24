@@ -57,7 +57,10 @@ AudioRendererImpl::AudioRendererImpl(
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
       preroll_aborted_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  audio_buffer_stream_.set_splice_observer(base::Bind(
+      &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
+}
 
 AudioRendererImpl::~AudioRendererImpl() {
   // Stop() should have been called and |algorithm_| should have been destroyed.
@@ -709,6 +712,11 @@ void AudioRendererImpl::ChangeState_Locked(State new_state) {
   DVLOG(1) << __FUNCTION__ << " : " << state_ << " -> " << new_state;
   lock_.AssertAcquired();
   state_ = new_state;
+}
+
+void AudioRendererImpl::OnNewSpliceBuffer(base::TimeDelta splice_timestamp) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  splicer_->SetSpliceTimestamp(splice_timestamp);
 }
 
 }  // namespace media

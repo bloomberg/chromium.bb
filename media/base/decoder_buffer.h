@@ -130,6 +130,20 @@ class MEDIA_EXPORT DecoderBuffer
     return data_ == NULL;
   }
 
+  // Indicates this buffer is part of a splice around |splice_timestamp_|.
+  // Returns kNoTimestamp() if the buffer is not part of a splice.
+  base::TimeDelta splice_timestamp() const {
+    DCHECK(!end_of_stream());
+    return splice_timestamp_;
+  }
+
+  // When set to anything but kNoTimestamp() indicates this buffer is part of a
+  // splice around |splice_timestamp|.
+  void set_splice_timestamp(base::TimeDelta splice_timestamp) {
+    DCHECK(!end_of_stream());
+    splice_timestamp_ = splice_timestamp;
+  }
+
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();
 
@@ -153,6 +167,7 @@ class MEDIA_EXPORT DecoderBuffer
   scoped_ptr<uint8, base::AlignedFreeDeleter> side_data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
   base::TimeDelta discard_padding_;
+  base::TimeDelta splice_timestamp_;
 
   // Constructor helper method for memory allocations.
   void Initialize();

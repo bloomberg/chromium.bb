@@ -91,6 +91,13 @@ class MEDIA_EXPORT DecoderStream {
   // have been removed from AudioDecoder and plumbed elsewhere.
   Decoder* decoder() { return decoder_.get(); }
 
+  // Allows callers to register for notification of splice buffers from the
+  // demuxer.  I.e., DecoderBuffer::splice_timestamp() is not kNoTimestamp().
+  typedef base::Callback<void(base::TimeDelta)> SpliceObserverCB;
+  void set_splice_observer(const SpliceObserverCB& splice_observer) {
+    splice_observer_cb_ = splice_observer;
+  }
+
  private:
   enum State {
     STATE_UNINITIALIZED,
@@ -165,6 +172,8 @@ class MEDIA_EXPORT DecoderStream {
   // These two will be set by DecoderSelector::SelectDecoder().
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+
+  SpliceObserverCB splice_observer_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;

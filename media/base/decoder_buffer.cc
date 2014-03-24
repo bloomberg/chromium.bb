@@ -5,6 +5,7 @@
 #include "media/base/decoder_buffer.h"
 
 #include "base/logging.h"
+#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 
 namespace media {
@@ -43,6 +44,7 @@ void DecoderBuffer::Initialize() {
         base::AlignedAlloc(side_data_size_ + kPaddingSize, kAlignmentSize)));
     memset(side_data_.get() + side_data_size_, 0, kPaddingSize);
   }
+  splice_timestamp_ = kNoTimestamp();
 }
 
 // static

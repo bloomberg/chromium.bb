@@ -483,8 +483,7 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   // TODO(rileya) Remove this check once we properly support midstream audio
   // config changes.
   if (codec_context_.get() &&
-      (bytes_per_channel_ != config_.bytes_per_channel() ||
-       channel_layout_ != config_.channel_layout() ||
+      (channel_layout_ != config_.channel_layout() ||
        samples_per_second_ != config_.samples_per_second())) {
     DVLOG(1) << "Unsupported config change :";
     DVLOG(1) << "\tbytes_per_channel : " << bytes_per_channel_

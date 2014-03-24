@@ -23,6 +23,11 @@ class MEDIA_EXPORT AudioSplicer {
   explicit AudioSplicer(int samples_per_second);
   ~AudioSplicer();
 
+  enum {
+    // The number of ms to crossfade before trimming when buffers overlap.
+    kCrossfadeDurationInMilliseconds = 5,
+  };
+
   // Resets the splicer state by clearing the output buffers queue and resetting
   // the timestamp helper.
   void Reset();
