@@ -7,11 +7,10 @@
 #include <limits>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 
 using base::TimeTicks;
 
@@ -46,10 +45,8 @@ class SessionFileReader {
         buffer_(SessionBackend::kFileReadBufferSize, 0),
         buffer_position_(0),
         available_count_(0) {
-    file_.reset(new net::FileStream(NULL));
-    if (base::PathExists(path))
-      file_->OpenSync(path,
-                      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+    file_.reset(new base::File(
+        path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   }
   // Reads the contents of the file specified in the constructor, returning
   // true on success. It is up to the caller to free all SessionCommands
@@ -77,7 +74,7 @@ class SessionFileReader {
   std::string buffer_;
 
   // The file.
-  scoped_ptr<net::FileStream> file_;
+  scoped_ptr<base::File> file_;
 
   // Position in buffer_ of the data.
   size_t buffer_position_;
@@ -90,13 +87,13 @@ class SessionFileReader {
 
 bool SessionFileReader::Read(BaseSessionService::SessionType type,
                              std::vector<SessionCommand*>* commands) {
-  if (!file_->IsOpen())
+  if (!file_->IsValid())
     return false;
   FileHeader header;
   int read_count;
   TimeTicks start_time = TimeTicks::Now();
-  read_count = file_->ReadUntilComplete(reinterpret_cast<char*>(&header),
-                                        sizeof(header));
+  read_count = file_->ReadAtCurrentPos(reinterpret_cast<char*>(&header),
+                                       sizeof(header));
   if (read_count != sizeof(header) || header.signature != kFileSignature ||
       header.version != kFileCurrentVersion)
     return false;
@@ -174,8 +171,8 @@ bool SessionFileReader::FillBuffer() {
   buffer_position_ = 0;
   DCHECK(buffer_position_ + available_count_ < buffer_.size());
   int to_read = static_cast<int>(buffer_.size() - available_count_);
-  int read_count = file_->ReadUntilComplete(&(buffer_[available_count_]),
-                                            to_read);
+  int read_count = file_->ReadAtCurrentPos(&(buffer_[available_count_]),
+                                           to_read);
   if (read_count < 0) {
     errored_ = true;
     return false;
@@ -230,11 +227,11 @@ void SessionBackend::AppendCommands(
   // Make sure and check current_session_file_, if opening the file failed
   // current_session_file_ will be NULL.
   if ((reset_first && !empty_file_) || !current_session_file_.get() ||
-      !current_session_file_->IsOpen()) {
+      !current_session_file_->IsValid()) {
     ResetFile();
   }
   // Need to check current_session_file_ again, ResetFile may fail.
-  if (current_session_file_.get() && current_session_file_->IsOpen() &&
+  if (current_session_file_.get() && current_session_file_->IsValid() &&
       !AppendCommandsToFile(current_session_file_.get(), *commands)) {
     current_session_file_.reset(NULL);
   }
@@ -304,7 +301,7 @@ bool SessionBackend::ReadCurrentSessionCommandsImpl(
   return file_reader.Read(type_, commands);
 }
 
-bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
+bool SessionBackend::AppendCommandsToFile(base::File* file,
     const std::vector<SessionCommand*>& commands) {
   for (std::vector<SessionCommand*>::const_iterator i = commands.begin();
        i != commands.end(); ++i) {
@@ -315,22 +312,22 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
       UMA_HISTOGRAM_COUNTS("TabRestore.command_size", total_size);
     else
       UMA_HISTOGRAM_COUNTS("SessionRestore.command_size", total_size);
-    wrote = file->WriteSync(reinterpret_cast<const char*>(&total_size),
-                            sizeof(total_size));
+    wrote = file->WriteAtCurrentPos(reinterpret_cast<const char*>(&total_size),
+                                    sizeof(total_size));
     if (wrote != sizeof(total_size)) {
       NOTREACHED() << "error writing";
       return false;
     }
     id_type command_id = (*i)->id();
-    wrote = file->WriteSync(reinterpret_cast<char*>(&command_id),
-                            sizeof(command_id));
+    wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>(&command_id),
+                                    sizeof(command_id));
     if (wrote != sizeof(command_id)) {
       NOTREACHED() << "error writing";
       return false;
     }
     if (content_size > 0) {
-      wrote = file->WriteSync(reinterpret_cast<char*>((*i)->contents()),
-                              content_size);
+      wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>((*i)->contents()),
+                                      content_size);
       if (wrote != content_size) {
         NOTREACHED() << "error writing";
         return false;
@@ -339,7 +336,7 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
 #if defined(OS_CHROMEOS)
     // TODO(gspencer): Remove this once we find a better place to do it.
     // See issue http://crbug.com/245015
-    file->FlushSync();
+    file->Flush();
 #endif
   }
   return true;
@@ -362,7 +359,9 @@ void SessionBackend::ResetFile() {
     // from under us once we close it. If truncation fails, we'll try to
     // recreate.
     const int header_size = static_cast<int>(sizeof(FileHeader));
-    if (current_session_file_->Truncate(header_size) != header_size)
+    if (current_session_file_->Seek(
+            base::File::FROM_BEGIN, header_size) != header_size ||
+        !current_session_file_->SetLength(header_size))
       current_session_file_.reset(NULL);
   }
   if (!current_session_file_.get())
@@ -370,19 +369,19 @@ void SessionBackend::ResetFile() {
   empty_file_ = true;
 }
 
-net::FileStream* SessionBackend::OpenAndWriteHeader(
-    const base::FilePath& path) {
+base::File* SessionBackend::OpenAndWriteHeader(const base::FilePath& path) {
   DCHECK(!path.empty());
-  scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
-  if (file->OpenSync(path, base::PLATFORM_FILE_CREATE_ALWAYS |
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-      base::PLATFORM_FILE_EXCLUSIVE_READ) != net::OK)
+  scoped_ptr<base::File> file(new base::File(
+      path,
+      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+      base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_EXCLUSIVE_READ));
+  if (!file->IsValid())
     return NULL;
   FileHeader header;
   header.signature = kFileSignature;
   header.version = kFileCurrentVersion;
-  int wrote = file->WriteSync(reinterpret_cast<char*>(&header),
-                              sizeof(header));
+  int wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>(&header),
+                                      sizeof(header));
   if (wrote != sizeof(header))
     return NULL;
   return file.release();

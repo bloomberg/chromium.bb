@@ -13,8 +13,8 @@
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_command.h"
 
-namespace net {
-class FileStream;
+namespace base {
+class File;
 }
 
 // SessionBackend -------------------------------------------------------------
@@ -105,10 +105,10 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   // Opens the current file and writes the header. On success a handle to
   // the file is returned.
-  net::FileStream* OpenAndWriteHeader(const base::FilePath& path);
+  base::File* OpenAndWriteHeader(const base::FilePath& path);
 
   // Appends the specified commands to the specified file.
-  bool AppendCommandsToFile(net::FileStream* file,
+  bool AppendCommandsToFile(base::File* file,
                             const std::vector<SessionCommand*>& commands);
 
   const BaseSessionService::SessionType type_;
@@ -126,7 +126,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   bool last_session_valid_;
 
   // Handle to the target file.
-  scoped_ptr<net::FileStream> current_session_file_;
+  scoped_ptr<base::File> current_session_file_;
 
   // Whether we've inited. Remember, the constructor is run on the
   // Main thread, all others on the IO thread, hence lazy initialization.
