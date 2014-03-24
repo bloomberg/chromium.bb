@@ -16,8 +16,7 @@
 
 class MockKernelProxy : public nacl_io::KernelProxy {
  public:
-  MockKernelProxy();
-  virtual ~MockKernelProxy();
+  MockKernelProxy() {}
 
   MOCK_METHOD2(access, int(const char*, int));
   MOCK_METHOD1(chdir, int(const char*));

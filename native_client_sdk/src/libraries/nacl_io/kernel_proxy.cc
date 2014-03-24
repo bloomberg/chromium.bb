@@ -51,6 +51,7 @@ namespace nacl_io {
 
 
 KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
+                             exit_handler_(NULL),
                              signal_emitter_(new EventEmitter) {
    memset(&sigwinch_handler_, 0, sizeof(sigwinch_handler_));
    sigwinch_handler_.sa_handler = SIG_DFL;
@@ -141,6 +142,15 @@ bool KernelProxy::UnregisterFsType(const char* fs_type) {
 
   delete iter->second;
   factories_.erase(iter);
+  return true;
+}
+
+bool KernelProxy::RegisterExitHandler(nacl_io_exit_handler_t exit_handler,
+                                      void* user_data) {
+  if (exit_handler_ != NULL)
+    return false;
+  exit_handler_ = exit_handler;
+  exit_handler_user_data_ = user_data;
   return true;
 }
 
@@ -266,6 +276,11 @@ int KernelProxy::chdir(const char* path) {
     return -1;
   }
   return 0;
+}
+
+void KernelProxy::exit(int status) {
+  if (exit_handler_)
+    exit_handler_(status, exit_handler_user_data_);
 }
 
 char* KernelProxy::getcwd(char* buf, size_t size) {

@@ -12,6 +12,8 @@
 
 EXTERN_C_BEGIN
 
+typedef void (*nacl_io_exit_handler_t)(int status, void* user_data);
+
 /**
  * Initialize nacl_io.
  *
@@ -39,6 +41,9 @@ void nacl_io_init();
  *       pp::Module::Get()->get_browser_interface()
  */
 void nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface);
+
+int nacl_io_register_exit_handler(nacl_io_exit_handler_t exit_handler,
+                                  void* user_data);
 
 /**
  * Mount a new filesystem type.

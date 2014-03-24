@@ -109,6 +109,12 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
                               MessageHandler_t handler,
                               void* user_data);
 
+
+  // Perform exit handshake with JavaScript.
+  // This is called by _exit before the process is terminated to ensure
+  // that all messages sent prior to _exit arrive at the JavaScript side.
+  void ExitHandshake(int status);
+
  protected:
   typedef std::map<std::string, MessageHandler> MessageHandlerMap;
 
@@ -148,16 +154,23 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   // Called by Init to processes default and embed tag arguments prior to
   // launching the 'ppapi_main' thread.
   virtual bool ProcessProperties();
-
  private:
   static void* MainThreadThunk(void *start_info);
   ssize_t TtyOutputHandler(const char* buf, size_t count);
+  void MessageHandlerExit(const pp::Var& message);
   void MessageHandlerInput(const pp::Var& message);
   void MessageHandlerResize(const pp::Var& message);
   void HandleResize(int width, int height);
 
+  static void HandleExitStatic(int status, void* user_data);
+
   static ssize_t TtyOutputHandlerStatic(const char* buf, size_t count,
                                         void* user_data);
+
+  /// Handle exit confirmation message from JavaScript.
+  static void MessageHandlerExitStatic(const pp::Var& key,
+                                       const pp::Var& value,
+                                       void* user_data);
 
   /// Handle input message from JavaScript.  The value is
   /// expected to be of type string.
@@ -185,15 +198,20 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   const char* tty_prefix_;
   MessageHandlerMap message_handlers_;
 
-  // A message to Post to JavaScript instead of exiting, or NULL if exit()
-  // should be called instead.
-  char* exit_message_;
-
   PSMainFunc_t main_cb_;
 
   const PPB_Core* ppb_core_;
   const PPB_Var* ppb_var_;
   const PPB_View* ppb_view_;
+
+  // Condition variable and lock used to wait for exit confirmation from
+  // JavaScript.
+  pthread_cond_t exit_cond_;
+  pthread_mutex_t exit_lock_;
+
+  // A message to Post to JavaScript instead of exiting, or NULL if exit()
+  // should be called instead.
+  char* exit_message_;
 };
 
 #endif  // PPAPI_MAIN_PS_INSTANCE_H_

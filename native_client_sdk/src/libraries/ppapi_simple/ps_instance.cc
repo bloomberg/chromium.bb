@@ -60,21 +60,11 @@ struct StartInfo {
 void* PSInstance::MainThreadThunk(void *info) {
   s_InstanceObject->Trace("Got MainThreadThunk.\n");
   StartInfo* si = static_cast<StartInfo*>(info);
-  si->inst_->main_loop_ = new pp::MessageLoop(si->inst_);
-  si->inst_->main_loop_->AttachToCurrentThread();
+  PSInstance* instance = si->inst_;
+  instance->main_loop_ = new pp::MessageLoop(si->inst_);
+  instance->main_loop_->AttachToCurrentThread();
 
-  int ret = si->inst_->MainThread(si->argc_, si->argv_);
-
-  bool should_exit = si->inst_->exit_message_ == NULL;
-
-  if (si->inst_->exit_message_) {
-    // Send the exit message to JavaScript. Don't call exit(), so the message
-    // doesn't get dropped.
-    si->inst_->Log("Posting exit message to JavaScript.\n");
-    std::stringstream ss;
-    ss << si->inst_->exit_message_ << ":" << ret;
-    si->inst_->PostMessage(ss.str());
-  }
+  int ret = instance->MainThread(si->argc_, si->argv_);
 
   // Clean up StartInfo.
   for (uint32_t i = 0; i < si->argc_; i++) {
@@ -83,14 +73,32 @@ void* PSInstance::MainThreadThunk(void *info) {
   delete[] si->argv_;
   delete si;
 
-  if (should_exit) {
-    // Exit the entire process once the 'main' thread returns.
-    // The error code will be available to javascript via
-    // the exitcode parameter of the crash event.
-    exit(ret);
-  }
-
+  // Exit the entire process once the 'main' thread returns.
+  // The error code will be available to javascript via
+  // the exitcode parameter of the crash event.
+#ifdef __native_client__
+  exit(ret);
+#else
+  instance->ExitHandshake(ret);
+#endif
   return NULL;
+}
+
+void PSInstance::ExitHandshake(int status) {
+  if (exit_message_ == NULL)
+    return;
+
+  RegisterMessageHandler(exit_message_, MessageHandlerExitStatic, this);
+
+  // Send the exit message to JavaScript. Then wait
+  // for the reply/confirmation.
+  std::stringstream ss;
+  ss << exit_message_ << ":" << status;
+
+  pthread_mutex_lock(&exit_lock_);
+  PostMessage(ss.str());
+  pthread_cond_wait(&exit_cond_, &exit_lock_);
+  pthread_mutex_unlock(&exit_lock_);
 }
 
 // The default implementation supports running a 'C' main.
@@ -117,6 +125,10 @@ PSInstance::PSInstance(PP_Instance instance)
       tty_fd_(-1),
       tty_prefix_(NULL),
       exit_message_(NULL) {
+
+  pthread_mutex_init(&exit_lock_, NULL);
+  pthread_cond_init(&exit_cond_, NULL);
+
   // Set the single Instance object
   s_InstanceObject = this;
 
@@ -130,7 +142,9 @@ PSInstance::PSInstance(PP_Instance instance)
                      PP_INPUTEVENT_CLASS_TOUCH);
 }
 
-PSInstance::~PSInstance() {}
+PSInstance::~PSInstance() {
+  s_InstanceObject = NULL;
+}
 
 void PSInstance::SetMain(PSMainFunc_t main) {
   main_cb_ = main;
@@ -207,17 +221,18 @@ bool PSInstance::Init(uint32_t arg,
 // initialization macro, or via dynamically set embed attributes
 // through instance DidCreate.
 bool PSInstance::ProcessProperties() {
-  // Set default values
-  setenv("PS_STDIN", "/dev/stdin", 0);
-  setenv("PS_STDOUT", "/dev/stdout", 0);
-  setenv("PS_STDERR", "/dev/console3", 0);
-
   // Reset verbosity if passed in
   const char* verbosity = getenv("PS_VERBOSITY");
   if (verbosity) SetVerbosity(static_cast<Verbosity>(atoi(verbosity)));
 
   // Enable NaCl IO to map STDIN, STDOUT, and STDERR
   nacl_io_init_ppapi(PSGetInstanceId(), PSGetInterface);
+
+  // Set default values
+  setenv("PS_STDIN", "/dev/stdin", 0);
+  setenv("PS_STDOUT", "/dev/stdout", 0);
+  setenv("PS_STDERR", "/dev/console3", 0);
+
   int fd0 = open(getenv("PS_STDIN"), O_RDONLY);
   dup2(fd0, 0);
 
@@ -266,6 +281,11 @@ bool PSInstance::ProcessProperties() {
   }
 
   exit_message_ = getenv("PS_EXIT_MESSAGE");
+
+  // If PS_EXIT_MESSAGE is set in the envionment then we perform a handshake
+  // with JavaScript when program exits.
+  if (exit_message_ != NULL)
+    nacl_io_register_exit_handler(HandleExitStatic, this);
 
   // Set line buffering on stdout and stderr
 #if !defined(WIN32)
@@ -370,6 +390,13 @@ ssize_t PSInstance::TtyOutputHandler(const char* buf, size_t count) {
   return count;
 }
 
+void PSInstance::MessageHandlerExit(const pp::Var& message) {
+  assert(message.is_string());
+  pthread_mutex_lock(&exit_lock_);
+  pthread_cond_signal(&exit_cond_);
+  pthread_mutex_unlock(&exit_lock_);
+}
+
 void PSInstance::MessageHandlerInput(const pp::Var& message) {
   // Since our message may contain null characters, we can't send it as a
   // naked C string, so we package it up in this struct before sending it
@@ -387,7 +414,12 @@ void PSInstance::MessageHandlerInput(const pp::Var& message) {
   }
 }
 
-void PSInstance::HandleResize(int width, int height){
+void PSInstance::HandleExitStatic(int status, void* user_data) {
+  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  instance->ExitHandshake(status);
+}
+
+void PSInstance::HandleResize(int width, int height) {
   struct winsize size;
   memset(&size, 0, sizeof(size));
   size.ws_col = width;
@@ -410,6 +442,13 @@ ssize_t PSInstance::TtyOutputHandlerStatic(const char* buf,
                                            void* user_data) {
   PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
   return instance->TtyOutputHandler(buf, count);
+}
+
+void PSInstance::MessageHandlerExitStatic(const pp::Var& key,
+                                          const pp::Var& value,
+                                          void* user_data) {
+  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  instance->MessageHandlerExit(value);
 }
 
 void PSInstance::MessageHandlerInputStatic(const pp::Var& key,
@@ -459,7 +498,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   // If the message is a dictionary then see if it matches one
   // of the specific handlers, then call that handler rather than
   // queuing an event.
-  if (tty_fd_ >= 0 && event.is_dictionary()) {
+  if (event.is_dictionary()) {
     pp::VarDictionary dictionary(var);
     pp::VarArray keys = dictionary.GetKeys();
     if (keys.GetLength() == 1) {

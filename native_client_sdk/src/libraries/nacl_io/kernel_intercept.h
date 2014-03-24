@@ -21,6 +21,12 @@
 
 EXTERN_C_BEGIN
 
+#ifdef __cplusplus
+namespace nacl_io {
+class KernelProxy;
+}
+#endif
+
 struct fuse_operations;
 
 /*
@@ -54,12 +60,15 @@ int ki_init_ppapi(void* kernel_proxy,
  */
 int ki_init_interface(void* kernel_proxy, void* pepper_interface);
 
-int ki_register_fs_type(const char* fs_type, struct fuse_operations* fuse_ops);
-int ki_unregister_fs_type(const char* fs_type);
+#ifdef __cplusplus
+nacl_io::KernelProxy* ki_get_proxy();
+#endif
+
 int ki_is_initialized();
 void ki_uninit();
 
 int ki_chdir(const char* path);
+void ki_exit(int status);
 char* ki_getcwd(char* buf, size_t size);
 char* ki_getwd(char* buf);
 int ki_dup(int oldfd);

@@ -10,6 +10,7 @@
 
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/pepper_interface.h"
@@ -81,14 +82,6 @@ int ki_init_interface(void* kp, void* pepper_interface) {
   return 0;
 }
 
-int ki_register_fs_type(const char* fs_type, struct fuse_operations* fuse_ops) {
-  return s_state.kp->RegisterFsType(fs_type, fuse_ops);
-}
-
-int ki_unregister_fs_type(const char* fs_type) {
-  return s_state.kp->UnregisterFsType(fs_type);
-}
-
 int ki_is_initialized() {
   return s_state.kp != NULL;
 }
@@ -112,9 +105,20 @@ void ki_uninit() {
     delete delete_kp;
 }
 
+nacl_io::KernelProxy* ki_get_proxy() {
+  return s_state.kp;
+}
+
 int ki_chdir(const char* path) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->chdir(path);
+}
+
+void ki_exit(int status) {
+  if (ki_is_initialized())
+    s_state.kp->exit(status);
+
+  _real_exit(status);
 }
 
 char* ki_getcwd(char* buf, size_t size) {

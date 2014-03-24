@@ -12,6 +12,7 @@
 #include "nacl_io/fs_factory.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_object.h"
+#include "nacl_io/nacl_io.h"
 #include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
@@ -55,6 +56,9 @@ class KernelProxy : protected KernelObject {
   bool RegisterFsType(const char* fs_type, fuse_operations* fuse_ops);
   bool UnregisterFsType(const char* fs_type);
 
+  bool RegisterExitHandler(nacl_io_exit_handler_t exit_handler,
+                           void* user_data);
+
   virtual int pipe(int pipefds[2]);
 
   // NaCl-only function to read resources specified in the NMF file.
@@ -65,6 +69,8 @@ class KernelProxy : protected KernelObject {
   virtual int close(int fd);
   virtual int dup(int fd);
   virtual int dup2(int fd, int newfd);
+
+  virtual void exit(int status);
 
   // Path related System calls handled by KernelProxy (not filesystem-specific)
   virtual int chdir(const char* path);
@@ -207,6 +213,8 @@ class KernelProxy : protected KernelObject {
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
   struct sigaction sigwinch_handler_;
+  nacl_io_exit_handler_t exit_handler_;
+  void* exit_handler_user_data_;
 #ifdef PROVIDES_SOCKET_API
   HostResolver host_resolver_;
 #endif

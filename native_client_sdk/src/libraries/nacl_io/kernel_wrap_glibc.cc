@@ -127,10 +127,11 @@ EXTERN_C_BEGIN
   OP(chdir); \
   OP(close); \
   OP(dup); \
-  OP(dup2);  \
+  OP(dup2); \
+  OP(exit); \
   OP(fstat); \
-  OP(getcwd);  \
-  OP(getdents);  \
+  OP(getcwd); \
+  OP(getdents); \
   OP(mkdir); \
   OP(open); \
   OP(poll);\
@@ -146,7 +147,7 @@ EXTERN_C_BEGIN
 
 EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
 
-int WRAP(chdir) (const char* pathname) {
+int WRAP(chdir)(const char* pathname) {
   return (ki_chdir(pathname)) ? errno : 0;
 }
 
@@ -161,6 +162,10 @@ int WRAP(dup)(int fd, int* newfd) NOTHROW {
 
 int WRAP(dup2)(int fd, int newfd) NOTHROW {
   return (ki_dup2(fd, newfd) < 0) ? errno : 0;
+}
+
+void WRAP(exit)(int status) {
+  ki_exit(status);
 }
 
 int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
@@ -299,6 +304,11 @@ static void assign_real_pointers() {
 int _real_close(int fd) {
   CHECK_REAL(close);
   return REAL(close)(fd);
+}
+
+void _real_exit(int status) {
+  CHECK_REAL(exit);
+  REAL(exit)(status);
 }
 
 int _real_fstat(int fd, struct stat* buf) {

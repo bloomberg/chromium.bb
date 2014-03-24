@@ -47,6 +47,7 @@ EXTERN_C_BEGIN
 
 extern void __libnacl_irt_dev_filename_init(void);
 
+extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
 extern struct nacl_irt_dev_fdio __libnacl_irt_dev_fdio;
 extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
@@ -54,6 +55,7 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
 
 // Create function pointers to the REAL implementation
 #define EXPAND_SYMBOL_LIST_OPERATION(OP) \
+  OP(basic, exit); \
   OP(fdio, close); \
   OP(fdio, dup); \
   OP(fdio, dup2); \
@@ -101,6 +103,10 @@ int WRAP(dup)(int fd, int* newfd) {
 int WRAP(dup2)(int fd, int newfd) {
   newfd = ki_dup2(fd, newfd);
   return (newfd < 0) ? errno : 0;
+}
+
+void WRAP(exit)(int status) {
+  ki_exit(status);
 }
 
 int WRAP(read)(int fd, void* buf, size_t count, size_t* nread) {
@@ -259,6 +265,11 @@ static void assign_real_pointers() {
 int _real_close(int fd) {
   CHECK_REAL(close);
   return REAL(close)(fd);
+}
+
+void _real_exit(int status) {
+  CHECK_REAL(exit);
+  REAL(exit)(status);
 }
 
 int _real_fstat(int fd, struct stat* buf) {

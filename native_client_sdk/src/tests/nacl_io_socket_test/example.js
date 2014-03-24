@@ -63,6 +63,9 @@ function handleMessage(event) {
   var cmdFunctionName = cmd + 'Command';
   var cmdFunction = window[cmdFunctionName];
 
+  if (cmd == 'testend')
+    event.srcElement.postMessage({'testend' : ''});
+
   if (typeof(cmdFunction) !== 'function') {
     console.log('Unknown command: ' + cmd);
     console.log('  message: ' + msg);

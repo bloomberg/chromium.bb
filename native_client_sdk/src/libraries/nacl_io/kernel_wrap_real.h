@@ -12,6 +12,7 @@
 EXTERN_C_BEGIN
 
 int _real_close(int fd);
+void _real_exit(int status);
 int _real_fstat(int fd, struct stat *buf);
 int _real_getdents(int fd, void* nacl_buf, size_t nacl_count, size_t *nread);
 int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset);

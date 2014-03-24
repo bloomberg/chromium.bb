@@ -47,7 +47,6 @@
         'mem_fs_node_test.cc',
         'mock_fs.cc',
         'mock_fs.h',
-        'mock_kernel_proxy.cc',
         'mock_kernel_proxy.h',
         'mock_node.cc',
         'mock_node.h',

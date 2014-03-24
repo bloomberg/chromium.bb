@@ -321,7 +321,7 @@ void KernelProxyFuseTest::SetUp() {
   ASSERT_EQ(0, ki_init(&kp_));
 
   // Register a fuse filesystem.
-  ki_register_fs_type("flatfs", &g_fuse_operations);
+  nacl_io_register_fs_type("flatfs", &g_fuse_operations);
 
   // Unmount the passthrough FS and mount our fuse filesystem.
   EXPECT_EQ(0, kp_.umount("/"));
@@ -329,7 +329,7 @@ void KernelProxyFuseTest::SetUp() {
 }
 
 void KernelProxyFuseTest::TearDown() {
-  ki_unregister_fs_type("flatfs");
+  nacl_io_unregister_fs_type("flatfs");
   ki_uninit();
 }
 
