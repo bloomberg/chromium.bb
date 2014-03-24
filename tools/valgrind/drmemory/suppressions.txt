@@ -445,10 +445,6 @@ skia.dll!D1G_NoBounder_RectClip
 skia.dll!SkDraw::drawPosText
 skia.dll!SkBitmapDevice::drawPosText
 skia.dll!SkCanvas::drawPosText
-gfx.dll!gfx::internal::SkiaTextRenderer::DrawPosText
-gfx.dll!gfx::RenderTextWin::DrawVisualText
-gfx.dll!gfx::RenderText::Draw
-gfx.dll!gfx::Canvas::DrawStringRectWithShadows
 
 HANDLE LEAK
 name=http://crbug.com/346993
