@@ -473,7 +473,8 @@ bool ContentDecryptorDelegate::DeinitializeDecoder(
     Decryptor::StreamType stream_type) {
   CancelDecode(stream_type);
 
-  natural_size_ = gfx::Size();
+  if (stream_type == Decryptor::kVideo)
+    natural_size_ = gfx::Size();
 
   // TODO(tomfinegan): Add decoder deinitialize request tracking, and get
   // stream type from media stack.
