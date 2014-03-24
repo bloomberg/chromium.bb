@@ -328,9 +328,6 @@ crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailu
 # Crash due to lost_context_callback_proxy_. When this is fixed, this test shoud be re-marked as ImageOnlyFailure with due to crbug.com/231357.
 crbug.com/344237 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure Crash ]
 
-# Will pass once http://crrev.com/26442004 lands
-crbug.com/285976 http/tests/serviceworker/registration.html [ NeedsManualRebaseline ]
-
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
 crbug.com/316147 [ Win ] http/tests/history/back-to-post.html [ Failure Pass ]
@@ -923,7 +920,6 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-prop
 
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
-crbug.com/352703 [ Win Debug ] virtual/serviceworker/http/tests/serviceworker/registration.html [ Crash Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352801 [ Mavericks ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
@@ -950,10 +946,6 @@ crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
 crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failure ]
-
-# Disabled until Chromium side lands
-crbug.com/350103 virtual/serviceworker/http/tests/serviceworker/indexeddb.html [ Skip ]
-crbug.com/350103 virtual/serviceworker/http/tests/serviceworker/postmessage.html [ Skip ]
 
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
