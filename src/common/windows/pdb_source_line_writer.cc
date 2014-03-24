@@ -48,6 +48,53 @@
 #define UNDNAME_NO_ECSU 0x8000  // Suppresses enum/class/struct/union.
 #endif  // UNDNAME_NO_ECSU
 
+/*
+ * Not defined in WinNT.h for some reason. Definitions taken from:
+ * http://uninformed.org/index.cgi?v=4&a=1&p=13
+ *
+ */
+typedef unsigned char UBYTE;
+#define UNW_FLAG_EHANDLER  0x01
+#define UNW_FLAG_UHANDLER  0x02
+#define UNW_FLAG_CHAININFO 0x04
+
+union UnwindCode {
+  struct {
+    UBYTE offset_in_prolog;
+    UBYTE unwind_operation_code : 4;
+    UBYTE operation_info        : 4;
+  };
+  USHORT frame_offset;
+};
+
+enum UnwindOperationCodes {
+  UWOP_PUSH_NONVOL = 0, /* info == register number */
+  UWOP_ALLOC_LARGE,     /* no info, alloc size in next 2 slots */
+  UWOP_ALLOC_SMALL,     /* info == size of allocation / 8 - 1 */
+  UWOP_SET_FPREG,       /* no info, FP = RSP + UNWIND_INFO.FPRegOffset*16 */
+  UWOP_SAVE_NONVOL,     /* info == register number, offset in next slot */
+  UWOP_SAVE_NONVOL_FAR, /* info == register number, offset in next 2 slots */
+  //XXX: these are missing from MSDN!
+  // See: http://www.osronline.com/ddkx/kmarch/64bitamd_4rs7.htm
+  UWOP_SAVE_XMM,
+  UWOP_SAVE_XMM_FAR,
+  UWOP_SAVE_XMM128,     /* info == XMM reg number, offset in next slot */
+  UWOP_SAVE_XMM128_FAR, /* info == XMM reg number, offset in next 2 slots */
+  UWOP_PUSH_MACHFRAME   /* info == 0: no error-code, 1: error-code */
+};
+
+// See: http://msdn.microsoft.com/en-us/library/ddssxxy8.aspx
+// Note: some fields removed as we don't use them.
+struct UnwindInfo {
+  UBYTE version       : 3;
+  UBYTE flags         : 5;
+  UBYTE size_of_prolog;
+  UBYTE count_of_codes;
+  UBYTE frame_register : 4;
+  UBYTE frame_offset   : 4;
+  UnwindCode unwind_code[1];
+};
+
 namespace google_breakpad {
 
 namespace {
@@ -383,7 +430,7 @@ bool PDBSourceLineWriter::PrintFunctions() {
   return true;
 }
 
-bool PDBSourceLineWriter::PrintFrameData() {
+bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
   // It would be nice if it were possible to output frame data alongside the
   // associated function, as is done with line numbers, but the DIA API
   // doesn't make it possible to get the frame data in that way.
@@ -536,6 +583,149 @@ bool PDBSourceLineWriter::PrintFrameData() {
   }
 
   return true;
+}
+
+bool PDBSourceLineWriter::PrintFrameDataUsingEXE() {
+  if (code_file_.empty() && !FindPEFile()) {
+    fprintf(stderr, "Couldn't locate EXE or DLL file.\n");
+    return false;
+  }
+
+  // Convert wchar to native charset because ImageLoad only takes
+  // a PSTR as input.
+  string code_file;
+  if (!WindowsStringUtils::safe_wcstombs(code_file_, &code_file)) {
+    return false;
+  }
+
+  AutoImage img(ImageLoad((PSTR)code_file.c_str(), NULL));
+  if (!img) {
+    fprintf(stderr, "Failed to load %s\n", code_file.c_str());
+    return false;
+  }
+  PIMAGE_OPTIONAL_HEADER64 optional_header =
+    &(reinterpret_cast<PIMAGE_NT_HEADERS64>(img->FileHeader))->OptionalHeader;
+  if (optional_header->Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+    fprintf(stderr, "Not a PE32+ image\n");
+    return false;
+  }
+
+  // Read Exception Directory
+  DWORD exception_rva = optional_header->
+    DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress;
+  DWORD exception_size = optional_header->
+    DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION].Size;
+  PIMAGE_RUNTIME_FUNCTION_ENTRY funcs =
+    static_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>(
+        ImageRvaToVa(img->FileHeader,
+                     img->MappedAddress,
+                     exception_rva,
+                     &img->LastRvaSection));
+  for (DWORD i = 0; i < exception_size / sizeof(*funcs); i++) {
+    DWORD unwind_rva = funcs[i].UnwindInfoAddress;
+    // handle chaining
+    while (unwind_rva & 0x1) {
+      unwind_rva ^= 0x1;
+      PIMAGE_RUNTIME_FUNCTION_ENTRY chained_func =
+        static_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>(
+            ImageRvaToVa(img->FileHeader,
+                         img->MappedAddress,
+                         unwind_rva,
+                         &img->LastRvaSection));
+      unwind_rva = chained_func->UnwindInfoAddress;
+    }
+
+    UnwindInfo *unwind_info = static_cast<UnwindInfo *>(
+        ImageRvaToVa(img->FileHeader,
+                     img->MappedAddress,
+                     unwind_rva,
+                     &img->LastRvaSection));
+
+    DWORD stack_size = 8; // minimal stack size is 8 for RIP
+    DWORD rip_offset = 8;
+    do {
+      for (UBYTE c = 0; c < unwind_info->count_of_codes; c++) {
+        UnwindCode *unwind_code = &unwind_info->unwind_code[c];
+        switch (unwind_code->unwind_operation_code) {
+          case UWOP_PUSH_NONVOL: {
+            stack_size += 8;
+            break;
+          }
+          case UWOP_ALLOC_LARGE: {
+            if (unwind_code->operation_info == 0) {
+              c++;
+              if (c < unwind_info->count_of_codes)
+                stack_size += (unwind_code + 1)->frame_offset * 8;
+            } else {
+              c += 2;
+              if (c < unwind_info->count_of_codes)
+                stack_size += (unwind_code + 1)->frame_offset |
+                              ((unwind_code + 2)->frame_offset << 16);
+            }
+            break;
+          }
+          case UWOP_ALLOC_SMALL: {
+            stack_size += unwind_code->operation_info * 8 + 8;
+            break;
+          }
+          case UWOP_SET_FPREG:
+          case UWOP_SAVE_XMM:
+          case UWOP_SAVE_XMM_FAR:
+            break;
+          case UWOP_SAVE_NONVOL:
+          case UWOP_SAVE_XMM128: {
+            c++; //skip slot with offset
+            break;
+          }
+          case UWOP_SAVE_NONVOL_FAR:
+          case UWOP_SAVE_XMM128_FAR: {
+            c += 2; //skip 2 slots with offset
+            break;
+          }
+          case UWOP_PUSH_MACHFRAME: {
+            if (unwind_code->operation_info) {
+              stack_size += 88;
+            } else {
+              stack_size += 80;
+            }
+            rip_offset += 80;
+            break;
+          }
+        }
+      }
+      if (unwind_info->flags & UNW_FLAG_CHAININFO) {
+        PIMAGE_RUNTIME_FUNCTION_ENTRY chained_func =
+          reinterpret_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>(
+              (unwind_info->unwind_code +
+              ((unwind_info->count_of_codes + 1) & ~1)));
+
+        unwind_info = static_cast<UnwindInfo *>(
+            ImageRvaToVa(img->FileHeader,
+                         img->MappedAddress,
+                         chained_func->UnwindInfoAddress,
+                         &img->LastRvaSection));
+      } else {
+        unwind_info = NULL;
+      }
+    } while (unwind_info);
+    fprintf(output_, "STACK CFI INIT %x %x .cfa: $rsp .ra: .cfa %d - ^\n",
+            funcs[i].BeginAddress,
+            funcs[i].EndAddress - funcs[i].BeginAddress, rip_offset);
+    fprintf(output_, "STACK CFI %x .cfa: $rsp %d +\n",
+            funcs[i].BeginAddress, stack_size);
+  }
+
+  return true;
+}
+
+bool PDBSourceLineWriter::PrintFrameData() {
+  PDBModuleInfo info;
+  if (GetModuleInfo(&info) && info.cpu == L"x86_64") {
+    return PrintFrameDataUsingEXE();
+  } else {
+    return PrintFrameDataUsingPDB();
+  }
+  return false;
 }
 
 bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {

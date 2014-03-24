@@ -148,6 +148,16 @@ class PDBSourceLineWriter {
   bool PrintSourceFiles();
 
   // Outputs all of the frame information necessary to construct stack
+  // backtraces in the absence of frame pointers. For x86 data stored in
+  // .pdb files. Returns true on success.
+  bool PrintFrameDataUsingPDB();
+
+  // Outputs all of the frame information necessary to construct stack
+  // backtraces in the absence of frame pointers. For x64 data stored in
+  // .exe, .dll files. Returns true on success.
+  bool PrintFrameDataUsingEXE();
+
+  // Outputs all of the frame information necessary to construct stack
   // backtraces in the absence of frame pointers.  Returns true on success.
   bool PrintFrameData();
 

@@ -52,6 +52,13 @@
         '<(DEPTH)/client/windows/unittests/testing.gyp:gtest',
         'dump_syms',
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'AdditionalDependencies': [
+            'shell32.lib',
+          ],
+        },
+      },
     },
   ],
 }

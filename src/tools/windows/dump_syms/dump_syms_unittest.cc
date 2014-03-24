@@ -57,6 +57,8 @@ const wchar_t* kRootNames[] = {
   L"omap_stretched",
   // A PDB file with OMAP data for an image that has been basic block reordered.
   L"omap_reorder_bbs",  
+  // A 64bit PDB file with no OMAP data.
+  L"dump_syms_regtest64",
 };
 
 void TrimLastComponent(const std::wstring& path,
