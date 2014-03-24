@@ -19,6 +19,7 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
           NULL,
           profile,
           new ManagedUserSigninManagerWrapper(
+              profile,
               SigninManagerFactory::GetForProfile(profile)),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           browser_sync::MANUAL_START) {}

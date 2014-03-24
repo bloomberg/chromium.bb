@@ -68,7 +68,8 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
 }
 
 SigninManager::SigninManager(SigninClient* client)
-    : prohibit_signout_(false),
+    : profile_(NULL),
+      prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
       signin_host_id_(ChildProcessHost::kInvalidUniqueID),
@@ -275,6 +276,7 @@ void SigninManager::SignOut() {
 }
 
 void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
+  profile_ = profile;
   SigninManagerBase::Initialize(profile, local_state);
 
   // local_state can be null during unit tests.
@@ -298,7 +300,7 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   }
 
   InitTokenService();
-  account_id_helper_.reset(new SigninAccountIdHelper(this));
+  account_id_helper_.reset(new SigninAccountIdHelper(profile_, this));
 }
 
 void SigninManager::Shutdown() {

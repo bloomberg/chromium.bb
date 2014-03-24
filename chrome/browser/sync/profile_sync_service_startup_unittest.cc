@@ -96,7 +96,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         new ProfileSyncComponentsFactoryMock(),
         profile,
         new ManagedUserSigninManagerWrapper(
-            SigninManagerFactory::GetForProfile(profile)),
+            profile, SigninManagerFactory::GetForProfile(profile)),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         browser_sync::MANUAL_START);
   }
@@ -163,7 +163,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     return new ProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         profile,
-        new ManagedUserSigninManagerWrapper(signin),
+        new ManagedUserSigninManagerWrapper(profile, signin),
         oauth2_token_service,
         browser_sync::AUTO_START);
   }

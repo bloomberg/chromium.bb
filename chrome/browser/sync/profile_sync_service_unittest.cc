@@ -128,7 +128,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset(new ProfileSyncService(
         components_factory_,
         profile_.get(),
-        new ManagedUserSigninManagerWrapper(signin),
+        new ManagedUserSigninManagerWrapper(profile_.get(), signin),
         oauth2_token_service,
         behavior));
   }

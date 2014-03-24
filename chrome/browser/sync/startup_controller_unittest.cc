@@ -35,7 +35,7 @@ class FakeManagedUserSigninManagerWrapper
     : public ManagedUserSigninManagerWrapper {
  public:
   FakeManagedUserSigninManagerWrapper()
-      : ManagedUserSigninManagerWrapper(NULL) {}
+      : ManagedUserSigninManagerWrapper(NULL, NULL) {}
   virtual std::string GetEffectiveUsername() const OVERRIDE {
     return account_;
   }

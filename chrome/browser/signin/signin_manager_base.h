@@ -136,17 +136,11 @@ class SigninManagerBase : public KeyedService {
   void RemoveSigninDiagnosticsObserver(
       signin_internals_util::SigninDiagnosticsObserver* observer);
 
-  Profile* profile() { return profile_; }
-
  protected:
   // Used by subclass to clear authenticated_username_ instead of using
   // SetAuthenticatedUsername, which enforces special preconditions due
   // to the fact that it is part of the public API and called by clients.
   void clear_authenticated_username();
-
-  // Pointer to parent profile (protected so FakeSigninManager can access
-  // it).
-  Profile* profile_;
 
   // List of observers to notify on signin events.
   // Makes sure list is empty on destruction.
@@ -163,6 +157,8 @@ class SigninManagerBase : public KeyedService {
  private:
   friend class FakeSigninManagerBase;
   friend class FakeSigninManager;
+
+  Profile* profile_;
 
   // Actual username after successful authentication.
   std::string authenticated_username_;

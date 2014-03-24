@@ -150,6 +150,10 @@ class SigninManager : public SigninManagerBase,
   void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
 
  protected:
+  // Pointer to parent profile (protected so FakeSigninManager can access
+  // it).
+  Profile* profile_;
+
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
 

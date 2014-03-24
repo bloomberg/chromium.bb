@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 
+class Profile;
 class SigninManagerBase;
 
 // Some chrome cloud services support managed users as well as normally
@@ -18,7 +19,8 @@ class SigninManagerBase;
 // information when appropriate.
 class ManagedUserSigninManagerWrapper {
  public:
-  explicit ManagedUserSigninManagerWrapper(SigninManagerBase* original);
+  ManagedUserSigninManagerWrapper(Profile* profile,
+                                  SigninManagerBase* original);
   virtual ~ManagedUserSigninManagerWrapper();
 
   virtual std::string GetEffectiveUsername() const;
@@ -27,6 +29,7 @@ class ManagedUserSigninManagerWrapper {
   SigninManagerBase* GetOriginal();
 
  private:
+  Profile* profile_;
   SigninManagerBase* original_;
   DISALLOW_COPY_AND_ASSIGN(ManagedUserSigninManagerWrapper);
 };

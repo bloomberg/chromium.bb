@@ -114,7 +114,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       new ProfileSyncComponentsFactoryImpl(profile,
                                            CommandLine::ForCurrentProcess()),
       profile,
-      new ManagedUserSigninManagerWrapper(signin),
+      new ManagedUserSigninManagerWrapper(profile, signin),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       behavior);
 

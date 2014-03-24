@@ -129,7 +129,7 @@ class Waiter {
 
 class FakeSigninManager : public SigninManagerBase {
  public:
-  explicit FakeSigninManager(Profile* profile) {
+  explicit FakeSigninManager(Profile* profile) : profile_(profile) {
     Initialize(profile, NULL);
   }
 
@@ -146,9 +146,12 @@ class FakeSigninManager : public SigninManagerBase {
   void SignOut() {
     std::string username = GetAuthenticatedUsername();
     clear_authenticated_username();
-    profile()->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+    profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
     FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
   }
+
+ private:
+  Profile* profile_;
 };
 
 }  // namespace

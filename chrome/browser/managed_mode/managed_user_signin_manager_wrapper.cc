@@ -12,8 +12,9 @@
 #endif
 
 ManagedUserSigninManagerWrapper::ManagedUserSigninManagerWrapper(
-    SigninManagerBase* original) : original_(original) {
-}
+    Profile* profile,
+    SigninManagerBase* original)
+    : profile_(profile), original_(original) {}
 
 ManagedUserSigninManagerWrapper::~ManagedUserSigninManagerWrapper() {
 }
@@ -23,7 +24,7 @@ SigninManagerBase* ManagedUserSigninManagerWrapper::GetOriginal() {
 }
 
 std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
-  if (original_->profile()->IsManaged()) {
+  if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)
     DCHECK_EQ(std::string(), original_->GetAuthenticatedUsername());
     return managed_users::kManagedUserPseudoEmail;
@@ -36,7 +37,7 @@ std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
 }
 
 std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
-  if (original_->profile()->IsManaged()) {
+  if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)
     return managed_users::kManagedUserPseudoEmail;
 #else

@@ -16,7 +16,8 @@ class SigninAccountIdHelper::GaiaIdFetcher
     : public OAuth2TokenService::Consumer,
       public gaia::GaiaOAuthClient::Delegate {
  public:
-  GaiaIdFetcher(SigninManagerBase* signin_manager,
+  GaiaIdFetcher(Profile* profile,
+                SigninManagerBase* signin_manager,
                 SigninAccountIdHelper* signin_account_id_helper);
   virtual ~GaiaIdFetcher();
 
@@ -35,6 +36,7 @@ class SigninAccountIdHelper::GaiaIdFetcher
  private:
   void Start();
 
+  Profile* profile_;
   SigninManagerBase* signin_manager_;
   SigninAccountIdHelper* signin_account_id_helper_;
 
@@ -45,9 +47,11 @@ class SigninAccountIdHelper::GaiaIdFetcher
 };
 
 SigninAccountIdHelper::GaiaIdFetcher::GaiaIdFetcher(
+    Profile* profile,
     SigninManagerBase* signin_manager,
     SigninAccountIdHelper* signin_account_id_helper)
     : OAuth2TokenService::Consumer("gaia_id_fetcher"),
+      profile_(profile),
       signin_manager_(signin_manager),
       signin_account_id_helper_(signin_account_id_helper) {
   Start();
@@ -57,8 +61,7 @@ SigninAccountIdHelper::GaiaIdFetcher::~GaiaIdFetcher() {}
 
 void SigninAccountIdHelper::GaiaIdFetcher::Start() {
   ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          signin_manager_->profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert("https://www.googleapis.com/auth/userinfo.profile");
   login_token_request_ = service->StartRequest(
@@ -72,8 +75,7 @@ void SigninAccountIdHelper::GaiaIdFetcher::OnGetTokenSuccess(
   DCHECK_EQ(request, login_token_request_.get());
 
   gaia_oauth_client_.reset(
-      new gaia::GaiaOAuthClient(
-          signin_manager_->profile()->GetRequestContext()));
+      new gaia::GaiaOAuthClient(profile_->GetRequestContext()));
 
   const int kMaxGetUserIdRetries = 3;
   gaia_oauth_client_->GetUserId(access_token, kMaxGetUserIdRetries, this);
@@ -101,41 +103,39 @@ void SigninAccountIdHelper::GaiaIdFetcher::OnNetworkError(
   VLOG(1) << "OnNetworkError " << response_code;
 }
 
-SigninAccountIdHelper::SigninAccountIdHelper(SigninManagerBase* signin_manager)
-    : signin_manager_(signin_manager) {
+SigninAccountIdHelper::SigninAccountIdHelper(Profile* profile,
+                                             SigninManagerBase* signin_manager)
+    : profile_(profile), signin_manager_(signin_manager) {
   DCHECK(signin_manager_);
   signin_manager_->AddObserver(this);
   ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          signin_manager_->profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   std::string primary_email = signin_manager_->GetAuthenticatedAccountId();
   if (!primary_email.empty() &&
       token_service->RefreshTokenIsAvailable(primary_email) &&
       !disable_for_test_) {
-    id_fetcher_.reset(new GaiaIdFetcher(signin_manager_, this));
+    id_fetcher_.reset(new GaiaIdFetcher(profile_, signin_manager_, this));
   }
   token_service->AddObserver(this);
 }
 
 SigninAccountIdHelper::~SigninAccountIdHelper() {
   signin_manager_->RemoveObserver(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(signin_manager_->profile())->
-      RemoveObserver(this);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+      ->RemoveObserver(this);
 }
 
 void SigninAccountIdHelper::GoogleSignedOut(const std::string& username) {
-  signin_manager_->profile()->GetPrefs()->ClearPref(
-      prefs::kGoogleServicesUserAccountId);
+  profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
 }
 
 void SigninAccountIdHelper::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (account_id == signin_manager_->GetAuthenticatedAccountId()) {
     std::string current_gaia_id =
-      signin_manager_->profile()->GetPrefs()->
-          GetString(prefs::kGoogleServicesUserAccountId);
+        profile_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
     if (current_gaia_id.empty() && !disable_for_test_) {
-      id_fetcher_.reset(new GaiaIdFetcher(signin_manager_, this));
+      id_fetcher_.reset(new GaiaIdFetcher(profile_, signin_manager_, this));
     }
   }
 }
@@ -143,8 +143,8 @@ void SigninAccountIdHelper::OnRefreshTokenAvailable(
 void SigninAccountIdHelper::OnPrimaryAccountIdFetched(
     const std::string& gaia_id) {
   if (!gaia_id.empty()) {
-    signin_manager_->profile()->GetPrefs()->SetString(
-        prefs::kGoogleServicesUserAccountId, gaia_id);
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
+                                    gaia_id);
   }
 }
 
