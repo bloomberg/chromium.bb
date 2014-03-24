@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
 
 #include <string>
-#include "base/android/jni_helper.h"
-#include "base/android/scoped_java_ref.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "components/auto_login_parser/auto_login_parser.h"
@@ -38,15 +36,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   // successfully added.
   static bool Create(content::WebContents* web_contents, const Params& params);
 
-  // These methods are defined in downstream code.
-  bool AttachAccount(JavaObjectWeakGlobalRef weak_java_translate_helper);
-  void LoginSuccess(JNIEnv* env, jobject obj, jstring result);
-  void LoginFailed(JNIEnv* env, jobject obj);
-  void LoginDismiss(JNIEnv* env, jobject obj);
-
-  // Register Android JNI bindings.
-  static bool Register(JNIEnv* env);
-
  protected:
   AutoLoginInfoBarDelegate(const Params& params, Profile* profile);
   virtual ~AutoLoginInfoBarDelegate();
@@ -63,10 +52,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     HISTOGRAM_BOUNDING_VALUE
   };
 
-  const std::string& realm() const { return params_.header.realm; }
-  const std::string& account() const { return params_.header.account; }
-  const std::string& args() const { return params_.header.args; }
-
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
@@ -82,8 +67,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   void RecordHistogramAction(Actions action);
 
-  JavaObjectWeakGlobalRef weak_java_auto_login_delegate_;
-  std::string user_;
   const Params params_;
 
   Profile* profile_;
@@ -94,4 +77,4 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_

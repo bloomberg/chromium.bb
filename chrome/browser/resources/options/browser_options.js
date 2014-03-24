@@ -915,6 +915,7 @@ cr.define('options', function() {
         $('sync-general').insertBefore($('sync-status').nextSibling,
                                        $('enable-auto-login-checkbox'));
       }
+      $('enable-auto-login-checkbox').hidden = !syncData.autoLoginVisible;
     },
 
     /**
