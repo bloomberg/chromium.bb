@@ -1768,10 +1768,6 @@ void FrameView::scrollbarExistenceDidChange()
     if (!useOverlayScrollbars && needsLayout())
         layout();
 
-    // FIXME: Rather than updating this state synchronously, we should set some dirty bits
-    // and clean them out when updating compositing.
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
     if (renderView() && renderView()->usesCompositing()) {
         renderView()->compositor()->frameViewScrollbarsExistenceDidChange();
 
