@@ -10,6 +10,7 @@ define([
   runWithMessagePipe(testReadAndWriteMessage);
   runWithDataPipe(testNop);
   runWithDataPipe(testReadAndWriteDataPipe);
+  runWithDataPipe(testBeginWriteDataPipe);
   this.result = "PASS";
 
   function runWithMessagePipe(test) {
@@ -74,6 +75,32 @@ define([
 
     expect(write.result).toBe(core.RESULT_OK);
     expect(write.numBytes).toBe(42);
+
+    var read = core.readData(
+      pipe.consumerHandle, core.READ_DATA_FLAG_ALL_OR_NONE);
+
+    expect(read.result).toBe(core.RESULT_OK);
+    expect(read.buffer.byteLength).toBe(42);
+
+    var memory = new Uint8Array(read.buffer);
+    for (var i = 0; i < memory.length; ++i)
+      expect(memory[i]).toBe((i * i) & 0xFF);
+  }
+
+  function testBeginWriteDataPipe(pipe) {
+    var write = core.beginWriteData(
+      pipe.producerHandle, 42,
+      core.WRITE_DATA_FLAG_ALL_OR_NONE);
+
+    expect(write.result).toBe(core.RESULT_OK);
+    expect(write.buffer.byteLength).toBeGreaterThan(41);
+
+    var memory = new Uint8Array(write.buffer);
+    for (var i = 0; i < 42; ++i)
+      memory[i] = i * i;
+
+    var result = core.endWriteData(pipe.producerHandle, 42);
+    expect(result).toBe(core.RESULT_OK);
 
     var read = core.readData(
       pipe.consumerHandle, core.READ_DATA_FLAG_ALL_OR_NONE);

@@ -133,6 +133,26 @@ gin::Dictionary WriteData(const gin::Arguments& args,
   return dictionary;
 }
 
+gin::Dictionary BeginWriteData(const gin::Arguments& args,
+                          MojoHandle handle,
+                          uint32_t num_bytes,
+                          MojoWriteDataFlags flags) {
+  void* data = NULL;
+  MojoResult result = MojoBeginWriteData(handle, &data, &num_bytes, flags);
+  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  dictionary.Set("result", result);
+  if (result == MOJO_RESULT_OK) {
+    v8::Handle<v8::Value> buffer =
+        v8::ArrayBuffer::New(args.isolate(), data, num_bytes);
+    dictionary.Set("buffer", buffer);
+  }
+  return dictionary;
+}
+
+MojoResult EndWriteData(MojoHandle handle, uint32_t num_bytes_written) {
+  return MojoEndWriteData(handle, num_bytes_written);
+}
+
 gin::Dictionary ReadData(const gin::Arguments& args,
                          MojoHandle handle,
                          MojoReadDataFlags flags) {
@@ -182,6 +202,8 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetMethod("readMessage", ReadMessage)
         .SetMethod("createDataPipe", CreateDataPipe)
         .SetMethod("writeData", WriteData)
+        .SetMethod("beginWriteData", BeginWriteData)
+        .SetMethod("endWriteData", EndWriteData)
         .SetMethod("readData", ReadData)
 
         // TODO(vtl): Change name of "kInvalidHandle", now that there's no such
