@@ -10055,6 +10055,57 @@ other types of suffix sets.
   <summary>The time to generate an NTLM HTTP authentication token.</summary>
 </histogram>
 
+<histogram name="Net.AutoReload.CountAtStop">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Number of times auto-reload has been attempted before auto-reload stopped
+    without succeeding, either because the stop button was pressed or because
+    the renderer was destroyed.
+  </summary>
+</histogram>
+
+<histogram name="Net.AutoReload.CountAtSuccess">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Number of times auto-reload had to attempt to reload a page before
+    succeeding.
+  </summary>
+</histogram>
+
+<histogram name="Net.AutoReload.ErrorAtFirstSuccess" enum="NetErrorCodes">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Original error code that started an auto-reload which then succeeded on the
+    first attempt.
+  </summary>
+</histogram>
+
+<histogram name="Net.AutoReload.ErrorAtStop" enum="NetErrorCodes">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Error code, if any, when auto-reload stopped without succeeding, either
+    because the stop button was pressed or because the renderer was destroyed.
+  </summary>
+</histogram>
+
+<histogram name="Net.AutoReload.ErrorAtSuccess" enum="NetErrorCodes">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Original error code that started an auto-reload which then eventually
+    succeeded.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertCommonNameFallback" enum="BooleanCommonNameMatch">
   <owner>rsleevi@chromium.org</owner>
   <summary>
