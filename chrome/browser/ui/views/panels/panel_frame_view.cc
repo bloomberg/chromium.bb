@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -578,10 +579,18 @@ bool PanelFrameView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool PanelFrameView::OnMouseDragged(const ui::MouseEvent& event) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Converting the mouse location to screen coordinates returns an incorrect
+  // location while the panel is moving. See crbug.com/353393 for more details.
+  // TODO(pkotwicz): Fix conversion to screen coordinates
+  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Point mouse_location = screen->GetCursorScreenPoint();
+#else
   // |event.location| is in the view's coordinate system. Convert it to the
   // screen coordinate system.
   gfx::Point mouse_location = event.location();
   views::View::ConvertPointToScreen(this, &mouse_location);
+#endif
 
   if (panel_view_->OnTitlebarMouseDragged(mouse_location))
     return true;
