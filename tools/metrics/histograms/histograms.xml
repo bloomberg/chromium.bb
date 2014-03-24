@@ -1736,6 +1736,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.Notification.Status"
+    enum="CaptivePortalNotificationStatus">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Count of displayed and not displayed due to errors notifications about
+    captive portal.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Notification.UserAction"
+    enum="CaptivePortalNotificationUserAction">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Count of clicked, closed and ignored captive portal notifications.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.CastButtonShown" enum="BooleanEnabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -29237,6 +29254,20 @@ other types of suffix sets.
   <int value="1" label="webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+</enum>
+
+<enum name="CaptivePortalNotificationStatus" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="OFFLINE"/>
+  <int value="2" label="ONLINE"/>
+  <int value="3" label="PORTAL"/>
+  <int value="4" label="PROXY_AUTH_REQUIRED"/>
+</enum>
+
+<enum name="CaptivePortalNotificationUserAction" type="int">
+  <int value="0" label="CLICKED"/>
+  <int value="1" label="CLOSED"/>
+  <int value="2" label="IGNORED"/>
 </enum>
 
 <enum name="CapturePixelFormat" type="int">
