@@ -42,17 +42,6 @@
       function doTest() {
         var container = document.getElementById("container");
         container.scrollTop = container.scrollHeight;
-
-        // FIXME: this is a hack to work around repainting issues with squashing.
-        // See http://crbug.com/351790
-        var scrolledCards = document.getElementsByClassName('scrolled');
-        for (var i = 0; i < scrolledCards.length; i++) {
-          scrolledCards[i].style.backgroundColor = '#ccc';
-        }
-        window.internals.forceCompositingUpdate(document);
-        for (var i = 0; i < scrolledCards.length; i++) {
-          scrolledCards[i].style.backgroundColor = 'green';
-        }
       }
 
       window.onload = doTest;
