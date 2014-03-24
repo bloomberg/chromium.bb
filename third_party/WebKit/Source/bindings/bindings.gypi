@@ -184,7 +184,6 @@
             'v8/custom/V8FileReaderCustom.cpp',
             'v8/custom/V8Float32ArrayCustom.h',
             'v8/custom/V8Float64ArrayCustom.h',
-            'v8/custom/V8FormDataCustom.cpp',
             'v8/custom/V8GeolocationCustom.cpp',
             'v8/custom/V8HTMLAllCollectionCustom.cpp',
             'v8/custom/V8HTMLCanvasElementCustom.cpp',
