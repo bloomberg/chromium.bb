@@ -35,6 +35,7 @@
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
 

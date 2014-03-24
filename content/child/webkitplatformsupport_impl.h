@@ -13,8 +13,8 @@
 namespace content {
 class WebCryptoImpl;
 
-// This is a specialization of WebKitPlatformSupportImpl that implements the
-// embedder functions in terms of ContentClient.
+// This is a specialization of WebKitPlatformSupportChildImpl that implements
+// the embedder functions in terms of ContentClient.
 class CONTENT_EXPORT WebKitPlatformSupportImpl
     : NON_EXPORTED_BASE(public WebKitPlatformSupportChildImpl) {
  public:
@@ -28,8 +28,7 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
       int resource_id,
       ui::ScaleFactor scale_factor) OVERRIDE;
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
-      OVERRIDE;
+      const RequestInfo& request_info) OVERRIDE;
   virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate) OVERRIDE;

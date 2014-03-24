@@ -44,6 +44,7 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "webkit/child/resource_loader_bridge.h"
 
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
@@ -369,7 +370,7 @@ MessageRouter* ChildThread::GetRouter() {
 }
 
 webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+    const RequestInfo& request_info) {
   return resource_dispatcher()->CreateBridge(request_info);
 }
 

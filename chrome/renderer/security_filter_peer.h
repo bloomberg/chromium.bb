@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 
 #include "webkit/child/resource_loader_bridge.h"
+#include "webkit/common/resource_type.h"
 
 // The SecurityFilterPeer is a proxy to a
 // webkit_glue::ResourceLoaderBridge::Peer instance.  It is used to pre-process

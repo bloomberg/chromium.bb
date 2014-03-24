@@ -27,6 +27,7 @@ namespace content {
 
 class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
+struct RequestInfo;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -129,7 +130,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   // Creates a ResourceLoaderBridge.
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) = 0;
+      const RequestInfo& request_info) = 0;
   // Creates a WebSocketStreamHandleBridge.
   virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,

@@ -24,7 +24,7 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
   }
 
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo&) OVERRIDE {
+      const RequestInfo&) OVERRIDE {
     return NULL;
   }
 

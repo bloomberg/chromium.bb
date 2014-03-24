@@ -16,7 +16,6 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-#include "webkit/child/resource_loader_bridge.h"
 
 namespace base {
 class MessageLoop;
@@ -35,6 +34,10 @@ namespace blink {
 class WebFrame;
 }  // namespace blink
 
+namespace webkit_glue {
+class ResourceLoaderBridge;
+}  // namespace webkit_glue
+
 namespace content {
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
@@ -48,6 +51,7 @@ class ResourceDispatcher;
 class SocketStreamDispatcher;
 class ThreadSafeSender;
 class WebSocketDispatcher;
+struct RequestInfo;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
@@ -74,7 +78,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // Creates a ResourceLoaderBridge.
   // Tests can override this method if they want a custom loading behavior.
   virtual webkit_glue::ResourceLoaderBridge* CreateBridge(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info);
+      const RequestInfo& request_info);
 
   // Allocates a block of shared memory of the given size and
   // maps in into the address space. Returns NULL of failure.

@@ -70,8 +70,7 @@ class TestWebKitPlatformSupport
       int resource_id,
       ui::ScaleFactor scale_factor) OVERRIDE;
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
-     OVERRIDE;
+      const RequestInfo& request_info) OVERRIDE;
   virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate) OVERRIDE;

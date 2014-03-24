@@ -30,7 +30,7 @@ base::StringPiece WebKitPlatformSupportImpl::GetDataResource(
 
 webkit_glue::ResourceLoaderBridge*
 WebKitPlatformSupportImpl::CreateResourceLoader(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+    const RequestInfo& request_info) {
   return ChildThread::current()->CreateBridge(request_info);
 }
 

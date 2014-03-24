@@ -13,6 +13,7 @@
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/common/resource_request_body.h"
@@ -97,7 +98,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       copy_stream_data_(copy_stream_data),
       data_offset_(0),
       pending_failure_notification_(false) {
-  webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
+  RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
   request_info.first_party_for_cookies = first_party_for_cookies;

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
+#include "content/child/request_info.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -377,7 +378,7 @@ void WebURLLoaderImpl::Context::Start(
   // TODO(brettw) this should take parameter encoding into account when
   // creating the GURLs.
 
-  ResourceLoaderBridge::RequestInfo request_info;
+  RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
   request_info.first_party_for_cookies = request.firstPartyForCookies();

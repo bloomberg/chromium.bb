@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/request_info.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
@@ -69,7 +70,7 @@ static int MakeRequestID() {
 class IPCResourceLoaderBridge : public ResourceLoaderBridge {
  public:
   IPCResourceLoaderBridge(ResourceDispatcher* dispatcher,
-      const ResourceLoaderBridge::RequestInfo& request_info);
+                          const RequestInfo& request_info);
   virtual ~IPCResourceLoaderBridge();
 
   // ResourceLoaderBridge
@@ -105,7 +106,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
 IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     ResourceDispatcher* dispatcher,
-    const ResourceLoaderBridge::RequestInfo& request_info)
+    const RequestInfo& request_info)
     : peer_(NULL),
       dispatcher_(dispatcher),
       request_id_(-1),
@@ -700,7 +701,7 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
 }
 
 ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
-    const ResourceLoaderBridge::RequestInfo& request_info) {
+    const RequestInfo& request_info) {
   return new IPCResourceLoaderBridge(this, request_info);
 }
 

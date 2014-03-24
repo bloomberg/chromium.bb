@@ -234,7 +234,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
 
 webkit_glue::ResourceLoaderBridge*
 TestWebKitPlatformSupport::CreateResourceLoader(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+    const RequestInfo& request_info) {
   NOTREACHED();
   return NULL;
 }
