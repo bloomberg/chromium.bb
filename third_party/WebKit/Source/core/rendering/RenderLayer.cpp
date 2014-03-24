@@ -1752,14 +1752,19 @@ RenderLayer* RenderLayer::scrollParent() const
         return m_ancestorDependentPropertyCache->scrollParent();
 
     RenderLayer* scrollParent = ancestorCompositedScrollingLayer();
-    if (!scrollParent || scrollParent->stackingNode()->isStackingContainer())
+    if (!scrollParent || scrollParent->stackingNode()->isStackingContainer()) {
+        if (m_ancestorDependentPropertyCache)
+            m_ancestorDependentPropertyCache->setScrollParent(0);
         return 0;
+    }
 
     // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
     // be composited due to an overflow scrolling parent, so we don't need to.
     for (RenderLayer* ancestor = parent(); ancestor && ancestor != scrollParent; ancestor = ancestor->parent()) {
-        if (ancestor->stackingNode()->isStackingContainer())
-            return 0;
+        if (ancestor->stackingNode()->isStackingContainer()) {
+            scrollParent = 0;
+            break;
+        }
         if (!isInCompositingUpdate())
             continue;
         if (AncestorDependentPropertyCache* ancestorCache = ancestor->m_ancestorDependentPropertyCache.get()) {
