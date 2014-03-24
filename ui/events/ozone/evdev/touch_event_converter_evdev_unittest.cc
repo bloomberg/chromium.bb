@@ -79,7 +79,7 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
   int fds[2];
 
   if (pipe(fds))
-    NOTREACHED() << "failed pipe(): " << strerror(errno);
+    PLOG(FATAL) << "failed pipe";
 
   DCHECK(SetNonBlocking(fds[0]) == 0)
       << "SetNonBlocking for pipe fd[0] failed, errno: " << errno;

@@ -131,7 +131,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
           altered_slots_.set(current_slot_);
           break;
         default:
-          NOTREACHED() << "invalid code for EV_ABS: " << input.code;
+          NOTIMPLEMENTED() << "invalid code for EV_ABS: " << input.code;
       }
     } else if (input.type == EV_SYN) {
       switch (input.code) {
@@ -163,7 +163,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
         case SYN_MT_REPORT:
         case SYN_CONFIG:
         case SYN_DROPPED:
-          NOTREACHED() << "invalid code for EV_SYN: " << input.code;
+          NOTIMPLEMENTED() << "invalid code for EV_SYN: " << input.code;
           break;
       }
     } else if (input.type == EV_KEY) {
@@ -171,10 +171,10 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
         case BTN_TOUCH:
           break;
         default:
-          NOTREACHED() << "invalid code for EV_KEY: " << input.code;
+          NOTIMPLEMENTED() << "invalid code for EV_KEY: " << input.code;
       }
     } else {
-      NOTREACHED() << "invalid type: " << input.type;
+      NOTIMPLEMENTED() << "invalid type: " << input.type;
     }
   }
 }
