@@ -344,7 +344,7 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
     case blink::WebAXEventMenuListItemSelected:
       return ui::AX_EVENT_MENU_LIST_ITEM_SELECTED;
     case blink::WebAXEventMenuListValueChanged:
-      return ui::AX_EVENT_MENU_LIST_VALUE_CHANGED;
+        return ui::AX_EVENT_MENU_LIST_VALUE_CHANGED;
     case blink::WebAXEventRowCollapsed:
       return ui::AX_EVENT_ROW_COLLAPSED;
     case blink::WebAXEventRowCountChanged:

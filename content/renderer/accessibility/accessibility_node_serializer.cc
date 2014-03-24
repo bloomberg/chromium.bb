@@ -75,6 +75,17 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
   return std::string();
 }
 
+void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
+                                       WebVector<WebAXObject> objects,
+                                       ui::AXNodeData* dst) {
+  std::vector<int32> ids;
+  for(size_t i = 0; i < objects.size(); i++)
+    ids.push_back(objects[i].axID());
+  if (ids.size() > 0)
+    dst->AddIntListAttribute(attr, ids);
+}
+
+
 }  // Anonymous namespace
 
 void SerializeAccessibilityNode(
@@ -158,6 +169,11 @@ void SerializeAccessibilityNode(
     dst->AddIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
                          src.titleUIElement().axID());
   }
+  if (!src.ariaActiveDescendant().isDetached()) {
+    dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
+                         src.ariaActiveDescendant().axID());
+  }
+
   if (!src.url().isEmpty())
     dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().spec());
 
@@ -409,16 +425,40 @@ void SerializeAccessibilityNode(
   // parent is the row, the row adds it as a child, and the column adds it
   // as an indirect child.
   int child_count = src.childCount();
+  std::vector<int32> indirect_child_ids;
   for (int i = 0; i < child_count; ++i) {
     WebAXObject child = src.childAt(i);
-    std::vector<int32> indirect_child_ids;
     if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
       indirect_child_ids.push_back(child.axID());
-    if (indirect_child_ids.size() > 0) {
-      dst->AddIntListAttribute(
-          ui::AX_ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
-    }
   }
+  if (indirect_child_ids.size() > 0) {
+    dst->AddIntListAttribute(ui::AX_ATTR_INDIRECT_CHILD_IDS,
+                             indirect_child_ids);
+  }
+
+  WebVector<WebAXObject> controls;
+  if (src.ariaControls(controls))
+    AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, controls, dst);
+
+  WebVector<WebAXObject> describedby;
+  if (src.ariaDescribedby(describedby)) {
+    AddIntListAttributeFromWebObjects(
+        ui::AX_ATTR_DESCRIBEDBY_IDS, describedby, dst);
+  }
+
+  WebVector<WebAXObject> flowTo;
+  if (src.ariaFlowTo(flowTo))
+    AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);
+
+  WebVector<WebAXObject> labelledby;
+  if (src.ariaLabelledby(labelledby)) {
+    AddIntListAttributeFromWebObjects(
+        ui::AX_ATTR_LABELLEDBY_IDS, labelledby, dst);
+  }
+
+  WebVector<WebAXObject> owns;
+  if (src.ariaOwns(owns))
+    AddIntListAttributeFromWebObjects(ui::AX_ATTR_OWNS_IDS, owns, dst);
 }
 
 bool ShouldIncludeChildNode(

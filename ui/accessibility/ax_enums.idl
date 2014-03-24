@@ -252,6 +252,7 @@ namespace ui {
 
     // Relationships between this element and other elements.
     ax_attr_title_ui_element,
+    ax_attr_activedescendant_id,
 
     // Color value for AX_ROLE_COLOR_WELL, each component is 0..255
     ax_attr_color_value_red,
@@ -305,6 +306,13 @@ namespace ui {
     // a table cell is a child of a row, and an 'indirect' child of a
     // column.
     ax_attr_indirect_child_ids,
+
+    // Relationships between this element and other elements.
+    ax_attr_controls_ids,
+    ax_attr_describedby_ids,
+    ax_attr_flowto_ids,
+    ax_attr_labelledby_ids,
+    ax_attr_owns_ids,
 
     // Character indices where line breaks occur.
     ax_attr_line_breaks,

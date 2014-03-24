@@ -256,6 +256,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityHeaderAttribute, @"header" },
     { NSAccessibilityHelpAttribute, @"help" },
     { NSAccessibilityIndexAttribute, @"index" },
+    { NSAccessibilityLinkedUIElementsAttribute, @"linkedUIElements" },
     { NSAccessibilityMaxValueAttribute, @"maxValue" },
     { NSAccessibilityMinValueAttribute, @"minValue" },
     { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
@@ -267,6 +268,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityRowHeaderUIElementsAttribute, @"rowHeaders" },
     { NSAccessibilityRowIndexRangeAttribute, @"rowIndexRange" },
     { NSAccessibilityRowsAttribute, @"rows" },
+    // TODO(aboxhall): expose NSAccessibilityServesAsTitleForUIElementsAttribute
     { NSAccessibilitySizeAttribute, @"size" },
     { NSAccessibilitySubroleAttribute, @"subrole" },
     { NSAccessibilityTabsAttribute, @"tabs" },
@@ -578,6 +580,28 @@ NSDictionary* attributeToMethodNameMap = nil;
   return invalid;
 }
 
+- (void)addLinkedUIElementsFromAttribute:(ui::AXIntListAttribute)attribute
+                                   addTo:(NSMutableArray*)outArray {
+  const std::vector<int32>& attributeValues =
+      browserAccessibility_->GetIntListAttribute(attribute);
+  for (size_t i = 0; i < attributeValues.size(); ++i) {
+    BrowserAccessibility* element =
+        browserAccessibility_->manager()->GetFromRendererID(attributeValues[i]);
+    if (element)
+      [outArray addObject:element->ToBrowserAccessibilityCocoa()];
+  }
+}
+
+- (NSArray*)linkedUIElements {
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_OWNS_IDS addTo:ret];
+  [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_CONTROLS_IDS addTo:ret];
+  [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_FLOWTO_IDS addTo:ret];
+  if ([ret count] == 0)
+    return nil;
+  return ret;
+}
+
 - (NSNumber*)loaded {
   return [NSNumber numberWithBool:YES];
 }
@@ -851,6 +875,15 @@ NSDictionary* attributeToMethodNameMap = nil;
     if (titleElement)
       return titleElement->ToBrowserAccessibilityCocoa();
   }
+  std::vector<int32> labelledby_ids =
+      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
+  if (labelledby_ids.size() == 1) {
+    BrowserAccessibility* titleElement =
+        browserAccessibility_->manager()->GetFromRendererID(labelledby_ids[0]);
+    if (titleElement)
+      return titleElement->ToBrowserAccessibilityCocoa();
+  }
+
   return nil;
 }
 
@@ -1242,6 +1275,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityEnabledAttribute,
       NSAccessibilityFocusedAttribute,
       NSAccessibilityHelpAttribute,
+      NSAccessibilityLinkedUIElementsAttribute,
       NSAccessibilityParentAttribute,
       NSAccessibilityPositionAttribute,
       NSAccessibilityRoleAttribute,
@@ -1356,12 +1390,16 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 
   // Title UI Element.
-  if (browserAccessibility_->HasIntAttribute(
-          ui::AX_ATTR_TITLE_UI_ELEMENT)) {
+  if (browserAccessibility_->HasIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT) ||
+      (browserAccessibility_->HasIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS) &&
+       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS)
+                            .size() == 1)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
          NSAccessibilityTitleUIElementAttribute,
          nil]];
   }
+  // TODO(aboxhall): expose NSAccessibilityServesAsTitleForUIElementsAttribute
+  // for elements which are referred to by labelledby or are labels
 
   return ret;
 }

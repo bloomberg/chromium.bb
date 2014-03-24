@@ -1,19 +1,23 @@
 <!--
 @WIN-DENY:description*
+@MAC-ALLOW:AXFocused='1'
+@MAC-ALLOW:AXLinkedUIElements*
+@MAC-ALLOW:AXTitleUIElement*
 -->
 <html>
   <body>
-    <span id="state_label">State</span>
+    <div id="state_label">State</div>
     <input type="text"
-        role="combobox" 
+        role="combobox"
         aria-labelledby="state_label"
         aria-autocomplete="list"
-        aria-owns="state_list" 
-        aria-readonly="true" 
-        aria-activedescendant="state2"/> 
+        aria-owns="state_list"
+        aria-readonly="true"
+        aria-activedescendant="state2"
+        autofocus="true"/>
     <ul id="state_list" role="listbox" aria-expanded="true">
-      <li id="state1" role="option" tabindex="-1">Alabama</li> 
-      <li id="state2" role="option" tabindex="-1">Alaska</li> 
+      <li id="state1" role="option" tabindex="-1">Alabama</li>
+      <li id="state2" role="option" tabindex="-1">Alaska</li>
     </ul>
   </body>
 </html>

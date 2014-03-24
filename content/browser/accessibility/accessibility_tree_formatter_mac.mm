@@ -83,6 +83,49 @@ bool IsRangeValue(id value) {
   return 0 == strcmp([value objCType], @encode(NSRange));
 }
 
+scoped_ptr<base::Value> PopulateObject(id value);
+
+scoped_ptr<base::ListValue> PopulateArray(NSArray* array) {
+  scoped_ptr<base::ListValue> list(new base::ListValue);
+  for (NSUInteger i = 0; i < [array count]; i++)
+    list->Append(PopulateObject([array objectAtIndex:i]).release());
+  return list.Pass();
+}
+
+scoped_ptr<base::StringValue> StringForBrowserAccessibility(
+    BrowserAccessibilityCocoa* obj) {
+  NSString* description = [obj role];
+  id value = [obj value];
+  id roleDescription = [obj roleDescription];
+  if (value != nil && ![value isEqualToString:@""]) {
+    description = [NSString stringWithFormat:@"%@ %@", description, value];
+  } else if ([description isEqualToString:NSAccessibilityGroupRole] &&
+           roleDescription != nil &&
+           ![roleDescription isEqualToString:@""]) {
+    description = [NSString stringWithFormat:@"%@ %@",
+                            description, roleDescription];
+  }
+  return scoped_ptr<base::StringValue>(
+      new base::StringValue(SysNSStringToUTF16(description))).Pass();
+}
+
+scoped_ptr<base::Value> PopulateObject(id value) {
+  if ([value isKindOfClass:[NSArray class]])
+    return scoped_ptr<base::Value>(PopulateArray((NSArray*) value));
+  if (IsRangeValue(value))
+    return scoped_ptr<base::Value>(PopulateRange([value rangeValue]));
+  if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
+    std::string str;
+    StringForBrowserAccessibility(value)->GetAsString(&str);
+    return scoped_ptr<base::Value>(StringForBrowserAccessibility(
+        (BrowserAccessibilityCocoa*) value));
+  }
+
+  return scoped_ptr<base::Value>(
+      new base::StringValue(
+          SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]))).Pass();
+}
+
 NSArray* BuildAllAttributesArray() {
   NSArray* array = [NSArray arrayWithObjects:
       NSAccessibilityRoleDescriptionAttribute,
@@ -111,9 +154,11 @@ NSArray* BuildAllAttributesArray() {
       NSAccessibilityOrientationAttribute,
       @"AXRequired",
       NSAccessibilityRowIndexRangeAttribute,
+      NSAccessibilityTitleUIElementAttribute,
       NSAccessibilityURLAttribute,
       NSAccessibilityVisibleCharacterRangeAttribute,
       @"AXVisited",
+      @"AXLinkedUIElements",
       nil];
   return [array retain];
 }
@@ -143,18 +188,13 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
 
   CR_DEFINE_STATIC_LOCAL(NSArray*, all_attributes, (BuildAllAttributesArray()));
   for (NSString* requestedAttribute in all_attributes) {
-    if (![supportedAttributes containsObject:requestedAttribute]) {
+    if (![supportedAttributes containsObject:requestedAttribute])
       continue;
-    }
     id value = [cocoa_node accessibilityAttributeValue:requestedAttribute];
-    if (IsRangeValue(value)) {
+    if (value != nil) {
       dict->Set(
           SysNSStringToUTF8(requestedAttribute),
-          PopulateRange([value rangeValue]).release());
-    } else if (value != nil) {
-      dict->SetString(
-          SysNSStringToUTF8(requestedAttribute),
-          SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]));
+          PopulateObject(value).release());
     }
   }
   dict->Set(kPositionDictAttr, PopulatePosition(node).release());
@@ -184,10 +224,18 @@ base::string16 AccessibilityTreeFormatter::ToString(
   CR_DEFINE_STATIC_LOCAL(NSArray*, all_attributes, (BuildAllAttributesArray()));
   for (NSString* requestedAttribute in all_attributes) {
     string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
-    const base::DictionaryValue* d_value;
-    if (dict.GetDictionary(requestedAttributeUTF8, &d_value)) {
+    if (dict.GetString(requestedAttributeUTF8, &s_value)) {
+      WriteAttribute([defaultAttributes containsObject:requestedAttribute],
+                     StringPrintf("%s='%s'",
+                                  requestedAttributeUTF8.c_str(),
+                                  s_value.c_str()),
+                     &line);
+      continue;
+    }
+    const base::Value* value;
+    if (dict.Get(requestedAttributeUTF8, &value)) {
       std::string json_value;
-      base::JSONWriter::Write(d_value, &json_value);
+      base::JSONWriter::Write(value, &json_value);
       WriteAttribute(
           [defaultAttributes containsObject:requestedAttribute],
           StringPrintf("%s=%s",
@@ -195,13 +243,6 @@ base::string16 AccessibilityTreeFormatter::ToString(
                        json_value.c_str()),
           &line);
     }
-    if (!dict.GetString(requestedAttributeUTF8, &s_value))
-      continue;
-    WriteAttribute([defaultAttributes containsObject:requestedAttribute],
-                   StringPrintf("%s='%s'",
-                                requestedAttributeUTF8.c_str(),
-                                s_value.c_str()),
-                   &line);
   }
   const base::DictionaryValue* d_value = NULL;
   if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
