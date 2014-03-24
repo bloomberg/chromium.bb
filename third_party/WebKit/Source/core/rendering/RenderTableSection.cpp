@@ -328,6 +328,17 @@ void RenderTableSection::distributeExtraRowSpanHeightToPercentRows(RenderTableCe
     }
 }
 
+// Sometimes the multiplication of the 2 values below will overflow an integer.
+// So we convert the parameters to 'long long' instead of 'int' to avoid the
+// problem in this function.
+static void updatePositionIncreasedWithRowHeight(long long extraHeight, long long rowHeight, long long totalHeight, int& accumulatedPositionIncrease, int& remainder)
+{
+    COMPILE_ASSERT(sizeof(long long int) > sizeof(int), int_should_be_less_than_longlong);
+
+    accumulatedPositionIncrease += (extraHeight * rowHeight) / totalHeight;
+    remainder += (extraHeight * rowHeight) % totalHeight;
+}
+
 void RenderTableSection::distributeExtraRowSpanHeightToAutoRows(RenderTableCell* cell, int totalAutoRowsHeight, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
 {
     if (!extraRowSpanningHeight || !totalAutoRowsHeight)
@@ -342,8 +353,7 @@ void RenderTableSection::distributeExtraRowSpanHeightToAutoRows(RenderTableCell*
     // So extra height distributed in auto spanning rows based on their weight in spanning cell.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         if (m_grid[row].logicalHeight.isAuto()) {
-            accumulatedPositionIncrease += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) / totalAutoRowsHeight;
-            remainder += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) % totalAutoRowsHeight;
+            updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, rowsHeight[row - rowIndex], totalAutoRowsHeight, accumulatedPositionIncrease, remainder);
 
             // While whole extra spanning height is distributing in auto spanning rows, rational parts remains
             // in every integer division. So accumulating all remainder part in integer division and when total remainder
@@ -376,8 +386,7 @@ void RenderTableSection::distributeExtraRowSpanHeightToRemainingRows(RenderTable
     // So extra height distribution in remaining spanning rows based on their weight in spanning cell.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         if (!m_grid[row].logicalHeight.isPercent()) {
-            accumulatedPositionIncrease += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) / totalRemainingRowsHeight;
-            remainder += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) % totalRemainingRowsHeight;
+            updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, rowsHeight[row - rowIndex], totalRemainingRowsHeight, accumulatedPositionIncrease, remainder);
 
             // While whole extra spanning height is distributing in remaining spanning rows, rational parts remains
             // in every integer division. So accumulating all remainder part in integer division and when total remainder
