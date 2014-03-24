@@ -27,6 +27,9 @@ RETRY_MAX = 3
 RETRY_INITIAL_SLEEP = 0.5
 
 
+_WARNINGS = []
+
+
 class Error(Exception):
   """gclient exception class."""
   def __init__(self, msg, *args, **kwargs):
@@ -34,6 +37,19 @@ class Error(Exception):
     if index:
       msg = '\n'.join('%d> %s' % (index, l) for l in msg.splitlines())
     super(Error, self).__init__(msg, *args, **kwargs)
+
+
+def PrintWarnings():
+  """Prints any accumulated warnings."""
+  if _WARNINGS:
+    print >> sys.stderr, '\n\nWarnings:'
+    for warning in _WARNINGS:
+      print >> sys.stderr, warning
+
+
+def AddWarning(msg):
+  """Adds the given warning message to the list of accumulated warnings."""
+  _WARNINGS.append(msg)
 
 
 def SplitUrlRevision(url):

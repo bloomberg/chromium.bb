@@ -1052,7 +1052,7 @@ solutions = [
         scm = gclient_scm.CreateSCM(dep.url, self.root_dir, dep.name)
         actual_url = scm.GetActualRemoteURL()
         if actual_url and not scm.DoesRemoteURLMatch():
-          print >> sys.stderr, ('''
+          gclient_utils.AddWarning('''
 ################################################################################
 ################################### WARNING! ###################################
 ################################################################################
@@ -1957,6 +1957,8 @@ def Main(argv):
   except (gclient_utils.Error, subprocess2.CalledProcessError), e:
     print >> sys.stderr, 'Error: %s' % str(e)
     return 1
+  finally:
+    gclient_utils.PrintWarnings()
 
 
 if '__main__' == __name__:
