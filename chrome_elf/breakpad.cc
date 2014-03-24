@@ -18,7 +18,7 @@ google_breakpad::ExceptionHandler* g_elf_breakpad = NULL;
 
 namespace {
 
-const wchar_t kBreakpadProductName[] = L"ChromeElf";
+const wchar_t kBreakpadProductName[] = L"Chrome";
 const wchar_t kBreakpadVersionEntry[] = L"ver";
 const wchar_t kBreakpadProdEntry[] = L"prod";
 const wchar_t kBreakpadPlatformEntry[] = L"plat";
