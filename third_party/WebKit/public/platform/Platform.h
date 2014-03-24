@@ -323,8 +323,8 @@ public:
     // Returns a new WebSocketHandle instance.
     virtual WebSocketHandle* createWebSocketHandle() { return 0; }
 
-    // Returns the User-Agent string that should be used for the given URL.
-    virtual WebString userAgent(const WebURL&) { return WebString(); }
+    // Returns the User-Agent string.
+    virtual WebString userAgent() { return WebString(); }
 
     // A suggestion to cache this metadata in association with this URL.
     virtual void cacheMetadata(const WebURL&, double responseTime, const char* data, size_t dataSize) { }

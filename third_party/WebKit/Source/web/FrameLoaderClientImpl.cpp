@@ -593,7 +593,7 @@ String FrameLoaderClientImpl::userAgent(const KURL& url)
     if (!override.isEmpty())
         return override;
 
-    return blink::Platform::current()->userAgent(url);
+    return blink::Platform::current()->userAgent();
 }
 
 String FrameLoaderClientImpl::doNotTrackValue()
