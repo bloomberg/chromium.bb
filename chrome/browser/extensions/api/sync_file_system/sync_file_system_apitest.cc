@@ -104,12 +104,6 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-// deleteFileSystem is disabled for now. http://crbug.com/159804
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DISABLED_DeleteFileSystem) {
-  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/delete_file_system"))
-      << message_;
-}
-
 // Flaky on WinXP Tests(1): http://crbug.com/354425
 #if defined(OS_WIN) && defined(ARCH_CPU_X86)
 #define MAYBE_GetFileStatus DISABLED_GetFileStatus
