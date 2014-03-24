@@ -306,8 +306,9 @@ bool SettingsOverridesHandler::Validate(
     if (!FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled()) {
       warnings->push_back(InstallWarning(
           ErrorUtils::FormatErrorMessage(
-              manifest_errors::kUnrecognizedManifestKey,
-              manifest_keys::kBookmarkUI)));
+              manifest_errors::kUnrecognizedManifestProperty,
+              manifest_keys::kBookmarkUI,
+              manifest_keys::kSettingsOverride)));
     } else if (settings_overrides->bookmarks_ui->hide_bookmark_button) {
       warnings->push_back(InstallWarning(
             ErrorUtils::FormatErrorMessage(

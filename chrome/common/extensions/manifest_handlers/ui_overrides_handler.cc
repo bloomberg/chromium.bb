@@ -187,8 +187,9 @@ bool UIOverridesHandler::Validate(const Extension* extension,
     if (!FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled()) {
       warnings->push_back(InstallWarning(
           ErrorUtils::FormatErrorMessage(
-              manifest_errors::kUnrecognizedManifestKey,
-              manifest_keys::kBookmarkUI)));
+              manifest_errors::kUnrecognizedManifestProperty,
+              manifest_keys::kBookmarkUI,
+              manifest_keys::kUIOverride)));
     }
   }
 
