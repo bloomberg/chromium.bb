@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_internals_util.h"
+#include "components/signin/core/signin_internals_util.h"
 
 #include <sstream>
 
@@ -10,8 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_constants.h"
 

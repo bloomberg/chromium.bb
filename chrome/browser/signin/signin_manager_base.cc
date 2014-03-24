@@ -14,19 +14,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/signin/about_signin_internals.h"
-#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 
 using namespace signin_internals_util;
-
-using content::BrowserThread;
 
 SigninManagerBase::SigninManagerBase()
     : profile_(NULL),

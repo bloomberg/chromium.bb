@@ -2148,8 +2148,6 @@
         'browser/signin/signin_global_error.h',
         'browser/signin/signin_global_error_factory.cc',
         'browser/signin/signin_global_error_factory.h',
-        'browser/signin/signin_internals_util.cc',
-        'browser/signin/signin_internals_util.h',
         'browser/signin/signin_manager.cc',
         'browser/signin/signin_manager.h',
         'browser/signin/signin_manager_base.cc',

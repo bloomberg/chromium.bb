@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
@@ -27,6 +28,8 @@
         'signin/core/signin_client.h',
         'signin/core/signin_error_controller.cc',
         'signin/core/signin_error_controller.h',
+        'signin/core/signin_internals_util.cc',
+        'signin/core/signin_internals_util.h',
         'signin/core/signin_manager_cookie_helper.cc',
         'signin/core/signin_manager_cookie_helper.h',
         'signin/core/webdata/token_service_table.cc',
