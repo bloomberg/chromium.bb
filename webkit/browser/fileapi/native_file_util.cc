@@ -5,9 +5,9 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/file_stream.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -37,15 +37,14 @@ bool SetPlatformSpecificDirectoryPermissions(const base::FilePath& dir_path) {
 // Copies a file |from| to |to|, and ensure the written content is synced to
 // the disk. This is essentially base::CopyFile followed by fsync().
 bool CopyFileAndSync(const base::FilePath& from, const base::FilePath& to) {
-  net::FileStream infile(NULL);
-  if (infile.OpenSync(from,
-          base::PLATFORM_FILE_OPEN | base:: PLATFORM_FILE_READ) < 0) {
+  base::File infile(from, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!infile.IsValid()) {
     return false;
   }
 
-  net::FileStream outfile(NULL);
-  if (outfile.OpenSync(to,
-          base::PLATFORM_FILE_CREATE_ALWAYS | base:: PLATFORM_FILE_WRITE) < 0) {
+  base::File outfile(to,
+                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!outfile.IsValid()) {
     return false;
   }
 
@@ -53,21 +52,21 @@ bool CopyFileAndSync(const base::FilePath& from, const base::FilePath& to) {
   std::vector<char> buffer(kBufferSize);
 
   for (;;) {
-    int bytes_read = infile.ReadSync(&buffer[0], kBufferSize);
+    int bytes_read = infile.ReadAtCurrentPos(&buffer[0], kBufferSize);
     if (bytes_read < 0)
       return false;
     if (bytes_read == 0)
       break;
     for (int bytes_written = 0; bytes_written < bytes_read; ) {
-      int bytes_written_partial = outfile.WriteSync(&buffer[bytes_written],
-                                                    bytes_read - bytes_written);
+      int bytes_written_partial = outfile.WriteAtCurrentPos(
+          &buffer[bytes_written], bytes_read - bytes_written);
       if (bytes_written_partial < 0)
         return false;
       bytes_written += bytes_written_partial;
     }
   }
 
-  return outfile.FlushSync() >= 0;
+  return outfile.Flush();
 }
 
 }  // namespace
