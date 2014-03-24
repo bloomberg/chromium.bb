@@ -80,51 +80,10 @@ class DOMOperationObserver : public NotificationObserver,
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptInFrameHelper(
-    RenderViewHost* render_view_host,
-    const std::string& frame_xpath,
-    const std::string& original_script,
-    scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
-
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
 bool ExecuteScriptHelper(
     RenderFrameHost* render_frame_host,
     const std::string& original_script,
     scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
-
-// Executes the passed |original_script| in the frame pointed to by
-// |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
-// of the script in |result|.  Returns true on success.
-bool ExecuteScriptInFrameHelper(RenderViewHost* render_view_host,
-                                const std::string& frame_xpath,
-                                const std::string& original_script,
-                                scoped_ptr<base::Value>* result) {
-  // TODO(jcampan): we should make the domAutomationController not require an
-  //                automation id.
-  std::string script =
-      "window.domAutomationController.setAutomationId(0);" + original_script;
-  DOMOperationObserver dom_op_observer(render_view_host);
-  render_view_host->ExecuteJavascriptInWebFrame(base::UTF8ToUTF16(frame_xpath),
-                                                base::UTF8ToUTF16(script));
-  std::string json;
-  if (!dom_op_observer.WaitAndGetResponse(&json)) {
-    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
-    return false;
-  }
-
-  // Nothing more to do for callers that ignore the returned JS value.
-  if (!result)
-    return true;
-
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  result->reset(reader.ReadToValue(json));
-  if (!result->get()) {
-    DLOG(ERROR) << reader.GetErrorMessage();
-    return false;
-  }
-
-  return true;
-}
 
 // Executes the passed |original_script| in the frame specified by
 // |render_frame_host|.  If |result| is not NULL, stores the value that the
@@ -429,14 +388,6 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
 
 namespace internal {
 
-ToRenderViewHost::ToRenderViewHost(WebContents* web_contents)
-    : render_view_host_(web_contents->GetRenderViewHost()) {
-}
-
-ToRenderViewHost::ToRenderViewHost(RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host) {
-}
-
 ToRenderFrameHost::ToRenderFrameHost(WebContents* web_contents)
     : render_frame_host_(web_contents->GetMainFrame()) {
 }
@@ -450,63 +401,6 @@ ToRenderFrameHost::ToRenderFrameHost(RenderFrameHost* render_frame_host)
 }
 
 }  // namespace internal
-
-bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
-                          const std::string& frame_xpath,
-                          const std::string& original_script) {
-  std::string script =
-      original_script + ";window.domAutomationController.send(0);";
-  return ExecuteScriptInFrameHelper(
-      adapter.render_view_host(), frame_xpath, script, NULL);
-}
-
-bool ExecuteScriptInFrameAndExtractInt(
-    const internal::ToRenderViewHost& adapter,
-    const std::string& frame_xpath,
-    const std::string& script,
-    int* result) {
-  DCHECK(result);
-  scoped_ptr<base::Value> value;
-  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
-                                  frame_xpath, script, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsInteger(result);
-}
-
-bool ExecuteScriptInFrameAndExtractBool(
-    const internal::ToRenderViewHost& adapter,
-    const std::string& frame_xpath,
-    const std::string& script,
-    bool* result) {
-  DCHECK(result);
-  scoped_ptr<base::Value> value;
-  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
-                                  frame_xpath, script, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsBoolean(result);
-}
-
-bool ExecuteScriptInFrameAndExtractString(
-    const internal::ToRenderViewHost& adapter,
-    const std::string& frame_xpath,
-    const std::string& script,
-    std::string* result) {
-  DCHECK(result);
-  scoped_ptr<base::Value> value;
-  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
-                                  frame_xpath, script, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsString(result);
-}
 
 bool ExecuteScript(const internal::ToRenderFrameHost& adapter,
                    const std::string& script) {
