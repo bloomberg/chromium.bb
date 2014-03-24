@@ -156,7 +156,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   virtual bool ShouldCreateResizeLock() OVERRIDE {
     gfx::Size desired_size = window()->bounds().size();
-    return desired_size != current_frame_size_in_dip();
+    return desired_size != current_frame_size();
   }
 
   virtual scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock)
@@ -843,6 +843,23 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 }
 
+scoped_ptr<cc::CompositorFrame> MakeGLFrame(float scale_factor,
+                                            gfx::Size size,
+                                            gfx::Rect damage,
+                                            OwnedMailbox* owned_mailbox) {
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->metadata.device_scale_factor = scale_factor;
+  frame->gl_frame_data.reset(new cc::GLFrameData);
+  DCHECK(owned_mailbox->sync_point());
+  frame->gl_frame_data->sync_point = owned_mailbox->sync_point();
+  memcpy(frame->gl_frame_data->mailbox.name,
+         owned_mailbox->mailbox().name,
+         sizeof(frame->gl_frame_data->mailbox.name));
+  frame->gl_frame_data->size = size;
+  frame->gl_frame_data->sub_buffer_rect = damage;
+  return frame.Pass();
+}
+
 scoped_ptr<cc::CompositorFrame> MakeSoftwareFrame(float scale_factor,
                                                   gfx::Size size,
                                                   gfx::Rect damage) {
@@ -902,10 +919,11 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
     EXPECT_EQ("800x600", params.a.new_size.ToString());
     // Resizes are blocked until we swapped a frame of the correct size, and
     // we've committed it.
-    view_->OnSwapCompositorFrame(
-        0,
-        MakeDelegatedFrame(
-            1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    view_->OnSwapCompositorFrame(0,
+                                 MakeGLFrame(1.f,
+                                             params.a.new_size,
+                                             gfx::Rect(params.a.new_size),
+                                             owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -925,10 +943,11 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
     EXPECT_EQ("0,0 1600x1200",
               gfx::Rect(params.a.screen_info.availableRect).ToString());
     EXPECT_EQ("1600x1200", params.a.new_size.ToString());
-    view_->OnSwapCompositorFrame(
-        0,
-        MakeDelegatedFrame(
-            1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    view_->OnSwapCompositorFrame(0,
+                                 MakeGLFrame(1.f,
+                                             params.a.new_size,
+                                             gfx::Rect(params.a.new_size),
+                                             owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -954,6 +973,60 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
 
   MockWindowObserver observer;
   view_->window_->AddObserver(&observer);
+
+  // Swap a frame through the GPU path.
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.surface_id = widget_host_->surface_id();
+  params.route_id = widget_host_->GetRoutingID();
+  memcpy(params.mailbox.name,
+         owned_mailbox->mailbox().name,
+         sizeof(params.mailbox.name));
+  params.size = view_size;
+  params.scale_factor = 1.f;
+
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->AcceleratedSurfaceBuffersSwapped(params, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // DSF = 2
+  params.size = gfx::Size(200, 200);
+  params.scale_factor = 2.f;
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->AcceleratedSurfaceBuffersSwapped(params, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Partial frames though GPU path
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params post_params;
+  post_params.surface_id = widget_host_->surface_id();
+  post_params.route_id = widget_host_->GetRoutingID();
+  memcpy(post_params.mailbox.name,
+         owned_mailbox->mailbox().name,
+         sizeof(params.mailbox.name));
+  post_params.surface_size = gfx::Size(200, 200);
+  post_params.surface_scale_factor = 2.f;
+  post_params.x = 40;
+  post_params.y = 40;
+  post_params.width = 80;
+  post_params.height = 80;
+  // rect from params is upside down, and is inflated in RWHVA, just because.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_,
+                                               gfx::Rect(19, 39, 42, 42)));
+  view_->AcceleratedSurfacePostSubBuffer(post_params, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Composite-to-mailbox path
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeGLFrame(1.f, view_size, view_rect, owned_mailbox.get()));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // rect from GL frame is upside down, and is inflated in RWHVA, just because.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_,
+                                               gfx::Rect(4, 89, 7, 7)));
+  view_->OnSwapCompositorFrame(
+      0,
+      MakeGLFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5), owned_mailbox.get()));
+  testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Software path
   EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
