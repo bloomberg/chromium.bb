@@ -256,7 +256,9 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
 
   int transaction_count() const { return transaction_count_; }
   bool done_reading_called() const { return done_reading_called_; }
+  bool stop_caching_called() const { return stop_caching_called_; }
   void TransactionDoneReading();
+  void TransactionStopCaching();
 
   // Returns the last priority passed to CreateTransaction, or
   // DEFAULT_PRIORITY if it hasn't been called yet.
@@ -289,6 +291,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
  private:
   int transaction_count_;
   bool done_reading_called_;
+  bool stop_caching_called_;
   net::RequestPriority last_create_transaction_priority_;
   base::WeakPtr<MockNetworkTransaction> last_transaction_;
 };

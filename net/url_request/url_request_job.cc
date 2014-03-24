@@ -327,6 +327,10 @@ void URLRequestJob::NotifyHeadersComplete() {
   GURL new_location;
   int http_status_code;
   if (IsRedirectResponse(&new_location, &http_status_code)) {
+    // Redirect response bodies are not read. Notify the transaction
+    // so it does not treat being stopped as an error.
+    DoneReadingRedirectResponse();
+
     const GURL& url = request_->url();
 
     // Move the reference fragment of the old location to the new one if the
@@ -339,10 +343,6 @@ void URLRequestJob::NotifyHeadersComplete() {
                           url.parsed_for_possibly_invalid_spec().ref);
       new_location = new_location.ReplaceComponents(replacements);
     }
-
-    // Redirect response bodies are not read. Notify the transaction
-    // so it does not treat being stopped as an error.
-    DoneReading();
 
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(new_location, &defer_redirect);
@@ -530,6 +530,9 @@ bool URLRequestJob::ReadRawData(IOBuffer* buf, int buf_size,
 
 void URLRequestJob::DoneReading() {
   // Do nothing.
+}
+
+void URLRequestJob::DoneReadingRedirectResponse() {
 }
 
 void URLRequestJob::FilteredDataRead(int bytes_read) {

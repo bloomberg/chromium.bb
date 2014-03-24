@@ -57,6 +57,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/ocsp/nss_ocsp.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"
@@ -5161,6 +5162,77 @@ TEST_F(URLRequestTestHTTP, RedirectToInvalidURL) {
 
   EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
   EXPECT_EQ(ERR_INVALID_URL, req.status().error());
+}
+
+// Make sure redirects are cached, despite not reading their bodies.
+TEST_F(URLRequestTestHTTP, CacheRedirect) {
+  ASSERT_TRUE(test_server_.Start());
+  GURL redirect_url =
+      test_server_.GetURL("files/redirect302-to-echo-cacheable");
+
+  {
+    TestDelegate d;
+    URLRequest req(redirect_url, DEFAULT_PRIORITY, &d, &default_context_);
+    req.Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(test_server_.GetURL("echo"), req.url());
+  }
+
+  {
+    TestDelegate d;
+    d.set_quit_on_redirect(true);
+    URLRequest req(redirect_url, DEFAULT_PRIORITY, &d, &default_context_);
+    req.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(0, d.response_started_count());
+    EXPECT_TRUE(req.was_cached());
+
+    req.FollowDeferredRedirect();
+    base::RunLoop().Run();
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
+    EXPECT_EQ(test_server_.GetURL("echo"), req.url());
+  }
+}
+
+// Make sure a request isn't cached when a NetworkDelegate forces a redirect
+// when the headers are read, since the body won't have been read.
+TEST_F(URLRequestTestHTTP, NoCacheOnNetworkDelegateRedirect) {
+  ASSERT_TRUE(test_server_.Start());
+  // URL that is normally cached.
+  GURL initial_url = test_server_.GetURL("cachetime");
+
+  {
+    // Set up the TestNetworkDelegate tp force a redirect.
+    GURL redirect_to_url = test_server_.GetURL("echo");
+    default_network_delegate_.set_redirect_on_headers_received_url(
+        redirect_to_url);
+
+    TestDelegate d;
+    URLRequest req(initial_url, DEFAULT_PRIORITY, &d, &default_context_);
+    req.Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(redirect_to_url, req.url());
+  }
+
+  {
+    TestDelegate d;
+    URLRequest req(initial_url, DEFAULT_PRIORITY, &d, &default_context_);
+    req.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
+    EXPECT_FALSE(req.was_cached());
+    EXPECT_EQ(0, d.received_redirect_count());
+    EXPECT_EQ(initial_url, req.url());
+  }
 }
 
 TEST_F(URLRequestTestHTTP, NoUserPassInReferrer) {

@@ -13,6 +13,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/default_server_bound_cert_store.h"
@@ -425,6 +426,17 @@ int TestNetworkDelegate::OnHeadersReceived(
   // Basic authentication sends a second request from the URLRequestHttpJob
   // layer before the URLRequest reports that a response has started.
   next_states_[req_id] |= kStageBeforeSendHeaders;
+
+  if (!redirect_on_headers_received_url_.is_empty()) {
+    *override_response_headers =
+        new net::HttpResponseHeaders(original_response_headers->raw_headers());
+    (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
+    (*override_response_headers)->RemoveHeader("Location");
+    (*override_response_headers)->AddHeader(
+        "Location: " + redirect_on_headers_received_url_.spec());
+
+    redirect_on_headers_received_url_ = GURL();
+  }
 
   return OK;
 }

@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_job.h"
 
+#include "base/run_loop.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/url_request/url_request_test_util.h"
@@ -96,7 +97,7 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
   req.set_method("GET");
   req.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 
@@ -116,11 +117,34 @@ TEST(URLRequestJob, RedirectTransactionNotifiedWhenDone) {
   req.set_method("GET");
   req.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 
   RemoveMockTransaction(&kRedirect_Transaction);
+}
+
+TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
+  MockNetworkLayer network_layer;
+  TestNetworkDelegate network_delegate;
+  network_delegate.set_redirect_on_headers_received_url(GURL("http://foo"));
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+  context.set_network_delegate(&network_delegate);
+
+  TestDelegate d;
+  TestURLRequest req(GURL(kGZip_Transaction.url), DEFAULT_PRIORITY, &d,
+                     &context);
+  AddMockTransaction(&kGZip_Transaction);
+
+  req.set_method("GET");
+  req.Start();
+
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(network_layer.stop_caching_called());
+
+  RemoveMockTransaction(&kGZip_Transaction);
 }
 
 }  // namespace net

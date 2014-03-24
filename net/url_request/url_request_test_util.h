@@ -234,6 +234,13 @@ class TestNetworkDelegate : public NetworkDelegate {
   bool GetLoadTimingInfoBeforeAuth(
       LoadTimingInfo* load_timing_info_before_auth) const;
 
+  // Will redirect once to the given URL when the next set of headers are
+  // received.
+  void set_redirect_on_headers_received_url(
+      GURL redirect_on_headers_received_url) {
+    redirect_on_headers_received_url_ = redirect_on_headers_received_url;
+  }
+
   void set_cookie_options(int o) {cookie_options_bit_mask_ = o; }
 
   int last_error() const { return last_error_; }
@@ -295,6 +302,8 @@ class TestNetworkDelegate : public NetworkDelegate {
       const CompletionCallback& callback) OVERRIDE;
 
   void InitRequestStatesIfNew(int request_id);
+
+  GURL redirect_on_headers_received_url_;
 
   int last_error_;
   int error_count_;

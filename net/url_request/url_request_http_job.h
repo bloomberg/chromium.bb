@@ -122,6 +122,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
       HttpRequestHeaders* headers) const OVERRIDE;
   virtual int64 GetTotalReceivedBytes() const OVERRIDE;
   virtual void DoneReading() OVERRIDE;
+  virtual void DoneReadingRedirectResponse() OVERRIDE;
+
   virtual HostPortPair GetSocketAddress() const OVERRIDE;
   virtual void NotifyURLRequestDestroyed() OVERRIDE;
 

@@ -446,6 +446,9 @@ void HttpCache::Transaction::StopCaching() {
   // entry how it is (it will be marked as truncated at destruction), and let
   // the next piece of code that executes know that we are now reading directly
   // from the net.
+  // TODO(mmenke):  This doesn't release the lock on the cache entry, so a
+  //                future request for the resource will be blocked on this one.
+  //                Fix this.
   if (cache_.get() && entry_ && (mode_ & WRITE) && network_trans_.get() &&
       !is_sparse_ && !range_requested_) {
     mode_ = NONE;

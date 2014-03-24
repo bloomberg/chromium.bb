@@ -296,7 +296,10 @@ int MockNetworkTransaction::Read(net::IOBuffer* buf, int buf_len,
   return net::ERR_IO_PENDING;
 }
 
-void MockNetworkTransaction::StopCaching() {}
+void MockNetworkTransaction::StopCaching() {
+  if (transaction_factory_.get())
+    transaction_factory_->TransactionStopCaching();
+}
 
 bool MockNetworkTransaction::GetFullRequestHeaders(
     net::HttpRequestHeaders* headers) const {
@@ -439,12 +442,17 @@ void MockNetworkTransaction::RunCallback(
 MockNetworkLayer::MockNetworkLayer()
     : transaction_count_(0),
       done_reading_called_(false),
+      stop_caching_called_(false),
       last_create_transaction_priority_(net::DEFAULT_PRIORITY) {}
 
 MockNetworkLayer::~MockNetworkLayer() {}
 
 void MockNetworkLayer::TransactionDoneReading() {
   done_reading_called_ = true;
+}
+
+void MockNetworkLayer::TransactionStopCaching() {
+  stop_caching_called_ = true;
 }
 
 int MockNetworkLayer::CreateTransaction(

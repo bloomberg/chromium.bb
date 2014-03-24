@@ -1261,8 +1261,27 @@ int64 URLRequestHttpJob::GetTotalReceivedBytes() const {
 }
 
 void URLRequestHttpJob::DoneReading() {
-  if (transaction_.get())
+  if (transaction_) {
     transaction_->DoneReading();
+  }
+  DoneWithRequest(FINISHED);
+}
+
+void URLRequestHttpJob::DoneReadingRedirectResponse() {
+  if (transaction_) {
+    if (transaction_->GetResponseInfo()->headers->IsRedirect(NULL)) {
+      // If the original headers indicate a redirect, go ahead and cache the
+      // response, even if the |override_response_headers_| are a redirect to
+      // another location.
+      transaction_->DoneReading();
+    } else {
+      // Otherwise, |override_response_headers_| must be non-NULL and contain
+      // bogus headers indicating a redirect.
+      DCHECK(override_response_headers_);
+      DCHECK(override_response_headers_->IsRedirect(NULL));
+      transaction_->StopCaching();
+    }
+  }
   DoneWithRequest(FINISHED);
 }
 

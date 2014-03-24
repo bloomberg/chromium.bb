@@ -293,6 +293,11 @@ class NET_EXPORT URLRequestJob
   // the stream.
   virtual void DoneReading();
 
+  // Called to tell the job that the body won't be read because it's a redirect.
+  // This is needed so that redirect headers can be cached even though their
+  // bodies are never read.
+  virtual void DoneReadingRedirectResponse();
+
   // Informs the filter that data has been read into its buffer
   void FilteredDataRead(int bytes_read);
 
