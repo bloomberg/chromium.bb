@@ -60,6 +60,10 @@ def GetVersion(compiler, tool):
 
 
 def main(args):
+  # Force the locale to C otherwise the version string could be localized
+  # making regex matching fail.
+  os.environ["LC_ALL"] = "C"
+
   tool = "compiler"
   if len(args) == 1:
     tool = args[0]
