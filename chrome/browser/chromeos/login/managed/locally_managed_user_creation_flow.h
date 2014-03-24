@@ -25,6 +25,7 @@ class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
   virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;
+  virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
   virtual bool HandlePasswordChangeDetected() OVERRIDE;
   virtual void HandleOAuthTokenStatusChange(User::OAuthTokenStatus status)
       OVERRIDE;

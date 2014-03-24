@@ -187,12 +187,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   local_discovery::PrivetNotificationServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserServiceFactory::GetInstance();
-  ManagedUserSyncServiceFactory::GetInstance();
 #if defined(OS_CHROMEOS)
-  ManagedUserPasswordServiceFactory::GetInstance();
+  chromeos::ManagedUserPasswordServiceFactory::GetInstance();
   chromeos::ManagerPasswordServiceFactory::GetInstance();
 #endif
+  ManagedUserServiceFactory::GetInstance();
+  ManagedUserSyncServiceFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();

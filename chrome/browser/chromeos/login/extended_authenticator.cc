@@ -135,6 +135,20 @@ void ExtendedAuthenticator::AddKey(const UserContext& context,
                               success_callback));
 }
 
+void ExtendedAuthenticator::UpdateKeyAuthorized(
+    const UserContext& context,
+    const cryptohome::KeyDefinition& key,
+    const std::string& signature,
+    const base::Closure& success_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TransformContext(context,
+                   base::Bind(&ExtendedAuthenticator::DoUpdateKeyAuthorized,
+                              this,
+                              key,
+                              signature,
+                              success_callback));
+}
+
 void ExtendedAuthenticator::DoAuthenticateToMount(
     const HashSuccessCallback& success_callback,
     const UserContext& user_context) {
@@ -199,6 +213,30 @@ void ExtendedAuthenticator::DoAddKey(const cryptohome::KeyDefinition& key,
       base::Bind(&ExtendedAuthenticator::OnAddKeyComplete,
                  this,
                  "AddKeyEx",
+                 user_context,
+                 success_callback));
+}
+
+void ExtendedAuthenticator::DoUpdateKeyAuthorized(
+    const cryptohome::KeyDefinition& key,
+    const std::string& signature,
+    const base::Closure& success_callback,
+    const UserContext& user_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordStartMarker("UpdateKeyAuthorized");
+
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  cryptohome::Identification id(canonicalized);
+  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+
+  cryptohome::HomedirMethods::GetInstance()->UpdateKeyEx(
+      id,
+      auth,
+      key,
+      signature,
+      base::Bind(&ExtendedAuthenticator::OnUpdateKeyAuthorizedComplete,
+                 this,
+                 "UpdateKeyAuthorized",
                  user_context,
                  success_callback));
 }
@@ -275,6 +313,34 @@ void ExtendedAuthenticator::OnCheckKeyComplete(
 }
 
 void ExtendedAuthenticator::OnAddKeyComplete(
+    const std::string& time_marker,
+    const UserContext& user_context,
+    const base::Closure& success_callback,
+    bool success,
+    cryptohome::MountError return_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordEndMarker(time_marker);
+  if (return_code == cryptohome::MOUNT_ERROR_NONE) {
+    success_callback.Run();
+  } else {
+    AuthState state = FAILED_MOUNT;
+
+    if (return_code && (cryptohome::MOUNT_ERROR_TPM_COMM_ERROR ||
+                        cryptohome::MOUNT_ERROR_TPM_DEFEND_LOCK ||
+                        cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT)) {
+      state = FAILED_TPM;
+    }
+
+    if (return_code && cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST)
+      state = NO_MOUNT;
+
+    if (consumer_)
+      consumer_->OnAuthenticationFailure(state);
+  }
+}
+
+void ExtendedAuthenticator::OnUpdateKeyAuthorizedComplete(
     const std::string& time_marker,
     const UserContext& user_context,
     const base::Closure& success_callback,

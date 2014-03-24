@@ -14,6 +14,8 @@
 #include "chrome/browser/managed_mode/managed_users.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace chromeos {
+
 class ManagedUserPasswordService : public KeyedService {
  public:
   ManagedUserPasswordService();
@@ -39,4 +41,5 @@ class ManagedUserPasswordService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(ManagedUserPasswordService);
 };
 
+}  // namespace chromeos
 #endif  // CHROME_BROWSER_MANAGED_MODE_CHROMEOS_MANAGED_USER_PASSWORD_SERVICE_H_

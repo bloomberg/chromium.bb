@@ -75,6 +75,9 @@ bool LocallyManagedUserCreationFlow::HandleLoginFailure(
   return true;
 }
 
+void LocallyManagedUserCreationFlow::HandleLoginSuccess(
+    const UserContext& context) {}
+
 bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected() {
   GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
   return true;

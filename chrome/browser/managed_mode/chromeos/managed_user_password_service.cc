@@ -12,6 +12,8 @@
 #include "chrome/browser/managed_mode/managed_user_constants.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 
+namespace chromeos {
+
 ManagedUserPasswordService::ManagedUserPasswordService()
     : weak_ptr_factory_(this) {}
 
@@ -70,3 +72,5 @@ void ManagedUserPasswordService::OnSharedSettingsChange(
 void ManagedUserPasswordService::Shutdown() {
     settings_service_subscription_.reset();
 }
+
+}  // namespace chromeos

@@ -94,6 +94,7 @@ const char kSalt[] = "PasswordSalt";
 const char kPasswordSignature[] = "PasswordSignature";
 const char kEncryptedPassword[] = "EncryptedPassword";
 const char kRequirePasswordUpdate[] = "RequirePasswordUpdate";
+const char kHasIncompleteKey[] = "HasIncompleteKey";
 const char kPasswordEncryptionKey[] = "password.hmac.encryption";
 const char kPasswordSignatureKey[] = "password.hmac.signature";
 

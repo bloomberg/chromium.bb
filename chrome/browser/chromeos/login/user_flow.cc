@@ -44,6 +44,8 @@ bool DefaultUserFlow::HandleLoginFailure(const LoginFailure& failure) {
   return false;
 }
 
+void DefaultUserFlow::HandleLoginSuccess(const UserContext& context) {}
+
 bool DefaultUserFlow::HandlePasswordChangeDetected() {
   return false;
 }

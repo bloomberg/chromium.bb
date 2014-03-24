@@ -7,14 +7,17 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
 
@@ -70,6 +73,35 @@ std::string BuildPasswordSignature(const std::string& password,
   // TODO(antrim) : implement signature as soon as wad@ lands sample code.
   base::Base64Encode(raw_result, &result);
   return result;
+}
+
+base::DictionaryValue* LoadPasswordData(base::FilePath profile_dir) {
+  JSONFileValueSerializer serializer(profile_dir.Append(kPasswordUpdateFile));
+  std::string error_message;
+  int error_code;
+  scoped_ptr<base::Value> value(
+      serializer.Deserialize(&error_code, &error_message));
+  if (JSONFileValueSerializer::JSON_NO_ERROR != error_code) {
+    return NULL;
+  }
+  base::DictionaryValue* result;
+  if (!value->GetAsDictionary(&result)) {
+    return NULL;
+  }
+  value.Pass();
+  return result;
+}
+
+void OnPasswordDataLoaded(
+    const SupervisedUserAuthentication::PasswordDataCallback& success_callback,
+    const base::Closure& failure_callback,
+    base::DictionaryValue* value) {
+  if (!value) {
+    failure_callback.Run();
+    return;
+  }
+  success_callback.Run(value);
+  delete value;
 }
 
 }  // namespace
@@ -236,12 +268,67 @@ void SupervisedUserAuthentication::ScheduleSupervisedPasswordChange(
   base::FilePath profile_path = ProfileHelper::GetProfilePathByUserIdHash(
       user->username_hash());
   JSONFileValueSerializer serializer(profile_path.Append(kPasswordUpdateFile));
-  if (!serializer.Serialize(*password_data))
+  if (!serializer.Serialize(*password_data)) {
+    LOG(ERROR) << "Failed to schedule password update for supervised user "
+               << supervised_user_id;
+    UMA_HISTOGRAM_ENUMERATION(
+        "ManagedUsers.ChromeOS.PasswordChange",
+        SupervisedUserAuthentication::PASSWORD_CHANGE_FAILED_STORE_DATA,
+        SupervisedUserAuthentication::PASSWORD_CHANGE_RESULT_MAX_VALUE);
     return;
+  }
   base::DictionaryValue holder;
   owner_->GetPasswordInformation(supervised_user_id, &holder);
   holder.SetBoolean(kRequirePasswordUpdate, true);
   owner_->SetPasswordInformation(supervised_user_id, &holder);
+}
+
+bool SupervisedUserAuthentication::HasScheduledPasswordUpdate(
+    const std::string& user_id) {
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(user_id, &holder);
+  bool require_update = false;
+  holder.GetBoolean(kRequirePasswordUpdate, &require_update);
+  return require_update;
+}
+
+void SupervisedUserAuthentication::ClearScheduledPasswordUpdate(
+    const std::string& user_id) {
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(user_id, &holder);
+  holder.SetBoolean(kRequirePasswordUpdate, false);
+  owner_->SetPasswordInformation(user_id, &holder);
+}
+
+bool SupervisedUserAuthentication::HasIncompleteKey(
+    const std::string& user_id) {
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(user_id, &holder);
+  bool incomplete_key = false;
+  holder.GetBoolean(kHasIncompleteKey, &incomplete_key);
+  return incomplete_key;
+}
+
+void SupervisedUserAuthentication::MarkKeyIncomplete(
+    const std::string& user_id) {
+  base::DictionaryValue holder;
+  owner_->GetPasswordInformation(user_id, &holder);
+  holder.SetBoolean(kHasIncompleteKey, true);
+  owner_->SetPasswordInformation(user_id, &holder);
+}
+
+void SupervisedUserAuthentication::LoadPasswordUpdateData(
+    const std::string& user_id,
+    const PasswordDataCallback& success_callback,
+    const base::Closure& failure_callback) {
+  const User* user = UserManager::Get()->FindUser(user_id);
+  base::FilePath profile_path =
+      ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
+  PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&LoadPasswordData, profile_path),
+      base::Bind(&OnPasswordDataLoaded, success_callback, failure_callback));
 }
 
 }  // namespace chromeos

@@ -210,11 +210,9 @@ void ManagedUserCreationControllerNew::OnPasswordHashingSuccess(
 
   // First is plain text password, hashed and salted with individual salt.
   // It can be used for mounting homedir, and can be replaced only when signed.
-  cryptohome::KeyDefinition password_key(
-      creation_context_->salted_password,
-      kCryptohomeManagedUserKeyLabel,
-      static_cast<cryptohome::AuthKeyPrivileges>(
-          cryptohome::PRIV_AUTHORIZED_UPDATE | cryptohome::PRIV_MOUNT));
+  cryptohome::KeyDefinition password_key(creation_context_->salted_password,
+                                         kCryptohomeManagedUserKeyLabel,
+                                         kCryptohomeManagedUserKeyPrivileges);
   base::Base64Decode(creation_context_->encryption_key,
                      &password_key.encryption_key);
   base::Base64Decode(creation_context_->signature_key,

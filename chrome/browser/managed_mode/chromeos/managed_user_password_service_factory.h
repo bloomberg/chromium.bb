@@ -9,8 +9,11 @@
 #include "chrome/browser/managed_mode/managed_users.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class ManagedUserPasswordService;
 class Profile;
+
+namespace chromeos {
+
+class ManagedUserPasswordService;
 
 class ManagedUserPasswordServiceFactory
     : public BrowserContextKeyedServiceFactory {
@@ -32,4 +35,5 @@ class ManagedUserPasswordServiceFactory
       content::BrowserContext* context) const OVERRIDE;
 };
 
+}  // namespace chromeos
 #endif  // CHROME_BROWSER_MANAGED_MODE_CHROMEOS_MANAGED_USER_PASSWORD_SERVICE_FACTORY_H_

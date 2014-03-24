@@ -79,21 +79,23 @@ void ManagerPasswordService::OnSharedSettingsChange(
   SupervisedUserAuthentication* auth =
       supervised_user_manager->GetAuthentication();
 
-  if (!auth->NeedPasswordChange(user->email(), dict))
+  if (!auth->NeedPasswordChange(user->email(), dict) &&
+      !auth->HasIncompleteKey(user->email())) {
     return;
-
+  }
+  scoped_ptr<base::DictionaryValue> wrapper(dict->DeepCopy());
   user_service_->GetManagedUsersAsync(
       base::Bind(&ManagerPasswordService::GetManagedUsersCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  mu_id,
                  user->email(),
-                 dict));
+                 Passed(&wrapper)));
 }
 
 void ManagerPasswordService::GetManagedUsersCallback(
     const std::string& sync_mu_id,
     const std::string& user_id,
-    const base::DictionaryValue* password_data,
+    scoped_ptr<base::DictionaryValue> password_data,
     const base::DictionaryValue* managed_users) {
   const base::DictionaryValue* managed_user = NULL;
   if (!managed_users->GetDictionary(sync_mu_id, &managed_user))
@@ -162,8 +164,9 @@ void ManagerPasswordService::GetManagedUsersCallback(
                          true /* replace existing */,
                          base::Bind(&ManagerPasswordService::OnAddKeySuccess,
                                     weak_ptr_factory_.GetWeakPtr(),
+                                    manager_key,
                                     user_id,
-                                    password_data));
+                                    Passed(&password_data)));
 }
 
 void ManagerPasswordService::OnAuthenticationFailure(
@@ -176,8 +179,9 @@ void ManagerPasswordService::OnAuthenticationFailure(
 }
 
 void ManagerPasswordService::OnAddKeySuccess(
+    const UserContext& master_key_context,
     const std::string& user_id,
-    const base::DictionaryValue* password_data) {
+    scoped_ptr<base::DictionaryValue> password_data) {
   VLOG(0) << "Password changed for " << user_id;
   UMA_HISTOGRAM_ENUMERATION(
       "ManagedUsers.ChromeOS.PasswordChange",
@@ -186,7 +190,55 @@ void ManagerPasswordService::OnAddKeySuccess(
 
   SupervisedUserAuthentication* auth =
       UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  auth->StorePasswordData(user_id, *password_data);
+  int old_schema = auth->GetPasswordSchema(user_id);
+  auth->StorePasswordData(user_id, *password_data.get());
+  if (old_schema == SupervisedUserAuthentication::SCHEMA_PLAIN) {
+    // 1) Add new manager key (using old key).
+    // 2) Remove old supervised user key.
+    // 3) Remove old manager key.
+    authenticator_->TransformContext(
+        master_key_context,
+        base::Bind(&ManagerPasswordService::OnContextTransformed,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ManagerPasswordService::OnContextTransformed(
+    const UserContext& master_key_context) {
+  DCHECK(!master_key_context.need_password_hashing);
+  cryptohome::KeyDefinition new_master_key(master_key_context.password,
+                                           kCryptohomeMasterKeyLabel,
+                                           cryptohome::PRIV_DEFAULT);
+  authenticator_->AddKey(
+      master_key_context,
+      new_master_key,
+      true /* replace existing */,
+      base::Bind(&ManagerPasswordService::OnNewManagerKeySuccess,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 master_key_context));
+}
+
+void ManagerPasswordService::OnNewManagerKeySuccess(
+    const UserContext& master_key_context) {
+  VLOG(1) << "Added new master key for " << master_key_context.username;
+  // TODO (antrim): Use RemoveKeyEx once Will lands it.
+  // authenticator_->RemoveKeyEx(master_key_context,
+  // kLegacyCryptohomeManagedUserKeyLabel)
+  OnOldManagedUserKeyDeleted(master_key_context);
+}
+
+void ManagerPasswordService::OnOldManagedUserKeyDeleted(
+    const UserContext& master_key_context) {
+  VLOG(1) << "Removed old managed user key for " << master_key_context.username;
+  // TODO (antrim): Use RemoveKeyEx once Will lands it.
+  // authenticator_->RemoveKeyEx(master_key_context,
+  // kLegacyCryptohomeManagerKeyLabel)
+  OnOldManagerKeyDeleted(master_key_context);
+}
+
+void ManagerPasswordService::OnOldManagerKeyDeleted(
+    const UserContext& master_key_context) {
+  VLOG(1) << "Removed old master key for " << master_key_context.username;
 }
 
 void ManagerPasswordService::Shutdown() {

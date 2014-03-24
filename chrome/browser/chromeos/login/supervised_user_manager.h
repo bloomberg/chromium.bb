@@ -25,6 +25,7 @@ extern const char kSchemaVersion[];
 extern const char kPasswordRevision[];
 extern const char kSalt[];
 extern const char kRequirePasswordUpdate[];
+extern const char kHasIncompleteKey[];
 extern const int kMinPasswordRevision;
 
 // Values for these keys are not stored in local state.

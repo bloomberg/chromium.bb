@@ -758,6 +758,9 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   offline_failed_ = false;
   login_display_->set_signin_completed(true);
 
+  UserManager::Get()->GetUserFlow(user_context.username)->HandleLoginSuccess(
+      user_context);
+
   StopPublicSessionAutoLoginTimer();
 
   bool has_cookies =
