@@ -1633,15 +1633,15 @@ list.autocomplete-suggestions > li > div.detail-text em {
 
 list.autocomplete-suggestions > li > div[search-icon] {
   background: -webkit-image-set(
-    url('../images/files/ui/search_icon_active.png') 1x,
-    url('../images/files/ui/2x/search_icon_active.png') 2x);
-  background-position: center;
-  background-repeat: no-repeat;
+      url('../images/files/ui/search_icon_active.png') 1x,
+      url('../images/files/ui/2x/search_icon_active.png') 2x) center no-repeat;
 }
 
 list.autocomplete-suggestions > li[selected] > div[search-icon],
 list.autocomplete-suggestions > li[lead] > div[search-icon] {
-  -webkit-filter: brightness(0) invert();
+  background: -webkit-image-set(
+      url('../images/files/ui/search_icon_white.png') 1x,
+      url('../images/files/ui/2x/search_icon_white.png') 2x) center no-repeat;
 }
 
 list.autocomplete-suggestions > [selected],
