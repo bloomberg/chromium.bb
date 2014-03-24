@@ -42,14 +42,14 @@ class RenderObject;
 class LayoutRectRecorder {
     WTF_MAKE_NONCOPYABLE(LayoutRectRecorder);
 public:
-    LayoutRectRecorder(RenderObject&, bool skipRecording = false);
+    LayoutRectRecorder(RenderObject&, bool record = true);
     ~LayoutRectRecorder();
 
     static bool shouldRecordLayoutRects();
 
 private:
     RenderObject& m_object;
-    bool m_skipRecording;
+    bool m_record;
 };
 
 } // namespace WebCore

@@ -195,12 +195,11 @@ void RenderSVGRoot::layout()
 {
     ASSERT(needsLayout());
 
-    LayoutRectRecorder recorder(*this);
-
     // Arbitrary affine transforms are incompatible with LayoutState.
     LayoutStateDisabler layoutStateDisabler(*this);
 
     bool needsLayout = selfNeedsLayout();
+    LayoutRectRecorder recorder(*this, checkForRepaint() && needsLayout);
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout() && needsLayout);
 
     LayoutSize oldSize = size();

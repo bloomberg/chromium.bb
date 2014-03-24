@@ -1954,7 +1954,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
             RenderObject* o = walker.current();
 
-            LayoutRectRecorder recorder(*o, !o->isText());
+            LayoutRectRecorder recorder(*o, o->isText());
 
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);

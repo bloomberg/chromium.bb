@@ -42,13 +42,13 @@ bool LayoutRectRecorder::shouldRecordLayoutRects()
     return RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || isTracing;
 }
 
-LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool skipRecording)
+LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool record)
     : m_object(object)
-    , m_skipRecording(skipRecording)
+    , m_record(record)
 {
     if (!shouldRecordLayoutRects())
         return;
-    if (m_skipRecording)
+    if (!m_record)
         return;
 
     if (!m_object.layoutDidGetCalled()) {
@@ -72,7 +72,7 @@ LayoutRectRecorder::~LayoutRectRecorder()
 {
     if (!shouldRecordLayoutRects())
         return;
-    if (m_skipRecording)
+    if (!m_record)
         return;
 
     // Note, we don't store the repaint container because it can change during layout.
