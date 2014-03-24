@@ -44,10 +44,10 @@ class BorderImageLengthBox;
 // CSSValue objects into their RenderStyle equivalents.
 
 class CSSToStyleMap {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(CSSToStyleMap);
 public:
     CSSToStyleMap(const StyleResolverState& state, ElementStyleResources& elementStyleResources) : m_state(state), m_elementStyleResources(elementStyleResources) { }
-
     void mapFillAttachment(CSSPropertyID, FillLayer*, CSSValue*) const;
     void mapFillClip(CSSPropertyID, FillLayer*, CSSValue*) const;
     void mapFillComposite(CSSPropertyID, FillLayer*, CSSValue*) const;
