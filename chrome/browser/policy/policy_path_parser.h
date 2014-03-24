@@ -7,11 +7,34 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 
 namespace policy {
 
 namespace path_parser {
+
+namespace internal {
+
+typedef base::Callback<bool(base::FilePath::StringType*)> GetValueCallback;
+
+struct VariableNameAndValueCallback {
+  VariableNameAndValueCallback(const base::FilePath::CharType* name,
+                               const GetValueCallback value_callback);
+  virtual ~VariableNameAndValueCallback();
+
+  const base::FilePath::CharType* name;
+  const GetValueCallback value_callback;
+};
+
+// Different set of variables are supported in each platform (see below). Hence
+// this table is filled in with different elements in each platform.
+extern const VariableNameAndValueCallback kVariableNameAndValueCallbacks[];
+
+// Since the number of elements in the table could vary for each platform, this
+// variable is used to keep track of it.
+extern const int kNoOfVariables;
+}
 
 // This function is used to expand the variables in policy strings that
 // represent paths. The set of supported variables differs between platforms
