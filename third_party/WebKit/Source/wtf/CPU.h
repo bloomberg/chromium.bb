@@ -180,4 +180,10 @@
 
 #endif /* ARM */
 
+/* CPU(ARM64) - AArch64 64-bit */
+#if defined(__aarch64__)
+#define WTF_CPU_ARM64 1
+#define WTF_CPU_64BIT 1
+#endif
+
 #endif /* WTF_CPU_h */
