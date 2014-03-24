@@ -8,9 +8,7 @@
 #include "gpu/command_buffer/service/mailbox_synchronizer.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
 namespace gles2 {
@@ -190,9 +188,6 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     manager2_ = new MailboxManager;
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
-    context_ = new gfx::GLContextStub();
-    surface_ = new gfx::GLSurfaceStub();
-    context_->MakeCurrent(surface_);
   }
 
   Texture* DefineTexture() {
@@ -254,15 +249,12 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
   virtual void TearDown() {
     MailboxManagerTest::TearDown();
     MailboxSynchronizer::Terminate();
-    context_->ReleaseCurrent(NULL);
     ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<MailboxManager> manager2_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MailboxManagerSyncTest);
@@ -291,6 +283,7 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncDestroy) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(GL_TEXTURE_2D, name));
 
   // Synchronize
+  EXPECT_CALL(*gl_, Flush()).Times(1);
   manager_->PushTextureUpdates();
   manager2_->PullTextureUpdates();
 
@@ -312,6 +305,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(GL_TEXTURE_2D, name));
 
   // Synchronize
+  EXPECT_CALL(*gl_, Flush()).Times(1);
   manager_->PushTextureUpdates();
   manager2_->PullTextureUpdates();
 
@@ -340,6 +334,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Synchronize again
+  EXPECT_CALL(*gl_, Flush()).Times(1);
   manager_->PushTextureUpdates();
   SetupUpdateTexParamExpectations(
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
@@ -401,6 +396,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   manager2_->ProduceTexture(GL_TEXTURE_2D, name2, texture2);
 
   // Make visible.
+  EXPECT_CALL(*gl_, Flush()).Times(2);
   manager_->PushTextureUpdates();
   manager2_->PushTextureUpdates();
 
@@ -439,6 +435,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   Mock::VerifyAndClearExpectations(gl_.get());
 
   // Synchronize in both directions
+  EXPECT_CALL(*gl_, Flush()).Times(2);
   manager_->PushTextureUpdates();
   manager2_->PushTextureUpdates();
   // manager1 should see the change to texture2 mag_filter being applied.

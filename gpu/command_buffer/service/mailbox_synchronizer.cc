@@ -174,6 +174,8 @@ void MailboxSynchronizer::PushTextureUpdates(MailboxManager* manager) {
       textures_.insert(std::make_pair(texture, TextureVersion(group)));
     }
   }
+  // Make sure all write fences are flushed.
+  glFlush();
 }
 
 void MailboxSynchronizer::UpdateTextureLocked(Texture* texture,
