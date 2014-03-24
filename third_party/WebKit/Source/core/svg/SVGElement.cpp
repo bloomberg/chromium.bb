@@ -115,11 +115,7 @@ SVGElement::~SVGElement()
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)
 {
-    // FIXME: This assumes that when shouldNotifyRendererWithIdenticalStyles() is true
-    // the change came from a SMIL animation, but what if there were non-SMIL changes
-    // since then? I think we should remove the shouldNotifyRendererWithIdenticalStyles
-    // check.
-    if (!hasSVGRareData() || shouldNotifyRendererWithIdenticalStyles())
+    if (!hasSVGRareData())
         return;
     // If the style changes because of a regular property change (not induced by SMIL animations themselves)
     // reset the "computed style without SMIL style properties", so the base value change gets reflected.

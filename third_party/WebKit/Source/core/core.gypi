@@ -2016,8 +2016,6 @@
             'dom/Position.cpp',
             'dom/PositionIterator.cpp',
             'dom/PositionIterator.h',
-            'dom/PostAttachCallbacks.cpp',
-            'dom/PostAttachCallbacks.h',
             'dom/PresentationAttributeStyle.cpp',
             'dom/PresentationAttributeStyle.h',
             'dom/ProcessingInstruction.cpp',

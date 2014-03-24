@@ -57,7 +57,6 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/PresentationAttributeStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/RenderTreeBuilder.h"
@@ -1469,6 +1468,8 @@ void Element::detach(const AttachContext& context)
     RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     cancelFocusAppearanceUpdate();
     removeCallbackSelectors();
+    if (needsLayerUpdate())
+        document().unscheduleLayerUpdate(*this);
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
@@ -1636,7 +1637,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
-        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || shouldNotifyRendererWithIdenticalStyles()) {
+        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || needsLayerUpdate()) {
             renderer->setStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
@@ -3030,19 +3031,9 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
     return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
 }
 
-static void scheduleLayerUpdateCallback(Node* node)
-{
-    // Notify the renderer even is the styles are identical since it may need to
-    // create or destroy a RenderLayer.
-    node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
-}
-
 void Element::scheduleLayerUpdate()
 {
-    if (document().inStyleRecalc())
-        PostAttachCallbacks::queueCallback(scheduleLayerUpdateCallback, this);
-    else
-        scheduleLayerUpdateCallback(this);
+    document().scheduleLayerUpdate(*this);
 }
 
 HTMLCollection* Element::cachedHTMLCollection(CollectionType type)

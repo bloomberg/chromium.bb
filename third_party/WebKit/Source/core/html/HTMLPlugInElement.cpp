@@ -29,7 +29,6 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
@@ -453,7 +452,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
     renderer->setWidget(widget);
     document().setContainsPlugins();
-    setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
+    scheduleLayerUpdate();
     return true;
 }
 

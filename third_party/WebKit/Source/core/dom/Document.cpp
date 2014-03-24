@@ -83,7 +83,6 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
-#include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptRunner.h"
@@ -1533,7 +1532,17 @@ bool Document::shouldCallRecalcStyleForDocument()
 {
     if (!isActive() || !view())
         return false;
-    return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
+    if (needsStyleRecalc() || childNeedsStyleRecalc())
+        return true;
+    if (childNeedsDistributionRecalc())
+        return true;
+    if (!m_useElementsNeedingUpdate.isEmpty())
+        return true;
+    if (!m_layerUpdateElements.isEmpty())
+        return true;
+    if (childNeedsStyleInvalidation())
+        return true;
+    return false;
 }
 
 bool Document::shouldScheduleStyleRecalc()
@@ -1727,7 +1736,7 @@ void Document::updateStyle(StyleRecalcChange change)
     RELEASE_ASSERT(!view()->isInPerformLayout());
     RELEASE_ASSERT(!view()->isPainting());
 
-    // Script can run below in PostAttachCallbacks or WidgetUpdates, so protect the LocalFrame.
+    // Script can run below in WidgetUpdates, so protect the LocalFrame.
     RefPtr<LocalFrame> protect(m_frame);
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
@@ -1755,7 +1764,6 @@ void Document::updateStyle(StyleRecalcChange change)
         m_styleEngine->setUsesRemUnit(true);
 
     {
-        PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
@@ -1788,8 +1796,11 @@ void Document::updateStyle(StyleRecalcChange change)
 
         if (Element* documentElement = this->documentElement()) {
             inheritHtmlAndBodyElementStyles(change);
+            dirtyElementsForLayerUpdate();
             if (documentElement->shouldCallRecalcStyle(change))
                 documentElement->recalcStyle(change);
+            while (dirtyElementsForLayerUpdate())
+                documentElement->recalcStyle(NoChange);
         }
 
         ensureStyleResolver().printStats();
@@ -1986,6 +1997,32 @@ void Document::setIsViewSource(bool isViewSource)
 
     setSecurityOrigin(SecurityOrigin::createUnique());
     didUpdateSecurityOrigin();
+}
+
+bool Document::dirtyElementsForLayerUpdate()
+{
+    if (m_layerUpdateElements.isEmpty())
+        return false;
+    HashSet<Element*>::iterator end = m_layerUpdateElements.end();
+    for (HashSet<Element*>::iterator it = m_layerUpdateElements.begin(); it != end; ++it)
+        (*it)->setNeedsStyleRecalc(LocalStyleChange);
+    m_layerUpdateElements.clear();
+    return true;
+}
+
+void Document::scheduleLayerUpdate(Element& element)
+{
+    if (element.styleChangeType() == NeedsReattachStyleChange)
+        return;
+    element.setNeedsLayerUpdate();
+    m_layerUpdateElements.add(&element);
+    scheduleStyleRecalc();
+}
+
+void Document::unscheduleLayerUpdate(Element& element)
+{
+    element.clearNeedsLayerUpdate();
+    m_layerUpdateElements.remove(&element);
 }
 
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element)

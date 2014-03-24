@@ -439,6 +439,12 @@ public:
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
+    // FIXME: This should be eliminated and elements that use it should be made to
+    // always have a layer so they don't need to go about creating one from reasons
+    // external to style.
+    void scheduleLayerUpdate(Element&);
+    void unscheduleLayerUpdate(Element&);
+
     void evaluateMediaQueryList();
 
     FormController& formController();
@@ -1076,6 +1082,7 @@ private:
 
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
+    bool dirtyElementsForLayerUpdate();
     void updateDistributionIfNeeded();
     void updateUseShadowTreesIfNeeded();
 
@@ -1348,6 +1355,7 @@ private:
     HashSet<RefPtr<Element> > m_associatedFormControls;
 
     HashSet<SVGUseElement*> m_useElementsNeedingUpdate;
+    HashSet<Element*> m_layerUpdateElements;
 
     bool m_hasViewportUnits;
 

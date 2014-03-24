@@ -554,7 +554,7 @@ void WebFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
     if (webLayer)
         GraphicsLayer::registerContentsLayer(webLayer);
     frame()->setRemotePlatformLayer(webLayer);
-    frame()->ownerElement()->setNeedsStyleRecalc(WebCore::SubtreeStyleChange, WebCore::StyleChangeFromRenderer);
+    frame()->ownerElement()->scheduleLayerUpdate();
 }
 
 void WebFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)

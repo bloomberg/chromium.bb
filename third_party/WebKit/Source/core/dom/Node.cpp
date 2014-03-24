@@ -750,14 +750,11 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
         document().scheduleStyleRecalc();
 }
 
-void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource source)
+void Node::setNeedsStyleRecalc(StyleChangeType changeType)
 {
     ASSERT(changeType != NoStyleChange);
     if (!inActiveDocument())
         return;
-
-    if (source == StyleChangeFromRenderer)
-        setFlag(NotifyRendererWithIdenticalStyles);
 
     StyleChangeType existingChangeType = styleChangeType();
     if (changeType > existingChangeType) {
@@ -776,7 +773,8 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource sou
 void Node::clearNeedsStyleRecalc()
 {
     m_nodeFlags &= ~StyleChangeMask;
-    clearFlag(NotifyRendererWithIdenticalStyles);
+
+    clearNeedsLayerUpdate();
 
     if (isElementNode() && hasRareData())
         toElement(*this).setAnimationStyleChange(false);
@@ -1006,6 +1004,7 @@ void Node::detach(const AttachContext& context)
 
     setStyleChange(NeedsReattachStyleChange);
     setChildNeedsStyleRecalc();
+
     if (StyleResolver* resolver = document().styleResolver())
         resolver->ruleFeatureSet().clearStyleInvalidation(this);
 

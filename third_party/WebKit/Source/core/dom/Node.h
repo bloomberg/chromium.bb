@@ -93,13 +93,6 @@ enum StyleChangeType {
     NeedsReattachStyleChange = 3 << nodeStyleChangeShift,
 };
 
-// If the style change is from the renderer then we'll call setStyle on the
-// renderer even if the style computed from CSS is identical.
-enum StyleChangeSource {
-    StyleChangeFromCSS,
-    StyleChangeFromRenderer
-};
-
 class NodeRareDataBase {
 public:
     RenderObject* renderer() const { return m_renderer; }
@@ -357,7 +350,7 @@ public:
     void setChildNeedsStyleRecalc() { setFlag(ChildNeedsStyleRecalcFlag); }
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
-    void setNeedsStyleRecalc(StyleChangeType, StyleChangeSource = StyleChangeFromCSS);
+    void setNeedsStyleRecalc(StyleChangeType);
     void clearNeedsStyleRecalc();
 
     bool childNeedsDistributionRecalc() const { return getFlag(ChildNeedsDistributionRecalc); }
@@ -375,7 +368,9 @@ public:
 
     void recalcDistribution();
 
-    bool shouldNotifyRendererWithIdenticalStyles() const { return getFlag(NotifyRendererWithIdenticalStyles); }
+    bool needsLayerUpdate() const { return getFlag(NeedsLayerUpdateFlag); }
+    void setNeedsLayerUpdate() { setFlag(NeedsLayerUpdateFlag); }
+    void clearNeedsLayerUpdate() { clearFlag(NeedsLayerUpdateFlag); }
 
     void setIsLink(bool f);
 
@@ -712,7 +707,7 @@ private:
         IsInsertionPointFlag = 1 << 24,
         IsInShadowTreeFlag = 1 << 25,
 
-        NotifyRendererWithIdenticalStyles = 1 << 26,
+        NeedsLayerUpdateFlag = 1 << 26,
 
         CustomElement = 1 << 27,
         CustomElementUpgraded = 1 << 28,
