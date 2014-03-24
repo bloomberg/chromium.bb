@@ -5,6 +5,7 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 #define NET_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "base/i18n/streaming_utf8_validator.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -121,6 +123,42 @@ class NET_EXPORT WebSocketChannel {
  private:
   class HandshakeNotificationSender;
 
+  // The Windows implementation of std::queue requires that this declaration be
+  // visible in the header.
+  class PendingReceivedFrame {
+   public:
+    PendingReceivedFrame(bool final,
+                         WebSocketFrameHeader::OpCode opcode,
+                         const scoped_refptr<IOBuffer>& data,
+                         size_t offset,
+                         size_t size);
+    ~PendingReceivedFrame();
+
+    bool final() const { return final_; }
+    WebSocketFrameHeader::OpCode opcode() const { return opcode_; }
+    // ResetOpcode() to Continuation.
+    void ResetOpcode();
+    const scoped_refptr<IOBuffer>& data() const { return data_; }
+    size_t offset() const { return offset_; }
+    size_t size() const { return size_; }
+    // Increase |offset_| by |bytes|.
+    void DidConsume(size_t bytes);
+
+    // This object needs to be copyable and assignable, since it will be placed
+    // in a std::queue. The compiler-generated copy constructor and assignment
+    // operator will do the right thing.
+
+   private:
+    bool final_;
+    WebSocketFrameHeader::OpCode opcode_;
+    scoped_refptr<IOBuffer> data_;
+    // Where to start reading from data_. Everything prior to offset_ has
+    // already been sent to the browser.
+    size_t offset_;
+    // The size of data_.
+    size_t size_;
+  };
+
   // Methods which return a value of type ChannelState may delete |this|. If the
   // return value is CHANNEL_DELETED, then the caller must return without making
   // any further access to member variables or methods.
@@ -183,7 +221,8 @@ class NET_EXPORT WebSocketChannel {
   // WriteFrames() itself.
   ChannelState OnWriteDone(bool synchronous, int result) WARN_UNUSED_RESULT;
 
-  // Calls WebSocketStream::ReadFrames() with the appropriate arguments.
+  // Calls WebSocketStream::ReadFrames() with the appropriate arguments. Stops
+  // calling ReadFrames if current_receive_quota_ is 0.
   ChannelState ReadFrames() WARN_UNUSED_RESULT;
 
   // Callback from WebSocketStream::ReadFrames. Handles any errors and processes
@@ -297,6 +336,10 @@ class NET_EXPORT WebSocketChannel {
   // Destination for the current call to WebSocketStream::ReadFrames
   ScopedVector<WebSocketFrame> read_frames_;
 
+  // Frames that have been read but not yet forwarded to the renderer due to
+  // lack of quota.
+  std::queue<PendingReceivedFrame> pending_received_frames_;
+
   // Handle to an in-progress WebSocketStream creation request. Only non-NULL
   // during the connection process.
   scoped_ptr<WebSocketStreamRequest> stream_request_;
@@ -311,6 +354,9 @@ class NET_EXPORT WebSocketChannel {
   // The current amount of quota that the renderer has available for sending
   // on this logical channel (quota units).
   int current_send_quota_;
+  // The remaining amount of quota that the renderer will allow us to send on
+  // this logical channel (quota units).
+  int current_receive_quota_;
 
   // Timer for the closing handshake.
   base::OneShotTimer<WebSocketChannel> timer_;
