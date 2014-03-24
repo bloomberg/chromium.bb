@@ -67,6 +67,7 @@ class DirectoryLoader {
 
  private:
   class FeedFetcher;
+  struct ReadDirectoryCallbackState;
 
   // Part of ReadDirectory().
   void ReadDirectoryAfterGetEntry(const base::FilePath& directory_path,
@@ -94,6 +95,14 @@ class DirectoryLoader {
   // This function should be called when the directory load is complete.
   // Flushes the callbacks waiting for the directory to be loaded.
   void OnDirectoryLoadComplete(const std::string& local_id, FileError error);
+  void OnDirectoryLoadCompleteAfterRead(const std::string& local_id,
+                                        const ResourceEntryVector* entries,
+                                        FileError error);
+
+  // Sends |entries| to the callbacks.
+  void SendEntries(const std::string& local_id,
+                   const ResourceEntryVector& entries,
+                   bool has_more);
 
   // ================= Implementation for directory loading =================
   // Loads the directory contents from server, and updates the local metadata.
@@ -104,11 +113,10 @@ class DirectoryLoader {
   void LoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
       FeedFetcher* fetcher,
-      FileError error,
-      ScopedVector<ChangeList> change_lists);
+      FileError error);
 
   // Part of LoadDirectoryFromServer().
-  void LoadDirectoryFromServerAfterRefresh(
+  void LoadDirectoryFromServerAfterUpdateChangestamp(
       const DirectoryFetchInfo& directory_fetch_info,
       const base::FilePath* directory_path,
       FileError error);
@@ -121,7 +129,7 @@ class DirectoryLoader {
   AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
-  typedef std::map<std::string, std::vector<ReadDirectoryCallback> >
+  typedef std::map<std::string, std::vector<ReadDirectoryCallbackState> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
 

@@ -505,45 +505,38 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
 
-  // Create change lists.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  // Create change list.
+  scoped_ptr<ChangeList> change_list(new ChangeList);
 
-  // Add a new file to the change lists.
+  // Add a new file to the change list.
   ResourceEntry new_file;
   new_file.set_title("new_file");
   new_file.set_resource_id("new_file_id");
-  change_lists[0]->mutable_entries()->push_back(new_file);
-  change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
+  change_list->mutable_entries()->push_back(new_file);
+  change_list->mutable_parent_resource_ids()->push_back(kRootId);
 
   // Add "Directory 1" to the map with a new name.
   ResourceEntry dir1;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath().AppendASCII("Directory 1"), &dir1));
   dir1.set_title(dir1.title() + " (renamed)");
-  change_lists[0]->mutable_entries()->push_back(dir1);
-  change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
+  change_list->mutable_entries()->push_back(dir1);
+  change_list->mutable_parent_resource_ids()->push_back(kRootId);
 
   // Update the directory with the map.
   ResourceEntry root;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(), &root));
   const int64 kNewChangestamp = 12345;
-  base::FilePath file_path;
+  ResourceEntryVector refreshed_entries;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),
       DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
-      change_lists.Pass(),
-      &file_path));
-  EXPECT_EQ(util::GetDriveMyDriveRootPath().value(), file_path.value());
-
-  // The new changestamp should be set.
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
-      util::GetDriveMyDriveRootPath(), &entry));
-  EXPECT_EQ(kNewChangestamp, entry.directory_specific_info().changestamp());
+      change_list.Pass(),
+      &refreshed_entries));
 
   // "new_file" should be added.
+  ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath().AppendASCII(new_file.title()), &entry));
 
@@ -557,16 +550,15 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
 
-  // Create change lists and add a new file to it.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  // Create change list and add a new file to it.
+  scoped_ptr<ChangeList> change_list(new ChangeList);
   ResourceEntry new_file;
   new_file.set_title("new_file");
   new_file.set_resource_id("new_file_id");
   // This entry should not be added because the parent ID does not match.
-  change_lists[0]->mutable_parent_resource_ids()->push_back(
+  change_list->mutable_parent_resource_ids()->push_back(
       "some-random-resource-id");
-  change_lists[0]->mutable_entries()->push_back(new_file);
+  change_list->mutable_entries()->push_back(new_file);
 
 
   // Update the directory.
@@ -574,13 +566,12 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(), &root));
   const int64 kNewChangestamp = 12345;
-  base::FilePath file_path;
+  ResourceEntryVector refreshed_entries;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),
       DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
-      change_lists.Pass(),
-      &file_path));
-  EXPECT_EQ(util::GetDriveMyDriveRootPath().value(), file_path.value());
+      change_list.Pass(),
+      &refreshed_entries));
 
   // "new_file" should not be added.
   ResourceEntry entry;

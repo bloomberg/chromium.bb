@@ -206,6 +206,8 @@ TEST_F(DirectoryLoaderTest, ReadDirectory_MyDrive) {
             metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
                                               &entry));
   EXPECT_EQ(drive_service_->GetRootResourceId(), entry.resource_id());
+  EXPECT_EQ(drive_service_->about_resource().largest_change_id(),
+            entry.directory_specific_info().changestamp());
 
   // My Drive's child is present.
   base::FilePath file_path =

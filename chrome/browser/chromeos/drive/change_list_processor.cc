@@ -383,8 +383,8 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
 FileError ChangeListProcessor::RefreshDirectory(
     ResourceMetadata* resource_metadata,
     const DirectoryFetchInfo& directory_fetch_info,
-    ScopedVector<ChangeList> change_lists,
-    base::FilePath* out_file_path) {
+    scoped_ptr<ChangeList> change_list,
+    std::vector<ResourceEntry>* out_refreshed_entries) {
   DCHECK(!directory_fetch_info.empty());
 
   ResourceEntry directory;
@@ -396,52 +396,45 @@ FileError ChangeListProcessor::RefreshDirectory(
   if (!directory.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  for (size_t i = 0; i < change_lists.size(); ++i) {
-    ChangeList* change_list = change_lists[i];
-    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
-    for (size_t i = 0; i < entries->size(); ++i) {
-      ResourceEntry* entry = &(*entries)[i];
-      const std::string& parent_resource_id =
-          change_list->parent_resource_ids()[i];
+  std::vector<ResourceEntry>* entries = change_list->mutable_entries();
+  for (size_t i = 0; i < entries->size(); ++i) {
+    ResourceEntry* entry = &(*entries)[i];
+    const std::string& parent_resource_id =
+        change_list->parent_resource_ids()[i];
 
-      // Skip if the parent resource ID does not match. This is needed to
-      // handle entries with multiple parents. For such entries, the first
-      // parent is picked and other parents are ignored, hence some entries may
-      // have a parent resource ID which does not match the target directory's.
-      if (parent_resource_id != directory_fetch_info.resource_id()) {
-        DVLOG(1) << "Wrong-parent entry rejected: " << entry->resource_id();
-        continue;
-      }
-
-      entry->set_parent_local_id(directory_fetch_info.local_id());
-
-      std::string local_id;
-      error = resource_metadata->GetIdByResourceId(entry->resource_id(),
-                                                   &local_id);
-      if (error == FILE_ERROR_OK) {
-        entry->set_local_id(local_id);
-        error = resource_metadata->RefreshEntry(*entry);
-      }
-
-      if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
-        std::string local_id;
-        entry->clear_local_id();
-        error = resource_metadata->AddEntry(*entry, &local_id);
-      }
-
-      if (error != FILE_ERROR_OK)
-        return error;
+    // Skip if the parent resource ID does not match. This is needed to
+    // handle entries with multiple parents. For such entries, the first
+    // parent is picked and other parents are ignored, hence some entries may
+    // have a parent resource ID which does not match the target directory's.
+    if (parent_resource_id != directory_fetch_info.resource_id()) {
+      DVLOG(1) << "Wrong-parent entry rejected: " << entry->resource_id();
+      continue;
     }
+
+    entry->set_parent_local_id(directory_fetch_info.local_id());
+
+    std::string local_id;
+    error = resource_metadata->GetIdByResourceId(entry->resource_id(),
+                                                 &local_id);
+    if (error == FILE_ERROR_OK) {
+      entry->set_local_id(local_id);
+      error = resource_metadata->RefreshEntry(*entry);
+    }
+
+    if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
+      entry->clear_local_id();
+      error = resource_metadata->AddEntry(*entry, &local_id);
+    }
+
+    if (error != FILE_ERROR_OK)
+      return error;
+
+    ResourceEntry result_entry;
+    error = resource_metadata->GetResourceEntryById(local_id, &result_entry);
+    if (error != FILE_ERROR_OK)
+      return error;
+    out_refreshed_entries->push_back(result_entry);
   }
-
-  directory.mutable_directory_specific_info()->set_changestamp(
-      directory_fetch_info.changestamp());
-  error = resource_metadata->RefreshEntry(directory);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  *out_file_path = resource_metadata->GetFilePath(
-      directory_fetch_info.local_id());
   return FILE_ERROR_OK;
 }
 

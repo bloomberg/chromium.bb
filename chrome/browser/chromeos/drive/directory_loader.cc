@@ -61,35 +61,46 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
   return FILE_ERROR_OK;
 }
 
-void ReadDirectoryAfterRead(const std::vector<ReadDirectoryCallback>& callbacks,
-                            scoped_ptr<ResourceEntryVector> entries,
-                            FileError error) {
+FileError UpdateChangestamp(ResourceMetadata* resource_metadata,
+                            const DirectoryFetchInfo& directory_fetch_info,
+                            base::FilePath* directory_path) {
+  // Update the directory changestamp.
+  ResourceEntry directory;
+  FileError error = resource_metadata->GetResourceEntryById(
+      directory_fetch_info.local_id(), &directory);
   if (error != FILE_ERROR_OK)
-    entries.reset();
-  for (size_t i = 0; i < callbacks.size(); ++i) {
-    scoped_ptr<ResourceEntryVector> copied_entries;
-    if (entries)
-      copied_entries.reset(new ResourceEntryVector(*entries));
+    return error;
 
-    callbacks[i].Run(error, copied_entries.Pass(), false /*has_more*/);
-  }
+  if (!directory.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
+
+  directory.mutable_directory_specific_info()->set_changestamp(
+      directory_fetch_info.changestamp());
+  error = resource_metadata->RefreshEntry(directory);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // Get the directory path.
+  *directory_path = resource_metadata->GetFilePath(
+      directory_fetch_info.local_id());
+  return FILE_ERROR_OK;
 }
 
 }  // namespace
 
+struct DirectoryLoader::ReadDirectoryCallbackState {
+  ReadDirectoryCallback callback;
+  std::set<std::string> sent_entry_names;
+};
+
 // Fetches the resource entries in the directory with |directory_resource_id|.
 class DirectoryLoader::FeedFetcher {
  public:
-  typedef base::Callback<void(FileError, ScopedVector<ChangeList>)>
-      FeedFetcherCallback;
-
-  FeedFetcher(JobScheduler* scheduler,
-              DriveServiceInterface* drive_service,
-              const std::string& directory_resource_id,
+  FeedFetcher(DirectoryLoader* loader,
+              const DirectoryFetchInfo& directory_fetch_info,
               const std::string& root_folder_id)
-      : scheduler_(scheduler),
-        drive_service_(drive_service),
-        directory_resource_id_(directory_resource_id),
+      : loader_(loader),
+        directory_fetch_info_(directory_fetch_info),
         root_folder_id_(root_folder_id),
         weak_ptr_factory_(this) {
   }
@@ -97,10 +108,10 @@ class DirectoryLoader::FeedFetcher {
   ~FeedFetcher() {
   }
 
-  void Run(const FeedFetcherCallback& callback) {
+  void Run(const FileOperationCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
-    DCHECK(!directory_resource_id_.empty());
+    DCHECK(!directory_fetch_info_.resource_id().empty());
 
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
@@ -110,14 +121,14 @@ class DirectoryLoader::FeedFetcher {
     // regression.
     // TODO(hashimoto): Remove this. crbug.com/340931.
 
-    std::string resource_id = directory_resource_id_;
-    if (directory_resource_id_ == root_folder_id_) {
+    std::string resource_id = directory_fetch_info_.resource_id();
+    if (resource_id == root_folder_id_) {
       // GData WAPI doesn't accept the root directory id which is used in Drive
       // API v2. So it is necessary to translate it here.
       resource_id = util::kWapiRootDirectoryResourceId;
     }
 
-    scheduler_->GetResourceListInDirectoryByWapi(
+    loader_->scheduler_->GetResourceListInDirectoryByWapi(
         resource_id,
         base::Bind(&FeedFetcher::OnResourceListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
@@ -125,7 +136,7 @@ class DirectoryLoader::FeedFetcher {
 
  private:
   void OnResourceListFetched(
-      const FeedFetcherCallback& callback,
+      const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceList> resource_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -133,20 +144,54 @@ class DirectoryLoader::FeedFetcher {
 
     FileError error = GDataToFileError(status);
     if (error != FILE_ERROR_OK) {
-      callback.Run(error, ScopedVector<ChangeList>());
+      callback.Run(error);
       return;
     }
 
-    // Add the current change list to the list of collected lists.
     DCHECK(resource_list);
-    ChangeList* change_list = new ChangeList(*resource_list);
-    FixResourceIdInChangeList(change_list);
-    change_lists_.push_back(change_list);
+    scoped_ptr<ChangeList> change_list(new ChangeList(*resource_list));
+    FixResourceIdInChangeList(change_list.get());
 
     GURL next_url;
-    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+    resource_list->GetNextFeedURL(&next_url);
+
+    ResourceEntryVector* entries = new ResourceEntryVector;
+    loader_->loader_controller_->ScheduleRun(base::Bind(
+        base::IgnoreResult(
+            &base::PostTaskAndReplyWithResult<FileError, FileError>),
+        loader_->blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&ChangeListProcessor::RefreshDirectory,
+                   loader_->resource_metadata_,
+                   directory_fetch_info_,
+                   base::Passed(&change_list),
+                   entries),
+        base::Bind(&FeedFetcher::OnDirectoryRefreshed,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   next_url,
+                   base::Owned(entries))));
+  }
+
+  void OnDirectoryRefreshed(
+      const FileOperationCallback& callback,
+      const GURL& next_url,
+      const std::vector<ResourceEntry>* refreshed_entries,
+      FileError error) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error);
+      return;
+    }
+
+    loader_->SendEntries(directory_fetch_info_.local_id(), *refreshed_entries,
+                         true /*has_more*/);
+
+    if (!next_url.is_empty()) {
       // There is the remaining result so fetch it.
-      scheduler_->GetRemainingResourceList(
+      loader_->scheduler_->GetRemainingResourceList(
           next_url,
           base::Bind(&FeedFetcher::OnResourceListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
@@ -159,7 +204,7 @@ class DirectoryLoader::FeedFetcher {
     // Note: The fetcher is managed by DirectoryLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
     // invocation.
-    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+    callback.Run(FILE_ERROR_OK);
   }
 
   // Fixes resource IDs in |change_list| into the format that |drive_service_|
@@ -181,14 +226,13 @@ class DirectoryLoader::FeedFetcher {
   std::string FixResourceId(const std::string& resource_id) {
     if (resource_id == util::kWapiRootDirectoryResourceId)
       return root_folder_id_;
-    return drive_service_->GetResourceIdCanonicalizer().Run(resource_id);
+    return loader_->drive_service_->GetResourceIdCanonicalizer().Run(
+        resource_id);
   }
 
-  JobScheduler* scheduler_;
-  DriveServiceInterface* drive_service_;
-  std::string directory_resource_id_;
+  DirectoryLoader* loader_;
+  DirectoryFetchInfo directory_fetch_info_;
   std::string root_folder_id_;
-  ScopedVector<ChangeList> change_lists_;
   base::TimeTicks start_time_;
   base::WeakPtrFactory<FeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FeedFetcher);
@@ -285,7 +329,9 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
 
   // Register the callback function to be called when it is loaded.
   const std::string& local_id = directory_fetch_info.local_id();
-  pending_load_callback_[local_id].push_back(callback);
+  ReadDirectoryCallbackState callback_state;
+  callback_state.callback = callback;
+  pending_load_callback_[local_id].push_back(callback_state);
 
   // If loading task for |local_id| is already running, do nothing.
   if (pending_load_callback_[local_id].size() > 1)
@@ -427,19 +473,61 @@ void DirectoryLoader::OnDirectoryLoadComplete(const std::string& local_id,
                "Fast-fetch complete: %s => %s",
                local_id.c_str(),
                FileErrorToString(error).c_str());
+
+  ResourceEntryVector* entries = new ResourceEntryVector;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::ReadDirectoryById,
+                 base::Unretained(resource_metadata_), local_id, entries),
+      base::Bind(&DirectoryLoader::OnDirectoryLoadCompleteAfterRead,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 local_id,
+                 base::Owned(entries)));
+}
+
+void DirectoryLoader::OnDirectoryLoadCompleteAfterRead(
+    const std::string& local_id,
+    const ResourceEntryVector* entries,
+    FileError error) {
   LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it != pending_load_callback_.end()) {
     DVLOG(1) << "Running callback for " << local_id;
-    const std::vector<ReadDirectoryCallback>& callbacks = it->second;
-    ResourceEntryVector* entries = new ResourceEntryVector;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(&ResourceMetadata::ReadDirectoryById,
-                   base::Unretained(resource_metadata_), local_id, entries),
-        base::Bind(&ReadDirectoryAfterRead, callbacks,
-                   base::Passed(scoped_ptr<ResourceEntryVector>(entries))));
+
+    const bool kHasMore = false;
+    if (error == FILE_ERROR_OK) {
+      SendEntries(local_id, *entries, kHasMore);
+    } else {
+      for (size_t i = 0; i < it->second.size(); ++i) {
+        const ReadDirectoryCallbackState& callback_state = it->second[i];
+        callback_state.callback.Run(error, scoped_ptr<ResourceEntryVector>(),
+                                    kHasMore);
+      }
+    }
     pending_load_callback_.erase(it);
+  }
+}
+
+void DirectoryLoader::SendEntries(const std::string& local_id,
+                                  const ResourceEntryVector& entries,
+                                  bool has_more) {
+  LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
+  DCHECK(it != pending_load_callback_.end());
+
+  for (size_t i = 0; i < it->second.size(); ++i) {
+    ReadDirectoryCallbackState* callback_state = &it->second[i];
+
+    // Filter out entries which were already sent.
+    scoped_ptr<ResourceEntryVector> entries_to_send(new ResourceEntryVector);
+    for (size_t i = 0; i < entries.size(); ++i) {
+      const ResourceEntry& entry = entries[i];
+      if (!callback_state->sent_entry_names.count(entry.base_name())) {
+        callback_state->sent_entry_names.insert(entry.base_name());
+        entries_to_send->push_back(entry);
+      }
+    }
+    callback_state->callback.Run(FILE_ERROR_OK, entries_to_send.Pass(),
+                                 has_more);
   }
 }
 
@@ -451,9 +539,8 @@ void DirectoryLoader::LoadDirectoryFromServer(
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
   FeedFetcher* fetcher = new FeedFetcher(
-      scheduler_,
-      drive_service_,
-      directory_fetch_info.resource_id(),
+      this,
+      directory_fetch_info,
       about_resource_loader_->cached_about_resource()->root_folder_id());
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
@@ -466,8 +553,7 @@ void DirectoryLoader::LoadDirectoryFromServer(
 void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     FeedFetcher* fetcher,
-    FileError error,
-    ScopedVector<ChangeList> change_lists) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!directory_fetch_info.empty());
 
@@ -483,24 +569,23 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
     return;
   }
 
+  // Update changestamp and get the directory path.
   base::FilePath* directory_path = new base::FilePath;
-  loader_controller_->ScheduleRun(base::Bind(
-      base::IgnoreResult(
-          &base::PostTaskAndReplyWithResult<FileError, FileError>),
-      blocking_task_runner_,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&ChangeListProcessor::RefreshDirectory,
+      base::Bind(&UpdateChangestamp,
                  resource_metadata_,
                  directory_fetch_info,
-                 base::Passed(&change_lists),
                  directory_path),
-      base::Bind(&DirectoryLoader::LoadDirectoryFromServerAfterRefresh,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_fetch_info,
-                 base::Owned(directory_path))));
+      base::Bind(
+          &DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp,
+          weak_ptr_factory_.GetWeakPtr(),
+          directory_fetch_info,
+          base::Owned(directory_path)));
 }
 
-void DirectoryLoader::LoadDirectoryFromServerAfterRefresh(
+void DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp(
     const DirectoryFetchInfo& directory_fetch_info,
     const base::FilePath* directory_path,
     FileError error) {
