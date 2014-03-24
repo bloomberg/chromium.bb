@@ -68,7 +68,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
  private:
-  int buffer_id_;
+  long buffer_id_;
   gfx::Size size_;
   bool mapped_;
 

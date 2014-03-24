@@ -68,17 +68,17 @@ enum AwMapMode {
 };
 
 // Called to create a GraphicBuffer
-typedef int AwCreateGraphicBufferFunction(int w, int h);
+typedef long AwCreateGraphicBufferFunction(int w, int h);
 // Called to release a GraphicBuffer
-typedef void AwReleaseGraphicBufferFunction(int buffer_id);
+typedef void AwReleaseGraphicBufferFunction(long buffer_id);
 // Called to map a GraphicBuffer in |mode|.
-typedef int AwMapFunction(int buffer_id, AwMapMode mode, void** vaddr);
+typedef int AwMapFunction(long buffer_id, AwMapMode mode, void** vaddr);
 // Called to unmap a GraphicBuffer
-typedef int AwUnmapFunction(int buffer_id);
+typedef int AwUnmapFunction(long buffer_id);
 // Called to get a native buffer pointer
-typedef void* AwGetNativeBufferFunction(int buffer_id);
+typedef void* AwGetNativeBufferFunction(long buffer_id);
 // Called to get the stride of the buffer
-typedef unsigned int AwGetStrideFunction(int buffer_id);
+typedef unsigned int AwGetStrideFunction(long buffer_id);
 
 // Set of functions used in rendering in hardware mode
 struct AwDrawGLFunctionTable {
