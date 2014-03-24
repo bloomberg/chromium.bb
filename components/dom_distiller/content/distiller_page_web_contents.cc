@@ -35,9 +35,9 @@ DistillerPageWebContents::~DistillerPageWebContents() {
 
 void DistillerPageWebContents::InitImpl() {
   DCHECK(browser_context_);
-  web_contents_.reset(
-      content::WebContents::Create(
-          content::WebContents::CreateParams(browser_context_)));
+  content::WebContents::CreateParams create_params(browser_context_);
+  create_params.initially_hidden = true;
+  web_contents_.reset(content::WebContents::Create(create_params));
 }
 
 void DistillerPageWebContents::LoadURLImpl(const GURL& gurl) {
@@ -57,14 +57,12 @@ void DistillerPageWebContents::ExecuteJavaScriptImpl(
                                       web_contents_->GetLastCommittedURL()));
 }
 
-void DistillerPageWebContents::DidFinishLoad(int64 frame_id,
-                                             const GURL& validated_url,
-                                             bool is_main_frame,
-                                             RenderViewHost* render_view_host) {
-  // TODO(shashishekhar): Find a better way to detect when it is safe to run the
-  // distillation script. Waiting for the entire page to load is really slow.
-  if (is_main_frame) {
+void DistillerPageWebContents::DocumentLoadedInFrame(
+    int64 frame_id,
+    RenderViewHost* render_view_host) {
+  if (frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
     content::WebContentsObserver::Observe(NULL);
+    web_contents_->Stop();
     OnLoadURLDone();
   }
 }
