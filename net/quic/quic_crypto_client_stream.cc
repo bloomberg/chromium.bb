@@ -259,8 +259,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       }
       case STATE_VERIFY_PROOF_COMPLETE:
         if (!verify_ok_) {
-          client_session()->OnProofVerifyDetailsAvailable(
-              *cached->proof_verify_details());
+          client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
           CloseConnectionWithDetails(
               QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
           return;
