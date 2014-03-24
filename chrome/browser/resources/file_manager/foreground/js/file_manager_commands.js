@@ -101,13 +101,17 @@ CommandUtil.canExecuteEnabledOnDriveOnly = function(event, fileManager) {
 };
 
 /**
- * Checks if command should be visible on drive.
+ * Sets the command as visible only when the current volume is drive and it's
+ * running as a normal app, not as a modal dialog.
  * @param {Event} event Command event to mark.
  * @param {FileManager} fileManager FileManager to use.
  */
-CommandUtil.canExecuteVisibleOnDriveOnly = function(event, fileManager) {
-  event.canExecute = fileManager.isOnDrive();
-  event.command.setHidden(!fileManager.isOnDrive());
+CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly =
+    function(event, fileManager) {
+  var enabled = fileManager.isOnDrive() &&
+      !DialogType.isModal(fileManager.dialogType);
+  event.canExecute = enabled;
+  event.command.setHidden(!enabled);
 };
 
 /**
@@ -513,8 +517,7 @@ CommandHandler.COMMANDS_['volume-help'] = {
     var hideHelp = DialogType.isModal(fileManager.dialogType);
     event.canExecute = !hideHelp;
     event.command.setHidden(hideHelp);
-    fileManager.document_.getElementById('help-separator').hidden =
-        hideHelp && !fileManager.isOnDrive();
+    fileManager.document_.getElementById('help-separator').hidden = hideHelp;
   },
 };
 
@@ -526,7 +529,7 @@ CommandHandler.COMMANDS_['drive-buy-more-space'] = {
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_BUY_STORAGE_URL'));
   },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
 };
 
 /**
@@ -537,7 +540,7 @@ CommandHandler.COMMANDS_['drive-go-to-drive'] = {
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_ROOT_URL'));
   },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
 };
 
 /**
