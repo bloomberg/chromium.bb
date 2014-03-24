@@ -69,10 +69,7 @@ void InvokeErrorCallback(const std::string& service_path,
 void LogErrorWithDict(const tracked_objects::Location& from_where,
                       const std::string& error_name,
                       scoped_ptr<base::DictionaryValue> error_data) {
-  network_event_log::internal::AddEntry(
-       from_where.file_name(), from_where.line_number(),
-       network_event_log::LOG_LEVEL_ERROR,
-       error_name, "");
+  LOG(ERROR) << from_where.ToString() << ": " << error_name;
 }
 
 const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,
@@ -146,8 +143,10 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
                                                  &profile_path);
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
-  if (!profile)
-    NET_LOG_ERROR("No profile for service: " + profile_path, service_path);
+  if (!profile) {
+    LOG(ERROR) << "No or no known profile received for service "
+            << service_path << ".";
+  }
 
   scoped_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(shill_properties);
@@ -163,7 +162,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
     else
       NOTREACHED();
   } else if (profile) {
-    NET_LOG_ERROR("Service contains empty or invalid UIData", service_path);
+    LOG(WARNING) << "Service " << service_path << " of profile "
+                 << profile_path << " contains no or no valid UIData.";
     // TODO(pneubeck): add a conversion of user configured entries of old
     // ChromeOS versions. We will have to use a heuristic to determine which
     // properties _might_ be user configured.
@@ -377,8 +377,9 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     DCHECK(!guid.empty());
 
     if (policies->per_network_config.count(guid) > 0) {
-      NET_LOG_ERROR("ONC from " + ToDebugString(onc_source, userhash) +
-                    " contains several entries for the same GUID ", guid);
+      LOG(ERROR) << "ONC from " << ToDebugString(onc_source, userhash)
+                 << " contains several entries for the same GUID "
+                 << guid << ".";
       delete policies->per_network_config[guid];
     }
     const base::DictionaryValue* new_entry = network->DeepCopy();
@@ -460,9 +461,7 @@ void ManagedNetworkConfigurationHandlerImpl::
   existing_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                     &profile);
   if (profile.empty()) {
-    NET_LOG_ERROR("Missing profile property",
-                  shill_property_util::GetNetworkIdFromProperties(
-                      existing_properties));
+    LOG(ERROR) << "Missing profile property.";
     return;
   }
   shill_properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
@@ -470,9 +469,7 @@ void ManagedNetworkConfigurationHandlerImpl::
 
   if (!shill_property_util::CopyIdentifyingProperties(existing_properties,
                                                       &shill_properties)) {
-    NET_LOG_ERROR("Missing identifying properties",
-                  shill_property_util::GetNetworkIdFromProperties(
-                      existing_properties));
+    LOG(ERROR) << "Missing identifying properties.";
   }
 
   shill_properties.MergeDictionary(&new_properties);
@@ -539,7 +536,7 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
-    NET_LOG_ERROR("Profile path unknown:" + profile_path, guid);
+    LOG(ERROR) << "Profile path unknown: " << profile_path;
     return NULL;
   }
 

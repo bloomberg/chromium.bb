@@ -53,6 +53,13 @@ void GetPropertiesCallback(
     const std::string& service_path,
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
+  // Get the correct name from WifiHex if necessary.
+  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
+  std::string name =
+      shill_property_util::GetNameFromProperties(service_path, properties);
+  if (!name.empty()) {
+    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
+  }
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // Because network services are added and removed frequently, we will see
     // failures regularly, so don't log these.
@@ -60,18 +67,9 @@ void GetPropertiesCallback(
                                       service_path,
                                       network_handler::kDBusFailedError,
                                       network_handler::kDBusFailedErrorMessage);
-    return;
+  } else if (!callback.is_null()) {
+    callback.Run(service_path, *properties_copy.get());
   }
-  if (callback.is_null())
-    return;
-
-  // Get the correct name from WifiHex if necessary.
-  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
-  std::string name =
-      shill_property_util::GetNameFromProperties(service_path, properties);
-  if (!name.empty())
-    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
-  callback.Run(service_path, *properties_copy.get());
 }
 
 void SetNetworkProfileErrorCallback(
@@ -269,17 +267,15 @@ void NetworkConfigurationHandler::CreateConfiguration(
       DBusThreadManager::Get()->GetShillManagerClient();
   std::string type;
   properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
-  DCHECK(!type.empty());
   if (NetworkTypePattern::Ethernet().MatchesType(type)) {
     InvokeErrorCallback(
-        shill_property_util::GetNetworkIdFromProperties(properties),
+        "" /* no service path */,
         error_callback,
-        "ConfigureServiceForProfile: Invalid type: " + type);
+        "ConfigureServiceForProfile is not implemented for Ethernet");
     return;
   }
 
-  NET_LOG_USER("CreateConfiguration: " + type,
-               shill_property_util::GetNetworkIdFromProperties(properties));
+  NET_LOG_USER("CreateConfiguration", type);
   LogConfigProperties("Configure", type, properties);
 
   std::string profile;
