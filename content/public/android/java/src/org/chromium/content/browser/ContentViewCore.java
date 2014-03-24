@@ -357,6 +357,11 @@ public class ContentViewCore
     private final RenderCoordinates.NormalizedPoint mEndHandlePoint;
     private final RenderCoordinates.NormalizedPoint mInsertionHandlePoint;
 
+    // Cached copy of the visible rectangle defined by two points. Needed to determine
+    // visibility of insertion/selection handles.
+    private final RenderCoordinates.NormalizedPoint mTopLeftVisibilityClippingPoint;
+    private final RenderCoordinates.NormalizedPoint mBottomRightVisibilityClippingPoint;
+
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
     // whether the last selected text is still highlighted.
     private boolean mHasSelection;
@@ -459,6 +464,8 @@ public class ContentViewCore
         mStartHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mEndHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mInsertionHandlePoint = mRenderCoordinates.createNormalizedPoint();
+        mTopLeftVisibilityClippingPoint = mRenderCoordinates.createNormalizedPoint();
+        mBottomRightVisibilityClippingPoint = mRenderCoordinates.createNormalizedPoint();
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         mGestureStateListeners = new ObserverList<GestureStateListener>();
@@ -1991,6 +1998,7 @@ public class ContentViewCore
             };
 
             mSelectionHandleController.hideAndDisallowAutomaticShowing();
+            updateInsertionSelectionVisibleBounds();
         }
 
         return mSelectionHandleController;
@@ -2029,6 +2037,7 @@ public class ContentViewCore
             };
 
             mInsertionHandleController.hideAndDisallowAutomaticShowing();
+            updateInsertionSelectionVisibleBounds();
         }
 
         return mInsertionHandleController;
@@ -2514,6 +2523,32 @@ public class ContentViewCore
         }
         if (isSelectionHandleShowing() || isInsertionHandleShowing()) {
             mPositionObserver.addListener(mPositionListener);
+        }
+    }
+
+    @CalledByNative
+    private void setSelectionRootBounds(Rect bounds) {
+        mTopLeftVisibilityClippingPoint.setLocalDip(bounds.left, bounds.top);
+        mBottomRightVisibilityClippingPoint.setLocalDip(bounds.right, bounds.bottom);
+        updateInsertionSelectionVisibleBounds();
+    }
+
+    private void updateInsertionSelectionVisibleBounds() {
+        if (mSelectionHandleController == null && mInsertionHandleController == null) {
+            return;
+        }
+
+        int x1 = Math.round(mTopLeftVisibilityClippingPoint.getXPix());
+        int y1 = Math.round(mTopLeftVisibilityClippingPoint.getYPix());
+        int x2 = Math.round(mBottomRightVisibilityClippingPoint.getXPix());
+        int y2 = Math.round(mBottomRightVisibilityClippingPoint.getYPix());
+
+        if (mSelectionHandleController != null) {
+            mSelectionHandleController.setVisibleClippingRectangle(x1, y1, x2, y2);
+        }
+
+        if (mInsertionHandleController != null) {
+            mInsertionHandleController.setVisibleClippingRectangle(x1, y1, x2, y2);
         }
     }
 

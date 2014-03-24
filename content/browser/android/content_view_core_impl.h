@@ -274,6 +274,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
+  void OnSelectionRootBoundsChanged(const gfx::Rect& bounds);
 
   void StartContentIntent(const GURL& content_url);
 

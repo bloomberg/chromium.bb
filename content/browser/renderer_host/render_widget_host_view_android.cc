@@ -609,6 +609,9 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
 
 void RenderWidgetHostViewAndroid::SelectionRootBoundsChanged(
     const gfx::Rect& bounds) {
+  if (content_view_core_) {
+    content_view_core_->OnSelectionRootBoundsChanged(bounds);
+  }
 }
 
 void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
