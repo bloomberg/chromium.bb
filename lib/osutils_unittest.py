@@ -198,11 +198,12 @@ class TempDirTests(cros_test_lib.TestCase):
   def testCleanupExceptionContextException(self):
     """Test an exception during cleanup if the context DID raise."""
     was_raised = False
+    tempdir_obj = osutils.TempDir(prefix=self.PREFIX)
 
-    with mock.patch.object(osutils.TempDir, 'Cleanup',
+    with mock.patch.object(osutils, '_TempDirTearDown',
                            side_effect=TempDirTests.HelperException):
       try:
-        with osutils.TempDir(prefix=self.PREFIX) as td:
+        with tempdir_obj as td:
           tempdir = td
           raise TempDirTests.HelperExceptionInner()
       except TempDirTests.HelperExceptionInner:
@@ -211,23 +212,30 @@ class TempDirTests(cros_test_lib.TestCase):
     # Show that the exception exited the context.
     self.assertTrue(was_raised)
 
+    # Verify the tempdir object no longer contains a reference to the tempdir.
+    self.assertIsNone(tempdir_obj.tempdir)
+
     # Cleanup the dir leaked by our mock exception.
     os.rmdir(tempdir)
 
   def testCleanupExceptionNoContextException(self):
     """Test an exception during cleanup if the context did NOT raise."""
     was_raised = False
+    tempdir_obj = osutils.TempDir(prefix=self.PREFIX)
 
-    with mock.patch.object(osutils.TempDir, 'Cleanup',
+    with mock.patch.object(osutils, '_TempDirTearDown',
                            side_effect=TempDirTests.HelperException):
       try:
-        with osutils.TempDir(prefix=self.PREFIX) as td:
+        with tempdir_obj as td:
           tempdir = td
       except TempDirTests.HelperException:
         was_raised = True
 
     # Show that the exception exited the context.
     self.assertTrue(was_raised)
+
+    # Verify the tempdir object no longer contains a reference to the tempdir.
+    self.assertIsNone(tempdir_obj.tempdir)
 
     # Cleanup the dir leaked by our mock exception.
     os.rmdir(tempdir)

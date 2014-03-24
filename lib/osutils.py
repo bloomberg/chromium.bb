@@ -433,8 +433,10 @@ class TempDir(object):
   def Cleanup(self):
     """Clean up the temporary directory."""
     if self.tempdir is not None:
-      _TempDirTearDown(self, self.sudo_rm)
-      self.tempdir = None
+      try:
+        _TempDirTearDown(self, self.sudo_rm)
+      finally:
+        self.tempdir = None
 
   def __enter__(self):
     """Return the temporary directory."""
