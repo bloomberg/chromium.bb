@@ -2161,8 +2161,14 @@ cr.define('login', function() {
           break;
         case 'Enter':
           if (this.focusedPod_) {
-            this.setActivatedPod(this.focusedPod_, e);
-            e.stopPropagation();
+            var targetTag = e.target.tagName;
+            if (e.target == this.focusedPod_.passwordElement ||
+                (targetTag != 'INPUT' &&
+                 targetTag != 'BUTTON' &&
+                 targetTag != 'A')) {
+              this.setActivatedPod(this.focusedPod_, e);
+              e.stopPropagation();
+            }
           }
           break;
         case 'U+001B':  // Esc
