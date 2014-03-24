@@ -383,6 +383,7 @@ static const char* const kLavabitAcceptableCerts[] = {
 static const struct HSTSPreload kPreloadedSTS[] = {
   {25, true, "\013pinningtest\007appspot\003com", false, kTestPins, DOMAIN_APPSPOT_COM },
   {12, true, "\006google\003com", false, kGooglePins, DOMAIN_GOOGLE_COM },
+  {18, true, "\005admin\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {19, true, "\006wallet\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {21, true, "\010checkout\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {19, true, "\006chrome\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
