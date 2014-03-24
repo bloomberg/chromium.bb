@@ -195,9 +195,11 @@ void ClipboardMessageFilter::OnIsFormatAvailable(ClipboardFormat format,
     case CLIPBOARD_FORMAT_HTML:
       *result = GetClipboard()->IsFormatAvailable(
           ui::Clipboard::GetHtmlFormatType(), type);
+      break;
     case CLIPBOARD_FORMAT_SMART_PASTE:
       *result = GetClipboard()->IsFormatAvailable(
           ui::Clipboard::GetWebKitSmartPasteFormatType(), type);
+      break;
     case CLIPBOARD_FORMAT_BOOKMARK:
 #if defined(OS_WIN) || defined(OS_MACOSX)
       *result = GetClipboard()->IsFormatAvailable(
@@ -205,6 +207,7 @@ void ClipboardMessageFilter::OnIsFormatAvailable(ClipboardFormat format,
 #else
       *result = false;
 #endif
+      break;
   }
 }
 
