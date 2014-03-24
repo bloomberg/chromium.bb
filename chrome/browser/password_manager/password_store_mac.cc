@@ -22,6 +22,7 @@
 #include "chrome/browser/mac/security_wrappers.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/apple_keychain.h"
 
 using autofill::PasswordForm;
@@ -840,6 +841,7 @@ PasswordStoreMac::~PasswordStoreMac() {}
 
 bool PasswordStoreMac::Init(
     const syncer::SyncableService::StartSyncFlare& flare) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
 
   if (!thread_->Start()) {
@@ -847,6 +849,12 @@ bool PasswordStoreMac::Init(
     return false;
   }
   return PasswordStore::Init(flare);
+}
+
+void PasswordStoreMac::Shutdown() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  PasswordStore::Shutdown();
+  thread_->Stop();
 }
 
 // Mac stores passwords in the system keychain, which can block for an

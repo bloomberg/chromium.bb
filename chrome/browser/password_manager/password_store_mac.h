@@ -36,6 +36,9 @@ class PasswordStoreMac : public PasswordStore {
   virtual bool Init(
       const syncer::SyncableService::StartSyncFlare& flare) OVERRIDE;
 
+  // Stops |thread_|.
+  virtual void Shutdown() OVERRIDE;
+
  protected:
   virtual ~PasswordStoreMac();
 
