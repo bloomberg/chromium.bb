@@ -23,6 +23,7 @@ class MockTimer : public MockableTime::Timer {
   }
   virtual ~MockTimer() {}
 
+  // MockableTime::Timer implementation:
   virtual void Start(const tracked_objects::Location& posted_from,
                      base::TimeDelta delay,
                      const base::Closure& user_task) OVERRIDE {
@@ -80,6 +81,17 @@ TestCallback::~TestCallback() {}
 void TestCallback::OnCalled() {
   EXPECT_FALSE(called_);
   called_ = true;
+}
+
+MockUploader::MockUploader(const UploadRequestCallback& callback)
+    : callback_(callback) {}
+
+MockUploader::~MockUploader() {}
+
+void MockUploader::UploadReport(const std::string& report_json,
+                                const GURL& upload_url,
+                                const UploadCallback& callback) {
+  callback_.Run(report_json, upload_url, callback);
 }
 
 MockTime::MockTime()

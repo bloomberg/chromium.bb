@@ -18,18 +18,67 @@ bool OnIOThread() {
   return content::BrowserThread::CurrentlyOn(content::BrowserThread::IO);
 }
 
+// Shamelessly stolen from net/tools/get_server_time/get_server_time.cc.
+// TODO(ttuttle): Merge them, if possible.
+class TrivialURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  TrivialURLRequestContextGetter(
+      net::URLRequestContext* context,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
+      : context_(context),
+        main_task_runner_(main_task_runner) {}
+
+  // net::URLRequestContextGEtter implementation:
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+    return context_;
+  }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetNetworkTaskRunner() const OVERRIDE {
+    return main_task_runner_;
+  }
+
+ private:
+  virtual ~TrivialURLRequestContextGetter() {}
+
+  net::URLRequestContext* context_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+};
+
 }  // namespace
 
 namespace domain_reliability {
 
-DomainReliabilityMonitor::DomainReliabilityMonitor()
-    : time_(new ActualTime()) {
+DomainReliabilityMonitor::DomainReliabilityMonitor(
+    net::URLRequestContext* url_request_context)
+    : time_(new ActualTime()),
+      url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
+          new TrivialURLRequestContextGetter(
+              url_request_context,
+              content::BrowserThread::GetMessageLoopProxyForThread(
+                  content::BrowserThread::IO)))),
+      scheduler_params_(
+          DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
+      dispatcher_(time_.get()),
+      uploader_(
+          DomainReliabilityUploader::Create(url_request_context_getter_)) {
   DCHECK(OnIOThread());
 }
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
+    net::URLRequestContext* url_request_context,
     scoped_ptr<MockableTime> time)
-    : time_(time.Pass()) {
+    : time_(time.Pass()),
+      url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
+          new TrivialURLRequestContextGetter(
+              url_request_context,
+              content::BrowserThread::GetMessageLoopProxyForThread(
+                  content::BrowserThread::IO)))),
+      scheduler_params_(
+          DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
+      dispatcher_(time_.get()),
+      uploader_(
+          DomainReliabilityUploader::Create(url_request_context_getter_)) {
   DCHECK(OnIOThread());
 }
 
@@ -59,7 +108,12 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
     scoped_ptr<const DomainReliabilityConfig> config) {
   DomainReliabilityContext*& context_ref = contexts_[config->domain];
   DCHECK(!context_ref);
-  context_ref = new DomainReliabilityContext(time_.get(), config.Pass());
+  context_ref = new DomainReliabilityContext(
+      time_.get(),
+      scheduler_params_,
+      &dispatcher_,
+      uploader_.get(),
+      config.Pass());
   return context_ref;
 }
 

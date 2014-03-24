@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "components/domain_reliability/dispatcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using base::DictionaryValue;
@@ -29,9 +30,17 @@ const int DomainReliabilityContext::kMaxQueuedBeacons = 150;
 
 DomainReliabilityContext::DomainReliabilityContext(
     MockableTime* time,
+    const DomainReliabilityScheduler::Params& scheduler_params,
+    DomainReliabilityDispatcher* dispatcher,
+    DomainReliabilityUploader* uploader,
     scoped_ptr<const DomainReliabilityConfig> config)
     : config_(config.Pass()),
       time_(time),
+      scheduler_(time, config_->collectors.size(), scheduler_params,
+                 base::Bind(&DomainReliabilityContext::ScheduleUpload,
+                            base::Unretained(this))),
+      dispatcher_(dispatcher),
+      uploader_(uploader),
       beacon_count_(0),
       weak_factory_(this) {
   InitializeResourceStates();
@@ -68,6 +77,7 @@ void DomainReliabilityContext::AddBeacon(
     ++beacon_count_;
     if (beacon_count_ > kMaxQueuedBeacons)
       RemoveOldestBeacon();
+    scheduler_.OnBeaconAdded();
   }
 }
 
@@ -150,6 +160,43 @@ void DomainReliabilityContext::InitializeResourceStates() {
   ScopedVector<DomainReliabilityConfig::Resource>::const_iterator it;
   for (it = config_->resources.begin(); it != config_->resources.end(); ++it)
     states_.push_back(new ResourceState(this, *it));
+}
+
+void DomainReliabilityContext::ScheduleUpload(
+    base::TimeDelta min_delay,
+    base::TimeDelta max_delay) {
+  dispatcher_->ScheduleTask(
+      base::Bind(
+          &DomainReliabilityContext::StartUpload,
+          weak_factory_.GetWeakPtr()),
+      min_delay,
+      max_delay);
+}
+
+void DomainReliabilityContext::StartUpload() {
+  MarkUpload();
+
+  base::TimeTicks upload_time = time_->Now();
+  std::string report_json;
+  scoped_ptr<const Value> report_value(CreateReport(upload_time));
+  base::JSONWriter::Write(report_value.get(), &report_json);
+  report_value.reset();
+
+  int collector_index;
+  scheduler_.OnUploadStart(&collector_index);
+
+  uploader_->UploadReport(
+      report_json,
+      config_->collectors[collector_index]->upload_url,
+      base::Bind(
+          &DomainReliabilityContext::OnUploadComplete,
+          weak_factory_.GetWeakPtr()));
+}
+
+void DomainReliabilityContext::OnUploadComplete(bool success) {
+  if (success)
+    CommitUpload();
+  scheduler_.OnUploadComplete(success);
 }
 
 scoped_ptr<const Value> DomainReliabilityContext::CreateReport(

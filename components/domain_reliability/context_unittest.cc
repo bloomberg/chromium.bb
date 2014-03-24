@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "components/domain_reliability/dispatcher.h"
+#include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/test_util.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_test_util.h"
@@ -37,8 +39,39 @@ DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
 class DomainReliabilityContextTest : public testing::Test {
  protected:
   DomainReliabilityContextTest()
-      : context_(&time_,
-                 CreateConfig().Pass()) {}
+      : dispatcher_(&time_),
+        params_(CreateParams()),
+        uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
+                             base::Unretained(this))),
+        context_(&time_,
+                 params_,
+                 &dispatcher_,
+                 &uploader_,
+                 CreateConfig().Pass()),
+        upload_pending_(false) {}
+
+  TimeDelta min_delay() const { return params_.minimum_upload_delay; }
+  TimeDelta max_delay() const { return params_.maximum_upload_delay; }
+  TimeDelta retry_interval() const { return params_.upload_retry_interval; }
+  TimeDelta zero_delta() const { return TimeDelta::FromMicroseconds(0); }
+
+  bool upload_pending() { return upload_pending_; }
+
+  const std::string& upload_report() {
+    DCHECK(upload_pending_);
+    return upload_report_;
+  }
+
+  const GURL& upload_url() {
+    DCHECK(upload_pending_);
+    return upload_url_;
+  }
+
+  void CallUploadCallback(bool success) {
+    DCHECK(upload_pending_);
+    upload_callback_.Run(success);
+    upload_pending_ = false;
+  }
 
   bool CheckNoBeacons(int index) {
     BeaconVector beacons;
@@ -53,9 +86,31 @@ class DomainReliabilityContextTest : public testing::Test {
   }
 
   MockTime time_;
+  DomainReliabilityDispatcher dispatcher_;
+  DomainReliabilityScheduler::Params params_;
+  MockUploader uploader_;
   DomainReliabilityContext context_;
 
  private:
+  void OnUploadRequest(
+      const std::string& report_json,
+      const GURL& upload_url,
+      const DomainReliabilityUploader::UploadCallback& callback) {
+    DCHECK(!upload_pending_);
+    upload_report_ = report_json;
+    upload_url_ = upload_url;
+    upload_callback_ = callback;
+    upload_pending_ = true;
+  }
+
+  static DomainReliabilityScheduler::Params CreateParams() {
+    DomainReliabilityScheduler::Params params;
+    params.minimum_upload_delay = base::TimeDelta::FromSeconds(60);
+    params.maximum_upload_delay = base::TimeDelta::FromSeconds(300);
+    params.upload_retry_interval = base::TimeDelta::FromSeconds(15);
+    return params;
+  }
+
   static scoped_ptr<const DomainReliabilityConfig> CreateConfig() {
     DomainReliabilityConfig* config = new DomainReliabilityConfig();
     DomainReliabilityConfig::Resource* resource;
@@ -83,6 +138,11 @@ class DomainReliabilityContextTest : public testing::Test {
 
     return scoped_ptr<const DomainReliabilityConfig>(config);
   }
+
+  bool upload_pending_;
+  std::string upload_report_;
+  GURL upload_url_;
+  DomainReliabilityUploader::UploadCallback upload_callback_;
 };
 
 TEST_F(DomainReliabilityContextTest, Create) {
@@ -122,6 +182,25 @@ TEST_F(DomainReliabilityContextTest, AlwaysReport) {
   EXPECT_TRUE(CheckCounts(0, 1, 0));
   EXPECT_TRUE(CheckNoBeacons(1));
   EXPECT_TRUE(CheckCounts(1, 0, 0));
+}
+
+TEST_F(DomainReliabilityContextTest, ReportUpload) {
+  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
+  context_.AddBeacon(beacon, GURL("http://example/always_report"));
+
+  const char* kExpectedReport = "{\"reporter\":\"chrome\","
+      "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
+      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
+      "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"
+      "\"resource_name\":\"always_report\",\"successful_requests\":1},"
+      "{\"beacons\":[],\"failed_requests\":0,\"resource_name\":"
+      "\"never_report\",\"successful_requests\":0}]}";
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+  EXPECT_EQ(kExpectedReport, upload_report());
+  EXPECT_EQ(GURL("https://example/upload"), upload_url());
+  CallUploadCallback(true);
 }
 
 }  // namespace domain_reliability

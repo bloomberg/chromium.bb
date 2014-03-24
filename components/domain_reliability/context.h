@@ -15,12 +15,16 @@
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "components/domain_reliability/scheduler.h"
+#include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 
 class GURL;
-class MockableTime;
 
 namespace domain_reliability {
+
+class DomainReliabilityDispatcher;
+class MockableTime;
 
 // The per-domain context for the Domain Reliability client; includes the
 // domain's config and per-resource beacon queues.
@@ -28,6 +32,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
  public:
   DomainReliabilityContext(
       MockableTime* time,
+      const DomainReliabilityScheduler::Params& scheduler_params,
+      DomainReliabilityDispatcher* dispatcher,
+      DomainReliabilityUploader* uploader,
       scoped_ptr<const DomainReliabilityConfig> config);
   virtual ~DomainReliabilityContext();
 
@@ -89,6 +96,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   typedef ResourceStateVector::const_iterator ResourceStateIterator;
 
   void InitializeResourceStates();
+  void ScheduleUpload(base::TimeDelta min_delay, base::TimeDelta max_delay);
+  void StartUpload();
+  void OnUploadComplete(bool success);
 
   scoped_ptr<const base::Value> CreateReport(base::TimeTicks upload_time) const;
 
@@ -105,6 +115,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
 
   scoped_ptr<const DomainReliabilityConfig> config_;
   MockableTime* time_;
+  DomainReliabilityScheduler scheduler_;
+  DomainReliabilityDispatcher* dispatcher_;
+  DomainReliabilityUploader* uploader_;
 
   // Each ResourceState in |states_| corresponds to the Resource of the same
   // index in the config.

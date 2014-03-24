@@ -15,7 +15,9 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace domain_reliability {
@@ -28,8 +30,11 @@ class DomainReliabilityMonitorTest : public testing::Test {
 
   DomainReliabilityMonitorTest()
       : bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        url_request_context_getter_(new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current())),
         time_(new MockTime()),
-        monitor_(scoped_ptr<MockableTime>(time_)),
+        monitor_(url_request_context_getter_->GetURLRequestContext(),
+                 scoped_ptr<MockableTime>(time_)),
         context_(monitor_.AddContextForTesting(CreateConfig())) {}
 
   static scoped_ptr<const DomainReliabilityConfig> CreateConfig() {
@@ -81,6 +86,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle bundle_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   MockTime* time_;
   DomainReliabilityMonitor monitor_;
   DomainReliabilityContext* context_;

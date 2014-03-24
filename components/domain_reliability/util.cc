@@ -22,6 +22,7 @@ class ActualTimer : public MockableTime::Timer {
   ActualTimer() : base_timer_(false, false) {}
   virtual ~ActualTimer() {}
 
+  // MockableTime::Timer implementation:
   virtual void Start(const tracked_objects::Location& posted_from,
                      base::TimeDelta delay,
                      const base::Closure& user_task) OVERRIDE {

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/host_port_pair.h"
 
@@ -34,6 +35,25 @@ class TestCallback {
   bool called_;
 };
 
+class MockUploader : public DomainReliabilityUploader {
+ public:
+  typedef base::Callback<void(const std::string& report_json,
+                              const GURL& upload_url,
+                              const UploadCallback& upload_callback)>
+      UploadRequestCallback;
+
+  MockUploader(const UploadRequestCallback& callback);
+  virtual ~MockUploader();
+
+  // DomainREliabilityUploader implementation:
+  virtual void UploadReport(const std::string& report_json,
+                            const GURL& upload_url,
+                            const UploadCallback& callback) OVERRIDE;
+
+ private:
+  UploadRequestCallback callback_;
+};
+
 class MockTime : public MockableTime {
  public:
   MockTime();
@@ -42,6 +62,7 @@ class MockTime : public MockableTime {
   // to their scheduled time.
   virtual ~MockTime();
 
+  // MockableTime implementation:
   virtual base::TimeTicks Now() OVERRIDE;
   virtual scoped_ptr<MockableTime::Timer> CreateTimer() OVERRIDE;
 
