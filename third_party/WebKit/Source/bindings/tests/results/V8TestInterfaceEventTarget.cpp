@@ -97,8 +97,8 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
     toV8(document, info.Holder(), info.GetIsolate());
 
     RefPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(*document);
-    v8::Handle<v8::Object> wrapper = info.Holder();
 
+    v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventTarget>(impl.release(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }

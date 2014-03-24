@@ -44,6 +44,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/DOMWindow.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -76,6 +77,15 @@ namespace TestInterfacePython2V8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    RefPtr<TestInterfacePython2> impl = TestInterfacePython2::create();
+    v8::Handle<v8::Object> wrapper = info.Holder();
+
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfacePython2>(impl.release(), &V8TestInterfacePython2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
+}
+
 } // namespace TestInterfacePython2V8Internal
 
 void V8TestInterfacePython2::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
@@ -90,6 +100,22 @@ void V8TestInterfacePython2::visitDOMWrapper(void* object, const v8::Persistent<
     setObjectGroup(object, wrapper, isolate);
 }
 
+void V8TestInterfacePython2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfacePython2", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    TestInterfacePython2V8Internal::constructor(info);
+}
+
 static void configureV8TestInterfacePython2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
@@ -100,6 +126,8 @@ static void configureV8TestInterfacePython2Template(v8::Handle<v8::FunctionTempl
         0, 0,
         0, 0,
         isolate);
+    functionTemplate->SetCallHandler(V8TestInterfacePython2::constructorCallback);
+    functionTemplate->SetLength(0);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
 
