@@ -828,7 +828,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
     GetPendingWallpaper(user_id, delayed)
         ->ResetSetWallpaperImage(user_wallpaper, info);
   } else {
-    if (info.type == User::CUSTOMIZED) {
+    if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
       ash::WallpaperResolution resolution =
           ash::Shell::GetInstance()->
               desktop_background_controller()->
@@ -952,7 +952,7 @@ void WallpaperManager::CacheUserWallpaper(const std::string& user_id) {
   if (GetUserWallpaperInfo(user_id, &info)) {
     base::FilePath wallpaper_dir;
     base::FilePath wallpaper_path;
-    if (info.type == User::CUSTOMIZED) {
+    if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
       ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
           desktop_background_controller()->GetAppropriateResolution();
       const char* sub_dir  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
