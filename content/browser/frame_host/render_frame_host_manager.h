@@ -225,8 +225,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // network response and allow the pending RenderFrameHost to commit.
   void SwappedOutFrame(RenderFrameHostImpl* render_frame_host);
 
-  // Called when a renderer's main frame navigates.
-  void DidNavigateMainFrame(RenderViewHost* render_view_host);
+  // Called when a renderer's frame navigates.
+  void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);
 
   // Called when a renderer sets its opener to null.
   void DidDisownOpener(RenderViewHost* render_view_host);

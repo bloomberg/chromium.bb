@@ -184,7 +184,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
   if (!dest_render_frame_host->render_view_host()->IsRenderViewLive()) {
     // Recreate the opener chain.
     int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
-        dest_render_frame_host->render_view_host()->GetSiteInstance());
+        dest_render_frame_host->GetSiteInstance());
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
                         opener_route_id))
       return NULL;
@@ -449,14 +449,13 @@ void RenderFrameHostManager::SwappedOutFrame(
   pending_nav_params_.reset();
 }
 
-// TODO(creis): This should take in a RenderFrameHost.
-void RenderFrameHostManager::DidNavigateMainFrame(
-    RenderViewHost* render_view_host) {
+void RenderFrameHostManager::DidNavigateFrame(
+    RenderFrameHostImpl* render_frame_host) {
   if (!cross_navigation_pending_) {
     DCHECK(!pending_render_frame_host_);
 
     // We should only hear this from our current renderer.
-    DCHECK(render_view_host == render_frame_host_->render_view_host());
+    DCHECK_EQ(render_frame_host_, render_frame_host);
 
     // Even when there is no pending RVH, there may be a pending Web UI.
     if (pending_web_ui())
@@ -464,7 +463,7 @@ void RenderFrameHostManager::DidNavigateMainFrame(
     return;
   }
 
-  if (render_view_host == pending_render_frame_host_->render_view_host()) {
+  if (render_frame_host == pending_render_frame_host_) {
     // The pending cross-site navigation completed, so show the renderer.
     // If it committed without sending network requests (e.g., data URLs),
     // then we still need to swap out the old RFH first and run its unload
@@ -475,7 +474,7 @@ void RenderFrameHostManager::DidNavigateMainFrame(
 
     CommitPending();
     cross_navigation_pending_ = false;
-  } else if (render_view_host == render_frame_host_->render_view_host()) {
+  } else if (render_frame_host == render_frame_host_) {
     // A navigation in the original page has taken place.  Cancel the pending
     // one.
     CancelPending();
@@ -492,8 +491,8 @@ void RenderFrameHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
   for (RenderFrameHostMap::iterator iter = swapped_out_hosts_.begin();
        iter != swapped_out_hosts_.end();
        ++iter) {
-    DCHECK_NE(iter->second->render_view_host()->GetSiteInstance(),
-              current_host()->GetSiteInstance());
+    DCHECK_NE(iter->second->GetSiteInstance(),
+              current_frame_host()->GetSiteInstance());
     iter->second->render_view_host()->DisownOpener();
   }
 }
@@ -661,7 +660,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   const GURL& current_url = (current_entry) ?
       SiteInstanceImpl::GetEffectiveURL(browser_context,
                                         current_entry->GetURL()) :
-      render_frame_host_->render_view_host()->GetSiteInstance()->GetSiteURL();
+      render_frame_host_->GetSiteInstance()->GetSiteURL();
   const GURL& new_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
                                                           new_entry->GetURL());
 
@@ -691,7 +690,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // Check with the content client as well.  Important to pass current_url here,
   // which uses the SiteInstance's site if there is no current_entry.
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
-          render_frame_host_->render_view_host()->GetSiteInstance(),
+          render_frame_host_->GetSiteInstance(),
           current_url, new_url)) {
     return true;
   }
@@ -929,7 +928,7 @@ int RenderFrameHostManager::CreateRenderFrame(
 
   // We are creating a pending or swapped out RFH here.  We should never create
   // it in the same SiteInstance as our current RFH.
-  CHECK_NE(render_frame_host_->render_view_host()->GetSiteInstance(), instance);
+  CHECK_NE(render_frame_host_->GetSiteInstance(), instance);
 
   // Check if we've already created an RFH for this SiteInstance.  If so, try
   // to re-use the existing one, which has already been initialized.  We'll
@@ -1083,7 +1082,7 @@ void RenderFrameHostManager::CommitPending() {
   // If the old view is live and top-level, hide it now that the new one is
   // visible.
   int32 old_site_instance_id =
-      old_render_frame_host->render_view_host()->GetSiteInstance()->GetId();
+      old_render_frame_host->GetSiteInstance()->GetId();
   if (old_render_frame_host->render_view_host()->GetView()) {
     if (is_main_frame) {
       old_render_frame_host->render_view_host()->GetView()->Hide();
@@ -1120,8 +1119,7 @@ void RenderFrameHostManager::CommitPending() {
   }
 
   // If the pending frame was on the swapped out list, we can remove it.
-  swapped_out_hosts_.erase(render_frame_host_->render_view_host()->
-                               GetSiteInstance()->GetId());
+  swapped_out_hosts_.erase(render_frame_host_->GetSiteInstance()->GetId());
 
   if (old_render_frame_host->render_view_host()->IsRenderViewLive()) {
     // If the old RFH is live, we are swapping it out and should keep track of
@@ -1167,8 +1165,7 @@ void RenderFrameHostManager::CommitPending() {
     // in this SiteInstance.  We do this after ensuring the RFH is on the
     // swapped out list to simplify the deletion.
     if (!static_cast<SiteInstanceImpl*>(
-            old_render_frame_host->render_view_host()->GetSiteInstance())->
-                active_view_count()) {
+            old_render_frame_host->GetSiteInstance())->active_view_count()) {
       ShutdownRenderFrameHostsInSiteInstance(old_site_instance_id);
       // This is deleted while cleaning up the SiteInstance's views.
       old_render_frame_host = NULL;
@@ -1219,8 +1216,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
   // render_frame_host_'s SiteInstance and new_instance will not be deleted
   // before the end of this method, so we don't have to worry about their ref
   // counts dropping to zero.
-  SiteInstance* current_instance =
-      render_frame_host_->render_view_host()->GetSiteInstance();
+  SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   SiteInstance* new_instance = current_instance;
 
   // We do not currently swap processes for navigations in webview tag guests.
@@ -1439,11 +1435,11 @@ bool RenderFrameHostManager::IsRVHOnSwappedOutList(
 
 bool RenderFrameHostManager::IsOnSwappedOutList(
     RenderFrameHostImpl* rfh) const {
-  if (!rfh->render_view_host()->GetSiteInstance())
+  if (!rfh->GetSiteInstance())
     return false;
 
   RenderFrameHostMap::const_iterator iter = swapped_out_hosts_.find(
-      rfh->render_view_host()->GetSiteInstance()->GetId());
+      rfh->GetSiteInstance()->GetId());
   if (iter == swapped_out_hosts_.end())
     return false;
 

@@ -377,7 +377,6 @@ void NavigatorImpl::DidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
-  RenderViewHostImpl* rvh = render_frame_host->render_view_host();
   bool use_site_per_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
 
@@ -407,15 +406,14 @@ void NavigatorImpl::DidNavigate(
       controller_->TakeScreenshot();
 
     if (!use_site_per_process)
-      frame_tree->root()->render_manager()->DidNavigateMainFrame(rvh);
+      frame_tree->root()->render_manager()->DidNavigateFrame(render_frame_host);
   }
 
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.
   if (use_site_per_process) {
     FrameTreeNode* frame = render_frame_host->frame_tree_node();
-    // TODO(creis): Rename to DidNavigateFrame.
-    frame->render_manager()->DidNavigateMainFrame(rvh);
+    frame->render_manager()->DidNavigateFrame(render_frame_host);
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless

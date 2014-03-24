@@ -627,7 +627,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   EXPECT_FALSE(manager->pending_frame_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
   // Commit to SiteInstance should be delayed until RenderView commit.
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -649,7 +649,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   EXPECT_FALSE(manager->pending_frame_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
@@ -671,7 +671,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(manager->pending_render_view_host());
+  manager->DidNavigateFrame(manager->pending_frame_host());
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
@@ -725,7 +725,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
 
   // Commit to SiteInstance should be delayed until RenderView commit.
   EXPECT_TRUE(host == manager->current_frame_host());
@@ -771,7 +771,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
   // call of RenderFrameHostManager::SwapOutOldPage before
-  // RenderFrameHostManager::DidNavigateMainFrame is called.
+  // RenderFrameHostManager::DidNavigateFrame is called.
   // The RVH is swapped out after receiving the unload ack.
   manager->SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
@@ -813,14 +813,14 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
   // call of RenderFrameHostManager::SwapOutOldPage before
-  // RenderFrameHostManager::DidNavigateMainFrame is called.
+  // RenderFrameHostManager::DidNavigateFrame is called.
   manager->SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
   test_host->OnSwappedOut(false);
 
   // Commit.
-  manager->DidNavigateMainFrame(host3->render_view_host());
+  manager->DidNavigateFrame(host3);
   EXPECT_TRUE(host3 == manager->current_frame_host());
   ASSERT_TRUE(host3);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host3->GetSiteInstance())->
@@ -877,7 +877,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   EXPECT_TRUE(manager->web_ui());
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
   EXPECT_TRUE(
       host->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
@@ -916,7 +916,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
       host1->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Commit and ensure we still have bindings.
-  manager1->DidNavigateMainFrame(host1->render_view_host());
+  manager1->DidNavigateFrame(host1);
   SiteInstance* webui_instance = host1->GetSiteInstance();
   EXPECT_EQ(host1, manager1->current_frame_host());
   EXPECT_TRUE(
@@ -948,7 +948,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   EXPECT_TRUE(
       host2->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
-  manager2->DidNavigateMainFrame(host2->render_view_host());
+  manager2->DidNavigateFrame(host2);
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
@@ -1242,7 +1242,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   EXPECT_EQ(manager->current_frame_host()->GetSiteInstance(), instance);
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
   // Commit to SiteInstance should be delayed until RenderView commit.
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -1264,7 +1264,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   EXPECT_FALSE(manager->pending_frame_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_EQ(static_cast<SiteInstanceImpl*>(host->GetSiteInstance()),
@@ -1312,7 +1312,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(host->render_view_host());
+  manager->DidNavigateFrame(host);
 
   // Commit to SiteInstance should be delayed until RenderFrame commits.
   EXPECT_EQ(host, manager->current_frame_host());
