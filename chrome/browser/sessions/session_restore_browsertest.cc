@@ -42,6 +42,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -52,6 +53,10 @@ using sessions::SerializedNavigationEntryTestHelper;
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
 #endif
 
 class SessionRestoreTest : public InProcessBrowserTest {
@@ -186,6 +191,35 @@ class SessionRestoreTest : public InProcessBrowserTest {
 
   const BrowserList* active_browser_list_;
 };
+
+#if defined(USE_AURA)
+// Verifies that restored tabs have a root window. This is important
+// otherwise the wrong information is communicated to the renderer.
+// (http://crbug.com/342672).
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
+  // Create tabs.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(content::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Restart and session restore the tabs.
+  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  TabStripModel* tab_strip_model = restored->tab_strip_model();
+  const int tabs = tab_strip_model->count();
+  ASSERT_EQ(3, tabs);
+
+  // Check the restored tabs have a root window.
+  for (int i = 0; i < tabs; ++i) {
+    content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
+    gfx::NativeView window = contents->GetView()->GetNativeView();
+    bool tab_has_root_window = !!window->GetRootWindow();
+    EXPECT_TRUE(tab_has_root_window);
+  }
+}
+#endif  // USE_AURA
 
 #if defined(OS_CHROMEOS)
 // Verify that session restore does not occur when a user opens a browser window

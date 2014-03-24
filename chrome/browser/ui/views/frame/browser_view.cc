@@ -144,6 +144,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/screen.h"
@@ -1460,6 +1461,22 @@ ToolbarView* BrowserView::GetToolbarView() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
+
+void BrowserView::TabInsertedAt(WebContents* contents,
+                                int index,
+                                bool foreground) {
+  // WebContents inserted in tabs might not have been added to the root
+  // window yet. Per http://crbug/342672 add them now since drawing the
+  // WebContents requires root window specific data - information about
+  // the screen the WebContents is drawn on, for example.
+  if (!contents->GetView()->GetNativeView()->GetRootWindow()) {
+    aura::Window* window = contents->GetView()->GetNativeView();
+    aura::Window* root_window = GetNativeWindow()->GetRootWindow();
+    aura::client::ParentWindowWithContext(
+        window, root_window, root_window->GetBoundsInScreen());
+    DCHECK(contents->GetView()->GetNativeView()->GetRootWindow());
+  }
+}
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {
   if (PermissionBubbleManager::FromWebContents(contents))

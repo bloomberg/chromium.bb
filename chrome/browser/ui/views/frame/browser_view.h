@@ -398,6 +398,9 @@ class BrowserView : public BrowserWindow,
   virtual ToolbarView* GetToolbarView() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
+  virtual void TabInsertedAt(content::WebContents* contents,
+                             int index,
+                             bool foreground) OVERRIDE;
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
   virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
