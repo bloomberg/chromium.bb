@@ -960,5 +960,4 @@ crbug.com/355459 [ Release ] inspector/elements/edit-dom-actions-shadow.html [ P
 
 crbug.com/355463 [ Win Debug ] css3/flexbox/repaint.html [ Pass Failure ]
 
-crbug.com/354849 [ XP ] fast/css/css2-system-fonts.html [ Failure ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure ]
