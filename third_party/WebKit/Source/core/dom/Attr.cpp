@@ -123,6 +123,8 @@ const AtomicString& Attr::valueForBindings() const
 void Attr::setValueForBindings(const AtomicString& value)
 {
     UseCounter::count(document(), UseCounter::AttrSetValue);
+    if (m_element)
+        UseCounter::count(document(), UseCounter::AttrSetValueWithElement);
     setValueInternal(value);
 }
 
