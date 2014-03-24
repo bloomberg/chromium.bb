@@ -43,6 +43,9 @@ class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NoticeNotificationChanges DISABLED_NoticeNotificationChanges
+// Broken on gtk, see http://crbug.com/355442
+#elif defined(TOOLKIT_GTK)
+#define MAYBE_NoticeNotificationChanges DISABLED_NoticeNotificationChanges
 #else
 #define MAYBE_NoticeNotificationChanges NoticeNotificationChanges
 #endif
