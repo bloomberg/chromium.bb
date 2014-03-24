@@ -6,6 +6,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "ash/frame/frame_util.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -56,7 +56,7 @@ apps::AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
 }
 
 std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
-GetLoggedInProfileInfoList() {
+GetLoggedInProfileInfoList(content::WebContents* contents) {
   DCHECK(chromeos::UserManager::IsInitialized());
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -84,13 +84,14 @@ GetLoggedInProfileInfoList() {
     profile_info->is_current_profile = true;
 
     // Make an icon URL of the profile.
-    const int kImageSize = 30;
-    const gfx::Image& image = profiles::GetAvatarIconForTitleBar(
-        gfx::Image(user->image()), true, kImageSize, kImageSize);
-    const SkBitmap* const bitmap = image.ToSkBitmap();
-    if (bitmap) {
-      profile_info->image_uri.reset(new std::string(
-          webui::GetBitmapDataUrl(*bitmap)));
+    if (contents) {
+      const gfx::Image& image =
+          ash::GetAvatarImageForContext(contents->GetBrowserContext());
+      const SkBitmap* const bitmap = image.ToSkBitmap();
+      if (bitmap) {
+        profile_info->image_uri.reset(
+            new std::string(webui::GetBitmapDataUrl(*bitmap)));
+      }
     }
     result_profiles.push_back(profile_info);
   }
@@ -369,7 +370,7 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 
 bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList();
+      profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
 
   // Obtains the display profile ID.
   apps::AppWindow* const app_window = GetCurrentAppWindow(this);
@@ -393,7 +394,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
   using api::file_browser_private::VisitDesktop::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList();
+      profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
 
   // Check the multi-profile support.
   if (!profiles::IsMultipleProfilesEnabled()) {
