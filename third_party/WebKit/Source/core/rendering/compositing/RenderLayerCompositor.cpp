@@ -1572,25 +1572,6 @@ void RenderLayerCompositor::setIsInWindow(bool isInWindow)
     }
 }
 
-void RenderLayerCompositor::clearMappingForRenderLayerIncludingDescendants(RenderLayer* layer)
-{
-    if (!layer)
-        return;
-
-    if (layer->hasCompositedLayerMapping()) {
-        removeViewportConstrainedLayer(layer);
-        layer->clearCompositedLayerMapping();
-    }
-
-    for (RenderLayer* currLayer = layer->firstChild(); currLayer; currLayer = currLayer->nextSibling())
-        clearMappingForRenderLayerIncludingDescendants(currLayer);
-}
-
-void RenderLayerCompositor::clearMappingForAllRenderLayers()
-{
-    clearMappingForRenderLayerIncludingDescendants(m_renderView.layer());
-}
-
 void RenderLayerCompositor::updateRootLayerPosition()
 {
     if (m_rootContentLayer) {
@@ -1606,11 +1587,6 @@ void RenderLayerCompositor::updateRootLayerPosition()
         FrameView* frameView = m_renderView.frameView();
         m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
     }
-}
-
-bool RenderLayerCompositor::has3DContent() const
-{
-    return layerHas3DContent(rootRenderLayer());
 }
 
 void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer* layer)
@@ -2150,32 +2126,6 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
     }
 }
 
-bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
-{
-    const RenderStyle* style = layer->renderer()->style();
-    RenderLayerStackingNode* stackingNode = const_cast<RenderLayer*>(layer)->stackingNode();
-
-    if (style &&
-        (style->transformStyle3D() == TransformStyle3DPreserve3D ||
-         style->hasPerspective() ||
-         style->transform().has3DOperation()))
-        return true;
-
-    stackingNode->updateLayerListsIfNeeded();
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(stackingNode);
-#endif
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next()) {
-        if (layerHas3DContent(curNode->layer()))
-            return true;
-    }
-
-    return false;
-}
-
 void RenderLayerCompositor::updateViewportConstraintStatus(RenderLayer* layer)
 {
     if (CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(layer))
@@ -2195,67 +2145,6 @@ void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
         return;
 
     m_viewportConstrainedLayers.remove(layer);
-}
-
-FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportConstraints(RenderLayer* layer) const
-{
-    ASSERT(layer->hasCompositedLayerMapping());
-
-    FrameView* frameView = m_renderView.frameView();
-    LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
-
-    FixedPositionViewportConstraints constraints;
-
-    GraphicsLayer* graphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
-
-    constraints.setLayerPositionAtLastLayout(graphicsLayer->position());
-    constraints.setViewportRectAtLastLayout(viewportRect);
-
-    RenderStyle* style = layer->renderer()->style();
-    if (!style->left().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
-
-    if (!style->right().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeRight);
-
-    if (!style->top().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
-
-    if (!style->bottom().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeBottom);
-
-    // If left and right are auto, use left.
-    if (style->left().isAuto() && style->right().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
-
-    // If top and bottom are auto, use top.
-    if (style->top().isAuto() && style->bottom().isAuto())
-        constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
-
-    return constraints;
-}
-
-StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportConstraints(RenderLayer* layer) const
-{
-    ASSERT(layer->hasCompositedLayerMapping());
-    // We should never get here for stickies constrained by an enclosing clipping layer.
-    ASSERT(!layer->enclosingOverflowClipLayer(ExcludeSelf));
-
-    FrameView* frameView = m_renderView.frameView();
-    LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
-
-    StickyPositionViewportConstraints constraints;
-
-    RenderBoxModelObject* renderer = toRenderBoxModelObject(layer->renderer());
-
-    renderer->computeStickyPositionConstraints(constraints, viewportRect);
-
-    GraphicsLayer* graphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
-
-    constraints.setLayerPositionAtLastLayout(graphicsLayer->position());
-    constraints.setStickyOffsetAtLastLayout(renderer->stickyPositionOffset());
-
-    return constraints;
 }
 
 ScrollingCoordinator* RenderLayerCompositor::scrollingCoordinator() const

@@ -166,12 +166,6 @@ public:
 
     void setIsInWindow(bool);
 
-    void clearMappingForAllRenderLayers();
-
-    // Walk the tree looking for layers with 3d transforms. Useful in case you need
-    // to know if there is non-affine content, e.g. for drawing into an image.
-    bool has3DContent() const;
-
     static RenderLayerCompositor* frameContentsCompositor(RenderPart*);
     // Return true if the layers changed.
     static bool parentFrameContentLayers(RenderPart*);
@@ -273,8 +267,6 @@ private:
     bool allocateOrClearCompositedLayerMapping(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
     bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType compositedLayerUpdate);
 
-    void clearMappingForRenderLayerIncludingDescendants(RenderLayer*);
-
     void recursiveRepaintLayer(RenderLayer*);
 
     void addToOverlapMap(OverlapMap&, RenderLayer*, const IntRect& layerBounds);
@@ -289,18 +281,10 @@ private:
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
     void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, RenderLayer* clippingAncestor);
 
-    // Allocates, sets up hierarchy, and sets appropriate properties for the GraphicsLayers that correspond to a given
-    // composited RenderLayer. Does nothing if the given RenderLayer does not have a CompositedLayerMapping.
-    void updateGraphicsLayersMappedToRenderLayer(RenderLayer*);
-
-    // Recurses down the tree, updating layer geometry only.
-    void updateLayerTreeGeometry(RenderLayer*);
-
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
     void removeCompositedChildren(RenderLayer*);
 
-    bool layerHas3DContent(const RenderLayer*) const;
     bool isRunningAcceleratedTransformAnimation(RenderObject*) const;
 
     bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
@@ -323,9 +307,6 @@ private:
     ScrollingCoordinator* scrollingCoordinator() const;
 
     void addViewportConstrainedLayer(RenderLayer*);
-
-    FixedPositionViewportConstraints computeFixedViewportConstraints(RenderLayer*) const;
-    StickyPositionViewportConstraints computeStickyViewportConstraints(RenderLayer*) const;
 
     bool requiresHorizontalScrollbarLayer() const;
     bool requiresVerticalScrollbarLayer() const;
