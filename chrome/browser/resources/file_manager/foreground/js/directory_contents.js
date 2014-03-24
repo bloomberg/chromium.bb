@@ -528,12 +528,30 @@ DirectoryContents.prototype.getDirectoryEntry = function() {
  * 'scan-failed' event will be fired upon completion.
  */
 DirectoryContents.prototype.scan = function() {
+  /**
+   * Invoked when the scanning is completed successfully.
+   * @this {DirectoryContents}
+   */
+  function completionCallback() {
+    this.onScanFinished_();
+    this.onScanCompleted_();
+  }
+
+  /**
+   * Invoked when the scanning is finished but is not completed due to error.
+   * @this {DirectoryContents}
+   */
+  function errorCallback() {
+    this.onScanFinished_();
+    this.onScanError_();
+  }
+
   // TODO(hidehiko,mtomasz): this scan method must be called at most once.
   // Remove such a limitation.
   this.scanner_ = this.scannerFactory_();
   this.scanner_.scan(this.onNewEntries_.bind(this),
-                     this.onScanCompleted_.bind(this),
-                     this.onScanError_.bind(this));
+                     completionCallback.bind(this),
+                     errorCallback.bind(this));
 };
 
 /**
@@ -546,22 +564,49 @@ DirectoryContents.prototype.cancelScan = function() {
   if (this.scanner_)
     this.scanner_.cancel();
 
+  this.onScanFinished_();
+
   this.prefetchMetadataQueue_.cancel();
   cr.dispatchSimpleEvent(this, 'scan-cancelled');
 };
 
 /**
- * Called when the scanning by scanner_ is done.
+ * Called when the scanning by scanner_ is done, even when the scanning is
+ * succeeded or failed. This is called before completion (or error) callback.
+ *
+ * @private
+ */
+DirectoryContents.prototype.onScanFinished_ = function() {
+  this.scanner_ = null;
+
+  this.prefetchMetadataQueue_.run(function(callback) {
+    // TODO(yoshiki): Here we should fire the update event of changed
+    // items. Currently we have a method this.fileList_.updateIndex() to
+    // fire an event, but this method takes only 1 argument and invokes sort
+    // one by one. It is obviously time wasting. Instead, we call sort
+    // directory.
+    // In future, we should implement a good method like updateIndexes and
+    // use it here.
+    var status = this.fileList_.sortStatus;
+    if (status)
+      this.fileList_.sort(status.field, status.direction);
+
+    callback();
+  }.bind(this));
+};
+
+/**
+ * Called when the scanning by scanner_ is succeeded.
  * @private
  */
 DirectoryContents.prototype.onScanCompleted_ = function() {
-  this.scanner_ = null;
   if (this.scanCancelled_)
     return;
 
   this.prefetchMetadataQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
     callback();
+
     cr.dispatchSimpleEvent(this, 'scan-completed');
   }.bind(this));
 };
@@ -571,7 +616,6 @@ DirectoryContents.prototype.onScanCompleted_ = function() {
  * @private
  */
 DirectoryContents.prototype.onScanError_ = function() {
-  this.scanner_ = null;
   if (this.scanCancelled_)
     return;
 
@@ -613,16 +657,6 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
           callback();
           return;
         }
-
-        // TODO(yoshiki): Here we should fire the update event of changed
-        // items. Currently we have a method this.fileList_.updateIndex() to
-        // fire an event, but this method takes only 1 argument and invokes sort
-        // one by one. It is obviously time wasting. Instead, we call sort
-        // directory.
-        // In future, we should implement a good method like updateIndexes and
-        // use it here.
-        var status = this.fileList_.sortStatus;
-        this.fileList_.sort(status.field, status.direction);
 
         cr.dispatchSimpleEvent(this, 'scan-updated');
         callback();
