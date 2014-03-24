@@ -9336,6 +9336,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MobileStartup.MobileMultiWindowInstances">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>
+    Android: Number of instances of Chrome currently open during a MultiWindow
+    session.  Emitted every time Chrome is paused.  Only emitted on Android
+    MultiWindow devices.
+
+    A MultiWindow session is any period of time that Chrome was not used in a
+    full screen mode but together with another Activity that is visible at the
+    same time. This is only supported in a few Android models.
+  </summary>
+</histogram>
+
 <histogram name="MobileStartup.MobileMultiWindowSession" units="percent">
   <owner>miguelg@chromium.org</owner>
   <summary>
