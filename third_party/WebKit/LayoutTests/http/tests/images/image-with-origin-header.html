@@ -1,33 +1,28 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<body>
 <script src="/js-test-resources/js-test.js"></script>
 <script>
-description("Tests that the order of setting the src of an image element and its crossOrigin attribute doesn't matter");
-window.jsTestIsAsync = true;
+    description("Tests that the order of setting the src of an image element and its crossOrigin attribute doesn't matter");
+    jsTestIsAsync = true;
 
-// Resource returns a 100x100 image if Origin: is present, a 200x200 one if not.
-var testImageURL = "http://127.0.0.1:8000/resources/origin.php";
-var successWidth = 100;
-
-function checkIfDone() {
-    if ("loaded" in img1 && "loaded" in img2)
-        finishJSTest();
-}
-
-function createImage() {
     var img = new Image();
-    img.onload = function () {
-        (img.width == successWidth ? testPassed : testFailed)("Origin: present in request.");
-        img.loaded = true;
-        checkIfDone();
-    }
-    return img;
-}
+    img.src="http://127.0.0.1:8000/resources/origin.php?1";
+    img.crossOrigin = "anonymous";
+    var img2 = new Image();
+    img2.crossOrigin = "anonymous";
+    img2.src="http://127.0.0.1:8000/resources/origin.php?2";
 
-var img1 = createImage();
-img1.src = testImageURL + "?1";
-img1.crossOrigin = "anonymous";
+    var srcFirstHasOrigin = false;
+    var srcLastHasOrigin = false;
+    document.body.onload = function() {
+        srcFirstHasOrigin = (img.width == 100)
+        // srcFirstHasOrigin should be true per spec - see http://crbug.com/341047
+        shouldBeFalse('srcFirstHasOrigin');
+        srcLastHasOrigin = (img2.width == 100)
+        shouldBeTrue('srcLastHasOrigin');
+        finishJSTest();
+    };
 
-var img2 = createImage();
-img2.crossOrigin = "anonymous";
-img2.src = testImageURL + "?2";
 </script>
+</body>
+</html>

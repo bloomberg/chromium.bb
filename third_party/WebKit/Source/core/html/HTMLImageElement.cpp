@@ -165,9 +165,8 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
                 toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
         }
         m_imageLoader.updateFromElementIgnoringPreviousError();
-    } else if (name == crossoriginAttr) {
-        m_imageLoader.updateFromElementIgnoringPreviousError();
-    } else if (name == usemapAttr)
+    }
+    else if (name == usemapAttr)
         setIsLink(!value.isNull());
     else if (name == onbeforeloadAttr)
         setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
