@@ -13,17 +13,13 @@ class GURL;
 
 namespace content {
 
-class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistration;
 
 class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
-  ServiceWorkerDispatcherHost(
-      int render_process_id,
-      MessagePortMessageFilter* message_port_message_filter);
+  explicit ServiceWorkerDispatcherHost(int render_process_id);
 
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
@@ -58,16 +54,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnSendMessageToBrowser(int embedded_worker_id,
                               int request_id,
                               const IPC::Message& message);
-  void OnPostMessage(int64 registration_id,
-                     const base::string16& message,
-                     const std::vector<int>& sent_message_port_ids);
-
-  static void PostMessageFoundRegistration(
-      const base::string16& message,
-      const std::vector<int>& sent_message_port_ids,
-      const std::vector<int>& new_routing_ids,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& result);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int32 thread_id,
@@ -82,10 +68,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void SendRegistrationError(int32 thread_id,
                              int32 request_id,
                              ServiceWorkerStatusCode status);
-
   int render_process_id_;
-  MessagePortMessageFilter* const message_port_message_filter_;
-
   base::WeakPtr<ServiceWorkerContextCore> context_;
 };
 

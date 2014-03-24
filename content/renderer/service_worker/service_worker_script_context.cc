@@ -5,7 +5,6 @@
 #include "content/renderer/service_worker/service_worker_script_context.h"
 
 #include "base/logging.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
@@ -32,7 +31,6 @@ void ServiceWorkerScriptContext::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerScriptContext, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Message, OnPostMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -64,23 +62,6 @@ void ServiceWorkerScriptContext::OnFetchEvent(
     const ServiceWorkerFetchRequest& request) {
   // TODO(falken): Pass in the request.
   proxy_->dispatchFetchEvent(current_request_id_);
-}
-
-void ServiceWorkerScriptContext::OnPostMessage(
-    const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
-    const std::vector<int>& new_routing_ids) {
-  std::vector<WebMessagePortChannelImpl*> ports;
-  if (!sent_message_port_ids.empty()) {
-    base::MessageLoopProxy* loop_proxy = embedded_context_->main_thread_proxy();
-    ports.resize(sent_message_port_ids.size());
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], loop_proxy);
-    }
-  }
-
-  proxy_->dispatchMessageEvent(message, ports);
 }
 
 }  // namespace content

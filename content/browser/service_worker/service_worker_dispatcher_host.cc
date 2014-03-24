@@ -5,12 +5,10 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/message_port_message_filter.h"
-#include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -37,12 +35,11 @@ const uint32 kFilteredMessageClasses[] = {
 namespace content {
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
-    int render_process_id,
-    MessagePortMessageFilter* message_port_message_filter)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
-      render_process_id_(render_process_id),
-      message_port_message_filter_(message_port_message_filter) {}
+    int render_process_id)
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      render_process_id_(render_process_id) {
+}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   if (context_) {
@@ -88,7 +85,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnAddScriptClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RemoveScriptClient,
                         OnRemoveScriptClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
@@ -160,54 +156,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
                  this,
                  thread_id,
                  request_id));
-}
-
-void ServiceWorkerDispatcherHost::OnPostMessage(
-    int64 registration_id,
-    const base::string16& message,
-    const std::vector<int>& sent_message_port_ids) {
-  if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled())
-    return;
-
-  std::vector<int> new_routing_ids(sent_message_port_ids.size());
-  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-    new_routing_ids[i] = message_port_message_filter_->GetNextRoutingID();
-    MessagePortService::GetInstance()->UpdateMessagePort(
-        sent_message_port_ids[i],
-        message_port_message_filter_,
-        new_routing_ids[i]);
-  }
-
-  context_->storage()->FindRegistrationForId(
-      registration_id,
-      base::Bind(&ServiceWorkerDispatcherHost::PostMessageFoundRegistration,
-                 message,
-                 sent_message_port_ids,
-                 new_routing_ids));
-}
-
-namespace {
-void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
-}  // namespace
-
-// static
-void ServiceWorkerDispatcherHost::PostMessageFoundRegistration(
-    const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
-    const std::vector<int>& new_routing_ids,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& result) {
-  if (status != SERVICE_WORKER_OK)
-    return;
-  DCHECK(result);
-
-  // TODO(jsbell): Route message to appropriate version. crbug.com/351797
-  ServiceWorkerVersion* version = result->active_version();
-  if (!version)
-    return;
-  version->SendMessage(
-      ServiceWorkerMsg_Message(message, sent_message_port_ids, new_routing_ids),
-      base::Bind(&NoOpStatusCallback));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {

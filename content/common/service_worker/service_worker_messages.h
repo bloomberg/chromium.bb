@@ -49,12 +49,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int32 /* request_id */,
                      GURL /* scope (url pattern) */)
 
-// Sends a 'message' event to a service worker (renderer->browser).
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessage,
-                     int64 /* registration_id */,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */)
-
 // Messages sent from the browser to the child process.
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker
@@ -83,12 +77,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
 // Sent via EmbeddedWorker to dispatch fetch event.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_FetchEvent,
                      content::ServiceWorkerFetchRequest)
-
-// Sends a 'message' event to a service worker (browser->EmbeddedWorker).
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
-                     base::string16 /* message */,
-                     std::vector<int> /* sent_message_port_ids */,
-                     std::vector<int> /* new_routing_ids */)
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process.

@@ -97,24 +97,6 @@ void ServiceWorkerStorage::GetAllRegistrations(
       BrowserThread::IO, FROM_HERE, base::Bind(callback, registrations));
 }
 
-void ServiceWorkerStorage::FindRegistrationForId(
-    int64 registration_id,
-    const FindRegistrationCallback& callback) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NOT_FOUND;
-  scoped_refptr<ServiceWorkerRegistration> found;
-  for (PatternToRegistrationMap::const_iterator it =
-           registration_by_pattern_.begin();
-       it != registration_by_pattern_.end();
-       ++it) {
-    if (registration_id == it->second->id()) {
-      status = SERVICE_WORKER_OK;
-      found = it->second;
-      break;
-    }
-  }
-  RunSoon(base::Bind(callback, status, found));
-}
-
 void ServiceWorkerStorage::StoreRegistration(
     ServiceWorkerRegistration* registration,
     const StatusCallback& callback) {

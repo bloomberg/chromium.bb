@@ -709,6 +709,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new IndexedDBDispatcherHost(
       storage_partition_impl_->GetIndexedDBContext()));
 
+  scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
+      new ServiceWorkerDispatcherHost(GetID());
+  service_worker_filter->Init(
+      storage_partition_impl_->GetServiceWorkerContext());
+  AddFilter(service_worker_filter);
+
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =
@@ -785,12 +791,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get())));
   AddFilter(message_port_message_filter_);
-
-  scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
-      new ServiceWorkerDispatcherHost(GetID(), message_port_message_filter_);
-  service_worker_filter->Init(
-      storage_partition_impl_->GetServiceWorkerContext());
-  AddFilter(service_worker_filter);
 
   // If "--enable-embedded-shared-worker" is set, we use
   // SharedWorkerMessageFilter in stead of WorkerMessageFilter.
