@@ -148,6 +148,10 @@
     index_ = [cell indexOfSelectedItem];
 }
 
+- (void)hide {
+  [menu_ cancelTracking];
+}
+
 - (int)indexOfSelectedItem {
   return index_;
 }

@@ -137,6 +137,7 @@ class CONTENT_EXPORT WebContentsViewAura
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
+  virtual void HidePopupMenu() OVERRIDE;
   virtual void StartDragging(const DropData& drop_data,
                              blink::WebDragOperationsMask operations,
                              const gfx::ImageSkia& image,

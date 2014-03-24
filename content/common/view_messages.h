@@ -1196,9 +1196,11 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
                     gfx::Rect /* position */)
 
-// Message to show a popup menu using native cocoa controls (Mac only).
+// Message to show/hide a popup menu using native cocoa controls
+// (Mac and Android only).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
                     ViewHostMsg_ShowPopup_Params)
+IPC_MESSAGE_ROUTED0(ViewHostMsg_HidePopup)
 
 // Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
 // to ViewMsg_ScriptEvalRequest. The result has the value returned by the

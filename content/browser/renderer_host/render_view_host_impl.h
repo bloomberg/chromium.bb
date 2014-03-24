@@ -591,6 +591,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
+  void OnHidePopup();
 #endif
 
  private:

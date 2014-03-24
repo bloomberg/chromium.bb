@@ -1136,6 +1136,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnCancelDesktopNotification)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HidePopup, OnHidePopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidAccessInitialDocument,
@@ -1875,6 +1876,12 @@ void RenderViewHostImpl::OnShowPopup(
                         params.right_aligned,
                         params.allow_multiple_selection);
   }
+}
+
+void RenderViewHostImpl::OnHidePopup() {
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (view)
+    view->HidePopupMenu();
 }
 #endif
 

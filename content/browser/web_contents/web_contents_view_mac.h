@@ -25,6 +25,7 @@ class SkBitmap;
 @class WebDragSource;
 
 namespace content {
+class PopupMenuHelper;
 class WebContentsImpl;
 class WebContentsViewDelegate;
 class WebContentsViewMac;
@@ -108,6 +109,7 @@ class WebContentsViewMac : public WebContentsViewPort,
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
+  virtual void HidePopupMenu() OVERRIDE;
   virtual void StartDragging(const DropData& drop_data,
                              blink::WebDragOperationsMask allowed_operations,
                              const gfx::ImageSkia& image,
@@ -154,6 +156,8 @@ class WebContentsViewMac : public WebContentsViewPort,
   // The underlay view which this view is rendered above.
   // Underlay view has |overlay_view_| set to this view.
   WebContentsViewMac* underlay_view_;
+
+  scoped_ptr<PopupMenuHelper> popup_menu_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

@@ -13,6 +13,12 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
+#ifdef __OBJC__
+@class WebMenuRunner;
+#else
+class WebMenuRunner;
+#endif
+
 namespace content {
 class RenderViewHost;
 class RenderViewHostImpl;
@@ -24,6 +30,7 @@ class PopupMenuHelper : public NotificationObserver {
   // Creates a PopupMenuHelper that will notify |render_view_host| when a user
   // selects or cancels the popup.
   explicit PopupMenuHelper(RenderViewHost* render_view_host);
+  void Hide();
 
   // Shows the popup menu and notifies the RenderViewHost of the selection/
   // cancel.
@@ -48,8 +55,9 @@ class PopupMenuHelper : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar notification_registrar_;
-
   RenderViewHostImpl* render_view_host_;
+  WebMenuRunner* menu_runner_;
+  bool popup_was_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupMenuHelper);
 };

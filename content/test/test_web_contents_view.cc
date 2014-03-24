@@ -21,6 +21,9 @@ void TestWebContentsView::ShowPopupMenu(const gfx::Rect& bounds,
                                         bool allow_multiple_selection) {
 }
 
+void TestWebContentsView::HidePopupMenu() {
+}
+
 void TestWebContentsView::StartDragging(
     const DropData& drop_data,
     blink::WebDragOperationsMask allowed_ops,

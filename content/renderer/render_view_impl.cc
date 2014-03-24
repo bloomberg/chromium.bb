@@ -4730,14 +4730,8 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::OnSelectPopupMenuItem(int selected_index) {
-  if (external_popup_menu_ == NULL) {
-    // Crash reports from the field indicate that we can be notified with a
-    // NULL external popup menu (we probably get notified twice).
-    // If you hit this please file a bug against jcivelli and include the page
-    // and steps to repro.
-    NOTREACHED();
+  if (external_popup_menu_ == NULL)
     return;
-  }
   external_popup_menu_->DidSelectItem(selected_index);
   external_popup_menu_.reset();
 }
@@ -4758,6 +4752,12 @@ void RenderViewImpl::OnSelectPopupMenuItems(
   external_popup_menu_.reset();
 }
 #endif
+
+void RenderViewImpl::DidHideExternalPopupMenu() {
+  // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
+  // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
+  external_popup_menu_.reset();
+}
 
 void RenderViewImpl::OnShowContextMenu(const gfx::Point& location) {
   context_menu_source_type_ = ui::MENU_SOURCE_TOUCH_EDIT_MENU;

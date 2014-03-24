@@ -87,6 +87,7 @@ class CONTENT_EXPORT WebContentsViewGuest
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
+  virtual void HidePopupMenu() OVERRIDE;
   virtual void StartDragging(const DropData& drop_data,
                              blink::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,

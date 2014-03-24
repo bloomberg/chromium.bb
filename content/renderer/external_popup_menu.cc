@@ -54,8 +54,9 @@ void ExternalPopupMenu::show(const blink::WebRect& bounds) {
 }
 
 void ExternalPopupMenu::close()  {
-  popup_menu_client_ = NULL;
-  render_view_ = NULL;
+  render_view_->Send(new ViewHostMsg_HidePopup(render_view_->routing_id()));
+  render_view_->DidHideExternalPopupMenu();
+  // |this| was deleted.
 }
 
 #if defined(OS_MACOSX)

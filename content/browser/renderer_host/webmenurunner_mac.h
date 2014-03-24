@@ -52,6 +52,9 @@
            withBounds:(NSRect)bounds
          initialIndex:(int)index;
 
+// Hides a popup menu if it's visible.
+- (void)hide;
+
 // Returns the index of selected menu item, or its initial value (-1) if no item
 // was selected.
 - (int)indexOfSelectedItem;

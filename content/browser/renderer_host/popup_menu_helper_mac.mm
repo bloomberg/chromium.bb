@@ -25,7 +25,9 @@ bool g_allow_showing_popup_menus = true;
 }  // namespace
 
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
-    : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)) {
+    : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)),
+      menu_runner_(nil),
+      popup_was_hidden_(false) {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(render_view_host));
@@ -55,10 +57,9 @@ void PopupMenuHelper::ShowPopupMenu(
       [rwhvm->cocoa_view() retain]);
 
   // Display the menu.
-  base::scoped_nsobject<WebMenuRunner> menu_runner;
-   menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
-                                                 fontSize:item_font_size
-                                             rightAligned:right_aligned]);
+  menu_runner_ = [[WebMenuRunner alloc] initWithItems:items
+                                             fontSize:item_font_size
+                                         rightAligned:right_aligned];
 
   {
     // Make sure events can be pumped while the menu is up.
@@ -73,23 +74,35 @@ void PopupMenuHelper::ShowPopupMenu(
     base::mac::ScopedSendingEvent sending_event_scoper;
 
     // Now run a SYNCHRONOUS NESTED EVENT LOOP until the pop-up is finished.
-    [menu_runner runMenuInView:cocoa_view
-                    withBounds:[cocoa_view flipRectToNSRect:bounds]
-                  initialIndex:selected_item];
+    [menu_runner_ runMenuInView:cocoa_view
+                     withBounds:[cocoa_view flipRectToNSRect:bounds]
+                   initialIndex:selected_item];
   }
 
   if (!render_view_host_) {
     // Bad news, the RenderViewHost got deleted while we were off running the
     // menu. Nothing to do.
+    [menu_runner_ release];
+    menu_runner_ = nil;
     return;
   }
 
-  if ([menu_runner menuItemWasChosen]) {
-    render_view_host_->DidSelectPopupMenuItem(
-        [menu_runner indexOfSelectedItem]);
-  } else {
-    render_view_host_->DidCancelPopupMenu();
+  if (!popup_was_hidden_) {
+    if ([menu_runner_ menuItemWasChosen]) {
+      render_view_host_->DidSelectPopupMenuItem(
+          [menu_runner_ indexOfSelectedItem]);
+    } else {
+      render_view_host_->DidCancelPopupMenu();
+    }
   }
+  [menu_runner_ release];
+  menu_runner_ = nil;
+}
+
+void PopupMenuHelper::Hide() {
+  if (menu_runner_)
+    [menu_runner_ hide];
+  popup_was_hidden_ = true;
 }
 
 // static

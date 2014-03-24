@@ -189,6 +189,10 @@ void WebContentsViewAndroid::ShowPopupMenu(
   }
 }
 
+void WebContentsViewAndroid::HidePopupMenu() {
+  // TODO(tkent): implement
+}
+
 void WebContentsViewAndroid::StartDragging(
     const DropData& drop_data,
     blink::WebDragOperationsMask allowed_ops,

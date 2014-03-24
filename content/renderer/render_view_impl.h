@@ -270,6 +270,7 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
 #endif
+  void DidHideExternalPopupMenu();
 
   // Plugin-related functions --------------------------------------------------
 

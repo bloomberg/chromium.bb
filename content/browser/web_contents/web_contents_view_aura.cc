@@ -1166,6 +1166,11 @@ void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
+void WebContentsViewAura::HidePopupMenu() {
+  // External popup menus are only used on Mac and Android.
+  NOTIMPLEMENTED();
+}
+
 void WebContentsViewAura::StartDragging(
     const DropData& drop_data,
     blink::WebDragOperationsMask operations,

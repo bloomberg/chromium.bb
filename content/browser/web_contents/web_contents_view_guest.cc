@@ -254,6 +254,11 @@ void WebContentsViewGuest::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
+void WebContentsViewGuest::HidePopupMenu() {
+  // External popup menus are only used on Mac and Android.
+  NOTIMPLEMENTED();
+}
+
 void WebContentsViewGuest::StartDragging(
     const DropData& drop_data,
     WebDragOperationsMask ops,
