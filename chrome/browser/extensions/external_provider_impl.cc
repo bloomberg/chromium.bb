@@ -55,6 +55,7 @@ using content::BrowserThread;
 namespace extensions {
 
 // Constants for keeping track of extension preferences in a dictionary.
+const char ExternalProviderImpl::kInstallParam[] = "install_parameter";
 const char ExternalProviderImpl::kExternalCrx[] = "external_crx";
 const char ExternalProviderImpl::kExternalVersion[] = "external_version";
 const char ExternalProviderImpl::kExternalUpdateUrl[] = "external_update_url";
@@ -220,6 +221,9 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
       }
     }
 
+    std::string install_parameter;
+    extension->GetString(kInstallParam, &install_parameter);
+
     if (has_external_crx) {
       if (crx_location_ == Manifest::INVALID_LOCATION) {
         LOG(WARNING) << "This provider does not support installing external "
@@ -271,9 +275,12 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
                      << "\", which is not a valid URL.";
         continue;
       }
-      service_->OnExternalExtensionUpdateUrlFound(
-          extension_id, update_url, download_location_, creation_flags,
-          auto_acknowledge_);
+      service_->OnExternalExtensionUpdateUrlFound(extension_id,
+                                                  install_parameter,
+                                                  update_url,
+                                                  download_location_,
+                                                  creation_flags,
+                                                  auto_acknowledge_);
     }
   }
 

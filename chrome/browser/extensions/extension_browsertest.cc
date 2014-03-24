@@ -124,8 +124,27 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
   observer_.reset(new ExtensionTestNotificationObserver(browser()));
 }
 
+const Extension* ExtensionBrowserTest::LoadExtension(
+    const base::FilePath& path) {
+  return LoadExtensionWithFlags(path, kFlagEnableFileAccess);
+}
+
+const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
+    const base::FilePath& path) {
+  return LoadExtensionWithFlags(path,
+                                kFlagEnableFileAccess | kFlagEnableIncognito);
+}
+
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     const base::FilePath& path, int flags) {
+  return LoadExtensionWithInstallParam(path, flags, std::string());
+}
+
+const extensions::Extension*
+ExtensionBrowserTest::LoadExtensionWithInstallParam(
+    const base::FilePath& path,
+    int flags,
+    const std::string& install_param) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
   {
@@ -169,13 +188,22 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
 
   const std::string extension_id = extension->id();
 
-  // The call to OnExtensionInstalled ensures the other extension prefs
-  // are set up with the defaults.
-  extensions::ExtensionPrefs::Get(profile())
-      ->OnExtensionInstalled(extension,
-                             Extension::ENABLED,
-                             false,
-                             syncer::StringOrdinal::CreateInitialOrdinal());
+  if (!install_param.empty()) {
+    extensions::ExtensionPrefs::Get(profile())
+        ->SetInstallParam(extension_id, install_param);
+    // Re-enable the extension if needed.
+    if (service->extensions()->Contains(extension_id)) {
+      content::WindowedNotificationObserver load_signal(
+          chrome::NOTIFICATION_EXTENSION_LOADED,
+          content::Source<Profile>(profile()));
+      // Reload the extension so that the NOTIFICATION_EXTENSION_LOADED
+      // observers may access |install_param|.
+      service->ReloadExtension(extension_id);
+      load_signal.Wait();
+      extension = service->GetExtensionById(extension_id, false);
+      CHECK(extension) << extension_id << " not found after reloading.";
+    }
+  }
 
   // Toggling incognito or file access will reload the extension, so wait for
   // the reload and grab the new extension instance. The default state is
@@ -212,17 +240,6 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     return NULL;
 
   return extension;
-}
-
-const Extension* ExtensionBrowserTest::LoadExtension(
-    const base::FilePath& path) {
-  return LoadExtensionWithFlags(path, kFlagEnableFileAccess);
-}
-
-const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
-    const base::FilePath& path) {
-  return LoadExtensionWithFlags(path,
-                                kFlagEnableFileAccess | kFlagEnableIncognito);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(

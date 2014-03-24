@@ -26,6 +26,9 @@ namespace {
 // The Registry subkey that contains information about external extensions.
 const char kRegistryExtensions[] = "Software\\Google\\Chrome\\Extensions";
 
+// Registry value of the key that defines the installation parameter.
+const wchar_t kRegistryExtensionInstallParam[] = L"install_parameter";
+
 // Registry value of the key that defines the path to the .crx file.
 const wchar_t kRegistryExtensionPath[] = L"path";
 
@@ -92,6 +95,13 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";
       continue;
+    }
+
+    base::string16 extension_dist_id;
+    if (key.ReadValue(kRegistryExtensionInstallParam, &extension_dist_id) ==
+        ERROR_SUCCESS) {
+      prefs->SetString(id + "." + ExternalProviderImpl::kInstallParam,
+                       base::UTF16ToASCII(extension_dist_id));
     }
 
     // If there is an update URL present, copy it to prefs and ignore

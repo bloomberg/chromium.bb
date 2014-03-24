@@ -180,7 +180,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             bool blacklisted_for_malware,
-                            const syncer::StringOrdinal& page_ordinal);
+                            const syncer::StringOrdinal& page_ordinal,
+                            const std::string& install_parameter);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
@@ -417,7 +418,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                              Extension::State initial_state,
                              bool blacklisted_for_malware,
                              DelayReason delay_reason,
-                             const syncer::StringOrdinal& page_ordinal);
+                             const syncer::StringOrdinal& page_ordinal,
+                             const std::string& install_parameter);
 
   // Removes any delayed install information we have for the given
   // |extension_id|. Returns true if there was info to remove; false otherwise.
@@ -491,7 +493,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  bool extensions_disabled() { return extensions_disabled_; }
+  bool extensions_disabled() const { return extensions_disabled_; }
 
   ContentSettingsStore* content_settings_store() {
     return content_settings_store_.get();
@@ -524,6 +526,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // null to remove the preference.
   const base::DictionaryValue* GetInstallSignature();
   void SetInstallSignature(const base::DictionaryValue* signature);
+
+  // The installation parameter associated with the extension.
+  std::string GetInstallParam(const std::string& extension_id) const;
+  void SetInstallParam(const std::string& extension_id,
+                       const std::string& install_parameter);
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
@@ -625,6 +632,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                                   const base::Time install_time,
                                   Extension::State initial_state,
                                   bool blacklisted_for_malware,
+                                  const std::string& install_parameter,
                                   base::DictionaryValue* extension_dict);
 
   // Helper function to complete initialization of the values in

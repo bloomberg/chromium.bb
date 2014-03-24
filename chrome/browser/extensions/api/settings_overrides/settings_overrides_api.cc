@@ -24,6 +24,7 @@
 namespace extensions {
 
 namespace {
+
 base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsOverridesAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
@@ -32,19 +33,33 @@ const char kManyStartupPagesWarning[] = "* specifies more than 1 startup URL. "
 
 using api::manifest_types::ChromeSettingsOverrides;
 
+std::string SubstituteInstallParam(std::string str,
+                                   const std::string& install_parameter) {
+  ReplaceSubstringsAfterOffset(&str, 0, "__PARAM__", install_parameter);
+  return str;
+}
+
 TemplateURLData ConvertSearchProvider(
-    const ChromeSettingsOverrides::Search_provider& search_provider) {
+    const ChromeSettingsOverrides::Search_provider& search_provider,
+    const std::string& install_parameter) {
   TemplateURLData data;
 
   data.short_name = base::UTF8ToUTF16(search_provider.name);
   data.SetKeyword(base::UTF8ToUTF16(search_provider.keyword));
-  data.SetURL(search_provider.search_url);
-  if (search_provider.suggest_url)
-    data.suggestions_url = *search_provider.suggest_url;
-  if (search_provider.instant_url)
-    data.instant_url = *search_provider.instant_url;
-  if (search_provider.image_url)
-    data.image_url = *search_provider.image_url;
+  data.SetURL(
+      SubstituteInstallParam(search_provider.search_url, install_parameter));
+  if (search_provider.suggest_url) {
+    data.suggestions_url =
+        SubstituteInstallParam(*search_provider.suggest_url, install_parameter);
+  }
+  if (search_provider.instant_url) {
+    data.instant_url =
+        SubstituteInstallParam(*search_provider.instant_url, install_parameter);
+  }
+  if (search_provider.image_url) {
+    data.image_url =
+        SubstituteInstallParam(*search_provider.image_url, install_parameter);
+  }
   if (search_provider.search_url_post_params)
     data.search_url_post_params = *search_provider.search_url_post_params;
   if (search_provider.suggest_url_post_params)
@@ -53,7 +68,8 @@ TemplateURLData ConvertSearchProvider(
     data.instant_url_post_params = *search_provider.instant_url_post_params;
   if (search_provider.image_url_post_params)
     data.image_url_post_params = *search_provider.image_url_post_params;
-  data.favicon_url = GURL(search_provider.favicon_url);
+  data.favicon_url = GURL(
+      SubstituteInstallParam(search_provider.favicon_url, install_parameter));
   data.show_in_default_list = true;
   data.safe_for_autoreplace = false;
   data.input_encodings.push_back(search_provider.encoding);
@@ -63,11 +79,13 @@ TemplateURLData ConvertSearchProvider(
   if (search_provider.alternate_urls) {
     for (size_t i = 0; i < search_provider.alternate_urls->size(); ++i) {
       if (!search_provider.alternate_urls->at(i).empty())
-        data.alternate_urls.push_back(search_provider.alternate_urls->at(i));
+        data.alternate_urls.push_back(SubstituteInstallParam(
+            search_provider.alternate_urls->at(i), install_parameter));
     }
   }
   return data;
 }
+
 }  // namespace
 
 SettingsOverridesAPI::SettingsOverridesAPI(content::BrowserContext* context)
@@ -119,9 +137,13 @@ void SettingsOverridesAPI::Observe(
       const SettingsOverrides* settings =
           SettingsOverrides::Get(extension);
       if (settings) {
+        std::string install_parameter =
+            ExtensionPrefs::Get(profile_)->GetInstallParam(extension->id());
         if (settings->homepage) {
-          SetPref(extension->id(), prefs::kHomePage,
-                  new base::StringValue(settings->homepage->spec()));
+          SetPref(extension->id(),
+                  prefs::kHomePage,
+                  new base::StringValue(SubstituteInstallParam(
+                      settings->homepage->spec(), install_parameter)));
           SetPref(extension->id(), prefs::kHomePageIsNewTabPage,
                   new base::FundamentalValue(false));
         }
@@ -134,8 +156,8 @@ void SettingsOverridesAPI::Observe(
                 kManyStartupPagesWarning, manifest_keys::kSettingsOverride);
           }
           scoped_ptr<base::ListValue> url_list(new base::ListValue);
-          url_list->Append(
-              new base::StringValue(settings->startup_pages[0].spec()));
+          url_list->Append(new base::StringValue(SubstituteInstallParam(
+              settings->startup_pages[0].spec(), install_parameter)));
           SetPref(extension->id(), prefs::kURLsToRestoreOnStartup,
                   url_list.release());
         }
@@ -213,9 +235,11 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   scoped_ptr<AssociatedExtensionInfo> info(new AssociatedExtensionInfo);
   info->extension_id = extension->id();
   info->wants_to_be_default_engine = settings->search_engine->is_default;
-  info->install_time =
-      ExtensionPrefs::Get(profile_)->GetInstallTime(extension->id());
-  TemplateURLData data = ConvertSearchProvider(*settings->search_engine);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  info->install_time = prefs->GetInstallTime(extension->id());
+  std::string install_parameter = prefs->GetInstallParam(extension->id());
+  TemplateURLData data =
+      ConvertSearchProvider(*settings->search_engine, install_parameter);
   url_service_->AddExtensionControlledTURL(new TemplateURL(profile_, data),
                                            info.Pass());
 }

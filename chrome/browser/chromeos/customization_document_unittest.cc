@@ -201,8 +201,9 @@ class MockExternalProviderVisitor
                     extensions::Manifest::Location,
                     int,
                     bool));
-  MOCK_METHOD5(OnExternalExtensionUpdateUrlFound,
+  MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
                bool(const std::string&,
+                    const std::string&,
                     const GURL&,
                     extensions::Manifest::Location,
                     int,
@@ -359,7 +360,7 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
@@ -399,7 +400,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
@@ -410,7 +411,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(2);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);

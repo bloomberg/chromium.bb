@@ -10,6 +10,7 @@ namespace extensions {
 
 PendingExtensionInfo::PendingExtensionInfo(
     const std::string& id,
+    const std::string& install_parameter,
     const GURL& update_url,
     const Version& version,
     ShouldAllowInstallPredicate should_allow_install,
@@ -21,6 +22,7 @@ PendingExtensionInfo::PendingExtensionInfo(
     : id_(id),
       update_url_(update_url),
       version_(version),
+      install_parameter_(install_parameter),
       should_allow_install_(should_allow_install),
       is_from_sync_(is_from_sync),
       install_silently_(install_silently),
@@ -34,6 +36,8 @@ PendingExtensionInfo::PendingExtensionInfo()
       is_from_sync_(true),
       install_silently_(false),
       install_source_(Manifest::INVALID_LOCATION) {}
+
+PendingExtensionInfo::~PendingExtensionInfo() {}
 
 bool PendingExtensionInfo::operator==(const PendingExtensionInfo& rhs) const {
   return id_ == rhs.id_;

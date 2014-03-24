@@ -486,7 +486,8 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
                                    Extension::ENABLED,
                                    false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
-                                   syncer::StringOrdinal());
+                                   syncer::StringOrdinal(),
+                                   std::string());
   }
 
   // Verifies that we get back expected idle install information previously
@@ -610,7 +611,8 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
                                    Extension::ENABLED,
                                    false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
-                                   syncer::StringOrdinal());
+                                   syncer::StringOrdinal(),
+                                   "Param");
 
     // Finish idle installation
     ASSERT_TRUE(prefs()->FinishDelayedInstallInfo(id_));
@@ -618,6 +620,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
 
   virtual void Verify() OVERRIDE {
     EXPECT_FALSE(prefs()->GetDelayedInstallInfo(id_));
+    EXPECT_EQ(std::string("Param"), prefs()->GetInstallParam(id_));
 
     const base::DictionaryValue* manifest;
     ASSERT_TRUE(prefs()->ReadPrefAsDictionary(id_, "manifest", &manifest));
@@ -646,11 +649,13 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::DISABLED,
                                   false,
-                                  syncer::StringOrdinal());
+                                  syncer::StringOrdinal(),
+                                  "Param");
   }
 
   virtual void Verify() OVERRIDE {
     EXPECT_TRUE(prefs()->IsExtensionDisabled(extension_->id()));
+    EXPECT_EQ(std::string("Param"), prefs()->GetInstallParam(extension_->id()));
   }
 
  private:
@@ -667,7 +672,8 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
                                   false,
-                                  syncer::StringOrdinal());
+                                  syncer::StringOrdinal(),
+                                  std::string());
   }
 
   virtual void Verify() OVERRIDE {

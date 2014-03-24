@@ -90,6 +90,7 @@ class PendingExtensionManager {
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
   bool AddFromExternalUpdateUrl(const std::string& id,
+                                const std::string& install_parameter,
                                 const GURL& update_url,
                                 Manifest::Location location,
                                 int creation_flags,
@@ -118,6 +119,7 @@ class PendingExtensionManager {
   // Return true if the extension was added.
   bool AddExtensionImpl(
       const std::string& id,
+      const std::string& install_parameter,
       const GURL& update_url,
       const base::Version& version,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,

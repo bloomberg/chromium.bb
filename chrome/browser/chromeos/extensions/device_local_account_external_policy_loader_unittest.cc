@@ -70,8 +70,9 @@ class MockExternalPolicyProviderVisitor
                     extensions::Manifest::Location,
                     int,
                     bool));
-  MOCK_METHOD5(OnExternalExtensionUpdateUrlFound,
+  MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
                bool(const std::string&,
+                    const std::string&,
                     const GURL&,
                     extensions::Manifest::Location,
                     int,
@@ -156,7 +157,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::
   Mock::VerifyAndClearExpectations(&visitor_);
   EXPECT_CALL(visitor_, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor_, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor_, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor_, OnExternalProviderReady(_))
       .Times(0);

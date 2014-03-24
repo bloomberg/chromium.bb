@@ -80,12 +80,21 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   const extensions::Extension* LoadExtension(const base::FilePath& path);
 
-  // Same as above, but enables the extension in incognito mode first.
+  // Load extension and enable it in incognito mode.
   const extensions::Extension* LoadExtensionIncognito(
       const base::FilePath& path);
 
+  // Load extension from the |path| folder. |flags| is bit mask of values from
+  // |Flags| enum.
   const extensions::Extension* LoadExtensionWithFlags(
       const base::FilePath& path, int flags);
+
+  // Same as above, but sets the installation parameter to the extension
+  // preferences.
+  const extensions::Extension* LoadExtensionWithInstallParam(
+      const base::FilePath& path,
+      int flags,
+      const std::string& install_param);
 
   // Loads unpacked extension from |path| with manifest |manifest_relative_path|
   // and imitates that it is a component extension.

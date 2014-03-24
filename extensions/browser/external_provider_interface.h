@@ -46,6 +46,7 @@ class ExternalProviderInterface {
     // location.
     virtual bool OnExternalExtensionUpdateUrlFound(
         const std::string& id,
+        const std::string& install_parameter,
         const GURL& update_url,
         Manifest::Location location,
         int creation_flags,

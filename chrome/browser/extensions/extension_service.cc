@@ -265,6 +265,7 @@ void ExtensionService::AddProviderForTesting(
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
+    const std::string& install_parameter,
     const GURL& update_url,
     Manifest::Location location,
     int creation_flags,
@@ -292,7 +293,12 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   // source.  In this case, signal that this extension will not be
   // installed by returning false.
   if (!pending_extension_manager()->AddFromExternalUpdateUrl(
-          id, update_url, location, creation_flags, mark_acknowledged)) {
+          id,
+          install_parameter,
+          update_url,
+          location,
+          creation_flags,
+          mark_acknowledged)) {
     return false;
   }
 
@@ -1826,7 +1832,8 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
     AddNewOrUpdatedExtension(extension,
                              Extension::ENABLED_COMPONENT,
                              extensions::NOT_BLACKLISTED,
-                             syncer::StringOrdinal());
+                             syncer::StringOrdinal(),
+                             std::string());
     return;
   }
 
@@ -2086,6 +2093,7 @@ void ExtensionService::OnExtensionInstalled(
 
   const std::string& id = extension->id();
   bool initial_enable = ShouldEnableOnInstall(extension);
+  std::string install_parameter;
   const extensions::PendingExtensionInfo* pending_extension_info = NULL;
   if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
     if (!pending_extension_info->ShouldAllowInstall(extension)) {
@@ -2108,6 +2116,7 @@ void ExtensionService::OnExtensionInstalled(
       return;
     }
 
+    install_parameter = pending_extension_info->install_parameter();
     pending_extension_manager()->Remove(id);
   } else {
     // We explicitly want to re-enable an uninstalled external
@@ -2173,7 +2182,8 @@ void ExtensionService::OnExtensionInstalled(
         initial_state,
         blacklisted_for_malware,
         extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
-        page_ordinal);
+        page_ordinal,
+        install_parameter);
 
     // Transfer ownership of |extension|.
     delayed_installs_.Insert(extension);
@@ -2191,7 +2201,8 @@ void ExtensionService::OnExtensionInstalled(
         initial_state,
         blacklisted_for_malware,
         extensions::ExtensionPrefs::DELAY_REASON_GC,
-        page_ordinal);
+        page_ordinal,
+        install_parameter);
     delayed_installs_.Insert(extension);
   } else if (status != IMPORT_STATUS_OK) {
     if (status == IMPORT_STATUS_UNSATISFIED) {
@@ -2200,14 +2211,16 @@ void ExtensionService::OnExtensionInstalled(
           initial_state,
           blacklisted_for_malware,
           extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
-          page_ordinal);
+          page_ordinal,
+          install_parameter);
       delayed_installs_.Insert(extension);
     }
   } else {
     AddNewOrUpdatedExtension(extension,
                              initial_state,
                              blacklist_state,
-                             page_ordinal);
+                             page_ordinal,
+                             install_parameter);
   }
 }
 
@@ -2215,14 +2228,16 @@ void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
     Extension::State initial_state,
     extensions::BlacklistState blacklist_state,
-    const syncer::StringOrdinal& page_ordinal) {
+    const syncer::StringOrdinal& page_ordinal,
+    const std::string& install_parameter) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const bool blacklisted_for_malware =
       blacklist_state == extensions::BLACKLISTED_MALWARE;
   extension_prefs_->OnExtensionInstalled(extension,
                                          initial_state,
                                          blacklisted_for_malware,
-                                         page_ordinal);
+                                         page_ordinal,
+                                         install_parameter);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension)) {
     system_->install_verifier()->Add(extension->id(),

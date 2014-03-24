@@ -68,38 +68,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
   EXPECT_EQ(TemplateURL::NORMAL, default_provider->GetType());
 
 #if defined(OS_WIN)
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("settings_override"));
+  const extensions::Extension* extension = LoadExtensionWithInstallParam(
+      test_data_dir_.AppendASCII("settings_override"),
+      kFlagEnableFileAccess,
+      "10");
   ASSERT_TRUE(extension);
-  EXPECT_EQ("http://www.homepage.com/", prefs->GetString(prefs::kHomePage));
+  EXPECT_EQ("http://www.homepage.com/?param=10",
+            prefs->GetString(prefs::kHomePage));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
   startup_pref = SessionStartupPref::GetStartupPref(prefs);
   EXPECT_EQ(SessionStartupPref::URLS, startup_pref.type);
-  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.com")),
+  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.com/?param=10")),
             startup_pref.urls);
   TemplateURL* extension_provider = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION,
             extension_provider->GetType());
   EXPECT_EQ(base::ASCIIToUTF16("name.de"), extension_provider->short_name());
   EXPECT_EQ(base::ASCIIToUTF16("keyword.de"), extension_provider->keyword());
-  EXPECT_EQ("http://www.foo.de/s?q={searchTerms}", extension_provider->url());
-  EXPECT_EQ(GURL("http://www.foo.de/favicon.ico"),
+  EXPECT_EQ("http://www.foo.de/s?q={searchTerms}&id=10",
+            extension_provider->url());
+  EXPECT_EQ(GURL("http://www.foo.de/favicon.ico?id=10"),
             extension_provider->favicon_url());
-  EXPECT_EQ("http://www.foo.de/suggest?q={searchTerms}",
+  EXPECT_EQ("http://www.foo.de/suggest?q={searchTerms}&id=10",
             extension_provider->suggestions_url());
-  EXPECT_EQ("http://www.foo.de/instant?q={searchTerms}",
+  EXPECT_EQ("http://www.foo.de/instant?q={searchTerms}&id=10",
             extension_provider->instant_url());
-  EXPECT_EQ("http://www.foo.de/image?q={searchTerms}",
-              extension_provider->image_url());
+  EXPECT_EQ("http://www.foo.de/image?q={searchTerms}&id=10",
+            extension_provider->image_url());
   EXPECT_EQ("search_lang=de", extension_provider->search_url_post_params());
   EXPECT_EQ("suggest_lang=de",
             extension_provider->suggestions_url_post_params());
   EXPECT_EQ("instant_lang=de", extension_provider->instant_url_post_params());
   EXPECT_EQ("image_lang=de", extension_provider->image_url_post_params());
   const std::string alternate_urls[] = {
-      "http://www.moo.de/s?q={searchTerms}",
-      "http://www.noo.de/s?q={searchTerms}"
-  };
+      "http://www.moo.de/s?q={searchTerms}&id=10",
+      "http://www.noo.de/s?q={searchTerms}&id=10"};
   EXPECT_EQ(std::vector<std::string>(
                 alternate_urls, alternate_urls + arraysize(alternate_urls)),
             extension_provider->alternate_urls());

@@ -67,10 +67,11 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kExternalCrx[];
   static const char kExternalVersion[];
   static const char kExternalUpdateUrl[];
-  static const char kSupportedLocales[];
+  static const char kInstallParam[];
   static const char kIsBookmarkApp[];
   static const char kIsFromWebstore[];
   static const char kKeepIfPresent[];
+  static const char kSupportedLocales[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;

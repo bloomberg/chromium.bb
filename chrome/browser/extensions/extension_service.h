@@ -452,6 +452,7 @@ class ExtensionService
 
   virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id,
+      const std::string& install_parameter,
       const GURL& update_url,
       extensions::Manifest::Location location,
       int creation_flags,
@@ -583,11 +584,11 @@ class ExtensionService
   // the extension is installed, e.g., to update event handlers on background
   // pages; and perform other extension install tasks before calling
   // AddExtension.
-  void AddNewOrUpdatedExtension(
-      const extensions::Extension* extension,
-      extensions::Extension::State initial_state,
-      extensions::BlacklistState blacklist_state,
-      const syncer::StringOrdinal& page_ordinal);
+  void AddNewOrUpdatedExtension(const extensions::Extension* extension,
+                                extensions::Extension::State initial_state,
+                                extensions::BlacklistState blacklist_state,
+                                const syncer::StringOrdinal& page_ordinal,
+                                const std::string& install_parameter);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const extensions::Extension* extension);

@@ -184,6 +184,9 @@ const char kPrefLastLaunchTime[] = "last_launch_time";
 // of time.
 const char kPrefEvictedEphemeralApp[] = "evicted_ephemeral_app";
 
+// Am installation parameter bundled with an extension.
+const char kPrefInstallParam[] = "install_parameter";
+
 // A list of installed ids and a signature.
 const char kInstallSignature[] = "extensions.install_signature";
 
@@ -1117,12 +1120,17 @@ void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
     bool blacklisted_for_malware,
-    const syncer::StringOrdinal& page_ordinal) {
+    const syncer::StringOrdinal& page_ordinal,
+    const std::string& install_parameter) {
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   base::DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = time_provider_->GetCurrentTime();
-  PopulateExtensionInfoPrefs(extension, install_time, initial_state,
-                             blacklisted_for_malware, extension_dict);
+  PopulateExtensionInfoPrefs(extension,
+                             install_time,
+                             initial_state,
+                             blacklisted_for_malware,
+                             install_parameter,
+                             extension_dict);
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(),
                            page_ordinal, extension_dict);
@@ -1340,10 +1348,14 @@ void ExtensionPrefs::SetDelayedInstallInfo(
     Extension::State initial_state,
     bool blacklisted_for_malware,
     DelayReason delay_reason,
-    const syncer::StringOrdinal& page_ordinal) {
+    const syncer::StringOrdinal& page_ordinal,
+    const std::string& install_parameter) {
   base::DictionaryValue* extension_dict = new base::DictionaryValue();
-  PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
-                             initial_state, blacklisted_for_malware,
+  PopulateExtensionInfoPrefs(extension,
+                             time_provider_->GetCurrentTime(),
+                             initial_state,
+                             blacklisted_for_malware,
+                             install_parameter,
                              extension_dict);
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
@@ -1767,6 +1779,25 @@ void ExtensionPrefs::SetInstallSignature(
   }
 }
 
+std::string ExtensionPrefs::GetInstallParam(
+    const std::string& extension_id) const {
+  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension) {
+    NOTREACHED();
+    return std::string();
+  }
+  std::string install_parameter;
+  if (!extension->GetString(kPrefInstallParam, &install_parameter))
+    return std::string();
+  return install_parameter;
+}
+
+void ExtensionPrefs::SetInstallParam(const std::string& extension_id,
+                                     const std::string& install_parameter) {
+  UpdateExtensionPref(extension_id,
+                      kPrefInstallParam,
+                      new base::StringValue(install_parameter));
+}
 
 ExtensionPrefs::ExtensionPrefs(
     PrefService* prefs,
@@ -1902,6 +1933,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     const base::Time install_time,
     Extension::State initial_state,
     bool blacklisted_for_malware,
+    const std::string& install_parameter,
     base::DictionaryValue* extension_dict) {
   // Leave the state blank for component extensions so that old chrome versions
   // loading new profiles do not fail in GetInstalledExtensionInfo. Older
@@ -1932,6 +1964,10 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());
   extension_dict->Set(kPrefPath, new base::StringValue(path));
+  if (!install_parameter.empty()) {
+    extension_dict->Set(kPrefInstallParam,
+                        new base::StringValue(install_parameter));
+  }
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.
   if (!Manifest::IsUnpackedLocation(extension->location())) {

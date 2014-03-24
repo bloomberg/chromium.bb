@@ -407,7 +407,9 @@ class MockProviderVisitor
   }
 
   virtual bool OnExternalExtensionUpdateUrlFound(
-      const std::string& id, const GURL& update_url,
+      const std::string& id,
+      const std::string& install_parameter,
+      const GURL& update_url,
       Manifest::Location location,
       int creation_flags,
       bool mark_acknowledged) OVERRIDE {
@@ -429,6 +431,10 @@ class MockProviderVisitor
       EXPECT_TRUE(provider_->GetExtensionDetails(id, &location1, &v1));
       EXPECT_FALSE(v1.get());
       EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, location1);
+
+      std::string parsed_install_parameter;
+      pref->GetString("install_parameter", &parsed_install_parameter);
+      EXPECT_EQ(parsed_install_parameter, install_parameter);
 
       // Remove it so we won't count it again.
       prefs_->Remove(id, NULL);
@@ -1823,6 +1829,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   // Try adding the same extension from an external update URL.
   ASSERT_FALSE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
       good_crx,
+      std::string(),
       GURL("http:://fake.update/url"),
       Manifest::EXTERNAL_PREF_DOWNLOAD,
       Extension::NO_FLAGS,
@@ -3197,7 +3204,11 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
 TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
-      theme_crx, GURL(), Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS,
+      theme_crx,
+      std::string(),
+      GURL(),
+      Manifest::EXTERNAL_PREF_DOWNLOAD,
+      Extension::NO_FLAGS,
       false));
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -3236,8 +3247,12 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be updated, with the same ID, from a non-sync source.
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
-      kGoodId, GURL(kGoodUpdateURL), Manifest::EXTERNAL_PREF_DOWNLOAD,
-      Extension::NO_FLAGS, false));
+      kGoodId,
+      std::string(),
+      GURL(kGoodUpdateURL),
+      Manifest::EXTERNAL_PREF_DOWNLOAD,
+      Extension::NO_FLAGS,
+      false));
 
   // Check that there is a pending crx, with is_from_sync set to false.
   ASSERT_TRUE((pending_extension_info = service_->pending_extension_manager()->
@@ -3324,10 +3339,16 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 
   // Use AddExtensionImpl() as AddFrom*() would balk.
   service_->pending_extension_manager()->AddExtensionImpl(
-      good->id(), extensions::ManifestURL::GetUpdateURL(good),
-      Version(), &IsExtension, kGoodIsFromSync,
-      kGoodInstallSilently, Manifest::INTERNAL,
-      Extension::NO_FLAGS, false);
+      good->id(),
+      std::string(),
+      extensions::ManifestURL::GetUpdateURL(good),
+      Version(),
+      &IsExtension,
+      kGoodIsFromSync,
+      kGoodInstallSilently,
+      Manifest::INTERNAL,
+      Extension::NO_FLAGS,
+      false);
   UpdateExtension(good->id(), path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -5028,7 +5049,8 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "    \"external_version\": \"2.0\""
       "  },"
       "  \"cccccccccccccccccccccccccccccccc\": {"
-      "    \"external_update_url\": \"http:\\\\foo.com/update\""
+      "    \"external_update_url\": \"http:\\\\foo.com/update\","
+      "    \"install_parameter\": \"id\""
       "  }"
       "}";
   EXPECT_EQ(3, visitor.Visit(json_data));
@@ -6217,24 +6239,32 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Skip install when the location is the same.
-  EXPECT_FALSE(
-      service_->OnExternalExtensionUpdateUrlFound(
-          kGoodId, GURL(kGoodUpdateURL), Manifest::INTERNAL,
-          Extension::NO_FLAGS, false));
+  EXPECT_FALSE(service_->OnExternalExtensionUpdateUrlFound(kGoodId,
+                                                           std::string(),
+                                                           GURL(kGoodUpdateURL),
+                                                           Manifest::INTERNAL,
+                                                           Extension::NO_FLAGS,
+                                                           false));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Install when the location has higher priority.
-  EXPECT_TRUE(
-      service_->OnExternalExtensionUpdateUrlFound(
-          kGoodId, GURL(kGoodUpdateURL), Manifest::EXTERNAL_POLICY_DOWNLOAD,
-          Extension::NO_FLAGS, false));
+  EXPECT_TRUE(service_->OnExternalExtensionUpdateUrlFound(
+      kGoodId,
+      std::string(),
+      GURL(kGoodUpdateURL),
+      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+      Extension::NO_FLAGS,
+      false));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 
   // Try the low priority again.  Should be rejected.
-  EXPECT_FALSE(
-      service_->OnExternalExtensionUpdateUrlFound(
-          kGoodId, GURL(kGoodUpdateURL), Manifest::EXTERNAL_PREF_DOWNLOAD,
-          Extension::NO_FLAGS, false));
+  EXPECT_FALSE(service_->OnExternalExtensionUpdateUrlFound(
+      kGoodId,
+      std::string(),
+      GURL(kGoodUpdateURL),
+      Manifest::EXTERNAL_PREF_DOWNLOAD,
+      Extension::NO_FLAGS,
+      false));
   // The existing record should still be present in the pending extension
   // manager.
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
@@ -6243,9 +6273,12 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
 
   // Skip install when the location has the same priority as the installed
   // location.
-  EXPECT_FALSE(service_->OnExternalExtensionUpdateUrlFound(
-      kGoodId, GURL(kGoodUpdateURL), Manifest::INTERNAL,
-      Extension::NO_FLAGS, false));
+  EXPECT_FALSE(service_->OnExternalExtensionUpdateUrlFound(kGoodId,
+                                                           std::string(),
+                                                           GURL(kGoodUpdateURL),
+                                                           Manifest::INTERNAL,
+                                                           Extension::NO_FLAGS,
+                                                           false));
 
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 }
@@ -6483,10 +6516,13 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
 
   // Adding the latest version from the webstore overrides a specific version.
   GURL kUpdateUrl("http://example.com/update");
-  EXPECT_TRUE(
-      service_->OnExternalExtensionUpdateUrlFound(
-          kGoodId, kUpdateUrl, Manifest::EXTERNAL_POLICY_DOWNLOAD,
-          Extension::NO_FLAGS, false));
+  EXPECT_TRUE(service_->OnExternalExtensionUpdateUrlFound(
+      kGoodId,
+      std::string(),
+      kUpdateUrl,
+      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+      Extension::NO_FLAGS,
+      false));
   EXPECT_TRUE((info = pending->GetById(kGoodId)));
   EXPECT_FALSE(info->version().IsValid());
 }
@@ -6530,8 +6566,12 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   // Fake an external source adding a URL to fetch an extension from.
   bool AddPendingExternalPrefUrl() {
     return service_->pending_extension_manager()->AddFromExternalUpdateUrl(
-        crx_id_, GURL(), Manifest::EXTERNAL_PREF_DOWNLOAD,
-        Extension::NO_FLAGS, false);
+        crx_id_,
+        std::string(),
+        GURL(),
+        Manifest::EXTERNAL_PREF_DOWNLOAD,
+        Extension::NO_FLAGS,
+        false);
   }
 
   // Fake an external file from external_extensions.json.
@@ -6553,8 +6593,12 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   bool AddPendingPolicyInstall() {
     // Get path to the CRX with id |kGoodId|.
     return service_->OnExternalExtensionUpdateUrlFound(
-        crx_id_, GURL(), Manifest::EXTERNAL_POLICY_DOWNLOAD,
-        Extension::NO_FLAGS, false);
+        crx_id_,
+        std::string(),
+        GURL(),
+        Manifest::EXTERNAL_POLICY_DOWNLOAD,
+        Extension::NO_FLAGS,
+        false);
   }
 
   // Get the install source of a pending extension.
