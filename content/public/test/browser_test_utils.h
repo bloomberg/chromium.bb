@@ -277,7 +277,7 @@ class DOMMessageQueue : public NotificationObserver {
   void ClearQueue();
 
   // Wait for the next message to arrive. |message| will be set to the next
-  // message, if not null. Returns true on success.
+  // message. Returns true on success.
   bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
 
   // Overridden NotificationObserver methods.
@@ -288,7 +288,6 @@ class DOMMessageQueue : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
   std::queue<std::string> message_queue_;
-  bool waiting_for_message_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);

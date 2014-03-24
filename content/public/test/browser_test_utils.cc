@@ -645,7 +645,7 @@ void RenderProcessHostWatcher::RenderProcessHostDestroyed(
     message_loop_runner_->Quit();
 }
 
-DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {
+DOMMessageQueue::DOMMessageQueue() {
   registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
 }
@@ -656,12 +656,9 @@ void DOMMessageQueue::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   Details<DomOperationNotificationDetails> dom_op_details(details);
-  Source<RenderViewHost> sender(source);
   message_queue_.push(dom_op_details->json);
-  if (waiting_for_message_) {
-    waiting_for_message_ = false;
+  if (message_loop_runner_)
     message_loop_runner_->Quit();
-  }
 }
 
 void DOMMessageQueue::ClearQueue() {
@@ -669,8 +666,8 @@ void DOMMessageQueue::ClearQueue() {
 }
 
 bool DOMMessageQueue::WaitForMessage(std::string* message) {
+  DCHECK(message);
   if (message_queue_.empty()) {
-    waiting_for_message_ = true;
     // This will be quit when a new message comes in.
     message_loop_runner_ = new MessageLoopRunner;
     message_loop_runner_->Run();
@@ -678,8 +675,7 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   // The queue should not be empty, unless we were quit because of a timeout.
   if (message_queue_.empty())
     return false;
-  if (message)
-    *message = message_queue_.front();
+  *message = message_queue_.front();
   message_queue_.pop();
   return true;
 }
