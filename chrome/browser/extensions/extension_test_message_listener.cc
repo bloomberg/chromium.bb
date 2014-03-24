@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 ExtensionTestMessageListener::ExtensionTestMessageListener(
     const std::string& expected_message,
@@ -17,9 +19,23 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
     : expected_message_(expected_message),
       satisfied_(false),
       waiting_(false),
+      wait_for_any_message_(false),
       will_reply_(will_reply),
+      replied_(false),
       failed_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                 content::NotificationService::AllSources());
+}
+
+ExtensionTestMessageListener::ExtensionTestMessageListener(bool will_reply)
+    : satisfied_(false),
+      waiting_(false),
+      wait_for_any_message_(true),
+      will_reply_(will_reply),
+      replied_(false),
+      failed_(false) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                  content::NotificationService::AllSources());
 }
 
@@ -34,34 +50,53 @@ bool ExtensionTestMessageListener::WaitUntilSatisfied()  {
 }
 
 void ExtensionTestMessageListener::Reply(const std::string& message) {
-  DCHECK(satisfied_);
-  DCHECK(will_reply_);
+  CHECK(satisfied_);
+  CHECK(!replied_);
+
+  replied_ = true;
   function_->Reply(message);
   function_ = NULL;
-  will_reply_ = false;
 }
 
 void ExtensionTestMessageListener::Reply(int message) {
   Reply(base::IntToString(message));
 }
 
+void ExtensionTestMessageListener::Reset() {
+  satisfied_ = false;
+  failed_ = false;
+  message_.clear();
+  replied_ = false;
+}
+
 void ExtensionTestMessageListener::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  const std::string& content = *content::Details<std::string>(details).ptr();
-  if (!satisfied_ && (content == expected_message_ ||
-      (!failure_message_.empty() && (content == failure_message_)))) {
-    if (!failed_)
-      failed_ = (content == failure_message_);
-    function_ = content::Source<extensions::TestSendMessageFunction>(
-        source).ptr();
+  // Return immediately if we're already satisfied or it's not the right
+  // extension.
+  extensions::TestSendMessageFunction* function =
+      content::Source<extensions::TestSendMessageFunction>(source).ptr();
+  if (satisfied_ ||
+      (!extension_id_.empty() && function->extension_id() != extension_id_)) {
+    return;
+  }
+
+  // We should have an empty message if we're not already satisfied.
+  CHECK(message_.empty());
+
+  const std::string& message = *content::Details<std::string>(details).ptr();
+  if (message == expected_message_ || wait_for_any_message_ ||
+      (!failure_message_.empty() && message == failure_message_)) {
+    message_ = message;
     satisfied_ = true;
-    registrar_.RemoveAll();  // Stop listening for more messages.
-    if (!will_reply_) {
-      function_->Reply(std::string());
-      function_ = NULL;
-    }
+    failed_ = (message_ == failure_message_);
+
+    // Reply immediately, or save the function for future use.
+    function_ = function;
+    if (!will_reply_)
+      Reply(base::EmptyString());
+
     if (waiting_) {
       waiting_ = false;
       base::MessageLoopForUI::current()->Quit();

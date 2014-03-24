@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
       dm_protocol::kChromeExtensionPolicyType, kTestExtension2, kTestPolicy2));
 
   ExtensionTestMessageListener result_listener("ok", true);
-  result_listener.AlsoListenForFailureMessage("fail");
+  result_listener.set_failure_message("fail");
   scoped_refptr<const extensions::Extension> extension2 =
       LoadExtension(kTestExtension2Path);
   ASSERT_TRUE(extension2.get());

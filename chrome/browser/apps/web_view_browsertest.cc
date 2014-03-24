@@ -564,7 +564,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     }
 
     ExtensionTestMessageListener done_listener("TEST_PASSED", false);
-    done_listener.AlsoListenForFailureMessage("TEST_FAILED");
+    done_listener.set_failure_message("TEST_FAILED");
     if (!content::ExecuteScript(
             embedder_web_contents,
             base::StringPrintf("runTest('%s')", test_name.c_str()))) {
@@ -618,7 +618,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(embedder_web_contents);
 
     ExtensionTestMessageListener test_run_listener("PASSED", false);
-    test_run_listener.AlsoListenForFailureMessage("FAILED");
+    test_run_listener.set_failure_message("FAILED");
     EXPECT_TRUE(
         content::ExecuteScript(
             embedder_web_contents,
@@ -1581,7 +1581,7 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   embedder_web_contents->SetDelegate(mock);
 
   ExtensionTestMessageListener done_listener("TEST_PASSED", false);
-  done_listener.AlsoListenForFailureMessage("TEST_FAILED");
+  done_listener.set_failure_message("TEST_FAILED");
   EXPECT_TRUE(
       content::ExecuteScript(
           embedder_web_contents,
@@ -1598,7 +1598,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
       SetBrowserClientForTesting(&new_client);
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  launched_listener.AlsoListenForFailureMessage("TEST_FAILED");
+  launched_listener.set_failure_message("TEST_FAILED");
   LoadAndLaunchPlatformApp("web_view/context_menus/basic");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
