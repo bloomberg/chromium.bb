@@ -142,16 +142,12 @@ class SCMWrapper(object):
 
   def GetActualRemoteURL(self):
     """Attempt to determine the remote URL for this SCMWrapper."""
-    try:
+    if os.path.exists(os.path.join(self.checkout_path, '.git')):
       return shlex.split(scm.GIT.Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
           self.checkout_path))[1]
-    except Exception:
-      pass
-    try:
+    if os.path.exists(os.path.join(self.checkout_path, '.svn')):
       return scm.SVN.CaptureLocalInfo([], self.checkout_path)['URL']
-    except Exception:
-      pass
     return None
 
   def DoesRemoteURLMatch(self):
