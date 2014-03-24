@@ -275,8 +275,8 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
       rev_checking_required_local_anchors_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
-  config->version_min = net::SSLConfigService::default_version_min();
-  config->version_max = net::SSLConfigService::default_version_max();
+  config->version_min = net::kDefaultSSLVersionMin;
+  config->version_max = net::kDefaultSSLVersionMax;
   uint16 version_min = SSLProtocolVersionFromString(version_min_str);
   uint16 version_max = SSLProtocolVersionFromString(version_max_str);
   if (version_min) {

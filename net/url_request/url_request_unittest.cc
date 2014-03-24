@@ -6204,12 +6204,11 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
 // Tests TLSv1.1 -> TLSv1 fallback. Verifies that we don't fall back more
 // than necessary.
 TEST_F(HTTPSRequestTest, TLSv1Fallback) {
-  uint16 default_version_max = SSLConfigService::default_version_max();
   // The OpenSSL library in use may not support TLS 1.1.
 #if !defined(USE_OPENSSL)
-  EXPECT_GT(default_version_max, SSL_PROTOCOL_VERSION_TLS1);
+  EXPECT_GT(kDefaultSSLVersionMax, SSL_PROTOCOL_VERSION_TLS1);
 #endif
-  if (default_version_max <= SSL_PROTOCOL_VERSION_TLS1)
+  if (kDefaultSSLVersionMax <= SSL_PROTOCOL_VERSION_TLS1)
     return;
 
   SpawnedTestServer::SSLOptions ssl_options(

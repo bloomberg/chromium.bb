@@ -5,73 +5,10 @@
 #include "net/ssl/ssl_config_service.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "net/cert/crl_set.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 
-#if defined(USE_OPENSSL)
-#include <openssl/ssl.h>
-#endif
-
 namespace net {
-
-static uint16 g_default_version_min = SSL_PROTOCOL_VERSION_SSL3;
-
-static uint16 g_default_version_max =
-#if defined(USE_OPENSSL)
-#if defined(SSL_OP_NO_TLSv1_2)
-    SSL_PROTOCOL_VERSION_TLS1_2;
-#elif defined(SSL_OP_NO_TLSv1_1)
-    SSL_PROTOCOL_VERSION_TLS1_1;
-#else
-    SSL_PROTOCOL_VERSION_TLS1;
-#endif
-#else
-    SSL_PROTOCOL_VERSION_TLS1_2;
-#endif
-
-SSLConfig::CertAndStatus::CertAndStatus() : cert_status(0) {}
-
-SSLConfig::CertAndStatus::~CertAndStatus() {}
-
-SSLConfig::SSLConfig()
-    : rev_checking_enabled(false),
-      rev_checking_required_local_anchors(false),
-      version_min(g_default_version_min),
-      version_max(g_default_version_max),
-      channel_id_enabled(true),
-      false_start_enabled(true),
-      signed_cert_timestamps_enabled(true),
-      require_forward_secrecy(false),
-      send_client_cert(false),
-      verify_ev_cert(false),
-      version_fallback(false),
-      cert_io_enabled(true) {
-}
-
-SSLConfig::~SSLConfig() {
-}
-
-bool SSLConfig::IsAllowedBadCert(X509Certificate* cert,
-                                 CertStatus* cert_status) const {
-  std::string der_cert;
-  if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_cert))
-    return false;
-  return IsAllowedBadCert(der_cert, cert_status);
-}
-
-bool SSLConfig::IsAllowedBadCert(const base::StringPiece& der_cert,
-                                 CertStatus* cert_status) const {
-  for (size_t i = 0; i < allowed_bad_certs.size(); ++i) {
-    if (der_cert == allowed_bad_certs[i].der_cert) {
-      if (cert_status)
-        *cert_status = allowed_bad_certs[i].cert_status;
-      return true;
-    }
-  }
-  return false;
-}
 
 SSLConfigService::SSLConfigService()
     : observer_list_(ObserverList<Observer>::NOTIFY_EXISTING_ONLY) {
@@ -108,16 +45,6 @@ void SSLConfigService::SetCRLSet(scoped_refptr<CRLSet> crl_set) {
 // static
 scoped_refptr<CRLSet> SSLConfigService::GetCRLSet() {
   return g_crl_set.Get().Get();
-}
-
-// static
-uint16 SSLConfigService::default_version_min() {
-  return g_default_version_min;
-}
-
-// static
-uint16 SSLConfigService::default_version_max() {
-  return g_default_version_max;
 }
 
 void SSLConfigService::AddObserver(Observer* observer) {

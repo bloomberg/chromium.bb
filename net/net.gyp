@@ -1124,6 +1124,8 @@
         'ssl/ssl_client_auth_cache.cc',
         'ssl/ssl_client_auth_cache.h',
         'ssl/ssl_client_cert_type.h',
+        'ssl/ssl_config.cc',
+        'ssl/ssl_config.h',
         'ssl/ssl_config_service.cc',
         'ssl/ssl_config_service.h',
         'ssl/ssl_config_service_defaults.cc',
