@@ -431,8 +431,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, info[0]);
     RefPtr<TestTypedefs> impl = TestTypedefs::create(hello);
-    v8::Handle<v8::Object> wrapper = info.Holder();
 
+    v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }

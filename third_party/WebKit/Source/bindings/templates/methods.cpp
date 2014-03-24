@@ -386,13 +386,17 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     {% endif %}
     {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
-    v8::Handle<v8::Object> wrapper = info.Holder();
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
     {% endif %}
 
+    {% if has_custom_wrap %}
+    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
+    {% else %}
+    v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
+    {% endif %}
     v8SetReturnValue(info, wrapper);
 }
 {% endmacro %}

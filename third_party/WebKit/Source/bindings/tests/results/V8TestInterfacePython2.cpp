@@ -80,9 +80,8 @@ template <typename T> void V8_USE(T) { }
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtr<TestInterfacePython2> impl = TestInterfacePython2::create();
-    v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfacePython2>(impl.release(), &V8TestInterfacePython2::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 

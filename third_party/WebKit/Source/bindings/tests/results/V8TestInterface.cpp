@@ -632,10 +632,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, exceptionState);
-    v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;
 
+    v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
 }
