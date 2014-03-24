@@ -464,7 +464,7 @@ class TempDir(object):
               ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
               error_code_ok=True)
           cros_build_lib.Error('Mounts were:')
-          cros_build_lib.Error('  ', mount_results.output)
+          cros_build_lib.Error('  %s', mount_results.output)
 
       else:
         # If there was not an exception from the context, raise ours.
