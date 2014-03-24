@@ -35,6 +35,17 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SimpleLoad, {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 })
 
+// ASan does not work with libc-free context, so disable the test.
+#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)
+#  define MAYBE_NonSfiLoad NonSfiLoad
+#else
+#  define MAYBE_NonSfiLoad DISABLED_NonSfiLoad
+#endif
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNonSfiMode, MAYBE_NonSfiLoad) {
+  RunLoadTest(FILE_PATH_LITERAL("libc_free.html"));
+}
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatus0, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exit0&expected_exit=0"));
