@@ -932,6 +932,44 @@ private:
     bool m_didCallWillFinalize;
 };
 
+class FinalizationObserverWithHashMap {
+public:
+    typedef HeapHashMap<WeakMember<Observable>, OwnPtr<FinalizationObserverWithHashMap> > ObserverMap;
+
+    explicit FinalizationObserverWithHashMap(Observable& target) : m_target(target) { }
+    ~FinalizationObserverWithHashMap()
+    {
+        m_target.willFinalize();
+        s_didCallWillFinalize = true;
+    }
+
+    static ObserverMap& observe(Observable& target)
+    {
+        ObserverMap& map = observers();
+        ObserverMap::AddResult result = map.add(&target, nullptr);
+        if (result.isNewEntry)
+            result.storedValue->value = adoptPtr(new FinalizationObserverWithHashMap(target));
+        else
+            ASSERT(result.storedValue->value);
+        return map;
+    }
+
+    static bool s_didCallWillFinalize;
+
+private:
+    static ObserverMap& observers()
+    {
+        DEFINE_STATIC_LOCAL(Persistent<ObserverMap>, observerMap, ());
+        if (!observerMap)
+            observerMap = new ObserverMap();
+        return *observerMap;
+    }
+
+    Observable& m_target;
+};
+
+bool FinalizationObserverWithHashMap::s_didCallWillFinalize = false;
+
 class SuperClass;
 
 class PointsBack : public RefCountedWillBeGarbageCollectedFinalized<PointsBack> {
@@ -2631,6 +2669,18 @@ TEST(HeapTest, FinalizationObserver)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live);
     EXPECT_TRUE(o->didCallWillFinalize());
+
+    FinalizationObserverWithHashMap::s_didCallWillFinalize = false;
+    Observable* foo = Observable::create(Bar::create());
+    FinalizationObserverWithHashMap::ObserverMap& map = FinalizationObserverWithHashMap::observe(*foo);
+    EXPECT_EQ(1u, map.size());
+    foo = 0;
+    // FinalizationObserverWithHashMap doesn't have a strong reference to
+    // |foo|. So |foo| and its member will be collected.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, Bar::s_live);
+    EXPECT_EQ(0u, map.size());
+    EXPECT_TRUE(FinalizationObserverWithHashMap::s_didCallWillFinalize);
 }
 
 TEST(HeapTest, Comparisons)
