@@ -2161,8 +2161,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Called when a dialog is shown or hidden.
-   * @param {boolean} flag True if a dialog is shown, false if hidden.   */
+   * @param {boolean} flag True if a dialog is shown, false if hidden.
+   */
   FileManager.prototype.onDialogShownOrHidden = function(show) {
+    if (show) {
+      // If a dialog is shown, activate the window.
+      var appWindow = chrome.app.window.current();
+      if (appWindow)
+        appWindow.focus();
+    }
+
     // Set/unset a flag to disable dragging on the title area.
     this.dialogContainer_.classList.toggle('disable-header-drag', show);
   };
