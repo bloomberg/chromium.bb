@@ -60,15 +60,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketSplitSegments) {
   EXPECT_TRUE(EqualsASCII(result, "PASS"));
 }
 
-// Test that the browser can handle a WebSocket frame split into multiple SSL
-// records. This test is flaky on Linux; see http://crbug.com/176867.
-#if defined(OS_LINUX)
-#define MAYBE_SecureWebSocketSplitRecords DISABLED_SecureWebSocketSplitRecords
-#else
-#define MAYBE_SecureWebSocketSplitRecords SecureWebSocketSplitRecords
-#endif
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
-    MAYBE_SecureWebSocketSplitRecords) {
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SecureWebSocketSplitRecords) {
   // Launch a secure WebSocket server.
   ASSERT_TRUE(wss_server_.Start());
 

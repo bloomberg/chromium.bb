@@ -27,6 +27,7 @@ import re
 import select
 import socket
 import SocketServer
+import ssl
 import struct
 import sys
 import threading
@@ -51,7 +52,10 @@ import tlslite.api
 # Insert at the beginning of the path, we want this to be used
 # unconditionally.
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
+import mod_pywebsocket.standalone
 from mod_pywebsocket.standalone import WebSocketServer
+# import manually
+mod_pywebsocket.standalone.ssl = ssl
 
 SERVER_HTTP = 0
 SERVER_FTP = 1
@@ -84,6 +88,7 @@ class WebSocketOptions:
     self.certificate = None
     self.tls_client_auth = False
     self.tls_client_ca = None
+    self.tls_module = 'ssl'
     self.use_basic_auth = False
 
 

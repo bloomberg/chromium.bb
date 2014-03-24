@@ -26,7 +26,7 @@ ws.onopen = function()
 ws.onclose = function(event)
 {
   // Check wasClean, then set proper title.
-  if (event.wasClean)
+  if (event.wasClean && event.code === 3004 && event.reason === 'split test')
     document.title = 'PASS';
   else
     document.title = 'FAIL';
