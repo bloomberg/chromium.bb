@@ -21,6 +21,25 @@ function $(id) {
 }
 
 /**
+ * Add an accessible message to the page that will be announced to
+ * users who have spoken feedback on, but will be invisible to all
+ * other users. It's removed right away so it doesn't clutter the DOM.
+ * @param {string} msg The text to be pronounced.
+ */
+function announceAccessibleMessage(msg) {
+  var element = document.createElement('div');
+  element.setAttribute('aria-live', 'polite');
+  element.style.position = 'relative';
+  element.style.left = '-9999px';
+  element.style.height = '0px';
+  element.innerText = msg;
+  document.body.appendChild(element);
+  window.setTimeout(function() {
+    document.body.removeChild(element);
+  }, 0);
+}
+
+/**
  * Calls chrome.send with a callback and restores the original afterwards.
  * @param {string} name The name of the message to send.
  * @param {!Array} params The parameters to send.

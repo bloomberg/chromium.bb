@@ -220,10 +220,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
 
-      // Announce the name of the screen, if accessibility is on.
-      $('gaia-signin-aria-label').setAttribute(
-          'aria-label', loadTimeData.getString('signinScreenTitle'));
-
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
       Oobe.getInstance().headerHidden = false;

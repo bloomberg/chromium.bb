@@ -1151,8 +1151,14 @@ Press any key to continue exploring.
   <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
     Connect
   </message>
+  <message name="IDS_NETWORK_SCREEN_ACCESSIBLE_TITLE" desc="Text to be spoken on opening the OOBE network screen">
+    Welcome! Set your language and network
+  </message>
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
+  </message>
+  <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
+    <ph name="PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph> terms
   </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested
@@ -1183,6 +1189,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
     Update
+  </message>
+  <message name="IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE update screen">
+    Chrome updates automatically so you always have the freshest version
   </message>
   <message name="IDS_SIGNIN_SCREEN_TITLE" desc="Title of OOBE/Add User sign-in screen">
     Sign in
@@ -1444,11 +1453,17 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Supervised user dialog, manager selection page, text shown as a hint in the user password field.">
     Enter password
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_SETUP_ACCESSIBLE_TITLE" desc="Text to be spoken on opening supervised user creation username and password set-up dialog.">
+    Set up new supervised user
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Supervised user dialog, new user page, title for name of new user">
     Create a name -
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_EXPLANATION" desc="Supervised user dialog, new user page, explanation for name of new user">
     This supervised user will be managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_HINT" desc="Text shown as a hint in the new user name field in supervised user creation dialog.">
+    Enter new name
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE" desc="Supervised user dialog, new user page, title for password for new user.">
     Create a password -
@@ -2152,10 +2167,10 @@ Press any key to continue exploring.
     Discard photo
   </message>
   <message name="IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was captured.">
-    Captured photo
+    Photo was captured
   </message>
   <message name="IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was discarded.">
-    Discarded photo
+    Photo was discarded
   </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO" desc="The text on the button to flip the camera image horizontally.">
     Flip camera image horizontally

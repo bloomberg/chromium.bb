@@ -91,8 +91,12 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
 
   builder->Add("createManagedUserNameTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE);
+  builder->Add("createManagedUserNameAccessibleTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_SETUP_ACCESSIBLE_TITLE);
   builder->Add("createManagedUserNameExplanation",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_EXPLANATION);
+  builder->Add("createManagedUserNameHint",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_HINT);
   builder->Add("createManagedUserPasswordTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE);
   builder->Add("createManagedUserPasswordExplanation",
@@ -147,7 +151,10 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT);
   builder->Add("photoFlippedBackAccessibleText",
                IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT);
-
+  builder->Add("photoCaptureAccessibleText",
+               IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
+  builder->Add("photoDiscardAccessibleText",
+               IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
 }
 
 void LocallyManagedUserCreationScreenHandler::Initialize() {}

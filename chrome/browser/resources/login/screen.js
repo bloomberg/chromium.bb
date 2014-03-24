@@ -27,7 +27,7 @@ cr.define('login', function() {
     /**
      * Called for currently active screen when screen size changed.
      */
-    onWindowResize: doNothing
+    onWindowResize: doNothing,
   };
 
   return {

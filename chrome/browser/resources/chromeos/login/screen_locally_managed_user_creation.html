@@ -25,7 +25,9 @@
         <div id="managed-user-creation-managers-pane"></div>
       </div>
     </div>
-    <div id="managed-user-creation-username" class="page-no-marketing" hidden>
+    <div id="managed-user-creation-username" class="page-no-marketing"
+        role="group"
+        i18n-values="aria-label:createManagedUserNameAccessibleTitle" hidden>
       <div class="logo-padded-text">
         <div class="hide-on-import">
           <div class="page-title inline"
@@ -34,7 +36,8 @@
               class="page-title-explanation inline"></div>
         </div>
         <div id="managed-user-creation-name-block" class="hide-on-import">
-          <input id="managed-user-creation-name" type="text" maxlength="50" />
+          <input id="managed-user-creation-name" type="text" maxlength="50"
+              i18n-values="placeholder:createManagedUserNameHint" />
           <span id="managed-user-creation-name-error" class="no-error">
           </span>
         </div>

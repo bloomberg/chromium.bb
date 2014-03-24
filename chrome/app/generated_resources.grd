@@ -3546,10 +3546,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <!-- User Image Selection Dialog -->
       <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
-        Smile! Take a picture of yourself and set it as your account picture.
-      </message>
-      <!-- OOBE progress bar labels -->
-      <message name="IDS_OOBE_PICTURE" desc="The label of OOBE progress bar step, must be short">
         Choose your account picture
       </message>
 

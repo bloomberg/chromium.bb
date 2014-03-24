@@ -166,6 +166,8 @@ cr.define('login', function() {
       this.profileImageLoading_ = value;
       $('user-image-screen-main').classList[
           value ? 'add' : 'remove']('profile-image-loading');
+      if (value)
+        announceAccessibleMessage(loadTimeData.getString('syncingPreferences'));
       this.updateProfileImageCaption_();
     },
 
@@ -247,8 +249,7 @@ cr.define('login', function() {
       imageGrid.flipPhoto = !imageGrid.flipPhoto;
       var flipMessageId = imageGrid.flipPhoto ?
          'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
-      this.announceAccessibleMessage_(
-          loadTimeData.getString(flipMessageId));
+      announceAccessibleMessage(loadTimeData.getString(flipMessageId));
     },
 
     /**
@@ -265,7 +266,7 @@ cr.define('login', function() {
      */
     handlePhotoTaken_: function(e) {
       chrome.send('photoTaken', [e.dataURL]);
-      this.announceAccessibleMessage_(
+      announceAccessibleMessage(
           loadTimeData.getString('photoCaptureAccessibleText'));
     },
 
@@ -284,26 +285,8 @@ cr.define('login', function() {
       var imageGrid = $('user-image-grid');
       imageGrid.discardPhoto();
       chrome.send('discardPhoto');
-      this.announceAccessibleMessage_(
+      announceAccessibleMessage(
           loadTimeData.getString('photoDiscardAccessibleText'));
-    },
-
-    /**
-     * Add an accessible message to the page that will be announced to
-     * users who have spoken feedback on, but will be invisible to all
-     * other users. It's removed right away so it doesn't clutter the DOM.
-     */
-    announceAccessibleMessage_: function(msg) {
-      var element = document.createElement('div');
-      element.setAttribute('aria-live', 'polite');
-      element.style.position = 'relative';
-      element.style.left = '-9999px';
-      element.style.height = '0px';
-      element.innerText = msg;
-      document.body.appendChild(element);
-      window.setTimeout(function() {
-        document.body.removeChild(element);
-      }, 0);
     },
 
     /**

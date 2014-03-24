@@ -364,6 +364,20 @@ cr.define('cr.ui.login', function() {
       if (newStep.onAfterShow)
         newStep.onAfterShow(screenData);
 
+      // Workaround for gaia and network screens.
+      // Due to other origin iframe and long ChromeVox focusing correspondingly
+      // passive aria-label title is not pronounced.
+      // Gaia hack can be removed on fixed crbug.com/316726.
+      if (nextStepId == SCREEN_GAIA_SIGNIN) {
+        newStep.setAttribute(
+            'aria-label',
+            loadTimeData.getString('signinScreenTitle'));
+      } else if (nextStepId == SCREEN_OOBE_NETWORK) {
+        newStep.setAttribute(
+            'aria-label',
+            loadTimeData.getString('networkScreenAccessibleTitle'));
+      }
+
       // Default control to be focused (if specified).
       var defaultControl = newStep.defaultControl;
 

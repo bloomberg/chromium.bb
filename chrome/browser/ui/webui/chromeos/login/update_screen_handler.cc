@@ -38,6 +38,8 @@ void UpdateScreenHandler::DeclareLocalizedValues(
                 IDS_UPDATE_MSG, IDS_SHORT_PRODUCT_NAME);
 
   builder->Add("updateScreenTitle", IDS_UPDATE_SCREEN_TITLE);
+  builder->Add("updateScreenAccessibleTitle",
+               IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("checkingForUpdates", IDS_CHECKING_FOR_UPDATES);
   builder->Add("downloading", IDS_DOWNLOADING);
   builder->Add("downloadingTimeLeftLong", IDS_DOWNLOADING_TIME_LEFT_LONG);
