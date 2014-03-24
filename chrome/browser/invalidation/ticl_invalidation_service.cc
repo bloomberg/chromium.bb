@@ -95,6 +95,9 @@ void TiclInvalidationService::Init() {
                  base::Unretained(this)));
 
   UpdateInvalidationNetworkChannel();
+  UMA_HISTOGRAM_ENUMERATION("Invalidations.NetworkChannel",
+                            network_channel_type_,
+                            NETWORK_CHANNELS_COUNT);
 
   if (IsReadyToStart()) {
     StartInvalidator(network_channel_type_);

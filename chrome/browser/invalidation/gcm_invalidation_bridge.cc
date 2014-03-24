@@ -297,8 +297,6 @@ void GCMInvalidationBridge::OnMessage(
   it = message.data.find(kEchoTokenKey);
   if (it != message.data.end())
     echo_token = it->second;
-  if (content.empty())
-    return;
 
   core_thread_task_runner_->PostTask(
       FROM_HERE,

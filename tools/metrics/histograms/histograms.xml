@@ -6675,6 +6675,22 @@ other types of suffix sets.
   <summary>Status code of the outcome of a GCM unregistration request.</summary>
 </histogram>
 
+<histogram name="GCMInvalidations.IncomingMessageStatus"
+    enum="GCMInvalidationsIncomingMessageStatus">
+  <owner>pavely@chromium.org</owner>
+  <summary>
+    Status of parsing incoming invalidations message from GCM channel.
+  </summary>
+</histogram>
+
+<histogram name="GCMInvalidations.OutgoingMessageStatus"
+    enum="GCMInvalidationsOutgoingMessageStatus">
+  <owner>pavely@chromium.org</owner>
+  <summary>
+    Status of sending outgoing invalidations message through GCM.
+  </summary>
+</histogram>
+
 <histogram name="GData.AuthSuccess" enum="GDataAuthResult">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Result of the authentication for Drive.</summary>
@@ -7735,6 +7751,12 @@ other types of suffix sets.
     the user rejects the SSL warning.  This is only recorded for overridable SSL
     warnings.  Timing begins when user first focuses on the page.
   </summary>
+</histogram>
+
+<histogram name="Invalidations.NetworkChannel"
+    enum="InvalidationNetworkChannel">
+  <owner>pavely@chromium.org</owner>
+  <summary>Network channel used for invalidations.</summary>
 </histogram>
 
 <histogram name="Keyboard.KeystrokeDeltas" units="milliseconds">
@@ -32506,6 +32528,20 @@ other types of suffix sets.
   <int value="3" label="Socket failure"/>
 </enum>
 
+<enum name="GCMInvalidationsIncomingMessageStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="GCM message's content missing or empty"/>
+  <int value="2" label="Base64Decode failed"/>
+  <int value="3" label="Parsing protobuf failed"/>
+</enum>
+
+<enum name="GCMInvalidationsOutgoingMessageStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Message was discarded"/>
+  <int value="2" label="Access token request failed"/>
+  <int value="3" label="HTTP Post failed"/>
+</enum>
+
 <enum name="GCMRegistrationRequestStatus" type="int">
   <int value="0" label="Success (this is not logged currently)"/>
   <int value="1" label="Invalid parameters"/>
@@ -33126,6 +33162,11 @@ other types of suffix sets.
   <int value="40" label="USER_CANCELED"/>
   <int value="41" label="USER_SHUTDOWN"/>
   <int value="50" label="CRASH"/>
+</enum>
+
+<enum name="InvalidationNetworkChannel" type="int">
+  <int value="0" label="PushClientChannel"/>
+  <int value="1" label="GCMNetworkChannel"/>
 </enum>
 
 <enum name="IPV6ProbeResult" type="int">

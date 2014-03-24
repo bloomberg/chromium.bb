@@ -42,7 +42,11 @@ class TiclInvalidationService : public base::NonThreadSafe,
  public:
   enum InvalidationNetworkChannel {
     PUSH_CLIENT_CHANNEL = 0,
-    GCM_NETWORK_CHANNEL = 1
+    GCM_NETWORK_CHANNEL = 1,
+
+    // This enum is used in UMA_HISTOGRAM_ENUMERATION. Insert new values above
+    // this line.
+    NETWORK_CHANNELS_COUNT = 2
   };
 
   TiclInvalidationService(scoped_ptr<InvalidationAuthProvider> auth_provider,

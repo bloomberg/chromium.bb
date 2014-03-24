@@ -4,6 +4,7 @@
 
 #include "base/base64.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #if !defined(ANDROID)
@@ -54,6 +55,35 @@ const net::BackoffEntry::Policy kRegisterBackoffPolicy = {
   // Don't use initial delay unless the last request was an error.
   false,
 };
+
+// Outgoing message status values for UMA_HISTOGRAM.
+enum OutgoingMessageStatus {
+  OUTGOING_MESSAGE_SUCCESS,
+  MESSAGE_DISCARDED,     // New message started before old one was sent.
+  ACCESS_TOKEN_FAILURE,  // Requeting access token failed.
+  POST_FAILURE,          // HTTP Post failed.
+
+  // This enum is used in UMA_HISTOGRAM_ENUMERATION. Insert new values above
+  // this line.
+  OUTGOING_MESSAGE_STATUS_COUNT
+};
+
+// Incoming message status values for UMA_HISTOGRAM.
+enum IncomingMessageStatus {
+  INCOMING_MESSAGE_SUCCESS,
+  MESSAGE_EMPTY,     // GCM message's content is missing or empty.
+  INVALID_ENCODING,  // Base64Decode failed.
+  INVALID_PROTO,     // Parsing protobuf failed.
+
+  // This enum is used in UMA_HISTOGRAM_ENUMERATION. Insert new values above
+  // this line.
+  INCOMING_MESSAGE_STATUS_COUNT
+};
+
+const char kOutgoingMessageStatusHistogram[] =
+    "GCMInvalidations.OutgoingMessageStatus";
+const char kIncomingMessageStatusHistogram[] =
+    "GCMInvalidations.IncomingMessageStatus";
 
 }  // namespace
 
@@ -179,6 +209,11 @@ void GCMNetworkChannel::SendMessage(const std::string& message) {
   DCHECK(!message.empty());
   DVLOG(2) << "SendMessage";
   diagnostic_info_.sent_messages_count_++;
+  if (!cached_message_.empty()) {
+    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
+                              MESSAGE_DISCARDED,
+                              OUTGOING_MESSAGE_STATUS_COUNT);
+  }
   cached_message_ = message;
 
   if (!registration_id_.empty()) {
@@ -213,6 +248,10 @@ void GCMNetworkChannel::OnGetTokenComplete(
     // token service. Just drop this request, cacheinvalidations will retry
     // sending message and at that time we'll retry requesting access token.
     DVLOG(1) << "RequestAccessToken failed: " << error.ToString();
+    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
+                              ACCESS_TOKEN_FAILURE,
+                              OUTGOING_MESSAGE_STATUS_COUNT);
+    cached_message_.clear();
     return;
   }
   DCHECK(!token.empty());
@@ -238,20 +277,36 @@ void GCMNetworkChannel::OnGetTokenComplete(
 void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
                                           const std::string& echo_token) {
 #if !defined(ANDROID)
-  DCHECK(!message.empty());
   if (!echo_token.empty())
     echo_token_ = echo_token;
   diagnostic_info_.last_message_empty_echo_token_ = echo_token.empty();
-  std::string data;
-  if (!Base64DecodeURLSafe(message, &data))
-    return;
-  ipc::invalidation::AddressedAndroidMessage android_message;
-  if (!android_message.ParseFromString(data))
-    return;
-  if (!android_message.has_message())
-    return;
   diagnostic_info_.last_message_received_time_ = base::Time::Now();
+
+  if (message.empty()) {
+    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
+                              MESSAGE_EMPTY,
+                              INCOMING_MESSAGE_STATUS_COUNT);
+    return;
+  }
+  std::string data;
+  if (!Base64DecodeURLSafe(message, &data)) {
+    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
+                              INVALID_ENCODING,
+                              INCOMING_MESSAGE_STATUS_COUNT);
+    return;
+  }
+  ipc::invalidation::AddressedAndroidMessage android_message;
+  if (!android_message.ParseFromString(data) ||
+      !android_message.has_message()) {
+    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
+                              INVALID_PROTO,
+                              INCOMING_MESSAGE_STATUS_COUNT);
+    return;
+  }
   DVLOG(2) << "Deliver incoming message";
+  UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
+                            INCOMING_MESSAGE_SUCCESS,
+                            INCOMING_MESSAGE_STATUS_COUNT);
   DeliverIncomingMessage(android_message.message());
 #else
   // This code shouldn't be invoked on Android.
@@ -268,16 +323,25 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   net::URLRequestStatus status = fetcher->GetStatus();
   diagnostic_info_.last_post_response_code_ =
       status.is_success() ? source->GetResponseCode() : status.error();
-  if (!status.is_success()) {
+
+  if (status.is_success() &&
+      fetcher->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
+    DVLOG(1) << "URLFetcher failure: HTTP_UNAUTHORIZED";
+    delegate_->InvalidateToken(access_token_);
+  }
+
+  if (!status.is_success() || fetcher->GetResponseCode() != net::HTTP_OK ||
+      fetcher->GetResponseCode() != net::HTTP_NO_CONTENT) {
     DVLOG(1) << "URLFetcher failure";
+    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
+                              POST_FAILURE,
+                              OUTGOING_MESSAGE_STATUS_COUNT);
     return;
   }
 
-  if (fetcher->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
-    DVLOG(1) << "URLFetcher failure: HTTP_UNAUTHORIZED";
-    delegate_->InvalidateToken(access_token_);
-    return;
-  }
+  UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
+                            OUTGOING_MESSAGE_SUCCESS,
+                            OUTGOING_MESSAGE_STATUS_COUNT);
   DVLOG(2) << "URLFetcher success";
 }
 
