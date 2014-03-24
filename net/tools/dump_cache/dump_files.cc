@@ -14,10 +14,10 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
-#include "net/base/file_stream.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
@@ -31,14 +31,13 @@ const base::FilePath::CharType kIndexName[] = FILE_PATH_LITERAL("index");
 
 // Reads the |header_size| bytes from the beginning of file |name|.
 bool ReadHeader(const base::FilePath& name, char* header, int header_size) {
-  net::FileStream file(NULL);
-  file.OpenSync(name, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
-  if (!file.IsOpen()) {
+  base::File file(name, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
     printf("Unable to open file %s\n", name.MaybeAsASCII().c_str());
     return false;
   }
 
-  int read = file.ReadSync(header, header_size);
+  int read = file.Read(0, header, header_size);
   if (read != header_size) {
     printf("Unable to read file %s\n", name.MaybeAsASCII().c_str());
     return false;
