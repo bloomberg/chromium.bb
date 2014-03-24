@@ -736,8 +736,6 @@
         'browser/chromeos/policy/enterprise_install_attributes.h',
         'browser/chromeos/policy/login_profile_policy_provider.cc',
         'browser/chromeos/policy/login_profile_policy_provider.h',
-        'browser/chromeos/policy/login_screen_power_management_policy.cc',
-        'browser/chromeos/policy/login_screen_power_management_policy.h',
         'browser/chromeos/policy/network_configuration_updater.cc',
         'browser/chromeos/policy/network_configuration_updater.h',
         'browser/chromeos/policy/policy_cert_service.cc',

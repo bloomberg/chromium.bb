@@ -596,7 +596,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ScreenMagnifierPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new LoginScreenPowerManagementPolicyHandler));
+      new LoginScreenPowerManagementPolicyHandler(chrome_schema)));
 
   ScopedVector<ConfigurationPolicyHandler>
       power_management_idle_legacy_policies;

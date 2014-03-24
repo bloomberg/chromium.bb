@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/login_screen_power_management_policy.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -21,6 +21,36 @@
 namespace policy {
 
 namespace {
+
+const char kLidCloseAction[] = "LidCloseAction";
+const char kUserActivityScreenDimDelayScale[] =
+    "UserActivityScreenDimDelayScale";
+
+const char kActionSuspend[] = "Suspend";
+const char kActionLogout[] = "Logout";
+const char kActionShutdown[]  = "Shutdown";
+const char kActionDoNothing[] = "DoNothing";
+
+scoped_ptr<base::Value> GetAction(const std::string &action) {
+  if (action == kActionSuspend) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_SUSPEND));
+  }
+  if (action == kActionLogout) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_STOP_SESSION));
+  }
+  if (action == kActionShutdown) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
+  }
+  if (action == kActionDoNothing) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_DO_NOTHING));
+  }
+  return scoped_ptr<base::Value>();
+}
+
 
 // Applies the value of |device_policy| in |device_policy_map| as the
 // recommended value of |user_policy| in |user_policy_map|. If the value of
@@ -136,48 +166,38 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
       key::kVirtualKeyboardEnabled,
       device_policy_map, &user_policy_map);
 
-  // TODO(bartfab): Consolidate power management user policies into a single
-  // JSON policy, allowing the value of the device policy to be simply forwarded
-  // here. http://crbug.com/258339
   const base::Value* value =
       device_policy_map.GetValue(key::kDeviceLoginScreenPowerManagement);
-  std::string json;
-  if (value && value->GetAsString(&json)) {
-    LoginScreenPowerManagementPolicy power_management_policy;
-    power_management_policy.Init(json, NULL);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetScreenDimDelayAC(),
-                                key::kScreenDimDelayAC,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetScreenOffDelayAC(),
-                                key::kScreenOffDelayAC,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetIdleDelayAC(),
-                                key::kIdleDelayAC,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(
-        power_management_policy.GetScreenDimDelayBattery(),
-        key::kScreenDimDelayBattery,
-        &user_policy_map);
-    ApplyValueAsMandatoryPolicy(
-        power_management_policy.GetScreenOffDelayBattery(),
-        key::kScreenOffDelayBattery,
-        &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetIdleDelayBattery(),
-                                key::kIdleDelayBattery,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetIdleActionAC(),
-                                key::kIdleActionAC,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetIdleActionBattery(),
-                                key::kIdleActionBattery,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(power_management_policy.GetLidCloseAction(),
-                                key::kLidCloseAction,
-                                &user_policy_map);
-    ApplyValueAsMandatoryPolicy(
-        power_management_policy.GetUserActivityScreenDimDelayScale(),
-        key::kUserActivityScreenDimDelayScale,
-        &user_policy_map);
+  const base::DictionaryValue* dict = NULL;
+  if (value && value->GetAsDictionary(&dict)) {
+    scoped_ptr<base::DictionaryValue> policy_value(dict->DeepCopy());
+    std::string lid_close_action;
+    base::Value* screen_dim_delay_scale = NULL;
+
+    if (policy_value->GetString(kLidCloseAction, &lid_close_action)) {
+      scoped_ptr<base::Value> action = GetAction(lid_close_action);
+      if (action) {
+        ApplyValueAsMandatoryPolicy(
+            action.release(), key::kLidCloseAction, &user_policy_map);
+      }
+      policy_value->Remove(kLidCloseAction, NULL);
+    }
+
+    if (policy_value->Get(kUserActivityScreenDimDelayScale,
+                          &screen_dim_delay_scale)) {
+      ApplyValueAsMandatoryPolicy(screen_dim_delay_scale,
+                                  key::kUserActivityScreenDimDelayScale,
+                                  &user_policy_map);
+      policy_value->Remove(kUserActivityScreenDimDelayScale, NULL);
+    }
+
+    // |policy_value| is expected to be a valid value for the
+    // PowerManagementIdleSettings policy now.
+    if (!policy_value->empty()) {
+      ApplyValueAsMandatoryPolicy(policy_value.release(),
+                                  key::kPowerManagementIdleSettings,
+                                  &user_policy_map);
+    }
   }
 
   UpdatePolicy(bundle.Pass());

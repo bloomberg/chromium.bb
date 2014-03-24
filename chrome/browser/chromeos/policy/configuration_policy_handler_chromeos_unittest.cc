@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include "base/callback.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
@@ -13,6 +14,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/schema.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,6 +29,26 @@ class ScreenMagnifierPolicyHandlerTest : public testing::Test {
   PrefValueMap prefs_;
   ScreenMagnifierPolicyHandler handler_;
 };
+
+class LoginScreenPowerManagementPolicyHandlerTest : public testing::Test {
+ protected:
+  LoginScreenPowerManagementPolicyHandlerTest();
+
+  virtual void SetUp() OVERRIDE;
+
+  Schema chrome_schema_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandlerTest);
+};
+
+LoginScreenPowerManagementPolicyHandlerTest::
+    LoginScreenPowerManagementPolicyHandlerTest() {
+}
+
+void LoginScreenPowerManagementPolicyHandlerTest::SetUp() {
+  chrome_schema_ = Schema::Wrap(GetChromeSchemaData());
+}
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
   handler_.ApplyPolicySettings(policy_, &prefs_);
@@ -323,51 +345,35 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
 }
 
-TEST(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
+TEST_F(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
   PolicyMap policy_map;
-  LoginScreenPowerManagementPolicyHandler handler;
+  LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
 }
 
-TEST(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
+TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(
-      key::kDeviceLoginScreenPowerManagement,
-      POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER,
-      base::Value::CreateStringValue(kLoginScreenPowerManagementPolicy),
-      NULL);
-  LoginScreenPowerManagementPolicyHandler handler;
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 base::JSONReader::Read(kLoginScreenPowerManagementPolicy),
+                 NULL);
+  LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
 }
 
-TEST(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
+TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kDeviceLoginScreenPowerManagement,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
                  base::Value::CreateBooleanValue(false),
                  NULL);
-  LoginScreenPowerManagementPolicyHandler handler;
-  PolicyErrorMap errors;
-  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
-  EXPECT_FALSE(
-      errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
-}
-
-TEST(LoginScreenPowerManagementPolicyHandlerTest, JSONParseError) {
-  const std::string policy("I'm not proper JSON!");
-  PolicyMap policy_map;
-  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue(policy),
-                 NULL);
-  LoginScreenPowerManagementPolicyHandler handler;
+  LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(
