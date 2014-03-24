@@ -543,7 +543,7 @@ public class AwContents {
     }
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
-            InternalAccessDelegate internalDispatcher, int nativeWebContents,
+            InternalAccessDelegate internalDispatcher, long nativeWebContents,
             GestureStateListener gestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
@@ -583,7 +583,7 @@ public class AwContents {
         // bind all the native->java relationships.
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
-        int nativeWebContents = nativeGetWebContents(mNativeAwContents);
+        long nativeWebContents = nativeGetWebContents(mNativeAwContents);
         mContentViewCore = createAndInitializeContentViewCore(
                 mContainerView, mInternalAccessAdapter, nativeWebContents,
                 new AwGestureStateListener(), mContentViewClient, mZoomControls);
@@ -602,7 +602,7 @@ public class AwContents {
      * provide the AwContents to host the pop up content.
      */
     public void supplyContentsForPopup(AwContents newContents) {
-        int popupNativeAwContents = nativeReleasePopupAwContents(mNativeAwContents);
+        long popupNativeAwContents = nativeReleasePopupAwContents(mNativeAwContents);
         if (popupNativeAwContents == 0) {
             Log.w(TAG, "Popup WebView bind failed: no pending content.");
             if (newContents != null) newContents.destroy();
@@ -618,7 +618,7 @@ public class AwContents {
 
     // Recap: supplyContentsForPopup() is called on the parent window's content, this method is
     // called on the popup window's content.
-    private void receivePopupContents(int popupNativeAwContents) {
+    private void receivePopupContents(long popupNativeAwContents) {
         mDeferredShouldOverrideUrlLoadingIsPendingForPopup = true;
         // Save existing view state.
         final boolean wasAttached = mIsAttachedToWindow;
@@ -705,15 +705,15 @@ public class AwContents {
         return mAwPdfExporter;
     }
 
-    public static void setAwDrawSWFunctionTable(int functionTablePointer) {
+    public static void setAwDrawSWFunctionTable(long functionTablePointer) {
         nativeSetAwDrawSWFunctionTable(functionTablePointer);
     }
 
-    public static void setAwDrawGLFunctionTable(int functionTablePointer) {
+    public static void setAwDrawGLFunctionTable(long functionTablePointer) {
         nativeSetAwDrawGLFunctionTable(functionTablePointer);
     }
 
-    public static int getAwDrawGLFunction() {
+    public static long getAwDrawGLFunction() {
         return nativeGetAwDrawGLFunction();
     }
 
@@ -740,7 +740,7 @@ public class AwContents {
         return nativeGetNativeInstanceCount();
     }
 
-    public int getAwDrawGLViewContext() {
+    public long getAwDrawGLViewContext() {
         // Only called during early construction, so client should not have had a chance to
         // call destroy yet.
         assert mNativeAwContents != 0;
@@ -2067,9 +2067,9 @@ public class AwContents {
 
     private static native long nativeInit(AwBrowserContext browserContext);
     private static native void nativeDestroy(long nativeAwContents);
-    private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
-    private static native void nativeSetAwDrawGLFunctionTable(int functionTablePointer);
-    private static native int nativeGetAwDrawGLFunction();
+    private static native void nativeSetAwDrawSWFunctionTable(long functionTablePointer);
+    private static native void nativeSetAwDrawGLFunctionTable(long functionTablePointer);
+    private static native long nativeGetAwDrawGLFunction();
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
@@ -2077,7 +2077,7 @@ public class AwContents {
             AwContentsClientBridge contentsClientBridge,
             AwContentsIoThreadClient ioThreadClient,
             InterceptNavigationDelegate navigationInterceptionDelegate);
-    private native int nativeGetWebContents(long nativeAwContents);
+    private native long nativeGetWebContents(long nativeAwContents);
 
     private native void nativeDocumentHasImages(long nativeAwContents, Message message);
     private native void nativeGenerateMHTML(
@@ -2116,11 +2116,11 @@ public class AwContents {
     // Returns false if restore state fails.
     private native boolean nativeRestoreFromOpaqueState(long nativeAwContents, byte[] state);
 
-    private native int nativeReleasePopupAwContents(long nativeAwContents);
+    private native long nativeReleasePopupAwContents(long nativeAwContents);
     private native void nativeFocusFirstNode(long nativeAwContents);
     private native void nativeSetBackgroundColor(long nativeAwContents, int color);
 
-    private native int nativeGetAwDrawGLViewContext(long nativeAwContents);
+    private native long nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
     private native void nativeClearView(long nativeAwContents);

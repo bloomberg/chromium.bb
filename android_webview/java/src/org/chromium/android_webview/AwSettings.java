@@ -256,7 +256,7 @@ public class AwSettings {
         }
     }
 
-    void setWebContents(int nativeWebContents) {
+    void setWebContents(long nativeWebContents) {
         synchronized (mAwSettingsLock) {
             if (mNativeAwSettings != 0) {
                 nativeDestroy(mNativeAwSettings);

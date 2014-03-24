@@ -58,7 +58,7 @@ struct AwDrawGLInfo {
 // call to AwContents.getAwDrawGLViewContext().
 // |draw_info| carries the in and out parameters for this draw.
 // |spare| ignored; pass NULL.
-typedef void (AwDrawGLFunction)(int view_context,
+typedef void (AwDrawGLFunction)(long view_context,
                                 AwDrawGLInfo* draw_info,
                                 void* spare);
 enum AwMapMode {

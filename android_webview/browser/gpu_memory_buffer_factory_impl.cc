@@ -19,7 +19,7 @@ AwDrawGLFunctionTable* g_gl_draw_functions = NULL;
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  GpuMemoryBufferImpl(int buffer_id, gfx::Size size)
+  GpuMemoryBufferImpl(long buffer_id, gfx::Size size)
       : buffer_id_(buffer_id),
         size_(size),
         mapped_(false) {
@@ -91,7 +91,7 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferFactoryImpl::CreateGpuMemoryBuffer(
   // GL_RGBA8_OES.
   CHECK_EQ(static_cast<GLenum>(GL_RGBA8_OES), internalformat);
   CHECK(g_gl_draw_functions);
-  int buffer_id = g_gl_draw_functions->create_graphic_buffer(width, height);
+  long buffer_id = g_gl_draw_functions->create_graphic_buffer(width, height);
   if (!buffer_id)
     return NULL;
 

@@ -199,19 +199,19 @@ bool RegisterAwDevToolsServer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jint InitRemoteDebugging(JNIEnv* env,
+static jlong InitRemoteDebugging(JNIEnv* env,
                                 jobject obj) {
   AwDevToolsServer* server = new AwDevToolsServer();
-  return reinterpret_cast<jint>(server);
+  return reinterpret_cast<intptr_t>(server);
 }
 
-static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jint server) {
+static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jlong server) {
   delete reinterpret_cast<AwDevToolsServer*>(server);
 }
 
 static void SetRemoteDebuggingEnabled(JNIEnv* env,
                                       jobject obj,
-                                      jint server,
+                                      jlong server,
                                       jboolean enabled) {
   AwDevToolsServer* devtools_server =
       reinterpret_cast<AwDevToolsServer*>(server);

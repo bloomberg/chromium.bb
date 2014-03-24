@@ -30,7 +30,7 @@ AwPdfExporter::AwPdfExporter(JNIEnv* env,
       web_contents_(web_contents) {
   DCHECK(obj);
   Java_AwPdfExporter_setNativeAwPdfExporter(
-      env, obj, reinterpret_cast<jint>(this));
+      env, obj, reinterpret_cast<intptr_t>(this));
 }
 
 AwPdfExporter::~AwPdfExporter() {

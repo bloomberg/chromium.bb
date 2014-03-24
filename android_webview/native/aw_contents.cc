@@ -82,7 +82,7 @@ using content::WebContents;
 
 extern "C" {
 static AwDrawGLFunction DrawGLFunction;
-static void DrawGLFunction(int view_context,
+static void DrawGLFunction(long view_context,
                            AwDrawGLInfo* draw_info,
                            void* spare) {
   // |view_context| is the value that was returned from the java
@@ -323,10 +323,10 @@ AwContents::~AwContents() {
   }
 }
 
-jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
+jlong AwContents::GetWebContents(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(web_contents_);
-  return reinterpret_cast<jint>(web_contents_.get());
+  return reinterpret_cast<intptr_t>(web_contents_.get());
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
@@ -347,18 +347,20 @@ static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
   return reinterpret_cast<intptr_t>(new AwContents(web_contents.Pass()));
 }
 
-static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
+static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass,
+                                     jlong function_table) {
   JavaBrowserViewRendererHelper::SetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 
-static void SetAwDrawGLFunctionTable(JNIEnv* env, jclass, jint function_table) {
+static void SetAwDrawGLFunctionTable(JNIEnv* env, jclass,
+                                     jlong function_table) {
   GpuMemoryBufferFactoryImpl::SetAwDrawGLFunctionTable(
       reinterpret_cast<AwDrawGLFunctionTable*>(function_table));
 }
 
-static jint GetAwDrawGLFunction(JNIEnv* env, jclass) {
-  return reinterpret_cast<jint>(&DrawGLFunction);
+static jlong GetAwDrawGLFunction(JNIEnv* env, jclass) {
+  return reinterpret_cast<intptr_t>(&DrawGLFunction);
 }
 
 // static
@@ -366,9 +368,9 @@ jint GetNativeInstanceCount(JNIEnv* env, jclass) {
   return base::subtle::NoBarrier_Load(&g_instance_count);
 }
 
-jint AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
+jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return reinterpret_cast<jint>(this);
+  return reinterpret_cast<intptr_t>(this);
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
@@ -876,9 +878,9 @@ void AwContents::SetBackgroundColor(JNIEnv* env, jobject obj, jint color) {
   render_view_host_ext_->SetBackgroundColor(color);
 }
 
-jint AwContents::ReleasePopupAwContents(JNIEnv* env, jobject obj) {
+jlong AwContents::ReleasePopupAwContents(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return reinterpret_cast<jint>(pending_contents_.release());
+  return reinterpret_cast<intptr_t>(pending_contents_.release());
 }
 
 gfx::Point AwContents::GetLocationOnScreen() {

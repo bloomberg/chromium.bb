@@ -69,7 +69,7 @@ public class AwPdfExporter {
     }
 
     @CalledByNative
-    private void setNativeAwPdfExporter(int nativePdfExporter) {
+    private void setNativeAwPdfExporter(long nativePdfExporter) {
         mNativeAwPdfExporter = nativePdfExporter;
         // Handle the cornercase that Webview.Destroy is called before the native side
         // has a chance to complete the pdf exporting.

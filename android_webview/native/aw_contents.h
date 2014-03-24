@@ -83,7 +83,7 @@ class AwContents : public FindHelper::Listener,
                     jobject contents_client_bridge,
                     jobject io_thread_client,
                     jobject intercept_navigation_delegate);
-  jint GetWebContents(JNIEnv* env, jobject obj);
+  jlong GetWebContents(JNIEnv* env, jobject obj);
 
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
@@ -120,7 +120,7 @@ class AwContents : public FindHelper::Listener,
               jint clip_top,
               jint clip_right,
               jint clip_bottom);
-  jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
+  jlong GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   jlong CapturePicture(JNIEnv* env, jobject obj, int width, int height);
   void EnableOnNewPicture(JNIEnv* env, jobject obj, jboolean enabled);
   void ClearView(JNIEnv* env, jobject obj);
@@ -180,7 +180,7 @@ class AwContents : public FindHelper::Listener,
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
-  jint ReleasePopupAwContents(JNIEnv* env, jobject obj);
+  jlong ReleasePopupAwContents(JNIEnv* env, jobject obj);
 
   void ScrollTo(JNIEnv* env, jobject obj, jint x, jint y);
   void SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale);
