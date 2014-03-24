@@ -100,6 +100,21 @@ class DocumentRendererUnittest(unittest.TestCase):
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
+  def testRefSplitAcrossLines(self):
+    document = 'Hello, $(ref:baz.baz_e1 world). A $(ref:foo.foo_t3\n link)'
+    expected_document = ('Hello, <a href=#type-baz_e1>world</a>. A <a href='
+                         '#type-foo_t3>link</a>')
+
+    path = 'some/path/to/document.html'
+
+    text, warnings = self._renderer.Render(document, path)
+    self.assertEqual(expected_document, text)
+    self.assertEqual([], warnings)
+
+    text, warnings = self._renderer.Render(document, path, render_title=True)
+    self.assertEqual(expected_document, text)
+    self.assertEqual(['Expected a title'], warnings)
+
   def testInvalidRef(self):
     # There needs to be more than 100 characters between the invalid ref
     # and the next ref
