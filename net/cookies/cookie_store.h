@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 
 class GURL;
@@ -28,8 +29,8 @@ class CookieMonster;
 class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
   // Callback definitions.
-  typedef base::Callback<void(const std::string& cookie)>
-      GetCookiesCallback;
+  typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
+  typedef base::Callback<void(const std::string& cookie)> GetCookiesCallback;
   typedef base::Callback<void(bool success)> SetCookiesCallback;
   typedef base::Callback<void(int num_deleted)> DeleteCallback;
 
@@ -54,6 +55,12 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const GURL& url,
       const CookieOptions& options,
       const GetCookiesCallback& callback) = 0;
+
+  // Returns all matching cookies without marking them as accessed,
+  // including HTTP only cookies.
+  virtual void GetAllCookiesForURLAsync(
+      const GURL& url,
+      const GetCookieListCallback& callback) = 0;
 
   // Deletes the passed in cookie for the specified URL.
   virtual void DeleteCookieAsync(const GURL& url,

@@ -187,11 +187,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const CookieOptions& options,
       const GetCookieListCallback& callback);
 
-  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
-  // only cookies.
-  void GetAllCookiesForURLAsync(const GURL& url,
-                                const GetCookieListCallback& callback);
-
   // Deletes all of the cookies.
   void DeleteAllAsync(const DeleteCallback& callback);
 
@@ -256,6 +251,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const GURL& url,
       const CookieOptions& options,
       const GetCookiesCallback& callback) OVERRIDE;
+
+  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
+  // only cookies.
+  virtual void GetAllCookiesForURLAsync(
+      const GURL& url,
+      const GetCookieListCallback& callback) OVERRIDE;
 
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookieAsync(

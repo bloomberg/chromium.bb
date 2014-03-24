@@ -34,6 +34,10 @@ class DelayedCookieMonster : public CookieStore {
       const CookieOptions& options,
       const CookieMonster::GetCookiesCallback& callback) OVERRIDE;
 
+  virtual void GetAllCookiesForURLAsync(
+      const GURL& url,
+      const GetCookieListCallback& callback) OVERRIDE;
+
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
                                     const CookieOptions& options);

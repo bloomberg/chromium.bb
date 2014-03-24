@@ -24,7 +24,7 @@
 #include "net/base/network_delegate.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -550,15 +550,10 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
   CookieStore* cookie_store = GetCookieStore();
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
-    net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
-    if (cookie_monster) {
-      cookie_monster->GetAllCookiesForURLAsync(
-          request_->url(),
-          base::Bind(&URLRequestHttpJob::CheckCookiePolicyAndLoad,
-                     weak_factory_.GetWeakPtr()));
-    } else {
-      CheckCookiePolicyAndLoad(CookieList());
-    }
+    cookie_store->GetAllCookiesForURLAsync(
+        request_->url(),
+        base::Bind(&URLRequestHttpJob::CheckCookiePolicyAndLoad,
+                   weak_factory_.GetWeakPtr()));
   } else {
     DoStartTransaction();
   }

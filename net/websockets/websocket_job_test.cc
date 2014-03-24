@@ -204,6 +204,12 @@ class MockCookieStore : public CookieStore {
       callback.Run(GetCookiesWithOptions(url, options));
   }
 
+  virtual void GetAllCookiesForURLAsync(
+      const GURL& url,
+      const GetCookieListCallback& callback) OVERRIDE {
+    ADD_FAILURE();
+  }
+
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
                                  const base::Closure& callback) OVERRIDE {

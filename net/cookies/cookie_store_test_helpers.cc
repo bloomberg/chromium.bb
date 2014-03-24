@@ -68,6 +68,12 @@ void DelayedCookieMonster::GetCookiesWithOptionsAsync(
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
+void DelayedCookieMonster::GetAllCookiesForURLAsync(
+    const GURL& url,
+    const GetCookieListCallback& callback) {
+  cookie_monster_->GetAllCookiesForURLAsync(url, callback);
+}
+
 void DelayedCookieMonster::InvokeSetCookiesCallback(
     const CookieMonster::SetCookiesCallback& callback) {
   if (!callback.is_null())
