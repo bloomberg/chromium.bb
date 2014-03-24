@@ -6,26 +6,30 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 See https://bugs.webkit.org/show_bug.cgi?id=96060 for details
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Verify active isn't initially set
-PASS isBoxActive() is false
-Verify tapdown,tap sets and clears active
-PASS isBoxActive() is true
-PASS isBoxActive() is false
-Verify tapdown,tapcancel on the element sets and clears active
-PASS isBoxActive() is true
-PASS isBoxActive() is false
+PASS getHoverActiveState(box) is "default"
+Verify showPress, tap sets and clears active
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "hovered"
+Verify showPress, tapCancel on the element sets and clears active
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "hovered"
 Verify tap elsewhere still clears active
-PASS isBoxActive() is true
-PASS isBoxActive() is false
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "default"
 Verify tapCancel elsewhere still clears active
-PASS isBoxActive() is true
-PASS isBoxActive() is false
-Verify that touchstart doesn't trigger active state
-PASS isBoxActive() is false
-Verify that touchstart/touchend doesn't cancel active
-PASS isBoxActive() is true
-PASS isBoxActive() is true
-PASS isBoxActive() is true
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "default"
+Verify that touchStart doesn't trigger active state
+PASS getHoverActiveState(box) is "default"
+Verify that touchStart/touchEnd doesn't cancel active
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "hoveredAndActive"
+PASS getHoverActiveState(box) is "hovered"
 PASS successfullyParsed is true
 
 TEST COMPLETE

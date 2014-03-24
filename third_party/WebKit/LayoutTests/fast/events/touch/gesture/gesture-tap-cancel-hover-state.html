@@ -1,68 +1,24 @@
 <!DOCTYPE html>
 <html>
 <script src="../../../../resources/js-test.js"></script>
+<link rel="stylesheet" href="../resources/touch-hover-active-tests.css">
 <style type="text/css">
 #box {
-    background-color: blue;
     width: 300px;
     height: 100px;
 }
-
-#box:hover {
-    background-color: red;
-}
-
-#box:active {
-    background-color: green;
-}
-
-#box:hover:active {
-    background-color: yellow;
-}
-
 </style>
 <body>
-<div id="box">Gestures go here</div>
+<div id="box" class="touch-interactive">Gestures go here</div>
 
 <p id="description"></p>
 <p>See http://crbug.com/316974 for details</p>
 
 <div id="console"></div>
 
+<script src="../resources/touch-hover-active-tests.js"></script>
 <script>
-var color;
-
-function isBoxOfColor(givenColor)
-{
-    var b = document.getElementById('box');
-    color = window.getComputedStyle(b).backgroundColor;
-    if (color == givenColor)
-        return true;
-
-    testFailed('Box had backgroundColor: ' + color);
-    return false;
-}
-
-function isBoxHovered()
-{
-    return isBoxOfColor("rgb(255, 0, 0)");
-}
-
-function isBoxActive()
-{
-    return isBoxOfColor("rgb(0, 255, 0)");
-}
-
-function isBoxHoverActive()
-{
-    return isBoxOfColor("rgb(255, 255, 0)");
-}
-
-function isBoxDefault()
-{
-    return isBoxOfColor("rgb(0, 0, 255)");
-}
-
+var box = document.getElementById("box");
 description("Tests that gesture tapcancel clears hover properly");
 
 function runTests()
@@ -79,34 +35,36 @@ function runTests()
     }
 
     debug("Verify hover, active aren't initially set");
-    shouldBeTrue("isBoxDefault()");
+    shouldBeDefault("getHoverActiveState(box)");
 
-    debug("tapcancel on element when it is Active should keep hover");
+    debug("tapCancel on element when it is Active should keep hover");
+    eventSender.gestureTapDown(50, 50);
     eventSender.gestureShowPress(50, 50);
-    shouldBeTrue("isBoxHoverActive()");
+    shouldBeHoveredAndActive("getHoverActiveState(box)");
     eventSender.gestureTapCancel(50, 50);
-    shouldBeTrue("isBoxHovered()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
 
-    debug("tapcancel outside element when it is Active should clear it");
+    debug("tapCancel outside element when it is Active should clear it");
+    eventSender.gestureTapDown(50, 50);
     eventSender.gestureShowPress(50, 50);
-    shouldBeTrue("isBoxHoverActive()");
+    shouldBeHoveredAndActive("getHoverActiveState(box)");
     eventSender.gestureTapCancel(400, 250);
-    shouldBeTrue("isBoxDefault()");
+    shouldBeDefault("getHoverActiveState(box)");
 
-    debug("tapcancel on element when it is hovered but not active should keep hover");
+    debug("tapCancel on element when it is hovered but not active should keep hover");
     eventSender.mouseMoveTo(50, 50);
-    shouldBeTrue("isBoxHovered()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
     eventSender.gestureTapCancel(50, 50);
-    shouldBeTrue("isBoxHovered()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
 
-    debug("tapcancel outside element when it is hovered but not active should keep hover");
+    debug("tapCancel outside element when it is hovered but not active should keep hover");
     eventSender.mouseMoveTo(50, 50);
-    shouldBeTrue("isBoxHovered()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
     eventSender.gestureTapCancel(400, 250);
-    shouldBeTrue("isBoxHovered()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
 }
 
-runTests();
+window.onload = runTests;
 </script>
 </body>
 </html>

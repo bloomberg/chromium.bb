@@ -8,7 +8,6 @@
     left: 400px;
     height: 3000px;
 }
-
 </style>
 <body>
 <iframe src='resources/gesture-tap-active-state-iframe-inner.html' id='frame'>
@@ -19,15 +18,14 @@
 
 <div id="console"></div>
 
+<script src="../resources/touch-hover-active-tests.js"></script>
 <script>
+var box;
 
 description("Tests that tap gesture events set and clear the active state of elements, even when inside an iframe and the document is scrolled.");
 
-var isBoxActive;
-function runTests(ba)
+function runTests()
 {
-    isBoxActive = ba;
-
     if (!window.eventSender) {
         debug('This test requires DRT.');
         return;
@@ -38,15 +36,18 @@ function runTests(ba)
         return;
     }
 
+    box = document.getElementById("frame").contentDocument.getElementById('box');
+
     // Scroll so the box is at the top
     window.scrollTo(0, 400);
 
     debug("Verify active isn't initially set");
-    shouldBeFalse("isBoxActive()");
+    shouldBeDefault("getHoverActiveState(box)");
 
-    debug("Verify tapdown,tap sets and clears active");
+    debug("Verify showPress, tap sets and clears active");
+    eventSender.gestureTapDown(450, 50);
     eventSender.gestureShowPress(450, 50);
-    shouldBeTrue("isBoxActive()");
+    shouldBeHoveredAndActive("getHoverActiveState(box)");
     eventSender.gestureTap(450, 50);
     // FIXME: Enable after implementing mocked timers (http://crbug.com/319529)
     // shouldBeTrue("isBoxActive()");
@@ -55,11 +56,11 @@ function runTests(ba)
 
 function waitUntilActiveCleared()
 {
-    if(isBoxActive()) {
+    if(getHoverActiveState(box) == "hoveredAndActive") {
         return setTimeout(waitUntilActiveCleared, 10);
     }
 
-    shouldBeFalse("isBoxActive()");
+    shouldBeOnlyHovered("getHoverActiveState(box)");
     finishJSTest();
 }
 
@@ -68,6 +69,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
+window.onload = runTests;
 </script>
 </body>
 </html>
