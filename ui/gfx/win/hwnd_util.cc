@@ -207,9 +207,10 @@ void CheckWindowCreated(HWND hwnd) {
 void ShowSystemMenu(HWND window) {
   RECT rect;
   GetWindowRect(window, &rect);
-  Point point = Point(rect.left, rect.top);
+  Point point = Point(base::i18n::IsRTL() ? rect.right : rect.left, rect.top);
   static const int kSystemMenuOffset = 10;
-  point.Offset(kSystemMenuOffset, kSystemMenuOffset);
+  point.Offset(base::i18n::IsRTL() ? -kSystemMenuOffset : kSystemMenuOffset,
+               kSystemMenuOffset);
   ShowSystemMenuAtPoint(window, point);
 }
 
