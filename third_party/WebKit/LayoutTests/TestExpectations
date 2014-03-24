@@ -414,6 +414,7 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/timing-properties-do-not-update-running-animation.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/cubic-bezier-overflow-svg-length.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cross-fade-background-image.html [ Pass ImageOnlyFailure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
