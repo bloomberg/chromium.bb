@@ -76,9 +76,8 @@ PasswordFormManager::PasswordFormManager(PasswordManager* password_manager,
 }
 
 PasswordFormManager::~PasswordFormManager() {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenWithPsl",
-                            GetActionsTaken(),
-                            kMaxNumActionsTaken);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.ActionsTakenV3", GetActionsTaken(), kMaxNumActionsTaken);
   if (has_generated_password_ && submit_result_ == kSubmitResultNotSubmitted)
     LogPasswordGenerationSubmissionEvent(PASSWORD_NOT_SUBMITTED);
 }
@@ -244,7 +243,7 @@ void PasswordFormManager::ProvisionallySave(
 
     // Check to see if we're using a known username but a new password.
     if (pending_credentials_.password_value != credentials.password_value)
-      user_action_ = kUserActionOverride;
+      user_action_ = kUserActionOverridePassword;
   } else if (action == ALLOW_OTHER_POSSIBLE_USERNAMES &&
              UpdatePendingCredentialsIfOtherPossibleUsername(
                  credentials.username_value)) {
@@ -256,7 +255,7 @@ void PasswordFormManager::ProvisionallySave(
     is_new_login_ = false;
   } else {
     // User typed in a new, unknown username.
-    user_action_ = kUserActionOverride;
+    user_action_ = kUserActionOverrideUsernameAndPassword;
     pending_credentials_ = observed_form_;
     pending_credentials_.username_value = credentials.username_value;
     pending_credentials_.other_possible_usernames =
@@ -280,7 +279,7 @@ void PasswordFormManager::ProvisionallySave(
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
 
-  if (user_action_ == kUserActionOverride &&
+  if (user_action_ == kUserActionOverridePassword &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
       !has_generated_password_) {
     LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);

@@ -15920,8 +15920,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.ActionsTakenV3"
+    enum="PasswordManagerActionsTakenV3">
+  <owner>dubroy@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Stats documenting how we handle every form containing a password, bucketed
+    by the actions taken.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.ActionsTakenWithPsl"
     enum="PasswordManagerActionsTakenWithPsl">
+  <obsolete>
+    Deprecated as of 3/18/2014. See PasswordManagerActionsTakenV3.
+  </obsolete>
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -36144,7 +36158,149 @@ other types of suffix sets.
              / form submit succeeded"/>
 </enum>
 
+<enum name="PasswordManagerActionsTakenV3" type="int">
+  <summary>
+    The value is a combination of three different options - what did the
+    password manager do, what did the user do, and was the form submitted (and
+    submitted successfully or not). The meaning of each value can be determined
+    from the values in chrome/browser/password_manager/password_form_manager.h
+  </summary>
+  <int value="0"
+      label="manager did nothing / user did nothing / form not submitted"/>
+  <int value="1"
+      label="manager did nothing / user chose a value / form not submitted"/>
+  <int value="2"
+      label="manager did nothing / user chose a value from PSL / form not
+             submitted"/>
+  <int value="3"
+      label="manager did nothing / user typed in password / form not
+             submitted"/>
+  <int value="4"
+      label="manager did nothing / user typed in username and password / form
+             not submitted"/>
+  <int value="5"
+      label="manager filled the fields / user did nothing / form not
+             submitted"/>
+  <int value="6"
+      label="manager filled the fields / user chose a value / form not
+             submitted"/>
+  <int value="7"
+      label="manager filled the fields / user chose a value from PSL / form
+             not submitted"/>
+  <int value="8"
+      label="manager filled the fields / user typed in password / form not
+             submitted"/>
+  <int value="9"
+      label="manager filled the fields / user typed in username and password
+             / form not submitted"/>
+  <int value="10"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form not submitted"/>
+  <int value="11"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form not submitted (this value shouldn't be possible)"/>
+  <int value="12"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from PSL / form not submitted (this value shouldn't be possible)"/>
+  <int value="13"
+      label="manager did nothing (site was blacklisted) / user typed in
+             password / form not submitted"/>
+  <int value="14"
+      label="manager did nothing (site was blacklisted) / user typed in
+             username and password / form not submitted"/>
+  <int value="15"
+      label="manager did nothing / user did nothing / form submit failed"/>
+  <int value="16"
+      label="manager did nothing / user chose a value / form submit failed"/>
+  <int value="17"
+      label="manager did nothing / user chose a value from psl / form submit
+             failed"/>
+  <int value="18"
+      label="manager did nothing / user typed in password / form submit
+             failed"/>
+  <int value="19"
+      label="manager did nothing / user typed in username and password / form
+             submit failed"/>
+  <int value="20"
+      label="manager filled the fields / user did nothing / form submit
+             failed"/>
+  <int value="21"
+      label="manager filled the fields / user chose a value / form submit
+             failed"/>
+  <int value="22"
+      label="manager filled the fields / user chose a value from psl / form
+             submit failed"/>
+  <int value="23"
+      label="manager filled the fields / user typed in pasword / form submit
+             failed"/>
+  <int value="24"
+      label="manager filled the fields / user typed in username and pasword /
+             form submit failed"/>
+  <int value="25"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form submit failed"/>
+  <int value="26"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form submit failed (this value shouldn't be possible)"/>
+  <int value="27"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from psl / form submit failed (this value shouldn't be possible)"/>
+  <int value="28"
+      label="manager did nothing (site was blacklisted) / user typed in
+             password / form submit failed"/>
+  <int value="29"
+      label="manager did nothing (site was blacklisted) / user typed in
+             username and password / form submit failed"/>
+  <int value="30"
+      label="manager did nothing / user did nothing / form submit succeeded"/>
+  <int value="31"
+      label="manager did nothing / user chose a value / form submit succeeded"/>
+  <int value="32"
+      label="manager did nothing / user chose a value from psl / form submit
+             succeeded"/>
+  <int value="33"
+      label="manager did nothing / user typed in password / form submit
+             succeeded"/>
+  <int value="34"
+      label="manager did nothing / user typed in username and password / form
+             submit succeeded"/>
+  <int value="35"
+      label="manager filled the fields / user did nothing / form submit
+             succeeded"/>
+  <int value="36"
+      label="manager filled the fields / user chose a value / form submit
+             succeeded"/>
+  <int value="37"
+      label="manager filled the fields / user chose a value from psl / form
+             submit succeeded"/>
+  <int value="38"
+      label="manager filled the fields / user typed in password / form submit
+             succeeded"/>
+  <int value="39"
+      label="manager filled the fields / user typed in username and password
+             / form submit succeeded"/>
+  <int value="40"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form submit succeeded"/>
+  <int value="41"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form submit succeeded (this value shouldn't be possible)"/>
+  <int value="42"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from psl / form submit succeeded (this value shouldn't be
+             possible)"/>
+  <int value="43"
+      label="manager did nothing (site was blacklisted) / user typed in
+             password / form submit succeeded"/>
+  <int value="44"
+      label="manager did nothing (site was blacklisted) / user typed in
+             username and password / form submit succeeded"/>
+</enum>
+
 <enum name="PasswordManagerActionsTakenWithPsl" type="int">
+  <obsolete>
+    Deprecated as of 3/18/2014. See PasswordManagerActionsTakenV3.
+  </obsolete>
   <summary>
     The value is a combination of three different options - what did the
     password manager do, what did the user do, and was the form submitted (and
