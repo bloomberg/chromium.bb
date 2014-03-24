@@ -83,9 +83,8 @@ static void skiaDrawText(GraphicsContext* context,
     }
 }
 
-static void paintSkiaText(GraphicsContext* context,
+void paintSkiaText(GraphicsContext* context,
     const FontPlatformData& data,
-    SkTypeface* face, float size, uint32_t textFlags,
     unsigned numGlyphs,
     const WORD* glyphs,
     const int* advances,
@@ -100,11 +99,6 @@ static void paintSkiaText(GraphicsContext* context,
     context->setupPaintForFilling(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     data.setupPaint(&paint, context);
-
-    // FIXME: Only needed to support the HFONT based paintSkiaText
-    // version where a new typeface is created from the HFONT.
-    // As such it can go away once the HFONT code path is removed.
-    paint.setTypeface(face);
 
     bool didFill = false;
 
@@ -122,7 +116,6 @@ static void paintSkiaText(GraphicsContext* context,
         context->setupPaintForStroking(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
         data.setupPaint(&paint, context);
-        paint.setTypeface(face);
 
         if (didFill) {
             // If there is a shadow and we filled above, there will already be
@@ -139,21 +132,6 @@ static void paintSkiaText(GraphicsContext* context,
 
         skiaDrawText(context, origin, textRect, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
     }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-void paintSkiaText(GraphicsContext* context,
-    const FontPlatformData& data,
-    unsigned numGlyphs,
-    const WORD* glyphs,
-    const int* advances,
-    const GOFFSET* offsets,
-    const SkPoint& origin,
-    const SkRect& textRect)
-{
-    paintSkiaText(context, data, data.typeface(), data.size(), data.paintTextFlags(),
-        numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 
 } // namespace WebCore
