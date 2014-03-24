@@ -626,18 +626,18 @@ void ServicesCustomizationDocument::OnCustomizationNotFound() {
 void ServicesCustomizationDocument::SetOemFolderName(
     Profile* profile,
     const base::DictionaryValue& root) {
-  app_list::AppListSyncableService* service =
-      app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  if (!service) {
-    LOG(WARNING) << "AppListSyncableService is not ready for setting OEM "
-                    "folder name";
-    return;
-  }
-
   std::string locale = g_browser_process->GetApplicationLocale();
   std::string name = GetOemAppsFolderNameImpl(locale, root);
-  if (!name.empty())
+  if (!name.empty()) {
+    app_list::AppListSyncableService* service =
+        app_list::AppListSyncableServiceFactory::GetForProfile(profile);
+    if (!service) {
+      LOG(WARNING) << "AppListSyncableService is not ready for setting OEM "
+                      "folder name";
+      return;
+    }
     service->SetOemFolderName(name);
+  }
 }
 
 std::string ServicesCustomizationDocument::GetOemAppsFolderNameImpl(
