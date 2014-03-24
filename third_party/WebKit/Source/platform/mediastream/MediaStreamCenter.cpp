@@ -35,11 +35,14 @@
 
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebMediaStreamTrackSourcesRequest.h"
+#include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -110,6 +113,17 @@ void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track)
 {
     if (m_private)
         m_private->didCreateMediaStreamTrack(track);
+}
+
+PassOwnPtr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* track)
+{
+    ASSERT_UNUSED(track, track);
+#if ENABLE(WEB_AUDIO)
+    if (m_private)
+        return MediaStreamWebAudioSource::create(adoptPtr(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
+#endif
+
+    return nullptr;
 }
 
 void MediaStreamCenter::stopLocalMediaStream(const blink::WebMediaStream& webStream)

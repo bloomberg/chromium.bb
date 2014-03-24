@@ -34,14 +34,13 @@ class WebAudioSourceProviderClient;
 // Abstract interface for a pull-model client.
 class WebAudioSourceProvider {
 public:
+    virtual ~WebAudioSourceProvider() { }
+
     // provideInput() gets called repeatedly to render time-slices of a continuous audio stream.
     virtual void provideInput(const WebVector<float*>& audioData, size_t numberOfFrames) = 0;
 
     // If a client is set, we call it back when the audio format is available.
     virtual void setClient(WebAudioSourceProviderClient*) { };
-
-protected:
-    virtual ~WebAudioSourceProvider() { }
 };
 
 } // WebKit

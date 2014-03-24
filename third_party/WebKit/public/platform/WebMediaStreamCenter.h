@@ -34,6 +34,7 @@
 #include "WebVector.h"
 
 namespace blink {
+class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebMediaStreamTrackSourcesRequest;
@@ -57,6 +58,9 @@ public:
     virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) { }
     virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) { }
     virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) { return false; }
+
+    // Caller must take the ownership of the returned |WebAudioSourceProvider| object.
+    virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack&) { return 0; }
 };
 
 } // namespace blink

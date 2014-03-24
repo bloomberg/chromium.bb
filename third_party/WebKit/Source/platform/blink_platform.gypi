@@ -679,6 +679,8 @@
       'mediastream/MediaStreamSource.cpp',
       'mediastream/MediaStreamSource.h',
       'mediastream/MediaStreamTrackSourcesRequest.h',
+      'mediastream/MediaStreamWebAudioSource.cpp',
+      'mediastream/MediaStreamWebAudioSource.h',
       'mediastream/RTCConfiguration.h',
       'mediastream/RTCSessionDescriptionRequest.h',
       'mediastream/RTCStatsRequest.h',

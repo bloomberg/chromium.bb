@@ -32,6 +32,7 @@
 #include "modules/mediastream/SourceInfo.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -39,6 +40,7 @@
 
 namespace WebCore {
 
+class AudioSourceProvider;
 class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
@@ -84,6 +86,8 @@ public:
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
+
+    PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);

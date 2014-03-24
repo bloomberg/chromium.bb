@@ -185,6 +185,11 @@ void MediaStreamTrack::stop()
     m_stopped = true;
 }
 
+PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
+{
+    return MediaStreamCenter::instance().createWebAudioSourceFromMediaStreamTrack(component());
+}
+
 void MediaStreamTrack::addObserver(MediaStreamTrack::Observer* observer)
 {
     RELEASE_ASSERT(!m_isIteratingObservers);

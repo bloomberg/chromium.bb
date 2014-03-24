@@ -28,57 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamCenter_h
-#define MediaStreamCenter_h
+#ifndef MediaStreamWebAudioSource_h
+#define MediaStreamWebAudioSource_h
 
-#include "platform/PlatformExport.h"
-#include "public/platform/WebMediaStreamCenterClient.h"
-#include "public/platform/WebVector.h"
+#include "platform/audio/AudioSourceProvider.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
-class WebMediaStream;
-class WebMediaStreamCenter;
-class WebMediaStreamTrack;
+class WebAudioSourceProvider;
 }
 
 namespace WebCore {
 
-class AudioSourceProvider;
-class MediaStreamComponent;
-class MediaStreamDescriptor;
-class MediaStreamTrackSourcesRequest;
-
-class PLATFORM_EXPORT MediaStreamCenter FINAL : public blink::WebMediaStreamCenterClient {
-    WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
+class MediaStreamWebAudioSource : public AudioSourceProvider {
+    WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
 public:
-    virtual ~MediaStreamCenter();
+    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<blink::WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(provider)); }
 
-    static MediaStreamCenter& instance();
-
-    bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
-
-    void didCreateMediaStreamTrack(MediaStreamComponent*);
-    void didSetMediaStreamTrackEnabled(MediaStreamComponent*);
-    bool didStopMediaStreamTrack(MediaStreamComponent*);
-    PassOwnPtr<AudioSourceProvider> createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent*);
-
-    void didCreateMediaStream(MediaStreamDescriptor*);
-    bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
-    bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
-    void didStopLocalMediaStream(MediaStreamDescriptor*);
-
-    // blink::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual ~MediaStreamWebAudioSource();
 
 private:
-    MediaStreamCenter();
+    explicit MediaStreamWebAudioSource(PassOwnPtr<blink::WebAudioSourceProvider>);
 
-    OwnPtr<blink::WebMediaStreamCenter> m_private;
+    // WebCore::AudioSourceProvider implementation.
+    virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess) OVERRIDE;
+
+    OwnPtr<blink::WebAudioSourceProvider> m_webAudioSourceProvider;
 };
 
 } // namespace WebCore
 
-#endif // MediaStreamCenter_h
+#endif // MediaStreamWebAudioSource_h
