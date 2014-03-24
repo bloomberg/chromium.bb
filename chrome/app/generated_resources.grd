@@ -6938,9 +6938,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         sync-touchmove
       </message>
       <message name="IDS_FLAGS_BLEEDING_RENDERER_NAME" desc="Name of the 'Stacked Tabs' lab.">
-        Bleeding Edge Renderer Paths
+        Bleeding Edge Renderer Paths - LIKELY TO CRASH YOUR BROWSER
       </message>
-      <message name="IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION" desc="Description of the 'Stacked Tabs' lab.">
+      <message name="IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION" desc="Description of the 'Bleeding edge' lab.">
         Use bleeding-edge code to make Chrome draw content faster. The changes
         behind this path are very likely to break lots of content.
       </message>

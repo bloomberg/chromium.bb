@@ -1820,7 +1820,7 @@ const Experiment kExperiments[] = {
     "bleeding-edge-renderer-mode",
     IDS_FLAGS_BLEEDING_RENDERER_NAME,
     IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION,
-    kOsAll,
+    kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableBleedingEdgeRenderingFastPaths)
   },
   {
