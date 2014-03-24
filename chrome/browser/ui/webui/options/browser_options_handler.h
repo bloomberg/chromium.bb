@@ -113,6 +113,9 @@ class BrowserOptionsHandler
   // Will be called when the policy::key::kWallpaperImage policy changes.
   void OnWallpaperPolicyChanged(const base::Value* previous_policy,
                                 const base::Value* current_policy);
+
+  // Will be called when powerwash dialog is shown.
+  void OnPowerwashDialogShow(const base::ListValue* args);
 #endif
 
   void UpdateSyncState();

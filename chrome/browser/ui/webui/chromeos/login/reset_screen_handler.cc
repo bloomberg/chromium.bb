@@ -7,10 +7,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -52,6 +54,20 @@ void ResetScreenHandler::PrepareToShow() {
 }
 
 void ResetScreenHandler::ShowWithParams() {
+  int dialog_type;
+  if (reboot_was_requested_) {
+    dialog_type = rollback_available_ ?
+        reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_AND_ROLLBACK :
+        reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_ONLY;
+  } else {
+    dialog_type = rollback_available_ ?
+      reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE :
+      reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown",
+                            dialog_type,
+                            reset::DIALOG_VIEW_TYPE_SIZE);
+
   base::DictionaryValue reset_screen_params;
   reset_screen_params.SetBoolean("showRestartMsg", restart_required_);
   reset_screen_params.SetBoolean(

@@ -10,14 +10,17 @@ namespace first_run {
 
 enum TutorialCompletion {
   // User left tutorial before finish.
-  kTutorialNotFinished,
+  TUTORIAL_NOT_FINISHED,
+
   // Tutorial was completed with "Got It" button.
-  kTutorialCompletedWithGotIt,
+  TUTORIAL_COMPLETED_WITH_GOT_IT,
+
   // Tutorial was completed with "Keep Exploring" button, i.e. Help App was
   // launched after tutorial.
-  kTutorialCompletedWithKeepExploring,
+  TUTORIAL_COMPLETED_WITH_KEEP_EXPLORING,
+
   // Must be the last element.
-  kTutorialCompletionSize
+  TUTORIAL_COMPLETION_SIZE
 };
 
 }  // namespace first_run

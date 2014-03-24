@@ -532,6 +532,7 @@ cr.define('options', function() {
       if (cr.isChromeOS) {
         $('factory-reset-restart').onclick = function(event) {
           OptionsPage.navigateToPage('factoryResetData');
+          chrome.send('onPowerwashDialogShow');
         };
       }
 

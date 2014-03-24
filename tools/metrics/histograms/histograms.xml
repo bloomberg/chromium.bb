@@ -20329,6 +20329,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Reset.ChromeOS.PowerwashDialogShown"
+    enum="PowerwashDialogViewType">
+  <owner>merkulova@chromium.org</owner>
+  <summary>
+    Records the number of times the factory reset dialog was shown. Grouped by
+    the viewtype.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -36566,6 +36575,14 @@ other types of suffix sets.
   <int value="2" label="USB Charger"/>
   <int value="3" label="Unconfirmed Spring Charger"/>
   <int value="4" label="Safe Spring Charger"/>
+</enum>
+
+<enum name="PowerwashDialogViewType" type="int">
+  <int value="0" label="Invoked on settings page"/>
+  <int value="1" label="Shortcut. Confirmation for powerwash only."/>
+  <int value="2" label="Shortcut. Confirmation for powerwash and rollback."/>
+  <int value="3" label="Shortcut. Offer. Rollback unavailable."/>
+  <int value="4" label="Shortcut. Offer. Rollback available."/>
 </enum>
 
 <enum name="PreconnectedNavigation" type="int">

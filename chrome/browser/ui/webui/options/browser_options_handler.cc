@@ -107,6 +107,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -687,6 +688,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       "virtualKeyboardChange",
       base::Bind(&BrowserOptionsHandler::VirtualKeyboardChangeCallback,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+       "onPowerwashDialogShow",
+       base::Bind(&BrowserOptionsHandler::OnPowerwashDialogShow,
+                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "performFactoryResetRestart",
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
@@ -1425,6 +1430,14 @@ void BrowserOptionsHandler::OnWallpaperPolicyChanged(
   const bool has_policy = current_policy;
   if (had_policy != has_policy)
     OnWallpaperManagedChanged(has_policy);
+}
+
+void BrowserOptionsHandler::OnPowerwashDialogShow(
+     const base::ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Reset.ChromeOS.PowerwashDialogShown",
+      chromeos::reset::DIALOG_FROM_OPTIONS,
+      chromeos::reset::DIALOG_VIEW_TYPE_SIZE);
 }
 
 #endif  // defined(OS_CHROMEOS)
