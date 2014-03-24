@@ -20,6 +20,10 @@
 #include "ui/events/ozone/evdev/device_manager_udev.h"
 #endif
 
+#ifndef EVIOCSCLOCKID
+#define EVIOCSCLOCKID  _IOW('E', 0xa0, int)
+#endif
+
 namespace ui {
 
 namespace {
