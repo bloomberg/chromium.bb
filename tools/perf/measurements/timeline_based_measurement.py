@@ -40,9 +40,12 @@ class _ResultsWrapper(object):
 
 
 class _TimelineBasedMetrics(object):
-  def __init__(self, model, renderer_thread):
+  def __init__(self, model, renderer_thread,
+               create_metrics_for_interaction_record_callback):
     self._model = model
     self._renderer_thread = renderer_thread
+    self._create_metrics_for_interaction_record_callback = \
+        create_metrics_for_interaction_record_callback
 
   def FindTimelineInteractionRecords(self):
     # TODO(nduca): Add support for page-load interaction record.
@@ -50,18 +53,14 @@ class _TimelineBasedMetrics(object):
             event in self._renderer_thread.IterAllAsyncSlices()
             if tir_module.IsTimelineInteractionRecord(event.name)]
 
-  def CreateMetricsForTimelineInteractionRecord(self, interaction):
-    res = []
-    if interaction.is_smooth:
-      res.append(smoothness.SmoothnessMetric())
-    return res
 
   def AddResults(self, results):
     interactions = self.FindTimelineInteractionRecords()
     if len(interactions) == 0:
       raise Exception('Expected at least one Interaction on the page')
     for interaction in interactions:
-      metrics = self.CreateMetricsForTimelineInteractionRecord(interaction)
+      metrics = \
+          self._create_metrics_for_interaction_record_callback(interaction)
       wrapped_results = _ResultsWrapper(results, interaction)
       for m in metrics:
         m.AddResults(self._model, self._renderer_thread,
@@ -116,10 +115,20 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
     categories = ','.join([categories] + page.GetSyntheticDelayCategories())
     tab.browser.StartTracing(categories)
 
+  def CreateMetricsForTimelineInteractionRecord(self, interaction):
+    """ Subclass of TimelineBasedMeasurement overrides this method to customize
+    the binding of interaction's flags to metrics.
+    """
+    res = []
+    if interaction.is_smooth:
+      res.append(smoothness.SmoothnessMetric())
+    return res
+
   def MeasurePage(self, page, tab, results):
     """ Collect all possible metrics and added them to results. """
     trace_result = tab.browser.StopTracing()
     model = model_module.TimelineModel(trace_result)
     renderer_thread = model.GetRendererThreadFromTab(tab)
-    meta_metrics = _TimelineBasedMetrics(model, renderer_thread)
+    meta_metrics = _TimelineBasedMetrics(
+      model, renderer_thread, self.CreateMetricsForTimelineInteractionRecord)
     meta_metrics.AddResults(results)

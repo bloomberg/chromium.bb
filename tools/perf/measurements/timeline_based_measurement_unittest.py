@@ -41,7 +41,7 @@ class TimelineBasedMetricsTests(unittest.TestCase):
 
   def testFindTimelineInteractionRecords(self):
     metric = tbm_module._TimelineBasedMetrics( # pylint: disable=W0212
-        self.model, self.renderer_thread)
+      self.model, self.renderer_thread, lambda _: [] )
     interactions = metric.FindTimelineInteractionRecords()
     self.assertEquals(2, len(interactions))
     self.assertTrue(interactions[0].is_smooth)
@@ -65,18 +65,17 @@ class TimelineBasedMetricsTests(unittest.TestCase):
         assert interaction_record.logical_name == 'LogicalName2'
         results.Add('FakeLoadingMetric', 'ms', 2)
 
-    class TimelineBasedMetricsWithFakeMetricHandler(
-        tbm_module._TimelineBasedMetrics): # pylint: disable=W0212
-      def CreateMetricsForTimelineInteractionRecord(self, interaction):
-        res = []
-        if interaction.is_smooth:
-          res.append(FakeSmoothMetric())
-        if interaction.is_loading_resources:
-          res.append(FakeLoadingMetric())
-        return res
+    def CreateMetricsForTimelineInteractionRecord(interaction):
+      res = []
+      if interaction.is_smooth:
+        res.append(FakeSmoothMetric())
+      if interaction.is_loading_resources:
+        res.append(FakeLoadingMetric())
+      return res
 
-    metric = TimelineBasedMetricsWithFakeMetricHandler(
-        self.model, self.renderer_thread)
+    metric = tbm_module._TimelineBasedMetrics( # pylint: disable=W0212
+        self.model, self.renderer_thread,
+        CreateMetricsForTimelineInteractionRecord)
     ps = page_set.PageSet.FromDict({
       "description": "hello",
       "archive_path": "foo.wpr",
