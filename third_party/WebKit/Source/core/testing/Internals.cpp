@@ -2444,6 +2444,8 @@ void Internals::setValueForUser(Element* element, const String& value)
 
 String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long maxLength)
 {
+    if (!node)
+        return String();
     blink::WebPoint point(x, y);
     SurroundingText surroundingText(VisiblePosition(node->renderer()->positionForPoint(static_cast<IntPoint>(point))), maxLength);
     return surroundingText.content();
