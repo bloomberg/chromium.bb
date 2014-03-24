@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/mock_timer.h"
 #include "net/socket/stream_listen_socket.h"
 #include "remoting/host/gnubby_auth_handler_posix.h"
+#include "remoting/host/gnubby_socket.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +69,8 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
   // Mock client stub.
   MockClientStub client_stub_;
 
+  base::MessageLoop message_loop_;
+
  private:
   void OnConnect(int result);
 };
@@ -78,17 +83,19 @@ void GnubbyAuthHandlerPosixTest::SetUp() {
 
 MATCHER_P2(EqualsDataMessage, id, data, "") {
   std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
-  std::string json_message = base::StringPrintf("\"jsonMessage\":\"%s\"", data);
+  std::string data_message = base::StringPrintf("\"data\":%s", data);
 
   return (arg.type() == "gnubby-auth" &&
           arg.data().find("\"type\":\"data\"") != std::string::npos &&
           arg.data().find(connection_id) != std::string::npos &&
-          arg.data().find(json_message) != std::string::npos);
+          arg.data().find(data_message) != std::string::npos);
 }
 
 TEST_F(GnubbyAuthHandlerPosixTest, HostDataMessageDelivered) {
+  // Expects a JSON array of the ASCII character codes for "test_msg".
   EXPECT_CALL(client_stub_,
-              DeliverHostMessage(EqualsDataMessage(42, "test_msg")));
+              DeliverHostMessage(
+                  EqualsDataMessage(42, "[116,101,115,116,95,109,115,103]")));
 
   auth_handler_->DeliverHostDataMessage(42, "test_msg");
 }
@@ -109,7 +116,8 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidRead) {
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
   delegate_->DidAccept(NULL, make_scoped_ptr(socket));
-  delegate_->DidRead(socket, reinterpret_cast<const char*>(request_data),
+  delegate_->DidRead(socket,
+                     reinterpret_cast<const char*>(request_data),
                      sizeof(request_data));
 }
 
@@ -120,9 +128,38 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
 
   delegate_->DidAccept(NULL, make_scoped_ptr(socket));
   for (unsigned int i = 0; i < sizeof(request_data); ++i) {
-    delegate_->DidRead(socket,
-                       reinterpret_cast<const char *>(request_data + i), 1);
+    delegate_->DidRead(
+        socket, reinterpret_cast<const char*>(request_data + i), 1);
   }
+}
+
+TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
+  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
+
+  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+
+  base::MockTimer* mock_timer = new base::MockTimer(false, false);
+  auth_handler_posix_->GetGnubbySocketForTesting(socket)
+      ->SetTimerForTesting(scoped_ptr<base::Timer>(mock_timer));
+  delegate_->DidRead(socket, reinterpret_cast<const char*>(request_data), 1);
+  mock_timer->Fire();
+
+  ASSERT_FALSE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+}
+
+TEST_F(GnubbyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
+  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
+
+  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+
+  std::string error_json = base::StringPrintf(
+      "{\"type\":\"error\",\"connectionId\":%d}",
+      auth_handler_posix_->GetConnectionIdForTesting(socket));
+
+  ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+  auth_handler_->DeliverClientMessage(error_json);
+  ASSERT_FALSE(auth_handler_posix_->HasActiveSocketForTesting(socket));
 }
 
 }  // namespace remoting

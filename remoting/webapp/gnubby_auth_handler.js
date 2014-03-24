@@ -30,9 +30,10 @@ remoting.GnubbyAuthHandler.prototype.onMessage = function(data) {
   var message = getJsonObjectFromString(data);
   var messageType = getStringAttr(message, 'type');
   if (messageType == 'data') {
-    this.sendMessageToGnubbyd_(
-        getJsonObjectFromString(getStringAttr(message, 'jsonMessage')),
-        this.callback_.bind(this, getNumberAttr(message, 'connectionId')));
+    this.sendMessageToGnubbyd_({
+      'type': 'auth-agent@openssh.com',
+      'data': getArrayAttr(message, 'data')
+    }, this.callback_.bind(this, getNumberAttr(message, 'connectionId')));
   } else {
     console.error('Invalid gnubby-auth message: ' + messageType);
   }
@@ -41,15 +42,25 @@ remoting.GnubbyAuthHandler.prototype.onMessage = function(data) {
 /**
  * Callback invoked with data to be returned to the host.
  * @param {number} connectionId The connection id.
- * @param {Object} data The JSON object to send to the host.
+ * @param {Object} response The JSON response with the data to send to the host.
  * @private
  */
 remoting.GnubbyAuthHandler.prototype.callback_ =
-    function(connectionId, data) {
-  var json_data = JSON.stringify(data);
-  this.clientSession_.sendGnubbyAuthMessage({'type': 'data',
-    'connectionId': connectionId,
-    'jsonMessage': json_data});
+    function(connectionId, response) {
+  try {
+    this.clientSession_.sendGnubbyAuthMessage({
+      'type': 'data',
+      'connectionId': connectionId,
+      'data': getArrayAttr(response, 'data')
+    });
+  } catch (err) {
+    console.error('gnubby callback failed: ', /** @type {*} */ (err));
+    this.clientSession_.sendGnubbyAuthMessage({
+      'type': 'error',
+      'connectionId': connectionId
+    });
+    return;
+  }
 };
 
 /**
@@ -86,4 +97,4 @@ function onGnubbydDevReply_(jsonObject, callback, reply) {
   } else {
     chrome.runtime.sendMessage(kGnubbydStableExtensionId, jsonObject, callback);
   }
-};
+}
