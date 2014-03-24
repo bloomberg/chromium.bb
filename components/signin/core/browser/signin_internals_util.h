@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_INTERNALS_UTIL_H_
-#define COMPONENTS_SIGNIN_CORE_SIGNIN_INTERNALS_UTIL_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_INTERNALS_UTIL_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_INTERNALS_UTIL_H_
 
 #include <map>
 #include <string>
@@ -87,4 +87,4 @@ std::string GetTruncatedHash(const std::string& str);
 
 } // namespace signin_internals_util
 
-#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_INTERNALS_UTIL_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_INTERNALS_UTIL_H_

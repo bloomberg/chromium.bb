@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_error_controller.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -103,4 +103,4 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_H_

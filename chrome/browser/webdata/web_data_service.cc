@@ -12,7 +12,7 @@
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_intents_table.h"
-#include "components/signin/core/webdata/token_service_table.h"
+#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"

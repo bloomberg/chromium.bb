@@ -6,8 +6,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
-#define COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
+#define COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
 
 #include <map>
 #include <string>
@@ -67,4 +67,4 @@ class TokenWebData : public WebDataServiceBase {
   DISALLOW_COPY_AND_ASSIGN(TokenWebData);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__

@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "components/signin/core/webdata/token_web_data.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 
 // Base class for mocks of WebDataService, that does nothing in
 // Shutdown().

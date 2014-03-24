@@ -15,8 +15,8 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/chrome_version_info.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
-#include "components/signin/core/signin_internals_util.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 using base::Time;

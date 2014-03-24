@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/app_list/search/people/person.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/api/hangouts_private.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_SERVICE_TABLE_H_
-#define COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
 
 #include <map>
 #include <string>
@@ -48,4 +48,4 @@ class TokenServiceTable : public WebDatabaseTable {
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTable);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_

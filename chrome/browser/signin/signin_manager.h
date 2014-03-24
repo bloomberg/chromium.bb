@@ -34,7 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_internals_util.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"

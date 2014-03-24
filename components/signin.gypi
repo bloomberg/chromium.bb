@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'signin_core',
+      'target_name': 'signin_core_browser',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -21,21 +21,21 @@
         '..',
       ],
       'sources': [
-        'signin/core/mutable_profile_oauth2_token_service.cc',
-        'signin/core/mutable_profile_oauth2_token_service.h',
-        'signin/core/profile_oauth2_token_service.cc',
-        'signin/core/profile_oauth2_token_service.h',
-        'signin/core/signin_client.h',
-        'signin/core/signin_error_controller.cc',
-        'signin/core/signin_error_controller.h',
-        'signin/core/signin_internals_util.cc',
-        'signin/core/signin_internals_util.h',
-        'signin/core/signin_manager_cookie_helper.cc',
-        'signin/core/signin_manager_cookie_helper.h',
-        'signin/core/webdata/token_service_table.cc',
-        'signin/core/webdata/token_service_table.h',
-        'signin/core/webdata/token_web_data.cc',
-        'signin/core/webdata/token_web_data.h',
+        'signin/core/browser/mutable_profile_oauth2_token_service.cc',
+        'signin/core/browser/mutable_profile_oauth2_token_service.h',
+        'signin/core/browser/profile_oauth2_token_service.cc',
+        'signin/core/browser/profile_oauth2_token_service.h',
+        'signin/core/browser/signin_client.h',
+        'signin/core/browser/signin_error_controller.cc',
+        'signin/core/browser/signin_error_controller.h',
+        'signin/core/browser/signin_internals_util.cc',
+        'signin/core/browser/signin_internals_util.h',
+        'signin/core/browser/signin_manager_cookie_helper.cc',
+        'signin/core/browser/signin_manager_cookie_helper.h',
+        'signin/core/browser/webdata/token_service_table.cc',
+        'signin/core/browser/webdata/token_service_table.h',
+        'signin/core/browser/webdata/token_web_data.cc',
+        'signin/core/browser/webdata/token_web_data.h',
       ],
     },
   ],
@@ -43,8 +43,8 @@
     ['OS=="android"', {
       'sources!': [
         # Not used on Android.
-        'signin/core/mutable_profile_oauth2_token_service.cc',
-        'signin/core/mutable_profile_oauth2_token_service.h',
+        'signin/core/browser/mutable_profile_oauth2_token_service.cc',
+        'signin/core/browser/mutable_profile_oauth2_token_service.h',
       ],
     }],
   ],

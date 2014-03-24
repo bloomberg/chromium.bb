@@ -34,7 +34,7 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_internals_util.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class PrefService;

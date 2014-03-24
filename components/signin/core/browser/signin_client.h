@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_
-#define COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 
-#include "components/signin/core/webdata/token_web_data.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 
 class TokenWebData;
 
@@ -29,4 +29,4 @@ class SigninClient {
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_

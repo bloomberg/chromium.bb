@@ -9,12 +9,12 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #else
-#include "components/signin/core/mutable_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #endif
 
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()

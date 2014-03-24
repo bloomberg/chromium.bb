@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_COOKIE_HELPER_H_
-#define COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_COOKIE_HELPER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_COOKIE_HELPER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_COOKIE_HELPER_H_
 
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
@@ -63,4 +63,4 @@ class SigninManagerCookieHelper
   DISALLOW_COPY_AND_ASSIGN(SigninManagerCookieHelper);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_COOKIE_HELPER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_COOKIE_HELPER_H_

@@ -14,7 +14,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_internals_util.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;

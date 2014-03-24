@@ -5,7 +5,7 @@
 #include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 namespace invalidation {
 

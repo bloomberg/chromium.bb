@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/webdata/token_web_data.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "components/signin/core/webdata/token_service_table.h"
+#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database_service.h"
 
 using base::Bind;

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/signin_client.h"
+#include "components/signin/core/browser/signin_client.h"
 
 class CookieSettings;
 class Profile;

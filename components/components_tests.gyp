@@ -110,7 +110,7 @@
             'rappor/rappor_metric_unittest.cc',
             'rappor/rappor_service_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
-            'signin/core/webdata/token_service_table_unittest.cc',
+            'signin/core/browser/webdata/token_service_table_unittest.cc',
             'storage_monitor/image_capture_device_manager_unittest.mm',
             'storage_monitor/media_storage_util_unittest.cc',
             'storage_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
@@ -210,7 +210,7 @@
             'components.gyp:rappor',
 
             # Dependencies of signin
-            'components.gyp:signin_core',
+            'components.gyp:signin_core_browser',
 
             # Dependencies of sync_driver
             'components.gyp:sync_driver_test_support',

@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_mock.h"
 #include "components/sync_driver/pref_names.h"
