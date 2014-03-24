@@ -199,13 +199,11 @@ void FileSelectHelper::OnListFile(
     const net::DirectoryLister::DirectoryListerData& data) {
   ActiveDirectoryEnumeration* entry = directory_enumerations_[id];
 
-  // Directory upload returns directories via a "." file, so that
-  // empty directories are included.  This util call just checks
-  // the flags in the structure; there's no file I/O going on.
+  // Directory upload only cares about files.
   if (data.info.IsDirectory())
-    entry->results_.push_back(data.path.Append(FILE_PATH_LITERAL(".")));
-  else
-    entry->results_.push_back(data.path);
+    return;
+
+  entry->results_.push_back(data.path);
 }
 
 void FileSelectHelper::OnListDone(int id, int error) {
