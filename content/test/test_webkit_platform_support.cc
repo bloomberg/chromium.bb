@@ -146,7 +146,7 @@ blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
         "\x82";
     return blink::WebData(red_square, arraysize(red_square));
   }
-  return BlinkPlatformImpl::loadResource(name);
+  return blink::WebData();
 }
 
 blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
@@ -172,7 +172,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     case blink::WebLocalizedString::WeekFormatTemplate:
       return base::ASCIIToUTF16("Week $2, $1");
     default:
-      return BlinkPlatformImpl::queryLocalizedString(name);
+      return blink::WebString();
   }
 }
 
