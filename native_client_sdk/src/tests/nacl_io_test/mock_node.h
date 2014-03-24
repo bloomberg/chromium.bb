@@ -35,7 +35,7 @@ class MockNode : public nacl_io::Node {
   MOCK_METHOD1(GetSize, Error(size_t*));
   MOCK_METHOD0(IsaDir, bool());
   MOCK_METHOD0(IsaFile, bool());
-  MOCK_METHOD0(IsaTTY, bool());
+  MOCK_METHOD0(Isatty, Error());
   MOCK_METHOD0(ChildCount, int());
   MOCK_METHOD2(AddChild, Error(const std::string&, const ScopedNode&));
   MOCK_METHOD1(RemoveChild, Error(const std::string&));

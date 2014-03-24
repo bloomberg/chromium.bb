@@ -69,6 +69,7 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
   OP(dev_fdio, fsync); \
   OP(dev_fdio, fdatasync); \
   OP(dev_fdio, ftruncate); \
+  OP(dev_fdio, isatty); \
   OP(dev_filename, open); \
   OP(dev_filename, stat); \
   OP(dev_filename, mkdir); \
@@ -156,6 +157,13 @@ int WRAP(fdatasync)(int fd) {
 
 int WRAP(ftruncate)(int fd, off_t length) {
   return (ki_ftruncate(fd, length) < 0) ? errno : 0;
+}
+
+int WRAP(isatty)(int fd, int* result) {
+  *result = ki_isatty(fd);
+  if (*result == 1)
+    return errno;
+  return 0;
 }
 
 int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
@@ -275,6 +283,11 @@ void _real_exit(int status) {
 int _real_fstat(int fd, struct stat* buf) {
   CHECK_REAL(fstat);
   return REAL(fstat)(fd, buf);
+}
+
+int _real_isatty(int fd, int* result) {
+  CHECK_REAL(isatty);
+  return REAL(isatty)(fd, result);
 }
 
 int _real_getdents(int fd, void* nacl_buf, size_t nacl_count, size_t* nread) {

@@ -591,16 +591,16 @@ int KernelProxy::isatty(int fd) {
   Error error = AcquireHandle(fd, &handle);
   if (error) {
     errno = error;
-    return -1;
+    return 0;
   }
 
-  error = handle->node()->IsaTTY();
+  error = handle->node()->Isatty();
   if (error) {
     errno = error;
-    return -1;
+    return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 int KernelProxy::ioctl(int fd, int request, va_list args) {

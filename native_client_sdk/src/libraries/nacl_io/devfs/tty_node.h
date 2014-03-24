@@ -38,6 +38,8 @@ class TtyNode : public CharNode {
   virtual Error Tcsetattr(int optional_actions,
                           const struct termios* termios_p);
 
+  virtual Error Isatty() { return 0; }
+
  private:
   ScopedEventEmitter emitter_;
 

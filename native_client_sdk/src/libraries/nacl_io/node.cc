@@ -184,7 +184,9 @@ bool Node::IsaFile() { return (stat_.st_mode & S_IFREG) != 0; }
 
 bool Node::IsaSock() { return (stat_.st_mode & S_IFSOCK) != 0; }
 
-bool Node::IsaTTY() { return (stat_.st_mode & S_IFCHR) != 0; }
+Error Node::Isatty() {
+  return ENOTTY;
+}
 
 Error Node::AddChild(const std::string& name, const ScopedNode& node) {
   return ENOTDIR;

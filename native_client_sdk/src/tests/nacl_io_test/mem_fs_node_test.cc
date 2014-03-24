@@ -79,7 +79,7 @@ TEST(MemFsNodeTest, File) {
   EXPECT_EQ(S_IFREG, file.GetType());
   EXPECT_FALSE(file.IsaDir());
   EXPECT_TRUE(file.IsaFile());
-  EXPECT_FALSE(file.IsaTTY());
+  EXPECT_EQ(ENOTTY, file.Isatty());
   EXPECT_EQ(0, file.RefCount());
 
   // Test IO
@@ -209,7 +209,7 @@ TEST(MemFsNodeTest, Directory) {
   EXPECT_EQ(S_IFDIR, root.GetType());
   EXPECT_TRUE(root.IsaDir());
   EXPECT_FALSE(root.IsaFile());
-  EXPECT_FALSE(root.IsaTTY());
+  EXPECT_EQ(ENOTTY, root.Isatty());
   EXPECT_EQ(0, root.RefCount());
 
   // IO operations should fail

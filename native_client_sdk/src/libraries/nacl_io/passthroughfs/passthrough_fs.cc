@@ -90,6 +90,19 @@ class PassthroughFsNode : public Node {
     return 0;
   }
 
+  virtual Error Isatty() {
+#ifdef __GLIBC__
+    // isatty is not yet hooked up to the IRT interface under glibc.
+    return ENOTTY;
+#else
+    int result = 0;
+    int err = _real_isatty(real_fd_, &result);
+    if (err)
+      return err;
+    return 0;
+#endif
+  }
+
   Error MMap(void* addr,
              size_t length,
              int prot,

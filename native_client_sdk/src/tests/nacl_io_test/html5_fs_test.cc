@@ -364,7 +364,7 @@ TEST_F(Html5FsTest, GetStat) {
   EXPECT_EQ(strlen(contents), size);
   EXPECT_FALSE(node->IsaDir());
   EXPECT_TRUE(node->IsaFile());
-  EXPECT_FALSE(node->IsaTTY());
+  EXPECT_EQ(ENOTTY, node->Isatty());
 
   // GetStat on a directory...
   EXPECT_EQ(0, fs->Open(Path("/dir"), O_RDONLY, &node));
@@ -382,7 +382,7 @@ TEST_F(Html5FsTest, GetStat) {
   EXPECT_EQ(0, size);
   EXPECT_TRUE(node->IsaDir());
   EXPECT_FALSE(node->IsaFile());
-  EXPECT_FALSE(node->IsaTTY());
+  EXPECT_EQ(ENOTTY, node->Isatty());
 }
 
 TEST_F(Html5FsTest, FTruncate) {
