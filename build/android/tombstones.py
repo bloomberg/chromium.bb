@@ -10,7 +10,6 @@
 # Assumes tombstone file was created with current symbols.
 
 import datetime
-import logging
 import multiprocessing
 import os
 import subprocess
@@ -177,7 +176,7 @@ def main():
                     default=4,
                     help='Number of jobs to use when processing multiple '
                          'crash stacks.')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
 
   if options.device:
     devices = [options.device]

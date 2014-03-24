@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import base64
 import gzip
 import logging
 import optparse
@@ -27,13 +26,13 @@ from pylib import pexpect
 _TRACE_VIEWER_ROOT = os.path.join(constants.DIR_SOURCE_ROOT,
                                   'third_party', 'trace-viewer')
 sys.path.append(_TRACE_VIEWER_ROOT)
-from trace_viewer.build import trace2html
+from trace_viewer.build import trace2html # pylint: disable=F0401
 
 _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
 
 def _GetTraceTimestamp():
- return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
 
 
 class ChromeTracingController(object):
@@ -117,7 +116,7 @@ class SystraceController(object):
   def GetCategories(adb):
     return adb.RunShellCommand('atrace --list_categories')
 
-  def StartTracing(self, interval):
+  def StartTracing(self, _):
     self._thread = threading.Thread(target=self._CollectData)
     self._thread.start()
 
@@ -363,7 +362,7 @@ def main():
                     action='store_true')
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
-  options, args = parser.parse_args()
+  options, _args = parser.parse_args()
   if options.trace_cc:
     parser.parse_error("""--trace-cc is deprecated.
 

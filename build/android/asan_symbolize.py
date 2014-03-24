@@ -53,18 +53,17 @@ def _TranslateLibPath(library, asan_libs):
   return symbol.TranslateLibPath(library)
 
 
-def _Symbolize(input):
+def _Symbolize(asan_input):
   asan_libs = _FindASanLibraries()
   libraries = collections.defaultdict(list)
   asan_lines = []
-  for asan_log_line in [a.rstrip() for a in input]:
+  for asan_log_line in [a.rstrip() for a in asan_input]:
     m = _ParseAsanLogLine(asan_log_line)
     if m:
       libraries[m['library']].append(m)
     asan_lines.append({'raw_log': asan_log_line, 'parsed': m})
 
   all_symbols = collections.defaultdict(dict)
-  original_symbols_dir = symbol.SYMBOLS_DIR
   for library, items in libraries.iteritems():
     libname = _TranslateLibPath(library, asan_libs)
     lib_relative_addrs = set([i['rel_address'] for i in items])
@@ -82,7 +81,7 @@ def _Symbolize(input):
     if (m['library'] in all_symbols and
         m['rel_address'] in all_symbols[m['library']]['symbols']):
       s = all_symbols[m['library']]['symbols'][m['rel_address']][0]
-      print '%s%s %s %s' %(m['prefix'], m['pos'], s[0], s[1])
+      print '%s%s %s %s' % (m['prefix'], m['pos'], s[0], s[1])
     else:
       print asan_log_line['raw_log']
 
@@ -92,12 +91,12 @@ def main():
   parser.add_option('-l', '--logcat',
                     help='File containing adb logcat output with ASan stacks. '
                          'Use stdin if not specified.')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
   if options.logcat:
-    input = file(options.logcat, 'r')
+    asan_input = file(options.logcat, 'r')
   else:
-    input = sys.stdin
-  _Symbolize(input.readlines())
+    asan_input = sys.stdin
+  _Symbolize(asan_input.readlines())
 
 
 if __name__ == "__main__":

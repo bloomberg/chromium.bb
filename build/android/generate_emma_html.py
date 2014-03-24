@@ -11,7 +11,6 @@ import json
 import optparse
 import os
 import sys
-import traceback
 
 from pylib import cmd_helper
 from pylib import constants
@@ -36,7 +35,7 @@ def _GetFilesWithExt(root_dir, ext):
   return files
 
 
-def main(argv):
+def main():
   option_parser = optparse.OptionParser()
   option_parser.add_option('--output', help='HTML output filename.')
   option_parser.add_option('--coverage-dir', default=None,
@@ -48,7 +47,7 @@ def main(argv):
   option_parser.add_option('--cleanup', action='store_true',
                            help=('If set, removes coverage files generated at '
                                  'runtime.'))
-  options, args = option_parser.parse_args()
+  options, _ = option_parser.parse_args()
 
   if not (options.coverage_dir and options.metadata_dir and options.output):
     option_parser.error('One or more mandatory options are missing.')
@@ -88,4 +87,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
