@@ -58,6 +58,8 @@ main/k/krb5/libkrb5-dev_1.10.1+dfsg-5+deb7u1_i386.deb
 main/k/krb5/libkrb5support0_1.10.1+dfsg-5+deb7u1_i386.deb
 main/libc/libcap2/libcap2_2.22-1.2_i386.deb
 main/libc/libcap2/libcap-dev_2.22-1.2_i386.deb
+main/libe/libexif/libexif12_0.6.20-3_i386.deb
+main/libe/libexif/libexif-dev_0.6.20-3_i386.deb
 main/libf/libffi/libffi5_3.0.10-3_i386.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.0-5+deb7u1_i386.deb
 main/libg/libgcrypt11/libgcrypt11-dev_1.5.0-5+deb7u1_i386.deb

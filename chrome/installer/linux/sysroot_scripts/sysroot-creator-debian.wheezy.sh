@@ -73,6 +73,8 @@ readonly DEBIAN_PACKAGES="\
   libdbus-glib-1-2 \
   libelf1 \
   libelf-dev \
+  libexif12 \
+  libexif-dev \
   libexpat1 \
   libexpat1-dev \
   libffi5 \
