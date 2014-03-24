@@ -14,6 +14,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -79,7 +81,18 @@ const char kGoodServicesManifest[] =
     "  \"default_apps\": [\n"
     "    \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
     "    \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n"
-    "  ]\n"
+    "  ],\n"
+    "  \"localized_content\": {\n"
+    "    \"en-US\": {\n"
+    "      \"default_apps_folder_name\": \"EN-US OEM Name\"\n"
+    "    },\n"
+    "    \"en\": {\n"
+    "      \"default_apps_folder_name\": \"EN OEM Name\"\n"
+    "    },\n"
+    "    \"default\": {\n"
+    "      \"default_apps_folder_name\": \"Default OEM Name\"\n"
+    "    }\n"
+    "  }\n"
     "}";
 
 const char kDummyCustomizationID[] = "test-dummy";
@@ -317,6 +330,10 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
 
   EXPECT_EQ(default_apps[0], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   EXPECT_EQ(default_apps[1], "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+
+  EXPECT_EQ(doc->GetOemAppsFolderName("en-US"), "EN-US OEM Name");
+  EXPECT_EQ(doc->GetOemAppsFolderName("en"), "EN OEM Name");
+  EXPECT_EQ(doc->GetOemAppsFolderName("ru"), "Default OEM Name");
 }
 
 TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
@@ -400,6 +417,11 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
 
   RunUntilIdle();
   EXPECT_TRUE(doc->IsReady());
+
+  app_list::AppListSyncableService* service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile.get());
+  ASSERT_TRUE(service);
+  EXPECT_EQ(service->GetOemFolderNameForTest(), "EN OEM Name");
 }
 
 TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {

@@ -79,7 +79,10 @@ class AppListSyncableService : public syncer::SyncableService,
 
   Profile* profile() { return profile_; }
   AppListModel* model() { return model_.get(); }
-  size_t GetNumSyncItemsForTest() { return sync_items_.size(); }
+  size_t GetNumSyncItemsForTest() const { return sync_items_.size(); }
+  const std::string& GetOemFolderNameForTest() const {
+    return oem_folder_name_;
+  }
 
   // syncer::SyncableService
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(

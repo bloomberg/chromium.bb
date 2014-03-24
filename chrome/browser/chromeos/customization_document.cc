@@ -25,6 +25,8 @@
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -53,6 +55,8 @@ const char kSetupContentAttr[] = "setup_content";
 const char kEulaPageAttr[] = "eula_page";
 const char kDefaultWallpaperAttr[] = "default_wallpaper";
 const char kDefaultAppsAttr[] = "default_apps";
+const char kLocalizedContent[] = "localized_content";
+const char kDefaultAppsFolderName[] = "default_apps_folder_name";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
@@ -91,6 +95,32 @@ void LogManifestLoadResult(HistogramServicesCustomizationLoadResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServicesCustomization.LoadResult",
                             result,
                             HISTOGRAM_LOAD_RESULT_MAX_VALUE);
+}
+
+std::string GetLocaleSpecificStringImpl(
+    const base::DictionaryValue* root,
+    const std::string& locale,
+    const std::string& dictionary_name,
+    const std::string& entry_name) {
+  const base::DictionaryValue* dictionary_content = NULL;
+  if (!root || !root->GetDictionary(dictionary_name, &dictionary_content))
+    return std::string();
+
+  const base::DictionaryValue* locale_dictionary = NULL;
+  if (dictionary_content->GetDictionary(locale, &locale_dictionary)) {
+    std::string result;
+    if (locale_dictionary->GetString(entry_name, &result))
+      return result;
+  }
+
+  const base::DictionaryValue* default_dictionary = NULL;
+  if (dictionary_content->GetDictionary(kDefaultAttr, &default_dictionary)) {
+    std::string result;
+    if (default_dictionary->GetString(entry_name, &result))
+      return result;
+  }
+
+  return std::string();
 }
 
 }  // anonymous namespace
@@ -191,26 +221,8 @@ std::string CustomizationDocument::GetLocaleSpecificString(
     const std::string& locale,
     const std::string& dictionary_name,
     const std::string& entry_name) const {
-  base::DictionaryValue* dictionary_content = NULL;
-  if (!root_.get() ||
-      !root_->GetDictionary(dictionary_name, &dictionary_content))
-    return std::string();
-
-  base::DictionaryValue* locale_dictionary = NULL;
-  if (dictionary_content->GetDictionary(locale, &locale_dictionary)) {
-    std::string result;
-    if (locale_dictionary->GetString(entry_name, &result))
-      return result;
-  }
-
-  base::DictionaryValue* default_dictionary = NULL;
-  if (dictionary_content->GetDictionary(kDefaultAttr, &default_dictionary)) {
-    std::string result;
-    if (default_dictionary->GetString(entry_name, &result))
-      return result;
-  }
-
-  return std::string();
+  return GetLocaleSpecificStringImpl(
+      root_.get(), locale, dictionary_name, entry_name);
 }
 
 // StartupCustomizationDocument implementation. --------------------------------
@@ -464,6 +476,7 @@ void ServicesCustomizationDocument::OnManifestLoaded() {
       UpdateCachedManifest((*it)->profile());
       (*it)->SetCurrentApps(
           scoped_ptr<base::DictionaryValue>(prefs->DeepCopy()));
+      SetOemFolderName((*it)->profile(), *root_);
     }
   }
 }
@@ -541,6 +554,14 @@ bool ServicesCustomizationDocument::GetDefaultApps(
   return true;
 }
 
+std::string ServicesCustomizationDocument::GetOemAppsFolderName(
+    const std::string& locale) const {
+  if (!IsReady())
+    return std::string();
+
+  return GetOemAppsFolderNameImpl(locale, *root_);
+}
+
 scoped_ptr<base::DictionaryValue>
 ServicesCustomizationDocument::GetDefaultAppsInProviderFormat(
     const base::DictionaryValue& root) {
@@ -578,6 +599,7 @@ extensions::ExternalLoader* ServicesCustomizationDocument::CreateExternalLoader(
   if (IsReady()) {
     UpdateCachedManifest(profile);
     loader->SetCurrentApps(GetDefaultAppsInProviderFormat(*root_));
+    SetOemFolderName(profile, *root_);
   } else {
     const base::DictionaryValue* root =
         profile->GetPrefs()->GetDictionary(kServicesCustomizationKey);
@@ -585,6 +607,7 @@ extensions::ExternalLoader* ServicesCustomizationDocument::CreateExternalLoader(
     if (root && root->GetString(kVersionAttr, &version)) {
       // If version exists, profile has cached version of customization.
       loader->SetCurrentApps(GetDefaultAppsInProviderFormat(*root));
+      SetOemFolderName(profile, *root);
     } else {
       // StartFetching will be called from ServicesCustomizationExternalLoader
       // when StartLoading is called. We can't initiate manifest fetch here
@@ -598,6 +621,30 @@ extensions::ExternalLoader* ServicesCustomizationDocument::CreateExternalLoader(
 void ServicesCustomizationDocument::OnCustomizationNotFound() {
   LogManifestLoadResult(HISTOGRAM_LOAD_RESULT_FILE_NOT_FOUND);
   LoadManifestFromString(kEmptyServicesCustomizationManifest);
+}
+
+void ServicesCustomizationDocument::SetOemFolderName(
+    Profile* profile,
+    const base::DictionaryValue& root) {
+  app_list::AppListSyncableService* service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile);
+  if (!service) {
+    LOG(WARNING) << "AppListSyncableService is not ready for setting OEM "
+                    "folder name";
+    return;
+  }
+
+  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string name = GetOemAppsFolderNameImpl(locale, root);
+  if (!name.empty())
+    service->SetOemFolderName(name);
+}
+
+std::string ServicesCustomizationDocument::GetOemAppsFolderNameImpl(
+    const std::string& locale,
+    const base::DictionaryValue& root) const {
+  return GetLocaleSpecificStringImpl(
+      &root, locale, kLocalizedContent, kDefaultAppsFolderName);
 }
 
 }  // namespace chromeos

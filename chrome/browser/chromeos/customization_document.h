@@ -169,6 +169,9 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Cache of OEM default apps stored in profile preferences.
   extensions::ExternalLoader* CreateExternalLoader(Profile* profile);
 
+  // Returns the name of the folder for OEM apps for given |locale|.
+  std::string GetOemAppsFolderName(const std::string& locale) const;
+
   // Set delay between network checking for testing.
   void SetZeroNetworkDelayForTesting() {
     network_delay_ = base::TimeDelta();
@@ -223,6 +226,14 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Customization document not found for give ID.
   void OnCustomizationNotFound();
+
+  // Set OEM apps folder name for AppListSyncableService for |profile|.
+  void SetOemFolderName(Profile* profile, const base::DictionaryValue& root);
+
+  // Returns the name of the folder for OEM apps for given |locale|.
+  std::string GetOemAppsFolderNameImpl(
+      const std::string& locale,
+      const base::DictionaryValue& root) const;
 
   // Services customization manifest URL.
   GURL url_;
