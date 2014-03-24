@@ -42,6 +42,10 @@
     '../third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp',
     '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
 
+    '../third_party/skia/src/fonts/SkFontMgr_indirect.cpp',
+    '../third_party/skia/src/fonts/SkRemotableFontMgr.cpp',
+    '../third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp',
+
     '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
     '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
     '../third_party/skia/src/ports/SkFontHost_FreeType_common.h',
@@ -89,18 +93,25 @@
     '../third_party/skia/src/utils/SkProxyCanvas.cpp',
     '../third_party/skia/src/utils/SkRTConf.cpp',
     '../third_party/skia/include/utils/SkRTConf.h',
+    '../third_party/skia/src/utils/win/SkDWrite.h',
+    '../third_party/skia/src/utils/win/SkDWrite.cpp',
     '../third_party/skia/src/utils/win/SkDWriteFontFileStream.cpp',
     '../third_party/skia/src/utils/win/SkDWriteFontFileStream.h',
     '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
     '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
     '../third_party/skia/src/utils/win/SkHRESULT.cpp',
 
-    '../third_party/skia/include/ports/SkTypeface_win.h',
-
     '../third_party/skia/include/images/SkImageRef.h',
     '../third_party/skia/include/images/SkImageRef_GlobalPool.h',
     '../third_party/skia/include/images/SkMovie.h',
     '../third_party/skia/include/images/SkPageFlipper.h',
+
+    '../third_party/skia/include/ports/SkFontConfigInterface.h',
+    '../third_party/skia/include/ports/SkFontMgr.h',
+    '../third_party/skia/include/ports/SkFontMgr_indirect.h',
+    '../third_party/skia/include/ports/SkFontStyle.h',
+    '../third_party/skia/include/ports/SkRemotableFontMgr.h',
+    '../third_party/skia/include/ports/SkTypeface_win.h',
 
     '../third_party/skia/include/utils/SkNullCanvas.h',
     '../third_party/skia/include/utils/SkPictureUtils.h',
@@ -282,7 +293,10 @@
       'sources!': [
         '../third_party/skia/src/ports/SkFontHost_win_dw.cpp',
         '../third_party/skia/src/ports/SkFontMgr_default_gdi.cpp',
+        '../third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp',
 
+        '../third_party/skia/src/utils/win/SkDWrite.h',
+        '../third_party/skia/src/utils/win/SkDWrite.cpp',
         '../third_party/skia/src/utils/win/SkDWriteFontFileStream.cpp',
         '../third_party/skia/src/utils/win/SkDWriteFontFileStream.h',
         '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
