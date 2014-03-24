@@ -78,10 +78,4 @@ bool SVGAnimatedPropertyBase::isSpecified() const
     return isAnimating() || contextElement()->hasAttribute(attributeName());
 }
 
-void SVGAnimatedPropertyBase::commitChange()
-{
-    contextElement()->invalidateSVGAttributes();
-    contextElement()->svgAttributeChanged(m_attributeName);
-}
-
 } // namespace WebCore

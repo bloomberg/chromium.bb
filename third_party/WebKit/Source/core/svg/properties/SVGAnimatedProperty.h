@@ -93,7 +93,6 @@ public:
 
 protected:
     SVGAnimatedPropertyBase(AnimatedPropertyType, SVGElement*, const QualifiedName& attributeName);
-    void commitChange();
 
 private:
     const AnimatedPropertyType m_type;
