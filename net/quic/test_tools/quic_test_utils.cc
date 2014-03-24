@@ -364,6 +364,22 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
   return crypto_stream_;
 }
 
+TestClientSession::TestClientSession(QuicConnection* connection,
+                                     const QuicConfig& config)
+    : QuicClientSessionBase(connection, config),
+      crypto_stream_(NULL) {
+}
+
+TestClientSession::~TestClientSession() {}
+
+void TestClientSession::SetCryptoStream(QuicCryptoStream* stream) {
+  crypto_stream_ = stream;
+}
+
+QuicCryptoStream* TestClientSession::GetCryptoStream() {
+  return crypto_stream_;
+}
+
 MockPacketWriter::MockPacketWriter() {
 }
 

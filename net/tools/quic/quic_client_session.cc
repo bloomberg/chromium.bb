@@ -19,11 +19,19 @@ QuicClientSession::QuicClientSession(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicCryptoClientConfig* crypto_config)
-    : QuicSession(connection, config),
-      crypto_stream_(server_key, this, NULL, NULL, crypto_config) {
+    : QuicClientSessionBase(connection, config),
+      crypto_stream_(server_key, this, NULL, crypto_config) {
 }
 
 QuicClientSession::~QuicClientSession() {
+}
+
+void QuicClientSession::OnProofValid(
+    const QuicCryptoClientConfig::CachedState& /*cached*/) {
+}
+
+void QuicClientSession::OnProofVerifyDetailsAvailable(
+    const ProofVerifyDetails& /*verify_details*/) {
 }
 
 QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {

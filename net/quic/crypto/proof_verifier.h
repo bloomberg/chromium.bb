@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE ProofVerifyContext {
 // call back after an asynchronous verification.
 class NET_EXPORT_PRIVATE ProofVerifierCallback {
  public:
-  virtual ~ProofVerifierCallback();
+  virtual ~ProofVerifierCallback() {}
 
   // Run is called on the original thread to mark the completion of an
   // asynchonous verification. If |ok| is true then the certificate is valid
@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
     PENDING = 2,
   };
 
-  virtual ~ProofVerifier();
+  virtual ~ProofVerifier() {}
 
   // VerifyProof checks that |signature| is a valid signature of
   // |server_config| by the public key in the leaf certificate of |certs|, and

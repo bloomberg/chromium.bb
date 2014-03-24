@@ -95,7 +95,7 @@ QuicClientSession::QuicClientSession(
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
-    : QuicSession(connection, config),
+    : QuicClientSessionBase(connection, config),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
@@ -112,7 +112,7 @@ QuicClientSession::QuicClientSession(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
               server_key, this, crypto_config) :
-          new QuicCryptoClientStream(server_key, this, this,
+          new QuicCryptoClientStream(server_key, this,
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
 

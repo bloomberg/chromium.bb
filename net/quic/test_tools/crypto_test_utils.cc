@@ -167,7 +167,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     QuicCryptoServerStream* server,
     const FakeClientOptions& options) {
   PacketSavingConnection* client_conn = new PacketSavingConnection(false);
-  TestSession client_session(client_conn, DefaultQuicConfig());
+  TestClientSession client_session(client_conn, DefaultQuicConfig());
   QuicCryptoClientConfig crypto_config;
 
   client_session.config()->SetDefaults();
@@ -180,7 +180,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     crypto_config.SetChannelIDSigner(ChannelIDSignerForTesting());
   }
   QuicSessionKey server_key(kServerHostname, kServerPort, false);
-  QuicCryptoClientStream client(server_key, &client_session, NULL, NULL,
+  QuicCryptoClientStream client(server_key, &client_session, NULL,
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
 

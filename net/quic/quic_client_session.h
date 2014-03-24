@@ -17,11 +17,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_server.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_reliable_client_stream.h"
-#include "net/quic/quic_session.h"
 
 namespace net {
 
@@ -39,9 +39,7 @@ namespace test {
 class QuicClientSessionPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicClientSession :
-      public QuicSession,
-      public QuicCryptoClientStream::Visitor {
+class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
  public:
   // An interface for observing events on a session.
   class NET_EXPORT_PRIVATE Observer {
@@ -136,7 +134,7 @@ class NET_EXPORT_PRIVATE QuicClientSession :
       const CryptoHandshakeMessage& message) OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) const OVERRIDE;
 
-  // QuicCryptoClientStream::Visitor methods:
+  // QuicClientSessionBase methods:
   virtual void OnProofValid(
       const QuicCryptoClientConfig::CachedState& cached) OVERRIDE;
   virtual void OnProofVerifyDetailsAvailable(

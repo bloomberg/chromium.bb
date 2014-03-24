@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
 namespace net {
@@ -23,13 +23,19 @@ class ReliableQuicStream;
 
 namespace tools {
 
-class QuicClientSession : public QuicSession {
+class QuicClientSession : public QuicClientSessionBase {
  public:
   QuicClientSession(const QuicSessionKey& server_key,
                     const QuicConfig& config,
                     QuicConnection* connection,
                     QuicCryptoClientConfig* crypto_config);
   virtual ~QuicClientSession();
+
+  // QuicClientSessionBase methods:
+  virtual void OnProofValid(
+      const QuicCryptoClientConfig::CachedState& cached) OVERRIDE;
+  virtual void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) OVERRIDE;
 
   // QuicSession methods:
   virtual QuicSpdyClientStream* CreateOutgoingDataStream() OVERRIDE;

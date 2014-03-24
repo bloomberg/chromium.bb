@@ -8,8 +8,8 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_session.h"
 
 namespace net {
 
@@ -44,12 +44,10 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
 
 QuicCryptoClientStream::QuicCryptoClientStream(
     const QuicSessionKey& server_key,
-    QuicSession* session,
-    Visitor* visitor,
+    QuicClientSessionBase* session,
     ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
-      visitor_(visitor),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
@@ -169,8 +167,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           CloseConnectionWithDetails(error, error_details);
           return;
         }
-        if (visitor_ && cached->proof_verify_details()) {
-          visitor_->OnProofVerifyDetailsAvailable(
+        if (cached->proof_verify_details()) {
+          client_session()->OnProofVerifyDetailsAvailable(
               *cached->proof_verify_details());
         }
         next_state_ = STATE_RECV_SHLO;
@@ -261,10 +259,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       }
       case STATE_VERIFY_PROOF_COMPLETE:
         if (!verify_ok_) {
-          if (visitor_) {
-            visitor_->OnProofVerifyDetailsAvailable(
-                *cached->proof_verify_details());
-          }
+          client_session()->OnProofVerifyDetailsAvailable(
+              *cached->proof_verify_details());
           CloseConnectionWithDetails(
               QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
           return;
@@ -355,9 +351,11 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 void QuicCryptoClientStream::SetCachedProofValid(
     QuicCryptoClientConfig::CachedState* cached) {
   cached->SetProofValid();
-  if (visitor_) {
-    visitor_->OnProofValid(*cached);
-  }
+  client_session()->OnProofValid(*cached);
+}
+
+QuicClientSessionBase* QuicCryptoClientStream::client_session() {
+  return reinterpret_cast<QuicClientSessionBase*>(session());
 }
 
 }  // namespace net

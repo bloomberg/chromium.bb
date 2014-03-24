@@ -13,7 +13,9 @@
 #include "base/strings/string_piece.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
@@ -396,11 +398,35 @@ class TestSession : public QuicSession {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream();
+  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
 
  private:
   QuicCryptoStream* crypto_stream_;
   DISALLOW_COPY_AND_ASSIGN(TestSession);
+};
+
+class TestClientSession : public QuicClientSessionBase {
+ public:
+  TestClientSession(QuicConnection* connection, const QuicConfig& config);
+  virtual ~TestClientSession();
+
+  // QuicClientSessionBase
+  MOCK_METHOD1(OnProofValid,
+               void(const QuicCryptoClientConfig::CachedState& cached));
+  MOCK_METHOD1(OnProofVerifyDetailsAvailable,
+               void(const ProofVerifyDetails& verify_details));
+
+  // TestClientSession
+  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
+
+  void SetCryptoStream(QuicCryptoStream* stream);
+
+  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
+
+ private:
+  QuicCryptoStream* crypto_stream_;
+  DISALLOW_COPY_AND_ASSIGN(TestClientSession);
 };
 
 class MockPacketWriter : public QuicPacketWriter {
