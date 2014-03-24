@@ -11,17 +11,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/signin/core/profile_oauth2_token_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -70,23 +66,27 @@ OAuth2LoginVerifier::~OAuth2LoginVerifier() {
 void OAuth2LoginVerifier::VerifyUserCookies(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (DelayNetworkCall(base::Bind(&OAuth2LoginVerifier::VerifyUserCookies,
-                                  AsWeakPtr(),
-                                  profile))) {
-    return;
-  }
-
-  StartAuthCookiesVerification();
+  // Delay the verification if the network is not connected or on a captive
+  // portal.
+  DelayNetworkCall(
+      base::Bind(&OAuth2LoginVerifier::StartAuthCookiesVerification,
+                 AsWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
 }
 
 void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (DelayNetworkCall(base::Bind(&OAuth2LoginVerifier::VerifyProfileTokens,
-                                  AsWeakPtr(),
-                                  profile))) {
-    return;
-  }
+  // Delay the verification if the network is not connected or on a captive
+  // portal.
+  DelayNetworkCall(
+      base::Bind(
+          &OAuth2LoginVerifier::VerifyProfileTokensImpl, AsWeakPtr(), profile),
+      base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
+}
+
+void OAuth2LoginVerifier::VerifyProfileTokensImpl(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gaia_token_.clear();
   if (access_token_.empty()) {
@@ -267,30 +267,6 @@ void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
       GoogleServiceAuthError::NUM_STATES);
 
   error_handler.Run(IsConnectionOrServiceError(error));
-}
-
-bool OAuth2LoginVerifier::DelayNetworkCall(const base::Closure& callback) {
-  // Delay the verification if the network is not connected or on a captive
-  // portal.
-  const NetworkState* default_network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
-  if (!default_network ||
-      default_network->connection_state() == shill::kStatePortal ||
-      (detector &&
-       detector->GetCaptivePortalState(default_network->path()).status !=
-           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
-    // If network is offline, defer the token fetching until online.
-    LOG(WARNING) << "Network is offline. Deferring call.";
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        callback,
-        base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
-    return true;
-  }
-
-  return false;
 }
 
 }  // namespace chromeos

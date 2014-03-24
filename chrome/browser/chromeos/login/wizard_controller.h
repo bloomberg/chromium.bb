@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "content/public/common/geoposition.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
@@ -27,6 +28,10 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+struct Geoposition;
 }
 
 namespace chromeos {
@@ -42,6 +47,8 @@ class NetworkScreen;
 class OobeDisplay;
 class ResetScreen;
 class TermsOfServiceScreen;
+class TimeZoneProvider;
+struct TimeZoneResponseData;
 class UpdateScreen;
 class UserImageScreen;
 class WizardScreen;
@@ -158,6 +165,10 @@ class WizardController : public ScreenObserver {
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
+  // Called from LoginLocationMonitor when location is resolved.
+  static void OnLocationUpdated(const content::Geoposition& position,
+                                base::TimeDelta elapsed);
+
  private:
   // Show specific screen.
   void ShowNetworkScreen();
@@ -266,6 +277,16 @@ class WizardController : public ScreenObserver {
     local_state_for_testing_ = local_state;
   }
 
+  // Called when network is UP.
+  void StartTimezoneResolve() const;
+
+  // Creates provider on demand.
+  TimeZoneProvider* GetTimezoneProvider();
+
+  // TimeZoneRequest::TimeZoneResponseCallback implementation.
+  void OnTimezoneResolved(scoped_ptr<TimeZoneResponseData> timezone,
+                          bool server_error);
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -352,6 +373,8 @@ class WizardController : public ScreenObserver {
       auto_enrollment_progress_subscription_;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
+
+  scoped_ptr<TimeZoneProvider> timezone_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

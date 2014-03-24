@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_location_monitor.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
@@ -44,10 +46,12 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -62,19 +66,26 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/breakpad/app/breakpad_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/geoposition.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
+namespace {
 // If reboot didn't happen, ask user to reboot device manually.
 const int kWaitForRebootTimeSec = 3;
 
 // Interval in ms which is used for smooth screen showing.
 static int kShowDelayMs = 400;
+
+// Total timezone resolving process timeout.
+const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
+}  // namespace
 
 namespace chromeos {
 
@@ -148,6 +159,7 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
 WizardController::~WizardController() {
   if (default_controller_ == this) {
     default_controller_ = NULL;
+    LoginLocationMonitor::RemoveLocationCallback();
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
@@ -625,7 +637,17 @@ void WizardController::InitiateOOBEUpdate() {
   GetUpdateScreen()->StartNetworkCheck();
 }
 
+void WizardController::StartTimezoneResolve() const {
+  LoginLocationMonitor::InstallLocationCallback(
+      base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds));
+}
+
 void WizardController::PerformPostEulaActions() {
+  DelayNetworkCall(
+      base::Bind(&WizardController::StartTimezoneResolve,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
+
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.
   NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
@@ -947,6 +969,86 @@ PrefService* WizardController::GetLocalState() {
   if (local_state_for_testing_)
     return local_state_for_testing_;
   return g_browser_process->local_state();
+}
+
+// static
+void WizardController::OnLocationUpdated(const content::Geoposition& position,
+                                         const base::TimeDelta elapsed) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const base::TimeDelta timeout =
+      base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds);
+  if (elapsed >= timeout) {
+    LOG(WARNING) << "Resolve TimeZone: got location after timeout ("
+                 << elapsed.InSecondsF() << " seconds elapsed). Ignored.";
+    return;
+  }
+
+  WizardController* self = default_controller();
+
+  if (self == NULL) {
+    LOG(WARNING) << "Resolve TimeZone: got location after WizardController "
+                 << "has finished. (" << elapsed.InSecondsF() << " seconds "
+                 << "elapsed). Ignored.";
+    return;
+  }
+
+  // WizardController owns TimezoneProvider, so timezone request is silently
+  // cancelled on destruction.
+  self->GetTimezoneProvider()->RequestTimezone(
+      position,
+      false,  // sensor
+      timeout - elapsed,
+      base::Bind(&WizardController::OnTimezoneResolved,
+                 base::Unretained(self)));
+}
+
+void WizardController::OnTimezoneResolved(
+    scoped_ptr<TimeZoneResponseData> timezone,
+    bool server_error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(timezone.get());
+  // To check that "this" is not destroyed try to access some member
+  // (timezone_provider_) in this case. Expect crash here.
+  DCHECK(timezone_provider_.get());
+
+  VLOG(1) << "Resolved local timezone={" << timezone->ToStringForDebug()
+          << "}.";
+
+  if (timezone->status != TimeZoneResponseData::OK) {
+    LOG(WARNING) << "Resolve TimeZone: failed to resolve timezone.";
+    return;
+  }
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged()) {
+    std::string policy_timezone;
+    if (chromeos::CrosSettings::Get()->GetString(
+            chromeos::kSystemTimezonePolicy, &policy_timezone) &&
+        !policy_timezone.empty()) {
+      VLOG(1) << "Resolve TimeZone: TimeZone settings are overridden"
+              << " by DevicePolicy.";
+      return;
+    }
+  }
+
+  if (!timezone->timeZoneId.empty()) {
+    VLOG(1) << "Resolve TimeZone: setting timezone to '" << timezone->timeZoneId
+            << "'";
+
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+        base::UTF8ToUTF16(timezone->timeZoneId));
+  }
+}
+
+TimeZoneProvider* WizardController::GetTimezoneProvider() {
+  if (!timezone_provider_) {
+    timezone_provider_.reset(
+        new TimeZoneProvider(g_browser_process->system_request_context(),
+                             DefaultTimezoneProviderURL()));
+  }
+  return timezone_provider_.get();
 }
 
 }  // namespace chromeos
