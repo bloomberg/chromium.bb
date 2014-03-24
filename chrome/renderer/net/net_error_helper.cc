@@ -16,6 +16,7 @@
 #include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/net/error_cache_load.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -176,6 +177,10 @@ void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
     return;
   blink::WebFrame* frame = web_view->mainFrame();
   frame->loadHTMLString(html, GURL(kUnreachableWebDataURL), failed_url, true);
+}
+
+void NetErrorHelper::EnableErrorJSBindings(const GURL& page_url) {
+  ErrorCacheLoad::Install(render_frame(), page_url);
 }
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,

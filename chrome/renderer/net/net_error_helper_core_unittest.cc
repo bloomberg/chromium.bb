@@ -231,6 +231,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = html;
   }
 
+  virtual void EnableErrorJSBindings(const GURL& page_url) OVERRIDE { }
+
   virtual void UpdateErrorPage(const WebURLError& error,
                                bool is_failed_post) OVERRIDE {
     update_count_++;

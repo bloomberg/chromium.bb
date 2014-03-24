@@ -252,14 +252,12 @@ class ErrorPageTest : public InProcessBrowserTest {
   // a stale copy in the cache has been set to |expected|.
   bool ProbeStaleCopyValue(bool expected) {
     const char* js_cache_probe =
-        "(function () {\n"
-        "  if ('staleCopyInCache' in templateData) {\n"
+        "try {\n"
         "    domAutomationController.send(\n"
-        "      templateData.staleCopyInCache ? 'yes' : 'no');\n"
-        "  } else {\n"
-        "    domAutomationController.send('absent');\n"
-        "  }\n"
-        "})();";
+        "        templateData.staleCopyInCache ? 'yes' : 'no');\n"
+        "} catch (e) {\n"
+        "    domAutomationController.send(e.message);\n"
+        "}\n";
 
     std::string result;
     bool ret =
@@ -272,6 +270,27 @@ class ErrorPageTest : public InProcessBrowserTest {
       return false;
     EXPECT_EQ(expected ? "yes" : "no", result);
     return ((expected ? "yes" : "no") == result);
+  }
+
+  testing::AssertionResult ReloadStaleCopyFromCache() {
+    const char* js_reload_script =
+        "try {\n"
+        "    errorCacheLoad.reloadStaleInstance();\n"
+        "    domAutomationController.send('success');\n"
+        "} catch (e) {\n"
+        "    domAutomationController.send(e.message);\n"
+        "}\n";
+
+    std::string result;
+    bool ret = content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        js_reload_script,
+        &result);
+    EXPECT_TRUE(ret);
+    if (!ret)
+      return testing::AssertionFailure();
+    return ("success" == result ? testing::AssertionSuccess() :
+            (testing::AssertionFailure() << "Exception message is " << result));
   }
 
  protected:
@@ -640,7 +659,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
 }
 
 // Checks that when an error occurs, the stale cache status of the page
-// is correctly transferred.
+// is correctly transferred, and that stale cached copied can be loaded
+// from the javascript.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   ASSERT_TRUE(test_server()->Start());
   // Load cache with entry with "nocache" set, to create stale
@@ -661,6 +681,16 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       // With no navigation corrections to load, there's only one navigation.
       browser(), test_url, 1);
   EXPECT_TRUE(ProbeStaleCopyValue(true));
+  EXPECT_NE(base::ASCIIToUTF16("Nocache Test Page"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  // Confirm that loading the stale copy from the cache works.
+  content::TestNavigationObserver same_tab_observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  ASSERT_TRUE(ReloadStaleCopyFromCache());
+  same_tab_observer.Wait();
+  EXPECT_EQ(base::ASCIIToUTF16("Nocache Test Page"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.
@@ -810,8 +840,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 }
 
 // Checks that when an error occurs and a corrections fail to load, the stale
-// cache status of the page is correctly transferred.  Most logic copied
-// from StaleCacheStatus above.
+// cache status of the page is correctly transferred, and we can load the
+// stale copy from the javascript.  Most logic copied from StaleCacheStatus
+// above.
 IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
                        StaleCacheStatusFailedCorrections) {
   ASSERT_TRUE(test_server()->Start());
@@ -832,6 +863,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
   ProbeStaleCopyValue(true);
+
+  // Confirm that loading the stale copy from the cache works.
+  content::TestNavigationObserver same_tab_observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  ASSERT_TRUE(ReloadStaleCopyFromCache());
+  same_tab_observer.Wait();
+  EXPECT_EQ(base::ASCIIToUTF16("Nocache Test Page"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.

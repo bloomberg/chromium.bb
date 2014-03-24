@@ -182,6 +182,8 @@
         'renderer/media/chrome_webrtc_log_message_delegate.h',
         'renderer/media/webrtc_logging_message_filter.cc',
         'renderer/media/webrtc_logging_message_filter.h',
+	'renderer/net/error_cache_load.cc',
+	'renderer/net/error_cache_load.h',
         'renderer/net/net_error_helper.cc',
         'renderer/net/net_error_helper.h',
         'renderer/net/net_error_helper_core.cc',
