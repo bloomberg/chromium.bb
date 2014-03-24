@@ -570,6 +570,7 @@
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/video_destination_handler_unittest.cc',
+        'renderer/media/video_frame_compositor_unittest.cc',
         'renderer/media/webaudiosourceprovider_impl_unittest.cc',
         'renderer/npapi/webplugin_impl_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',

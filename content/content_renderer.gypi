@@ -275,6 +275,8 @@
     'renderer/media/video_capture_impl_manager.h',
     'renderer/media/video_capture_message_filter.cc',
     'renderer/media/video_capture_message_filter.h',
+    'renderer/media/video_frame_compositor.cc',
+    'renderer/media/video_frame_compositor.h',
     'renderer/media/video_frame_provider.cc',
     'renderer/media/video_frame_provider.h',
     'renderer/media/webaudiosourceprovider_impl.cc',

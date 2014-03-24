@@ -13,15 +13,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "cc/layers/video_frame_provider.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
+#include "content/renderer/media/video_frame_compositor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"
 #include "media/filters/skcanvas_video_renderer.h"
-#include "media/filters/video_frame_painter.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -52,6 +51,7 @@ class WebLayerImpl;
 
 namespace content {
 class BufferedDataSource;
+class VideoFrameCompositor;
 class WebAudioSourceProviderImpl;
 class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
@@ -63,7 +63,6 @@ class WebTextTrackImpl;
 // Encrypted Media.
 class WebMediaPlayerImpl
     : public blink::WebMediaPlayer,
-      public cc::VideoFrameProvider,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
@@ -125,13 +124,6 @@ class WebMediaPlayerImpl
   virtual unsigned droppedFrameCount() const;
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
-
-  // cc::VideoFrameProvider implementation.
-  virtual void SetVideoFrameProviderClient(
-      cc::VideoFrameProvider::Client* client) OVERRIDE;
-  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
-  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
-      OVERRIDE;
 
   virtual bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
@@ -329,17 +321,13 @@ class WebMediaPlayerImpl
   std::string init_data_type_;
 
   // Video rendering members.
-  media::VideoFramePainter painter_;
+  VideoFrameCompositor compositor_;
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
   gfx::Size natural_size_;
 
   // The compositor layer for displaying the video content when using composited
   // playback.
   scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
-
-  // A pointer back to the compositor to inform it about state changes. This is
-  // not NULL while the compositor is actively using this webmediaplayer.
-  cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   // Text track objects get a unique index value when they're created.
   int text_track_index_;

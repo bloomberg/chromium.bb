@@ -165,10 +165,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
-      painter_(
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::InvalidateOnMainThread),
+      compositor_(  // Threaded compositing isn't enabled universally yet.
+          (RenderThreadImpl::current()->compositor_message_loop_proxy()
+               ? RenderThreadImpl::current()->compositor_message_loop_proxy()
+               : base::MessageLoopProxy::current()),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChange)),
-      video_frame_provider_client_(NULL),
       text_track_index_(0),
       web_cdm_(NULL) {
   media_log_->AddEvent(
@@ -198,7 +199,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
-  SetVideoFrameProviderClient(NULL);
   client_->setWebLayer(NULL);
 
   DCHECK(main_loop_->BelongsToCurrentThread());
@@ -533,9 +533,14 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
         frame_->view()->isAcceleratedCompositingActive());
   }
 
+  // TODO(scherkus): Clarify paint() API contract to better understand when and
+  // why it's being called. For example, today paint() is called when:
+  //   - We haven't reached HAVE_CURRENT_DATA and need to paint black
+  //   - We're painting to a canvas
+  // See http://crbug.com/341225 http://crbug.com/342621 for details.
+  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
-  scoped_refptr<media::VideoFrame> video_frame = painter_.GetCurrentFrame(true);
   gfx::Rect gfx_rect(rect);
   skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
@@ -568,9 +573,11 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
 
-  unsigned frames_dropped = stats.video_frames_dropped +
-      const_cast<media::VideoFramePainter*>(&painter_)
-          ->GetFramesDroppedBeforePaint();
+  unsigned frames_dropped = stats.video_frames_dropped;
+
+  frames_dropped += const_cast<VideoFrameCompositor&>(compositor_)
+                        .GetFramesDroppedBeforeComposite();
+
   DCHECK_LE(frames_dropped, stats.video_frames_decoded);
   return frames_dropped;
 }
@@ -589,33 +596,6 @@ unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
   return stats.video_bytes_decoded;
 }
 
-void WebMediaPlayerImpl::SetVideoFrameProviderClient(
-    cc::VideoFrameProvider::Client* client) {
-  // This is called from both the main renderer thread and the compositor
-  // thread (when the main thread is blocked).
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopUsingProvider();
-  video_frame_provider_client_ = client;
-}
-
-scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
-  scoped_refptr<media::VideoFrame> current_frame =
-      painter_.GetCurrentFrame(true);
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "media", "WebMediaPlayerImpl:compositing", this);
-  return current_frame;
-}
-
-void WebMediaPlayerImpl::PutCurrentFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  if (!accelerated_compositing_reported_) {
-    accelerated_compositing_reported_ = true;
-    DCHECK(frame_->view()->isAcceleratedCompositingActive());
-    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
-  }
-  TRACE_EVENT_ASYNC_END0("media", "WebMediaPlayerImpl:compositing", this);
-}
-
 bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     blink::WebGraphicsContext3D* web_graphics_context,
     unsigned int texture,
@@ -624,8 +604,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  scoped_refptr<media::VideoFrame> video_frame =
-      painter_.GetCurrentFrame(false);
+  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
@@ -909,7 +888,6 @@ void WebMediaPlayerImpl::InvalidateOnMainThread() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::InvalidateOnMainThread");
 
-  painter_.DidFinishInvalidating();
   client_->repaint();
 }
 
@@ -980,8 +958,8 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
 
       if (hasVideo()) {
         DCHECK(!video_weblayer_);
-        video_weblayer_.reset(
-            new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+        video_weblayer_.reset(new webkit::WebLayerImpl(
+            cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
         client_->setWebLayer(video_weblayer_.get());
       }
       break;
@@ -1286,10 +1264,7 @@ void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
 
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
-  // TODO(scherkus): Today we always invalidate on the main thread even when
-  // compositing is available, which is less efficient and involves more
-  // thread hops. Refer to http://crbug.com/335345 for details.
-  painter_.UpdateCurrentFrame(frame);
+  compositor_.UpdateCurrentFrame(frame);
 }
 
 void WebMediaPlayerImpl::SetDecryptorReadyCB(
