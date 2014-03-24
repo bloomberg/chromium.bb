@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search_engines/search_terms_data.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
@@ -96,10 +94,9 @@ std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
       BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (google_base_url_)
     return *google_base_url_;
-  std::string base_url = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kGoogleBaseURL);
-  if (!base_url.empty())
-    return base_url;
+  GURL base_url(google_util::CommandLineGoogleBaseURL());
+  if (base_url.is_valid())
+    return base_url.spec();
   return profile_ ? GoogleURLTracker::GoogleURL(profile_).spec() :
       SearchTermsData::GoogleBaseURLValue();
 }

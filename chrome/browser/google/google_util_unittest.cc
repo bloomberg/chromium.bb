@@ -289,7 +289,7 @@ TEST(GoogleUtilTest, GoogleDomains) {
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
 }
 
-TEST(GoogleUtilTest, GoogleBaseURL) {
+TEST(GoogleUtilTest, GoogleBaseURLNotSpecified) {
   // When no command-line flag is specified, no input to
   // StartsWithCommandLineGoogleBaseURL() should return true.
   EXPECT_FALSE(StartsWithBaseURL(std::string()));
@@ -333,4 +333,24 @@ TEST(GoogleUtilTest, GoogleBaseURL) {
   EXPECT_TRUE(IsHomePage("https://www.foo.com/webhp"));
   EXPECT_FALSE(IsHomePage("http://www.foo.com/xyz"));
   EXPECT_TRUE(IsSearch("http://www.foo.com/search?q=a"));
+}
+
+TEST(GoogleUtilTest, GoogleBaseURLDisallowQuery) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "http://www.foo.com/?q=");
+  EXPECT_FALSE(google_util::CommandLineGoogleBaseURL().is_valid());
+}
+
+TEST(GoogleUtilTest, GoogleBaseURLDisallowRef) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "http://www.foo.com/#q=");
+  EXPECT_FALSE(google_util::CommandLineGoogleBaseURL().is_valid());
+}
+
+TEST(GoogleUtilTest, GoogleBaseURLFixup) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "www.foo.com");
+  ASSERT_TRUE(google_util::CommandLineGoogleBaseURL().is_valid());
+  EXPECT_EQ("http://www.foo.com/",
+            google_util::CommandLineGoogleBaseURL().spec());
 }

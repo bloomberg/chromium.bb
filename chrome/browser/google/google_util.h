@@ -55,6 +55,15 @@ bool GetBrand(std::string* brand);
 // install. Returns false if the information is not available.
 bool GetReactivationBrand(std::string* brand);
 
+// Returns the Google base URL specified on the command line, if it exists.
+// This performs some fixup and sanity-checking to ensure that the resulting URL
+// is valid and has no query or ref.
+GURL CommandLineGoogleBaseURL();
+
+// Returns true if a Google base URL was specified on the command line and |url|
+// begins with that base URL.  This uses a simple string equality check.
+bool StartsWithCommandLineGoogleBaseURL(const GURL& url);
+
 // WARNING: The following IsGoogleXXX() functions use heuristics to rule out
 // "obviously false" answers.  They do NOT guarantee that the string in question
 // is actually on a Google-owned domain, just that it looks plausible.  If you
@@ -74,10 +83,6 @@ enum PortPermission {
   ALLOW_NON_STANDARD_PORTS,
   DISALLOW_NON_STANDARD_PORTS,
 };
-
-// Returns true if a Google base URL was specified on the command line and |url|
-// begins with that base URL.  This uses a simple string equality check.
-bool StartsWithCommandLineGoogleBaseURL(const GURL& url);
 
 // True if |host| is "[www.]google.<TLD>" with a valid TLD. If
 // |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
