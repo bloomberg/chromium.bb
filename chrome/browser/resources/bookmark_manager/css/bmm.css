@@ -55,9 +55,6 @@ list > * > .url {
   -webkit-flex: 1;
   direction: ltr; /* URLs always read LTR */
   display: none;
-  /* TODO(arv): Remove min-width once bug is fixed:
-   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
-  min-width: 0;
 }
 
 list > :hover > .url,
@@ -204,9 +201,6 @@ list > .folder > .label,
 .main {
   -webkit-flex: 1;
   display: -webkit-flex;
-  /* TODO(arv): Remove min-height once bug is fixed:
-   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
-  min-height: 0;
 }
 
 #tree-container {
@@ -240,9 +234,6 @@ list > .folder > .label,
   -webkit-flex: 1;
   -webkit-padding-end: 5px;
   box-sizing: border-box;
-  /* TODO(arv): Remove min-width once bug is fixed:
-   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
-  min-width: 0;
   padding-bottom: 5px;
   padding-top: 5px;
 }
