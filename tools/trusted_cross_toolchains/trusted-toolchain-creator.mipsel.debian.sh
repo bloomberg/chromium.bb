@@ -48,7 +48,7 @@ readonly EGLIBC_REVISION="20996"
 
 readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0-rc0.tar.bz2"
 
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86_linux_mips/mips_trusted
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/mips_trusted
 
 readonly TMP=$(pwd)/toolchain/tmp/crosstool-trusted
 

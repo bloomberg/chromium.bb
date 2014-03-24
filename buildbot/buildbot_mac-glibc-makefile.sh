@@ -13,11 +13,23 @@ set -x
 set -e
 set -u
 
+# Transitionally, even though our new toolchain location is under
+# toolchain/mac_x86_nacl_x86/nacl_x86_glibc we have to keep the old format
+# inside of the tar (toolchain/mac_x86) so that the untar toolchain script
+# is backwards compatible and can untar old tars. Eventually this will be
+# unnecessary with the new package_version scheme since how to untar the
+# tar file will be embedded inside of the package file so they can differ
+# between revisions.
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=mac_x86
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 
-this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
+# This is where we want the toolchain when moving to native_client/toolchain.
+OUT_TOOLCHAINLOC=toolchain/mac_x86
+OUT_TOOLCHAINNAME=nacl_x86_glibc
+
+TOOL_TOOLCHAIN="$TOOLCHAINLOC/$TOOLCHAINNAME"
+OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
 
 GSUTIL=/b/build/scripts/slave/gsutil
 
@@ -26,9 +38,10 @@ gclient runhooks --force
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf scons-out tools/BUILD/* tools/out/* tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" \
+  "${TOOL_TOOLCHAIN}" .tmp ||
   echo already_clean
-mkdir -p tools/toolchain/mac_x86
+mkdir -p "tools/${TOOL_TOOLCHAIN}"
 
 echo @@@BUILD_STEP clean_sources@@@
 tools/update_all_repos_to_latest.sh
@@ -41,7 +54,7 @@ tools/update_all_repos_to_latest.sh
 # If the error result is 2 or more we are stopping the build
 echo @@@BUILD_STEP check_glibc_revision_sanity@@@
 echo "Try to download glibc revision $(tools/glibc_revision.sh)"
-if tools/glibc_download.sh tools/toolchain/mac_x86 1; then
+if tools/glibc_download.sh "tools/${TOOL_TOOLCHAIN}" 1; then
   INST_GLIBC_PROGRAM=true
 elif (($?>1)); then
   echo @@@STEP_FAILURE@@@
@@ -60,16 +73,16 @@ echo @@@BUILD_STEP compile_toolchain@@@
 )
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
-  mkdir -p "$TOOLCHAINLOC"
-  rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
-  mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
+  rm -rf "${OUT_TOOLCHAIN}"
+  mkdir -p "${OUT_TOOLCHAINLOC}"
+  mv "tools/${TOOL_TOOLCHAIN}" "${OUT_TOOLCHAIN}"
 else
   (
     cd tools
     echo @@@BUILD_STEP canonicalize timestamps@@@
-    ./canonicalize_timestamps.sh "${this_toolchain}"
+    ./canonicalize_timestamps.sh "${TOOLCHAINLOC}"
     echo @@@BUILD_STEP tar_toolchain@@@
-    tar Scf toolchain.tar "${this_toolchain}"
+    tar Scf toolchain.tar "${TOOLCHAINLOC}"
     bzip2 -k -9 toolchain.tar
     gzip -n -9 toolchain.tar
     for i in gz bz2 ; do
@@ -94,7 +107,9 @@ else
     # GNU tar does not like some headers, regular tar can not create sparse files.
     # Use regular tar with non-sparse files for now.
     tar zxf ../tools/toolchain.tar.gz
-    mv "${this_toolchain}" ../toolchain
+    rm -rf "../${OUT_TOOLCHAIN}"
+    mkdir -p "../${OUT_TOOLCHAINLOC}"
+    mv "${TOOL_TOOLCHAIN}" "../${OUT_TOOLCHAINLOC}"
   )
 fi
 

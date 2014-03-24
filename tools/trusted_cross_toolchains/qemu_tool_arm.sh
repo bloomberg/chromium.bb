@@ -11,7 +11,7 @@ set -o errexit
 #@ Note: this script is not meant to be run as
 #@     tools/trusted_cross_toolchains/qemu_tool_arm.sh
 #@ but rather as:
-#@     toolchain/linux_arm-trusted/qemu_tool_arm.sh
+#@     toolchain/linux_x86/arm_trusted/qemu_tool_arm.sh
 
 # From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)

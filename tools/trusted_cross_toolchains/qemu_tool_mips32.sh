@@ -11,7 +11,7 @@ set -o errexit
 #@ Note: this script is not meant to be run as
 #@     tools/llvm/qemu_tool.sh
 #@ but rather as:
-#@     toolchain/linux_mips-trusted/qemu-mips32
+#@     toolchain/linux_x86/mips_trusted/qemu-mips32
 
 # From a qemu build based on qemu-0.12.5.tar.gz
 readonly SDK_ROOT=$(dirname $0)

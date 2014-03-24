@@ -42,7 +42,7 @@ set -o errexit
 readonly SCRIPT_DIR=$(dirname $0)
 
 # this where we create the ARMEL "jail"
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/arm_trusted
 
 readonly TMP=/tmp/armel-crosstool-precise
 
@@ -357,7 +357,7 @@ InstallTrustedLinkerScript() {
 }
 
 HacksAndPatches() {
-  rel_path=toolchain/linux_arm-trusted
+  rel_path=toolchain/linux_x86/arm_trusted
   Banner "Misc Hacks & Patches"
   # these are linker scripts with absolute pathnames in them
   # which we rewrite here

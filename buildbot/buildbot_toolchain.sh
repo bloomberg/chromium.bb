@@ -33,7 +33,11 @@ cd tools
 export INSIDE_TOOLCHAIN=1
 
 echo @@@BUILD_STEP clobber_toolchain@@@
-rm -rf ../scons-out sdk-out sdk ../toolchain/*_newlib BUILD/*
+rm -rf ../scons-out \
+    sdk-out \
+    sdk \
+    ../toolchain/${PLATFORM}_x86/*newlib \
+    BUILD/*
 
 echo @@@BUILD_STEP clean_sources@@@
 ./update_all_repos_to_latest.sh
@@ -44,7 +48,7 @@ echo @@@BUILD_STEP setup source@@@
 fi
 
 echo @@@BUILD_STEP compile_toolchain@@@
-mkdir -p ../toolchain/${PLATFORM}_x86
+mkdir -p ../toolchain/${PLATFORM}_x86/nacl_x86_newlib
 make -j8 clean buildbot-build-with-newlib
 if [[ ${PLATFORM} == win ]]; then
 ../mingw/msys/bin/sh.exe -c "export PATH=/mingw/bin:/bin:\$PATH &&
@@ -89,12 +93,12 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
 fi
 
 echo @@@BUILD_STEP untar_toolchain@@@
-mkdir -p ../toolchain/${PLATFORM}_x86_newlib/.tmp
-cd ../toolchain/${PLATFORM}_x86_newlib/.tmp
-tar xfz ../../../tools/naclsdk.tgz
-mv sdk/nacl-sdk/* ../
-
-cd ../../..
+cd ..
+mkdir -p toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp
+tar xfz tools/naclsdk.tgz \
+    -C toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp
+mv toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp/sdk/nacl-sdk/* \
+  toolchain/${PLATFORM}_x86/nacl_x86_newlib
 
 
 if [[ ${PLATFORM} == win ]]; then

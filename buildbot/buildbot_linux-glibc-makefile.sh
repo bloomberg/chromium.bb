@@ -13,19 +13,32 @@ set -x
 set -e
 set -u
 
+# Transitionally, even though our new toolchain location is under
+# toolchain/linux_x86_nacl_x86/nacl_x86_glibc we have to keep the old format
+# inside of the tar (toolchain/linux_x86) so that the untar toolchain script
+# is backwards compatible and can untar old tars. Eventually this will be
+# unnecessary with the new package_version scheme since how to untar the
+# tar file will be embedded inside of the package file so they can differ
+# between revisions.
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=linux_x86
 
+# This is where we want the toolchain when moving to native_client/toolchain.
+OUT_TOOLCHAINLOC=toolchain/linux_x86
+OUT_TOOLCHAINNAME=nacl_x86_glibc
+
 GSUTIL=/b/build/scripts/slave/gsutil
 
-this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
+TOOL_TOOLCHAIN="${TOOLCHAINLOC}/${TOOLCHAINNAME}"
+OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf scons-out tools/SRC/*.patch* tools/BUILD/* tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* "$this_toolchain" .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" \
+  "${TOOL_TOOLCHAIN}" .tmp ||
   echo already_clean
 
 echo @@@BUILD_STEP clean_sources@@@
@@ -93,9 +106,9 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
     make glibc-check
   )
 
-  mkdir -p "$TOOLCHAINLOC"
-  rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
-  mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
+  rm -rf "${OUT_TOOLCHAIN}"
+  mkdir -p "${OUT_TOOLCHAINLOC}"
+  mv "tools/${TOOL_TOOLCHAIN}" "${OUT_TOOLCHAIN}"
 else
   echo @@@BUILD_STEP tar_glibc@@@
   (
@@ -119,13 +132,13 @@ else
   (
     cd tools
     echo @@@BUILD_STEP sparsify_toolchain@@@
-    cp --archive --sparse=always "${this_toolchain}" "${this_toolchain}_sparse"
-    rm -rf "${this_toolchain}"
-    mv "${this_toolchain}_sparse" "${this_toolchain}"
+    cp --archive --sparse=always "${TOOL_TOOLCHAIN}" "${TOOL_TOOLCHAIN}_sparse"
+    rm -rf "${TOOL_TOOLCHAIN}"
+    mv "${TOOL_TOOLCHAIN}_sparse" "${TOOL_TOOLCHAIN}"
     echo @@@BUILD_STEP canonicalize timestamps@@@
-    ./canonicalize_timestamps.sh "${this_toolchain}"
+    ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
     echo @@@BUILD_STEP tar_toolchain@@@
-    tar Scf toolchain.tar "${this_toolchain}"
+    tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
     gzip -n -9 toolchain.tar
@@ -158,7 +171,9 @@ else
     mkdir -p .tmp
     cd .tmp
     tar JSxf ../tools/toolchain.tar.xz
-    mv "${this_toolchain}" ../toolchain
+    rm -rf "../${OUT_TOOLCHAIN}"
+    mkdir -p "../${OUT_TOOLCHAINLOC}"
+    mv "${TOOL_TOOLCHAIN}" "../${OUT_TOOLCHAINLOC}"
   )
 
   echo @@@BUILD_STEP glibc_tests64@@@
