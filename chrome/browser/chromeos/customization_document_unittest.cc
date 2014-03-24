@@ -451,7 +451,7 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
@@ -462,7 +462,7 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
 
   EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
