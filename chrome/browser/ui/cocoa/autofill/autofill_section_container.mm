@@ -438,12 +438,14 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
                                                              type,
                                                              fieldValue);
     [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
-    [validationDelegate_ updateMessageForField:textfield];
 
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.
     if (![textfield invalid])
       [self validateFor:autofill::VALIDATE_EDIT];
+
+    // The validity message has potentially changed - notify the error bubble.
+    [validationDelegate_ updateMessageForField:textfield];
   }
 
   // Update the icon if necessary.
