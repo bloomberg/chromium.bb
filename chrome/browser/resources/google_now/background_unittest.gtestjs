@@ -279,6 +279,9 @@ TEST_F(
       this.mockGlobals.expects(once()).recordEvent(
           GoogleNowEvent.STOPPED);
 
+      this.mockGlobals.expects(once()).recordEvent(
+          GoogleNowEvent.SIGNED_OUT);
+
       expectInitialization(this.mockApis);
 
       expectStateMachineCalls(
@@ -320,6 +323,104 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
 
   // Invoking the tested function.
   initialize();
+});
+
+/**
+ * No Cards Event Recording Tests
+ */
+TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsSignedOut', function() {
+  var signedIn = false;
+  var notificationEnabled = false;
+  var googleNowEnabled = false;
+  this.makeAndRegisterMockGlobals([
+      'recordEvent',
+      'setBackgroundEnable',
+      'setShouldPollCards']);
+
+  this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.STOPPED);
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.SIGNED_OUT);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.NOTIFICATION_DISABLED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.GOOGLE_NOW_DISABLED);
+  updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
+});
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'NoCardsNotificationsDisabled',
+    function() {
+      var signedIn = true;
+      var notificationEnabled = false;
+      var googleNowEnabled = false;
+      this.makeAndRegisterMockGlobals([
+          'recordEvent',
+          'setBackgroundEnable',
+          'setShouldPollCards']);
+
+      this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
+      this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+
+      this.mockGlobals.expects(once()).recordEvent(
+          GoogleNowEvent.STOPPED);
+      this.mockGlobals.expects(never()).recordEvent(
+          GoogleNowEvent.SIGNED_OUT);
+      this.mockGlobals.expects(once()).recordEvent(
+          GoogleNowEvent.NOTIFICATION_DISABLED);
+      this.mockGlobals.expects(never()).recordEvent(
+          GoogleNowEvent.GOOGLE_NOW_DISABLED);
+      updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
+    });
+
+TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsGoogleNowDisabled', function() {
+  var signedIn = true;
+  var notificationEnabled = true;
+  var googleNowEnabled = false;
+  this.makeAndRegisterMockGlobals([
+      'recordEvent',
+      'setBackgroundEnable',
+      'setShouldPollCards']);
+
+  this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.STOPPED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.SIGNED_OUT);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.NOTIFICATION_DISABLED);
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.GOOGLE_NOW_DISABLED);
+  updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
+});
+
+TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsEverythingEnabled', function() {
+  var signedIn = true;
+  var notificationEnabled = true;
+  var googleNowEnabled = true;
+  this.makeAndRegisterMockGlobals([
+      'recordEvent',
+      'setBackgroundEnable',
+      'setShouldPollCards']);
+
+  this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.STOPPED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.SIGNED_OUT);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.NOTIFICATION_DISABLED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.GOOGLE_NOW_DISABLED);
+  updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
 });
 
 /**

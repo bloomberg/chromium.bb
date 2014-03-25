@@ -227,7 +227,10 @@ var GoogleNowEvent = {
   DELETED_SHOW_WELCOME_TOAST: 8,
   STOPPED: 9,
   DELETED_USER_SUPPRESSED: 10,
-  EVENTS_TOTAL: 11  // EVENTS_TOTAL is not an event; all new events need to be
+  SIGNED_OUT: 11,
+  NOTIFICATION_DISABLED: 12,
+  GOOGLE_NOW_DISABLED: 13,
+  EVENTS_TOTAL: 14  // EVENTS_TOTAL is not an event; all new events need to be
                     // added before it.
 };
 
@@ -953,6 +956,24 @@ function setBackgroundEnable(backgroundEnable) {
 }
 
 /**
+ * Record why this extension would not poll for cards.
+ * @param {boolean} signedIn true if the user is signed in.
+ * @param {boolean} notificationEnabled true if
+ *     Google Now for Chrome is allowed to show notifications.
+ * @param {boolean} googleNowEnabled true if
+ *     the Google Now is enabled for the user.
+ */
+function recordEventIfNoCards(signedIn, notificationEnabled, googleNowEnabled) {
+  if (!signedIn) {
+    recordEvent(GoogleNowEvent.SIGNED_OUT);
+  } else if (!notificationEnabled) {
+    recordEvent(GoogleNowEvent.NOTIFICATION_DISABLED);
+  } else if (!googleNowEnabled) {
+    recordEvent(GoogleNowEvent.GOOGLE_NOW_DISABLED);
+  }
+}
+
+/**
  * Does the actual work of deciding what Google Now should do
  * based off of the current state of Chrome.
  * @param {boolean} signedIn true if the user is signed in.
@@ -985,6 +1006,8 @@ function updateRunningState(
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
   }
+
+  recordEventIfNoCards(signedIn, notificationEnabled, googleNowEnabled);
 
   console.log(
       'Requested Actions shouldSetBackground=' + shouldSetBackground + ' ' +

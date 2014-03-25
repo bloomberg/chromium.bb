@@ -33350,6 +33350,9 @@ other types of suffix sets.
   <int value="8" label="DELETED_SHOW_WELCOME_TOAST"/>
   <int value="9" label="STOPPED"/>
   <int value="10" label="DELETED_USER_SUPPRESSED"/>
+  <int value="11" label="SIGNED_OUT"/>
+  <int value="12" label="NOTIFICATION_DISABLED"/>
+  <int value="13" label="GOOGLE_NOW_DISABLED"/>
 </enum>
 
 <enum name="GoogleServiceAuthError" type="int">
