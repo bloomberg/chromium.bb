@@ -418,9 +418,8 @@ PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(Med
 
 PassRefPtr<MediaStreamAudioDestinationNode> AudioContext::createMediaStreamDestination()
 {
-    // FIXME: Add support for an optional argument which specifies the number of channels.
-    // FIXME: The default should probably be stereo instead of mono.
-    return MediaStreamAudioDestinationNode::create(this, 1);
+    // Set number of output channels to stereo by default.
+    return MediaStreamAudioDestinationNode::create(this, 2);
 }
 
 PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(ExceptionState& exceptionState)
