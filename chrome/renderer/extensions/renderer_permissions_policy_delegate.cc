@@ -46,8 +46,7 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     return false;
   }
 
-  if (dispatcher_->IsExtensionActive(extension_misc::kWebStoreAppId) &&
-      !command_line->HasSwitch(switches::kAllowScriptingGallery)) {
+  if (dispatcher_->IsExtensionActive(extension_misc::kWebStoreAppId)) {
     if (error)
       *error = errors::kCannotScriptGallery;
     return false;
