@@ -5,7 +5,7 @@
 [
   {
     "namespace": "browserAction",
-    "description": "Use browser actions to put icons in the main Google Chrome toolbar, to the right of the address bar. In addition to its <a href='#icon'>icon</a>, a browser action can also have a <a href='#tooltip'>tooltip</a>, a <a href='#badge'>badge</a>, and a <a href = '#popups'>popup</a>.",
+    "description": "Use browser actions to put icons in the main Google Chrome toolbar, to the right of the address bar. In addition to its <a href='browserAction#icon'>icon</a>, a browser action can also have a <a href='browserAction#tooltip'>tooltip</a>, a <a href='browserAction#badge'>badge</a>, and a <a href='browserAction#popups'>popup</a>.",
     "types": [
       {
         "id": "ColorArray",
