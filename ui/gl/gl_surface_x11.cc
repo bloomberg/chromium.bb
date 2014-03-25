@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -290,6 +291,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return surface;
     }
     case kGLImplementationEGLGLES2: {
+      DCHECK(window != gfx::kNullAcceleratedWidget);
       scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(window));
       if (!surface->Initialize())
         return NULL;

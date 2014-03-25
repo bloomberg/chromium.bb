@@ -329,7 +329,7 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
 
-NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::AcceleratedWidget window)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false),
@@ -348,11 +348,6 @@ bool NativeViewGLSurfaceEGL::Initialize() {
 bool NativeViewGLSurfaceEGL::Initialize(
     scoped_ptr<VSyncProvider> sync_provider) {
   DCHECK(!surface_);
-
-  if (window_ == kNullAcceleratedWidget) {
-    LOG(ERROR) << "Trying to create surface without window.";
-    return false;
-  }
 
   if (!GetDisplay()) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
@@ -767,7 +762,7 @@ SurfacelessEGL::~SurfacelessEGL() {
 // provider is not available.
 class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
  public:
-  explicit GLSurfaceOSMesaHeadless(gfx::AcceleratedWidget window);
+  explicit GLSurfaceOSMesaHeadless();
 
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
@@ -784,10 +779,8 @@ bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
 
 bool GLSurfaceOSMesaHeadless::SwapBuffers() { return true; }
 
-GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless(gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {
-  DCHECK(window);
-}
+GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
+    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {}
 
 GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
 
@@ -810,22 +803,27 @@ scoped_refptr<GLSurface>
 GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
 
   if (GetGLImplementation() == kGLImplementationOSMesaGL) {
-    scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless(window));
+    scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless());
     if (!surface->Initialize())
       return NULL;
     return surface;
   }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
-  if (window) {
+  if (window != kNullAcceleratedWidget) {
+    EGLNativeWindowType egl_window;
     scoped_refptr<NativeViewGLSurfaceEGL> surface;
     scoped_ptr<VSyncProvider> sync_provider;
 #if defined(USE_OZONE)
-    window = gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
-        window);
+    egl_window =
+        gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
+            window);
     sync_provider =
-        gfx::SurfaceFactoryOzone::GetInstance()->CreateVSyncProvider(window);
+        gfx::SurfaceFactoryOzone::GetInstance()->CreateVSyncProvider(
+            egl_window);
+#else
+    egl_window = window;
 #endif
-    surface = new NativeViewGLSurfaceEGL(window);
+    surface = new NativeViewGLSurfaceEGL(egl_window);
     if(surface->Initialize(sync_provider.Pass()))
       return surface;
   } else {
