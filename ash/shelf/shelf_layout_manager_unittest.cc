@@ -1525,7 +1525,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
             display.work_area().y() - display.bounds().y());
 }
 
-TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {
+//  https://code.google.com/p/chromium/issues/detail?id=356419
+TEST_F(ShelfLayoutManagerTest, DISABLED_GestureEdgeSwipe) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   views::Widget* widget = new views::Widget;
