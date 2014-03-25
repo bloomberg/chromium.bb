@@ -20,12 +20,18 @@ namespace extensions {
 
 class ExtensionManifestServiceWorkerTest : public ExtensionManifestTest {
  public:
+  ExtensionManifestServiceWorkerTest()
+      : trunk_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+
   void AddServiceWorkerCommandLineSwitch() {
     CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableServiceWorker));
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableServiceWorker);
   }
+
+  // "app.service_worker" is restricted to trunk in _manifest_features.json.
+  extensions::ScopedCurrentChannel trunk_channel_;
 };
 
 // Checks that a service_worker key is ignored without enable-service-worker
@@ -91,6 +97,8 @@ TEST_F(ExtensionManifestServiceWorkerTest, ServiceWorkerScript) {
       "  }"
       "}"));
   ASSERT_TRUE(extension.get());
+  // "app.service_worker" key exists and access is permitted.
+  EXPECT_TRUE(extension->manifest()->HasPath("app.service_worker"));
   EXPECT_EQ("service_worker.js",
             BackgroundInfo::GetServiceWorkerScript(extension.get()));
 
