@@ -7,14 +7,17 @@
 
 namespace ui {
 
-DummyTextInputClient::DummyTextInputClient() {
-}
+DummyTextInputClient::DummyTextInputClient()
+    : text_input_type_(TEXT_INPUT_TYPE_NONE) {}
+
+DummyTextInputClient::DummyTextInputClient(TextInputType text_input_type)
+    : text_input_type_(text_input_type) {}
 
 DummyTextInputClient::~DummyTextInputClient() {
 }
 
 void DummyTextInputClient::SetCompositionText(
-    const ui::CompositionText& composition) {
+    const CompositionText& composition) {
 }
 
 void DummyTextInputClient::ConfirmCompositionText() {
@@ -33,11 +36,11 @@ gfx::NativeWindow DummyTextInputClient::GetAttachedWindow() const {
   return NULL;
 }
 
-ui::TextInputType DummyTextInputClient::GetTextInputType() const {
-  return TEXT_INPUT_TYPE_NONE;
+TextInputType DummyTextInputClient::GetTextInputType() const {
+  return text_input_type_;
 }
 
-ui::TextInputMode DummyTextInputClient::GetTextInputMode() const {
+TextInputMode DummyTextInputClient::GetTextInputMode() const {
   return TEXT_INPUT_MODE_DEFAULT;
 }
 

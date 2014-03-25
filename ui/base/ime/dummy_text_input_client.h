@@ -13,18 +13,18 @@ namespace ui {
 class DummyTextInputClient : public TextInputClient {
  public:
   DummyTextInputClient();
+  explicit DummyTextInputClient(TextInputType text_input_type);
   virtual ~DummyTextInputClient();
 
   // Overriden from TextInputClient.
-  virtual void SetCompositionText(
-      const ui::CompositionText& composition) OVERRIDE;
+  virtual void SetCompositionText(const CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
   virtual void InsertText(const base::string16& text) OVERRIDE;
   virtual void InsertChar(base::char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
-  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
-  virtual ui::TextInputMode GetTextInputMode() const OVERRIDE;
+  virtual TextInputType GetTextInputType() const OVERRIDE;
+  virtual TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
   virtual gfx::Rect GetCaretBounds() const OVERRIDE;
   virtual bool GetCompositionCharacterBounds(uint32 index,
@@ -45,6 +45,10 @@ class DummyTextInputClient : public TextInputClient {
   virtual void OnCandidateWindowShown() OVERRIDE;
   virtual void OnCandidateWindowUpdated() OVERRIDE;
   virtual void OnCandidateWindowHidden() OVERRIDE;
+
+  TextInputType text_input_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyTextInputClient);
 };
 
 }  // namespace ui
