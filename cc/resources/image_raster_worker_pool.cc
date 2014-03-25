@@ -5,7 +5,6 @@
 #include "cc/resources/image_raster_worker_pool.h"
 
 #include "base/debug/trace_event.h"
-#include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
 

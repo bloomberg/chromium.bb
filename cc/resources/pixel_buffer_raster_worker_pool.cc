@@ -8,7 +8,6 @@
 
 #include "base/containers/stack_container.h"
 #include "base/debug/trace_event.h"
-#include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
 

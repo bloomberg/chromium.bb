@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/values.h"
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {

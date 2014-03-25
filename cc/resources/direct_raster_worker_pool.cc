@@ -4,6 +4,7 @@
 
 #include "cc/resources/direct_raster_worker_pool.h"
 
+#include "base/debug/trace_event.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"

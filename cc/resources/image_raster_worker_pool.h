@@ -7,6 +7,8 @@
 
 #include "cc/resources/raster_worker_pool.h"
 
+#include "base/values.h"
+
 namespace cc {
 
 class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {

@@ -8,22 +8,21 @@
 #include <deque>
 #include <vector>
 
-#include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/raster_mode.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/task_graph_runner.h"
-#include "cc/resources/tile_priority.h"
 
-class SkPixelRef;
+class SkCanvas;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace cc {
-
 class Resource;
 class ResourceProvider;
 
 namespace internal {
-
 class WorkerPoolTask;
 
 class CC_EXPORT WorkerPoolTaskClient {
@@ -144,28 +143,6 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   static unsigned kRasterFinishedTaskPriority;
   static unsigned kRasterRequiredForActivationFinishedTaskPriority;
   static unsigned kRasterTaskPriorityBase;
-
-  // TODO(vmpstr): Figure out an elegant way to not pass this many parameters.
-  static scoped_refptr<internal::RasterWorkerPoolTask> CreateRasterTask(
-      const Resource* resource,
-      PicturePileImpl* picture_pile,
-      const gfx::Rect& content_rect,
-      float contents_scale,
-      RasterMode raster_mode,
-      TileResolution tile_resolution,
-      int layer_id,
-      const void* tile_id,
-      int source_frame_number,
-      bool analyze_picture,
-      RenderingStatsInstrumentation* rendering_stats,
-      const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
-      internal::WorkerPoolTask::Vector* dependencies);
-
-  static scoped_refptr<internal::WorkerPoolTask> CreateImageDecodeTask(
-      SkPixelRef* pixel_ref,
-      int layer_id,
-      RenderingStatsInstrumentation* rendering_stats,
-      const base::Callback<void(bool was_canceled)>& reply);
 
   void SetClient(RasterWorkerPoolClient* client);
 
