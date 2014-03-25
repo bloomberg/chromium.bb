@@ -42,16 +42,15 @@ MojoResult SharedBufferDispatcher::Create(
     const MojoCreateSharedBufferOptions& /*validated_options*/,
     uint64_t num_bytes,
     scoped_refptr<SharedBufferDispatcher>* result) {
+  if (!num_bytes)
+    return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > kMaxSharedMemoryNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   scoped_refptr<RawSharedBuffer> shared_buffer(
       RawSharedBuffer::Create(static_cast<size_t>(num_bytes)));
-  if (!shared_buffer) {
-    // TODO(vtl): This error code is a bit of a guess. Maybe we should propagate
-    // error codes more carefully.
+  if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  }
 
   *result = new SharedBufferDispatcher(shared_buffer);
   return MOJO_RESULT_OK;
@@ -115,13 +114,15 @@ MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
   if (num_bytes > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  DCHECK(mapping);
-  *mapping = shared_buffer_->Map(static_cast<size_t>(offset),
-                                 static_cast<size_t>(num_bytes));
-  if (!*mapping) {
-    // TODO(vtl): This is just a guess; propagate errors more thoroughly.
+  if (!shared_buffer_->IsValidMap(static_cast<size_t>(offset),
+                                  static_cast<size_t>(num_bytes)))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  }
+
+  DCHECK(mapping);
+  *mapping = shared_buffer_->MapNoCheck(static_cast<size_t>(offset),
+                                        static_cast<size_t>(num_bytes));
+  if (!*mapping)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   return MOJO_RESULT_OK;
 }

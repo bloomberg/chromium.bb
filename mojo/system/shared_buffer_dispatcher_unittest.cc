@@ -181,13 +181,10 @@ TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
                                            &dispatcher));
   EXPECT_FALSE(dispatcher);
 
-  // TODO(vtl): currently fails.
-/*
   // Zero size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             SharedBufferDispatcher::Create(validated_options, 0, &dispatcher));
   EXPECT_FALSE(dispatcher);
-*/
 }
 
 TEST(SharedBufferDispatcherTest, MapBufferInvalidArguments) {

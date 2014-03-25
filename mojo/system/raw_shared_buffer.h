@@ -65,13 +65,20 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   };
 
   // Creates a shared buffer of size |num_bytes| bytes (initially zero-filled).
-  // Returns null on failure.
+  // |num_bytes| must be nonzero. Returns null on failure.
   static RawSharedBuffer* Create(size_t num_bytes);
 
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
   // Returns null on failure.
   scoped_ptr<Mapping> Map(size_t offset, size_t length);
+
+  // Checks if |offset| and |length| are valid arguments.
+  bool IsValidMap(size_t offset, size_t length);
+
+  // Like |Map()|, but doesn't check its arguments (which should have been
+  // preflighted using |IsValidMap()|).
+  scoped_ptr<Mapping> MapNoCheck(size_t offset, size_t length);
 
   size_t num_bytes() const { return num_bytes_; }
 
