@@ -6,6 +6,7 @@
 
 import os
 
+from metrics import power
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
@@ -14,11 +15,21 @@ from telemetry.page import page_set
 class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(_JsgamebenchMeasurement, self).__init__()
+    self._power_metric = power.PowerMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    power.PowerMetric.CustomizeBrowserOptions(options)
+
+  def DidNavigateToPage(self, page, tab):
+    self._power_metric.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
     tab.ExecuteJavaScript('UI.call({}, "perftest")')
     tab.WaitForJavaScriptExpression(
         'document.getElementById("perfscore0") != null', 1800)
+
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results)
 
     js_get_results = 'document.getElementById("perfscore0").innerHTML'
     result = int(tab.EvaluateJavaScript(js_get_results))
