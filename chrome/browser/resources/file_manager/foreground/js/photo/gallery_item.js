@@ -198,10 +198,10 @@ Gallery.Item.prototype.saveToFile = function(
  * @param {function()} onExists Called if the file with the new name exists.
  */
 Gallery.Item.prototype.rename = function(displayName, onSuccess, onExists) {
-  var fileName = this.entry_.name.replace(
+  var newFileName = this.entry_.name.replace(
       ImageUtil.getDisplayNameFromName(this.entry_.name), displayName);
 
-  if (name === this.entry_.name)
+  if (newFileName === this.entry_.name)
     return;
 
   var onRenamed = function(entry) {
@@ -210,16 +210,17 @@ Gallery.Item.prototype.rename = function(displayName, onSuccess, onExists) {
   }.bind(this);
 
   var onError = function() {
-    console.error('Rename error: "' + oldName + '" to "' + newName + '"');
+    console.error(
+        'Rename error: "' + this.entry_.name + '" to "' + newFileName + '"');
   };
 
   var moveIfDoesNotExist = function(parentDir) {
     parentDir.getFile(
-        fileName,
+        newFileName,
         {create: false, exclusive: false},
         onExists,
         function() {
-          this.entry_.moveTo(parentDir, fileName, onRenamed, onError);
+          this.entry_.moveTo(parentDir, newFileName, onRenamed, onError);
         }.bind(this));
   }.bind(this);
 
