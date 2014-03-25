@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(vtl): Enable this on non-POSIX once we have a non-POSIX implementation.
-#include "build/build_config.h"
-#if defined(OS_POSIX)
-
 #include <stdint.h>
 
 #include <string>
@@ -278,5 +274,3 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
 }  // namespace
 }  // namespace system
 }  // namespace mojo
-
-#endif  // defined(OS_POSIX)
