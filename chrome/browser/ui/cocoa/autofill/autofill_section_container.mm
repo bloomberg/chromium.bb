@@ -639,9 +639,12 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       base::scoped_nsobject<AutofillPopUpButton> popup(
           [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO]);
       for (int i = 0; i < inputModel->GetItemCount(); ++i) {
-        if (inputModel->IsItemSeparatorAt(i)) {
-          [[popup menu] addItem:[NSMenuItem separatorItem]];
-        } else {
+        if (!inputModel->IsItemSeparatorAt(i)) {
+          // Currently, the first item in |inputModel| is duplicated later in
+          // the list. The second item is a separator. Because NSPopUpButton
+          // de-duplicates, the menu's just left with a separator on the top of
+          // the list (with nothing it's separating). For that reason,
+          // separators are ignored on Mac for now. http://crbug.com/347653
           [popup addItemWithTitle:
               base::SysUTF16ToNSString(inputModel->GetItemAt(i))];
         }
