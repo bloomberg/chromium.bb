@@ -444,6 +444,7 @@ void BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits(
   DCHECK_GT(page_scale_factor_, 0);
   client_->SetPageScaleFactorAndLimits(
       page_scale_factor, min_page_scale_factor, max_page_scale_factor);
+  client_->SetMaxContainerViewScrollOffset(max_scroll_offset());
 }
 
 void BrowserViewRenderer::SetRootLayerScrollableSize(

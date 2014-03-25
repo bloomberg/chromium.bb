@@ -1977,6 +1977,9 @@ public class AwContents {
         if (mPageScaleFactor != pageScaleFactor) {
           float oldPageScaleFactor = mPageScaleFactor;
           mPageScaleFactor = pageScaleFactor;
+          // NOTE: if this ever needs to become synchronous then we need to make sure the scroll
+          // bounds are correctly updated before calling the method, otherwise embedder code that
+          // attempts to scroll on scale change might cause weird results.
           mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
                   (float)(oldPageScaleFactor * mDIPScale),
                   (float)(mPageScaleFactor * mDIPScale));
