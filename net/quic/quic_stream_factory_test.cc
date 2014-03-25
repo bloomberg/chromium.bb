@@ -48,7 +48,7 @@ class QuicStreamFactoryPeer {
   static bool HasActiveSession(QuicStreamFactory* factory,
                                const HostPortPair& host_port_pair,
                                bool is_https) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https);
     return factory->HasActiveSession(server_key);
   }
 
@@ -56,7 +56,7 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https);
     DCHECK(factory->HasActiveSession(server_key));
     return factory->active_sessions_[server_key];
   }
@@ -66,7 +66,7 @@ class QuicStreamFactoryPeer {
       const HostPortPair& host_port_pair,
       bool is_https,
       const BoundNetLog& net_log) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https);
     return factory->CreateIfSessionExists(server_key, net_log);
   }
 
@@ -96,8 +96,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  &random_generator_, clock_, kDefaultMaxPacketSize,
                  SupportedVersions(GetParam()), true, true),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
-        is_https_(false),
-        privacy_mode_(kPrivacyModeDisabled) {
+        is_https_(false) {
     factory_.set_require_confirmation(false);
   }
 
@@ -134,7 +133,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_EQ(ERR_IO_PENDING,
               request.Request(destination,
                               is_https_,
-                              privacy_mode_,
                               "GET",
                               net_log_,
                               callback_.callback()));
@@ -183,7 +181,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   QuicStreamFactory factory_;
   HostPortPair host_port_pair_;
   bool is_https_;
-  PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   TestCompletionCallback callback_;
 };
@@ -207,7 +204,6 @@ TEST_P(QuicStreamFactoryTest, Create) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -226,7 +222,6 @@ TEST_P(QuicStreamFactoryTest, Create) {
   EXPECT_EQ(OK,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -252,7 +247,6 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -265,7 +259,6 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              !is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -304,7 +297,6 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   EXPECT_EQ(OK,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -316,7 +308,6 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   EXPECT_EQ(OK,
             request2.Request(server2,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback.callback()));
@@ -354,7 +345,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_EQ(OK,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -366,7 +356,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_EQ(OK,
             request2.Request(server2,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback.callback()));
@@ -385,7 +374,6 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_EQ(OK,
             request3.Request(server2,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback3.callback()));
@@ -433,7 +421,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   EXPECT_EQ(OK,
             request.Request(server1,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -445,7 +432,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   EXPECT_EQ(OK,
             request2.Request(server2,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -498,7 +484,6 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   EXPECT_EQ(OK,
             request.Request(server1,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -510,7 +495,6 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   EXPECT_EQ(OK,
             request2.Request(server2,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -543,7 +527,6 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -568,7 +551,6 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -616,7 +598,6 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
     QuicStreamRequest request(&factory_);
     int rv = request.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback());
@@ -637,7 +618,6 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   EXPECT_EQ(OK,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             CompletionCallback()));
@@ -668,7 +648,6 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -690,7 +669,6 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -712,7 +690,6 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
     EXPECT_EQ(ERR_IO_PENDING,
               request.Request(host_port_pair_,
                               is_https_,
-                              privacy_mode_,
                               "GET",
                               net_log_,
                               callback_.callback()));
@@ -780,7 +757,6 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -804,7 +780,6 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -844,7 +819,6 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -869,7 +843,6 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -909,7 +882,6 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -934,7 +906,6 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -974,7 +945,6 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_,
                             is_https_,
-                            privacy_mode_,
                             "GET",
                             net_log_,
                             callback_.callback()));
@@ -999,7 +969,6 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_,
                              is_https_,
-                             privacy_mode_,
                              "GET",
                              net_log_,
                              callback_.callback()));
@@ -1028,7 +997,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     HostPortPair host_port_pair1(r1_host_name, 80);
     QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(&factory_);
-    QuicSessionKey server_key1(host_port_pair1, is_https_, privacy_mode_);
+    QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -1040,7 +1009,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     cached1->SetProofValid();
 
     HostPortPair host_port_pair2(r2_host_name, 80);
-    QuicSessionKey server_key2(host_port_pair2, is_https_, privacy_mode_);
+    QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_key2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
@@ -1062,7 +1031,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     HostPortPair host_port_pair1(r3_host_name, 80);
     QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(&factory_);
-    QuicSessionKey server_key1(host_port_pair1, is_https_, privacy_mode_);
+    QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -1074,7 +1043,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     cached1->SetProofInvalid();
 
     HostPortPair host_port_pair2(r4_host_name, 80);
-    QuicSessionKey server_key2(host_port_pair2, is_https_, privacy_mode_);
+    QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_key2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());

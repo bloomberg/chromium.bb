@@ -9,7 +9,6 @@
 
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/base/privacy_mode.h"
 
 namespace net {
 
@@ -17,13 +16,8 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicSessionKey {
  public:
   QuicSessionKey();
-  QuicSessionKey(const HostPortPair& host_port_pair,
-                 bool is_https,
-                 PrivacyMode privacy_mode);
-  QuicSessionKey(const std::string& host,
-                 uint16 port,
-                 bool is_https,
-                 PrivacyMode privacy_mode);
+  QuicSessionKey(const HostPortPair& host_port_pair, bool is_https);
+  QuicSessionKey(const std::string& host, uint16 port, bool is_https);
   ~QuicSessionKey();
 
   // Needed to be an element of std::set.
@@ -44,12 +38,9 @@ class NET_EXPORT_PRIVATE QuicSessionKey {
 
   bool is_https() const { return is_https_; }
 
-  PrivacyMode privacy_mode() const { return privacy_mode_; }
-
  private:
   HostPortPair host_port_pair_;
   bool is_https_;
-  PrivacyMode privacy_mode_;
 };
 
 }  // namespace net

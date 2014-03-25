@@ -698,9 +698,8 @@ void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   if (i == canoncial_suffixes_.size())
     return;
 
-  QuicSessionKey suffix_server_key(canoncial_suffixes_[i], server_key.port(),
-                                   server_key.is_https(),
-                                   server_key.privacy_mode());
+  QuicSessionKey suffix_server_key(
+      canoncial_suffixes_[i], server_key.port(), server_key.is_https());
   if (!ContainsKey(canonical_server_map_, suffix_server_key)) {
     // This is the first host we've seen which matches the suffix, so make it
     // canonical.

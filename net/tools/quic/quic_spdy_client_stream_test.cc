@@ -30,8 +30,7 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
   QuicSpdyClientStreamTest()
       : connection_(new StrictMock<MockConnection>(
             false, SupportedVersions(GetParam()))),
-        session_(QuicSessionKey("example.com", 80, false, kPrivacyModeDisabled),
-                 DefaultQuicConfig(),
+        session_(QuicSessionKey("example.com", 80, false), DefaultQuicConfig(),
                  connection_, &crypto_config_),
         body_("hello world") {
     crypto_config_.SetDefaults();
