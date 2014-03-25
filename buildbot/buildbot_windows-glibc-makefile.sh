@@ -116,7 +116,7 @@ else
     tar JSxf ../tools/toolchain.tar.xz
     rm -rf "../${OUT_TOOLCHAIN}"
     mkdir -p "../${OUT_TOOLCHAINLOC}"
-    mv "${TOOL_TOOLCHAIN}" "../${OUT_TOOLCHAINLOC}"
+    mv "${TOOL_TOOLCHAIN}" "../${OUT_TOOLCHAIN}"
   )
 fi
 
