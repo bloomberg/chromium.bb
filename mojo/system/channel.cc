@@ -149,6 +149,12 @@ bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   return raw_channel_->WriteMessage(message.Pass());
 }
 
+bool Channel::IsWriteBufferEmpty() {
+  base::AutoLock locker(lock_);
+  DCHECK(raw_channel_.get());
+  return raw_channel_->IsWriteBufferEmpty();
+}
+
 void Channel::DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id) {
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 

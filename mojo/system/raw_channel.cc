@@ -130,6 +130,9 @@ void RawChannel::Shutdown() {
 
   base::AutoLock locker(write_lock_);
 
+  LOG_IF(WARNING, !write_buffer_->message_queue_.empty())
+      << "Shutting down RawChannel with write buffer nonempty";
+
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   read_stopped_ = true;
@@ -170,6 +173,12 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   }
 
   return result;
+}
+
+// Reminder: This must be thread-safe.
+bool RawChannel::IsWriteBufferEmpty() {
+  base::AutoLock locker(write_lock_);
+  return write_buffer_->message_queue_.empty();
 }
 
 RawChannel::ReadBuffer* RawChannel::read_buffer() {

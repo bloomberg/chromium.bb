@@ -92,6 +92,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // This forwards |message| verbatim to |raw_channel_|.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
 
+  // See |RawChannel::IsWriteBufferEmpty()|.
+  // TODO(vtl): Maybe we shouldn't expose this, and instead have a
+  // |FlushWriteBufferAndShutdown()| or something like that.
+  bool IsWriteBufferEmpty();
+
   // This removes the message pipe/port's endpoint (with the given local ID,
   // returned by |AttachMessagePipeEndpoint()| from this channel. After this is
   // called, |local_id| may be reused for another message pipe.

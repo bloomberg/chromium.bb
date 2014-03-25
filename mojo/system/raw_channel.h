@@ -85,9 +85,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // This must be called (on the I/O thread) before this object is destroyed.
   void Shutdown();
 
-  // This is thread-safe. It takes ownership of |message| (always, even on
-  // failure). Returns true on success.
+  // Writes the given message (or schedules it to be written). This is
+  // thread-safe. Returns true on success.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
+
+  // Returns true if the write buffer is empty (i.e., all messages written using
+  // |WriteMessage()| have actually been sent.
+  // TODO(vtl): We should really also notify our delegate when the write buffer
+  // becomes empty (or something like that).
+  bool IsWriteBufferEmpty();
 
  protected:
   // Return values of |[Schedule]Read()| and |[Schedule]WriteNoLock()|.
