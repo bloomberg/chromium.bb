@@ -84,12 +84,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
 
-  // Evaluates a string of JavaScript in a particular frame.
-  virtual void EvaluateScript(const base::string16& frame_xpath,
-                              const base::string16& jscript,
-                              int id,
-                              bool notify_result) = 0;
-
   // Returns true if we should display scrollbars for the given view size and
   // false if the scrollbars should be hidden.
   virtual bool ShouldDisplayScrollbars(int width, int height) const = 0;

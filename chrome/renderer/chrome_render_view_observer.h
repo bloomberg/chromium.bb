@@ -45,15 +45,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   virtual ~ChromeRenderViewObserver();
 
  private:
-  // Holds the information received in OnWebUIJavaScript for later use
-  // to call EvaluateScript() to preload javascript for WebUI tests.
-  struct WebUIJavaScript {
-    base::string16 frame_xpath;
-    base::string16 jscript;
-    int id;
-    bool notify_result;
-  };
-
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
@@ -67,10 +58,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
                                            int32 severity_level) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
 
-  void OnWebUIJavaScript(const base::string16& frame_xpath,
-                         const base::string16& jscript,
-                         int id,
-                         bool notify_result);
+  void OnWebUIJavaScript(const base::string16& javascript);
   void OnJavaScriptStressTestControl(int cmd, int param);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetVisuallyDeemphasized(bool deemphasized);
@@ -104,7 +92,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   bool HasRefreshMetaTag(blink::WebFrame* frame);
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
-  scoped_ptr<WebUIJavaScript> webui_javascript_;
+  base::string16 webui_javascript_;
 
   // Owned by ChromeContentRendererClient and outlive us.
   ChromeRenderProcessObserver* chrome_render_process_observer_;

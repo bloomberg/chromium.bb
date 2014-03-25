@@ -262,14 +262,11 @@ IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
                      bool /* on_navigation */)
 
-// For WebUI testing, this message stores parameters to do ScriptEvalRequest at
-// a time which is late enough to not be thrown out, and early enough to be
-// before onload events are fired.
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_WebUIJavaScript,
-                    base::string16,  /* frame_xpath */
-                    base::string16,  /* jscript_url */
-                    int,  /* ID */
-                    bool  /* If true, result is sent back. */)
+// For WebUI testing, this message requests JavaScript to be executed at a time
+// which is late enough to not be thrown out, and early enough to be before
+// onload events are fired.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
+                    base::string16  /* javascript */)
 
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,

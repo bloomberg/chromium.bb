@@ -1094,6 +1094,10 @@ void RenderFrameImpl::LoadURLExternally(
   loadURLExternally(frame, request, policy);
 }
 
+void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
+  OnJavaScriptExecuteRequest(javascript, 0, false);
+}
+
 void RenderFrameImpl::OnChildFrameProcessGone() {
   if (compositing_helper_)
     compositing_helper_->ChildFrameGone();

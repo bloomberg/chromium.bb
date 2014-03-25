@@ -32,8 +32,7 @@ void WebUITestHandler::PreloadJavaScript(const base::string16& js_text,
                                          RenderViewHost* preload_host) {
   DCHECK(preload_host);
   preload_host->Send(new ChromeViewMsg_WebUIJavaScript(
-      preload_host->GetRoutingID(), base::string16(), js_text, 0,
-      false));
+      preload_host->GetRoutingID(), js_text));
 }
 
 void WebUITestHandler::RunJavaScript(const base::string16& js_text) {

@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
-#include "base/strings/string16.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -184,6 +183,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const blink::WebURLRequest& request,
       blink::WebNavigationPolicy policy) OVERRIDE;
+  virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
 
   // blink::WebFrameClient implementation -------------------------------------
   virtual blink::WebPlugin* createPlugin(

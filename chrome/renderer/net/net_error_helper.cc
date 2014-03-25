@@ -208,8 +208,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
     return;
   }
 
-  base::string16 frame_xpath;
-  render_frame()->GetRenderView()->EvaluateScript(frame_xpath, js16, 0, false);
+  render_frame()->ExecuteJavaScript(js16);
 }
 
 void NetErrorHelper::FetchNavigationCorrections(

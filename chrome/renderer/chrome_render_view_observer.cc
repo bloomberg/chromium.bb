@@ -255,15 +255,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromeRenderViewObserver::OnWebUIJavaScript(
-    const base::string16& frame_xpath,
-    const base::string16& jscript,
-    int id,
-    bool notify_result) {
-  webui_javascript_.reset(new WebUIJavaScript());
-  webui_javascript_->frame_xpath = frame_xpath;
-  webui_javascript_->jscript = jscript;
-  webui_javascript_->id = id;
-  webui_javascript_->notify_result = notify_result;
+    const base::string16& javascript) {
+  webui_javascript_ = javascript;
 }
 
 void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
@@ -395,12 +388,9 @@ void ChromeRenderViewObserver::OnGetFPS() {
 
 void ChromeRenderViewObserver::DidStartLoading() {
   if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
-      webui_javascript_.get()) {
-    render_view()->EvaluateScript(webui_javascript_->frame_xpath,
-                                  webui_javascript_->jscript,
-                                  webui_javascript_->id,
-                                  webui_javascript_->notify_result);
-    webui_javascript_.reset();
+      !webui_javascript_.empty()) {
+    render_view()->GetMainRenderFrame()->ExecuteJavaScript(webui_javascript_);
+    webui_javascript_.clear();
   }
 }
 

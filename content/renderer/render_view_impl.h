@@ -638,10 +638,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual blink::WebView* GetWebView() OVERRIDE;
   virtual blink::WebElement GetFocusedElement() const OVERRIDE;
   virtual bool IsEditableNode(const blink::WebNode& node) const OVERRIDE;
-  virtual void EvaluateScript(const base::string16& frame_xpath,
-                              const base::string16& jscript,
-                              int id,
-                              bool notify_result) OVERRIDE;
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual bool GetContentStateImmediately() const OVERRIDE;
@@ -851,6 +847,11 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Called when the "pinned to left/right edge" state needs to be updated.
   void UpdateScrollState(blink::WebFrame* frame);
+
+  void EvaluateScript(const base::string16& frame_xpath,
+                      const base::string16& jscript,
+                      int id,
+                      bool notify_result);
 
   // IPC message handlers ------------------------------------------------------
   //

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_FRAME_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_FRAME_H_
 
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -80,6 +81,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       blink::WebFrame* frame,
       const blink::WebURLRequest& request,
       blink::WebNavigationPolicy policy) = 0;
+
+  // Execute a string of JavaScript in this frame's context.
+  virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
 
  protected:
   virtual ~RenderFrame() {}
