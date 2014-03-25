@@ -195,6 +195,47 @@ void WebCryptoImpl::verifySignature(const blink::WebCryptoAlgorithm& algorithm,
     result.completeWithBoolean(signature_match);
 }
 
+void WebCryptoImpl::wrapKey(blink::WebCryptoKeyFormat format,
+                            const blink::WebCryptoKey& key,
+                            const blink::WebCryptoKey& wrapping_key,
+                            const blink::WebCryptoAlgorithm& wrap_algorithm,
+                            blink::WebCryptoResult result) {
+  blink::WebArrayBuffer buffer;
+  // TODO(eroman): Use the same parameter ordering.
+  Status status = webcrypto::WrapKey(
+      format, wrapping_key, key, wrap_algorithm, &buffer);
+  if (status.IsError())
+    CompleteWithError(status, &result);
+  else
+    result.completeWithBuffer(buffer);
+}
+
+void WebCryptoImpl::unwrapKey(
+    blink::WebCryptoKeyFormat format,
+    const unsigned char* wrapped_key,
+    unsigned wrapped_key_size,
+    const blink::WebCryptoKey& wrapping_key,
+    const blink::WebCryptoAlgorithm& unwrap_algorithm,
+    const blink::WebCryptoAlgorithm& unwrapped_key_algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    blink::WebCryptoResult result) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  Status status =
+      webcrypto::UnwrapKey(format,
+                           webcrypto::CryptoData(wrapped_key, wrapped_key_size),
+                           wrapping_key,
+                           unwrap_algorithm,
+                           unwrapped_key_algorithm,
+                           extractable,
+                           usages,
+                           &key);
+  if (status.IsError())
+    CompleteWithError(status, &result);
+  else
+    result.completeWithKey(key);
+}
+
 bool WebCryptoImpl::digestSynchronous(
     const blink::WebCryptoAlgorithmId algorithm_id,
     const unsigned char* data,

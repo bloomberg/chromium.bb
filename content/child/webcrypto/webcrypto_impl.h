@@ -61,7 +61,22 @@ class WebCryptoImpl : public blink::WebCrypto {
                                unsigned int signature_size,
                                const unsigned char* data,
                                unsigned int data_size,
-                               blink::WebCryptoResult result);
+                              blink::WebCryptoResult result);
+  virtual void wrapKey(blink::WebCryptoKeyFormat format,
+                       const blink::WebCryptoKey& key,
+                       const blink::WebCryptoKey& wrapping_key,
+                       const blink::WebCryptoAlgorithm& wrap_algorithm,
+                       blink::WebCryptoResult result);
+  virtual void unwrapKey(
+      blink::WebCryptoKeyFormat format,
+      const unsigned char* wrapped_key,
+      unsigned wrapped_key_size,
+      const blink::WebCryptoKey& wrapping_key,
+      const blink::WebCryptoAlgorithm& unwrap_algorithm,
+      const blink::WebCryptoAlgorithm& unwrapped_key_algorithm,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usages,
+      blink::WebCryptoResult result);
   // This method synchronously computes a digest for the given data, returning
   // |true| if successful and |false| otherwise.
   virtual bool digestSynchronous(const blink::WebCryptoAlgorithmId algorithm_id,
