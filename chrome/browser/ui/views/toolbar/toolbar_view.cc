@@ -145,7 +145,10 @@ ToolbarView::ToolbarView(Browser* browser)
       origin_chip_view_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
-      browser_(browser) {
+      browser_(browser),
+      extension_message_bubble_factory_(
+          new extensions::ExtensionMessageBubbleFactory(browser->profile(),
+                                                        this)) {
   set_id(VIEW_ID_TOOLBAR);
 
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
@@ -300,11 +303,16 @@ void ToolbarView::Init() {
 
 void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                             bool visible) {
-  if (visible) {
-    extensions::ExtensionMessageBubbleView::MaybeShow(
-        browser_, this, app_menu_);
-    GetWidget()->RemoveObserver(this);
-  }
+  // Safe to call multiple times; the bubble will only appear once.
+  if (visible)
+    extension_message_bubble_factory_->MaybeShow(app_menu_);
+}
+
+void ToolbarView::OnWidgetActivationChanged(views::Widget* widget,
+                                            bool active) {
+  // Safe to call multiple times; the bubble will only appear once.
+  if (active)
+    extension_message_bubble_factory_->MaybeShow(app_menu_);
 }
 
 void ToolbarView::Update(WebContents* tab) {
@@ -657,8 +665,8 @@ void ToolbarView::Layout() {
     next_element_x = origin_chip_view_->bounds().right();
   }
 
-  browser_actions_->SetBounds(next_element_x, 0,
-                              browser_actions_width, height());
+  browser_actions_->SetBounds(
+      next_element_x, child_y, browser_actions_width, child_height);
   next_element_x = browser_actions_->bounds().right();
 
   // The browser actions need to do a layout explicitly, because when an

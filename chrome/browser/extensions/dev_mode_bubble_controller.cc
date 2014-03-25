@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -26,6 +27,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace extensions {
+
 namespace {
 
 base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
@@ -34,20 +37,19 @@ base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
 ////////////////////////////////////////////////////////////////////////////////
 // DevModeBubbleDelegate
 
-DevModeBubbleDelegate::DevModeBubbleDelegate(ExtensionService* service)
-    : service_(service) {
-}
+DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
+    : profile_(profile),
+      service_(ExtensionSystem::Get(profile)->extension_service()) {}
 
 DevModeBubbleDelegate::~DevModeBubbleDelegate() {
 }
 
 bool DevModeBubbleDelegate::ShouldIncludeExtension(
     const std::string& extension_id) {
-  const extensions::Extension* extension =
-      service_->GetExtensionById(extension_id, false);
+  const Extension* extension = service_->GetExtensionById(extension_id, false);
   if (!extension)
     return false;
-  return extensions::DevModeBubbleController::IsDevModeExtension(extension);
+  return DevModeBubbleController::IsDevModeExtension(extension);
 }
 
 void DevModeBubbleDelegate::AcknowledgeExtension(
@@ -55,12 +57,15 @@ void DevModeBubbleDelegate::AcknowledgeExtension(
     ExtensionMessageBubbleController::BubbleAction user_action) {
 }
 
-void DevModeBubbleDelegate::PerformAction(
-    const extensions::ExtensionIdList& list) {
-  for (size_t i = 0; i < list.size(); ++i) {
-    service_->DisableExtension(
-        list[i], extensions::Extension::DISABLE_USER_ACTION);
-  }
+void DevModeBubbleDelegate::PerformAction(const ExtensionIdList& list) {
+  for (size_t i = 0; i < list.size(); ++i)
+    service_->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
+}
+
+void DevModeBubbleDelegate::OnClose() {
+  ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(profile_);
+  if (toolbar_model)
+    toolbar_model->StopHighlighting();
 }
 
 base::string16 DevModeBubbleDelegate::GetTitle() const {
@@ -112,8 +117,6 @@ void DevModeBubbleDelegate::LogAction(
 
 }  // namespace
 
-namespace extensions {
-
 ////////////////////////////////////////////////////////////////////////////////
 // DevModeBubbleController
 
@@ -135,10 +138,8 @@ bool DevModeBubbleController::IsDevModeExtension(
 }
 
 DevModeBubbleController::DevModeBubbleController(Profile* profile)
-    : ExtensionMessageBubbleController(
-          new DevModeBubbleDelegate(
-              ExtensionSystem::Get(profile)->extension_service()),
-          profile),
+    : ExtensionMessageBubbleController(new DevModeBubbleDelegate(profile),
+                                       profile),
       profile_(profile) {}
 
 DevModeBubbleController::~DevModeBubbleController() {

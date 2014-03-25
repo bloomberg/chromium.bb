@@ -92,6 +92,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionActionAPI::GetFactoryInstance();
   extensions::ExtensionSystemFactory::GetInstance();
+  extensions::ExtensionToolbarModelFactory::GetInstance();
   extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance();
   extensions::FeedbackPrivateAPI::GetFactoryInstance();
   extensions::FontSettingsAPI::GetFactoryInstance();
@@ -143,7 +144,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebRequestAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
-  ExtensionToolbarModelFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   file_manager::FileBrowserPrivateAPIFactory::GetInstance();
 #endif

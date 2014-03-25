@@ -19,12 +19,13 @@ class ExtensionService;
 class PrefService;
 class Profile;
 
+namespace extensions {
+
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public content::NotificationObserver,
                               public KeyedService {
  public:
-  ExtensionToolbarModel(Profile* profile,
-                        extensions::ExtensionPrefs* extension_prefs);
+  ExtensionToolbarModel(Profile* profile, ExtensionPrefs* extension_prefs);
   virtual ~ExtensionToolbarModel();
 
   // The action that should be taken as a result of clicking a browser action.
@@ -42,23 +43,30 @@ class ExtensionToolbarModel : public content::NotificationObserver,
    public:
     // An extension with a browser action button has been added, and should go
     // in the toolbar at |index|.
-    virtual void BrowserActionAdded(const extensions::Extension* extension,
-                                    int index) {}
+    virtual void BrowserActionAdded(const Extension* extension, int index) {}
 
     // The browser action button for |extension| should no longer show.
-    virtual void BrowserActionRemoved(const extensions::Extension* extension) {}
+    virtual void BrowserActionRemoved(const Extension* extension) {}
 
     // The browser action button for |extension| has been moved to |index|.
-    virtual void BrowserActionMoved(const extensions::Extension* extension,
-                                    int index) {}
+    virtual void BrowserActionMoved(const Extension* extension, int index) {}
 
     // Signal the |extension| to show the popup now in the active window.
     // Returns true if a popup was slated to be shown.
-    virtual bool BrowserActionShowPopup(const extensions::Extension* extension);
+    virtual bool BrowserActionShowPopup(const Extension* extension);
 
     // Signal when the container needs to be redrawn because of a size change,
     // and when the model has finished loading.
     virtual void VisibleCountChanged() {}
+
+    // Signal that the model has entered or exited highlighting mode, or that
+    // the extensions being highlighted have (probably*) changed. Highlighting
+    // mode indicates that only a subset of the extensions are actively
+    // displayed, and those extensions should be highlighted for extra emphasis.
+    // * probably, because if we are in highlight mode and receive a call to
+    //   highlight a new set of extensions, we do not compare the current set
+    //   with the new set (and just assume the new set is different).
+    virtual void HighlightModeChanged(bool is_highlighting) {}
 
    protected:
     virtual ~Observer() {}
@@ -70,7 +78,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // Functions called by the view.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-  void MoveBrowserAction(const extensions::Extension* extension, int index);
+  void MoveBrowserAction(const Extension* extension, int index);
   // Executes the browser action for an extension and returns the action that
   // the UI should perform in response.
   // |popup_url_out| will be set if the extension should show a popup, with
@@ -78,7 +86,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // the extension should be granted page tab permissions, which is what happens
   // when the user clicks the browser action, but not, for example, when the
   // showPopup API is called.
-  Action ExecuteBrowserAction(const extensions::Extension* extension,
+  Action ExecuteBrowserAction(const Extension* extension,
                               Browser* browser,
                               GURL* popup_url_out,
                               bool should_grant);
@@ -90,9 +98,11 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   bool extensions_initialized() const { return extensions_initialized_; }
 
-  const extensions::ExtensionList& toolbar_items() const {
-    return toolbar_items_;
+  const ExtensionList& toolbar_items() const {
+    return is_highlighting_ ? highlighted_items_ : toolbar_items_;
   }
+
+  bool is_highlighting() const { return is_highlighting_; }
 
   // Utility functions for converting between an index into the list of
   // incognito-enabled browser actions, and the list of all browser actions.
@@ -103,12 +113,23 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   // Tells observers to display a popup without granting tab permissions and
   // returns whether the popup was slated to be shown.
-  bool ShowBrowserActionPopup(const extensions::Extension* extension);
+  bool ShowBrowserActionPopup(const Extension* extension);
 
   // Ensures that the extensions in the |extension_ids| list are visible on the
   // toolbar. This might mean they need to be moved to the front (if they are in
   // the overflow bucket).
-  void EnsureVisibility(const extensions::ExtensionIdList& extension_ids);
+  void EnsureVisibility(const ExtensionIdList& extension_ids);
+
+  // Highlight the extensions specified by |extension_ids|. This will cause
+  // the ToolbarModel to only display those extensions.
+  // Highlighting mode is only entered if there is at least one extension to
+  // be shown.
+  // Returns true if highlighting mode is entered, false otherwise.
+  bool HighlightExtensions(const ExtensionIdList& extension_ids);
+
+  // Stop highlighting extensions. All extensions can be shown again, and the
+  // number of visible icons will be reset to what it was before highlighting.
+  void StopHighlighting();
 
  private:
   // content::NotificationObserver implementation.
@@ -120,11 +141,10 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // from the extension service and their saved order from the pref service
   // and constructs |toolbar_items_| from these data.
   void InitializeExtensionList(ExtensionService* service);
-  void Populate(const extensions::ExtensionIdList& positions,
-                ExtensionService* service);
+  void Populate(const ExtensionIdList& positions, ExtensionService* service);
 
   // Fills |list| with extensions based on provided |order|.
-  void FillExtensionList(const extensions::ExtensionIdList& order,
+  void FillExtensionList(const ExtensionIdList& order,
                          ExtensionService* service);
 
   // Save the model to prefs.
@@ -132,29 +152,40 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   // Finds the last known visible position of the icon for an |extension|. The
   // value returned is a zero-based index into the vector of visible items.
-  size_t FindNewPositionFromLastKnownGood(
-      const extensions::Extension* extension);
+  size_t FindNewPositionFromLastKnownGood(const Extension* extension);
 
   // Our observers.
   ObserverList<Observer> observers_;
 
-  void AddExtension(const extensions::Extension* extension);
-  void RemoveExtension(const extensions::Extension* extension);
-  void UninstalledExtension(const extensions::Extension* extension);
+  void AddExtension(const Extension* extension);
+  void RemoveExtension(const Extension* extension);
+  void UninstalledExtension(const Extension* extension);
 
   // The Profile this toolbar model is for.
   Profile* profile_;
 
-  extensions::ExtensionPrefs* extension_prefs_;
+  ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool extensions_initialized_;
 
   // Ordered list of browser action buttons.
-  extensions::ExtensionList toolbar_items_;
+  ExtensionList toolbar_items_;
 
-  extensions::ExtensionIdList last_known_positions_;
+  // List of browser action buttons which should be highlighted.
+  ExtensionList highlighted_items_;
+
+  // Indication whether or not we are currently in highlight mode; typically,
+  // this is equivalent to !highlighted_items_.empty(), but can be different
+  // if we are exiting highlight mode due to no longer having highlighted items.
+  bool is_highlighting_;
+
+  // The number of icons which were visible before highlighting a subset, in
+  // order to restore the count when finished.
+  int old_visible_icon_count_;
+
+  ExtensionIdList last_known_positions_;
 
   // The number of icons visible (the rest should be hidden in the overflow
   // chevron).
@@ -170,5 +201,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarModel);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_

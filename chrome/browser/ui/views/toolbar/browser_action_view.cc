@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -67,16 +66,7 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
 }
 
 void BrowserActionView::Layout() {
-  // We can't rely on button_->GetPreferredSize() here because that's not set
-  // correctly until the first call to
-  // BrowserActionsContainer::RefreshBrowserActionViews(), whereas this can be
-  // called before that when the initial bounds are set (and then not after,
-  // since the bounds don't change).  So instead of setting the height from the
-  // button's preferred size, we use IconHeight(), since that's how big the
-  // button should be regardless of what it's displaying.
-  gfx::Point offset = delegate_->GetViewContentOffset();
-  button_->SetBounds(offset.x(), offset.y(), width() - offset.x(),
-                     BrowserActionsContainer::IconHeight());
+  button_->SetBounds(0, y(), width(), height());
 }
 
 void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
@@ -232,11 +222,7 @@ void BrowserActionButton::UpdateState() {
     ThemeService* theme =
         ThemeServiceFactory::GetForProfile(browser_->profile());
 
-    int background_id = IDR_BROWSER_ACTION;
-    if (extensions::DevModeBubbleController::IsDevModeExtension(extension_))
-      background_id = IDR_BROWSER_ACTION_HIGHLIGHT;
-
-    gfx::ImageSkia bg = *theme->GetImageSkiaNamed(background_id);
+    gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
     SetIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
 
     gfx::ImageSkia bg_h = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);

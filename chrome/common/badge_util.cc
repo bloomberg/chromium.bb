@@ -26,7 +26,7 @@ const int kPadding = 2;
 const int kTopTextPadding = 0;
 #elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 const float kTextSize = 8.0;
-const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginBrowserAction = 0;
 const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 const int kTopTextPadding = 1;
@@ -38,7 +38,7 @@ const int kPadding = 2;
 const int kTopTextPadding = 0;
 #else
 const float kTextSize = 10;
-const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginBrowserAction = 0;
 const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.

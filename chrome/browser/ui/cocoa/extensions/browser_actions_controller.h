@@ -14,13 +14,13 @@ class Browser;
 @class BrowserActionButton;
 @class BrowserActionsContainerView;
 @class ExtensionPopupController;
-class ExtensionToolbarModel;
 class ExtensionServiceObserverBridge;
 @class MenuButton;
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionToolbarModel;
 }
 
 // Sent when the visibility of the Browser Actions changes.
@@ -40,7 +40,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   Profile* profile_;
 
   // The model that tracks the order of the toolbar icons. Weak.
-  ExtensionToolbarModel* toolbarModel_;
+  extensions::ExtensionToolbarModel* toolbarModel_;
 
   // The observer for the ExtensionService we're getting events from.
   scoped_ptr<ExtensionServiceObserverBridge> observer_;

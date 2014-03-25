@@ -38,6 +38,7 @@ class ExtensionMessageBubbleController {
         const std::string& extension_id,
         BubbleAction action) = 0;
     virtual void PerformAction(const ExtensionIdList& list) = 0;
+    virtual void OnClose() {}
 
     // Text for various UI labels shown in the bubble.
     virtual base::string16 GetTitle() const = 0;

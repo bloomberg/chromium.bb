@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTIONS_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTIONS_CONTAINER_H_
 
+#include "base/observer_list.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
@@ -117,7 +119,7 @@ class BrowserActionsContainer
       public views::MenuButtonListener,
       public views::ResizeAreaDelegate,
       public gfx::AnimationDelegate,
-      public ExtensionToolbarModel::Observer,
+      public extensions::ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
       public views::WidgetObserver,
       public BrowserActionView::Delegate,
@@ -165,6 +167,10 @@ class BrowserActionsContainer
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
+  // Add or remove an observer.
+  void AddObserver(BrowserActionsContainerObserver* observer);
+  void RemoveObserver(BrowserActionsContainerObserver* observer);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -211,7 +217,6 @@ class BrowserActionsContainer
   virtual int GetCurrentTabId() const OVERRIDE;
   virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
-  virtual gfx::Point GetViewContentOffset() const OVERRIDE;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
@@ -254,7 +259,7 @@ class BrowserActionsContainer
   virtual void OnThemeChanged() OVERRIDE;
 
  private:
-  friend class BrowserActionView;  // So it can access IconHeight().
+  friend class BrowserActionView;  // So it can access IconWidth().
   friend class ShowFolderMenuTask;
 
   typedef std::vector<BrowserActionView*> BrowserActionViews;
@@ -265,7 +270,7 @@ class BrowserActionsContainer
   // Returns the height of an icon.
   static int IconHeight();
 
-  // ExtensionToolbarModel::Observer implementation.
+  // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(const extensions::Extension* extension,
                                   int index) OVERRIDE;
   virtual void BrowserActionRemoved(
@@ -275,6 +280,7 @@ class BrowserActionsContainer
   virtual bool BrowserActionShowPopup(
       const extensions::Extension* extension) OVERRIDE;
   virtual void VisibleCountChanged() OVERRIDE;
+  virtual void HighlightModeChanged(bool is_highlighting) OVERRIDE;
 
   void LoadImages();
 
@@ -353,7 +359,7 @@ class BrowserActionsContainer
   BrowserActionButton* popup_button_;
 
   // The model that tracks the order of the toolbar icons.
-  ExtensionToolbarModel* model_;
+  extensions::ExtensionToolbarModel* model_;
 
   // The current width of the container.
   int container_width_;
@@ -363,6 +369,9 @@ class BrowserActionsContainer
 
   // The chevron for accessing the overflow items.
   views::MenuButton* chevron_;
+
+  // The painter used when we are highlighting a subset of extensions.
+  scoped_ptr<views::Painter> highlight_painter_;
 
   // The menu to show for the overflow button (chevron). This class manages its
   // own lifetime so that it can stay alive during drag and drop operations.
@@ -393,6 +402,8 @@ class BrowserActionsContainer
 
   // Handles delayed showing of the overflow menu when hovering.
   base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
+
+  ObserverList<BrowserActionsContainerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

@@ -37,7 +37,6 @@
 #include "extensions/common/one_shot_event.h"
 
 class ExtensionErrorUI;
-class ExtensionToolbarModel;
 class GURL;
 class Profile;
 
@@ -54,6 +53,7 @@ class CrxInstaller;
 class ExtensionActionStorageManager;
 class ExtensionRegistry;
 class ExtensionSystem;
+class ExtensionToolbarModel;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class RendererStartupHelper;

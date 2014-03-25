@@ -9,8 +9,11 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class ExtensionToolbarModel;
 class Profile;
+
+namespace extensions {
+
+class ExtensionToolbarModel;
 
 class ExtensionToolbarModelFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -31,5 +34,7 @@ class ExtensionToolbarModelFactory : public BrowserContextKeyedServiceFactory {
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_FACTORY_H_

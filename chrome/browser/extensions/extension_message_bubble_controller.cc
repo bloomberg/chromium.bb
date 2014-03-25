@@ -95,14 +95,23 @@ void ExtensionMessageBubbleController::OnBubbleAction() {
   delegate_->LogAction(ACTION_EXECUTE);
   delegate_->PerformAction(*GetOrCreateExtensionList());
   AcknowledgeExtensions();
+  delegate_->OnClose();
 }
 
 void ExtensionMessageBubbleController::OnBubbleDismiss() {
-  DCHECK_EQ(ACTION_BOUNDARY, user_action_);
+  // OnBubbleDismiss() can be called twice when we receive multiple
+  // "OnWidgetDestroying" notifications (this can at least happen when we close
+  // a window with a notification open). Handle this gracefully.
+  if (user_action_ != ACTION_BOUNDARY) {
+    DCHECK(user_action_ == ACTION_DISMISS);
+    return;
+  }
+
   user_action_ = ACTION_DISMISS;
 
   delegate_->LogAction(ACTION_DISMISS);
   AcknowledgeExtensions();
+  delegate_->OnClose();
 }
 
 void ExtensionMessageBubbleController::OnLinkClicked() {
@@ -121,6 +130,7 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
                                false));
   }
   AcknowledgeExtensions();
+  delegate_->OnClose();
 }
 
 void ExtensionMessageBubbleController::AcknowledgeExtensions() {

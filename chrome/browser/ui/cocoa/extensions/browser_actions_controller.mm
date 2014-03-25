@@ -178,8 +178,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // A helper class to proxy extension notifications to the view controller's
 // appropriate methods.
-class ExtensionServiceObserverBridge : public content::NotificationObserver,
-                                       public ExtensionToolbarModel::Observer {
+class ExtensionServiceObserverBridge
+    : public content::NotificationObserver,
+      public extensions::ExtensionToolbarModel::Observer {
  public:
   ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                  Browser* browser)
@@ -220,7 +221,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     }
   }
 
-  // ExtensionToolbarModel::Observer implementation.
+  // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(
       const Extension* extension,
       int index) OVERRIDE {
@@ -273,7 +274,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     profile_ = browser->profile();
 
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
-    toolbarModel_ = ExtensionToolbarModel::Get(profile_);
+    toolbarModel_ = extensions::ExtensionToolbarModel::Get(profile_);
     if (toolbarModel_)
       toolbarModel_->AddObserver(observer_.get());
 
@@ -763,9 +764,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   GURL popupUrl;
   switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl,
                                               shouldGrant)) {
-    case ExtensionToolbarModel::ACTION_NONE:
+    case extensions::ExtensionToolbarModel::ACTION_NONE:
       break;
-    case ExtensionToolbarModel::ACTION_SHOW_POPUP: {
+    case extensions::ExtensionToolbarModel::ACTION_SHOW_POPUP: {
       NSPoint arrowPoint = [self popupPointForBrowserAction:extension];
       [ExtensionPopupController showURL:popupUrl
                               inBrowser:browser_

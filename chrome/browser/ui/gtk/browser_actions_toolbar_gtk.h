@@ -36,11 +36,12 @@ class Extension;
 typedef struct _GdkDragContext GdkDragContext;
 typedef struct _GtkWidget GtkWidget;
 
-class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
-                                 public gfx::AnimationDelegate,
-                                 public MenuGtk::Delegate,
-                                 public ui::SimpleMenuModel::Delegate,
-                                 public content::NotificationObserver {
+class BrowserActionsToolbarGtk
+    : public extensions::ExtensionToolbarModel::Observer,
+      public gfx::AnimationDelegate,
+      public MenuGtk::Delegate,
+      public ui::SimpleMenuModel::Delegate,
+      public content::NotificationObserver {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   virtual ~BrowserActionsToolbarGtk();
@@ -59,7 +60,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   Browser* browser() { return browser_; }
 
-  ExtensionToolbarModel* model() { return model_; }
+  extensions::ExtensionToolbarModel* model() { return model_; }
 
   // Returns the currently selected tab ID, or -1 if there is none.
   int GetCurrentTabId() const;
@@ -113,7 +114,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // for incognito.
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
 
-  // ExtensionToolbarModel::Observer implementation.
+  // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(const extensions::Extension* extension,
                                   int index) OVERRIDE;
   virtual void BrowserActionRemoved(
@@ -185,7 +186,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   Profile* profile_;
   GtkThemeService* theme_service_;
 
-  ExtensionToolbarModel* model_;
+  extensions::ExtensionToolbarModel* model_;
 
   // Contains the drag gripper, browser action buttons, and overflow chevron.
   ui::OwnedWidgetGtk hbox_;

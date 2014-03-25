@@ -9,24 +9,31 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_message_bubble.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/locale_settings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+namespace extensions {
 
 namespace {
 
@@ -45,12 +52,70 @@ const size_t kMaxExtensionsToShow = 7;
 // How long to wait until showing the bubble (in seconds).
 const int kBubbleAppearanceWaitTime = 5;
 
-}  // namespace
+// This is a class that implements the UI for the bubble showing which
+// extensions look suspicious and have therefore been automatically disabled.
+class ExtensionMessageBubbleView : public ExtensionMessageBubble,
+                                   public views::BubbleDelegateView,
+                                   public views::ButtonListener,
+                                   public views::LinkListener {
+ public:
+  ExtensionMessageBubbleView(
+      views::View* anchor_view,
+      scoped_ptr<ExtensionMessageBubbleController> controller);
 
-////////////////////////////////////////////////////////////////////////////////
-// ExtensionMessageBubbleView
+  // ExtensionMessageBubble methods.
+  virtual void OnActionButtonClicked(const base::Closure& callback) OVERRIDE;
+  virtual void OnDismissButtonClicked(const base::Closure& callback) OVERRIDE;
+  virtual void OnLinkClicked(const base::Closure& callback) OVERRIDE;
+  virtual void Show() OVERRIDE;
 
-namespace extensions {
+  // WidgetObserver methods.
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+
+ private:
+  virtual ~ExtensionMessageBubbleView();
+
+  // Shows the bubble and updates the counter for how often it has been shown.
+  void ShowBubble();
+
+  // views::BubbleDelegateView overrides:
+  virtual void Init() OVERRIDE;
+
+  // views::ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // views::LinkListener implementation.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // views::View implementation.
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
+      OVERRIDE;
+
+  base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
+
+  // The controller for this bubble.
+  scoped_ptr<ExtensionMessageBubbleController> controller_;
+
+  // The headline, labels and buttons on the bubble.
+  views::Label* headline_;
+  views::Link* learn_more_;
+  views::LabelButton* action_button_;
+  views::LabelButton* dismiss_button_;
+
+  // All actions (link, button, esc) close the bubble, but we need to
+  // make sure we don't send dismiss if the link was clicked.
+  bool link_clicked_;
+  bool action_taken_;
+
+  // Callbacks into the controller.
+  base::Closure action_callback_;
+  base::Closure dismiss_callback_;
+  base::Closure link_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleView);
+};
 
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
@@ -70,75 +135,6 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
 
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
-}
-
-// static
-void ExtensionMessageBubbleView::MaybeShow(
-    Browser* browser,
-    ToolbarView* toolbar_view,
-    views::View* anchor_view) {
-#if defined(OS_WIN)
-  // The list of suspicious extensions takes priority over the dev mode bubble,
-  // since that needs to be shown as soon as we disable something. The dev mode
-  // bubble is not as time sensitive so we'll catch the dev mode extensions on
-  // the next startup/next window that opens. That way, we're not too spammy
-  // with the bubbles.
-  scoped_ptr<SuspiciousExtensionBubbleController> suspicious_extensions(
-      new SuspiciousExtensionBubbleController(browser->profile()));
-  if (suspicious_extensions->ShouldShow()) {
-    SuspiciousExtensionBubbleController* controller =
-        suspicious_extensions.get();
-    ExtensionMessageBubbleView* bubble_delegate =
-        new ExtensionMessageBubbleView(anchor_view,
-                                       suspicious_extensions.Pass());
-    views::BubbleDelegateView::CreateBubble(bubble_delegate);
-    controller->Show(bubble_delegate);
-    return;
-  }
-
-  scoped_ptr<DevModeBubbleController> dev_mode_extensions(
-      new DevModeBubbleController(browser->profile()));
-  if (dev_mode_extensions->ShouldShow()) {
-    views::View* reference_view = NULL;
-    BrowserActionsContainer* container = toolbar_view->browser_actions();
-    if (container->animating())
-      return;
-
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser->profile())->extension_service();
-    extensions::ExtensionActionManager* extension_action_manager =
-        extensions::ExtensionActionManager::Get(browser->profile());
-
-    const ExtensionIdList extension_list =
-        dev_mode_extensions->GetExtensionIdList();
-    ExtensionToolbarModel::Get(
-        browser->profile())->EnsureVisibility(extension_list);
-    for (size_t i = 0; i < extension_list.size(); ++i) {
-      const Extension* extension =
-          service->GetExtensionById(extension_list[i], false);
-      if (!extension)
-        continue;
-      reference_view = container->GetBrowserActionView(
-          extension_action_manager->GetBrowserAction(*extension));
-      if (reference_view && reference_view->visible())
-        break;  // Found a good candidate.
-    }
-    if (reference_view) {
-      // If we have a view, it means we found a browser action and we want to
-      // point to the chevron, not the hotdog menu.
-      if (!reference_view->visible())
-        reference_view = container->chevron();  // It's hidden, use the chevron.
-    }
-    if (reference_view && reference_view->visible())
-      anchor_view = reference_view;  // Catch-all is the hotdog menu.
-
-    DevModeBubbleController* controller = dev_mode_extensions.get();
-    ExtensionMessageBubbleView* bubble_delegate =
-        new ExtensionMessageBubbleView(anchor_view, dev_mode_extensions.Pass());
-    views::BubbleDelegateView::CreateBubble(bubble_delegate);
-    controller->Show(bubble_delegate);
-  }
-#endif
 }
 
 void ExtensionMessageBubbleView::OnActionButtonClicked(
@@ -182,8 +178,7 @@ void ExtensionMessageBubbleView::OnWidgetDestroying(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleView - private.
 
-ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {
-}
+ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {}
 
 void ExtensionMessageBubbleView::ShowBubble() {
   GetWidget()->Show();
@@ -327,6 +322,169 @@ void ExtensionMessageBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// ExtensionMessageBubbleFactory
+
+ExtensionMessageBubbleFactory::ExtensionMessageBubbleFactory(
+    Profile* profile,
+    ToolbarView* toolbar_view)
+    : profile_(profile),
+      toolbar_view_(toolbar_view),
+      shown_suspicious_extensions_bubble_(false),
+      shown_dev_mode_extensions_bubble_(false),
+      is_observing_(false),
+      stage_(STAGE_START),
+      container_(NULL),
+      anchor_view_(NULL) {}
+
+ExtensionMessageBubbleFactory::~ExtensionMessageBubbleFactory() {
+  MaybeStopObserving();
+}
+
+void ExtensionMessageBubbleFactory::MaybeShow(views::View* anchor_view) {
+  // The list of suspicious extensions takes priority over the dev mode bubble,
+  // since that needs to be shown as soon as we disable something. The dev mode
+  // bubble is not as time sensitive so we'll catch the dev mode extensions on
+  // the next startup/next window that opens. That way, we're not too spammy
+  // with the bubbles.
+  if (!shown_suspicious_extensions_bubble_) {
+    if (MaybeShowSuspiciousExtensionsBubble(anchor_view))
+      return;
+  }
+
+  if (!shown_dev_mode_extensions_bubble_)
+    MaybeShowDevModeExtensionsBubble(anchor_view);
+}
+
+bool ExtensionMessageBubbleFactory::MaybeShowSuspiciousExtensionsBubble(
+    views::View* anchor_view) {
+  DCHECK(!shown_suspicious_extensions_bubble_);
+
+  scoped_ptr<SuspiciousExtensionBubbleController> suspicious_extensions(
+      new SuspiciousExtensionBubbleController(profile_));
+  if (!suspicious_extensions->ShouldShow())
+    return false;
+
+  shown_suspicious_extensions_bubble_ = true;
+  SuspiciousExtensionBubbleController* weak_controller =
+      suspicious_extensions.get();
+  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+      anchor_view,
+      suspicious_extensions.PassAs<ExtensionMessageBubbleController>());
+
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
+  weak_controller->Show(bubble_delegate);
+
+  return true;
+}
+
+bool ExtensionMessageBubbleFactory::MaybeShowDevModeExtensionsBubble(
+    views::View* anchor_view) {
+  DCHECK(!shown_dev_mode_extensions_bubble_);
+
+  // Check the Developer Mode extensions.
+  scoped_ptr<DevModeBubbleController> dev_mode_extensions(
+      new DevModeBubbleController(profile_));
+
+  // Return early if we have none to show.
+  if (!dev_mode_extensions->ShouldShow())
+    return false;
+
+  shown_dev_mode_extensions_bubble_ = true;
+
+  // We should be in the start stage (i.e., should not have a pending attempt to
+  // show a bubble).
+  DCHECK_EQ(stage_, STAGE_START);
+
+  // Prepare to display and highlight the developer mode extensions before
+  // showing the bubble. Since this is an asynchronous process, set member
+  // variables for later use.
+  controller_ = dev_mode_extensions.Pass();
+  anchor_view_ = anchor_view;
+  container_ = toolbar_view_->browser_actions();
+
+  if (container_->animating())
+    MaybeObserve();
+  else
+    HighlightDevModeExtensions();
+
+  return true;
+}
+
+void ExtensionMessageBubbleFactory::MaybeObserve() {
+  if (!is_observing_) {
+    is_observing_ = true;
+    container_->AddObserver(this);
+  }
+}
+
+void ExtensionMessageBubbleFactory::MaybeStopObserving() {
+  if (is_observing_) {
+    is_observing_ = false;
+    container_->RemoveObserver(this);
+  }
+}
+
+void ExtensionMessageBubbleFactory::OnBrowserActionsContainerAnimationEnded() {
+  MaybeStopObserving();
+  if (stage_ == STAGE_START) {
+    HighlightDevModeExtensions();
+  } else if (stage_ == STAGE_HIGHLIGHTED) {
+    ShowDevModeBubble();
+  } else {  // We shouldn't be observing if we've completed the process.
+    NOTREACHED();
+    Finish();
+  }
+}
+
+void ExtensionMessageBubbleFactory::OnBrowserActionsContainerDestroyed() {
+  // If the container associated with the bubble is destroyed, abandon the
+  // process.
+  Finish();
+}
+
+void ExtensionMessageBubbleFactory::HighlightDevModeExtensions() {
+  DCHECK_EQ(STAGE_START, stage_);
+  stage_ = STAGE_HIGHLIGHTED;
+
+  const ExtensionIdList extension_list = controller_->GetExtensionIdList();
+  DCHECK(!extension_list.empty());
+  ExtensionToolbarModel::Get(profile_)->HighlightExtensions(extension_list);
+  if (container_->animating())
+    MaybeObserve();
+  else
+    ShowDevModeBubble();
+}
+
+void ExtensionMessageBubbleFactory::ShowDevModeBubble() {
+  DCHECK_EQ(stage_, STAGE_HIGHLIGHTED);
+  stage_ = STAGE_COMPLETE;
+
+  views::View* reference_view = NULL;
+  if (container_->num_browser_actions() > 0)
+    reference_view = container_->GetBrowserActionViewAt(0);
+  if (reference_view && reference_view->visible())
+    anchor_view_ = reference_view;
+
+  DevModeBubbleController* weak_controller = controller_.get();
+  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+      anchor_view_,
+      scoped_ptr<ExtensionMessageBubbleController>(controller_.release()));
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
+  weak_controller->Show(bubble_delegate);
+
+  Finish();
+}
+
+void ExtensionMessageBubbleFactory::Finish() {
+  MaybeStopObserving();
+  controller_.reset();
+  anchor_view_ = NULL;
+  container_ = NULL;
 }
 
 }  // namespace extensions

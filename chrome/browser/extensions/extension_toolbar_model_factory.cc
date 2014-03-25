@@ -11,6 +11,8 @@
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
 
+namespace extensions {
+
 // static
 ExtensionToolbarModel* ExtensionToolbarModelFactory::GetForProfile(
     Profile* profile) {
@@ -27,7 +29,7 @@ ExtensionToolbarModelFactory::ExtensionToolbarModelFactory()
     : BrowserContextKeyedServiceFactory(
         "ExtensionToolbarModel",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
 }
 
 ExtensionToolbarModelFactory::~ExtensionToolbarModelFactory() {}
@@ -36,13 +38,12 @@ KeyedService* ExtensionToolbarModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ExtensionToolbarModel(
       Profile::FromBrowserContext(context),
-      extensions::ExtensionPrefsFactory::GetForBrowserContext(context));
+      ExtensionPrefsFactory::GetForBrowserContext(context));
 }
 
 content::BrowserContext* ExtensionToolbarModelFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return extensions::ExtensionsBrowserClient::Get()->
-      GetOriginalContext(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 bool ExtensionToolbarModelFactory::ServiceIsCreatedWithBrowserContext() const {
@@ -52,3 +53,5 @@ bool ExtensionToolbarModelFactory::ServiceIsCreatedWithBrowserContext() const {
 bool ExtensionToolbarModelFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
+
+}  // namespace extensions

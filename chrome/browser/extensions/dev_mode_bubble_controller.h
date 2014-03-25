@@ -14,14 +14,14 @@
 class Browser;
 class ExtensionService;
 
-using extensions::ExtensionMessageBubbleController;
+namespace extensions {
 
 namespace {
 
 class DevModeBubbleDelegate
     : public ExtensionMessageBubbleController::Delegate {
  public:
-  explicit DevModeBubbleDelegate(ExtensionService* service);
+  explicit DevModeBubbleDelegate(Profile* profile);
   virtual ~DevModeBubbleDelegate();
 
   // ExtensionMessageBubbleController::Delegate methods.
@@ -29,7 +29,8 @@ class DevModeBubbleDelegate
   virtual void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
-  virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
+  virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
+  virtual void OnClose() OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
@@ -44,6 +45,9 @@ class DevModeBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;
 
  private:
+  // The associated profile (weak).
+  Profile* profile_;
+
   // Our extension service. Weak, not owned by us.
   ExtensionService* service_;
 
@@ -51,8 +55,6 @@ class DevModeBubbleDelegate
 };
 
 }  // namespace
-
-namespace extensions {
 
 class DevModeBubble;
 

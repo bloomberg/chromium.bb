@@ -5,90 +5,102 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_VIEW_H_
 
-#include "chrome/browser/extensions/extension_message_bubble.h"
-#include "chrome/browser/extensions/extension_message_bubble_controller.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 
-class Browser;
+class Profile;
+class BrowserActionsContainer;
 class ToolbarView;
 
 namespace views {
-class Label;
-class LabelButton;
-class Link;
-class Widget;
+class View;
 }
 
 namespace extensions {
+class DevModeBubbleController;
 
-// This is a class that implements the UI for the bubble showing which
-// extensions look suspicious and have therefore been automatically disabled.
-class ExtensionMessageBubbleView : public ExtensionMessageBubble,
-                                   public views::BubbleDelegateView,
-                                   public views::ButtonListener,
-                                   public views::LinkListener {
+// Create and show ExtensionMessageBubbles for either extensions that look
+// suspicious and have therefore been disabled, or for extensions that are
+// running in developer mode that we want to warn the user about.
+// Calling MaybeShow() will show one of the bubbles, if there is cause to (we
+// don't show both in order to avoid spamminess). The suspicious extensions
+// bubble takes priority over the developer mode extensions bubble.
+class ExtensionMessageBubbleFactory : public BrowserActionsContainerObserver {
  public:
-  // Show the Disabled Extension bubble, if needed.
-  static void MaybeShow(
-      Browser* browser, ToolbarView* toolbar_view, views::View* anchor_view);
+  ExtensionMessageBubbleFactory(Profile* profile, ToolbarView* toolbar_view);
+  virtual ~ExtensionMessageBubbleFactory();
 
-  // ExtensionMessageBubble methods.
-  virtual void OnActionButtonClicked(const base::Closure& callback) OVERRIDE;
-  virtual void OnDismissButtonClicked(const base::Closure& callback) OVERRIDE;
-  virtual void OnLinkClicked(const base::Closure& callback) OVERRIDE;
-  virtual void Show() OVERRIDE;
-
-  // WidgetObserver methods.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  void MaybeShow(views::View* anchor_view);
 
  private:
-  ExtensionMessageBubbleView(
-      views::View* anchor_view,
-      scoped_ptr<ExtensionMessageBubbleController> controller);
-  virtual ~ExtensionMessageBubbleView();
+  // The stage of showing the developer mode extensions bubble. STAGE_START
+  // corresponds to the beginning of the process, when nothing has been done.
+  // STAGE_HIGHLIGHTED indicates that the toolbar should be highlighting
+  // dangerous extensions. STAGE_COMPLETE means that the process should be
+  // ended.
+  enum Stage { STAGE_START, STAGE_HIGHLIGHTED, STAGE_COMPLETE };
 
-  // Shows the bubble and updates the counter for how often it has been shown.
-  void ShowBubble();
+  // Shows the suspicious extensions bubble, if there are suspicious extensions
+  // and we have not done so already.
+  // Returns true if we have show the view.
+  bool MaybeShowSuspiciousExtensionsBubble(views::View* anchor_view);
 
-  // views::BubbleDelegateView overrides:
-  virtual void Init() OVERRIDE;
+  // Shows the developer mode extensions bubble, if there are extensions running
+  // in developer mode and we have not done so already.
+  // Returns true if we show the view (or start the process).
+  bool MaybeShowDevModeExtensionsBubble(views::View* anchor_view);
 
-  // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+  // Starts or stops observing the BrowserActionsContainer, if necessary.
+  void MaybeObserve();
+  void MaybeStopObserving();
 
-  // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // BrowserActionsContainer::Observer implementation.
+  virtual void OnBrowserActionsContainerAnimationEnded() OVERRIDE;
+  virtual void OnBrowserActionsContainerDestroyed() OVERRIDE;
 
-  // views::View implementation.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+  // Inform the ExtensionToolbarModel to highlight the appropriate extensions.
+  void HighlightDevModeExtensions();
 
-  base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
+  // Shows the developer mode bubble, after highlighting the extensions.
+  void ShowDevModeBubble();
 
-  // The controller for this bubble.
-  scoped_ptr<ExtensionMessageBubbleController> controller_;
+  // Finishes the process of showing the developer mode bubble.
+  void Finish();
 
-  // The headline, labels and buttons on the bubble.
-  views::Label* headline_;
-  views::Link* learn_more_;
-  views::LabelButton* action_button_;
-  views::LabelButton* dismiss_button_;
+  // The associated profile.
+  Profile* profile_;
 
-  // All actions (link, button, esc) close the bubble, but we need to
-  // make sure we don't send dismiss if the link was clicked.
-  bool link_clicked_;
-  bool action_taken_;
+  // The toolbar view that the ExtensionMessageBubbleViews will attach to.
+  ToolbarView* toolbar_view_;
 
-  // Callbacks into the controller.
-  base::Closure action_callback_;
-  base::Closure dismiss_callback_;
-  base::Closure link_callback_;
+  // Whether or not we have shown the suspicious extensions bubble.
+  bool shown_suspicious_extensions_bubble_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleView);
+  // Whether or not we have shown the developer mode extensions bubble.
+  bool shown_dev_mode_extensions_bubble_;
+
+  // Whether or not we are already observing the BrowserActionsContainer (so
+  // we don't add ourselves twice).
+  bool is_observing_;
+
+  // The current stage of showing the bubble.
+  Stage stage_;
+
+  // The BrowserActionsContainer for the profile. This will be NULL if the
+  // factory is not currently in the process of showing a bubble.
+  BrowserActionsContainer* container_;
+
+  // The default view to anchor the bubble to. This will be NULL if the factory
+  // is not currently in the process of showing a bubble.
+  views::View* anchor_view_;
+
+  // The DevModeBubbleController to use. This will be NULL if the factory is not
+  // currently in the process of showing a bubble.
+  scoped_ptr<DevModeBubbleController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleFactory);
 };
 
 }  // namespace extensions
