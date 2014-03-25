@@ -81,9 +81,8 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     controller_ = NULL;
   }
 
-  // Update the display configuration as given in |display_specs|.
-  // See ash::test::DisplayManagerTestApi::UpdateDisplay for more
-  // details.
+  // Update the display configuration as given in |display_specs|.  See
+  // ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs) {
     ash::test::DisplayManagerTestApi display_manager_test_api(
         ash::Shell::GetInstance()->display_manager());
@@ -501,9 +500,9 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTestCacheUpdate,
 // Tests for crbug.com/339576. Wallpaper cache should be updated in
 // multi-profile mode when user:
 // 1. chooses an online wallpaper from wallpaper
-//    picker(calls SetWallpaperFromImageSkia);
+//    picker (calls SetWallpaperFromImageSkia);
 // 2. chooses a custom wallpaper from wallpaper
-//    picker(calls SetCustomWallpaper);
+//    picker (calls SetCustomWallpaper);
 // 3. reverts to a default wallpaper.
 // Also, when user login at multi-profile mode, previous logged in users'
 // wallpaper cache should not be deleted.

@@ -308,6 +308,8 @@ class WallpaperManager: public content::NotificationObserver {
  private:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
+  friend class WallpaperManagerPolicyTest;
+
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
   // Set |wallpaper| controlled by policy.
