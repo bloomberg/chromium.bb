@@ -1577,8 +1577,8 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
-  MockWebContentsDelegate* mock = new MockWebContentsDelegate;
-  embedder_web_contents->SetDelegate(mock);
+  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  embedder_web_contents->SetDelegate(mock.get());
 
   ExtensionTestMessageListener done_listener("TEST_PASSED", false);
   done_listener.set_failure_message("TEST_FAILED");
@@ -1839,9 +1839,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.
   content::WebContentsDelegate* delegate = guest_web_contents->GetDelegate();
-  MockDownloadWebContentsDelegate* mock_delegate =
-      new MockDownloadWebContentsDelegate(delegate);
-  guest_web_contents->SetDelegate(mock_delegate);
+  scoped_ptr<MockDownloadWebContentsDelegate>
+      mock_delegate(new MockDownloadWebContentsDelegate(delegate));
+  guest_web_contents->SetDelegate(mock_delegate.get());
 
   // Start test.
   // 1. Guest requests a download that its embedder denies.
