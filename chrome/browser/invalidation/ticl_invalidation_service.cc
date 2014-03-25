@@ -15,6 +15,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -430,10 +431,12 @@ void TiclInvalidationService::UpdateInvalidationNetworkChannel() {
   InvalidationNetworkChannel network_channel_type = PUSH_CLIENT_CHANNEL;
 // For now don't use GCM on iOS.
 #if !defined(OS_IOS)
-  if (profile_->GetPrefs()->GetBoolean(
-          prefs::kInvalidationServiceUseGCMChannel) &&
-      gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
-          gcm::GCMProfileService::ALWAYS_ENABLED) {
+  if (gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
+          gcm::GCMProfileService::ALWAYS_ENABLED &&
+      (profile_->GetPrefs()->GetBoolean(
+           prefs::kInvalidationServiceUseGCMChannel) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kInvalidationUseGCMChannel))) {
     network_channel_type = GCM_NETWORK_CHANNEL;
   }
 #endif

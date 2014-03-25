@@ -852,6 +852,10 @@ const char kIgnoreUrlFetcherCertRequests[]  =
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
+// Invalidation service should use GCM network channel even if experiment is not
+// enabled.
+const char kInvalidationUseGCMChannel[]     = "invalidation-use-gcm-channel";
+
 // Causes Chrome to attempt to get metadata from the webstore for the
 // app/extension ID given, and then prompt the user to download and install it.
 const char kInstallFromWebstore[]           = "install-from-webstore";

@@ -237,6 +237,7 @@ extern const char kHostResolverParallelism[];
 extern const char kHostResolverRetryAttempts[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];
+extern const char kInvalidationUseGCMChannel[];
 extern const char kInstallFromWebstore[];
 extern const char kInstantProcess[];
 extern const char kIpcFuzzerTestcase[];

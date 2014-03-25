@@ -6,6 +6,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #if !defined(ANDROID)
 // channel_common.proto defines ANDROID constant that conflicts with Android
@@ -56,18 +57,6 @@ const net::BackoffEntry::Policy kRegisterBackoffPolicy = {
   false,
 };
 
-// Outgoing message status values for UMA_HISTOGRAM.
-enum OutgoingMessageStatus {
-  OUTGOING_MESSAGE_SUCCESS,
-  MESSAGE_DISCARDED,     // New message started before old one was sent.
-  ACCESS_TOKEN_FAILURE,  // Requeting access token failed.
-  POST_FAILURE,          // HTTP Post failed.
-
-  // This enum is used in UMA_HISTOGRAM_ENUMERATION. Insert new values above
-  // this line.
-  OUTGOING_MESSAGE_STATUS_COUNT
-};
-
 // Incoming message status values for UMA_HISTOGRAM.
 enum IncomingMessageStatus {
   INCOMING_MESSAGE_SUCCESS,
@@ -80,10 +69,34 @@ enum IncomingMessageStatus {
   INCOMING_MESSAGE_STATUS_COUNT
 };
 
-const char kOutgoingMessageStatusHistogram[] =
-    "GCMInvalidations.OutgoingMessageStatus";
+// Outgoing message status values for UMA_HISTOGRAM.
+enum OutgoingMessageStatus {
+  OUTGOING_MESSAGE_SUCCESS,
+  MESSAGE_DISCARDED,     // New message started before old one was sent.
+  ACCESS_TOKEN_FAILURE,  // Requeting access token failed.
+  POST_FAILURE,          // HTTP Post failed.
+
+  // This enum is used in UMA_HISTOGRAM_ENUMERATION. Insert new values above
+  // this line.
+  OUTGOING_MESSAGE_STATUS_COUNT
+};
+
 const char kIncomingMessageStatusHistogram[] =
     "GCMInvalidations.IncomingMessageStatus";
+const char kOutgoingMessageStatusHistogram[] =
+    "GCMInvalidations.OutgoingMessageStatus";
+
+void RecordIncomingMessageStatus(IncomingMessageStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
+                            status,
+                            INCOMING_MESSAGE_STATUS_COUNT);
+}
+
+void RecordOutgoingMessageStatus(OutgoingMessageStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
+                            MESSAGE_DISCARDED,
+                            OUTGOING_MESSAGE_STATUS_COUNT);
+}
 
 }  // namespace
 
@@ -99,8 +112,9 @@ scoped_ptr<base::DictionaryValue>
 GCMNetworkChannelDiagnostic::CollectDebugData() const {
   scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue);
   status->SetString("GCMNetworkChannel.Channel", "GCM");
+  std::string reg_id_hash = base::SHA1HashString(registration_id_);
   status->SetString("GCMNetworkChannel.HashedRegistrationID",
-                    base::SHA1HashString(registration_id_));
+                    base::HexEncode(reg_id_hash.c_str(), reg_id_hash.size()));
   status->SetString("GCMNetworkChannel.RegistrationResult",
                     GCMClientResultToString(registration_result_));
   status->SetBoolean("GCMNetworkChannel.HadLastMessageEmptyEchoToken",
@@ -210,9 +224,7 @@ void GCMNetworkChannel::SendMessage(const std::string& message) {
   DVLOG(2) << "SendMessage";
   diagnostic_info_.sent_messages_count_++;
   if (!cached_message_.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
-                              MESSAGE_DISCARDED,
-                              OUTGOING_MESSAGE_STATUS_COUNT);
+    RecordOutgoingMessageStatus(MESSAGE_DISCARDED);
   }
   cached_message_ = message;
 
@@ -248,9 +260,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
     // token service. Just drop this request, cacheinvalidations will retry
     // sending message and at that time we'll retry requesting access token.
     DVLOG(1) << "RequestAccessToken failed: " << error.ToString();
-    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
-                              ACCESS_TOKEN_FAILURE,
-                              OUTGOING_MESSAGE_STATUS_COUNT);
+    RecordOutgoingMessageStatus(ACCESS_TOKEN_FAILURE);
     cached_message_.clear();
     return;
   }
@@ -283,30 +293,22 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
   diagnostic_info_.last_message_received_time_ = base::Time::Now();
 
   if (message.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
-                              MESSAGE_EMPTY,
-                              INCOMING_MESSAGE_STATUS_COUNT);
+    RecordIncomingMessageStatus(MESSAGE_EMPTY);
     return;
   }
   std::string data;
   if (!Base64DecodeURLSafe(message, &data)) {
-    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
-                              INVALID_ENCODING,
-                              INCOMING_MESSAGE_STATUS_COUNT);
+    RecordIncomingMessageStatus(INVALID_ENCODING);
     return;
   }
   ipc::invalidation::AddressedAndroidMessage android_message;
   if (!android_message.ParseFromString(data) ||
       !android_message.has_message()) {
-    UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
-                              INVALID_PROTO,
-                              INCOMING_MESSAGE_STATUS_COUNT);
+    RecordIncomingMessageStatus(INVALID_PROTO);
     return;
   }
   DVLOG(2) << "Deliver incoming message";
-  UMA_HISTOGRAM_ENUMERATION(kIncomingMessageStatusHistogram,
-                            INCOMING_MESSAGE_SUCCESS,
-                            INCOMING_MESSAGE_STATUS_COUNT);
+  RecordIncomingMessageStatus(INCOMING_MESSAGE_SUCCESS);
   DeliverIncomingMessage(android_message.message());
 #else
   // This code shouldn't be invoked on Android.
@@ -330,18 +332,15 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
     delegate_->InvalidateToken(access_token_);
   }
 
-  if (!status.is_success() || fetcher->GetResponseCode() != net::HTTP_OK ||
-      fetcher->GetResponseCode() != net::HTTP_NO_CONTENT) {
+  if (!status.is_success() ||
+      (fetcher->GetResponseCode() != net::HTTP_OK &&
+       fetcher->GetResponseCode() != net::HTTP_NO_CONTENT)) {
     DVLOG(1) << "URLFetcher failure";
-    UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
-                              POST_FAILURE,
-                              OUTGOING_MESSAGE_STATUS_COUNT);
+    RecordOutgoingMessageStatus(POST_FAILURE);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
-                            OUTGOING_MESSAGE_SUCCESS,
-                            OUTGOING_MESSAGE_STATUS_COUNT);
+  RecordOutgoingMessageStatus(OUTGOING_MESSAGE_SUCCESS);
   DVLOG(2) << "URLFetcher success";
 }
 
