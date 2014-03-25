@@ -12,9 +12,9 @@
 
 namespace WebCore {
 
-class InterpolationEffect : public RefCounted<InterpolationEffect> {
+class InterpolationEffect : public RefCountedWillBeGarbageCollected<InterpolationEffect> {
 public:
-    static PassRefPtr<InterpolationEffect> create() { return adoptRef(new InterpolationEffect()); }
+    static PassRefPtrWillBeRawPtr<InterpolationEffect> create() { return adoptRefWillBeNoop(new InterpolationEffect()); }
 
     PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > getActiveInterpolations(double fraction, double iterationDuration) const;
 
@@ -22,6 +22,8 @@ public:
     {
         m_interpolations.append(InterpolationRecord::create(interpolation, easing, start, end, applyFrom, applyTo));
     }
+
+    void trace(Visitor*);
 
 private:
     InterpolationEffect()
@@ -56,7 +58,7 @@ private:
         }
     };
 
-    WillBePersistentHeapVector<OwnPtrWillBeMember<InterpolationRecord> > m_interpolations;
+    WillBeHeapVector<OwnPtrWillBeMember<InterpolationRecord> > m_interpolations;
 };
 
 }

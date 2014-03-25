@@ -173,7 +173,7 @@ private:
     typedef WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
 
-    mutable RefPtr<InterpolationEffect> m_interpolationEffect;
+    mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
 
     friend class KeyframeEffectModelTest;
 };

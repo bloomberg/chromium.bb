@@ -267,6 +267,7 @@ bool KeyframeEffectModel::isReplaceOnly()
 void KeyframeEffectModel::trace(Visitor* visitor)
 {
     visitor->trace(m_keyframes);
+    visitor->trace(m_interpolationEffect);
 #if ENABLE_OILPAN
     visitor->trace(m_keyframeGroups);
 #endif

@@ -32,4 +32,11 @@ void InterpolationEffect::InterpolationRecord::trace(Visitor* visitor)
     visitor->trace(m_interpolation);
 }
 
+void InterpolationEffect::trace(Visitor* visitor)
+{
+#if ENABLE_OILPAN
+    visitor->trace(m_interpolations);
+#endif
+}
+
 }
