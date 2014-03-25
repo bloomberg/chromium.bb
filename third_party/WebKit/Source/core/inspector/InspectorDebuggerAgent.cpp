@@ -263,12 +263,12 @@ void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageTy
         breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
 }
 
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, PassRefPtr<ScriptCallStack>, unsigned long)
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptCallStack*, unsigned long)
 {
     addMessageToConsole(source, type);
 }
 
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long)
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, ScriptArguments*, unsigned long)
 {
     addMessageToConsole(source, type);
 }
@@ -750,7 +750,7 @@ void InspectorDebuggerAgent::didHandleEvent()
     cancelPauseOnNextStatement();
 }
 
-void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
+void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, FormData*, const HTTPHeaderMap&, bool)
 {
     if (m_asyncCallStackTracker.isEnabled() && async)
         m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());

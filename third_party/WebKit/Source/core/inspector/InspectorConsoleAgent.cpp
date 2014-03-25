@@ -157,7 +157,7 @@ void InspectorConsoleAgent::clearFrontend()
     disable(&errorString);
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptCallStack* callStack, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -167,7 +167,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, ScriptArguments* arguments, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -248,7 +248,7 @@ void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptAr
 
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
     String message = title + ": " + String::number(result.storedValue->value);
-    addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, callStack);
+    addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, callStack.get());
 }
 
 void InspectorConsoleAgent::frameWindowDiscarded(DOMWindow* window)
