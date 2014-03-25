@@ -2119,6 +2119,153 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CloudPrint.AuthEvent" enum="CloudPrintAuthEventType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Event counts in CloudPrintAuth.</summary>
+</histogram>
+
+<histogram name="CloudPrint.AvailablePrinters">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of printers availible for registration.</summary>
+</histogram>
+
+<histogram name="CloudPrint.AvailablePrintersList">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The number of printers availible for registration in Windows Service.
+  </summary>
+</histogram>
+
+<histogram name="CloudPrint.JobHandlerEvent"
+    enum="CloudPrintJobHandlerEventType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Event counts in PrinterJobHandler.</summary>
+</histogram>
+
+<histogram name="CloudPrint.JobsDonePerInterval">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of jobs successfully completed per hour.</summary>
+</histogram>
+
+<histogram name="CloudPrint.JobsStartedPerInterval">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of jobs started per hour.</summary>
+</histogram>
+
+<histogram name="CloudPrint.JobStatus" enum="CloudPrintJobStatusType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Then number of job completion statuses.</summary>
+</histogram>
+
+<histogram name="CloudPrint.NativeJobStatus"
+    enum="CloudPrintNativeJobStatusType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Event counts in PrintSystem.</summary>
+</histogram>
+
+<histogram name="CloudPrint.PrepareTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time needed to prepare job for spooling.</summary>
+</histogram>
+
+<histogram name="CloudPrint.PrinterBlacklistSize">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of printers user has blacklisted.</summary>
+</histogram>
+
+<histogram name="CloudPrint.PrinterWhitelistSize">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of printers user has whitelisted.</summary>
+</histogram>
+
+<histogram name="CloudPrint.PrintingTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time needed to finish print job.</summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceEvents" enum="ServiceProcessEventType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Event counts in ServiceProcessControl.</summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityCapsFailTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The amount of time used to fail to collect printer capabilities.
+  </summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityCapsTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time used to collect printer capabilities.</summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityDisconnectTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The amount of time the utility process runs before disconnect.
+  </summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityMetafileFailTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time used to fail to generate metafile.</summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityMetafileTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time used to generate metafile.</summary>
+</histogram>
+
+<histogram name="CloudPrint.ServiceUtilityProcessHostEvent"
+    enum="ServiceUtilityProcessHostEventType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Event counts in ServiceUtilityProcessHost.</summary>
+</histogram>
+
+<histogram name="CloudPrint.SpoolingTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time needed to spool print job.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UnregisterPrinters">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of printers to unregister.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UrlFetcherDownloadSize" units="KB">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of data downloaded on cloud print request.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UrlFetcherRequestTime" units="ms">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of time needed for cloud print request.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UrlFetcherRequestType"
+    enum="CloudPrintUrlFetcherRequestType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Request counts to cloud print service.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UrlFetcherRetries">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The number of retries used to complete cloud print request.</summary>
+</histogram>
+
+<histogram name="CloudPrint.UrlFetcherUploadSize" units="KB">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>The amount of data uploaded with cloud print request.</summary>
+</histogram>
+
+<histogram name="CloudPrint.XmppPingTry">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Number of tries before successfull ping. 99 means giving up.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.CopyFromSurfaceTime" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -8042,6 +8189,37 @@ other types of suffix sets.
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The version of glibc used. (Linux only)</summary>
+</histogram>
+
+<histogram name="LocalDiscovery.ClientRestartAttempts">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Records number of attempts to start local discovery.</summary>
+</histogram>
+
+<histogram name="LocalDiscovery.DetectorRestartTime" units="milliseconds">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Time between detector restarts.</summary>
+</histogram>
+
+<histogram name="LocalDiscovery.DetectorTriggerTime" units="milliseconds">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Time before detector trigger notifications.</summary>
+</histogram>
+
+<histogram name="LocalDiscovery.DevicesPage" enum="DevicesPageEvents">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Records events related to devices page.</summary>
+</histogram>
+
+<histogram name="LocalDiscovery.PrivetNotificationsEvent"
+    enum="PrivetNotificationsEvent">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Records events related to local discovery notifications.</summary>
 </histogram>
 
 <histogram name="Login.ConsumerNewUsersAllowed" enum="LoginConsumerWhitelist">
@@ -19200,6 +19378,197 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PrinterService.PrinterServiceEvent"
+    enum="PrinterServiceEventType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count of events in PrinterService on ChromeOS related to USB printers.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.DestinationAction"
+    enum="PrintPreviewPrintDestinationBuckets">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Actions performed by the user when the print destination search widget is
+    shown to the user.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.FontType" enum="PrintPreviewFontTypeType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count of font file formats embeeded in print preview PDFs. These numbers are
+    biased by what the platforms supports in terms of detection.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.GcpPromo" enum="PrintPreviewGcpPromoBuckets">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Actions performed by the user when the Google Cloud Print add-printers
+    promotion is shown to the user.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.InitialDisplayTime" units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Time from when print preview is intiated until the intial preview is sent to
+    the preview tab for rendering.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.InitializationTime" units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Time from when print preview is intiated until the preview PDF generation is
+    started.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.ManagePrinters">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count the number of requests received to show the manage printers dialog.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.NumberOfPrinters">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count the total number of printers shown in destination drop down list.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.Initial">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The page count of the initial print preview, a.k.a. the total number of
+    pages in documents to be printed.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.PrintToCloudPrint">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The final page count (after page selection) of documents printed to a cloud
+    printer.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.PrintToCloudPrintWebDialog">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The final page count (after page selection) of documents printed to a cloud
+    printer using web dialog.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.PrintToPDF">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The final page count (after page selection) of documents printed to PDF.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.PrintToPrinter">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The final page count (after page selection) of documents printed to a
+    printer.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PageCount.SystemDialog">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The final page count (after page selection) of documents printed using
+    system dialog.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Print preview events.</summary>
+</histogram>
+
+<histogram name="PrintPreview.PrintSettings" enum="PrintSettings">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Track the popularity of print settings. (Settings when printing to PDF are
+    excluded from this statistic.)
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RegeneratePreviewRequest.BeforeCancel">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The number of times regenerate preview requests received before the user
+    clicked the cancel button.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RegeneratePreviewRequest.BeforeFirstData">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The number of times regenerate preview requests received before the first
+    preview data is availible.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RegeneratePreviewRequest.BeforePrint">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    The number of times regenerate preview requests received before the user
+    clicked the print button.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RenderAndGeneratePDFTime" units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Time taken to render and generate PDF for print preview. (Includes time to
+    reflow the page back to normal, but not the time to reflow the page to
+    prepare for printing.)
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RenderAndGeneratePDFTimeAvgPerPage"
+    units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Time taken to render and generate PDF for print preview divided by the
+    number of pages. (Includes time to reflow the page back to normal, but not
+    the time to reflow the page to prepare for printing.)
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RendererError" enum="PrintPreviewFailureType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count how frequently a set of pre-defined print preview errors occur.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.RenderPDFPageTime" units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Time taken to render each PDF page for print preview.</summary>
+</histogram>
+
+<histogram name="PrintPreview.RenderToPDFTime" units="milliseconds">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Time taken to render to PDF for print preview.</summary>
+</histogram>
+
+<histogram name="PrintPreview.UserAction" enum="PrintPreviewUserActionType">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Action taken by the user in the preview tab such as print, cancel, print to
+    pdf and show advanced print settings dialog.
+  </summary>
+</histogram>
+
 <histogram name="Profile.AddNewUser" enum="ProfileAddNewUser">
   <owner>bcwhite@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
@@ -20299,6 +20668,18 @@ other types of suffix sets.
     Number of pixels uploaded to texture memory and not known opaque, normalized
     to the viewport size.  This is collected once per commit from WebKit to the
     compositor.
+  </summary>
+</histogram>
+
+<histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>Count of renderer view context menu items shown.</summary>
+</histogram>
+
+<histogram name="RenderViewContextMenu.Used" enum="RenderViewContextMenuItem">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Count of renderer view context menu items (Only commands now) used.
   </summary>
 </histogram>
 
@@ -29541,6 +29922,65 @@ other types of suffix sets.
   <int value="2" label="Read Text"/>
 </enum>
 
+<enum name="CloudPrintAuthEventType" type="int">
+  <int value="0" label="AUTH_EVENT_ROBO_CREATE"/>
+  <int value="1" label="AUTH_EVENT_ROBO_SUCCEEDED"/>
+  <int value="2" label="AUTH_EVENT_ROBO_FAILED"/>
+  <int value="3" label="AUTH_EVENT_ROBO_JSON_ERROR"/>
+  <int value="4" label="AUTH_EVENT_ROBO_AUTH_ERROR"/>
+  <int value="5" label="AUTH_EVENT_AUTH_WITH_TOKEN"/>
+  <int value="6" label="AUTH_EVENT_AUTH_WITH_CODE"/>
+  <int value="7" label="AUTH_EVENT_TOKEN_RESPONSE"/>
+  <int value="8" label="AUTH_EVENT_REFRESH_REQUEST"/>
+  <int value="9" label="AUTH_EVENT_REFRESH_RESPONSE"/>
+  <int value="10" label="AUTH_EVENT_AUTH_ERROR"/>
+  <int value="11" label="AUTH_EVENT_NET_ERROR"/>
+</enum>
+
+<enum name="CloudPrintJobHandlerEventType" type="int">
+  <int value="0" label="JOB_HANDLER_CHECK_FOR_JOBS"/>
+  <int value="1" label="JOB_HANDLER_START"/>
+  <int value="2" label="JOB_HANDLER_PENDING_TASK"/>
+  <int value="3" label="JOB_HANDLER_PRINTER_UPDATE"/>
+  <int value="4" label="JOB_HANDLER_JOB_CHECK"/>
+  <int value="5" label="JOB_HANDLER_JOB_STARTED"/>
+  <int value="6" label="JOB_HANDLER_VALID_TICKET"/>
+  <int value="7" label="JOB_HANDLER_DATA"/>
+  <int value="8" label="JOB_HANDLER_SET_IN_PROGRESS"/>
+  <int value="9" label="JOB_HANDLER_SET_START_PRINTING"/>
+  <int value="10" label="JOB_HANDLER_START_SPOOLING"/>
+  <int value="11" label="JOB_HANDLER_SPOOLED"/>
+  <int value="12" label="JOB_HANDLER_JOB_COMPLETED"/>
+  <int value="13" label="JOB_HANDLER_INVALID_TICKET"/>
+  <int value="14" label="JOB_HANDLER_INVALID_DATA"/>
+</enum>
+
+<enum name="CloudPrintJobStatusType" type="int">
+  <int value="0" label="JOB_SUCCESS"/>
+  <int value="1" label="JOB_DOWNLOAD_FAILED"/>
+  <int value="2" label="JOB_VALIDATE_TICKET_FAILED"/>
+  <int value="3" label="JOB_FAILED"/>
+</enum>
+
+<enum name="CloudPrintNativeJobStatusType" type="int">
+  <int value="0" label="PRINT_JOB_STATUS_INVALID"/>
+  <int value="1" label="PRINT_JOB_STATUS_IN_PROGRESS"/>
+  <int value="2" label="PRINT_JOB_STATUS_ERROR"/>
+  <int value="3" label="PRINT_JOB_STATUS_COMPLETED"/>
+</enum>
+
+<enum name="CloudPrintUrlFetcherRequestType" type="int">
+  <int value="0" label="REQUEST_AUTH_CODE"/>
+  <int value="1" label="REQUEST_REGISTER"/>
+  <int value="2" label="REQUEST_UNREGISTER"/>
+  <int value="3" label="REQUEST_UPDATE_PRINTER"/>
+  <int value="4" label="REQUEST_UPDATE_JOB"/>
+  <int value="5" label="REQUEST_USER_MESSAGE"/>
+  <int value="6" label="REQUEST_TICKET"/>
+  <int value="7" label="REQUEST_DATA"/>
+  <int value="8" label="REQUEST_JOB_FETCH"/>
+</enum>
+
 <enum name="CoalescePotentialPackets" type="int">
   <int value="0" label="No Advantage"/>
   <int value="1" label="Header packets Only"/>
@@ -29793,6 +30233,22 @@ other types of suffix sets.
   <int value="1" label="AllowHttp"/>
   <int value="2" label="Deny"/>
   <int value="3" label="Cancel"/>
+</enum>
+
+<enum name="DevicesPageEvents" type="int">
+  <int value="0" label="OPENED"/>
+  <int value="1" label="LOG_IN_STARTED_FROM_REGISTER_PROMO"/>
+  <int value="2" label="LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO"/>
+  <int value="3" label="ADD_PRINTER_CLICKED"/>
+  <int value="4" label="REGISTER_CLICKED"/>
+  <int value="5" label="REGISTER_CONFIRMED"/>
+  <int value="6" label="REGISTER_SUCCESS"/>
+  <int value="7" label="REGISTER_CANCEL"/>
+  <int value="8" label="REGISTER_FAILURE"/>
+  <int value="9" label="MANAGE_CLICKED"/>
+  <int value="10" label="REGISTER_CANCEL_ON_PRINTER"/>
+  <int value="11" label="REGISTER_TIMEOUT"/>
+  <int value="12" label="LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO"/>
 </enum>
 
 <enum name="DiagnosticsRecoveryRun" type="int">
@@ -37157,6 +37613,95 @@ other types of suffix sets.
   <int value="3" label="tapdown + tapunconfirmed"/>
 </enum>
 
+<enum name="PrinterServiceEventType" type="int">
+  <int value="0" label="Printer added"/>
+  <int value="1" label="Page displayed"/>
+</enum>
+
+<enum name="PrintPreviewFailureType" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Bad settings from print preview tab"/>
+  <int value="2" label="Copy metadata failed"/>
+  <int value="3" label="Metafile init failed"/>
+  <int value="4" label="0-page preview"/>
+  <int value="5" label="Mac draft metafile init failed"/>
+  <int value="6" label="PreviewPageRendered with no metafile"/>
+  <int value="7" label="UpdatePrintSettings failed"/>
+  <int value="8" label="Received bad printer settings"/>
+</enum>
+
+<enum name="PrintPreviewFontTypeType" type="int">
+  <int value="0" label="TYPE1"/>
+  <int value="1" label="TYPE1_CID"/>
+  <int value="2" label="CFF"/>
+  <int value="3" label="TRUETYPE"/>
+  <int value="4" label="OTHER"/>
+  <int value="5" label="NOT_EMBEDDABLE"/>
+</enum>
+
+<enum name="PrintPreviewGcpPromoBuckets" type="int">
+  <int value="0" label="PROMO_SHOWN"/>
+  <int value="1" label="PROMO_CLOSED"/>
+  <int value="2" label="GCP_PROMO_BUCKET_BOUNDARY"/>
+</enum>
+
+<enum name="PrintPreviewHelperEvents" type="int">
+  <int value="0" label="PREVIEW_EVENT_REQUESTED"/>
+  <int value="1" label="PREVIEW_EVENT_CACHE_HIT"/>
+  <int value="2" label="PREVIEW_EVENT_CREATE_DOCUMENT"/>
+  <int value="3" label="PREVIEW_EVENT_NEW_SETTINGS"/>
+</enum>
+
+<enum name="PrintPreviewPrintDestinationBuckets" type="int">
+  <int value="0" label="DESTINATION_SHOWN"/>
+  <int value="1" label="DESTINATION_CLOSED_CHANGED"/>
+  <int value="2" label="DESTINATION_CLOSED_UNCHANGED"/>
+  <int value="3" label="SIGNIN_PROMPT"/>
+  <int value="4" label="SIGNIN_TRIGGERED"/>
+  <int value="5" label="PRIVET_DUPLICATE_SELECTED"/>
+  <int value="6" label="CLOUD_DUPLICATE_SELECTED"/>
+  <int value="7" label="REGISTER_PROMO_SHOWN"/>
+  <int value="8" label="REGISTER_PROMO_SELECTED"/>
+</enum>
+
+<enum name="PrintPreviewUserActionType" type="int">
+  <int value="0" label="PRINT_TO_PRINTER"/>
+  <int value="1" label="PRINT_TO_PDF"/>
+  <int value="2" label="CANCEL"/>
+  <int value="3" label="FALLBACK_TO_ADVANCED_SETTINGS_DIALOG"/>
+  <int value="4" label="PREVIEW_FAILED"/>
+  <int value="5" label="PREVIEW_STARTED"/>
+  <int value="6" label="INITIATOR_TAB_CRASHED"/>
+  <int value="7" label="INITIATOR_TAB_CLOSED"/>
+  <int value="8" label="PRINT_WITH_CLOUD_PRINT"/>
+  <int value="9" label="PRINT_WITH_PRIVET"/>
+</enum>
+
+<enum name="PrintSettings" type="int">
+  <int value="0" label="LANDSCAPE"/>
+  <int value="1" label="PORTRAIT"/>
+  <int value="2" label="COLOR"/>
+  <int value="3" label="BLACK_AND_WHITE"/>
+  <int value="4" label="COLLATE"/>
+  <int value="5" label="SIMPLEX"/>
+  <int value="6" label="DUPLEX"/>
+  <int value="7" label="TOTAL"/>
+  <int value="8" label="HEADERS_AND_FOOTERS"/>
+  <int value="9" label="CSS_BACKGROUND"/>
+  <int value="10" label="SELECTION_ONLY"/>
+</enum>
+
+<enum name="PrivetNotificationsEvent" type="int">
+  <int value="0" label="PRIVET_SERVICE_STARTED"/>
+  <int value="1" label="PRIVET_LISTER_STARTED"/>
+  <int value="2" label="PRIVET_DEVICE_CHANGED"/>
+  <int value="3" label="PRIVET_INFO_DONE"/>
+  <int value="4" label="PRIVET_NOTIFICATION_SHOWN"/>
+  <int value="5" label="PRIVET_NOTIFICATION_CANCELED"/>
+  <int value="6" label="PRIVET_NOTIFICATION_CLICKED"/>
+  <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
+</enum>
+
 <enum name="ProfileAddNewUser" type="int">
   <int value="0" label="Add new user from icon menu"/>
   <int value="1" label="Add new user from title bar menu"/>
@@ -37573,6 +38118,67 @@ other types of suffix sets.
   <int value="3" label="Show More"/>
 </enum>
 
+<enum name="RenderViewContextMenuItem" type="int">
+  <int value="0" label="IDC_CONTENT_CONTEXT_CUSTOM_FIRST"/>
+  <int value="1" label="IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST"/>
+  <int value="2" label="IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST"/>
+  <int value="3" label="IDC_CONTENT_CONTEXT_OPENLINKNEWTAB"/>
+  <int value="4" label="IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW"/>
+  <int value="5" label="IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD"/>
+  <int value="6" label="IDC_CONTENT_CONTEXT_SAVELINKAS"/>
+  <int value="7" label="IDC_CONTENT_CONTEXT_SAVEAVAS"/>
+  <int value="8" label="IDC_CONTENT_CONTEXT_SAVEIMAGEAS"/>
+  <int value="9" label="IDC_CONTENT_CONTEXT_COPYLINKLOCATION"/>
+  <int value="10" label="IDC_CONTENT_CONTEXT_COPYIMAGELOCATION"/>
+  <int value="11" label="IDC_CONTENT_CONTEXT_COPYAVLOCATION"/>
+  <int value="12" label="IDC_CONTENT_CONTEXT_COPYIMAGE"/>
+  <int value="13" label="IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB"/>
+  <int value="14" label="IDC_CONTENT_CONTEXT_OPENAVNEWTAB"/>
+  <int value="15" label="IDC_CONTENT_CONTEXT_PLAYPAUSE"/>
+  <int value="16" label="IDC_CONTENT_CONTEXT_MUTE"/>
+  <int value="17" label="IDC_CONTENT_CONTEXT_LOOP"/>
+  <int value="18" label="IDC_CONTENT_CONTEXT_CONTROLS"/>
+  <int value="19" label="IDC_CONTENT_CONTEXT_ROTATECW"/>
+  <int value="20" label="IDC_CONTENT_CONTEXT_ROTATECCW"/>
+  <int value="21" label="IDC_BACK"/>
+  <int value="22" label="IDC_FORWARD"/>
+  <int value="23" label="IDC_SAVE_PAGE"/>
+  <int value="24" label="IDC_RELOAD"/>
+  <int value="25" label="IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP"/>
+  <int value="26" label="IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP"/>
+  <int value="27" label="IDC_PRINT"/>
+  <int value="28" label="IDC_VIEW_SOURCE"/>
+  <int value="29" label="IDC_CONTENT_CONTEXT_INSPECTELEMENT"/>
+  <int value="30" label="IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE"/>
+  <int value="31" label="IDC_CONTENT_CONTEXT_VIEWPAGEINFO"/>
+  <int value="32" label="IDC_CONTENT_CONTEXT_TRANSLATE"/>
+  <int value="33" label="IDC_CONTENT_CONTEXT_RELOADFRAME"/>
+  <int value="34" label="IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE"/>
+  <int value="35" label="IDC_CONTENT_CONTEXT_VIEWFRAMEINFO"/>
+  <int value="36" label="IDC_CONTENT_CONTEXT_UNDO"/>
+  <int value="37" label="IDC_CONTENT_CONTEXT_REDO"/>
+  <int value="38" label="IDC_CONTENT_CONTEXT_CUT"/>
+  <int value="39" label="IDC_CONTENT_CONTEXT_COPY"/>
+  <int value="40" label="IDC_CONTENT_CONTEXT_PASTE"/>
+  <int value="41" label="IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE"/>
+  <int value="42" label="IDC_CONTENT_CONTEXT_DELETE"/>
+  <int value="43" label="IDC_CONTENT_CONTEXT_SELECTALL"/>
+  <int value="44" label="IDC_CONTENT_CONTEXT_SEARCHWEBFOR"/>
+  <int value="45" label="IDC_CONTENT_CONTEXT_GOTOURL"/>
+  <int value="46" label="IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS"/>
+  <int value="47" label="IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS"/>
+  <int value="48" label="IDC_CONTENT_CONTEXT_ADDSEARCHENGINE"/>
+  <int value="49" label="IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES"/>
+  <int value="50" label="IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT"/>
+  <int value="51" label="IDC_SPEECH_INPUT_MENU"/>
+  <int value="52" label="IDC_CONTENT_CONTEXT_OPENLINKWITH"/>
+  <int value="53" label="IDC_CHECK_SPELLING_WHILE_TYPING"/>
+  <int value="54" label="IDC_SPELLCHECK_MENU"/>
+  <int value="55" label="IDC_CONTENT_CONTEXT_SPELLING_TOGGLE"/>
+  <int value="56" label="IDC_SPELLCHECK_LANGUAGES_FIRST"/>
+  <int value="57" label="IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE"/>
+</enum>
+
 <enum name="ResolutionCategory" type="int">
   <int value="0" label="RESOLVE_SUCCESS"/>
   <int value="1" label="RESOLVE_FAIL"/>
@@ -37951,11 +38557,44 @@ other types of suffix sets.
   <int value="33" label="NONE"/>
 </enum>
 
+<enum name="ServiceProcessEventType" type="int">
+  <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
+  <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
+  <int value="2" label="SERVICE_EVENT_ENABLE"/>
+  <int value="3" label="SERVICE_EVENT_DISABLE"/>
+  <int value="4" label="SERVICE_EVENT_DISABLE_BY_POLICY"/>
+  <int value="5" label="SERVICE_EVENT_LAUNCH"/>
+  <int value="6" label="SERVICE_EVENT_LAUNCHED"/>
+  <int value="7" label="SERVICE_EVENT_LAUNCH_FAILED"/>
+  <int value="8" label="SERVICE_EVENT_CHANNEL_CONNECTED"/>
+  <int value="9" label="SERVICE_EVENT_CHANNEL_ERROR"/>
+  <int value="10" label="SERVICE_EVENT_INFO_REQUEST"/>
+  <int value="11" label="SERVICE_EVENT_INFO_REPLY"/>
+  <int value="12" label="SERVICE_EVENT_HISTOGRAMS_REQUEST"/>
+  <int value="13" label="SERVICE_EVENT_HISTOGRAMS_REPLY"/>
+  <int value="14" label="SERVICE_PRINTERS_REQUEST"/>
+  <int value="15" label="SERVICE_PRINTERS_REPLY"/>
+</enum>
+
 <enum name="ServicesCustomizationLoadResult" type="int">
   <int value="0" label="Manifest loaded successfully"/>
   <int value="1" label="Manifest not found on server"/>
   <int value="2" label="Manifest parsing error"/>
   <int value="3" label="Failed to load manifest after N retries"/>
+</enum>
+
+<enum name="ServiceUtilityProcessHostEventType" type="int">
+  <int value="0" label="SERVICE_UTILITY_STARTED"/>
+  <int value="1" label="SERVICE_UTILITY_DISCONNECTED"/>
+  <int value="2" label="SERVICE_UTILITY_METAFILE_REQUEST"/>
+  <int value="3" label="SERVICE_UTILITY_METAFILE_SUCCEEDED"/>
+  <int value="4" label="SERVICE_UTILITY_METAFILE_FAILED"/>
+  <int value="5" label="SERVICE_UTILITY_CAPS_REQUEST"/>
+  <int value="6" label="SERVICE_UTILITY_CAPS_SUCCEEDED"/>
+  <int value="7" label="SERVICE_UTILITY_CAPS_FAILED"/>
+  <int value="8" label="SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST"/>
+  <int value="9" label="SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED"/>
+  <int value="10" label="SERVICE_UTILITY_SEMANTIC_CAPS_FAILED"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">
@@ -40044,6 +40683,17 @@ other types of suffix sets.
   <affected-histogram name="CertificateType.NonBR"/>
   <affected-histogram name="CertificateType2.BR"/>
   <affected-histogram name="CertificateType2.NonBR"/>
+</fieldtrial>
+
+<fieldtrial name="CloudPrintRequests" separator=".">
+  <group name="Register" label="Register request"/>
+  <group name="UpdatePrinter" label="Update printer request"/>
+  <group name="DownloadData" label="Download data request"/>
+  <group name="Other" label="Other requests"/>
+  <affected-histogram name="CloudPrint.UrlFetcherDownloadSize"/>
+  <affected-histogram name="CloudPrint.UrlFetcherRequestTime"/>
+  <affected-histogram name="CloudPrint.UrlFetcherRetries"/>
+  <affected-histogram name="CloudPrint.UrlFetcherUploadSize"/>
 </fieldtrial>
 
 <fieldtrial name="ConnCountImpact">
