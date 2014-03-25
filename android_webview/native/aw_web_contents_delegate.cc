@@ -163,7 +163,7 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
 // typically happens when popups are created.
 void AwWebContentsDelegate::WebContentsCreated(
     WebContents* source_contents,
-    int64 source_frame_id,
+    int opener_render_frame_id,
     const base::string16& frame_name,
     const GURL& target_url,
     content::WebContents* new_contents) {

@@ -33,8 +33,8 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
-    public void webContentsCreated(long sourceWebContents, long sourceFrameId, String frameName,
-            String targetUrl, long newWebContents) {
+    public void webContentsCreated(long sourceWebContents, long opener_render_frame_id,
+            String frameName, String targetUrl, long newWebContents) {
     }
 
     // Helper functions used to create types that are part of the public interface

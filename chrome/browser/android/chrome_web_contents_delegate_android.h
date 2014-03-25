@@ -73,7 +73,7 @@ class ChromeWebContentsDelegateAndroid
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
-                                  int64 source_frame_id,
+                                  int opener_render_frame_id,
                                   const base::string16& frame_name,
                                   const GURL& target_url,
                                   content::WebContents* new_contents) OVERRIDE;

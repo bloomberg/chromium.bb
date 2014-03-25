@@ -228,10 +228,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendSpeechInputOptionsSubMenu();
   void AppendProtocolHandlerSubMenu();
 
-  // Opens the specified URL string in a new tab.  The |frame_id| specifies the
-  // frame in which the context menu was displayed, or 0 if the menu action is
-  // independent of that frame (e.g. protocol handler settings).
-  void OpenURL(const GURL& url, const GURL& referrer, int64 frame_id,
+  // Opens the specified URL string in a new tab.
+  void OpenURL(const GURL& url, const GURL& referrer,
                WindowOpenDisposition disposition,
                content::PageTransition transition);
 

@@ -16,8 +16,9 @@ struct RetargetingDetails {
   // The source tab contents.
   content::WebContents* source_web_contents;
 
-  // The frame ID of the source tab from which the retargeting was triggered.
-  int64 source_frame_id;
+  // The routing id of the source render frame from which the retargeting was
+  // triggered.
+  int64 source_render_frame_id;
 
   // The target URL.
   GURL target_url;

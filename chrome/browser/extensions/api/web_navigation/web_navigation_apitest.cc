@@ -427,8 +427,6 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   params.is_editable = false;
   params.media_type = blink::WebContextMenuData::MediaTypeNone;
   params.page_url = url;
-  params.frame_id = WebNavigationTabObserver::Get(tab)->
-      frame_navigation_state().GetMainFrameID().frame_num;
   params.link_url = extension->GetResourceURL("b.html");
 
   TestRenderViewContextMenu menu(tab->GetMainFrame(), params);

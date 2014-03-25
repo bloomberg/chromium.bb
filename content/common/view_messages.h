@@ -273,8 +273,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   // has been specified).
   IPC_STRUCT_MEMBER(base::string16, frame_name)
 
-  // The frame identifier of the frame initiating the open.
-  IPC_STRUCT_MEMBER(int64, opener_frame_id)
+  // The routing id of the frame initiating the open.
+  IPC_STRUCT_MEMBER(int, opener_render_frame_id)
 
   // The URL of the frame initiating the open.
   IPC_STRUCT_MEMBER(GURL, opener_url)

@@ -327,7 +327,7 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
 }
 
 void ChromeWebContentsDelegateAndroid::WebContentsCreated(
-    content::WebContents* source_contents, int64 source_frame_id,
+    content::WebContents* source_contents, int opener_render_frame_id,
     const base::string16& frame_name, const GURL& target_url,
     content::WebContents* new_contents) {
   JNIEnv* env = AttachCurrentThread();
@@ -335,7 +335,7 @@ void ChromeWebContentsDelegateAndroid::WebContentsCreated(
   if (obj.is_null())
     return;
   Java_ChromeWebContentsDelegateAndroid_webContentsCreated(env, obj.obj(),
-      reinterpret_cast<intptr_t>(source_contents), source_frame_id,
+      reinterpret_cast<intptr_t>(source_contents), opener_render_frame_id,
       base::android::ConvertUTF16ToJavaString(env, frame_name).Release(),
       base::android::ConvertUTF8ToJavaString(env, target_url.spec()).Release(),
       reinterpret_cast<intptr_t>(new_contents));

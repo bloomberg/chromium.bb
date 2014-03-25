@@ -1496,9 +1496,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     OpenURL(
         handlers[handlerIndex].TranslateUrl(params_.link_url),
         params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-        params_.frame_id,
-        disposition,
-        content::PAGE_TRANSITION_LINK);
+        disposition, content::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -1509,7 +1507,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          params_.frame_id,
           !browser || browser->is_app() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
           content::PAGE_TRANSITION_LINK);
@@ -1519,15 +1516,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          params_.frame_id,
           NEW_WINDOW, content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      OpenURL(params_.link_url,
-              GURL(),
-              params_.frame_id,
-              OFF_THE_RECORD,
+      OpenURL(params_.link_url, GURL(), OFF_THE_RECORD,
               content::PAGE_TRANSITION_LINK);
       break;
 
@@ -1596,7 +1589,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURL(
           params_.src_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          params_.frame_id,
           NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_LINK);
       break;
 
@@ -1846,10 +1838,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
-      OpenURL(selection_navigation_url_,
-              GURL(),
-              params_.frame_id,
-              disposition,
+      OpenURL(selection_navigation_url_, GURL(), disposition,
               content::PAGE_TRANSITION_LINK);
       break;
     }
@@ -1857,7 +1846,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
       GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
-      OpenURL(url, GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
+      OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1867,7 +1856,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
       GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
-      OpenURL(url, GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
+      OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1911,8 +1900,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       GURL url(chrome::kSpeechInputAboutURL);
       GURL localized_url = google_util::AppendGoogleLocaleParam(url);
       // Open URL with no referrer field (because user clicked on menu item).
-      OpenURL(localized_url, GURL(), 0, NEW_FOREGROUND_TAB,
-          content::PAGE_TRANSITION_LINK);
+      OpenURL(localized_url, GURL(), NEW_FOREGROUND_TAB,
+              content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1999,7 +1988,7 @@ base::string16 RenderViewContextMenu::PrintableSelectionText() {
 // Controller functions --------------------------------------------------------
 
 void RenderViewContextMenu::OpenURL(
-    const GURL& url, const GURL& referring_url, int64 frame_id,
+    const GURL& url, const GURL& referring_url,
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
   content::Referrer referrer(referring_url.GetAsReferrer(),
@@ -2012,7 +2001,7 @@ void RenderViewContextMenu::OpenURL(
 
   RetargetingDetails details;
   details.source_web_contents = source_web_contents_;
-  details.source_frame_id = frame_id;
+  details.source_render_frame_id = render_frame_id_;
   details.target_url = url;
   details.target_web_contents = new_contents;
   details.not_yet_in_tabstrip = false;

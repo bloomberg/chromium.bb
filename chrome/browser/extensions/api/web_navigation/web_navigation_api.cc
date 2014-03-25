@@ -164,7 +164,7 @@ void WebNavigationEventRouter::Observe(
 }
 
 void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
-  if (details->source_frame_id == 0)
+  if (details->source_render_frame_id == 0)
     return;
   WebNavigationTabObserver* tab_observer =
       WebNavigationTabObserver::Get(details->source_web_contents);
@@ -178,7 +178,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
       tab_observer->frame_navigation_state();
 
   FrameNavigationState::FrameID frame_id(
-      details->source_frame_id,
+      details->source_render_frame_id,
       details->source_web_contents->GetRenderViewHost());
   if (!frame_navigation_state.CanSendEvents(frame_id))
     return;
@@ -189,7 +189,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
     pending_web_contents_[details->target_web_contents] =
         PendingWebContents(
             details->source_web_contents,
-            details->source_frame_id,
+            details->source_render_frame_id,
             frame_navigation_state.IsMainFrame(frame_id),
             details->target_web_contents,
             details->target_url);
@@ -197,7 +197,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
     helpers::DispatchOnCreatedNavigationTarget(
         details->source_web_contents,
         details->target_web_contents->GetBrowserContext(),
-        details->source_frame_id,
+        details->source_render_frame_id,
         frame_navigation_state.IsMainFrame(frame_id),
         details->target_web_contents,
         details->target_url);

@@ -1887,8 +1887,6 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
         selection_text_offset_, selection_range_));
   }
 
-  params.frame_id = routing_id_;
-
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do
   // it.  We replace it with an empty GURL so the appropriate items are disabled
   // in the context menu.
