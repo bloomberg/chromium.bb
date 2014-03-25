@@ -39,7 +39,7 @@ function timeout1()
         var localInInnerTimeout1 = "innerTimeout1";
         setTimeout(timeout2, Number(localInInnerTimeout1 + localInTimeout1) || 0);
     }
-    makeClosure(1, innerTimeout1)(100);
+    makeClosure(1, innerTimeout1, { foo: "bar1", __proto__: null })(100);
 }
 
 function timeout2()
@@ -50,7 +50,7 @@ function timeout2()
         var localInInnerTimeout2 = "innerTimeout2";
         debugger;
     }
-    makeClosure(2, innerTimeout2, { foo: "bar", __proto__: null })(200);
+    makeClosure(2, innerTimeout2, { foo: "bar2", __proto__: null })(200);
 }
 
 function test()

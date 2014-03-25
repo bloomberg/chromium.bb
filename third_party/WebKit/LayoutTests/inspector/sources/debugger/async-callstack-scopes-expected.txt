@@ -14,7 +14,7 @@ WindowGlobal
 
 2) innerFunction async-callstack-scopes.html:18
 ObjectWith Block
-    foo: "bar"
+    foo: "bar2"
 Catch
     e: Error
 Local
@@ -47,9 +47,7 @@ Closure
 WindowGlobal
     <section collapsed>
 
-5) innerFunction async-callstack-scopes.html:21
-Catch
-    e: Error
+5) innerFunction async-callstack-scopes.html:18
 Local
     arguments: Arguments[1]
     innerFunctionLocalVar: 102
@@ -59,7 +57,7 @@ Closure
     callback: function innerTimeout1()
     makeClosureLocalVar: "local.1"
     n: 1
-    withScope: undefined
+    withScope: Object
 WindowGlobal
     <section collapsed>
 
