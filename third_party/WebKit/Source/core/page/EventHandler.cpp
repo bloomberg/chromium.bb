@@ -2818,6 +2818,7 @@ bool EventHandler::sendContextMenuEventForKey()
     Element* focusedElement = doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
+    bool shouldTranslateToRootView = true;
 
     if (start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
         RefPtr<Range> selectionRange = selection.toNormalizedRange();
@@ -2837,11 +2838,12 @@ bool EventHandler::sendContextMenuEventForKey()
         location = IntPoint(
             rightAligned ? view->contentsWidth() - kContextMenuMargin : kContextMenuMargin,
             kContextMenuMargin);
+        shouldTranslateToRootView = false;
     }
 
     m_frame->view()->setCursor(pointerCursor());
 
-    IntPoint position = view->contentsToRootView(location);
+    IntPoint position = shouldTranslateToRootView ? view->contentsToRootView(location) : location;
     IntPoint globalPosition = view->hostWindow()->rootViewToScreen(IntRect(position, IntSize())).location();
 
     Node* targetNode = doc->focusedElement();
