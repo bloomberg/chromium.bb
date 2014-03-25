@@ -1338,7 +1338,24 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateInvalidArgs2_0) {
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
-// TODO(gman): UseProgram
+
+TEST_F(GLES2DecoderTest2, UseProgramValidArgs) {
+  EXPECT_CALL(*gl_, UseProgram(kServiceProgramId));
+  SpecializedSetup<cmds::UseProgram, 0>(true);
+  cmds::UseProgram cmd;
+  cmd.Init(client_program_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest2, UseProgramInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, UseProgram(_)).Times(0);
+  SpecializedSetup<cmds::UseProgram, 0>(false);
+  cmds::UseProgram cmd;
+  cmd.Init(kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
 
 TEST_F(GLES2DecoderTest2, ValidateProgramValidArgs) {
   EXPECT_CALL(*gl_, ValidateProgram(kServiceProgramId));

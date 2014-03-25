@@ -1549,6 +1549,19 @@ void GLES2Implementation::UniformMatrix4fv(GLint location,
   CheckGLError();
 }
 
+void GLES2Implementation::UseProgram(GLuint program) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUseProgram(" << program << ")");
+  if (IsProgramReservedId(program)) {
+    SetGLError(GL_INVALID_OPERATION, "UseProgram", "program reserved id");
+    return;
+  }
+  if (UseProgramHelper(program)) {
+    helper_->UseProgram(program);
+  }
+  CheckGLError();
+}
+
 void GLES2Implementation::ValidateProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glValidateProgram(" << program
@@ -1906,7 +1919,7 @@ void GLES2Implementation::BindVertexArrayOES(GLuint array) {
     SetGLError(GL_INVALID_OPERATION, "BindVertexArrayOES", "array reserved id");
     return;
   }
-  if (BindVertexArrayHelper(array)) {
+  if (BindVertexArrayOESHelper(array)) {
     helper_->BindVertexArrayOES(array);
   }
   CheckGLError();

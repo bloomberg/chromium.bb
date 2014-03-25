@@ -494,12 +494,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool IsRenderbufferReservedId(GLuint id) { return false; }
   bool IsTextureReservedId(GLuint id) { return false; }
   bool IsVertexArrayReservedId(GLuint id) { return false; }
+  bool IsProgramReservedId(GLuint id) { return false; }
 
   bool BindBufferHelper(GLenum target, GLuint texture);
   bool BindFramebufferHelper(GLenum target, GLuint texture);
   bool BindRenderbufferHelper(GLenum target, GLuint texture);
   bool BindTextureHelper(GLenum target, GLuint texture);
-  bool BindVertexArrayHelper(GLuint array);
+  bool BindVertexArrayOESHelper(GLuint array);
+  bool UseProgramHelper(GLuint program);
 
   void GenBuffersHelper(GLsizei n, const GLuint* buffers);
   void GenFramebuffersHelper(GLsizei n, const GLuint* framebuffers);

@@ -2170,9 +2170,8 @@ _FUNCTION_INFO = {
     'pepper_interface': 'ChromiumMapSub',
   },
   'UseProgram': {
+    'type': 'Bind',
     'decoder_func': 'DoUseProgram',
-    'impl_func': False,
-    'unit_test': False,
   },
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
   'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
@@ -3701,7 +3700,9 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-
+"""
+      if func.GetInfo("gen_func"):
+          valid_test += """
 TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
@@ -3714,8 +3715,6 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
-      gen_func_names = {
-      }
       self.WriteValidUnitTest(func, file, valid_test, {
           'resource_type': func.GetOriginalArgs()[0].resource_type,
           'gl_gen_func_name': func.GetInfo("gen_func"),
@@ -3730,7 +3729,9 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-
+"""
+      if func.GetInfo("gen_func"):
+          valid_test += """
 TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
@@ -3743,8 +3744,6 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
-      gen_func_names = {
-      }
       self.WriteValidUnitTest(func, file, valid_test, {
           'first_arg': func.GetOriginalArgs()[0].GetValidArg(func, 0, 0),
           'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func, 0, 0),
@@ -3786,7 +3785,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
   }
-  if (Bind%(type)sHelper(%(arg_string)s)) {
+  if (%(name)sHelper(%(arg_string)s)) {
     helper_->%(name)s(%(arg_string)s);
   }
   CheckGLError();

@@ -1397,6 +1397,9 @@ TEST_F(GLES2ImplementationTest, UseProgram) {
 
   gl_->UseProgram(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  ClearCommands();
+  gl_->UseProgram(1);
+  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, ValidateProgram) {
