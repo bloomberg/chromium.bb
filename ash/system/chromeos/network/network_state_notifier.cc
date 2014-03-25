@@ -252,35 +252,41 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     std::string shill_error;
     shill_properties.GetStringWithoutPathExpansion(shill::kErrorProperty,
                                                    &shill_error);
-    if (shill_error.empty()) {
-      NET_LOG_DEBUG("Service.Error is empty, trying PreviousError",
-                    service_path);
+    if (!chromeos::NetworkState::ErrorIsValid(shill_error)) {
       shill_properties.GetStringWithoutPathExpansion(
           shill::kPreviousErrorProperty, &shill_error);
+      NET_LOG_DEBUG("Notify Service.PreviousError: " + shill_error,
+                    service_path);
+      if (!chromeos::NetworkState::ErrorIsValid(shill_error))
+        shill_error.clear();
+    } else {
+      NET_LOG_DEBUG("Notify Service.Error: " + shill_error, service_path);
     }
-    std::string last_error;
+
     const NetworkState* network =
         NetworkHandler::Get()->network_state_handler()->GetNetworkState(
             service_path);
-    if (network)
-      last_error = network->last_error();
-    if (!last_error.empty() && last_error != shill_error) {
-      NET_LOG_DEBUG(
-          "last_error:" + last_error + " != Service.Error: " + shill_error,
-          service_path);
-      // Use Shill Error unless empty, since it is more recent.
+    if (network) {
+      // Always log last_error, but only use it if shill_error is empty.
+      // TODO(stevenjb): This shouldn't ever be necessary, but is kept here as a
+      // failsafe since more information is better than less when debugging and
+      // we have encountered some strange edge cases before.
+      NET_LOG_DEBUG("Notify Network.last_error: " + network->last_error(),
+                    service_path);
       if (shill_error.empty())
-        shill_error = last_error;
+        shill_error = network->last_error();
     }
+
     if (ShillErrorIsIgnored(shill_error)) {
-      NET_LOG_DEBUG("Ignoring error: " + error_name, service_path);
+      NET_LOG_DEBUG("Notify Ignoring error: " + error_name, service_path);
       return;
     }
+
     error = network_connect::ErrorString(shill_error, service_path);
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
-  NET_LOG_ERROR("Connect error notification: " + base::UTF16ToUTF8(error),
+  NET_LOG_ERROR("Notify connect error: " + base::UTF16ToUTF8(error),
                 service_path);
 
   std::string network_name =
