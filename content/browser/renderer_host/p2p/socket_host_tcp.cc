@@ -460,7 +460,9 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
   memcpy(buffer->data() + kPacketHeaderSize, &data[0], data.size());
 
   packet_processing_helpers::ApplyPacketOptions(
-      buffer->data(), buffer->BytesRemaining(), options, 0);
+      buffer->data() + kPacketHeaderSize,
+      buffer->BytesRemaining() - kPacketHeaderSize,
+      options, 0);
 
   WriteOrQueue(buffer);
 }

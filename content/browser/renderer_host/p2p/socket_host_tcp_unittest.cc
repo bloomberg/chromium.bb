@@ -239,6 +239,37 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   EXPECT_EQ(expected_data, sent_data_);
 }
 
+TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
+  std::vector<char> request_packet;
+  CreateStunRequest(&request_packet);
+
+  std::string received_data;
+  received_data.append(IntToSize(request_packet.size()));
+  received_data.append(request_packet.begin(), request_packet.end());
+
+  EXPECT_CALL(sender_, Send(
+      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  EXPECT_CALL(sender_, Send(MatchPacketMessage(request_packet)))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  socket_->AppendInputData(&received_data[0], received_data.size());
+
+  talk_base::PacketOptions options;
+  options.packet_time_params.rtp_sendtime_extension_id = 3;
+  // Now we should be able to send any data to |dest_|.
+  std::vector<char> packet;
+  CreateRandomPacket(&packet);
+  // Make it a RTP packet.
+  packet[0] = base::HostToNet16(0x8000);
+  socket_host_->Send(dest_.ip_address, packet, options, 0);
+
+  std::string expected_data;
+  expected_data.append(IntToSize(packet.size()));
+  expected_data.append(packet.begin(), packet.end());
+
+  EXPECT_EQ(expected_data, sent_data_);
+}
+
 // Verify that we can send STUN message and that they are formatted
 // properly.
 TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
