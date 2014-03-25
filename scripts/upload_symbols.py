@@ -372,6 +372,7 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
     for item in iter(dedupe_queue.get, None):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
         storage.push(item, item.content(0))
+    cros_build_lib.Info('dedupe notification finished; exiting')
   except Exception:
     sym_file = item.sym_file if (item and item.sym_file) else ''
     cros_build_lib.Warning('posting %s to dedupe server failed',
@@ -670,6 +671,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
 
   finally:
+    cros_build_lib.Info('finished uploading; joining background process')
     if dedupe_queue:
       dedupe_queue.put(None)
     storage_notify_proc.join()
