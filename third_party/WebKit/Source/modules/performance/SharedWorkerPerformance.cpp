@@ -43,10 +43,6 @@ SharedWorkerPerformance::SharedWorkerPerformance()
 {
 }
 
-SharedWorkerPerformance::~SharedWorkerPerformance()
-{
-}
-
 const char* SharedWorkerPerformance::supplementName()
 {
     return "SharedWorkerPerformance";

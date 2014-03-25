@@ -41,7 +41,6 @@ class SharedWorker;
 class SharedWorkerPerformance FINAL : public NoBaseWillBeGarbageCollected<SharedWorkerPerformance>, public WillBeHeapSupplement<SharedWorker> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
 public:
-    virtual ~SharedWorkerPerformance();
     static SharedWorkerPerformance& from(SharedWorker&);
 
     static double workerStart(ExecutionContext*, SharedWorker&);
