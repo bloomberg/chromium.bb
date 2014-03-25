@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -21,8 +22,6 @@
 #include "extensions/common/id_util.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -418,16 +417,15 @@ bool HasFrameBorder() {
 // Returns a piece of memory with the contents of the file |path|.
 base::RefCountedMemory* ReadFileData(const base::FilePath& path) {
   if (!path.empty()) {
-    net::FileStream file(NULL);
-    int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-    if (file.OpenSync(path, flags) == net::OK) {
-      int64 avail = file.Available();
-      if (avail > 0 && avail < INT_MAX) {
-        size_t size = static_cast<size_t>(avail);
+    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    if (file.IsValid()) {
+      int64 length = file.GetLength();
+      if (length > 0 && length < INT_MAX) {
+        int size = static_cast<int>(length);
         std::vector<unsigned char> raw_data;
         raw_data.resize(size);
         char* data = reinterpret_cast<char*>(&(raw_data.front()));
-        if (file.ReadUntilComplete(data, size) == avail)
+        if (file.ReadAtCurrentPos(data, size) == length)
           return base::RefCountedBytes::TakeVector(&raw_data);
       }
     }
