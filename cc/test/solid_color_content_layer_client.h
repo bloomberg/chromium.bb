@@ -20,6 +20,7 @@ class SolidColorContentLayerClient : public ContentLayerClient {
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& rect,
                              gfx::RectF* opaque_rect) OVERRIDE;
+  virtual bool FillsBoundsCompletely() const OVERRIDE;
 
  private:
   SkColor color_;

@@ -30,6 +30,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
       const gfx::Rect& clip,
       gfx::RectF* opaque) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual bool FillsBoundsCompletely() const OVERRIDE;
 
  private:
   PictureImageLayer();

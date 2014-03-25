@@ -59,6 +59,9 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
   // Set true by the layer when it is known that the entire output is going to
   // be opaque.
   virtual void SetOpaque(bool opaque) {}
+  // Set true by the layer when it is known that the entire output bounds will
+  // be rasterized.
+  virtual void SetFillsBoundsCompletely(bool fills_bounds) {}
 
  protected:
   virtual ~LayerUpdater() {}

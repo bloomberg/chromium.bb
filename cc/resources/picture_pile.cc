@@ -147,16 +147,17 @@ PicturePile::PicturePile() {
 PicturePile::~PicturePile() {
 }
 
-bool PicturePile::Update(
-    ContentLayerClient* painter,
-    SkColor background_color,
-    bool contents_opaque,
-    const Region& invalidation,
-    const gfx::Rect& visible_layer_rect,
-    int frame_number,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+bool PicturePile::Update(ContentLayerClient* painter,
+                         SkColor background_color,
+                         bool contents_opaque,
+                         bool contents_fill_bounds_completely,
+                         const Region& invalidation,
+                         const gfx::Rect& visible_layer_rect,
+                         int frame_number,
+                         RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
+  contents_fill_bounds_completely_ = contents_fill_bounds_completely;
 
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(

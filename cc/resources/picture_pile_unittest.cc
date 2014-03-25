@@ -56,6 +56,7 @@ class PicturePileTest : public testing::Test {
     return pile_->Update(&client_,
                          background_color_,
                          contents_opaque_,
+                         false,
                          invalidation,
                          visible_layer_rect,
                          frame_number_,

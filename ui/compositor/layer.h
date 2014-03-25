@@ -249,6 +249,10 @@ class COMPOSITOR_EXPORT Layer
   void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
   bool fills_bounds_opaquely() const { return fills_bounds_opaquely_; }
 
+  // Set to true if this layer always paints completely within its bounds. If so
+  // we can omit an unnecessary clear, even if the layer is transparent.
+  void SetFillsBoundsCompletely(bool fills_bounds_completely);
+
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
@@ -318,6 +322,7 @@ class COMPOSITOR_EXPORT Layer
   virtual void PaintContents(
       SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF* opaque) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual bool FillsBoundsCompletely() const OVERRIDE;
 
   cc::Layer* cc_layer() { return cc_layer_; }
 
@@ -424,6 +429,7 @@ class COMPOSITOR_EXPORT Layer
   bool force_render_surface_;
 
   bool fills_bounds_opaquely_;
+  bool fills_bounds_completely_;
 
   // Union of damaged rects, in pixel coordinates, to be used when
   // compositor is ready to paint the content.

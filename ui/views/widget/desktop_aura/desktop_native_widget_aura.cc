@@ -1182,6 +1182,10 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
 void DesktopNativeWidgetAura::UpdateWindowTransparency() {
   content_window_->SetTransparent(
       desktop_window_tree_host_->ShouldWindowContentsBeTransparent());
+  // Regardless of transparency or not, this root content window will always
+  // fill its bounds completely, so set this flag to true to avoid an
+  // unecessary clear before update.
+  content_window_->SetFillsBoundsCompletely(true);
 }
 
 void DesktopNativeWidgetAura::RootWindowDestroyed() {

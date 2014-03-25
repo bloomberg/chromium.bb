@@ -82,4 +82,6 @@ void WebContentLayerImpl::DidChangeLayerCanUseLCDText() {
   layer_->invalidate();
 }
 
+bool WebContentLayerImpl::FillsBoundsCompletely() const { return false; }
+
 }  // namespace webkit

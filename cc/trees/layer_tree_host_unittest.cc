@@ -1313,6 +1313,7 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
       test_layer_->SetOpacity(0.f);
   }
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
  private:
   Layer* test_layer_;
@@ -2595,6 +2596,7 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
       ++lcd_notification_count_;
       layer_->SetNeedsDisplay();
     }
+    virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
    private:
     Layer* layer_;
@@ -2833,6 +2835,8 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     }
 
     virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+
+    virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
    private:
     Layer* layer_;

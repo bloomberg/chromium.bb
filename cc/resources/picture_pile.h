@@ -20,14 +20,14 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   // Re-record parts of the picture that are invalid.
   // Invalidations are in layer space.
   // Return true iff the pile was modified.
-  bool Update(
-      ContentLayerClient* painter,
-      SkColor background_color,
-      bool contents_opaque,
-      const Region& invalidation,
-      const gfx::Rect& visible_layer_rect,
-      int frame_number,
-      RenderingStatsInstrumentation* stats_instrumentation);
+  bool Update(ContentLayerClient* painter,
+              SkColor background_color,
+              bool contents_opaque,
+              bool contents_fill_bounds_completely,
+              const Region& invalidation,
+              const gfx::Rect& visible_layer_rect,
+              int frame_number,
+              RenderingStatsInstrumentation* stats_instrumentation);
 
   void set_slow_down_raster_scale_factor(int factor) {
     slow_down_raster_scale_factor_for_debug_ = factor;

@@ -105,6 +105,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   SkColor background_color_;
   int slow_down_raster_scale_factor_for_debug_;
   bool contents_opaque_;
+  bool contents_fill_bounds_completely_;
   bool show_debug_picture_borders_;
   bool clear_canvas_with_debug_color_;
   // A hint about whether there are any recordings. This may be a false

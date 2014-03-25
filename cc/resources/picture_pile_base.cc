@@ -43,6 +43,7 @@ PicturePileBase::PicturePileBase()
       background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
       slow_down_raster_scale_factor_for_debug_(0),
       contents_opaque_(false),
+      contents_fill_bounds_completely_(false),
       show_debug_picture_borders_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       has_any_recordings_(false) {
@@ -62,6 +63,7 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       contents_opaque_(other->contents_opaque_),
+      contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       has_any_recordings_(other->has_any_recordings_) {}
@@ -76,6 +78,7 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other,
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       contents_opaque_(other->contents_opaque_),
+      contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       has_any_recordings_(other->has_any_recordings_) {

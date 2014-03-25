@@ -24,6 +24,9 @@ class MockContentLayerClient : public ContentLayerClient {
                              const gfx::Rect& clip,
                              gfx::RectF* opaque) OVERRIDE {}
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual bool FillsBoundsCompletely() const OVERRIDE {
+    return false;
+  };
 };
 
 TEST(PictureLayerTest, NoTilesIfEmptyBounds) {

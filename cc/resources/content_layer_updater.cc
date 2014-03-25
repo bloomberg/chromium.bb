@@ -24,6 +24,7 @@ ContentLayerUpdater::ContentLayerUpdater(
     : rendering_stats_instrumentation_(stats_instrumentation),
       layer_id_(layer_id),
       layer_is_opaque_(false),
+      layer_fills_bounds_completely_(false),
       painter_(painter.Pass()) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
@@ -61,9 +62,9 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
 
   canvas->clipRect(layer_sk_rect);
 
-  // If the layer has opaque contents then there is no need to
-  // clear the canvas before painting.
-  if (!layer_is_opaque_) {
+  // If the layer has opaque contents or will fill the bounds completely there
+  // is no need to clear the canvas before painting.
+  if (!layer_is_opaque_ && !layer_fills_bounds_completely_) {
     TRACE_EVENT0("cc", "Clear");
     canvas->drawColor(SK_ColorTRANSPARENT, SkXfermode::kSrc_Mode);
   }
@@ -81,6 +82,10 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
 
 void ContentLayerUpdater::SetOpaque(bool opaque) {
   layer_is_opaque_ = opaque;
+}
+
+void ContentLayerUpdater::SetFillsBoundsCompletely(bool fills_bounds) {
+  layer_fills_bounds_completely_ = fills_bounds;
 }
 
 }  // namespace cc

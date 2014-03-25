@@ -27,6 +27,7 @@ scoped_ptr<ui::Layer> CloneLayer(LayerOwner* layer_owner) {
   new_layer->SetMasksToBounds(old_layer->GetMasksToBounds());
   new_layer->set_name(old_layer->name());
   new_layer->SetFillsBoundsOpaquely(old_layer->fills_bounds_opaquely());
+  new_layer->SetFillsBoundsCompletely(old_layer->FillsBoundsCompletely());
 
   // Install new layer as a sibling of the old layer, stacked below it.
   if (old_layer->parent()) {

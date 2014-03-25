@@ -301,6 +301,11 @@ void Window::SetTransparent(bool transparent) {
     layer()->SetFillsBoundsOpaquely(!transparent_);
 }
 
+void Window::SetFillsBoundsCompletely(bool fills_bounds) {
+  if (layer())
+    layer()->SetFillsBoundsCompletely(fills_bounds);
+}
+
 Window* Window::GetRootWindow() {
   return const_cast<Window*>(
       static_cast<const Window*>(this)->GetRootWindow());

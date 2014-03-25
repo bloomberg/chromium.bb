@@ -101,6 +101,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool transparent() const { return transparent_; }
   void SetTransparent(bool transparent);
 
+  // See description in Layer::SetFillsBoundsCompletely.
+  void SetFillsBoundsCompletely(bool fills_bounds);
+
   WindowDelegate* delegate() { return delegate_; }
   const WindowDelegate* delegate() const { return delegate_; }
 

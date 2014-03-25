@@ -26,4 +26,8 @@ void SolidColorContentLayerClient::PaintContents(
     *opaque_rect = rect;
 }
 
+bool SolidColorContentLayerClient::FillsBoundsCompletely() const {
+  return false;
+}
+
 }  // namespace cc

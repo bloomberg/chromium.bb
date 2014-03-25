@@ -26,6 +26,7 @@ class MockContentLayerClient : public ContentLayerClient {
     *opaque = gfx::RectF(opaque_layer_rect_);
   }
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
  private:
   gfx::Rect opaque_layer_rect_;

@@ -111,9 +111,11 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
     // the full page content must always be provided in the picture layer.
     visible_layer_rect = gfx::Rect(bounds());
   }
+  DCHECK(client_);
   updated |= pile_->Update(client_,
                            SafeOpaqueBackgroundColor(),
                            contents_opaque(),
+                           client_->FillsBoundsCompletely(),
                            pile_invalidation_,
                            visible_layer_rect,
                            update_source_frame_number_,

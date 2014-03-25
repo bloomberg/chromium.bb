@@ -39,4 +39,6 @@ void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
   }
 }
 
+bool FakeContentLayerClient::FillsBoundsCompletely() const { return false; }
+
 }  // namespace cc

@@ -61,6 +61,7 @@ Layer::Layer()
       visible_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
+      fills_bounds_completely_(false),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -85,6 +86,7 @@ Layer::Layer(LayerType type)
       visible_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
+      fills_bounds_completely_(false),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -444,6 +446,10 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely);
 }
 
+void Layer::SetFillsBoundsCompletely(bool fills_bounds_completely) {
+  fills_bounds_completely_ = fills_bounds_completely;
+}
+
 void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   // Finish animations being handled by cc_layer_.
   if (animator_.get()) {
@@ -661,6 +667,8 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
   if (scale_content)
     canvas->Restore();
 }
+
+bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
 
 unsigned Layer::PrepareTexture() {
   DCHECK(texture_layer_.get());
