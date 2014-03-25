@@ -124,8 +124,10 @@ ScreenOrientation::~ScreenOrientation()
 const AtomicString& ScreenOrientation::orientation(Screen& screen)
 {
     ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
-    if (!screenOrientation.document())
-        return emptyAtom;
+    if (!screenOrientation.document()) {
+        // FIXME: we should try to return a better guess, like the latest known value.
+        return orientationToString(blink::WebScreenOrientationPortraitPrimary);
+    }
     ScreenOrientationController& controller = ScreenOrientationController::from(*screenOrientation.document());
     return orientationToString(controller.orientation());
 }

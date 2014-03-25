@@ -60,6 +60,9 @@ function emitExpectedResult(path, expected)
     case "navigator.vendor":
         expected = "window." + propertyPath;
         break;
+    case "screen.orientation":
+        expected = "'portrait-primary'";
+        break;
     }
 
     insertExpectedResult(path, expected);

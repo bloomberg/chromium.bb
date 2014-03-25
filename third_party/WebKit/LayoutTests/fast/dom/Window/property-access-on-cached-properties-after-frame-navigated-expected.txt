@@ -44,7 +44,7 @@ PASS window.cached_screen.availHeight is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
-PASS window.cached_screen.orientation is ''
+PASS window.cached_screen.orientation is 'portrait-primary'
 PASS window.cached_screen.pixelDepth is 0
 PASS window.cached_screen.width is 0
 PASS window.cached_scrollbars.visible is false

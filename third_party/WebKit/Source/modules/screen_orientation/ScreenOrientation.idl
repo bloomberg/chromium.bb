@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+enum OrientationType {
+    "portrait-primary",
+    "portrait-secondary",
+    "landscape-primary",
+    "landscape-secondary"
+};
+
 [
     RuntimeEnabled=ScreenOrientation
 ] partial interface Screen {
-    readonly attribute DOMString orientation;
+    readonly attribute OrientationType orientation;
 
     boolean lockOrientation(DOMString orientation);
 
