@@ -346,9 +346,12 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
 TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
+  std::string type = "wifi";
   std::string profile = "profile path";
   base::DictionaryValue value;
   shill_property_util::SetSSID(networkName, &value);
+  value.SetWithoutPathExpansion(shill::kTypeProperty,
+                                base::Value::CreateStringValue(type));
   value.SetWithoutPathExpansion(shill::kProfileProperty,
                                 base::Value::CreateStringValue(profile));
 
