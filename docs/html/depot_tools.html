@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.9" />
-<title>git-freeze(1)</title>
+<title>depot_tools(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -535,6 +535,13 @@ body.manpage div.sectionbody {
 }
 
 
+div.listingblock > div.content {
+  background: rgb(28, 28, 28);
+}
+
+div.listingblock > div > pre > code {
+  color: rgb(187, 187, 187);
+}
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -734,59 +741,95 @@ asciidoc.install();
 <body class="manpage">
 <div id="header">
 <h1>
-git-freeze(1) Manual Page
+depot_tools(1) Manual Page
 </h1>
 <h2>NAME</h2>
 <div class="sectionbody">
-<p>git-freeze -
-   Freeze all changes on a branch (indexed and unindexed)
+<p>depot_tools -
+   A collection of tools for dealing with Chromium development.
 </p>
 </div>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_synopsis">SYNOPSIS</h2>
-<div class="sectionbody">
-<div class="verseblock">
-<pre class="content"><em>git freeze</em></pre>
-<div class="attribution">
-</div></div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><code>git freeze</code> works a lot like <code>git stash</code>, in that it stores the current changes
-in your working copy and index <em>somewhere</em>. Unlike <code>git stash</code>, <code>git freeze</code>
-stores those changes on your current branch. This effectively allows you to
-<em>pause</em> development of a branch, work on something else, and then come back to
-exactly the same working state later (by running <code>git thaw</code>).</p></div>
-<div class="paragraph"><p><code>git freeze</code> will make up to 2 commits on your branch. A commit with the message
-<code>FREEZE.indexed</code> will contain all changes which you’ve added to your index (like
-with <em>git add</em>, <em>git mv</em>, <em>git rm</em>, etc.). A commit with the message
-<code>FREEZE.unindexed</code> will contain all changes which were not in your index at the
-time you ran git freeze (freshly modified files, new files, etc.).</p></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_see_also">SEE ALSO</h2>
-<div class="sectionbody">
-<div class="paragraph"><p><a href="git-thaw.html">git-thaw(1)</a></p></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium depot_tools suite. These tools are meant to assist with the
-development of chromium and related projects. Download the tools from
+<div class="paragraph"><p>The Chromium depot_tools suite contains many tools to assist/augment the
+Chromium development environment. The tools may be downloaded from
 <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
+<div class="paragraph"><p>There are two primary categories of tools. Some of these tools are <em>essential</em>
+to the development flow, in the sense that you cannot successfully develop
+Chromium without them.</p></div>
+<div class="paragraph"><p>Other tools are merely <em>helper</em> tools. Not required, but they can substantially
+ease the develpment workflow.</p></div>
+<div class="paragraph"><p>A listing of both categories of tools follows.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_helper_tools">HELPER TOOLS</h2>
+<div class="sectionbody">
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a href="git-freeze.html">git-freeze(1)</a>
+</dt>
+<dd>
+<p>
+Freeze all changes on a branch (indexed and unindexed).
+</p>
+</dd>
+<dt class="hdlist1">
+<a href="git-map-branches.html">git-map-branches(1)</a>
+</dt>
+<dd>
+<p>
+Helper script to display all local git branches with ‘upstream’ hierarchy in
+colorized terminal format.
+</p>
+</dd>
+</dl></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a href="git-map.html">git-map(1)</a>
+</dt>
+<dd>
+<p>
+Display history of all branches in a colorized terminal format.
+</p>
+</dd>
+</dl></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a href="git-nav-downstream.html">git-nav-downstream(1)</a>
+</dt>
+<dd>
+<p>
+Checkout a downstream branch of the currently checked out branch.
+</p>
+</dd>
+<dt class="hdlist1">
+<a href="git-nav-upstream.html">git-nav-upstream(1)</a>
+</dt>
+<dd>
+<p>
+Checkout the upstream branch of the currently checked out branch.
+</p>
+</dd>
+<dt class="hdlist1">
+<a href="git-thaw.html">git-thaw(1)</a>
+</dt>
+<dd>
+<p>
+Un-freeze all changes on a frozen branch.
+</p>
+</dd>
+</dl></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-13 17:20:25 PDT
+Last updated 2014-03-14 13:12:40 PDT
 </div>
 </div>
 </body>

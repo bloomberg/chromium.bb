@@ -3,7 +3,8 @@ git-thaw(1)
 
 NAME
 ----
-git-thaw - Un-freeze all changes on a frozen branch.
+git-thaw -
+include::_git-thaw_desc.helper.txt[]
 
 SYNOPSIS
 --------
@@ -24,3 +25,5 @@ SEE ALSO
 linkgit:git-freeze[1]
 
 include::_footer.txt[]
+
+// vim: ft=asciidoc noexpandtab:
