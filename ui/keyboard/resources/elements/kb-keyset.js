@@ -10,7 +10,7 @@ Polymer('kb-keyset', {
   weightBottom: 15,
   weightLeft: 10,
   weightRight: 10,
-  weightTop: 15,
+  weightTop: 6,
 
   /**
    * Weight assigned to space between keys, of the form "xPitch yPitch".

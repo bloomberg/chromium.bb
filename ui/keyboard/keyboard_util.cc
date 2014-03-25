@@ -48,7 +48,7 @@ base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 const float kUsabilityKeyboardHeightRatio = 1.0f;
 
 // The default ratio between the height of the keyboard and the screen.
-const float kDefaultKeyboardHeightRatio = 0.3f;
+const float kDefaultKeyboardHeightRatio = 0.45f;
 
 // The ratio between the height of the keyboard and the screen when using the
 // accessibility keyboard.
