@@ -3,7 +3,7 @@ Test if sysex permission request is handled.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS testRunner.setMIDISysExPermission is defined.
+PASS testRunner.setMIDISysexPermission is defined.
 PASS navigator.requestMIDIAccess is defined.
 PASS promise is defined.
 PASS promise.then is defined.
@@ -11,6 +11,9 @@ PASS sysex permission request is successfully rejected.
 PASS promise is defined.
 PASS promise.then is defined.
 PASS sysex permission request is successfully accepted.
+PASS access is defined.
+PASS access.sysexEnabled is defined.
+PASS access.sysexEnabled is true
 PASS all permission request rests pass successfully.
 PASS successfullyParsed is true
 

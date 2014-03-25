@@ -35,6 +35,8 @@
     sequence<MIDIInput> inputs();
     sequence<MIDIOutput> outputs();
 
+    readonly attribute boolean sysexEnabled;
+
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;
 };

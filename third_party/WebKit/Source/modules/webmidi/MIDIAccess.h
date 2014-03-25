@@ -64,8 +64,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
-    void setSysExEnabled(bool);
-    bool sysExEnabled() const { return m_sysExEnabled; }
+    void setSysexEnabled(bool);
+    bool sysexEnabled() const { return m_sysexEnabled; }
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIAccess; }
@@ -115,7 +115,7 @@ private:
     OwnPtr<MIDIAccessor> m_accessor;
     OwnPtr<MIDIAccessResolver> m_resolver;
     MIDIOptions m_options;
-    bool m_sysExEnabled;
+    bool m_sysexEnabled;
     AsyncMethodRunner<MIDIAccess> m_asyncResolveRunner;
     AsyncMethodRunner<MIDIAccess> m_asyncRejectRunner;
     RefPtrWillBeMember<DOMError> m_error;

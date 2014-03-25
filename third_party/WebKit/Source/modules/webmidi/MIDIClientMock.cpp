@@ -44,7 +44,7 @@ MIDIClientMock::~MIDIClientMock()
 {
 }
 
-void MIDIClientMock::setSysExPermission(bool allowed)
+void MIDIClientMock::setSysexPermission(bool allowed)
 {
     m_allowed = allowed;
 }
@@ -54,12 +54,12 @@ void MIDIClientMock::resetMock()
     m_allowed = false;
 }
 
-void MIDIClientMock::requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
+void MIDIClientMock::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
 {
-    access->setSysExEnabled(m_allowed);
+    access->setSysexEnabled(m_allowed);
 }
 
-void MIDIClientMock::cancelSysExPermissionRequest(MIDIAccess*)
+void MIDIClientMock::cancelSysexPermissionRequest(MIDIAccess*)
 {
 }
 

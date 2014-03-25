@@ -43,8 +43,8 @@ class MIDIController FINAL : public Supplement<Page> {
 public:
     virtual ~MIDIController();
 
-    void requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
-    void cancelSysExPermissionRequest(MIDIAccess*);
+    void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
+    void cancelSysexPermissionRequest(MIDIAccess*);
 
     static PassOwnPtr<MIDIController> create(MIDIClient*);
     static const char* supplementName();

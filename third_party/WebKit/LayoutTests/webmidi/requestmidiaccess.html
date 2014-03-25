@@ -18,6 +18,10 @@ function successCallback1(a) {
     shouldBe("access.inputs().length", "1");
     shouldBe("access.outputs().length", "1");
 
+    // Validate the values of the attributes on the access.
+    shouldBeDefined("access.sysexEnabled");
+    shouldBeFalse("access.sysexEnabled");
+
     var inputs = access.inputs();
     var outputs = access.outputs();
     var input = inputs[0];

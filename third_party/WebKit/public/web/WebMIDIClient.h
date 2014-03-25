@@ -39,9 +39,14 @@ public:
     virtual ~WebMIDIClient() { }
 
     // Request a permission to use system exclusive messages. Called when MIDIOptions.sysex is true.
-    virtual void requestSysExPermission(const WebMIDIPermissionRequest&) = 0;
+    // FIXME: Make following new functions pure virtual once Chromium implements them.
+    virtual void requestSysexPermission(const WebMIDIPermissionRequest&) { };
     // Cancel the request since the requesting frame may be moving to a new page.
-    virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest&) = 0;
+    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) { };
+
+    // FIXME: Remove following old functions once Chromium usess new functions.
+    virtual void requestSysExPermission(const WebMIDIPermissionRequest&) { };
+    virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest&) { };
 };
 
 } // namespace blink

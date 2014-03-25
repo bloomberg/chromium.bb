@@ -40,8 +40,8 @@ class Page;
 
 class MIDIClient {
 public:
-    virtual void requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess>) = 0;
-    virtual void cancelSysExPermissionRequest(MIDIAccess*) = 0;
+    virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>) = 0;
+    virtual void cancelSysexPermissionRequest(MIDIAccess*) = 0;
 
 protected:
     virtual ~MIDIClient() { }

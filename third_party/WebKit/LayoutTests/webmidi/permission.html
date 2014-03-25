@@ -8,7 +8,11 @@
 
 description("Test if sysex permission request is handled.");
 
-shouldBeDefined("testRunner.setMIDISysExPermission");
+// FIXME: remove following workaround once testRunner in Chromium has a new interface.
+if (!testRunner.setMIDISysexPermission)
+    testRunner.setMIDISysexPermission = testRunner.setMIDISysExPermission;
+
+shouldBeDefined("testRunner.setMIDISysexPermission");
 shouldBeDefined("navigator.requestMIDIAccess");
 
 window.jsTestIsAsync = true;
@@ -19,7 +23,7 @@ var finishSuccessfully = function () {
 }
 
 var rejectSysEx = function (next) {
-    testRunner.setMIDISysExPermission(false);
+    testRunner.setMIDISysexPermission(false);
     promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
     shouldBeDefined("promise.then");
@@ -36,12 +40,16 @@ var rejectSysEx = function (next) {
 }
 
 var acceptSysEx = function (next) {
-    testRunner.setMIDISysExPermission(true);
+    testRunner.setMIDISysexPermission(true);
     promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
     shouldBeDefined("promise.then");
-    promise.then(function(access) {
+    promise.then(function(obtainedAccess) {
         testPassed("sysex permission request is successfully accepted.");
+        access = obtainedAccess;
+        shouldBeDefined("access");
+        shouldBeDefined("access.sysexEnabled");
+        shouldBeTrue("access.sysexEnabled");
         if (next)
             next();
         else

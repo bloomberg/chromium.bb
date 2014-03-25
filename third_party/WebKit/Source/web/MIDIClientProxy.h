@@ -47,8 +47,8 @@ public:
     explicit MIDIClientProxy(WebMIDIClient*);
 
     // WebCore::MIDIClient
-    virtual void requestSysExPermission(PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>) OVERRIDE;
-    virtual void cancelSysExPermissionRequest(WebCore::MIDIAccess*) OVERRIDE;
+    virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>) OVERRIDE;
+    virtual void cancelSysexPermissionRequest(WebCore::MIDIAccess*) OVERRIDE;
 
 private:
     WebMIDIClient* m_client;

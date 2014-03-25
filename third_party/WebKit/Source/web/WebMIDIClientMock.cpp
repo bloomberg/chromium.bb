@@ -42,9 +42,9 @@ WebMIDIClientMock::WebMIDIClientMock()
     m_clientMock.reset(new WebCore::MIDIClientMock());
 }
 
-void WebMIDIClientMock::setSysExPermission(bool allowed)
+void WebMIDIClientMock::setSysexPermission(bool allowed)
 {
-    m_clientMock->setSysExPermission(allowed);
+    m_clientMock->setSysexPermission(allowed);
 }
 
 void WebMIDIClientMock::resetMock()
@@ -52,14 +52,14 @@ void WebMIDIClientMock::resetMock()
     m_clientMock->resetMock();
 }
 
-void WebMIDIClientMock::requestSysExPermission(const WebMIDIPermissionRequest& request)
+void WebMIDIClientMock::requestSysexPermission(const WebMIDIPermissionRequest& request)
 {
-    m_clientMock->requestSysExPermission(request.midiAccess());
+    m_clientMock->requestSysexPermission(request.midiAccess());
 }
 
-void WebMIDIClientMock::cancelSysExPermissionRequest(const WebMIDIPermissionRequest& request)
+void WebMIDIClientMock::cancelSysexPermissionRequest(const WebMIDIPermissionRequest& request)
 {
-    m_clientMock->cancelSysExPermissionRequest(request.midiAccess());
+    m_clientMock->cancelSysexPermissionRequest(request.midiAccess());
 }
 
 void WebMIDIClientMock::reset()

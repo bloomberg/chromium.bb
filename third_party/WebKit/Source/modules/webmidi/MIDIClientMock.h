@@ -42,12 +42,12 @@ public:
     MIDIClientMock();
     virtual ~MIDIClientMock();
 
-    void setSysExPermission(bool);
+    void setSysexPermission(bool);
     void resetMock();
 
     // MIDIClient
-    virtual void requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess>) OVERRIDE;
-    virtual void cancelSysExPermissionRequest(MIDIAccess*) OVERRIDE;
+    virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>) OVERRIDE;
+    virtual void cancelSysexPermissionRequest(MIDIAccess*) OVERRIDE;
 
 private:
     bool m_allowed;

@@ -56,14 +56,14 @@ PassOwnPtr<MIDIController> MIDIController::create(MIDIClient* client)
     return adoptPtr(new MIDIController(client));
 }
 
-void MIDIController::requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
+void MIDIController::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
 {
-    m_client->requestSysExPermission(access);
+    m_client->requestSysexPermission(access);
 }
 
-void MIDIController::cancelSysExPermissionRequest(MIDIAccess* access)
+void MIDIController::cancelSysexPermissionRequest(MIDIAccess* access)
 {
-    m_client->cancelSysExPermissionRequest(access);
+    m_client->cancelSysexPermissionRequest(access);
 }
 
 void provideMIDITo(Page& page, MIDIClient* client)

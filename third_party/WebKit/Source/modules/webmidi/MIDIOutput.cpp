@@ -51,10 +51,10 @@ double now(ExecutionContext* context)
 
 class MessageValidator {
 public:
-    static bool validate(Uint8Array* array, ExceptionState& exceptionState, bool sysExEnabled)
+    static bool validate(Uint8Array* array, ExceptionState& exceptionState, bool sysexEnabled)
     {
         MessageValidator validator(array);
-        return validator.process(exceptionState, sysExEnabled);
+        return validator.process(exceptionState, sysexEnabled);
     }
 private:
     MessageValidator(Uint8Array* array)
@@ -62,14 +62,14 @@ private:
         , m_length(array->length())
         , m_offset(0) { }
 
-    bool process(ExceptionState& exceptionState, bool sysExEnabled)
+    bool process(ExceptionState& exceptionState, bool sysexEnabled)
     {
         while (!isEndOfData() && acceptRealTimeMessages()) {
             if (!isStatusByte()) {
                 exceptionState.throwTypeError("Running status is not allowed " + getPositionString());
                 return false;
             }
-            if (isEndOfSysEx()) {
+            if (isEndOfSysex()) {
                 exceptionState.throwTypeError("Unexpected end of system exclusive message " + getPositionString());
                 return false;
             }
@@ -77,12 +77,12 @@ private:
                 exceptionState.throwTypeError("Reserved status is not allowed " + getPositionString());
                 return false;
             }
-            if (isSysEx()) {
-                if (!sysExEnabled) {
+            if (isSysex()) {
+                if (!sysexEnabled) {
                     exceptionState.throwDOMException(InvalidAccessError, "System exclusive message is not allowed " + getPositionString());
                     return false;
                 }
-                if (!acceptCurrentSysEx()) {
+                if (!acceptCurrentSysex()) {
                     if (isEndOfData())
                         exceptionState.throwTypeError("System exclusive message is not ended by end of system exclusive message.");
                     else
@@ -104,9 +104,9 @@ private:
 
 private:
     bool isEndOfData() { return m_offset >= m_length; }
-    bool isSysEx() { return m_data[m_offset] == 0xf0; }
+    bool isSysex() { return m_data[m_offset] == 0xf0; }
     bool isSystemMessage() { return m_data[m_offset] >= 0xf0; }
-    bool isEndOfSysEx() { return m_data[m_offset] == 0xf7; }
+    bool isEndOfSysex() { return m_data[m_offset] == 0xf7; }
     bool isRealTimeMessage() { return m_data[m_offset] >= 0xf8; }
     bool isStatusByte() { return m_data[m_offset] & 0x80; }
     bool isReservedStatusByte() { return m_data[m_offset] == 0xf4 || m_data[m_offset] == 0xf5 || m_data[m_offset] == 0xf9 || m_data[m_offset] == 0xfd; }
@@ -121,15 +121,15 @@ private:
         return false;
     }
 
-    bool acceptCurrentSysEx()
+    bool acceptCurrentSysex()
     {
-        ASSERT(isSysEx());
+        ASSERT(isSysex());
         for (m_offset++; !isEndOfData(); m_offset++) {
             if (isReservedStatusByte())
                 return false;
             if (isRealTimeMessage())
                 continue;
-            if (isEndOfSysEx()) {
+            if (isEndOfSysex()) {
                 m_offset++;
                 return true;
             }
@@ -142,7 +142,7 @@ private:
     bool acceptCurrentMessage()
     {
         ASSERT(isStatusByte());
-        ASSERT(!isSysEx());
+        ASSERT(!isSysex());
         ASSERT(!isReservedStatusByte());
         ASSERT(!isRealTimeMessage());
         static const int channelMessageLength[7] = { 3, 3, 3, 3, 2, 2, 3 }; // for 0x8*, 0x9*, ..., 0xe*
@@ -198,7 +198,7 @@ void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& excep
     if (!array)
         return;
 
-    if (MessageValidator::validate(array, exceptionState, midiAccess()->sysExEnabled()))
+    if (MessageValidator::validate(array, exceptionState, midiAccess()->sysexEnabled()))
         midiAccess()->sendMIDIData(m_portIndex, array->data(), array->length(), timestamp);
 }
 

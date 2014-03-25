@@ -85,7 +85,7 @@ MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
     , m_state(Requesting)
     , m_weakPtrFactory(this)
     , m_options(options)
-    , m_sysExEnabled(false)
+    , m_sysexEnabled(false)
     , m_asyncResolveRunner(this, &MIDIAccess::resolveNow)
     , m_asyncRejectRunner(this, &MIDIAccess::rejectNow)
 {
@@ -93,9 +93,9 @@ MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
     m_accessor = MIDIAccessor::create(this);
 }
 
-void MIDIAccess::setSysExEnabled(bool enable)
+void MIDIAccess::setSysexEnabled(bool enable)
 {
-    m_sysExEnabled = enable;
+    m_sysexEnabled = enable;
     if (enable) {
         m_accessor->startSession();
     } else {
@@ -192,7 +192,7 @@ void MIDIAccess::stop()
         ASSERT(document);
         MIDIController* controller = MIDIController::from(document->page());
         ASSERT(controller);
-        controller->cancelSysExPermissionRequest(this);
+        controller->cancelSysexPermissionRequest(this);
     }
     m_state = Stopped;
 }
@@ -223,7 +223,7 @@ ScriptPromise MIDIAccess::startRequest()
     ASSERT(document);
     MIDIController* controller = MIDIController::from(document->page());
     if (controller) {
-        controller->requestSysExPermission(this);
+        controller->requestSysexPermission(this);
     } else {
         reject(DOMError::create("SecurityError"));
     }

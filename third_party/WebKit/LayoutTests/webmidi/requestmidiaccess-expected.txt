@@ -6,6 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS requestMIDIAccess() succeeded with access [object MIDIAccess].
 PASS access.inputs().length is 1
 PASS access.outputs().length is 1
+PASS access.sysexEnabled is defined.
+PASS access.sysexEnabled is false
 PASS input attributes are correct
 PASS output attributes are correct
 PASS a note on message is sent without timestamp

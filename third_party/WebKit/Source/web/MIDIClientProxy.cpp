@@ -44,16 +44,18 @@ MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
 {
 }
 
-void MIDIClientProxy::requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
+void MIDIClientProxy::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
 {
+    // FIXME: call new function once Chromium implements it.
     if (m_client)
         m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
     else
-        access->setSysExEnabled(false);
+        access->setSysexEnabled(false);
 }
 
-void MIDIClientProxy::cancelSysExPermissionRequest(MIDIAccess* access)
+void MIDIClientProxy::cancelSysexPermissionRequest(MIDIAccess* access)
 {
+    // FIXME: call new function once Chromium implements it.
     if (m_client)
         m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
 }
