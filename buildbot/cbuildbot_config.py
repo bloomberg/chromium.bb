@@ -1553,6 +1553,12 @@ internal_paladin.add_config('glimmer-paladin',
   important=False,
 )
 
+internal_paladin.add_config('gnawty-paladin',
+  boards=['gnawty'],
+  paladin_builder_name='gnawty paladin',
+  important=False,
+)
+
 internal_paladin.add_config('kip-paladin',
   boards=['kip'],
   paladin_builder_name='kip paladin',
@@ -1940,6 +1946,11 @@ _release.add_config('glimmer-release',
   hw_tests=[],
 )
 
+_release.add_config('gnawty-release',
+  boards=['gnawty'],
+  hw_tests=[],
+)
+
 _release.add_config('kip-release',
   boards=['kip'],
   hw_tests=[],
@@ -2217,6 +2228,7 @@ _x86_firmware_boards = (
   'enguarde',
   'falco',
   'glimmer',
+  'gnawty',
   'kip',
   'leon',
   'link',
@@ -2243,6 +2255,7 @@ _x86_depthcharge_firmware_boards = (
   'clapper',
   'enguarde',
   'glimmer',
+  'gnawty',
   'kip',
   'leon',
   'link',
