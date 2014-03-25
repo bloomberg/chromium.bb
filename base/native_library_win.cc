@@ -15,9 +15,11 @@ namespace base {
 
 typedef HMODULE (WINAPI* LoadLibraryFunction)(const wchar_t* file_name);
 
+namespace {
+
 NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
                                       LoadLibraryFunction load_library_api,
-                                      std::string* error) {
+                                      NativeLibraryLoadError* error) {
   // LoadLibrary() opens the file off disk.
   ThreadRestrictions::AssertIOAllowed();
 
@@ -36,8 +38,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
   HMODULE module = (*load_library_api)(library_path.value().c_str());
   if (!module && error) {
     // GetLastError() needs to be called immediately after |load_library_api|.
-    DWORD last_error = GetLastError();
-    *error = StringPrintf("%u", last_error);
+    error->code = GetLastError();
   }
 
   if (restore_directory)
@@ -46,9 +47,15 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
   return module;
 }
 
+}  // namespace
+
+std::string NativeLibraryLoadError::ToString() const {
+  return StringPrintf("%u", code);
+}
+
 // static
 NativeLibrary LoadNativeLibrary(const FilePath& library_path,
-                                std::string* error) {
+                                NativeLibraryLoadError* error) {
   return LoadNativeLibraryHelper(library_path, LoadLibraryW, error);
 }
 

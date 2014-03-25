@@ -17895,9 +17895,19 @@ other types of suffix sets.
   <summary>Record usage of PPB_Flash.Navigate() Pepper API.</summary>
 </histogram>
 
+<histogram name="Plugin.PpapiBrokerLoadErrorCode" units="code">
+  <owner>xhwang@chromium.org</owner>
+  <summary>The error code of a PPAPI broker load failure.</summary>
+</histogram>
+
 <histogram name="Plugin.PpapiBrokerLoadResult" enum="PluginLoadResult">
   <owner>xhwang@chromium.org</owner>
   <summary>The result from an attempt to load a PPAPI broker.</summary>
+</histogram>
+
+<histogram name="Plugin.PpapiPluginLoadErrorCode" units="code">
+  <owner>xhwang@chromium.org</owner>
+  <summary>The error code of a PPAPI plugin load failure.</summary>
 </histogram>
 
 <histogram name="Plugin.PpapiPluginLoadResult" enum="PluginLoadResult">
@@ -42087,7 +42097,9 @@ other types of suffix sets.
   <group name="PepperFlashPlayer.plugin" label="Flash player on Mac"/>
   <group name="widevinecdmadapter.dll" label="Widevine CDM on Windows"/>
   <group name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
+  <affected-histogram name="Plugin.PpapiBrokerLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadResult"/>
+  <affected-histogram name="Plugin.PpapiPluginLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiPluginLoadResult"/>
 </fieldtrial>
 

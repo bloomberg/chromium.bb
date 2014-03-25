@@ -54,11 +54,12 @@ void InProcessDynamicServiceRunner::Run() {
       base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
 
   do {
-    std::string load_error;
+    base::NativeLibraryLoadError error;
     base::ScopedNativeLibrary app_library(
-        base::LoadNativeLibrary(app_path_, &load_error));
+        base::LoadNativeLibrary(app_path_, &error));
     if (!app_library.is_valid()) {
-      LOG(ERROR) << "Failed to load library (error: " << load_error << ")";
+      LOG(ERROR) << "Failed to load library (error: " << error.ToString()
+                 << ")";
       break;
     }
 

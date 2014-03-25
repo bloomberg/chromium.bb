@@ -30,9 +30,9 @@ void ChromeContentPluginClient::PreSandboxInitialization() {
   crypto::EnsureNSSInit();
 #elif defined(OS_WIN)
   // crypt32.dll is used to decode X509 certificates for Chromoting.
-  std::string error;
+  base::NativeLibraryLoadError error;
   if (base::LoadNativeLibrary(base::FilePath(L"crypt32.dll"), &error) == NULL)
-    LOG(ERROR) << "Failed to load crypto32.dll: " << error;
+    LOG(ERROR) << "Failed to load crypto32.dll: " << error.ToString();
 #endif // defined(OS_WIN)
 
   // Load media libraries for the Chromoting client plugin.

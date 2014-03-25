@@ -69,13 +69,12 @@ void PluginModule::Initialize() {
 
   base::FilePath plugin_path(plugin_name);
 
-  std::string error;
-  plugin_module_.Reset(
-      base::LoadNativeLibrary(plugin_path, &error));
+  base::NativeLibraryLoadError error;
+  plugin_module_.Reset(base::LoadNativeLibrary(plugin_path, &error));
 
   if (!plugin_module_.is_valid()) {
     LOG(WARNING) << "Cannot load " << plugin_path.AsUTF8Unsafe()
-                 << ". Error: " << error;
+                 << ". Error: " << error.ToString();
     return;
   }
 

@@ -41,9 +41,14 @@ static NativeLibraryObjCStatus GetObjCStatusForImage(
   return section == NULL ? OBJC_NOT_PRESENT : OBJC_PRESENT;
 }
 
+std::string NativeLibraryLoadError::ToString() const {
+  return message;
+}
+
 // static
+// TODO(xhwang): Fill |error|. See http://crbug.com/353771
 NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
-                                std::string* error) {
+                                NativeLibraryLoadError* /* error */) {
   // dlopen() etc. open the file off disk.
   if (library_path.Extension() == "dylib" || !DirectoryExists(library_path)) {
     void* dylib = dlopen(library_path.value().c_str(), RTLD_LAZY);

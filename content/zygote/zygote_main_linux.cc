@@ -292,12 +292,12 @@ void PreloadPepperPlugins() {
   ComputePepperPluginList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!plugins[i].is_internal && plugins[i].is_sandboxed) {
-      std::string error;
+      base::NativeLibraryLoadError error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);
       VLOG_IF(1, !library) << "Unable to load plugin "
                            << plugins[i].path.value() << " "
-                           << error;
+                           << error.ToString();
 
       (void)library;  // Prevent release-mode warning.
     }

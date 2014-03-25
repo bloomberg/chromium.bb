@@ -240,14 +240,14 @@ void UnwrapNSPluginWrapper(void **dl, base::FilePath* unwrapped_path) {
     return;
   }
 
-  std::string error;
+  base::NativeLibraryLoadError error;
   void* newdl = base::LoadNativeLibrary(path, &error);
   if (!newdl) {
     // We couldn't load the unwrapped plugin for some reason, despite
     // being able to load the wrapped one.  Just use the wrapped one.
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Could not use unwrapped nspluginwrapper plugin "
-        << unwrapped_path->value() << " (" << error << "), "
+        << unwrapped_path->value() << " (" << error.ToString() << "), "
         << "using the wrapped one.";
     return;
   }
@@ -276,12 +276,12 @@ bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
     return false;
   }
 
-  std::string error;
+  base::NativeLibraryLoadError error;
   void* dl = base::LoadNativeLibrary(filename, &error);
   if (!dl) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "While reading plugin info, unable to load library "
-        << filename.value() << " (" << error << "), skipping.";
+        << filename.value() << " (" << error.ToString() << "), skipping.";
     return false;
   }
 

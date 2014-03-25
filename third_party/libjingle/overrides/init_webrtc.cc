@@ -80,10 +80,9 @@ bool InitializeWebRtcModule() {
   base::FilePath path(GetLibPeerConnectionPath());
   DVLOG(1) << "Loading WebRTC module: " << path.value();
 
-  std::string error;
-  static base::NativeLibrary lib =
-      base::LoadNativeLibrary(path, &error);
-  CHECK(lib) << error;
+  base::NativeLibraryLoadError error;
+  static base::NativeLibrary lib = base::LoadNativeLibrary(path, &error);
+  CHECK(lib) << error.ToString();
 
   InitializeModuleFunction initialize_module =
       reinterpret_cast<InitializeModuleFunction>(

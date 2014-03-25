@@ -171,7 +171,7 @@ bool PluginLib::Load() {
 
   bool rv = false;
   base::NativeLibrary library = 0;
-  std::string error;
+  base::NativeLibraryLoadError error;
 
 #if defined(OS_WIN)
   // This is to work around a bug in the Real player recorder plugin which
@@ -193,7 +193,7 @@ bool PluginLib::Load() {
   if (!library) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Couldn't load plugin " << web_plugin_info_.path.value() << " "
-        << error;
+        << error.ToString();
     return rv;
   }
 

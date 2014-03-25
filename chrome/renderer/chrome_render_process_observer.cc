@@ -294,8 +294,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 #elif defined(OS_WIN)
   // crypt32.dll is used to decode X509 certificates for Chromoting.
   // Only load this library when the feature is enabled.
-  std::string error;
-  base::LoadNativeLibrary(base::FilePath(L"crypt32.dll"), &error);
+  base::LoadNativeLibrary(base::FilePath(L"crypt32.dll"), NULL);
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
   chrome_variations::SetChildProcessLoggingVariationList();

@@ -112,6 +112,10 @@ class PpapiThread : public ChildThread,
 
   void ReportLoadResult(const base::FilePath& path, LoadResult result);
 
+  // Reports |error| to UMA when plugin load fails.
+  void ReportLoadErrorCode(const base::FilePath& path,
+                           const base::NativeLibraryLoadError& error);
+
   // True if running in a broker process rather than a normal plugin process.
   bool is_broker_;
 

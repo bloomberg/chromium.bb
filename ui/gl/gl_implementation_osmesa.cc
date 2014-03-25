@@ -17,10 +17,11 @@ namespace gfx {
 
 // Load a library, printing an error message on failure.
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
-  std::string error;
+  base::NativeLibraryLoadError error;
   base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
   if (!library) {
-    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
+    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": "
+             << error.ToString();
     return NULL;
   }
   return library;

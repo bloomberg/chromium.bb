@@ -233,11 +233,12 @@ class AppChildControllerImpl : public mojo_shell::AppChildController {
         base::Bind(base::IgnoreResult(&base::DeleteFile), app_path, false));
 
     do {
-      std::string load_error;
+      base::NativeLibraryLoadError load_error;
       base::ScopedNativeLibrary app_library(
           base::LoadNativeLibrary(app_path, &load_error));
       if (!app_library.is_valid()) {
-        LOG(ERROR) << "Failed to load library (error: " << load_error << ")";
+        LOG(ERROR) << "Failed to load library (error: " << load_error.ToString()
+                   << ")";
         break;
       }
 
