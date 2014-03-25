@@ -713,6 +713,7 @@ Polymer('kb-keyboard', {
       insertText(char);
     // Post-typing logic.
     switch(char) {
+      case '\n':
       case ' ':
         if(enterUpperOnSpace) {
           enterUpperOnSpace = false;
@@ -727,7 +728,6 @@ Polymer('kb-keyboard', {
           // Immediately return to maintain shift-state. Space is a
           // non-control key and would otherwise trigger a reset of the
           // shift key, causing a transition to lower case.
-          // TODO(rsadam): Add unit test after Polymer uprev complete.
           return;
         }
         break;

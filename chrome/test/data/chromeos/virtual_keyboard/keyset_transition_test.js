@@ -273,5 +273,11 @@ function testUpperOnSpaceAfterPunctuation(testDoneCallback) {
   tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
   tester.typeKey(' ', 0x20, Modifier.NONE, Keyset.LOWER);
   tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
+  // Test the newline also causes a transition to upper.
+  tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey('.', 0xBE, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey('\n', 0x0D, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey('A', 0x41, Modifier.SHIFT, Keyset.UPPER);
+  tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
   tester.scheduleTest('testUpperOnSpaceAfterPunctuation', testDoneCallback);
 }
