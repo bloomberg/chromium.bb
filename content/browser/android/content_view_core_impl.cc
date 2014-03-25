@@ -1696,7 +1696,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
-    rwhv->UpdateScreenInfo(rwhv->GetNativeView());
+    rwhv->UpdateScreenInfo(GetViewAndroid());
 
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
