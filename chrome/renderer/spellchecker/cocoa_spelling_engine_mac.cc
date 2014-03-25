@@ -13,8 +13,8 @@ SpellingEngine* CreateNativeSpellingEngine() {
   return new CocoaSpellingEngine();
 }
 
-void CocoaSpellingEngine::Init(base::PlatformFile bdict_file) {
-  DCHECK(bdict_file == base::kInvalidPlatformFileValue);
+void CocoaSpellingEngine::Init(base::File bdict_file) {
+  DCHECK(!bdict_file.IsValid());
 }
 
 bool CocoaSpellingEngine::InitializeIfNeeded() {

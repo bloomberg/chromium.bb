@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
@@ -44,7 +44,7 @@ class SpellCheck : public content::RenderProcessObserver,
   virtual ~SpellCheck();
 
   // TODO: Try to move that all to SpellcheckLanguage.
-  void Init(base::PlatformFile file,
+  void Init(base::File file,
             const std::set<std::string>& custom_words,
             const std::string& language);
 

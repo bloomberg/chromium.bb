@@ -55,17 +55,17 @@ class SpellCheckTest : public testing::Test {
   void InitializeSpellCheck(const std::string& language) {
     base::FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
-    base::PlatformFile file = base::CreatePlatformFile(
+    base::File file(
         chrome::spellcheck_common::GetVersionedFileName(language,
-            hunspell_directory),
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
+                                                        hunspell_directory),
+        base::File::FLAG_OPEN | base::File::FLAG_READ);
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
     spell_check_->spellcheck_.platform_spelling_engine_.reset(
         new HunspellEngine);
 #endif
-    spell_check_->Init(file, std::set<std::string>(), language);
+    spell_check_->Init(file.Pass(), std::set<std::string>(), language);
   }
 
   void EnableAutoCorrect(bool enable_autocorrect) {

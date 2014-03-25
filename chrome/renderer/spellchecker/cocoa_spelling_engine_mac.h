@@ -10,7 +10,7 @@
 
 class CocoaSpellingEngine : public SpellingEngine {
  public:
-  virtual void Init(base::PlatformFile bdict_file) OVERRIDE;
+  virtual void Init(base::File bdict_file) OVERRIDE;
   virtual bool InitializeIfNeeded() OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual bool CheckSpelling(const base::string16& word_to_check,

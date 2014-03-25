@@ -29,7 +29,7 @@ namespace {
 
   COMPILE_ASSERT(kMaxCheckedLen <= size_t(MAXWORDLEN), MaxCheckedLen_too_long);
   COMPILE_ASSERT(kMaxSuggestLen <= kMaxCheckedLen, MaxSuggestLen_too_long);
-}
+}  // namespace
 
 #if !defined(OS_MACOSX)
 SpellingEngine* CreateNativeSpellingEngine() {
@@ -38,7 +38,7 @@ SpellingEngine* CreateNativeSpellingEngine() {
 #endif
 
 HunspellEngine::HunspellEngine()
-    : file_(base::kInvalidPlatformFileValue),
+    : hunspell_enabled_(false),
       initialized_(false),
       dictionary_requested_(false) {
   // Wait till we check the first word before doing any initializing.
@@ -47,11 +47,12 @@ HunspellEngine::HunspellEngine()
 HunspellEngine::~HunspellEngine() {
 }
 
-void HunspellEngine::Init(base::PlatformFile file) {
+void HunspellEngine::Init(base::File file) {
   initialized_ = true;
   hunspell_.reset();
   bdict_file_.reset();
-  file_ = file;
+  file_ = file.Pass();
+  hunspell_enabled_ = file_.IsValid();
   // Delay the actual initialization of hunspell until it is needed.
 }
 
@@ -61,13 +62,10 @@ void HunspellEngine::InitializeHunspell() {
 
   bdict_file_.reset(new base::MemoryMappedFile);
 
-  // TODO(rvargas): This object should not keep file_ after passing it to
-  // bdict_file_.
-  if (bdict_file_->Initialize(base::File(file_))) {
+  if (bdict_file_->Initialize(file_.Pass())) {
     TimeTicks debug_start_time = base::Histogram::DebugNow();
 
-    hunspell_.reset(
-        new Hunspell(bdict_file_->data(), bdict_file_->length()));
+    hunspell_.reset(new Hunspell(bdict_file_->data(), bdict_file_->length()));
 
     DHISTOGRAM_TIMES("Spellcheck.InitTime",
                      base::Histogram::DebugNow() - debug_start_time);
@@ -134,12 +132,12 @@ bool HunspellEngine::InitializeIfNeeded() {
   }
 
   // Don't initialize if hunspell is disabled.
-  if (file_ != base::kInvalidPlatformFileValue)
+  if (file_.IsValid())
     InitializeHunspell();
 
   return !initialized_;
 }
 
 bool HunspellEngine::IsEnabled() {
-  return file_ != base::kInvalidPlatformFileValue;
+  return hunspell_enabled_;
 }

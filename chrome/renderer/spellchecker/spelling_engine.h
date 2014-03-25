@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "base/strings/string16.h"
 
 // Creates the platform's "native" spelling engine.
@@ -21,7 +21,7 @@ class SpellingEngine {
 
   // Initialize spelling engine with browser-side info. Must be called before
   // any other functions are called.
-  virtual void Init(base::PlatformFile bdict_file) = 0;
+  virtual void Init(base::File bdict_file) = 0;
   virtual bool InitializeIfNeeded() = 0;
   virtual bool IsEnabled() = 0;
   virtual bool CheckSpelling(const base::string16& word_to_check, int tag) = 0;

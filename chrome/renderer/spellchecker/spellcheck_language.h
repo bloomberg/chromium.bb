@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 
@@ -21,7 +21,7 @@ class SpellcheckLanguage {
   SpellcheckLanguage();
   ~SpellcheckLanguage();
 
-  void Init(base::PlatformFile file, const std::string& language);
+  void Init(base::File file, const std::string& language);
 
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.

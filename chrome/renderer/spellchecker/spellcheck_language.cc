@@ -16,11 +16,9 @@ SpellcheckLanguage::SpellcheckLanguage()
 SpellcheckLanguage::~SpellcheckLanguage() {
 }
 
-void SpellcheckLanguage::Init(
-    base::PlatformFile file,
-    const std::string& language) {
+void SpellcheckLanguage::Init(base::File file, const std::string& language) {
   DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->Init(file);
+  platform_spelling_engine_->Init(file.Pass());
 
   character_attributes_.SetDefaultLanguage(language);
   text_iterator_.Reset();

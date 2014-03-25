@@ -134,7 +134,7 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
                         const std::set<std::string>& custom_words,
                         const std::string& language,
                         bool auto_spell_correct) {
-  Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
+  Init(IPC::PlatformFileForTransitToFile(bdict_file),
        custom_words, language);
   auto_spell_correct_turned_on_ = auto_spell_correct;
 #if !defined(OS_MACOSX)
@@ -167,10 +167,10 @@ void SpellCheck::OnRequestDocumentMarkers() {
 
 // TODO(groby): Make sure we always have a spelling engine, even before Init()
 // is called.
-void SpellCheck::Init(base::PlatformFile file,
+void SpellCheck::Init(base::File file,
                       const std::set<std::string>& custom_words,
                       const std::string& language) {
-  spellcheck_.Init(file, language);
+  spellcheck_.Init(file.Pass(), language);
   custom_dictionary_.Init(custom_words);
 }
 
