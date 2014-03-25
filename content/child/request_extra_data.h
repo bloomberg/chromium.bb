@@ -8,53 +8,97 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
-#include "webkit/child/weburlrequest_extradata_impl.h"
 
 namespace content {
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // ResourceRequest (see RenderFrameImpl::willSendRequest).
 class CONTENT_EXPORT RequestExtraData
-    : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
+    : public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {
  public:
-  RequestExtraData(blink::WebPageVisibilityState visibility_state,
-                   const blink::WebString& custom_user_agent,
-                   bool was_after_preconnect_request,
-                   int render_frame_id,
-                   bool is_main_frame,
-                   const GURL& frame_origin,
-                   bool parent_is_main_frame,
-                   int parent_render_frame_id,
-                   bool allow_download,
-                   PageTransition transition_type,
-                   bool should_replace_current_entry,
-                   int transferred_request_child_id,
-                   int transferred_request_request_id,
-                   int service_worker_provider_id);
+  RequestExtraData();
   virtual ~RequestExtraData();
 
   blink::WebPageVisibilityState visibility_state() const {
     return visibility_state_;
   }
+  void set_visibility_state(blink::WebPageVisibilityState visibility_state) {
+    visibility_state_ = visibility_state;
+  }
   int render_frame_id() const { return render_frame_id_; }
+  void set_render_frame_id(int render_frame_id) {
+    render_frame_id_ = render_frame_id;
+  }
   bool is_main_frame() const { return is_main_frame_; }
+  void set_is_main_frame(bool is_main_frame) {
+    is_main_frame_ = is_main_frame;
+  }
   GURL frame_origin() const { return frame_origin_; }
+  void set_frame_origin(const GURL& frame_origin) {
+    frame_origin_ = frame_origin;
+  }
   bool parent_is_main_frame() const { return parent_is_main_frame_; }
+  void set_parent_is_main_frame(bool parent_is_main_frame) {
+    parent_is_main_frame_ = parent_is_main_frame;
+  }
   int parent_render_frame_id() const { return parent_render_frame_id_; }
+  void set_parent_render_frame_id(int parent_render_frame_id) {
+    parent_render_frame_id_ = parent_render_frame_id;
+  }
   bool allow_download() const { return allow_download_; }
+  void set_allow_download(bool allow_download) {
+    allow_download_ = allow_download;
+  }
   PageTransition transition_type() const { return transition_type_; }
+  void set_transition_type(PageTransition transition_type) {
+    transition_type_ = transition_type;
+  }
   bool should_replace_current_entry() const {
     return should_replace_current_entry_;
+  }
+  void set_should_replace_current_entry(
+      bool should_replace_current_entry) {
+    should_replace_current_entry_ = should_replace_current_entry;
   }
   int transferred_request_child_id() const {
     return transferred_request_child_id_;
   }
+  void set_transferred_request_child_id(
+      int transferred_request_child_id) {
+    transferred_request_child_id_ = transferred_request_child_id;
+  }
   int transferred_request_request_id() const {
     return transferred_request_request_id_;
   }
+  void set_transferred_request_request_id(
+      int transferred_request_request_id) {
+    transferred_request_request_id_ = transferred_request_request_id;
+  }
   int service_worker_provider_id() const {
     return service_worker_provider_id_;
+  }
+  void set_service_worker_provider_id(
+      int service_worker_provider_id) {
+    service_worker_provider_id_ = service_worker_provider_id;
+  }
+  // |custom_user_agent| is used to communicate an overriding custom user agent
+  // to |RenderViewImpl::willSendRequest()|; set to a null string to indicate no
+  // override and an empty string to indicate that there should be no user
+  // agent.
+  const blink::WebString& custom_user_agent() const {
+      return custom_user_agent_;
+  }
+  void set_custom_user_agent(
+      const blink::WebString& custom_user_agent) {
+    custom_user_agent_ = custom_user_agent;
+  }
+  bool was_after_preconnect_request() { return was_after_preconnect_request_; }
+  void set_was_after_preconnect_request(
+      bool was_after_preconnect_request) {
+    was_after_preconnect_request_ = was_after_preconnect_request;
   }
 
  private:
@@ -70,6 +114,8 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_child_id_;
   int transferred_request_request_id_;
   int service_worker_provider_id_;
+  blink::WebString custom_user_agent_;
+  bool was_after_preconnect_request_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

@@ -4,39 +4,26 @@
 
 #include "content/child/request_extra_data.h"
 
+#include "content/common/service_worker/service_worker_types.h"
+#include "ipc/ipc_message.h"
+
 using blink::WebString;
 
 namespace content {
 
-RequestExtraData::RequestExtraData(
-    blink::WebPageVisibilityState visibility_state,
-    const WebString& custom_user_agent,
-    bool was_after_preconnect_request,
-    int render_frame_id,
-    bool is_main_frame,
-    const GURL& frame_origin,
-    bool parent_is_main_frame,
-    int parent_render_frame_id,
-    bool allow_download,
-    PageTransition transition_type,
-    bool should_replace_current_entry,
-    int transferred_request_child_id,
-    int transferred_request_request_id,
-    int service_worker_provider_id)
-    : webkit_glue::WebURLRequestExtraDataImpl(custom_user_agent,
-                                              was_after_preconnect_request),
-      visibility_state_(visibility_state),
-      render_frame_id_(render_frame_id),
-      is_main_frame_(is_main_frame),
-      frame_origin_(frame_origin),
-      parent_is_main_frame_(parent_is_main_frame),
-      parent_render_frame_id_(parent_render_frame_id),
-      allow_download_(allow_download),
-      transition_type_(transition_type),
-      should_replace_current_entry_(should_replace_current_entry),
-      transferred_request_child_id_(transferred_request_child_id),
-      transferred_request_request_id_(transferred_request_request_id),
-      service_worker_provider_id_(service_worker_provider_id) {
+RequestExtraData::RequestExtraData()
+    : visibility_state_(blink::WebPageVisibilityStateVisible),
+      render_frame_id_(MSG_ROUTING_NONE),
+      is_main_frame_(true),
+      parent_is_main_frame_(false),
+      parent_render_frame_id_(-1),
+      allow_download_(true),
+      transition_type_(PAGE_TRANSITION_LINK),
+      should_replace_current_entry_(false),
+      transferred_request_child_id_(-1),
+      transferred_request_request_id_(-1),
+      service_worker_provider_id_(kInvalidServiceWorkerProviderId),
+      was_after_preconnect_request_(false) {
 }
 
 RequestExtraData::~RequestExtraData() {

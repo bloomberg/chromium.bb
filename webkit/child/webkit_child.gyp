@@ -59,8 +59,6 @@
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
         'webkit_child_export.h',
-        'weburlrequest_extradata_impl.cc',
-        'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
         'weburlresponse_extradata_impl.h',
       ],

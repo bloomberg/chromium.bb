@@ -108,21 +108,9 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.request_type = ResourceType::OBJECT;
   request_info.routing_id = render_view_id;
 
-  RequestExtraData extra_data(blink::WebPageVisibilityStateVisible,
-                              base::string16(),
-                              false,
-                              render_frame_id,
-                              false,
-                              GURL(),
-                              false,
-                              -1,
-                              true,
-                              PAGE_TRANSITION_LINK,
-                              false,
-                              -1,
-                              -1,
-                              kInvalidServiceWorkerProviderId);
-
+  RequestExtraData extra_data;
+  extra_data.set_render_frame_id(render_frame_id);
+  extra_data.set_is_main_frame(false);
   request_info.extra_data = &extra_data;
 
   std::vector<char> body;
