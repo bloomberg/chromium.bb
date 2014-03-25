@@ -744,6 +744,17 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
   return e;
 }
 
+// Guess the type of |init_data|. This is only used to handle some corner cases
+// so we keep it as simple as possible without breaking major use cases.
+static std::string GuessInitDataType(const unsigned char* init_data,
+                                     unsigned init_data_length) {
+  // Most WebM files use KeyId of 16 bytes. MP4 init data are always >16 bytes.
+  if (init_data_length == 16)
+    return "video/webm";
+
+  return "video/mp4";
+}
+
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
                                                const unsigned char* init_data,
@@ -780,11 +791,15 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
+  std::string init_data_type = init_data_type_;
+  if (init_data_type.empty())
+    init_data_type = GuessInitDataType(init_data, init_data_length);
+
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
   if (!proxy_decryptor_->GenerateKeyRequest(
-           init_data_type_, init_data, init_data_length)) {
+           init_data_type, init_data, init_data_length)) {
     current_key_system_.clear();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }

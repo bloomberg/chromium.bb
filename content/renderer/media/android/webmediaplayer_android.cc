@@ -1216,6 +1216,17 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
   return e;
 }
 
+// Guess the type of |init_data|. This is only used to handle some corner cases
+// so we keep it as simple as possible without breaking major use cases.
+static std::string GuessInitDataType(const unsigned char* init_data,
+                                     unsigned init_data_length) {
+  // Most WebM files use KeyId of 16 bytes. MP4 init data are always >16 bytes.
+  if (init_data_length == 16)
+    return "video/webm";
+
+  return "video/mp4";
+}
+
 // TODO(xhwang): Report an error when there is encrypted stream but EME is
 // not enabled. Currently the player just doesn't start and waits for
 // ever.
@@ -1262,11 +1273,15 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
+  std::string init_data_type = init_data_type_;
+  if (init_data_type.empty())
+    init_data_type = GuessInitDataType(init_data, init_data_length);
+
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
   if (!proxy_decryptor_->GenerateKeyRequest(
-           init_data_type_, init_data, init_data_length)) {
+           init_data_type, init_data, init_data_length)) {
     current_key_system_.clear();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
