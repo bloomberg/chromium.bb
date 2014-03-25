@@ -18,8 +18,8 @@
 // https://developer.chrome.com/extensions/fileBrowserHandler.html
 //
 // 2) Built-in handlers provided from Files.app. Files.app provides lots of
-// file_browser_handlers, such as "play", "watch", "mount-archive".  These
-// built-in handlers are often handled in special manners inside Files.app.
+// file_browser_handlers, such as "play", "mount-archive".  These built-in
+// handlers are often handled in special manners inside Files.app.
 // This information also comes from FileBrowserHandler::GetHandlers().
 //
 // See also:
@@ -99,9 +99,9 @@
 // chrome.fileBrowserPrivate.executeTasks() is used to open a file with a
 // handler (Chrome Extension/App or Drive App).
 //
-// Some built-in handlers such as "play" and "watch" are handled internally
-// in Files.app. "mount-archive" is handled very differently. The task
-// execution business should be simplified: crbug.com/267313
+// Some built-in handlers such as "play" are handled internally in Files.app.
+// "mount-archive" is handled very differently. The task execution business
+// should be simplified: crbug.com/267313
 //
 // See also:
 // chrome/browser/resources/file_manager/js/file_tasks.js

@@ -188,7 +188,6 @@ FileTasks.isInternalTask_ = function(taskId) {
   return (appId === chrome.runtime.id &&
           taskType === 'file' &&
           (actionId === 'play' ||
-           actionId === 'watch' ||
            actionId === 'mount-archive' ||
            actionId === 'gallery'));
 };
@@ -235,9 +234,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (taskParts[2] === 'gallery') {
         task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (taskParts[2] === 'watch') {
-        task.iconType = 'video';
-        task.title = loadTimeData.getString('ACTION_WATCH');
       } else if (taskParts[2] === 'open-hosted-generic') {
         if (this.entries_.length > 1)
           task.iconType = 'generic';
@@ -547,17 +543,6 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
                                                    displayedId) {
       fm.backgroundPage.launchAudioPlayer({items: urls, position: position},
                                           displayedId);
-    });
-    return;
-  }
-
-  if (id === 'watch') {
-    console.assert(entries.length === 1, 'Cannot open multiple videos');
-    // TODO(mtomasz): Pass an entry instead.
-    chrome.fileBrowserPrivate.getProfiles(function(profiles,
-                                                   currentId,
-                                                   displayedId) {
-      fm.backgroundPage.launchVideoPlayer(entries[0].toURL(), displayedId);
     });
     return;
   }

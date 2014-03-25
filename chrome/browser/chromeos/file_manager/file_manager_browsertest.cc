@@ -727,10 +727,7 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     OpenSpecialTypes,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive"),
-                      TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
                       TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),

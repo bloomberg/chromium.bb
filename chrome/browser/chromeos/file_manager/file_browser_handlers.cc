@@ -133,25 +133,6 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
   return results;
 }
 
-// Finds a file browser handler that matches |extension_id| and |action_id|
-// from |handler_list|.  Returns a mutable iterator to the handler if
-// found. Returns handler_list->end() if not found.
-FileBrowserHandlerList::iterator
-FindFileBrowserHandlerForExtensionIdAndActionId(
-    FileBrowserHandlerList* handler_list,
-    const std::string& extension_id,
-    const std::string& action_id) {
-  DCHECK(handler_list);
-
-  FileBrowserHandlerList::iterator iter = handler_list->begin();
-  while (iter != handler_list->end() &&
-         !((*iter)->extension_id() == extension_id &&
-           (*iter)->id() == action_id)) {
-    ++iter;
-  }
-  return iter;
-}
-
 // This class is used to execute a file browser handler task. Here's how this
 // works:
 //
@@ -542,25 +523,6 @@ FileBrowserHandlerList FindFileBrowserHandlers(
       if (common_handlers.empty())
         return FileBrowserHandlerList();
     }
-  }
-
-  // "watch" and "gallery" are defined in the file manager's manifest.json.
-  FileBrowserHandlerList::iterator watch_iter =
-      FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileManagerAppId, "watch");
-  FileBrowserHandlerList::iterator gallery_iter =
-      FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileManagerAppId, "gallery");
-  if (watch_iter != common_handlers.end() &&
-      gallery_iter != common_handlers.end()) {
-    // Both "watch" and "gallery" actions are applicable which means that the
-    // selection is all videos. Showing them both is confusing, so we only keep
-    // the one that makes more sense ("watch" for single selection, "gallery"
-    // for multiple selection).
-    if (file_list.size() == 1)
-      common_handlers.erase(gallery_iter);
-    else
-      common_handlers.erase(watch_iter);
   }
 
   return common_handlers;

@@ -98,50 +98,6 @@ function audioOpen(path) {
 }
 
 /**
- * Tests if the video player shows up for the selected movie and that it is
- * loaded successfully.
- *
- * @param {string} path Directory path to be tested.
- */
-function videoOpen(path) {
-  var appId;
-  var videoAppId;
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    function(inAppId) {
-      appId = inAppId;
-      // Select the song.
-      callRemoteTestUtil(
-          'openFile', appId, ['world.ogv'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      // Wait for the video player.
-      waitForWindow('video_player.html').then(this.next);
-    },
-    function(inAppId) {
-      videoAppId = inAppId;
-      // Wait for the video tag and verify the source.
-      waitForElement(videoAppId, 'video[src]').then(this.next);
-    },
-    function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
-              'external' + path + '/world.ogv',
-          element.attributes.src);
-      // Wait for the window's inner dimensions. Should be changed to the video
-      // size once the metadata is loaded.
-      waitForWindowGeometry(videoAppId, 320, 192).then(this.next);
-    },
-    function(element) {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-}
-
-/**
  * Tests if we can open and unmount a zip file.
  * @param {string} path Directory path to be tested.
  */
@@ -216,20 +172,12 @@ testcase.audioOpenDownloads = function() {
   audioOpen(RootPath.DOWNLOADS);
 };
 
-testcase.videoOpenDownloads = function() {
-  videoOpen(RootPath.DOWNLOADS);
-};
-
 testcase.galleryOpenDrive = function() {
   galleryOpen(RootPath.DRIVE);
 };
 
 testcase.audioOpenDrive = function() {
   audioOpen(RootPath.DRIVE);
-};
-
-testcase.videoOpenDrive = function() {
-  videoOpen(RootPath.DRIVE);
 };
 
 testcase.zipOpenDownloads = function() {

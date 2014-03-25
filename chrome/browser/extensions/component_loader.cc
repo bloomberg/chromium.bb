@@ -440,8 +440,10 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
     return;
 
   // Component extensions needed for kiosk apps.
-  AddFileManagerExtension();
+  // Note: Video player should be avove the file manager, since the video
+  // player is the default app for video files by default.
   AddVideoPlayerExtension();
+  AddFileManagerExtension();
 
   // Add virtual keyboard.
   AddKeyboardApp();
@@ -471,8 +473,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
   if (!skip_session_components) {
-    AddFileManagerExtension();
+    // Note: Video player should be avove the file manager, since the video
+    // player is the default app for video files by default.
     AddVideoPlayerExtension();
+    AddFileManagerExtension();
+
     AddHangoutServicesExtension();
     AddHotwordHelperExtension();
     AddImageLoaderExtension();

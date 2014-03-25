@@ -41,8 +41,7 @@
         "webm"
       ],
       // TODO(yoshiki): localize this.
-      // TODO(yoshiki): change the text after removing the emdebed player.
-      "title": "Watch in VideoPlayer.app"
+      "title": "Watch"
     }
   },
   "app": {

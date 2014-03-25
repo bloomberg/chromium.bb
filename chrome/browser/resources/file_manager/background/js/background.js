@@ -690,10 +690,6 @@ Background.prototype.onExecute_ = function(action, details) {
       launchAudioPlayer({items: urls, position: 0});
       break;
 
-    case 'watch':
-      launchVideoPlayer(urls[0]);
-      break;
-
     default:
       var launchEnable = null;
       var queue = new AsyncUtil.Queue();
@@ -803,21 +799,6 @@ function launchAudioPlayer(playlist, opt_displayedId) {
   });
 }
 
-var videoPlayer = new SingletonAppWindowWrapper('video_player.html',
-                                                {hidden: true});
-
-/**
- * Launches the video player.
- * @param {string} url Video url.
- * @param {string=} opt_displayedId ProfileID of the desktop where the video
- *     player should show.
- */
-function launchVideoPlayer(url, opt_displayedId) {
-  videoPlayer.launch({url: url}, false, function(appWindow) {
-    AppWindowWrapper.focusOnDesktop(videoPlayer.rawAppWindow, opt_displayedId);
-  });
-}
-
 /**
  * Launches the app.
  * @private
@@ -871,9 +852,6 @@ Background.prototype.onRestarted_ = function() {
     });
     callback();
   });
-
-  // Reopen video player.
-  videoPlayer.reopen();
 };
 
 /**
