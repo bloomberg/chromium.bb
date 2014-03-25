@@ -535,7 +535,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         GraphicsLayerVector childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
-            GraphicsLayerUpdater(m_renderView).rebuildTree(*updateRoot, updateType, childList, 0);
+            GraphicsLayerUpdater().rebuildTree(*updateRoot, updateType, childList);
         }
 
         // Host the document layer in the RenderView's root layer.
@@ -555,7 +555,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
-        GraphicsLayerUpdater(m_renderView).updateRecursive(*updateRoot, updateType);
+        GraphicsLayerUpdater().updateRecursive(*updateRoot, updateType);
     }
 
     ASSERT(updateRoot || !m_compositingLayersNeedRebuild);

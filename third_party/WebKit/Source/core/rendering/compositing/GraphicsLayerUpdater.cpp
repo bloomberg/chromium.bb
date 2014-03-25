@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-bool shouldAppendLayer(const RenderLayer& layer)
+static bool shouldAppendLayer(const RenderLayer& layer)
 {
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
@@ -48,10 +48,7 @@ bool shouldAppendLayer(const RenderLayer& layer)
     return true;
 }
 
-GraphicsLayerUpdater::GraphicsLayerUpdater(RenderView& renderView)
-    : m_renderView(renderView)
-    , m_pixelsWithoutPromotingAllTransitions(0.0)
-    , m_pixelsAddedByPromotingAllTransitions(0.0)
+GraphicsLayerUpdater::GraphicsLayerUpdater()
 {
 }
 
@@ -59,7 +56,7 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType, GraphicsLayerVector& childLayersOfEnclosingLayer, int depth)
+void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType, GraphicsLayerVector& childLayersOfEnclosingLayer)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -73,16 +70,6 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
 
     updateType = update(layer, updateType);
 
-    // Grab some stats for histograms.
-    if (hasCompositedLayerMapping) {
-        m_pixelsWithoutPromotingAllTransitions += layer.size().height() * layer.size().width();
-    } else {
-        if ((layer.renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
-             layer.renderer()->style()->transitionForProperty(CSSPropertyWebkitTransform)) &&
-            m_renderView.viewRect().intersects(layer.absoluteBoundingBox()))
-            m_pixelsAddedByPromotingAllTransitions += layer.size().height() * layer.size().width();
-    }
-
     // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
     // Otherwise children continue to append to the child list of the enclosing layer.
     GraphicsLayerVector layerChildren;
@@ -95,7 +82,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
     if (layer.stackingNode()->isStackingContainer()) {
         RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
-            rebuildTree(*curNode->layer(), updateType, childList, depth + 1);
+            rebuildTree(*curNode->layer(), updateType, childList);
 
         // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
         if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
@@ -104,7 +91,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
 
     RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        rebuildTree(*curNode->layer(), updateType, childList, depth + 1);
+        rebuildTree(*curNode->layer(), updateType, childList);
 
     if (hasCompositedLayerMapping) {
         bool parented = false;
@@ -135,11 +122,6 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
 
         if (shouldAppendLayer(layer))
             childLayersOfEnclosingLayer.append(currentCompositedLayerMapping->childForSuperlayers());
-    }
-
-    if (!depth) {
-        int percentageIncreaseInPixels = static_cast<int>(m_pixelsAddedByPromotingAllTransitions / m_pixelsWithoutPromotingAllTransitions * 100);
-        blink::Platform::current()->histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
     }
 }
 
