@@ -54,8 +54,8 @@ void testExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> expression, co
 TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
 {
     RefPtr<RenderStyle> style = RenderStyle::create();
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expected;
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> actual;
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expected = nullptr;
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> actual = nullptr;
 
     expected = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true);
     actual = CSSCalcValue::createExpressionNode(Length(10, WebCore::Fixed), style->effectiveZoom());
@@ -109,7 +109,6 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
 
 TEST(CSSCalculationValue, CreateExpressionNodeFromLengthFromExpressionNode)
 {
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression;
     RefPtr<RenderStyle> style = RenderStyle::createDefaultStyle();
     style->setEffectiveZoom(5);
 

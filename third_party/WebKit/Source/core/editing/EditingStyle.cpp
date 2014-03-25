@@ -294,7 +294,7 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLAttributeEquivalent::attributeValueAsCSSVal
     if (value.isNull())
         return nullptr;
 
-    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle;
+    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = nullptr;
     dummyStyle = MutableStylePropertySet::create();
     dummyStyle->setProperty(m_propertyID, value);
     return dummyStyle->getPropertyCSSValue(m_propertyID);
@@ -939,8 +939,8 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
     RefPtr<EditingStyle> editingStyleAtPosition = EditingStyle::create(position, EditingPropertiesInEffect);
     StylePropertySet* styleAtPosition = editingStyleAtPosition->m_mutableStyle.get();
 
-    RefPtrWillBeRawPtr<CSSValue> unicodeBidi;
-    RefPtrWillBeRawPtr<CSSValue> direction;
+    RefPtrWillBeRawPtr<CSSValue> unicodeBidi = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> direction = nullptr;
     if (shouldPreserveWritingDirection == PreserveWritingDirection) {
         unicodeBidi = m_mutableStyle->getPropertyCSSValue(CSSPropertyUnicodeBidi);
         direction = m_mutableStyle->getPropertyCSSValue(CSSPropertyDirection);

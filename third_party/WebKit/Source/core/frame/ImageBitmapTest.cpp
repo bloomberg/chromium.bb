@@ -210,7 +210,7 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
     RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
     canvasElement->setHeight(40);
     canvasElement->setWidth(40);
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived;
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived = nullptr;
     {
         RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));

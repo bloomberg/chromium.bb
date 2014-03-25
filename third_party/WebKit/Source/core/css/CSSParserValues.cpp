@@ -84,7 +84,6 @@ void CSSParserValueList::stealValues(CSSParserValueList& valueList)
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
 {
-    RefPtrWillBeRawPtr<CSSValue> parsedValue;
     if (id)
         return CSSPrimitiveValue::createIdentifier(id);
 

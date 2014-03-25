@@ -88,7 +88,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createColorValue(unsigne
     if (m_colorValueCache.size() > maximumColorCacheSize)
         m_colorValueCache.clear();
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> dummyValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> dummyValue = nullptr;
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
         entry.storedValue->value = CSSPrimitiveValue::createColor(rgbValue);

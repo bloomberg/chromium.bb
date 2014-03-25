@@ -150,7 +150,7 @@ public:
 
     PassRefPtrWillBeRawPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
     {
-        RefPtrWillBeRawPtr<AnimatableValue> value;
+        RefPtrWillBeRawPtr<AnimatableValue> value = nullptr;
         if (id == CSSPropertyWebkitTransform)
             value = AnimatableTransform::create(TransformOperations());
         else
@@ -207,7 +207,7 @@ public:
         if (!HasFatalFailure()) {
             return KeyframeEffectModel::create(frames);
         }
-        return PassRefPtrWillBeRawPtr<KeyframeEffectModel>();
+        return nullptr;
     }
 
 };

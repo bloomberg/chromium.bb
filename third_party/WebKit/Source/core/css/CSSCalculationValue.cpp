@@ -542,7 +542,7 @@ static ParseState checkDepthAndIndex(int* depth, unsigned index, CSSParserValueL
 }
 
 class CSSCalcExpressionNodeParser {
-    DISALLOW_ALLOCATION(); // Is only ever stack allocated.
+    STACK_ALLOCATED();
 public:
     PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> parseCalc(CSSParserValueList* tokens)
     {
@@ -557,9 +557,9 @@ public:
 
 private:
     struct Value {
-        DISALLOW_ALLOCATION(); // Is only ever stack allocated.
+        STACK_ALLOCATED();
     public:
-        RefPtrWillBeRawPtr<CSSCalcExpressionNode> value;
+        RefPtrWillBeMember<CSSCalcExpressionNode> value;
     };
 
     char operatorValue(CSSParserValueList* tokens, unsigned index)
@@ -744,7 +744,7 @@ PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode
 PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, ValueRange range)
 {
     CSSCalcExpressionNodeParser parser;
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression;
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression = nullptr;
 
     if (equalIgnoringCase(name, "calc(") || equalIgnoringCase(name, "-webkit-calc("))
         expression = parser.parseCalc(parserValueList);

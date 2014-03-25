@@ -64,8 +64,7 @@ struct Token {
 
 class Parser {
     WTF_MAKE_NONCOPYABLE(Parser);
-    // FIXME: oilpan: This should be STACK_ALLOCATED.
-    DISALLOW_ALLOCATION();
+    STACK_ALLOCATED();
 public:
     Parser();
     ~Parser();
@@ -122,7 +121,7 @@ private:
     unsigned m_nextPos;
     String m_data;
     int m_lastTokenType;
-    RefPtrWillBeRawPtr<XPathNSResolver> m_resolver;
+    RefPtrWillBeMember<XPathNSResolver> m_resolver;
 
     HashSet<ParseNode*> m_parseNodes;
     HashSet<Vector<OwnPtr<Predicate> >*> m_predicateVectors;

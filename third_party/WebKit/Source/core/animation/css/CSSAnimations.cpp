@@ -518,7 +518,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
 void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSAnimationData* anim, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
 {
-    RefPtrWillBeRawPtr<AnimatableValue> to;
+    RefPtrWillBeRawPtr<AnimatableValue> to = nullptr;
     if (activeTransitions) {
         TransitionMap::const_iterator activeTransitionIter = activeTransitions->find(id);
         if (activeTransitionIter != activeTransitions->end()) {

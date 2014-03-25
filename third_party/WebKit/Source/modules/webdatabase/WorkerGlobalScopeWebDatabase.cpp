@@ -45,7 +45,7 @@ namespace WebCore {
 PassRefPtrWillBeRawPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
-    RefPtrWillBeRawPtr<Database> database;
+    RefPtrWillBeRawPtr<Database> database = nullptr;
     DatabaseError error = DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;
@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(Work
 PassRefPtrWillBeRawPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
-    RefPtrWillBeRawPtr<DatabaseSync> database;
+    RefPtrWillBeRawPtr<DatabaseSync> database = nullptr;
     DatabaseError error =  DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;

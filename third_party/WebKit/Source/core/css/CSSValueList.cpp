@@ -75,7 +75,7 @@ bool CSSValueList::hasValue(CSSValue* val) const
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::copy()
 {
-    RefPtrWillBeRawPtr<CSSValueList> newList;
+    RefPtrWillBeRawPtr<CSSValueList> newList = nullptr;
     switch (m_valueListSeparator) {
     case SpaceSeparator:
         newList = createSpaceSeparated();

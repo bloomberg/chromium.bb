@@ -215,7 +215,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
 {
     ASSERT(!mediaFeature.isNull());
 
-    RefPtrWillBeRawPtr<CSSValue> cssValue;
+    RefPtrWillBeRawPtr<CSSValue> cssValue = nullptr;
     bool isValid = false;
     String lowerMediaFeature = attemptStaticStringCreation(mediaFeature.lower());
 

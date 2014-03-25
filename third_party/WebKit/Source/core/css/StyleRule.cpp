@@ -204,7 +204,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
 
 PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
 {
-    RefPtrWillBeRawPtr<CSSRule> rule;
+    RefPtrWillBeRawPtr<CSSRule> rule = nullptr;
     StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
     switch (type()) {
     case Style:

@@ -78,7 +78,7 @@ static String serializePositionOffset(const Pair& offset, const Pair& other)
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> buildSerializablePositionOffset(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, CSSValueID defaultSide)
 {
     CSSValueID side = defaultSide;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> amount;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> amount = nullptr;
 
     if (!offset) {
         side = CSSValueCenter;

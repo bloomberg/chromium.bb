@@ -49,7 +49,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> SVGFontFaceSrcElement::srcValue() const
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     for (SVGElement* element = Traversal<SVGElement>::firstChild(*this); element; element = Traversal<SVGElement>::nextSibling(*element)) {
-        RefPtrWillBeRawPtr<CSSFontFaceSrcValue> srcValue;
+        RefPtrWillBeRawPtr<CSSFontFaceSrcValue> srcValue = nullptr;
         if (isSVGFontFaceUriElement(*element))
             srcValue = toSVGFontFaceUriElement(*element).srcValue();
         else if (isSVGFontFaceNameElement(*element))

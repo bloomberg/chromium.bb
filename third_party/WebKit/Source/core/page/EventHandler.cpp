@@ -3592,7 +3592,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     typedef HashSet<RefPtr<EventTarget> > EventTargetSet;
     struct {
         // The touches corresponding to the particular change state this struct instance represents.
-        RefPtrWillBeRawPtr<TouchList> m_touches;
+        RefPtrWillBeMember<TouchList> m_touches;
         // Set of targets involved in m_touches.
         EventTargetSet m_targets;
     } changedTouches[PlatformTouchPoint::TouchStateEnd];

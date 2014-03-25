@@ -276,7 +276,7 @@ void SVGFontFaceElement::rebuildFontFace()
     }
 
     bool describesParentFont = isSVGFontElement(*parentNode());
-    RefPtrWillBeRawPtr<CSSValueList> list;
+    RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
 
     if (describesParentFont) {
         m_fontElement = toSVGFontElement(parentNode());

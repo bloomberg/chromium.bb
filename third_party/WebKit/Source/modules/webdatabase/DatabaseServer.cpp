@@ -54,7 +54,7 @@ PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
-    RefPtrWillBeRawPtr<DatabaseBackendBase> database;
+    RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error))
         database = createDatabase(backendContext, type, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
@@ -64,7 +64,7 @@ PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPt
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    RefPtrWillBeRawPtr<DatabaseBackendBase> database;
+    RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
     switch (type) {
     case DatabaseType::Async:
         database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));

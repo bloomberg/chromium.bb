@@ -500,7 +500,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         bool useSingleWordShorthand = false;
         bool foundPositionYCSSProperty = false;
         for (unsigned j = 0; j < size; j++) {
-            RefPtrWillBeRawPtr<CSSValue> value;
+            RefPtrWillBeRawPtr<CSSValue> value = nullptr;
             if (values[j]) {
                 if (values[j]->isBaseValueList())
                     value = toCSSValueList(values[j].get())->item(i);
@@ -527,7 +527,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                 // BUG 49055: make sure the value was not reset in the layer check just above.
                 if ((j < size - 1 && shorthand.properties()[j + 1] == CSSPropertyBackgroundRepeatY && value)
                     || (j < size - 1 && shorthand.properties()[j + 1] == CSSPropertyWebkitMaskRepeatY && value)) {
-                    RefPtrWillBeRawPtr<CSSValue> yValue;
+                    RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
                     RefPtrWillBeRawPtr<CSSValue> nextValue = values[j + 1];
                     if (nextValue->isValueList())
                         yValue = toCSSValueList(nextValue.get())->itemWithoutBoundsCheck(i);

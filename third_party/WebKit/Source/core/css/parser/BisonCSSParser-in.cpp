@@ -862,7 +862,7 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
     if (!valueID)
         return false;
 
-    RefPtrWillBeRawPtr<CSSValue> value;
+    RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     if (valueID == CSSValueInherit)
         value = cssValuePool().createInheritedValue();
     else if (valueID == CSSValueInitial)
@@ -947,7 +947,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> parseTranslateTransformValue(Ch
 template <typename CharType>
 static PassRefPtrWillBeRawPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, CharType* end)
 {
-    RefPtrWillBeRawPtr<CSSValueList> transformList;
+    RefPtrWillBeRawPtr<CSSValueList> transformList = nullptr;
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
@@ -971,7 +971,7 @@ static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSProp
         return false;
     if (string.isEmpty())
         return false;
-    RefPtrWillBeRawPtr<CSSValueList> transformList;
+    RefPtrWillBeRawPtr<CSSValueList> transformList = nullptr;
     if (string.is8Bit()) {
         const LChar* pos = string.characters8();
         const LChar* end = pos + string.length();
@@ -1662,7 +1662,7 @@ StyleRuleBase* BisonCSSParser::createImportRule(const CSSParserString& url, Medi
 StyleRuleBase* BisonCSSParser::createMediaRule(MediaQuerySet* media, RuleList* rules)
 {
     m_allowImportRules = m_allowNamespaceDeclarations = false;
-    RefPtrWillBeRawPtr<StyleRuleMedia> rule;
+    RefPtrWillBeRawPtr<StyleRuleMedia> rule = nullptr;
     if (rules) {
         rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create().get(), *rules);
     } else {
@@ -1679,7 +1679,7 @@ StyleRuleBase* BisonCSSParser::createSupportsRule(bool conditionIsSupported, Rul
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
     RefPtr<CSSRuleSourceData> data = popSupportsRuleData();
-    RefPtrWillBeRawPtr<StyleRuleSupports> rule;
+    RefPtrWillBeRawPtr<StyleRuleSupports> rule = nullptr;
     String conditionText;
     unsigned conditionOffset = data->ruleHeaderRange.start + 9;
     unsigned conditionLength = data->ruleHeaderRange.length() - 9;

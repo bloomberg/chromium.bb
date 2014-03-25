@@ -91,7 +91,7 @@ void DatabaseBackend::close()
         // Clean up transactions that have not been scheduled yet:
         // Transaction phase 1 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
-        RefPtrWillBeRawPtr<SQLTransactionBackend> transaction;
+        RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = nullptr;
         while (!m_transactionQueue.isEmpty()) {
             transaction = m_transactionQueue.takeFirst();
             transaction->notifyDatabaseThreadIsShuttingDown();
@@ -134,7 +134,7 @@ void DatabaseBackend::inProgressTransactionCompleted()
 void DatabaseBackend::scheduleTransaction()
 {
     ASSERT(!m_transactionInProgressMutex.tryLock()); // Locked by caller.
-    RefPtrWillBeRawPtr<SQLTransactionBackend> transaction;
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = nullptr;
 
     if (m_isTransactionQueueEnabled && !m_transactionQueue.isEmpty())
         transaction = m_transactionQueue.takeFirst();

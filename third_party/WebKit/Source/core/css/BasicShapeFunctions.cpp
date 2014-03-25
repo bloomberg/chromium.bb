@@ -69,7 +69,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
 {
     CSSValuePool& pool = cssValuePool();
 
-    RefPtrWillBeRawPtr<CSSBasicShape> basicShapeValue;
+    RefPtrWillBeRawPtr<CSSBasicShape> basicShapeValue = nullptr;
     switch (basicShape->type()) {
     case BasicShape::BasicShapeCircleType: {
         const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);

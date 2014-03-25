@@ -122,7 +122,7 @@ PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesRes
             break;
         }
 
-    RefPtrWillBeRawPtr<CSSGradientValue> result;
+    RefPtrWillBeRawPtr<CSSGradientValue> result = nullptr;
     if (!derived)
         result = this;
     else if (isLinearGradientValue())

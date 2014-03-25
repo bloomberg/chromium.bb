@@ -32,6 +32,8 @@
 #define WTF_RawPtr_h
 
 #include <algorithm>
+#include <stdint.h>
+
 #include "wtf/HashTableDeletedValueType.h"
 
 // RawPtr is a simple wrapper for a raw pointer that provides the
@@ -48,7 +50,12 @@ class RawPtr {
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(RawPtr);
     WTF_DISALLOW_ZERO_ASSIGNMENT(RawPtr);
 public:
-    RawPtr() : m_ptr(0) { }
+    RawPtr()
+    {
+#ifndef NDEBUG
+        m_ptr = reinterpret_cast<T*>(rawPtrZapValue);
+#endif
+    }
     RawPtr(std::nullptr_t) : m_ptr(0) { }
     RawPtr(T* ptr) : m_ptr(ptr) { }
     explicit RawPtr(T& reference) : m_ptr(&reference) { }
@@ -116,6 +123,7 @@ public:
     static T* hashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
 private:
+    static const uintptr_t rawPtrZapValue = 0x3a3a3a3a;
     T* m_ptr;
 };
 

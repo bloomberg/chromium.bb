@@ -579,7 +579,7 @@ static bool isCacheableForStyleElement(const StyleSheetContents& contents)
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet;
+    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
 
     e->document().styleEngine()->addPendingSheet();
 
@@ -612,7 +612,7 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet;
+    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().inputEncoding());
     styleSheet->contents()->parseStringAtPosition(text, startPosition, createdByParser);
     return styleSheet;
