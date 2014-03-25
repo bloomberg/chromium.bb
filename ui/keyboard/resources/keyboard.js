@@ -13,7 +13,6 @@
 <include src="elements/kb-altkey-set.js"></include>
 <include src="elements/kb-key-codes.js"></include>
 <include src="elements/kb-key-sequence.js"></include>
-<include src="elements/kb-options-menu.js"></include>
 <include src="elements/kb-altkey-data.js"></include>
 <include src="elements/kb-key-base.js"></include>
 <include src="elements/kb-key.js"></include>

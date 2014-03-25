@@ -797,30 +797,6 @@ Polymer('kb-keyboard', {
   },
 
   /**
-   * Show menu for selecting a keyboard layout.
-   * @param {!Event} event The triggering event.
-   * @param {{left: number, top: number, width: number}} details Location of
-   *     the button that triggered the popup.
-   */
-  showOptions: function(event, details) {
-    var overlay = this.$.overlay;
-    if (!overlay) {
-      console.error('Missing overlay.');
-      return;
-    }
-    var menu = overlay.$.options;
-    if (!menu) {
-       console.error('Missing options menu.');
-    }
-    menu.hidden = false;
-    overlay.hidden = false;
-    var left = details.left + details.width - menu.clientWidth;
-    var top = details.top - menu.clientHeight;
-    menu.style.left = left + 'px';
-    menu.style.top = top + 'px';
-  },
-
-  /**
    * Handler for the 'set-layout' event.
    * @param {!Event} event The triggering event.
    * @param {{layout: string}} details Details of the event, which contains

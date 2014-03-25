@@ -105,22 +105,7 @@ Polymer('kb-abc-key', {
 ;
 
 Polymer('kb-hide-keyboard-key', {
-  /**
-   * Whether to show the options menu on key-up.
-   * @type {boolean}
-   */
-  showMenu: true,
-
   up: function(event) {
-    if (!this.showMenu) {
-      hideKeyboard();
-      return;
-    }
-    var details = {
-      left: this.offsetLeft,
-      top: this.offsetTop,
-      width: this.clientWidth,
-    };
-    this.fire('show-options', details);
+    hideKeyboard();
   },
 });

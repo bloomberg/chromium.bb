@@ -9,8 +9,7 @@
     on-key-longpress="{{keyLongpress}}" on-pointerup="{{up}}"
     on-pointerdown="{{down}}" on-pointerout="{{out}}"
     on-enable-sel="{{enableSel}}" on-enable-dbl="{{enableDbl}}"
-    on-key-out="{{keyOut}}" on-show-options="{{showOptions}}"
-    on-set-layout="{{setLayout}}" on-type-key="{{type}}"
+    on-key-out="{{keyOut}}" on-set-layout="{{setLayout}}" on-type-key="{{type}}"
     attributes="inputType inputTypeToLayoutMap keyset layout volume">
   <template>
     <style>
@@ -36,7 +35,6 @@
       -- keyboard layouts.
       -->
     <content id="content"></content>
-    <kb-keyboard-overlay id="overlay" hidden></kb-keyboard-overlay>
     <kb-key-codes id="keyCodeMetadata"></kb-key-codes>
   </template>
 </polymer-element>
