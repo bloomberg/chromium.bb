@@ -244,8 +244,9 @@ bool Initialize(bool force) {
   if (!force && !LeaveSetupBeacon())
     return false;
 
-  // Tells the resolver to patch already patched functions.
-  const bool kRelaxed = true;
+  // It is possible for other dlls to have already patched code by now and
+  // attempting to patch their code might result in crashes.
+  const bool kRelaxed = false;
 
   // Create a thunk via the appropriate ServiceResolver instance.
   sandbox::ServiceResolverThunk* thunk = GetThunk(kRelaxed);
