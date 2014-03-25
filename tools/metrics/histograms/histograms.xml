@@ -233,6 +233,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AndroidTabCloseUndo.Toast"
+    enum="AndroidTabCloseUndoToastEvent">
+  <owner>dtrainor@chromium.org</owner>
+  <summary>
+    When a user closes a tab an undo toast will popup on certain devices giving
+    the user the chance to undo closing that tab.  This stat tracks how the user
+    interacts with that UI and what actions they take.  A cold start means that
+    the undo bar wasn't showing when it was triggered to show again.  A warm
+    start means that it was.  Warm starts can happen when the user closes
+    multiple tabs close together.  When the undo bar is dismissed, all closes
+    that were queued up to be undone are committed.  This can happen either by a
+    timeout or by an action by the user to move to another part of the UI.
+  </summary>
+</histogram>
+
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -28668,6 +28683,14 @@ other types of suffix sets.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AndroidTabCloseUndoToastEvent" type="int">
+  <int value="0" label="Undo Shown (Cold)"/>
+  <int value="1" label="Undo Shown (Warm)"/>
+  <int value="2" label="Undo Pressed"/>
+  <int value="3" label="Undos Dismissed (Timeout)"/>
+  <int value="4" label="Undos Dismissed (Action)"/>
 </enum>
 
 <enum name="AppBannersDismissEvent" type="int">
