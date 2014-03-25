@@ -505,8 +505,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
     Picture::AsTraceableRecordData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
   record_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
-  record_data->SetInteger("width", layer_rect_.width());
-  record_data->SetInteger("height", layer_rect_.height());
+  record_data->Set("layer_rect", MathUtil::AsValue(layer_rect_).release());
   return TracedValue::FromValue(record_data.release());
 }
 
