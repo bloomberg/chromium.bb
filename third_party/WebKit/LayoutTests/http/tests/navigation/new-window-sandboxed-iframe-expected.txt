@@ -1,0 +1,12 @@
+
+
+============== Back Forward List ==============
+curr->  http://127.0.0.1:8000/navigation/new-window-sandboxed-iframe.html
+            http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-iframe.html (in frame "<!--framePath //<!--frame0-->-->")
+===============================================
+
+============== Back Forward List ==============
+        http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination.html
+            http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination-iframe.html (in frame "<!--framePath //<!--frame0-->-->")
+curr->  http://127.0.0.1:8000/navigation/resources/notify-done.html
+===============================================

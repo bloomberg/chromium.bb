@@ -81,8 +81,6 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
     ASSERT(page->mainFrame());
     LocalFrame& frame = *page->mainFrame();
 
-    frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
-
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());
 
@@ -140,6 +138,9 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     LocalFrame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
         return 0;
+
+    if (newFrame != &openerFrame && newFrame != openerFrame.tree().top())
+        newFrame->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
     newFrame->loader().setOpener(&openerFrame);
     newFrame->page()->setOpenedByDOM();
