@@ -8,7 +8,6 @@
 
 #include "chrome/browser/policy/policy_path_parser.h"
 
-#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -29,59 +28,6 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive, base::FilePath* dir) {
   return false;
 }
 
-}  // namespace
-
-namespace policy {
-
-namespace path_parser {
-
-namespace internal {
-
-bool GetSpecialFolderPath(int id, base::FilePath::StringType* value) {
-  WCHAR path[MAX_PATH];
-  ::SHGetSpecialFolderPath(0, path, id, false);
-  *value = base::FilePath::StringType(path);
-  return true;
-}
-
-bool GetWindowsUserName(base::FilePath::StringType* value) {
-  DWORD return_length = 0;
-  ::GetUserName(NULL, &return_length);
-  if (return_length) {
-    scoped_ptr<WCHAR[]> username(new WCHAR[return_length]);
-    ::GetUserName(username.get(), &return_length);
-    *value = base::FilePath::StringType(username.get());
-  }
-  return (return_length != 0);
-}
-
-bool GetMachineName(base::FilePath::StringType* value) {
-  DWORD return_length = 0;
-  ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
-  if (return_length) {
-    scoped_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
-    ::GetComputerNameEx(
-        ComputerNamePhysicalDnsHostname, machinename.get(), &return_length);
-    *value = base::FilePath::StringType(machinename.get());
-  }
-  return (return_length != 0);
-}
-
-bool GetClientName(base::FilePath::StringType* value) {
-  LPWSTR buffer = NULL;
-  DWORD buffer_length = 0;
-  BOOL status;
-  if ((status = ::WTSQuerySessionInformation(WTS_CURRENT_SERVER,
-                                             WTS_CURRENT_SESSION,
-                                             WTSClientName,
-                                             &buffer,
-                                             &buffer_length))) {
-    *value = base::FilePath::StringType(buffer);
-    ::WTSFreeMemory(buffer);
-  }
-  return (status == TRUE);
-}
-
 const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
 const WCHAR* kUserNamePolicyVarName = L"${user_name}";
 const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
@@ -93,39 +39,92 @@ const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
 const WCHAR* kWinWindowsFolderVarName = L"${windows}";
 const WCHAR* kWinClientName = L"${client_name}";
 
-// A table mapping variable name to their respective getvalue callbacks.
-const VariableNameAndValueCallback kVariableNameAndValueCallbacks[] = {
-    VariableNameAndValueCallback(
-        kWinWindowsFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_WINDOWS)),
-    VariableNameAndValueCallback(
-        kWinProgramFilesFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_PROGRAM_FILES)),
-    VariableNameAndValueCallback(
-        kWinProgramDataFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_COMMON_APPDATA)),
-    VariableNameAndValueCallback(
-        kWinProfileFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_PROFILE)),
-    VariableNameAndValueCallback(
-        kWinLocalAppDataFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_LOCAL_APPDATA)),
-    VariableNameAndValueCallback(
-        kWinRoamingAppDataFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_APPDATA)),
-    VariableNameAndValueCallback(
-        kWinDocumentsFolderVarName,
-        base::Bind(GetSpecialFolderPath, CSIDL_PERSONAL)),
-    VariableNameAndValueCallback(kUserNamePolicyVarName,
-                                 base::Bind(GetWindowsUserName)),
-    VariableNameAndValueCallback(kMachineNamePolicyVarName,
-                                 base::Bind(GetMachineName)),
-    VariableNameAndValueCallback(kWinClientName, base::Bind(GetClientName))};
+struct WinFolderNamesToCSIDLMapping {
+  const WCHAR* name;
+  int id;
+};
 
-// Total number of entries in the mapping table.
-const int kNoOfVariables = arraysize(kVariableNameAndValueCallbacks);
+// Mapping from variable names to Windows CSIDL ids.
+const WinFolderNamesToCSIDLMapping win_folder_mapping[] = {
+    { kWinWindowsFolderVarName,        CSIDL_WINDOWS},
+    { kWinProgramFilesFolderVarName,   CSIDL_PROGRAM_FILES},
+    { kWinProgramDataFolderVarName,    CSIDL_COMMON_APPDATA},
+    { kWinProfileFolderVarName,        CSIDL_PROFILE},
+    { kWinLocalAppDataFolderVarName,   CSIDL_LOCAL_APPDATA},
+    { kWinRoamingAppDataFolderVarName, CSIDL_APPDATA},
+    { kWinDocumentsFolderVarName,      CSIDL_PERSONAL}
+};
 
-}  // namespace internal
+}  // namespace
+
+namespace policy {
+
+namespace path_parser {
+
+// Replaces all variable occurances in the policy string with the respective
+// system settings values.
+base::FilePath::StringType ExpandPathVariables(
+    const base::FilePath::StringType& untranslated_string) {
+  base::FilePath::StringType result(untranslated_string);
+  if (result.length() == 0)
+    return result;
+  // Sanitize quotes in case of any around the whole string.
+  if (result.length() > 1 &&
+      ((result[0] == L'"' && result[result.length() - 1] == L'"') ||
+       (result[0] == L'\'' && result[result.length() - 1] == L'\''))) {
+    // Strip first and last char which should be matching quotes now.
+    result = result.substr(1, result.length() - 2);
+  }
+  // First translate all path variables we recognize.
+  for (int i = 0; i < arraysize(win_folder_mapping); ++i) {
+    size_t position = result.find(win_folder_mapping[i].name);
+    if (position != std::wstring::npos) {
+      WCHAR path[MAX_PATH];
+      ::SHGetSpecialFolderPath(0, path, win_folder_mapping[i].id, false);
+      std::wstring path_string(path);
+      result.replace(position, wcslen(win_folder_mapping[i].name), path_string);
+    }
+  }
+  // Next translate other windows specific variables.
+  size_t position = result.find(kUserNamePolicyVarName);
+  if (position != std::wstring::npos) {
+    DWORD return_length = 0;
+    ::GetUserName(NULL, &return_length);
+    if (return_length != 0) {
+      scoped_ptr<WCHAR[]> username(new WCHAR[return_length]);
+      ::GetUserName(username.get(), &return_length);
+      std::wstring username_string(username.get());
+      result.replace(position, wcslen(kUserNamePolicyVarName), username_string);
+    }
+  }
+  position = result.find(kMachineNamePolicyVarName);
+  if (position != std::wstring::npos) {
+    DWORD return_length = 0;
+    ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
+    if (return_length != 0) {
+      scoped_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
+      ::GetComputerNameEx(ComputerNamePhysicalDnsHostname,
+                          machinename.get(), &return_length);
+      std::wstring machinename_string(machinename.get());
+      result.replace(
+          position, wcslen(kMachineNamePolicyVarName), machinename_string);
+    }
+  }
+  position = result.find(kWinClientName);
+  if (position != std::wstring::npos) {
+    LPWSTR buffer = NULL;
+    DWORD buffer_length = 0;
+    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
+                                     WTSClientName,
+                                     &buffer, &buffer_length)) {
+      std::wstring clientname_string(buffer);
+      result.replace(position, wcslen(kWinClientName), clientname_string);
+      ::WTSFreeMemory(buffer);
+    }
+  }
+
+  return result;
+}
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   DCHECK(user_data_dir);

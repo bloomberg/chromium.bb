@@ -20,7 +20,6 @@
         'browser/policy/policy_path_parser_linux.cc',
         'browser/policy/policy_path_parser_mac.mm',
         'browser/policy/policy_path_parser_win.cc',
-        'browser/policy/policy_path_parser.cc',
       ],
     },
   ],
