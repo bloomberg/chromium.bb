@@ -11,11 +11,8 @@ namespace cc {
 namespace {
 
 UIResourceBitmap CreateMockUIResourceBitmap() {
-  SkBitmap skbitmap;
-  skbitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  skbitmap.allocPixels();
-  skbitmap.setImmutable();
-  return UIResourceBitmap(skbitmap);
+  bool is_opaque = false;
+  return UIResourceBitmap(gfx::Size(1, 1), is_opaque);
 }
 
 }  // anonymous namespace

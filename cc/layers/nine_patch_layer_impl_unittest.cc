@@ -55,12 +55,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->draw_properties().render_target = layer.get();
 
   UIResourceId uid = 1;
-  SkBitmap skbitmap;
-  skbitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, bitmap_size.width(), bitmap_size.height());
-  skbitmap.allocPixels();
-  skbitmap.setImmutable();
-  UIResourceBitmap bitmap(skbitmap);
+  bool is_opaque = false;
+  UIResourceBitmap bitmap(bitmap_size, is_opaque);
 
   host_impl.CreateUIResource(uid, bitmap);
   layer->SetUIResourceId(uid);

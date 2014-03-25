@@ -13,7 +13,7 @@
 namespace cc {
 
 void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
-                              gfx::Size size,
+                              const gfx::Size& size,
                               UIResourceFormat format) {
   DCHECK(size.width());
   DCHECK(size.height());
@@ -29,7 +29,7 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
 }
 
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
-  DCHECK_EQ(skbitmap.config(), SkBitmap::kARGB_8888_Config);
+  DCHECK_EQ(skbitmap.colorType(), kPMColor_SkColorType);
   DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
   DCHECK(skbitmap.isImmutable());
 
@@ -41,8 +41,19 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   SetOpaque(skbitmap.isOpaque());
 }
 
+UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
+  SkAlphaType alphaType = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkImageInfo info =
+      SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+  skia::RefPtr<SkPixelRef> pixel_ref = skia::AdoptRef(
+      SkMallocPixelRef::NewAllocate(info, info.minRowBytes(), NULL));
+  pixel_ref->setImmutable();
+  Create(pixel_ref, size, UIResourceBitmap::RGBA8);
+  SetOpaque(is_opaque);
+}
+
 UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
-                                   gfx::Size size) {
+                                   const gfx::Size& size) {
   Create(pixel_ref, size, UIResourceBitmap::ETC1);
 }
 

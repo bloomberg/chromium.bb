@@ -848,11 +848,9 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   uint8_t data3[4] = { 6, 7, 8, 9 };
-  SkBitmap bitmap3;
-  bitmap3.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  bitmap3.setPixels(data3);
+  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   SkCanvas* raster_canvas = child_resource_provider_->MapImageRasterBuffer(id3);
-  raster_canvas->writePixels(bitmap3, 0, 0);
+  raster_canvas->writePixels(info, data3, info.minRowBytes(), 0, 0);
   child_resource_provider_->UnmapImageRasterBuffer(id3);
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
@@ -962,7 +960,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     expected_ids.insert(id3);
     expected_ids.insert(id4);
     std::set<ResourceProvider::ResourceId> returned_ids;
-    for(unsigned i = 0; i < 4; i++)
+    for (unsigned i = 0; i < 4; i++)
       returned_ids.insert(returned_to_child[i].id);
     EXPECT_EQ(expected_ids, returned_ids);
     EXPECT_FALSE(returned_to_child[0].lost);
@@ -1042,7 +1040,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   expected_ids.insert(id3);
   expected_ids.insert(id4);
   std::set<ResourceProvider::ResourceId> returned_ids;
-  for(unsigned i = 0; i < 4; i++)
+  for (unsigned i = 0; i < 4; i++)
     returned_ids.insert(returned_to_child[i].id);
   EXPECT_EQ(expected_ids, returned_ids);
   EXPECT_FALSE(returned_to_child[0].lost);
@@ -2844,8 +2842,7 @@ TEST_P(ResourceProviderTest, PixelBuffer_Bitmap) {
   resource_provider->AcquirePixelRasterBuffer(id);
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(size.width(), size.height());
   *(bitmap.getAddr32(0, 0)) = kBadBeef;
   SkCanvas* canvas = resource_provider->MapPixelRasterBuffer(id);
   canvas->writePixels(bitmap, 0, 0);
@@ -3064,8 +3061,7 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(size.width(), size.height());
   *(bitmap.getAddr32(0, 0)) = kBadBeef;
   SkCanvas* canvas = resource_provider->MapImageRasterBuffer(id);
   ASSERT_TRUE(!!canvas);

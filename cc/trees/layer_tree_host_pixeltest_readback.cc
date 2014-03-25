@@ -1109,15 +1109,10 @@ class LayerTreeHostReadbackViaCompositeAndReadbackPixelTest
       device_viewport_copy_rect.Intersect(device_viewport_copy_subrect_);
 
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-    bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                      device_viewport_copy_rect.width(),
-                      device_viewport_copy_rect.height());
-    bitmap->allocPixels();
-    {
-      scoped_ptr<SkAutoLockPixels> lock(new SkAutoLockPixels(*bitmap));
-      layer_tree_host()->CompositeAndReadback(bitmap->getPixels(),
-                                              device_viewport_copy_rect);
-    }
+    bitmap->allocN32Pixels(device_viewport_copy_rect.width(),
+                           device_viewport_copy_rect.height());
+    layer_tree_host()->CompositeAndReadback(bitmap->getPixels(),
+                                            device_viewport_copy_rect);
 
     result_bitmap_ = bitmap.Pass();
     EndTest();

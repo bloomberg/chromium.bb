@@ -65,8 +65,7 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   EXPECT_FALSE(test_layer->DrawsContent());
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(10, 10);
   bitmap.setImmutable();
 
   test_layer->SetBitmap(bitmap);
@@ -93,13 +92,9 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  bitmap.allocPixels();
-  bitmap.setImmutable();
-
+  bool is_opaque = false;
   scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
-      layer_tree_host_.get(), UIResourceBitmap(bitmap));
+      layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   test_layer->SetUIResourceId(resource->id());
   test_layer->Update(&queue, &occlusion_tracker);
 

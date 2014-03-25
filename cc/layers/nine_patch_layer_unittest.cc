@@ -64,13 +64,9 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  bitmap.allocPixels();
-  bitmap.setImmutable();
-
+  bool is_opaque = false;
   scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
-      layer_tree_host_.get(), UIResourceBitmap(bitmap));
+      layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   gfx::Rect aperture(5, 5, 1, 1);
   bool fill_center = true;
   test_layer->SetAperture(aperture);

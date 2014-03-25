@@ -9,8 +9,7 @@ namespace cc {
 FakeLayerUpdater::Resource::Resource(FakeLayerUpdater* layer,
                                      scoped_ptr<PrioritizedResource> texture)
     : LayerUpdater::Resource(texture.Pass()), layer_(layer) {
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-  bitmap_.allocPixels();
+  bitmap_.allocN32Pixels(10, 10);
 }
 
 FakeLayerUpdater::Resource::~Resource() {}

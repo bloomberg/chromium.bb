@@ -247,11 +247,7 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   DCHECK(!layer_rect.size().IsEmpty());
 
   SkBitmap skbitmap;
-  skbitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     content_rect.width(),
-                     content_rect.height());
-  skbitmap.allocPixels();
-
+  skbitmap.allocN32Pixels(content_rect.width(), content_rect.height());
   SkCanvas skcanvas(skbitmap);
 
   float scale_x =

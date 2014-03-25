@@ -108,8 +108,7 @@ class ResourceUpdateControllerTest : public Test {
 
  protected:
   virtual void SetUp() {
-    bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
-    bitmap_.allocPixels();
+    bitmap_.allocN32Pixels(300, 150);
 
     for (int i = 0; i < 4; i++) {
       textures_[i] = PrioritizedResource::Create(resource_manager_.get(),

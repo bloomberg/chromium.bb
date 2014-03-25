@@ -15,26 +15,19 @@ namespace cc {
 void DrawPicture(unsigned char* buffer,
                  const gfx::Rect& layer_rect,
                  scoped_refptr<Picture> picture) {
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   layer_rect.width(),
-                   layer_rect.height());
-  bitmap.setPixels(buffer);
+  bitmap.installPixels(info, buffer, info.minRowBytes());
   SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   picture->Raster(&canvas, NULL, layer_rect, 1.0f);
 }
 
 void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap) {
-  SkImageInfo info = {
-    size.width(),
-    size.height(),
-    kPMColor_SkColorType,
-    kPremul_SkAlphaType
-  };
+  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
 
-  bitmap->setConfig(info);
-  bitmap->allocPixels();
+  bitmap->allocPixels(info);
   bitmap->pixelRef()->setImmutable();
   bitmap->pixelRef()->setURI(uri);
 }

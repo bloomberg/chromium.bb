@@ -674,10 +674,7 @@ TEST(PicturePileImpl, RasterContentsOpaque) {
       canvas_rect.Inset(0, 0, -1, -1);
 
       SkBitmap bitmap;
-      bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                       canvas_rect.width(),
-                       canvas_rect.height());
-      bitmap.allocPixels();
+      bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
       SkCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
 
@@ -726,10 +723,7 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   canvas_rect.Inset(0, 0, -1, -1);
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   canvas_rect.width(),
-                   canvas_rect.height());
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
   SkCanvas canvas(bitmap);
 
   FakeRenderingStatsInstrumentation rendering_stats_instrumentation;

@@ -1739,10 +1739,8 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                  const PictureDrawQuad* quad) {
   if (on_demand_tile_raster_bitmap_.width() != quad->texture_size.width() ||
       on_demand_tile_raster_bitmap_.height() != quad->texture_size.height()) {
-    on_demand_tile_raster_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                                            quad->texture_size.width(),
-                                            quad->texture_size.height());
-    on_demand_tile_raster_bitmap_.allocPixels();
+    on_demand_tile_raster_bitmap_.allocN32Pixels(quad->texture_size.width(),
+                                                 quad->texture_size.height());
 
     if (on_demand_tile_raster_resource_id_)
       resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
@@ -2298,9 +2296,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
   DCHECK(request->force_bitmap_result());
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(
-      SkBitmap::kARGB_8888_Config, window_rect.width(), window_rect.height());
-  bitmap->allocPixels();
+  bitmap->allocN32Pixels(window_rect.width(), window_rect.height());
 
   scoped_ptr<SkAutoLockPixels> lock(new SkAutoLockPixels(*bitmap));
 

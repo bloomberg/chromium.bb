@@ -35,15 +35,7 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
   layer->CreateRenderSurface();
   layer->draw_properties().render_target = layer.get();
 
-  SkBitmap skbitmap;
-  skbitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     bitmap_size.width(),
-                     bitmap_size.height(),
-                     0,
-                     opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  skbitmap.allocPixels();
-  skbitmap.setImmutable();
-  UIResourceBitmap bitmap(skbitmap);
+  UIResourceBitmap bitmap(bitmap_size, opaque);
 
   host_impl->CreateUIResource(uid, bitmap);
   layer->SetUIResourceId(uid);

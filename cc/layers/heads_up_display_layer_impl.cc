@@ -170,13 +170,14 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   }
 
   TRACE_EVENT0("cc", "UploadHudTexture");
-  const SkBitmap* bitmap = &hud_canvas_->getDevice()->accessBitmap(false);
-  SkAutoLockPixels locker(*bitmap);
-
+  SkImageInfo info;
+  size_t row_bytes = 0;
+  const void* pixels = hud_canvas_->peekPixels(&info, &row_bytes);
+  DCHECK(pixels);
   gfx::Rect content_rect(content_bounds());
-  DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+  DCHECK(info.colorType() == kPMColor_SkColorType);
   resource_provider->SetPixels(hud_resource_->id(),
-                               static_cast<const uint8_t*>(bitmap->getPixels()),
+                               static_cast<const uint8_t*>(pixels),
                                content_rect,
                                content_rect,
                                gfx::Vector2d());

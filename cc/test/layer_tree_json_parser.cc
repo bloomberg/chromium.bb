@@ -69,8 +69,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     scoped_refptr<NinePatchLayer> nine_patch_layer = NinePatchLayer::Create();
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, image_width, image_height);
-    bitmap.allocPixels(NULL, NULL);
+    bitmap.allocN32Pixels(image_width, image_height);
     bitmap.setImmutable();
     nine_patch_layer->SetBitmap(bitmap);
     nine_patch_layer->SetAperture(

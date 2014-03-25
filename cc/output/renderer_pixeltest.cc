@@ -1805,8 +1805,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
       CreateTestRenderPass(id, viewport, transform_to_root);
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(2, 2);
   {
     SkAutoLockPixels lock(bitmap);
     SkCanvas canvas(bitmap);
