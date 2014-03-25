@@ -10,9 +10,9 @@ function test()
 {
     WebInspector.inspectorView.showPanel("sources");
     var panel = WebInspector.panels.sources;
-    var sourcesEditor = panel._sourcesEditor;
-    var historyManager = sourcesEditor._historyManager;
-    var editorContainer = sourcesEditor._editorContainer;
+    var sourcesView = panel._sourcesView;
+    var historyManager = sourcesView._historyManager;
+    var editorContainer = sourcesView._editorContainer;
 
     function rollback()
     {
