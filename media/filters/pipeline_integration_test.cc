@@ -17,7 +17,6 @@
 #include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
 
-using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
 
@@ -394,16 +393,16 @@ class PipelineIntegrationTest
       public PipelineIntegrationTestBase {
  public:
   void StartPipelineWithMediaSource(MockMediaSource* source) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
-    EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
+        .Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
+        .Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(), NULL),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
-        base::Bind(&PipelineIntegrationTest::OnMetadata,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnPrerollCompleted,
+        base::Bind(&PipelineIntegrationTest::OnBufferingState,
                    base::Unretained(this)),
         base::Closure());
 
@@ -418,17 +417,17 @@ class PipelineIntegrationTest
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
-    EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
+        .Times(AtMost(1));
+    EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
+        .Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(),
                                encrypted_media->decryptor()),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
-        base::Bind(&PipelineIntegrationTest::OnMetadata,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnPrerollCompleted,
+        base::Bind(&PipelineIntegrationTest::OnBufferingState,
                    base::Unretained(this)),
         base::Closure());
 

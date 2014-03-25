@@ -436,19 +436,19 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
 bool WebMediaPlayerImpl::hasVideo() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  return pipeline_metadata_.has_video;
+  return pipeline_.HasVideo();
 }
 
 bool WebMediaPlayerImpl::hasAudio() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  return pipeline_metadata_.has_audio;
+  return pipeline_.HasAudio();
 }
 
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  return blink::WebSize(pipeline_metadata_.natural_size);
+  return blink::WebSize(natural_size_);
 }
 
 bool WebMediaPlayerImpl::paused() const {
@@ -943,39 +943,38 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   InvalidateOnMainThread();
 }
 
-void WebMediaPlayerImpl::OnPipelineMetadata(
-    media::PipelineMetadata metadata) {
-  DVLOG(1) << "OnPipelineMetadata";
+void WebMediaPlayerImpl::OnPipelineBufferingState(
+    media::Pipeline::BufferingState buffering_state) {
+  DVLOG(1) << "OnPipelineBufferingState(" << buffering_state << ")";
 
-  pipeline_metadata_ = metadata;
+  switch (buffering_state) {
+    case media::Pipeline::kHaveMetadata:
+      // TODO(scherkus): Would be better to have a metadata changed callback
+      // that contained the size information as well whether audio/video is
+      // present. Doing so would let us remove more methods off Pipeline.
+      natural_size_ = pipeline_.GetInitialNaturalSize();
 
-  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+      SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
-  if (hasVideo()) {
-    DCHECK(!video_weblayer_);
-    video_weblayer_.reset(new webkit::WebLayerImpl(
-        cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
-    client_->setWebLayer(video_weblayer_.get());
+      if (hasVideo()) {
+        DCHECK(!video_weblayer_);
+        video_weblayer_.reset(new webkit::WebLayerImpl(
+            cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
+        client_->setWebLayer(video_weblayer_.get());
+      }
+      break;
+    case media::Pipeline::kPrerollCompleted:
+      // Only transition to ReadyStateHaveEnoughData if we don't have
+      // any pending seeks because the transition can cause Blink to
+      // report that the most recent seek has completed.
+      if (!pending_seek_)
+        SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+      break;
   }
 
   // TODO(scherkus): This should be handled by HTMLMediaElement and controls
   // should know when to invalidate themselves http://crbug.com/337015
   InvalidateOnMainThread();
-}
-
-void WebMediaPlayerImpl::OnPipelinePrerollCompleted() {
-  DVLOG(1) << "OnPipelinePrerollCompleted";
-
-  // Only transition to ReadyStateHaveEnoughData if we don't have
-  // any pending seeks because the transition can cause Blink to
-  // report that the most recent seek has completed.
-  if (!pending_seek_) {
-    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-
-    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-    // should know when to invalidate themselves http://crbug.com/337015
-    InvalidateOnMainThread();
-  }
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1196,8 +1195,7 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelinePrerollCompleted),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChange));
 }
 
@@ -1259,7 +1257,7 @@ void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
 
   media_log_->AddEvent(
       media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
-  pipeline_metadata_.natural_size = size;
+  natural_size_ = size;
 
   client_->sizeChanged();
 }
