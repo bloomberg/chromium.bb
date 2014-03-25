@@ -250,6 +250,7 @@ DatabaseBackendBase::~DatabaseBackendBase()
 
 void DatabaseBackendBase::trace(Visitor* visitor)
 {
+    visitor->trace(m_sqliteDatabase);
     visitor->trace(m_databaseAuthorizer);
 }
 

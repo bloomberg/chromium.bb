@@ -421,4 +421,9 @@ bool SQLiteDatabase::turnOnIncrementalAutoVacuum()
     }
 }
 
+void SQLiteDatabase::trace(Visitor* visitor)
+{
+    visitor->trace(m_authorizer);
+}
+
 } // namespace WebCore

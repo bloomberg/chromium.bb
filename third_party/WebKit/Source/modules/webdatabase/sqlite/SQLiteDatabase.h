@@ -53,6 +53,7 @@ extern const int SQLResultInterrupt;
 extern const int SQLResultConstraint;
 
 class SQLiteDatabase {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(SQLiteDatabase);
     friend class SQLiteTransaction;
 public:
@@ -115,6 +116,8 @@ public:
     enum AutoVacuumPragma { AutoVacuumNone = 0, AutoVacuumFull = 1, AutoVacuumIncremental = 2 };
     bool turnOnIncrementalAutoVacuum();
 
+    void trace(Visitor*);
+
 private:
     static int authorizerFunction(void*, int, const char*, const char*, const char*, const char*);
 
@@ -129,7 +132,7 @@ private:
     bool m_sharable;
 
     Mutex m_authorizerLock;
-    RefPtrWillBePersistent<DatabaseAuthorizer> m_authorizer;
+    RefPtrWillBeMember<DatabaseAuthorizer> m_authorizer;
 
     Mutex m_lockingMutex;
     ThreadIdentifier m_openingThread;
