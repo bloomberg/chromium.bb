@@ -355,6 +355,8 @@
         'disk_cache/blockfile/backend_impl.h',
         'disk_cache/blockfile/backend_impl_v3.cc',
         'disk_cache/blockfile/backend_impl_v3.h',
+        'disk_cache/blockfile/backend_worker_v3.cc',
+        'disk_cache/blockfile/backend_worker_v3.h',
         'disk_cache/blockfile/bitmap.cc',
         'disk_cache/blockfile/bitmap.h',
         'disk_cache/blockfile/block_bitmaps_v3.cc',

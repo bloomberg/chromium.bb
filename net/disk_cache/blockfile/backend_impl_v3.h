@@ -194,6 +194,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
  private:
   friend class EvictionV3;
   typedef base::hash_map<CacheAddr, EntryImplV3*> EntriesMap;
+  class Worker;
 
   void AdjustMaxCacheSize();
   bool InitStats(void* stats_data);

@@ -8,34 +8,23 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/hash.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/stats_counters.h"
-#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/blockfile/entry_impl.h"
 #include "net/disk_cache/blockfile/errors.h"
 #include "net/disk_cache/blockfile/experiments.h"
 #include "net/disk_cache/blockfile/file.h"
-#include "net/disk_cache/blockfile/histogram_macros.h"
-#include "net/disk_cache/cache_util.h"
-
-// Provide a BackendImpl object to macros from histogram_macros.h.
-#define CACHE_UMA_BACKEND_IMPL_OBJ this
 
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
 namespace {
+
+#if defined(V3_NOT_JUST_YET_READY)
 
 const char* kIndexName = "index";
 
@@ -96,6 +85,7 @@ bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
   header->experiment = disk_cache::NO_EXPERIMENT;
   return true;
 }
+#endif  // defined(V3_NOT_JUST_YET_READY).
 
 }  // namespace
 
@@ -103,30 +93,14 @@ bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
 
 namespace disk_cache {
 
-BackendImpl::BackendImpl(const base::FilePath& path,
-                         base::MessageLoopProxy* cache_thread,
-                         net::NetLog* net_log)
-    : background_queue_(this, cache_thread),
-      path_(path),
-      block_files_(path),
-      mask_(0),
-      max_size_(0),
-      up_ticks_(0),
-      cache_type_(net::DISK_CACHE),
-      uma_report_(0),
-      user_flags_(0),
-      init_(false),
-      restarted_(false),
-      unit_test_(false),
-      read_only_(false),
-      disabled_(false),
-      new_eviction_(false),
-      first_timer_(true),
-      user_load_(false),
-      net_log_(net_log),
-      done_(true, false),
-      ptr_factory_(this) {
+BackendImplV3::Worker::Worker(const base::FilePath& path,
+                              base::MessageLoopProxy* main_thread)
+      : path_(path),
+        block_files_(path),
+        init_(false) {
 }
+
+#if defined(V3_NOT_JUST_YET_READY)
 
 int BackendImpl::SyncInit() {
 #if defined(NET_BUILD_STRESS_CACHE)
@@ -480,6 +454,15 @@ bool BackendImpl::InitStats() {
   if (cache_type_ == net::DISK_CACHE && ShouldReportAgain())
     stats_.InitSizeHistogram();
   return true;
+}
+
+#endif  // defined(V3_NOT_JUST_YET_READY).
+
+int BackendImplV3::Worker::Init(const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+BackendImplV3::Worker::~Worker() {
 }
 
 }  // namespace disk_cache
