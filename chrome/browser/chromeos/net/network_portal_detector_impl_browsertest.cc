@@ -56,22 +56,33 @@ void SetConnected(const std::string& service_path) {
 
 class TestObserver : public MessageCenterObserver {
  public:
-  explicit TestObserver(base::RunLoop& run_loop) : run_loop_(run_loop) {}
+  TestObserver() : run_loop_(new base::RunLoop()) {
+    MessageCenter::Get()->AddObserver(this);
+  }
+
+  virtual ~TestObserver() {
+    MessageCenter::Get()->RemoveObserver(this);
+  }
+
+  void WaitAndReset() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
 
   virtual void OnNotificationDisplayed(const std::string& notification_id)
       OVERRIDE {
     if (notification_id == kNotificationId)
-      MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+      MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
 
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE {
     if (notification_id == kNotificationId && by_user)
-      MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+      MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
 
  private:
-  base::RunLoop& run_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -144,9 +155,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        InSessionDetection) {
   typedef NetworkPortalNotificationController Controller;
 
-  base::RunLoop run_loop;
-  TestObserver observer(run_loop);
-  message_center()->AddObserver(&observer);
+  TestObserver observer;
 
   EnumHistogramChecker ui_checker(
       kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, NULL);
@@ -173,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
             NetworkPortalDetector::Get()->GetCaptivePortalState(kWifi).status);
 
   // Wait until notification is displayed.
-  run_loop.Run();
+  observer.WaitAndReset();
 
   ASSERT_TRUE(
       ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
@@ -183,13 +192,11 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   message_center()->RemoveNotification(kNotificationId, true);
 
   // Wait until notification is closed.
-  run_loop.Run();
+  observer.WaitAndReset();
 
   ASSERT_TRUE(ui_checker.Check());
   ASSERT_TRUE(
       action_checker.Expect(Controller::USER_ACTION_METRIC_CLOSED, 1)->Check());
-
-  message_center()->RemoveObserver(&observer);
 }
 
 }  // namespace chromeos
