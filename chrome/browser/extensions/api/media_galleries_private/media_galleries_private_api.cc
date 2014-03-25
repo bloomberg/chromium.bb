@@ -87,10 +87,6 @@ MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(
   DCHECK(profile_);
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   event_router->RegisterObserver(
-      this, media_galleries_private::OnDeviceAttached::kEventName);
-  event_router->RegisterObserver(
-      this, media_galleries_private::OnDeviceDetached::kEventName);
-  event_router->RegisterObserver(
       this, media_galleries_private::OnGalleryChanged::kEventName);
 }
 

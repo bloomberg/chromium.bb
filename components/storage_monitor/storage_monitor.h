@@ -20,7 +20,6 @@
 
 class MediaFileSystemRegistryTest;
 class MediaGalleriesPlatformAppBrowserTest;
-class MediaGalleriesPrivateApiTest;
 class SystemStorageApiTest;
 class SystemStorageEjectApiTest;
 
@@ -142,7 +141,6 @@ class StorageMonitor {
  protected:
   friend class ::MediaFileSystemRegistryTest;
   friend class ::MediaGalleriesPlatformAppBrowserTest;
-  friend class ::MediaGalleriesPrivateApiTest;
   friend class ::SystemStorageApiTest;
   friend class ::SystemStorageEjectApiTest;
 

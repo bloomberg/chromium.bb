@@ -2,25 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is a private API since M23. This will be superceded by the
-// systeminfo.storage API in the future.
-// See http://crbug.com/166950 and http://crbug.com/177605.
+// This is a private API since M23. Gallery watching needs to be implemented
+// on platforms others than Windows and then moved to the public API.
+// See http://crbug.com/166950.
 namespace mediaGalleriesPrivate {
-  // A dictionary that describes an attached device.
-  [inline_doc] dictionary DeviceAttachmentDetails {
-    // The name of the device.
-    DOMString deviceName;
-
-    // A transient id that unique identifies the device.
-    DOMString deviceId;
-  };
-
-  // A dictionary that describes a detached device.
-  [inline_doc] dictionary DeviceDetachmentDetails {
-    // A transient id that unique identifies the device.
-    DOMString deviceId;
-  };
-
   // A dictionary that describes the modified gallery.
   [inline_doc] dictionary GalleryChangeDetails {
     // Gallery identifier.
@@ -28,12 +13,6 @@ namespace mediaGalleriesPrivate {
   };
 
   interface Events {
-    // Fired when a media device gets attached.
-    static void onDeviceAttached(DeviceAttachmentDetails details);
-
-    // Fired when a media device gets detached.
-    static void onDeviceDetached(DeviceDetachmentDetails details);
-
     // Fired when a media gallery is changed.
     static void onGalleryChanged(GalleryChangeDetails details);
   };
