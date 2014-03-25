@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
@@ -36,9 +37,6 @@
 #include "components/sync_driver/failed_data_types_handler.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -54,7 +52,6 @@ class ManagedUserSigninManagerWrapper;
 class Profile;
 class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
-class SigninManagerBase;
 class SyncGlobalError;
 
 namespace browser_sync {
@@ -173,12 +170,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public sync_driver::SyncPrefObserver,
                            public browser_sync::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
-                           public content::NotificationObserver,
                            public KeyedService,
                            public browser_sync::DataTypeEncryptionHandler,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
-                           public SessionsSyncManager::SyncInternalApiDelegate {
+                           public SessionsSyncManager::SyncInternalApiDelegate,
+                           public SigninManagerBase::Observer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -400,6 +397,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool IsPassphraseRequired() const OVERRIDE;
   virtual syncer::ModelTypeSet GetEncryptedDataTypes() const OVERRIDE;
 
+  // SigninManagerBase::Observer implementation.
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+
   // Called when a user chooses which data types to sync as part of the sync
   // setup wizard.  |sync_everything| represents whether they chose the
   // "keep everything synced" option; if true, |chosen_types| will be ignored
@@ -564,11 +566,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // SyncPrefObserver implementation.
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) OVERRIDE;
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
@@ -921,8 +918,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
 
   syncer::SyncJsController sync_js_controller_;
-
-  content::NotificationRegistrar registrar_;
 
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and

@@ -5,7 +5,6 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -24,8 +23,6 @@
 #include "components/sync_driver/data_type_manager_mock.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -116,7 +113,22 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return static_cast<ProfileSyncComponentsFactoryMock*>(sync_->factory());
   }
 
+  FakeSigninManagerForTesting* fake_signin() {
+    return static_cast<FakeSigninManagerForTesting*>(sync_->signin());
+  }
+
  protected:
+  void SimulateTestUserSignin() {
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                    "test_user@gmail.com");
+#if !defined(OS_CHROMEOS)
+    fake_signin()->SignIn("test_user@gmail.com", "");
+#else
+    fake_signin()->SetAuthenticatedUsername("test_user@gmail.com");
+    sync_->GoogleSigninSucceeded("test_user@gmail.com", "");
+#endif
+  }
+
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(*components_factory_mock(),
@@ -201,15 +213,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin as test_user.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user@gmail.com");
-  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
-  GoogleServiceSigninSuccessDetails details("test_user@gmail.com", "");
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-      content::Source<Profile>(profile_.get()),
-      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-
+  SimulateTestUserSignin();
   // Create some tokens in the token service.
   IssueTestTokens();
 
@@ -242,14 +246,8 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin as test_user.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user@gmail.com");
-  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
-  GoogleServiceSigninSuccessDetails details("test_user@gmail.com", "");
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-      content::Source<Profile>(profile_.get()),
-      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+  SimulateTestUserSignin();
+
   ProfileOAuth2TokenService* token_service =
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   token_service->LoadCredentials("test_user@gmail.com");
@@ -291,12 +289,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin.
-  GoogleServiceSigninSuccessDetails details("test_user@gmail.com",
-                                            std::string());
-  content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-        content::Source<Profile>(profile_.get()),
-        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+  SimulateTestUserSignin();
 
   sync_->SetSetupInProgress(false);
 
