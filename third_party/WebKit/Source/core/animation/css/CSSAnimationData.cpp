@@ -49,8 +49,7 @@ CSSAnimationData::CSSAnimationData()
 }
 
 CSSAnimationData::CSSAnimationData(const CSSAnimationData& o)
-    : RefCounted<CSSAnimationData>()
-    , m_name(o.m_name)
+    : m_name(o.m_name)
     , m_property(o.m_property)
     , m_mode(o.m_mode)
     , m_iterationCount(o.m_iterationCount)

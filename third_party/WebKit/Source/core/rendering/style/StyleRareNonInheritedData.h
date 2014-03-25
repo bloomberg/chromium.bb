@@ -121,8 +121,8 @@ public:
 
     RefPtr<StyleReflection> m_boxReflect;
 
-    OwnPtr<CSSAnimationDataList> m_animations;
-    OwnPtr<CSSAnimationDataList> m_transitions;
+    OwnPtrWillBePersistent<CSSAnimationDataList> m_animations;
+    OwnPtrWillBePersistent<CSSAnimationDataList> m_transitions;
 
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;

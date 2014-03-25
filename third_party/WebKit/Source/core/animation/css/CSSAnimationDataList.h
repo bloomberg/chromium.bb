@@ -31,8 +31,8 @@
 
 namespace WebCore {
 
-class CSSAnimationDataList {
-    WTF_MAKE_FAST_ALLOCATED;
+class CSSAnimationDataList FINAL : public NoBaseWillBeGarbageCollected<CSSAnimationDataList> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     CSSAnimationDataList() { }
     explicit CSSAnimationDataList(const CSSAnimationDataList&);
@@ -49,15 +49,17 @@ public:
 
     void resize(size_t n) { m_animations.resize(n); }
     void remove(size_t i) { m_animations.remove(i); }
-    void append(PassRefPtr<CSSAnimationData> anim) { m_animations.append(anim); }
+    void append(PassRefPtrWillBeRawPtr<CSSAnimationData> anim) { m_animations.append(anim); }
 
     CSSAnimationData* animation(size_t i) { return m_animations[i].get(); }
     const CSSAnimationData* animation(size_t i) const { return m_animations[i].get(); }
 
+    void trace(Visitor*);
+
 private:
     CSSAnimationDataList& operator=(const CSSAnimationDataList&);
 
-    Vector<RefPtr<CSSAnimationData> > m_animations;
+    WillBeHeapVector<RefPtrWillBeMember<CSSAnimationData> > m_animations;
 };
 
 

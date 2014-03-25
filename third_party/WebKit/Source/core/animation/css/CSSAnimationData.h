@@ -27,6 +27,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "heap/Handle.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -34,12 +35,19 @@
 
 namespace WebCore {
 
-class CSSAnimationData : public RefCounted<CSSAnimationData> {
+class CSSAnimationData FINAL : public RefCountedWillBeGarbageCollectedFinalized<CSSAnimationData> {
 public:
     ~CSSAnimationData();
 
-    static PassRefPtr<CSSAnimationData> create() { return adoptRef(new CSSAnimationData); }
-    static PassRefPtr<CSSAnimationData> create(const CSSAnimationData* o) { return adoptRef(new CSSAnimationData(*o)); }
+    static PassRefPtrWillBeRawPtr<CSSAnimationData> create()
+    {
+        return adoptRefWillBeNoop(new CSSAnimationData);
+    }
+
+    static PassRefPtrWillBeRawPtr<CSSAnimationData> create(const CSSAnimationData* o)
+    {
+        return adoptRefWillBeNoop(new CSSAnimationData(*o));
+    }
 
     bool isDelaySet() const { return m_delaySet; }
     bool isDirectionSet() const { return m_directionSet; }
@@ -133,6 +141,8 @@ public:
     // return true every CSSAnimationData in the chain (defined by m_next) match
     bool operator==(const CSSAnimationData& o) const { return animationsMatchForStyleRecalc(&o); }
     bool operator!=(const CSSAnimationData& o) const { return !(*this == o); }
+
+    void trace(Visitor*) { }
 
 private:
     CSSAnimationData();

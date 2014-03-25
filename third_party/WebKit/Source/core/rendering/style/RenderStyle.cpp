@@ -1155,14 +1155,14 @@ void RenderStyle::adjustTransitions()
 CSSAnimationDataList* RenderStyle::accessAnimations()
 {
     if (!rareNonInheritedData.access()->m_animations)
-        rareNonInheritedData.access()->m_animations = adoptPtr(new CSSAnimationDataList());
+        rareNonInheritedData.access()->m_animations = adoptPtrWillBeNoop(new CSSAnimationDataList());
     return rareNonInheritedData->m_animations.get();
 }
 
 CSSAnimationDataList* RenderStyle::accessTransitions()
 {
     if (!rareNonInheritedData.access()->m_transitions)
-        rareNonInheritedData.access()->m_transitions = adoptPtr(new CSSAnimationDataList());
+        rareNonInheritedData.access()->m_transitions = adoptPtrWillBeNoop(new CSSAnimationDataList());
     return rareNonInheritedData->m_transitions.get();
 }
 

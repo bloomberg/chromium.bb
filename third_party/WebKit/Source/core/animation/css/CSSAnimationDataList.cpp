@@ -61,4 +61,9 @@ bool CSSAnimationDataList::operator==(const CSSAnimationDataList& o) const
     return true;
 }
 
+void CSSAnimationDataList::trace(Visitor* visitor)
+{
+    visitor->trace(m_animations);
+}
+
 } // namespace WebCore
