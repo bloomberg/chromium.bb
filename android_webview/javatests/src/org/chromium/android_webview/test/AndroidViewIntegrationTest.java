@@ -13,7 +13,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -357,9 +356,8 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView"})
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testReceivingSizeAfterLoadUpdatesLayout() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView = createDetachedTestContainerViewOnMainSync(
@@ -369,22 +367,26 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final double deviceDIPScale =
             DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
         final int physicalWidth = 600;
+        final int spanWidth = 42;
         final int expectedWidthCss =
             (int) Math.ceil(physicalWidth / deviceDIPScale);
 
-        StringBuilder htmlBuilder = new StringBuilder(" <html><body><span>");
-        for (int i = 0; i < 10; ++i)
-            htmlBuilder.append("test test test");
-        htmlBuilder.append("</span></body></html>");
+        StringBuilder htmlBuilder = new StringBuilder("<html><body style='margin:0px;'>");
+        final String spanBlock =
+            "<span style='width: " + spanWidth + "px; display: inline-block;'>a</span>";
+        for (int i = 0; i < 10; ++i) {
+            htmlBuilder.append(spanBlock);
+        }
+        htmlBuilder.append("</body></html>");
 
         int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
         loadDataAsync(awContents, htmlBuilder.toString(), "text/html", false);
-        mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
-
         // Because we're loading the contents into a detached WebView its layout size is 0x0 and as
         // a result of that the paragraph will be formated such that each word is on a separate
         // line.
-        assertTrue(mOnContentSizeChangedHelper.getWidth() < expectedWidthCss);
+        waitForContentSizeToChangeTo(mOnContentSizeChangedHelper, contentSizeChangeCallCount,
+                spanWidth, -1);
+
         final int narrowLayoutHeight = mOnContentSizeChangedHelper.getHeight();
 
         contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
@@ -399,7 +401,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         // As a result of calling the onSizeChanged method the layout size should be updated to
         // match the width of the webview and the text we previously loaded should reflow making the
         // contents width match the WebView width.
-        assertEquals(mOnContentSizeChangedHelper.getWidth(), expectedWidthCss);
+        assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
         assertTrue(mOnContentSizeChangedHelper.getHeight() < narrowLayoutHeight);
         assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
