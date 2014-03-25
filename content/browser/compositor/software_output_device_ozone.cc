@@ -41,7 +41,6 @@ void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_size) {
                                             bounds);
 
   canvas_ = skia::SharePtr(factory->GetCanvasForWidget(realized_widget_));
-  device_ = skia::SharePtr(canvas_->getDevice());
 }
 
 SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
