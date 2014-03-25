@@ -802,6 +802,9 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
     renderer->setStyleInternal(style.release());
+
+    if (renderer->isRenderBlock())
+        toRenderBlock(renderer)->invalidateLineHeight();
 }
 
 bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)

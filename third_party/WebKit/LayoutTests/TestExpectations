@@ -755,7 +755,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/oscillation-jav
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 crbug.com/343201 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ Pass Failure ]
-crbug.com/354032 virtual/fasttextautosizing/fast/text-autosizing/unlock-multipliers-on-DOMContentLoaded.html [ ImageOnlyFailure ]
 crbug.com/353309 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
 
 # FIXME(crbug.com/332944): Remove this when hash-based autosizer performs sufficiently well on hackernews.
