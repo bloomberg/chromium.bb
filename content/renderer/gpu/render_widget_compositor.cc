@@ -279,6 +279,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     // raster-on-demand, and use 50% of the memory otherwise.
     settings.max_memory_for_prepaint_percentage = 50;
   }
+  // Webview does not own the surface so should not clear it.
+  settings.should_clear_root_render_pass =
+      !widget->UsingSynchronousRendererCompositor();
 
 #elif !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
