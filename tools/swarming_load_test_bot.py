@@ -69,18 +69,9 @@ def calculate_version(url):
   # Cannot use url_open() since zipfile requires .seek().
   archive = zipfile.ZipFile(StringIO.StringIO(net.url_read(url)))
   # See
-  # https://code.google.com/p/swarming/source/browse/src/common/version.py?repo=swarming-server
-  files = (
-    'slave_machine.py',
-    'swarm_bot/local_test_runner.py',
-    'common/__init__.py',
-    'common/swarm_constants.py',
-    'common/version.py',
-    'common/test_request_message.py',
-    'common/url_helper.py',
-  )
+  # https://code.google.com/p/swarming/source/browse/services/swarming/common/bot_archive.py
   d = hashlib.sha1()
-  for f in files:
+  for f in archive.namelist():
     d.update(archive.read(f))
   return d.hexdigest()
 
