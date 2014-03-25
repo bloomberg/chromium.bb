@@ -1,0 +1,97 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+function testFunction()
+{
+    for (var i = 1, func; func = eval("typeof test" + i + " === 'function' && test" + i); ++i)
+        func();
+}
+
+function callback()
+{
+    return 0;
+}
+
+function test1()
+{
+    debugger;
+    Framework.empty();
+}
+
+function test2()
+{
+    debugger;
+    Framework.doSomeWork();
+}
+
+function test3()
+{
+    debugger;
+    Framework.safeRun(Framework.empty, callback); // Should step into callback
+}
+
+function test4()
+{
+    debugger;
+    Framework.safeRun(Framework.doSomeWork, callback); // Should NOT step into callback (otherwise too many StepIns)
+}
+
+function test5()
+{
+    debugger;
+    Framework.safeRun(Framework.empty, Framework.throwFrameworkException, callback); // Should be enough to step into callback
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    var totalDebuggerStatements = 5;
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.skipStackFrames(frameworkRegexString, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+    }
+
+    var step = 0;
+    var stepInCount = 0;
+    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        if (stepInCount < 2) {
+            ++stepInCount;
+            WebInspector.panels.sources._stepIntoButton.element.click();
+            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+            return;
+        }
+
+        stepInCount = 0;
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.addResult("");
+        if (++step < totalDebuggerStatements)
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+        else
+            InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests the skip stack frames feature when stepping.
+</p>
+</body>
+</html>

@@ -76,7 +76,7 @@ static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload
 
 };
 
-static const int numberOfStepsBeforeStepOut = 10;
+static const int numberOfStepsBeforeStepOut = 20;
 
 const char InspectorDebuggerAgent::backtraceObjectGroup[] = "backtrace";
 
