@@ -24,7 +24,8 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
                                                   public MediaStreamRequester {
  public:
   DeviceRequestMessageFilter(ResourceContext* resource_context,
-                             MediaStreamManager* media_stream_manager);
+                             MediaStreamManager* media_stream_manager,
+                             int render_process_id);
 
   // MediaStreamRequester implementation.
   // TODO(vrk): Replace MediaStreamRequester interface with a single callback so
@@ -70,6 +71,8 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
   typedef std::vector<DeviceRequest> DeviceRequestList;
   // List of all requests.
   DeviceRequestList requests_;
+
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceRequestMessageFilter);
 };

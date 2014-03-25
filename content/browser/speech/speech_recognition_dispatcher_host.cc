@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -73,6 +74,16 @@ void SpeechRecognitionDispatcherHost::OnChannelClosing() {
 void SpeechRecognitionDispatcherHost::OnStartRequest(
     const SpeechRecognitionHostMsg_StartRequest_Params& params) {
   SpeechRecognitionHostMsg_StartRequest_Params input_params(params);
+
+  // Check that the origin specified by the renderer process is one
+  // that it is allowed to access.
+  if (params.origin_url != "null" &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id_, GURL(params.origin_url))) {
+    LOG(ERROR) << "SRDH::OnStartRequest, disallowed origin: "
+               << params.origin_url;
+    return;
+  }
 
   int embedder_render_process_id = 0;
   int embedder_render_view_id = MSG_ROUTING_NONE;

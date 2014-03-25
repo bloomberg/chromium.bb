@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -77,6 +78,17 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
     const InputTagSpeechHostMsg_StartRecognition_Params& params) {
   InputTagSpeechHostMsg_StartRecognition_Params input_params(params);
   int render_process_id = render_process_id_;
+
+  // Check that the origin specified by the renderer process is one
+  // that it is allowed to access.
+  if (params.origin_url != "null" &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id, GURL(params.origin_url))) {
+    LOG(ERROR) << "ITSDH::OnStartRecognition, disallowed origin: "
+               << params.origin_url;
+    return;
+  }
+
   // The chrome layer is mostly oblivious to BrowserPlugin guests and so it
   // cannot correctly place the speech bubble relative to a guest. Thus, we
   // set up the speech recognition context relative to the embedder.

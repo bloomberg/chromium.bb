@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/browser/resource_context.h"
@@ -22,10 +23,12 @@ namespace content {
 
 DeviceRequestMessageFilter::DeviceRequestMessageFilter(
     ResourceContext* resource_context,
-    MediaStreamManager* media_stream_manager)
+    MediaStreamManager* media_stream_manager,
+    int render_process_id)
     : BrowserMessageFilter(MediaStreamMsgStart),
       resource_context_(resource_context),
-      media_stream_manager_(media_stream_manager) {
+      media_stream_manager_(media_stream_manager),
+      render_process_id_(render_process_id) {
   DCHECK(resource_context);
   DCHECK(media_stream_manager);
 }
@@ -135,6 +138,12 @@ void DeviceRequestMessageFilter::OnChannelClosing() {
 
 void DeviceRequestMessageFilter::OnGetSources(int request_id,
                                               const GURL& security_origin) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id_, security_origin)) {
+    LOG(ERROR) << "Disallowed URL in DRMF::OnGetSources: " << security_origin;
+    return;
+  }
+
   // Make request to get audio devices.
   const std::string& audio_label = media_stream_manager_->EnumerateDevices(
       this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,

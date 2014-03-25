@@ -95,6 +95,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     int page_request_id,
                     const std::string& label);;
 
+  bool IsURLAllowed(const GURL& url);
+
   int render_process_id_;
   ResourceContext::SaltCallback salt_callback_;
   MediaStreamManager* media_stream_manager_;

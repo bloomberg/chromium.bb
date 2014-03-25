@@ -5,8 +5,10 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/browser/render_process_host.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -134,6 +136,9 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << " ], "
            << security_origin.spec() << ")";
 
+  if (!IsURLAllowed(security_origin))
+    return;
+
   media_stream_manager_->GenerateStream(
       this, render_process_id_, render_view_id, salt_callback_,
       page_request_id, components, security_origin);
@@ -169,6 +174,9 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << type << ", "
            << security_origin.spec() << ")";
 
+  if (!IsURLAllowed(security_origin))
+    return;
+
   media_stream_manager_->EnumerateDevices(
       this, render_process_id_, render_view_id, salt_callback_,
       page_request_id, type, security_origin);
@@ -197,10 +205,12 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << type << ", "
            << security_origin.spec() << ")";
 
+  if (!IsURLAllowed(security_origin))
+    return;
+
   media_stream_manager_->OpenDevice(
       this, render_process_id_, render_view_id, salt_callback_,
       page_request_id, device_id, type, security_origin);
-
 }
 
 void MediaStreamDispatcherHost::OnCloseDevice(
@@ -211,6 +221,16 @@ void MediaStreamDispatcherHost::OnCloseDevice(
            << label << ")";
 
   media_stream_manager_->CancelRequest(label);
+}
+
+bool MediaStreamDispatcherHost::IsURLAllowed(const GURL& url) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id_, url)) {
+    LOG(ERROR) << "MSDH: Renderer requested a URL it's not allowed to use.";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

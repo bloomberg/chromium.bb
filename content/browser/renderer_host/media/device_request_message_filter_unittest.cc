@@ -54,7 +54,7 @@ class MockDeviceRequestMessageFilter : public DeviceRequestMessageFilter {
  public:
   MockDeviceRequestMessageFilter(MockResourceContext* context,
                                  MockMediaStreamManager* manager)
-      : DeviceRequestMessageFilter(context, manager), received_id_(-1) {}
+      : DeviceRequestMessageFilter(context, manager, 0), received_id_(-1) {}
   StreamDeviceInfoArray requested_devices() { return requested_devices_; }
   int received_id() { return received_id_; }
 
