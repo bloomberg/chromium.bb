@@ -87,7 +87,7 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
         if (errorCallback)
             callbackError = errorCallback->handleEvent(transaction, error.get());
     } else if (callback) {
-        RefPtr<SQLResultSet> resultSet = m_backend->sqlResultSet();
+        RefPtrWillBeRawPtr<SQLResultSet> resultSet = m_backend->sqlResultSet();
         callbackError = !callback->handleEvent(transaction, resultSet.get());
     }
 

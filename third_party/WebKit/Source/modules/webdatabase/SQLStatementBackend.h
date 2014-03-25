@@ -58,7 +58,7 @@ public:
 
     AbstractSQLStatement* frontend();
     virtual PassRefPtr<SQLError> sqlError() const OVERRIDE;
-    virtual PassRefPtr<SQLResultSet> sqlResultSet() const OVERRIDE;
+    virtual SQLResultSet* sqlResultSet() const OVERRIDE;
 
 private:
     SQLStatementBackend(PassOwnPtr<AbstractSQLStatement>, const String& statement,
@@ -74,7 +74,7 @@ private:
     bool m_hasErrorCallback;
 
     RefPtr<SQLError> m_error;
-    RefPtr<SQLResultSet> m_resultSet;
+    RefPtrWillBeMember<SQLResultSet> m_resultSet;
 
     int m_permissions;
 };

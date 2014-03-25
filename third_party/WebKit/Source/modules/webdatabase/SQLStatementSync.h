@@ -31,6 +31,7 @@
 #ifndef SQLStatementSync_h
 #define SQLStatementSync_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "wtf/Forward.h"
@@ -47,7 +48,7 @@ class SQLStatementSync {
 public:
     SQLStatementSync(const String& statement, const Vector<SQLValue>& arguments, int permissions);
 
-    PassRefPtr<SQLResultSet> execute(DatabaseSync*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SQLResultSet> execute(DatabaseSync*, ExceptionState&);
 
 private:
     String m_statement;

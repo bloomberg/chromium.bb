@@ -83,7 +83,7 @@ void SQLTransactionBackendSync::trace(Visitor* visitor)
     visitor->trace(m_database);
 }
 
-PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& exceptionState)
 {
     ASSERT(m_database->executionContext()->isContextThread());
 
@@ -114,7 +114,7 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
 
     m_database->resetAuthorizer();
     bool retryStatement = true;
-    RefPtr<SQLResultSet> resultSet;
+    RefPtrWillBeRawPtr<SQLResultSet> resultSet;
     while (retryStatement) {
         retryStatement = false;
         resultSet = statement.execute(m_database.get(), exceptionState);

@@ -55,7 +55,7 @@ public:
     ~SQLTransactionBackendSync();
     void trace(Visitor*);
 
-    PassRefPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
 
     DatabaseSync* database() { return m_database.get(); }
 

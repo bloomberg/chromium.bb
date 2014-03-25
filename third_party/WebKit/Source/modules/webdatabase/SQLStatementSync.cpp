@@ -50,7 +50,7 @@ SQLStatementSync::SQLStatementSync(const String& statement, const Vector<SQLValu
     ASSERT(!m_statement.isEmpty());
 }
 
-PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionState& exceptionState)
 {
     db->setAuthorizerPermissions(m_permissions);
 
@@ -91,7 +91,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionSt
         }
     }
 
-    RefPtr<SQLResultSet> resultSet = SQLResultSet::create();
+    RefPtrWillBeRawPtr<SQLResultSet> resultSet = SQLResultSet::create();
 
     // Step so we can fetch the column names.
     result = statement.step();

@@ -28,6 +28,7 @@
 
 [
     NoInterfaceObject,
+    WillBeGarbageCollected,
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;
     [Custom] object item(unsigned long index);

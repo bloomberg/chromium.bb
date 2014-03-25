@@ -38,9 +38,10 @@ namespace WebCore {
 
 class ExceptionState;
 
-class SQLResultSet : public ThreadSafeRefCounted<SQLResultSet>, public ScriptWrappable {
+class SQLResultSet : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLResultSet>, public ScriptWrappable {
 public:
-    static PassRefPtr<SQLResultSet> create() { return adoptRef(new SQLResultSet); }
+    static PassRefPtrWillBeRawPtr<SQLResultSet> create() { return adoptRefWillBeNoop(new SQLResultSet); }
+    void trace(Visitor*);
 
     SQLResultSetRowList* rows() const;
 
@@ -50,14 +51,16 @@ public:
     // For internal (non-JS) use
     void setInsertId(int64_t);
     void setRowsAffected(int);
+    bool isValid() { return m_isValid; }
 
 private:
     SQLResultSet();
 
-    RefPtr<SQLResultSetRowList> m_rows;
+    RefPtrWillBeMember<SQLResultSetRowList> m_rows;
     int64_t m_insertId;
-    bool m_insertIdSet;
     int m_rowsAffected;
+    bool m_insertIdSet;
+    bool m_isValid;
 };
 
 } // namespace WebCore

@@ -31,16 +31,23 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
 SQLResultSet::SQLResultSet()
     : m_rows(SQLResultSetRowList::create())
     , m_insertId(0)
-    , m_insertIdSet(false)
     , m_rowsAffected(0)
+    , m_insertIdSet(false)
+    , m_isValid(false)
 {
     ScriptWrappable::init(this);
+}
+
+void SQLResultSet::trace(Visitor* visitor)
+{
+    visitor->trace(m_rows);
 }
 
 int64_t SQLResultSet::insertId(ExceptionState& exceptionState) const
@@ -75,6 +82,7 @@ void SQLResultSet::setInsertId(int64_t id)
 void SQLResultSet::setRowsAffected(int count)
 {
     m_rowsAffected = count;
+    m_isValid = true;
 }
 
 }
