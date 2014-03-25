@@ -53,9 +53,6 @@ class ProfileInfoInterface {
   virtual base::string16 GetGAIAGivenNameOfProfileAtIndex(
       size_t index) const = 0;
 
-  // Checks if the GAIA name should be used as the profile's name.
-  virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const = 0;
-
   virtual const gfx::Image* GetGAIAPictureOfProfileAtIndex(
       size_t index) const = 0;
 

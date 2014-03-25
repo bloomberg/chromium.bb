@@ -42,14 +42,12 @@ const char kNameKey[] = "name";
 const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kGAIAGivenNameKey[] = "gaia_given_name";
-const char kUseGAIANameKey[] = "use_gaia_name";
 const char kUserNameKey[] = "user_name";
 const char kIsUsingDefaultName[] = "is_using_default_name";
 const char kAvatarIconKey[] = "avatar_icon";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
-const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
 const char kIsManagedKey[] = "is_managed";
 const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
@@ -318,8 +316,7 @@ base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   base::string16 name;
   // Unless the user has customized the profile name, we should use the
   // profile's Gaia given name, if it's available.
-  if (IsUsingGAIANameOfProfileAtIndex(index) &&
-      ProfileIsUsingDefaultNameAtIndex(index)) {
+  if (ProfileIsUsingDefaultNameAtIndex(index)) {
     base::string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
     name = given_name.empty() ? GetGAIANameOfProfileAtIndex(index) : given_name;
   }
@@ -398,12 +395,6 @@ base::string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
   base::string16 name;
   GetInfoForProfileAtIndex(index)->GetString(kGAIAGivenNameKey, &name);
   return name;
-}
-
-bool ProfileInfoCache::IsUsingGAIANameOfProfileAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kUseGAIANameKey, &value);
-  return value;
 }
 
 const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
@@ -677,28 +668,6 @@ void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
-                                                          bool value) {
-  if (value == IsUsingGAIANameOfProfileAtIndex(index))
-    return;
-
-  base::string16 old_display_name = GetNameOfProfileAtIndex(index);
-  scoped_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kUseGAIANameKey, value);
-  // This takes ownership of |info|.
-  SetInfoForProfileAtIndex(index, info.release());
-  base::string16 new_display_name = GetNameOfProfileAtIndex(index);
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  UpdateSortForProfileIndex(index);
-
-  if (old_display_name != new_display_name) {
-    FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
-                      observer_list_,
-                      OnProfileNameChanged(profile_path, old_display_name));
-  }
-}
-
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
                                                       const gfx::Image* image) {
   base::FilePath path = GetPathOfProfileAtIndex(index);
@@ -837,23 +806,6 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
     if (!name_found)
       return name;
   }
-}
-
-bool ProfileInfoCache::GetHasMigratedToGAIAInfoOfProfileAtIndex(
-      size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(
-      kHasMigratedToGAIAInfoKey, &value);
-  return value;
-}
-
-void ProfileInfoCache::SetHasMigratedToGAIAInfoOfProfileAtIndex(
-    size_t index, bool value) {
-  scoped_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kHasMigratedToGAIAInfoKey, value);
-  // This takes ownership of |info|.
-  SetInfoForProfileAtIndex(index, info.release());
 }
 
 bool ProfileInfoCache::IconIndexIsUnique(size_t icon_index) const {
