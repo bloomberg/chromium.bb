@@ -34,18 +34,44 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_
-#define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_
+/* Emulates the real prtypes.h. Defines the types and macros that sha512.cc
+ * needs. */
 
-#include "crypto/third_party/nss/chromium-prtypes.h"
+#ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_PRTYPES_H_
+#define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_PRTYPES_H_
 
-struct SHA256ContextStr {
-    union {
-	PRUint32 w[64];	    /* message schedule, input buffer, plus 48 words */
-	PRUint8  b[256];
-    } u;
-    PRUint32 h[8];		/* 8 state variables */
-    PRUint32 sizeHi,sizeLo;	/* 64-bit count of hashed bytes. */
-};
+#include <limits.h>
+#include <stdint.h>
 
-#endif /* CRYPTO_THIRD_PARTY_NSS_CHROMIUM_SHA_256_H_ */
+#include "build/build_config.h"
+
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+#define IS_LITTLE_ENDIAN 1
+#else
+#define IS_BIG_ENDIAN 1
+#endif
+
+/*
+ * The C language requires that 'long' be at least 32 bits. 2147483647 is the
+ * largest signed 32-bit integer.
+ */
+#if LONG_MAX > 2147483647L
+#define PR_BYTES_PER_LONG 8
+#else
+#define PR_BYTES_PER_LONG 4
+#endif
+
+#define HAVE_LONG_LONG
+
+#if defined(__linux__)
+#define LINUX
+#endif
+
+typedef uint8_t PRUint8;
+typedef uint32_t PRUint32;
+
+typedef int PRBool;
+
+#define PR_MIN(x,y) ((x)<(y)?(x):(y))
+
+#endif  /* CRYPTO_THIRD_PARTY_NSS_CHROMIUM_PRTYPES_H_ */

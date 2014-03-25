@@ -52,10 +52,26 @@
 #ifndef BASE_PRTIME_H__
 #define BASE_PRTIME_H__
 
+#include <stdint.h>
+
 #include "base/base_export.h"
-#include "base/third_party/nspr/prtypes.h"
+
+typedef int8_t PRInt8;
+typedef int16_t PRInt16;
+typedef int32_t PRInt32;
+typedef int64_t PRInt64;
+typedef int PRIntn;
+
+typedef PRIntn PRBool;
+#define PR_TRUE 1
+#define PR_FALSE 0
+
+typedef enum { PR_FAILURE = -1, PR_SUCCESS = 0 } PRStatus;
 
 #define PR_ASSERT DCHECK
+#define PR_CALLBACK
+#define PR_INT16_MAX 32767
+#define NSPR_API(__type) extern __type
 
 #define LL_I2L(l, i)    ((l) = (PRInt64)(i))
 #define LL_MUL(r, a, b) ((r) = (a) * (b))

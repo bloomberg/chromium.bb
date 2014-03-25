@@ -42,7 +42,7 @@
 // size from ~10k to ~1k.  The performance should be reasonable for our use.
 #define NOUNROLL256 1
 
-#include "base/third_party/nspr/prtypes.h"  /* for PRUintXX */
+#include "crypto/third_party/nss/chromium-prtypes.h"  /* for PRUintXX */
 #if defined(_X86_) || defined(SHA_NO_LONG_LONG)
 #define NOUNROLL512 1
 #undef HAVE_LONG_LONG

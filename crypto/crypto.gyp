@@ -122,6 +122,7 @@
               'third_party/nss/chromium-blapi.h',
               'third_party/nss/chromium-blapit.h',
               'third_party/nss/chromium-nss.h',
+              'third_party/nss/chromium-prtypes.h',
               'third_party/nss/chromium-sha256.h',
               'third_party/nss/pk11akey.cc',
               'third_party/nss/rsawrapr.c',

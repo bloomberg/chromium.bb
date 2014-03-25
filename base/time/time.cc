@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/third_party/nspr/prtime.h"
-#include "base/third_party/nspr/prtypes.h"
 
 namespace base {
 

@@ -31,10 +31,6 @@
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 
-// These headers must be included in this order to make the declaration gods
-// happy.
-#include "base/third_party/nspr/prcpucfg_linux.h"
-
 namespace content {
 
 namespace {

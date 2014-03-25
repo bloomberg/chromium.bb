@@ -43,7 +43,7 @@
 #ifndef CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPIT_H_
 #define CRYPTO_THIRD_PARTY_NSS_CHROMIUM_BLAPIT_H_
 
-#include "base/third_party/nspr/prtypes.h"
+#include "crypto/third_party/nss/chromium-prtypes.h"
 
 /*
 ** A status code. Status's are used by procedures that return status
