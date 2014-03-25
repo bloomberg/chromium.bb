@@ -120,6 +120,19 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         onPageFinishedHelper.waitForCallback(currentCallCount);
     }
 
+    protected void synchronousPageReload() throws Throwable {
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mTestCallbackHelperContainer.getOnPageFinishedHelper();
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentView().getContentViewCore().reload(true);
+            }
+        });
+        onPageFinishedHelper.waitForCallback(currentCallCount);
+    }
+
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private void assertRaisesException(String script) throws Throwable {
         executeJavaScript("try {" +
@@ -149,16 +162,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             }
         });
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testObject"));
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentView().getContentViewCore().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
+        synchronousPageReload();
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
     }
 
@@ -174,16 +178,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             }
         });
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentView().getContentViewCore().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
+        synchronousPageReload();
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testObject"));
     }
 
@@ -326,17 +321,18 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testObjectPersistsAcrossPageLoads() throws Throwable {
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentView().getContentViewCore().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
+        synchronousPageReload();
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testClientPropertiesPersistAcrossPageLoads() throws Throwable {
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
+        executeJavaScript("testController.myProperty = 42;");
+        assertEquals("42", executeJavaScriptAndGetStringResult("testController.myProperty"));
+        synchronousPageReload();
+        assertEquals("42", executeJavaScriptAndGetStringResult("testController.myProperty"));
     }
 
     @SmallTest
