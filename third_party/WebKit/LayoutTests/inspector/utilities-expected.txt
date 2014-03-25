@@ -1,6 +1,8 @@
 This test checks Web Inspector utilities.
 
 
+Running: remove
+
 Running: orderedMergeIntersect
 
 Running: binaryIndexOfTest
