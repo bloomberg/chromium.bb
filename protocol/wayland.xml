@@ -1503,7 +1503,8 @@
       </description>
       <entry name="no_keymap" value="0"
 	     summary="no keymap; client must understand how to interpret the raw keycode"/>
-      <entry name="xkb_v1" value="1" summary="libxkbcommon compatible"/>
+      <entry name="xkb_v1" value="1"
+             summary="libxkbcommon compatible; to determine the xkb keycode, clients must add 8 to the key event keycode"/>
     </enum>
 
     <event name="keymap">
