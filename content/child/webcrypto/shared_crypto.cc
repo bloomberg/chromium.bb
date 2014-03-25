@@ -646,11 +646,15 @@ Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
         return status;
       return platform::ExportKeySpki(public_key, buffer);
     }
+    case blink::WebCryptoKeyFormatPkcs8: {
+      platform::PrivateKey* private_key;
+      Status status = ToPlatformPrivateKey(key, &private_key);
+      if (status.IsError())
+        return status;
+      return platform::ExportKeyPkcs8(private_key, key.algorithm(), buffer);
+    }
     case blink::WebCryptoKeyFormatJwk:
       return ExportKeyJwk(key, buffer);
-    case blink::WebCryptoKeyFormatPkcs8:
-      // TODO(eroman):
-      return Status::ErrorUnsupported();
     default:
       return Status::ErrorUnsupported();
   }

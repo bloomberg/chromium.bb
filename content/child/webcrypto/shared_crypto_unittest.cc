@@ -810,7 +810,7 @@ TEST_F(SharedCryptoTest, AesCbcFailures) {
   // keys).
   EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
                 ExportKey(blink::WebCryptoKeyFormatSpki, key, &output));
-  EXPECT_STATUS(Status::ErrorUnsupported(),
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
                 ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &output));
 }
 
@@ -1681,7 +1681,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
                 ExportKey(blink::WebCryptoKeyFormatSpki, key, &output));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportPkcs8)) {
+TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
   // Passing case: Import a valid RSA key in PKCS#8 format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   ASSERT_STATUS_SUCCESS(ImportKey(
@@ -1703,6 +1703,11 @@ TEST_F(SharedCryptoTest, MAYBE(ImportPkcs8)) {
   ExpectCryptoDataMatchesHex(
       "010001",
       CryptoData(key.algorithm().rsaHashedParams()->publicExponent()));
+
+  blink::WebArrayBuffer exported_key;
+  ASSERT_STATUS_SUCCESS(
+      ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &exported_key));
+  ExpectArrayBufferMatchesHex(kPrivateKeyPkcs8DerHex, exported_key);
 
   // Failing case: Empty PKCS#8 data
   EXPECT_STATUS(Status::ErrorImportEmptyKeyData(),

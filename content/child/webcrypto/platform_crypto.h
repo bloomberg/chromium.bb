@@ -177,6 +177,12 @@ Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer);
 Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer);
 
 // Preconditions:
+//  * |key| is non-null.
+Status ExportKeyPkcs8(PrivateKey* key,
+                      const blink::WebCryptoKeyAlgorithm& key_algorithm,
+                      blink::WebArrayBuffer* buffer);
+
+// Preconditions:
 //  * |wrapping_key| is non-null
 //  * |key| is non-null
 Status WrapSymKeyAesKw(SymKey* wrapping_key,

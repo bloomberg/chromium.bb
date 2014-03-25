@@ -7,6 +7,7 @@
 #include <cryptohi.h>
 #include <pk11pub.h>
 #include <sechash.h>
+#include <secoid.h>
 
 #include <vector>
 
@@ -552,6 +553,116 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   return Status::Success();
 }
 
+// From PKCS#1 [http://tools.ietf.org/html/rfc3447]:
+//
+//    RSAPrivateKey ::= SEQUENCE {
+//      version           Version,
+//      modulus           INTEGER,  -- n
+//      publicExponent    INTEGER,  -- e
+//      privateExponent   INTEGER,  -- d
+//      prime1            INTEGER,  -- p
+//      prime2            INTEGER,  -- q
+//      exponent1         INTEGER,  -- d mod (p-1)
+//      exponent2         INTEGER,  -- d mod (q-1)
+//      coefficient       INTEGER,  -- (inverse of q) mod p
+//      otherPrimeInfos   OtherPrimeInfos OPTIONAL
+//    }
+//
+// Note that otherPrimeInfos is only applicable for version=1. Since NSS
+// doesn't use multi-prime can safely use version=0.
+struct RSAPrivateKey {
+  SECItem version;
+  SECItem modulus;
+  SECItem public_exponent;
+  SECItem private_exponent;
+  SECItem prime1;
+  SECItem prime2;
+  SECItem exponent1;
+  SECItem exponent2;
+  SECItem coefficient;
+};
+
+const SEC_ASN1Template RSAPrivateKeyTemplate[] = {
+    {SEC_ASN1_SEQUENCE, 0, NULL, sizeof(RSAPrivateKey)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, version)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, modulus)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, public_exponent)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, private_exponent)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, prime1)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, prime2)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, exponent1)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, exponent2)},
+    {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, coefficient)},
+    {0}};
+
+// On success |value| will be filled with data which must be freed by
+// SECITEM_FreeItem(value, PR_FALSE);
+bool ReadUint(SECKEYPrivateKey* key,
+              CK_ATTRIBUTE_TYPE attribute,
+              SECItem* value) {
+  SECStatus rv = PK11_ReadRawAttribute(PK11_TypePrivKey, key, attribute, value);
+
+  // PK11_ReadRawAttribute() returns items of type siBuffer. However in order
+  // for the ASN.1 encoding to be correct, the items must be of type
+  // siUnsignedInteger.
+  value->type = siUnsignedInteger;
+
+  return rv == SECSuccess;
+}
+
+// Fills |out| with the RSA private key properties. Returns true on success.
+// Regardless of the return value, the caller must invoke FreeRSAPrivateKey()
+// to free up any allocated memory.
+//
+// The passed in RSAPrivateKey must be zero-initialized.
+bool InitRSAPrivateKey(SECKEYPrivateKey* key, RSAPrivateKey* out) {
+  if (key->keyType != rsaKey)
+    return false;
+
+  // Everything should be zero-ed out. These are just some spot checks.
+  DCHECK(!out->version.data);
+  DCHECK(!out->version.len);
+  DCHECK(!out->modulus.data);
+  DCHECK(!out->modulus.len);
+
+  // Always use version=0 since not using multi-prime.
+  if (!SEC_ASN1EncodeInteger(NULL, &out->version, 0))
+    return false;
+
+  if (!ReadUint(key, CKA_MODULUS, &out->modulus))
+    return false;
+  if (!ReadUint(key, CKA_PUBLIC_EXPONENT, &out->public_exponent))
+    return false;
+  if (!ReadUint(key, CKA_PRIVATE_EXPONENT, &out->private_exponent))
+    return false;
+  if (!ReadUint(key, CKA_PRIME_1, &out->prime1))
+    return false;
+  if (!ReadUint(key, CKA_PRIME_2, &out->prime2))
+    return false;
+  if (!ReadUint(key, CKA_EXPONENT_1, &out->exponent1))
+    return false;
+  if (!ReadUint(key, CKA_EXPONENT_2, &out->exponent2))
+    return false;
+  if (!ReadUint(key, CKA_COEFFICIENT, &out->coefficient))
+    return false;
+
+  return true;
+}
+
+struct FreeRsaPrivateKey {
+  void operator()(RSAPrivateKey* out) {
+    SECITEM_FreeItem(&out->version, PR_FALSE);
+    SECITEM_FreeItem(&out->modulus, PR_FALSE);
+    SECITEM_FreeItem(&out->public_exponent, PR_FALSE);
+    SECITEM_FreeItem(&out->private_exponent, PR_FALSE);
+    SECITEM_FreeItem(&out->prime1, PR_FALSE);
+    SECITEM_FreeItem(&out->prime2, PR_FALSE);
+    SECITEM_FreeItem(&out->exponent1, PR_FALSE);
+    SECITEM_FreeItem(&out->exponent2, PR_FALSE);
+    SECITEM_FreeItem(&out->coefficient, PR_FALSE);
+  }
+};
+
 }  // namespace
 
 Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
@@ -692,6 +803,57 @@ Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
 
   *buffer = CreateArrayBuffer(spki_der->data, spki_der->len);
 
+  return Status::Success();
+}
+
+Status ExportKeyPkcs8(PrivateKey* key,
+                      const blink::WebCryptoKeyAlgorithm& key_algorithm,
+                      blink::WebArrayBuffer* buffer) {
+  // TODO(eroman): Support other RSA key types as they are added to Blink.
+  if (key_algorithm.id() != blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 &&
+      key_algorithm.id() != blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5)
+    return Status::ErrorUnsupported();
+
+  const SECOidTag algorithm = SEC_OID_PKCS1_RSA_ENCRYPTION;
+  const int kPrivateKeyInfoVersion = 0;
+
+  SECKEYPrivateKeyInfo private_key_info = {};
+  RSAPrivateKey rsa_private_key = {};
+  scoped_ptr<RSAPrivateKey, FreeRsaPrivateKey> free_private_key(
+      &rsa_private_key);
+
+  if (!InitRSAPrivateKey(key->key(), &rsa_private_key))
+    return Status::Error();
+
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!arena.get())
+    return Status::Error();
+
+  if (!SEC_ASN1EncodeItem(arena.get(),
+                          &private_key_info.privateKey,
+                          &rsa_private_key,
+                          RSAPrivateKeyTemplate))
+    return Status::Error();
+
+  if (SECSuccess !=
+      SECOID_SetAlgorithmID(
+          arena.get(), &private_key_info.algorithm, algorithm, NULL))
+    return Status::Error();
+
+  if (!SEC_ASN1EncodeInteger(
+          arena.get(), &private_key_info.version, kPrivateKeyInfoVersion))
+    return Status::Error();
+
+  crypto::ScopedSECItem encoded_key(
+      SEC_ASN1EncodeItem(NULL,
+                         NULL,
+                         &private_key_info,
+                         SEC_ASN1_GET(SECKEY_PrivateKeyInfoTemplate)));
+
+  if (!encoded_key.get())
+    return Status::Error();
+
+  *buffer = CreateArrayBuffer(encoded_key->data, encoded_key->len);
   return Status::Success();
 }
 
