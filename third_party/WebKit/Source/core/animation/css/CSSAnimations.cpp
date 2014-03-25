@@ -545,11 +545,19 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))
         return;
 
+    Timing timing;
+    bool isPaused;
+    RefPtr<TimingFunction> timingFunction = timingFromAnimationData(anim, timing, isPaused);
+    ASSERT(!isPaused);
+    // Note that the backwards part is required for delay to work.
+    timing.fillMode = Timing::FillModeBoth;
+
     KeyframeEffectModel::KeyframeVector keyframes;
 
     RefPtrWillBeRawPtr<Keyframe> startKeyframe = Keyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(0);
+    startKeyframe->setEasing(timingFunction);
     keyframes.append(startKeyframe);
 
     RefPtrWillBeRawPtr<Keyframe> endKeyframe = Keyframe::create();
@@ -558,14 +566,6 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     keyframes.append(endKeyframe);
 
     RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
-
-    Timing timing;
-    bool isPaused;
-    RefPtr<TimingFunction> timingFunction = timingFromAnimationData(anim, timing, isPaused);
-    ASSERT(!isPaused);
-    timing.timingFunction = timingFunction;
-    // Note that the backwards part is required for delay to work.
-    timing.fillMode = Timing::FillModeBoth;
 
     update->startTransition(id, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));
     ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());

@@ -127,7 +127,7 @@ void Animation::applyEffects(bool previouslyInEffect)
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    m_activeInterpolations = m_effect->sample(static_cast<int>(iteration), timeFraction());
+    m_activeInterpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
     if (player())
         m_target->setNeedsAnimationStyleRecalc();
 }

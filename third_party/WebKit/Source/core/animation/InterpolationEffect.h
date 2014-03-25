@@ -17,7 +17,7 @@ class InterpolationEffect : public RefCounted<InterpolationEffect> {
 public:
     static PassRefPtr<InterpolationEffect> create() { return adoptRef(new InterpolationEffect()); }
 
-    PassOwnPtr<Vector<RefPtr<Interpolation> > > getActiveInterpolations(double fraction) const;
+    PassOwnPtr<Vector<RefPtr<Interpolation> > > getActiveInterpolations(double fraction, double iterationDuration) const;
 
     void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {

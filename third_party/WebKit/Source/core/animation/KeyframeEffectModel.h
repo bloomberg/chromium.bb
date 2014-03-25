@@ -103,7 +103,7 @@ public:
     }
 
     // AnimationEffect implementation.
-    virtual PassOwnPtr<Vector<RefPtr<Interpolation> > > sample(int iteration, double fraction) const OVERRIDE;
+    virtual PassOwnPtr<Vector<RefPtr<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const OVERRIDE;
 
     // FIXME: Implement setFrames()
     const KeyframeVector& getFrames() const { return m_keyframes; }

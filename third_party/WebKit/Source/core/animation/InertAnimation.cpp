@@ -55,7 +55,7 @@ PassOwnPtr<Vector<RefPtr<Interpolation> > > InertAnimation::sample()
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    return m_effect->sample(static_cast<int>(iteration), timeFraction());
+    return m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
 }
 
 

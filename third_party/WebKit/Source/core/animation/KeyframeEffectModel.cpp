@@ -117,14 +117,14 @@ PropertySet KeyframeEffectModel::properties() const
     return result;
 }
 
-PassOwnPtr<Vector<RefPtr<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction) const
+PassOwnPtr<Vector<RefPtr<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction, double iterationDuration) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
     ensureKeyframeGroups();
     ensureInterpolationEffect();
 
-    return m_interpolationEffect->getActiveInterpolations(fraction);
+    return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration);
 }
 
 KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes(const KeyframeVector& keyframes)

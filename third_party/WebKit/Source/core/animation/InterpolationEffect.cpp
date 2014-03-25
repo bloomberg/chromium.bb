@@ -7,11 +7,7 @@
 
 namespace WebCore {
 
-namespace {
-    const double accuracyForKeyframeEasing = 0.0000001;
-}
-
-PassOwnPtr<Vector<RefPtr<Interpolation> > > InterpolationEffect::getActiveInterpolations(double fraction) const
+PassOwnPtr<Vector<RefPtr<Interpolation> > > InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration) const
 {
 
     Vector<RefPtr<Interpolation> >* result = new Vector<RefPtr<Interpolation> >();
@@ -22,7 +18,7 @@ PassOwnPtr<Vector<RefPtr<Interpolation> > > InterpolationEffect::getActiveInterp
             RefPtr<Interpolation> interpolation = record->m_interpolation;
             double localFraction = (fraction - record->m_start) / (record->m_end - record->m_start);
             if (record->m_easing)
-                localFraction = record->m_easing->evaluate(localFraction, accuracyForKeyframeEasing);
+                localFraction = record->m_easing->evaluate(localFraction, accuracyForDuration(iterationDuration));
             interpolation->interpolate(0, localFraction);
             result->append(interpolation);
         }
