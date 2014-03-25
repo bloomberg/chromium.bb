@@ -96,14 +96,7 @@ TEST(RawSharedBufferTest, Basic) {
 
 // TODO(vtl): Bigger buffers.
 
-TEST(RawSharedBufferTest, InvalidArguments) {
-// TODO(vtl): This part of the test fails on Mac. Figure out why!
-/*
-  // Too big.
-  EXPECT_FALSE(RawSharedBuffer::Create(std::numeric_limits<size_t>::max()));
-*/
-
-  // Invalid mappings:
+TEST(RawSharedBufferTest, InvalidMappings) {
   scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
   ASSERT_TRUE(buffer);
 
@@ -128,6 +121,17 @@ TEST(RawSharedBufferTest, InvalidArguments) {
   EXPECT_FALSE(buffer->IsValidMap(50, 51));
   EXPECT_FALSE(buffer->Map(51, 50));
   EXPECT_FALSE(buffer->IsValidMap(51, 50));
+}
+
+TEST(RawSharedBufferTest, TooBig) {
+  // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
+  // (since it only involves creating a 4 GB file).
+  const size_t kMaxSizeT = std::numeric_limits<size_t>::max();
+  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kMaxSizeT));
+  // But, assuming |sizeof(size_t) == sizeof(void*)|, mapping all of it should
+  // always fail.
+  if (buffer)
+    EXPECT_FALSE(buffer->Map(0, kMaxSizeT));
 }
 
 // Tests that separate mappings get distinct addresses.
