@@ -72,10 +72,10 @@ class CONTENT_EXPORT VideoCapturerDelegate
 
   virtual ~VideoCapturerDelegate();
 
-  void OnFrameReadyOnCaptureThread(
+  void OnFrameReadyOnRenderThread(
       media::VideoCapture* capture,
       const scoped_refptr<media::VideoFrame>& frame);
-  void OnErrorOnCaptureThread(media::VideoCapture* capture);
+  void OnErrorOnRenderThread(media::VideoCapture* capture);
 
   // The id identifies which video capture device is used for this video
   // capture session.

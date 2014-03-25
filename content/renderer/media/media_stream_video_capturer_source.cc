@@ -96,7 +96,7 @@ void VideoCapturerDelegate::StartDeliver(
     const NewFrameCallback& new_frame_callback,
     const StartedCallback& started_callback) {
   DCHECK(params.requested_format.IsValid());
-  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   new_frame_callback_ = new_frame_callback;
   started_callback_ = started_callback;
   got_first_frame_ = false;
@@ -110,7 +110,7 @@ void VideoCapturerDelegate::StartDeliver(
 void VideoCapturerDelegate::StopDeliver() {
   // Immediately make sure we don't provide more frames.
   DVLOG(3) << "VideoCapturerDelegate::StopCapture()";
-  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   capture_engine_->StopCapture(this);
   new_frame_callback_.Reset();
   started_callback_.Reset();
@@ -118,25 +118,29 @@ void VideoCapturerDelegate::StopDeliver() {
 
 void VideoCapturerDelegate::OnStarted(media::VideoCapture* capture) {
   DVLOG(3) << "VideoCapturerDelegate::OnStarted";
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void VideoCapturerDelegate::OnStopped(media::VideoCapture* capture) {
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void VideoCapturerDelegate::OnPaused(media::VideoCapture* capture) {
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void VideoCapturerDelegate::OnError(media::VideoCapture* capture,
                                     int error_code) {
   DVLOG(3) << "VideoCapturerDelegate::OnError";
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCapturerDelegate::OnErrorOnCaptureThread,
-                 this, capture));
+      base::Bind(&VideoCapturerDelegate::OnErrorOnRenderThread, this, capture));
 }
 
 void VideoCapturerDelegate::OnRemoved(media::VideoCapture* capture) {
   DVLOG(3) << " MediaStreamVideoCapturerSource::OnRemoved";
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
 
   // Balance the AddRef in StartDeliver.
   // This means we are no longer registered as an event handler and can safely
@@ -147,15 +151,16 @@ void VideoCapturerDelegate::OnRemoved(media::VideoCapture* capture) {
 void VideoCapturerDelegate::OnFrameReady(
     media::VideoCapture* capture,
     const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCapturerDelegate::OnFrameReadyOnCaptureThread,
+      base::Bind(&VideoCapturerDelegate::OnFrameReadyOnRenderThread,
                  this,
                  capture,
                  frame));
 }
 
-void VideoCapturerDelegate::OnFrameReadyOnCaptureThread(
+void VideoCapturerDelegate::OnFrameReadyOnRenderThread(
     media::VideoCapture* capture,
     const scoped_refptr<media::VideoFrame>& frame) {
   if (!got_first_frame_) {
@@ -169,7 +174,7 @@ void VideoCapturerDelegate::OnFrameReadyOnCaptureThread(
   }
 }
 
-void VideoCapturerDelegate::OnErrorOnCaptureThread(
+void VideoCapturerDelegate::OnErrorOnRenderThread(
     media::VideoCapture* capture) {
   if (!started_callback_.is_null())
     started_callback_.Run(false);
