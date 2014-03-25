@@ -123,7 +123,6 @@ class BrowserView : public BrowserWindow,
 
   // Returns a Browser instance of this view.
   Browser* browser() { return browser_.get(); }
-  const Browser* browser() const { return browser_.get(); }
 
   // Initializes (or re-initializes) the status bubble.  We try to only create
   // the bubble once and re-use it for the life of the browser, but certain
@@ -482,9 +481,9 @@ class BrowserView : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
                            TestAboutChromeViewAccObj);
 
-  enum FullscreenMode {
-    NORMAL_FULLSCREEN,
-    METRO_SNAP_FULLSCREEN
+  enum FullscreenType {
+    FOR_DESKTOP,
+    FOR_METRO
   };
 
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -549,7 +548,7 @@ class BrowserView : public BrowserWindow,
   // |bubble_type| determines what should be shown in the fullscreen exit
   // bubble.
   void ProcessFullscreen(bool fullscreen,
-                         FullscreenMode mode,
+                         FullscreenType fullscreen_type,
                          const GURL& url,
                          FullscreenExitBubbleType bubble_type);
 
