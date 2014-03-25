@@ -23,6 +23,48 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
+void* CreateDumbBuffer(DriSkBitmap* bitmap, int width, int height) {
+  struct drm_mode_create_dumb request;
+  request.width = width;
+  request.height = height;
+  request.bpp = bitmap->bytesPerPixel() << 3;
+  request.flags = 0;
+
+  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
+    DLOG(ERROR) << "Cannot create dumb buffer (" << errno << ") "
+                << strerror(errno);
+    return NULL;
+  }
+
+  CHECK(request.size == bitmap->getSize());
+
+  bitmap->set_handle(request.handle);
+
+  struct drm_mode_map_dumb map_request;
+  map_request.handle = bitmap->get_handle();
+  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
+    DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
+                << strerror(errno);
+    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
+    return NULL;
+  }
+
+  void* pixels = mmap(0,
+                      bitmap->getSize(),
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED,
+                      bitmap->get_fd(),
+                      map_request.offset);
+  if (pixels == MAP_FAILED) {
+    DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
+                << strerror(errno);
+    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
+    return NULL;
+  }
+
+  return pixels;
+}
+
 // Special DRM implementation of a SkPixelRef. The DRM allocator will create a
 // SkPixelRef for the backing pixels. It will then associate the SkPixelRef with
 // the SkBitmap. SkBitmap will access the allocated memory by locking the pixels
@@ -131,43 +173,9 @@ bool DriAllocator::allocPixelRef(SkBitmap* bitmap,
 
 bool DriAllocator::AllocatePixels(DriSkBitmap* bitmap,
                                   SkColorTable* color_table) {
-  struct drm_mode_create_dumb request;
-  request.width = bitmap->width();
-  request.height = bitmap->height();
-  request.bpp = bitmap->bytesPerPixel() << 3;
-  request.flags = 0;
-
-  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
-    DLOG(ERROR) << "Cannot create dumb buffer (" << errno << ") "
-                << strerror(errno);
+  void *pixels = CreateDumbBuffer(bitmap, bitmap->width(), bitmap->height());
+  if (!pixels)
     return false;
-  }
-
-  CHECK(request.size == bitmap->getSize());
-
-  bitmap->set_handle(request.handle);
-
-  struct drm_mode_map_dumb map_request;
-  map_request.handle = bitmap->get_handle();
-  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
-    DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
-                << strerror(errno);
-    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-    return false;
-  }
-
-  void* pixels = mmap(0,
-                      bitmap->getSize(),
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED,
-                      bitmap->get_fd(),
-                      map_request.offset);
-  if (pixels == MAP_FAILED) {
-    DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
-                << strerror(errno);
-    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-    return false;
-  }
 
   SkImageInfo info;
   if (!bitmap->asImageInfo(&info)) {

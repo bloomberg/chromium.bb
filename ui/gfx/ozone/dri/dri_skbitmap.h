@@ -22,6 +22,8 @@ class GFX_EXPORT DriSkBitmap : public SkBitmap {
   // Return true on success, false otherwise.
   virtual bool Initialize();
 
+  void set_handle(uint32_t handle) { handle_ = handle; };
+
   uint32_t get_handle() const { return handle_; };
 
   uint32_t get_framebuffer() const { return framebuffer_; };
@@ -35,7 +37,6 @@ class GFX_EXPORT DriSkBitmap : public SkBitmap {
   friend class DriAllocator;
   friend class HardwareDisplayController;
 
-  void set_handle(uint32_t handle) { handle_ = handle; };
   void set_framebuffer(uint32_t framebuffer) { framebuffer_ = framebuffer; };
 
   // File descriptor used by the DRI allocator to request buffers from the DRI
