@@ -6,7 +6,7 @@
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_
 
 namespace blink {
-class WebInputElement;
+class WebFormControlElement;
 }
 
 namespace autofill {
@@ -19,13 +19,13 @@ class PageClickListener {
   // Notification that |element| was clicked.
   // |was_focused| is true if |element| had focus BEFORE the click.
   // |is_focused| is true if |element| has focus AFTER the click was processed.
-  virtual void InputElementClicked(const blink::WebInputElement& element,
-                                   bool was_focused,
-                                   bool is_focused) = 0;
+  virtual void FormControlElementClicked(
+      const blink::WebFormControlElement& element,
+      bool was_focused) = 0;
 
-  // If the previously focused element was an input field, listeners are
-  // informed that the text field has lost its focus.
-  virtual void InputElementLostFocus() = 0;
+  // If the previously focused element was an input field or a textarea,
+  // listeners are informed that the text field has lost its focus.
+  virtual void FormControlElementLostFocus() = 0;
 
  protected:
   virtual ~PageClickListener() {}

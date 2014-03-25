@@ -13,6 +13,7 @@
 
 namespace blink {
 class WebDocument;
+class WebFormControlElement;
 class WebFormElement;
 class WebFrame;
 class WebInputElement;
@@ -50,7 +51,7 @@ class FormCache {
 
   // Clears the values of all input elements in the form that contains
   // |element|.  Returns false if the form is not found.
-  bool ClearFormWithElement(const blink::WebInputElement& element);
+  bool ClearFormWithElement(const blink::WebFormControlElement& element);
 
   // For each field in the |form|, sets the field's placeholder text to the
   // field's overall predicted type.  Also sets the title to include the field's

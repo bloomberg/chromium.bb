@@ -81,6 +81,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     int query_id,
     const base::string16& name,
     const base::string16& prefix,
+    const std::string form_control_type,
     const std::vector<base::string16>& autofill_values,
     const std::vector<base::string16>& autofill_labels,
     const std::vector<base::string16>& autofill_icons,
@@ -92,7 +93,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   autofill_labels_ = autofill_labels;
   autofill_icons_ = autofill_icons;
   autofill_unique_ids_ = autofill_unique_ids;
-  if (!manager_delegate_->IsAutocompleteEnabled()) {
+  if (!manager_delegate_->IsAutocompleteEnabled() ||
+      form_control_type == "textarea") {
     SendSuggestions(NULL);
     return;
   }

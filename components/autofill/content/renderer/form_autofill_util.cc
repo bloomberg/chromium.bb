@@ -507,10 +507,9 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
     // i.e. the field the user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
     if (!force_override && !is_initiating_element &&
-        ((IsAutofillableInputElement(input_element) &&
-          !input_element->value().isEmpty()) ||
-         (IsTextAreaElement(*element) &&
-          !element->toConst<WebTextAreaElement>().value().isEmpty())))
+        ((IsAutofillableInputElement(input_element) ||
+          IsTextAreaElement(*element)) &&
+         !element->value().isEmpty()))
       continue;
 
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||
@@ -539,27 +538,23 @@ void FillFormField(const FormFieldData& data,
     // returns the default maxlength value.
     input_element->setValue(
         data.value.substr(0, input_element->maxLength()), true);
-    if (is_initiating_node) {
-      int length = input_element->value().length();
-      input_element->setSelectionRange(length, length);
-      // Clear the current IME composition (the underline), if there is one.
-      input_element->document().frame()->unmarkText();
-    }
-  } else if (IsTextAreaElement(*field)) {
-    WebTextAreaElement text_area = field->to<WebTextAreaElement>();
-    if (text_area.value() != data.value) {
-      text_area.setValue(data.value);
-      text_area.dispatchFormControlChangeEvent();
-    }
-  } else if (IsSelectElement(*field)) {
-    WebSelectElement select_element = field->to<WebSelectElement>();
-    if (select_element.value() != data.value) {
-      select_element.setValue(data.value);
-      select_element.dispatchFormControlChangeEvent();
+  } else if (IsTextAreaElement(*field) || IsSelectElement(*field)) {
+    if (field->value() != data.value) {
+      field->setValue(data.value);
+      field->dispatchFormControlChangeEvent();
     }
   } else {
     DCHECK(IsCheckableElement(input_element));
     input_element->setChecked(data.is_checked, true);
+  }
+
+  if (is_initiating_node &&
+      ((IsTextInput(input_element) || IsMonthInput(input_element)) ||
+       IsTextAreaElement(*field))) {
+    int length = field->value().length();
+    field->setSelectionRange(length, length);
+    // Clear the current IME composition (the underline), if there is one.
+    field->document().frame()->unmarkText();
   }
 }
 
@@ -582,16 +577,17 @@ void PreviewFormField(const FormFieldData& data,
     input_element->setSuggestedValue(
       data.value.substr(0, input_element->maxLength()));
     input_element->setAutofilled(true);
-    if (is_initiating_node) {
-      // Select the part of the text that the user didn't type.
-      input_element->setSelectionRange(
-          input_element->value().length(),
-          input_element->suggestedValue().length());
-    }
   } else if (IsTextAreaElement(*field)) {
-    WebTextAreaElement textarea = field->to<WebTextAreaElement>();
-    textarea.setSuggestedValue(data.value);
+    field->setSuggestedValue(data.value);
     field->setAutofilled(true);
+  }
+
+  if (is_initiating_node &&
+      (IsTextInput(input_element) || IsTextAreaElement(*field))) {
+    // Select the part of the text that the user didn't type.
+    int start = field->value().length();
+    int end = field->suggestedValue().length();
+    field->setSelectionRange(start, end);
   }
 }
 
@@ -772,17 +768,21 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
+  if (IsAutofillableInputElement(input_element) ||
+      IsTextAreaElement(element)) {
+    field->is_autofilled = element.isAutofilled();
+    field->is_focusable = element.isFocusable();
+    field->should_autocomplete = element.autoComplete();
+    field->text_direction = element.directionForFormData() ==
+        "rtl" ? base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
+  }
+
   if (IsAutofillableInputElement(input_element)) {
     if (IsTextInput(input_element))
       field->max_length = input_element->maxLength();
 
-    field->is_autofilled = input_element->isAutofilled();
-    field->is_focusable = input_element->isFocusable();
     field->is_checkable = IsCheckableElement(input_element);
     field->is_checked = input_element->isChecked();
-    field->should_autocomplete = input_element->autoComplete();
-    field->text_direction = input_element->directionForFormData() == "rtl" ?
-        base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
   } else if (IsTextAreaElement(element)) {
     // Nothing more to do in this case.
   } else if (extract_mask & EXTRACT_OPTIONS) {
@@ -797,16 +797,10 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   if (!(extract_mask & EXTRACT_VALUE))
     return;
 
-  base::string16 value;
-  if (IsAutofillableInputElement(input_element)) {
-    value = input_element->value();
-  } else if (IsTextAreaElement(element)) {
-    value = element.toConst<WebTextAreaElement>().value();
-  } else {
-    DCHECK(IsSelectElement(element));
-    const WebSelectElement select_element = element.toConst<WebSelectElement>();
-    value = select_element.value();
+  base::string16 value = element.value();
 
+  if (IsSelectElement(element)) {
+    const WebSelectElement select_element = element.toConst<WebSelectElement>();
     // Convert the |select_element| value to text if requested.
     if (extract_mask & EXTRACT_OPTION_TEXT) {
       WebVector<WebElement> list_items = select_element.listItems();
@@ -971,10 +965,10 @@ bool WebFormElementToFormData(
   return true;
 }
 
-bool FindFormAndFieldForInputElement(const WebInputElement& element,
-                                     FormData* form,
-                                     FormFieldData* field,
-                                     RequirementsMask requirements) {
+bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
+                                           FormData* form,
+                                           FormFieldData* field,
+                                           RequirementsMask requirements) {
   if (!IsAutofillableElement(element))
     return false;
 
@@ -992,7 +986,7 @@ bool FindFormAndFieldForInputElement(const WebInputElement& element,
                                   field);
 }
 
-void FillForm(const FormData& form, const WebInputElement& element) {
+void FillForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.form();
   if (form_element.isNull())
     return;
@@ -1033,7 +1027,7 @@ void FillFormForAllElements(const FormData& form_data,
                            &FillFormField);
 }
 
-void PreviewForm(const FormData& form, const WebInputElement& element) {
+void PreviewForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.form();
   if (form_element.isNull())
     return;
@@ -1046,7 +1040,7 @@ void PreviewForm(const FormData& form, const WebInputElement& element) {
                            &PreviewFormField);
 }
 
-bool ClearPreviewedFormWithElement(const WebInputElement& element,
+bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
                                    bool was_autofilled) {
   WebFormElement form_element = element.form();
   if (form_element.isNull())
@@ -1074,39 +1068,28 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
     if(!control_element.isAutofilled())
       continue;
 
-    if ((IsTextInput(input_element) &&
-         input_element->suggestedValue().isEmpty()) ||
-        (IsMonthInput(input_element) &&
-         input_element->suggestedValue().isEmpty()) ||
-        (IsTextAreaElement(control_element) &&
-         control_element.to<WebTextAreaElement>().suggestedValue().isEmpty()))
+    if ((IsTextInput(input_element) ||
+         IsMonthInput(input_element) ||
+         IsTextAreaElement(control_element)) &&
+        control_element.suggestedValue().isEmpty())
       continue;
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
-    if (IsTextInput(input_element) || IsMonthInput(input_element)) {
-      input_element->setSuggestedValue(WebString());
-      bool is_initiating_node = (element == *input_element);
-      if (is_initiating_node)
-        input_element->setAutofilled(was_autofilled);
-      else
-        input_element->setAutofilled(false);
-
-      // Clearing the suggested value in the focused node (above) can cause
-      // selection to be lost. We force selection range to restore the text
-      // cursor.
+    if (IsTextInput(input_element) || IsMonthInput(input_element) ||
+        IsTextAreaElement(control_element)) {
+      control_element.setSuggestedValue(WebString());
+      bool is_initiating_node = (element == control_element);
       if (is_initiating_node) {
-        int length = input_element->value().length();
-        input_element->setSelectionRange(length, length);
-      }
-    } else if (IsTextAreaElement(control_element)) {
-      WebTextAreaElement text_area = control_element.to<WebTextAreaElement>();
-      text_area.setSuggestedValue(WebString());
-      bool is_initiating_node = (element == text_area);
-      if (is_initiating_node)
         control_element.setAutofilled(was_autofilled);
-      else
+        // Clearing the suggested value in the focused node (above) can cause
+        // selection to be lost. We force selection range to restore the text
+        // cursor.
+        int length = control_element.value().length();
+        control_element.setSelectionRange(length, length);
+      } else {
         control_element.setAutofilled(false);
+      }
     }
   }
 
@@ -1184,7 +1167,7 @@ bool IsWebElementEmpty(const blink::WebElement& element) {
   return true;
 }
 
-gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
+gfx::RectF GetScaledBoundingBox(float scale, WebFormControlElement* element) {
   gfx::Rect bounding_box(element->boundsInViewportSpace());
   return gfx::RectF(bounding_box.x() * scale,
                     bounding_box.y() * scale,

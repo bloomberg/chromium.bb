@@ -39,6 +39,7 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
       int query_id,
       const base::string16& name,
       const base::string16& prefix,
+      const std::string form_control_type,
       const std::vector<base::string16>& autofill_values,
       const std::vector<base::string16>& autofill_labels,
       const std::vector<base::string16>& autofill_icons,

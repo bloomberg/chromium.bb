@@ -225,4 +225,46 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   autocomplete_history_manager.SendSuggestions(NULL);
 }
 
+// Verify that no autocomplete suggestion is returned for textarea.
+TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
+  TestAutocompleteHistoryManager autocomplete_history_manager(
+      autofill_driver_.get(), manager_delegate_.get());
+
+  scoped_ptr<AutofillManager> autofill_manager(new AutofillManager(
+      autofill_driver_.get(),
+      manager_delegate_.get(),
+      "en-US",
+      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
+
+  MockAutofillExternalDelegate external_delegate(autofill_manager.get(),
+                                                 autofill_driver_.get());
+  autocomplete_history_manager.SetExternalDelegate(&external_delegate);
+
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
+
+  FormFieldData field;
+  test::CreateTestFormField("Address", "address", "", "textarea", &field);
+
+  EXPECT_CALL(external_delegate,
+              OnSuggestionsReturned(0,
+                                    std::vector<base::string16>(),
+                                    std::vector<base::string16>(),
+                                    std::vector<base::string16>(),
+                                    std::vector<int>()));
+  autocomplete_history_manager.OnGetAutocompleteSuggestions(
+      0,
+      field.name,
+      field.value,
+      field.form_control_type,
+      std::vector<base::string16>(),
+      std::vector<base::string16>(),
+      std::vector<base::string16>(),
+      std::vector<int>());
+}
+
 }  // namespace autofill

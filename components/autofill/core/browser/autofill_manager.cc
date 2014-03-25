@@ -450,7 +450,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // hand off what we generated and they will send the results back to the
   // renderer.
   autocomplete_history_manager_->OnGetAutocompleteSuggestions(
-      query_id, field.name, field.value, values, labels, icons, unique_ids);
+      query_id, field.name, field.value, field.form_control_type, values,
+      labels, icons, unique_ids);
 }
 
 void AutofillManager::FillOrPreviewForm(
