@@ -414,22 +414,20 @@ bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
   switch (algorithm.paramsType()) {
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(
           algorithm.id(),
-          new blink::WebCryptoRsaHashedKeyAlgorithmParams(
-              modulus_length_bits,
-              public_exponent.bytes(),
-              public_exponent.byte_length(),
-              GetInnerHashAlgorithm(algorithm)));
+          modulus_length_bits,
+          public_exponent.bytes(),
+          public_exponent.byte_length(),
+          GetInnerHashAlgorithm(algorithm).id());
       return true;
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
     case blink::WebCryptoAlgorithmParamsTypeNone:
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsa(
           algorithm.id(),
-          new blink::WebCryptoRsaKeyAlgorithmParams(
-              modulus_length_bits,
-              public_exponent.bytes(),
-              public_exponent.byte_length()));
+          modulus_length_bits,
+          public_exponent.bytes(),
+          public_exponent.byte_length());
       return true;
     default:
       return false;

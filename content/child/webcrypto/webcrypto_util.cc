@@ -205,18 +205,16 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
         return false;
       if (keylen_bytes > UINT_MAX / 8)
         return false;
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
-          algorithm.id(),
-          new blink::WebCryptoHmacKeyAlgorithmParams(hash, keylen_bytes * 8));
+      *key_algorithm =
+          blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bytes * 8);
       return true;
     }
     case blink::WebCryptoAlgorithmIdAesKw:
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesCtr:
     case blink::WebCryptoAlgorithmIdAesGcm:
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
-          algorithm.id(),
-          new blink::WebCryptoAesKeyAlgorithmParams(keylen_bytes * 8));
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::createAes(
+          algorithm.id(), keylen_bytes * 8);
       return true;
     default:
       return false;
