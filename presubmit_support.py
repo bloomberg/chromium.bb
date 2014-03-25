@@ -794,27 +794,16 @@ class Change(object):
     if files is None:
       files = []
     self._name = name
-    self._full_description = description
     # Convert root into an absolute path.
     self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
     self.author_email = author
 
-    # From the description text, build up a dictionary of key/value pairs
-    # plus the description minus all key/value or "tag" lines.
-    description_without_tags = []
+    self._full_description = ''
     self.tags = {}
-    for line in self._full_description.splitlines():
-      m = self.TAG_LINE_RE.match(line)
-      if m:
-        self.tags[m.group('key')] = m.group('value')
-      else:
-        description_without_tags.append(line)
-
-    # Change back to text and remove whitespace at end.
-    self._description_without_tags = (
-        '\n'.join(description_without_tags).rstrip())
+    self._description_without_tags = ''
+    self.SetDescriptionText(description)
 
     assert all(
         (isinstance(f, (list, tuple)) and len(f) == 2) for f in files), files
@@ -841,6 +830,27 @@ class Change(object):
   def FullDescriptionText(self):
     """Returns the complete changelist description including tags."""
     return self._full_description
+
+  def SetDescriptionText(self, description):
+    """Sets the full description text (including tags) to |description|.
+    
+    Also updates the list of tags."""
+    self._full_description = description
+
+    # From the description text, build up a dictionary of key/value pairs
+    # plus the description minus all key/value or "tag" lines.
+    description_without_tags = []
+    self.tags = {}
+    for line in self._full_description.splitlines():
+      m = self.TAG_LINE_RE.match(line)
+      if m:
+        self.tags[m.group('key')] = m.group('value')
+      else:
+        description_without_tags.append(line)
+
+    # Change back to text and remove whitespace at end.
+    self._description_without_tags = (
+        '\n'.join(description_without_tags).rstrip())
 
   def RepositoryRoot(self):
     """Returns the repository (checkout) root directory for this change,

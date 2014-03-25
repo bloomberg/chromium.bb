@@ -852,6 +852,16 @@ def _GetRietveldIssueProps(input_api, messages):
         issue=int(issue), messages=messages)
 
 
+def _ReviewersFromChange(change):
+  """Return the reviewers specified in the |change|, if any."""
+  reviewers = set()
+  if change.R:
+    reviewers.update(set([r.strip() for r in change.R.split(',')]))
+  if change.TBR:
+    reviewers.update(set([r.strip() for r in change.TBR.split(',')]))
+  return reviewers
+
+
 def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """Return the owner and reviewers of a change, if any.
 
@@ -860,7 +870,10 @@ def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """
   issue_props = _GetRietveldIssueProps(input_api, True)
   if not issue_props:
-    return None, set()
+    reviewers = set()
+    if not approval_needed:
+      reviewers = _ReviewersFromChange(input_api.change)
+    return None, reviewers
 
   if not approval_needed:
     return issue_props['owner_email'], set(issue_props['reviewers'])

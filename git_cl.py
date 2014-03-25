@@ -1694,6 +1694,11 @@ def CMDupload(parser, args):
     cl.SetWatchers(watchlist.GetWatchersForPaths(files))
 
   if not options.bypass_hooks:
+    if options.reviewers:
+      # Set the reviewer list now so that presubmit checks can access it.
+      change_description = ChangeDescription(change.FullDescriptionText())
+      change_description.update_reviewers(options.reviewers)
+      change.SetDescriptionText(change_description.description)
     hook_results = cl.RunHook(committing=False,
                               may_prompt=not options.force,
                               verbose=options.verbose,

@@ -1768,7 +1768,7 @@ class ChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
-        'TAG_LINE_RE',
+        'SetDescriptionText', 'TAG_LINE_RE',
         'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
@@ -1790,6 +1790,19 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals(self.fake_root_dir, change.RepositoryRoot())
     self.assertEquals(1, len(change.AffectedFiles(include_dirs=True)))
     self.assertEquals('Y', change.AffectedFiles(include_dirs=True)[0].Action())
+
+  def testSetDescriptionText(self):
+    change = presubmit.Change(
+        '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
+    self.assertEquals('foo', change.DescriptionText())
+    self.assertEquals('foo\nDRU=ro', change.FullDescriptionText())
+    self.assertEquals('ro', change.DRU)
+
+    change.SetDescriptionText('bar\nWHIZ=bang')
+    self.assertEquals('bar', change.DescriptionText())
+    self.assertEquals('bar\nWHIZ=bang', change.FullDescriptionText())
+    self.assertEquals('bang', change.WHIZ)
+    self.assertFalse(change.DRU)
 
 
 def CommHelper(input_api, cmd, ret=None, **kwargs):
@@ -2574,6 +2587,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change = self.mox.CreateMock(presubmit.Change)
     change.issue = issue
     change.author_email = 'john@example.com'
+    change.R = ''
+    change.TBR = ''
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api = self.MockInputApi(change, False)
     fake_db = self.mox.CreateMock(owners.Database)
@@ -2585,7 +2600,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if not is_committing or (not tbr and issue):
       affected_file.LocalPath().AndReturn('foo/xyz.cc')
       change.AffectedFiles(file_filter=None).AndReturn([affected_file])
-      if not rietveld_response:
+      if issue and not rietveld_response:
         rietveld_response = {
           "owner_email": change.author_email,
           "messages": [
@@ -2599,6 +2614,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         people = approvers
       else:
         people = reviewers
+        change.R = ','.join(reviewers)
 
       if issue:
         input_api.rietveld.get_issue_properties(
@@ -2709,6 +2725,16 @@ class CannedChecksUnittest(PresubmitTestsBase):
         uncovered_files=set(['foo']),
         expected_output='Missing OWNER reviewers for these files:\n'
                         '    foo\n')
+
+  def testCannedCheckOwners_NoIssueLocalReviewers(self):
+    self.AssertOwnersWorks(issue=None,
+        reviewers=set(['jane@example.com']),
+        expected_output="OWNERS check failed: this change has no Rietveld "
+                        "issue number, so we can't check it for approvals.\n")
+    self.AssertOwnersWorks(issue=None,
+        reviewers=set(['jane@example.com']),
+        is_committing=False,
+        expected_output='')
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
