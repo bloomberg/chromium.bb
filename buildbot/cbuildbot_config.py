@@ -1695,6 +1695,13 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
+internal_paladin.add_config('gizmo-paladin',
+  brillo_non_testable,
+  boards=['gizmo'],
+  important=False,
+  paladin_builder_name='gizmo paladin',
+)
+
 
 ### Arm paladins (CQ builders).
 
@@ -2124,6 +2131,12 @@ _arm_brillo_release.add_config('daisy_winter-full',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
+  upload_hw_test_artifacts=False,
+)
+
+_release.add_config('gizmo-release',
+  brillo_non_testable,
+  boards=['gizmo'],
   upload_hw_test_artifacts=False,
 )
 
