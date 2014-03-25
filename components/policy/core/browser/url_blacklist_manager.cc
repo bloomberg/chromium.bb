@@ -369,7 +369,7 @@ bool URLBlacklistManager::IsRequestBlocked(
 #endif
 
   bool block = false;
-  if (override_blacklist_(request.url(), &block))
+  if (override_blacklist_.Run(request.url(), &block))
     return block;
 
   return IsURLBlocked(request.url());

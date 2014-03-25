@@ -133,8 +133,7 @@ class POLICY_EXPORT URLBlacklistManager {
  public:
   // Returns true if the blacklist should be overridden for |url| and sets
   // |block| to true if it should be blocked and false otherwise.
-  typedef bool (*OverrideBlacklistCallback)(const GURL& url,
-                                            bool* block);
+  typedef base::Callback<bool(const GURL&, bool*)> OverrideBlacklistCallback;
 
   // Must be constructed on the UI thread.
   // |background_task_runner| is used to build the blacklist in a background

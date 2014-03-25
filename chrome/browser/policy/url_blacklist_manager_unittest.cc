@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -43,7 +44,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
                             base::MessageLoopProxy::current(),
                             base::MessageLoopProxy::current(),
                             GetSegmentURLCallback(),
-                            OverrideBlacklistForURL),
+                            base::Bind(OverrideBlacklistForURL)),
         update_called_(0),
         set_blacklist_called_(false) {}
 

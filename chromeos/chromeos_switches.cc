@@ -154,6 +154,9 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[]             = "oobe-timer-interval";
 
+// Indicates that a guest session has been started before OOBE completion.
+const char kOobeGuestSession[]              = "oobe-guest-session";
+
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
 // See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.

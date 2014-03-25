@@ -93,6 +93,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
@@ -442,11 +443,12 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   url_blacklist_manager_.reset(
-      new policy::URLBlacklistManager(pref_service,
-                                      background_task_runner,
-                                      io_message_loop_proxy,
-                                      callback,
-                                      policy::OverrideBlacklistForURL));
+      new policy::URLBlacklistManager(
+          pref_service,
+          background_task_runner,
+          io_message_loop_proxy,
+          callback,
+          base::Bind(policy::OverrideBlacklistForURL)));
 
   if (!IsOffTheRecord()) {
     // Add policy headers for non-incognito requests.
