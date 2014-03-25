@@ -52,8 +52,9 @@ var ModulesView = (function() {
 
     onLoadLogFinish: function(data) {
       // Show the tab if there are either service providers or extension info.
-      return this.onExtensionInfoChanged(data.extensionInfo) ||
-          this.onServiceProvidersChanged(data.serviceProviders);
+      var hasExtensionInfo = this.onExtensionInfoChanged(data.extensionInfo);
+      var hasSpiInfo = this.onServiceProvidersChanged(data.serviceProviders);
+      return hasExtensionInfo || hasSpiInfo;
     },
 
     onExtensionInfoChanged: function(extensionInfo) {
