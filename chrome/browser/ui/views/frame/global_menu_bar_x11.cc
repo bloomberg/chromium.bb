@@ -670,12 +670,12 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
       HistoryItem* item = new HistoryItem();
       item->session_id = entry_win->id;
 
-      std::string title = item->tabs.size() == 1 ?
+      std::string title = tabs.size() == 1 ?
           l10n_util::GetStringUTF8(
               IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE) :
           l10n_util::GetStringFUTF8(
               IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
-              base::IntToString16(item->tabs.size()));
+              base::IntToString16(tabs.size()));
       DbusmenuMenuitem* parent_item = BuildMenuItem(
           title, TAG_RECENTLY_CLOSED);
       menuitem_child_add_position(history_menu_, parent_item, index++);
