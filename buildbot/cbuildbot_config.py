@@ -1677,6 +1677,12 @@ internal_paladin.add_config('stumpy-paladin',
   upload_hw_test_artifacts=True,
 )
 
+internal_paladin.add_config('winky-paladin',
+  boards=['winky'],
+  paladin_builder_name='winky paladin',
+  important=False,
+)
+
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
@@ -2050,6 +2056,11 @@ _release.add_config('stumpy-release',
   boards=['stumpy'],
 )
 
+_release.add_config('winky-release',
+  boards=['winky'],
+  hw_tests=[],
+)
+
 _release.add_config('wolf-release',
   boards=['wolf'],
 )
@@ -2270,6 +2281,7 @@ _x86_firmware_boards = (
   'stout32',
   'slippy',
   'stumpy',
+  'winky',
   'wolf',
   'x86-mario',
   'zako',
@@ -2289,6 +2301,7 @@ _x86_depthcharge_firmware_boards = (
   'rambi',
   'samus',
   'squawks',
+  'winky',
   'zako',
 )
 
