@@ -12641,6 +12641,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.SocketReceiveBufferUnchangeable" units="Bytes">
+  <owner>jar@chromium.org</owner>
+  <summary>
+    The size of a socket's receive buffer when the attempt to change it via
+    setsockopt failed.
+  </summary>
+</histogram>
+
 <histogram name="Net.SocketRequestTime">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -12703,14 +12711,6 @@ other types of suffix sets.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The counts of the type of sockets returned by the socket pools.
-  </summary>
-</histogram>
-
-<histogram name="Net.SocketUnchangeableReceiveBuffer" units="Bytes">
-  <owner>jar@chromium.org</owner>
-  <summary>
-    The size of a socket's receive buffer when the attempt to change it via
-    setsockopt failed.
   </summary>
 </histogram>
 

@@ -391,7 +391,7 @@ int UDPSocketWin::CreateSocket(int addr_family) {
 bool UDPSocketWin::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
-              reinterpret_cast<const char*>(&size), sizeof(size));
+             reinterpret_cast<const char*>(&size), sizeof(size));
   // If the setsockopt fails, but the buffer is big enough, we will return
   // success. It is not worth testing the return value as we still need to check
   // via getsockopt anyway according to Windows documentation.
