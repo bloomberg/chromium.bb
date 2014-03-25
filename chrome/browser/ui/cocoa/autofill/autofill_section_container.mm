@@ -662,6 +662,12 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
           l10n_util::FixUpWindowsStyleLabel(input.placeholder_text)];
       NSString* tooltipText =
           base::SysUTF16ToNSString(delegate_->TooltipForField(input.type));
+      // VoiceOver onlys seems to pick up the help message on [field cell]
+      // (rather than just field).
+      BOOL success = [[field cell]
+          accessibilitySetOverrideValue:tooltipText
+                           forAttribute:NSAccessibilityHelpAttribute];
+      DCHECK(success);
       if ([tooltipText length] > 0) {
         if (!tooltipController_) {
           tooltipController_.reset(

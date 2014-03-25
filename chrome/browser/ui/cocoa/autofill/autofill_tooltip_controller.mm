@@ -62,6 +62,10 @@ CGFloat kTooltipInset = 10;
   [tooltipController_ updateTooltipDisplayState];
 }
 
+- (BOOL)acceptsFirstResponder {
+  return NO;
+}
+
 @end
 
 #pragma mark AutofillTrackingView
