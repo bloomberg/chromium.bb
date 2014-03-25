@@ -3169,7 +3169,7 @@ CanvasRenderingContext2DResource.DrawingMethods = TypeUtils.createPrefixedProper
     "drawImage",
     "drawImageFromRect",
     "drawCustomFocusRing",
-    "drawSystemFocusRing",
+    "drawFocusIfNeeded",
     "fill",
     "fillRect",
     "fillText",

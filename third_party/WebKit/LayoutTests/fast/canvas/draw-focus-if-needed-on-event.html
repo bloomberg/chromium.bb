@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <head>
-<title>Canvas test: drawSystemFocusRing</title>
+<title>Canvas test: drawFocusIfNeeded</title>
 <script src="../../resources/js-test.js"></script>
 </head>
 <body style="padding: 0; margin: 0">
@@ -12,28 +12,25 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-document.getElementById("button1").focus();
-
 var canvas = document.getElementById("canvas").getContext("2d");
 
-shouldNotThrow('canvas.drawSystemFocusRing(null);');
-shouldThrow('canvas.drawSystemFocusRing();');
+document.getElementById("button1").addEventListener('focus', function() {
+    canvas.beginPath();
+    canvas.rect(50, 50, 200, 100);
+    canvas.fillStyle = "#ccf";
+    canvas.fill();
+    canvas.drawFocusIfNeeded(document.getElementById("button1"));
 
-canvas.beginPath();
-canvas.rect(50, 50, 200, 100);
-canvas.fillStyle = "#ccf";
-canvas.fill();
-// re-test null case after having defined a path (regression test for crbug.com/353248)
-shouldNotThrow('canvas.drawSystemFocusRing(null);');
-canvas.drawSystemFocusRing(document.getElementById("button1"));
+    canvas.beginPath();
+    canvas.rect(50, 200, 200, 100);
+    canvas.fillStyle = "#cfc";
+    canvas.fill();
+    canvas.drawFocusIfNeeded(document.getElementById("button2"));
+});
 
-canvas.beginPath();
-canvas.rect(50, 200, 200, 100);
-canvas.fillStyle = "#cfc";
-canvas.fill();
-canvas.drawSystemFocusRing(document.getElementById("button2"));
+document.getElementById("button1").focus();
 
-// The top rect"s focus ring is tied to button1, which is focused.
+// The top rect's focus ring is tied to button1, which is focused.
 // It should have an outline in some color other than the background color.
 var imageData = canvas.getImageData(49, 50, 1, 1);
 var data = imageData.data;

@@ -168,7 +168,7 @@ interface CanvasRenderingContext2D {
     [RaisesException, DeprecateAs=PrefixedGetImageDataHD] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
 
     // Focus rings
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void drawFocusIfNeeded(Element element);
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
 
     readonly attribute float webkitBackingStorePixelRatio;

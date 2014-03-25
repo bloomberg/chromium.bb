@@ -230,7 +230,7 @@ public:
 
     PassRefPtr<Canvas2DContextAttributes> getContextAttributes() const;
 
-    void drawSystemFocusRing(Element*);
+    void drawFocusIfNeeded(Element*);
     bool drawCustomFocusRing(Element*);
 
 private:

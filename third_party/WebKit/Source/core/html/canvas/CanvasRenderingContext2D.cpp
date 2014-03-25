@@ -2207,7 +2207,7 @@ PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttrib
     return attributes.release();
 }
 
-void CanvasRenderingContext2D::drawSystemFocusRing(Element* element)
+void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element)
 {
     if (!focusRingCallIsValid(m_path, element))
         return;
