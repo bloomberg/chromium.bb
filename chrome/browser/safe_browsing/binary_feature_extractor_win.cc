@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/signature_util.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 
 #include <windows.h>
 #include <softpub.h>
@@ -16,11 +16,11 @@
 
 namespace safe_browsing {
 
-SignatureUtil::SignatureUtil() {}
+BinaryFeatureExtractor::BinaryFeatureExtractor() {}
 
-SignatureUtil::~SignatureUtil() {}
+BinaryFeatureExtractor::~BinaryFeatureExtractor() {}
 
-void SignatureUtil::CheckSignature(
+void BinaryFeatureExtractor::CheckSignature(
     const base::FilePath& file_path,
     ClientDownloadRequest_SignatureInfo* signature_info) {
   VLOG(2) << "Checking signature for " << file_path.value();

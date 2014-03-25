@@ -18,10 +18,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
-#include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -280,14 +280,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
       const CheckDownloadCallback& callback,
       DownloadProtectionService* service,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      SignatureUtil* signature_util)
+      BinaryFeatureExtractor* binary_feature_extractor)
       : item_(item),
         url_chain_(item->GetUrlChain()),
         referrer_url_(item->GetReferrerUrl()),
         zipped_executable_(false),
         callback_(callback),
         service_(service),
-        signature_util_(signature_util),
+        binary_feature_extractor_(binary_feature_extractor),
         database_manager_(database_manager),
         pingback_enabled_(service_->enabled()),
         finished_(false),
@@ -335,7 +335,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     } else {
       DCHECK(!download_protection_util::IsArchiveFile(
           item_->GetTargetFilePath()));
-      StartExtractSignatureFeatures();
+      StartExtractFileFeatures();
     }
   }
 
@@ -496,21 +496,21 @@ class DownloadProtectionService::CheckClientDownloadRequest
         base::Bind(&CheckClientDownloadRequest::StartTimeout, this));
   }
 
-  void StartExtractSignatureFeatures() {
+  void StartExtractFileFeatures() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(item_);  // Called directly from Start(), item should still exist.
     // Since we do blocking I/O, offload this to a worker thread.
     // The task does not need to block shutdown.
     BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
         FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::ExtractSignatureFeatures,
+        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures,
                    this, item_->GetFullPath()),
         base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   }
 
-  void ExtractSignatureFeatures(const base::FilePath& file_path) {
+  void ExtractFileFeatures(const base::FilePath& file_path) {
     base::TimeTicks start_time = base::TimeTicks::Now();
-    signature_util_->CheckSignature(file_path, &signature_info_);
+    binary_feature_extractor_->CheckSignature(file_path, &signature_info_);
     bool is_signed = (signature_info_.certificate_chain_size() > 0);
     if (is_signed) {
       VLOG(2) << "Downloaded a signed binary: " << file_path.value();
@@ -753,7 +753,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   CheckDownloadCallback callback_;
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;
-  scoped_refptr<SignatureUtil> signature_util_;
+  scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const bool pingback_enabled_;
   scoped_ptr<net::URLFetcher> fetcher_;
@@ -773,7 +773,7 @@ DownloadProtectionService::DownloadProtectionService(
     net::URLRequestContextGetter* request_context_getter)
     : request_context_getter_(request_context_getter),
       enabled_(false),
-      signature_util_(new SignatureUtil()),
+      binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
           request_context_getter, BrowserThread::GetBlockingPool())) {
@@ -805,7 +805,8 @@ void DownloadProtectionService::CheckClientDownload(
     const CheckDownloadCallback& callback) {
   scoped_refptr<CheckClientDownloadRequest> request(
       new CheckClientDownloadRequest(item, callback, this,
-                                     database_manager_, signature_util_.get()));
+                                     database_manager_,
+                                     binary_feature_extractor_.get()));
   download_requests_.insert(request);
   request->Start();
 }

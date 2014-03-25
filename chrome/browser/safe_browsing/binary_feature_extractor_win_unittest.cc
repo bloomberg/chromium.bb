@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/signature_util.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@
 
 namespace safe_browsing {
 
-class SignatureUtilWinTest : public testing::Test {
+class BinaryFeatureExtractorWinTest : public testing::Test {
  protected:
   virtual void SetUp() {
     base::FilePath source_path;
@@ -46,9 +46,10 @@ class SignatureUtilWinTest : public testing::Test {
   base::FilePath testdata_path_;
 };
 
-TEST_F(SignatureUtilWinTest, UntrustedSignedBinary) {
+TEST_F(BinaryFeatureExtractorWinTest, UntrustedSignedBinary) {
   // signed.exe is signed by an untrusted root CA.
-  scoped_refptr<SignatureUtil> signature_util(new SignatureUtil());
+  scoped_refptr<BinaryFeatureExtractor> signature_util(
+      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
   signature_util->CheckSignature(testdata_path_.Append(L"signed.exe"),
                                  &signature_info);
@@ -63,9 +64,10 @@ TEST_F(SignatureUtilWinTest, UntrustedSignedBinary) {
   EXPECT_FALSE(signature_info.trusted());
 }
 
-TEST_F(SignatureUtilWinTest, TrustedBinary) {
+TEST_F(BinaryFeatureExtractorWinTest, TrustedBinary) {
   // wow_helper.exe is signed using Google's signing certifiacte.
-  scoped_refptr<SignatureUtil> signature_util(new SignatureUtil());
+  scoped_refptr<BinaryFeatureExtractor> signature_util(
+      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
   signature_util->CheckSignature(testdata_path_.Append(L"wow_helper.exe"),
                                  &signature_info);
@@ -83,9 +85,10 @@ TEST_F(SignatureUtilWinTest, TrustedBinary) {
   EXPECT_TRUE(signature_info.trusted());
 }
 
-TEST_F(SignatureUtilWinTest, UnsignedBinary) {
+TEST_F(BinaryFeatureExtractorWinTest, UnsignedBinary) {
   // unsigned.exe has no signature information.
-  scoped_refptr<SignatureUtil> signature_util(new SignatureUtil());
+  scoped_refptr<BinaryFeatureExtractor> signature_util(
+      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
   signature_util->CheckSignature(testdata_path_.Append(L"unsigned.exe"),
                                  &signature_info);
@@ -93,9 +96,10 @@ TEST_F(SignatureUtilWinTest, UnsignedBinary) {
   EXPECT_FALSE(signature_info.has_trusted());
 }
 
-TEST_F(SignatureUtilWinTest, NonExistentBinary) {
+TEST_F(BinaryFeatureExtractorWinTest, NonExistentBinary) {
   // Test a file that doesn't exist.
-  scoped_refptr<SignatureUtil> signature_util(new SignatureUtil());
+  scoped_refptr<BinaryFeatureExtractor> signature_util(
+      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
   signature_util->CheckSignature(testdata_path_.Append(L"doesnotexist.exe"),
                                  &signature_info);

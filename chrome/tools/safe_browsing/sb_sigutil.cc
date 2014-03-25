@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/safe_browsing/signature_util.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
 // Command-line switch for the executable to extract a signature from.
@@ -37,11 +37,11 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  scoped_refptr<safe_browsing::SignatureUtil> sig_util(
-      new safe_browsing::SignatureUtil());
+  scoped_refptr<safe_browsing::BinaryFeatureExtractor> extractor(
+      new safe_browsing::BinaryFeatureExtractor());
   safe_browsing::ClientDownloadRequest_SignatureInfo signature_info;
-  sig_util->CheckSignature(cmd_line->GetSwitchValuePath(kExecutable),
-                           &signature_info);
+  extractor->CheckSignature(cmd_line->GetSwitchValuePath(kExecutable),
+                            &signature_info);
 
   std::string serialized_info = signature_info.SerializeAsString();
   int bytes_written = base::WriteFile(

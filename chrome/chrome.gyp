@@ -913,8 +913,8 @@
             'safe_browsing_proto',
           ],
           'sources': [
-            'browser/safe_browsing/signature_util.h',
-            'browser/safe_browsing/signature_util_win.cc',
+            'browser/safe_browsing/binary_feature_extractor.h',
+            'browser/safe_browsing/binary_feature_extractor_win.cc',
             'tools/safe_browsing/sb_sigutil.cc',
           ],
         },

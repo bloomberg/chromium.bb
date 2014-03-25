@@ -34,7 +34,7 @@ class X509Certificate;
 
 namespace safe_browsing {
 class DownloadFeedbackService;
-class SignatureUtil;
+class BinaryFeatureExtractor;
 
 // This class provides an asynchronous API to check whether a particular
 // client download is malicious or not.
@@ -190,8 +190,8 @@ class DownloadProtectionService {
   // Keeps track of the state of the service.
   bool enabled_;
 
-  // SignatureUtil object, may be overridden for testing.
-  scoped_refptr<SignatureUtil> signature_util_;
+  // BinaryFeatureExtractor object, may be overridden for testing.
+  scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor_;
 
   int64 download_request_timeout_ms_;
 

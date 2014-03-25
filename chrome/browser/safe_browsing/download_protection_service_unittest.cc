@@ -20,10 +20,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -95,17 +95,17 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
 
-class MockSignatureUtil : public SignatureUtil {
+class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
  public:
-  MockSignatureUtil() {}
+  MockBinaryFeatureExtractor() {}
   MOCK_METHOD2(CheckSignature, void (const base::FilePath&,
                                      ClientDownloadRequest_SignatureInfo*));
 
  protected:
-  virtual ~MockSignatureUtil() {}
+  virtual ~MockBinaryFeatureExtractor() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockSignatureUtil);
+  DISALLOW_COPY_AND_ASSIGN(MockBinaryFeatureExtractor);
 };
 }  // namespace
 
@@ -161,9 +161,9 @@ class DownloadProtectionServiceTest : public testing::Test {
     // to test that we're on the correct thread work.
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();
     sb_service_->Initialize();
-    signature_util_ = new StrictMock<MockSignatureUtil>();
+    binary_feature_extractor_ = new StrictMock<MockBinaryFeatureExtractor>();
     download_service_ = sb_service_->download_protection_service();
-    download_service_->signature_util_ = signature_util_;
+    download_service_->binary_feature_extractor_ = binary_feature_extractor_;
     download_service_->SetEnabled(true);
     base::RunLoop().RunUntilIdle();
     has_result_ = false;
@@ -311,7 +311,7 @@ class DownloadProtectionServiceTest : public testing::Test {
 
  protected:
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
-  scoped_refptr<MockSignatureUtil> signature_util_;
+  scoped_refptr<MockBinaryFeatureExtractor> binary_feature_extractor_;
   DownloadProtectionService* download_service_;
   DownloadProtectionService::DownloadCheckResult result_;
   bool has_result_;
@@ -383,7 +383,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
   EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(4);
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(4);
 
   // We should not get whilelist checks for other URLs than specified below.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -473,7 +474,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _));
 
   download_service_->CheckClientDownload(
       &item,
@@ -515,7 +516,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(6);
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(6);
 
   download_service_->CheckClientDownload(
       &item,
@@ -659,7 +661,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(1);
 
   download_service_->CheckClientDownload(
       &item,
@@ -722,7 +725,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(signature_util_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 
   // Now check with an executable in the zip file as well.
   ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
@@ -740,7 +743,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  Mock::VerifyAndClearExpectations(signature_util_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 
   // If the response is dangerous the result should also be marked as
   // dangerous.
@@ -760,7 +763,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 #else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 #endif
-  Mock::VerifyAndClearExpectations(signature_util_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
@@ -797,7 +800,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(signature_util_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
@@ -835,7 +838,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(1);
 
   EXPECT_FALSE(download_service_->IsSupportedDownload(item, a_crx));
   download_service_->CheckClientDownload(
@@ -873,7 +877,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(tmp_path, _))
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
       .WillOnce(SetCertificateContents("dummy cert data"));
   download_service_->CheckClientDownload(
       &item,
@@ -950,7 +954,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(tmp_path, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
   download_service_->CheckClientDownload(
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1082,7 +1086,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(tmp_path, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
 
   download_service_->download_request_timeout_ms_ = 10;
   download_service_->CheckClientDownload(
@@ -1123,7 +1127,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(tmp_path, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
 
   download_service_->CheckClientDownload(
       &item,
