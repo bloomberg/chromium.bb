@@ -19,17 +19,59 @@ kb-keyboard.alt-active kb-modifier-key[char=Alt] {
 }
 
 /** TODO(rsadam@): Use different assets for caps-lock and highlight **/
-.caps-locked kb-shift-key.dark .key,
+.caps-locked kb-shift-key.dark /shadow-deep/ .key,
 /**
 * Controls whether the shift key should be highlighted or not.
 * Only highlights if we are in the upper keyset, but not capslocked.
 */
-kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key .key{
+kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key /shadow-deep/ .key {
   background-image: url('images/shift-filled.svg');
 }
 
-kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key .key{
+kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key /shadow-deep/ .key {
   background-image: url('images/shift.svg');
+}
+
+kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
+kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl]  {
+  color: lightblue;
+}
+
+/** TODO(rsadam@): Move these rules to kb-row once we uprev to latest Polymer.*/
+kb-row:nth-child(2) kb-key:not(.dark):not(.active){
+  -webkit-box-shadow: inset 0px 1px #666666, inset 0px -1px #4c4c4c;
+  background-image: -webkit-linear-gradient(#5a5a5a, #515151);
+  background-size: cover;
+  border-bottom-color: #414141;
+  border-top-color: #7f7f7f;
+}
+
+kb-row:nth-child(3) kb-key:not(.dark):not(.active){
+  -webkit-box-shadow: inset 0px 1px #5d5d5d, inset 0px -1px #444444;
+  background-image: -webkit-linear-gradient(#505050, #494949);
+  background-size: cover;
+  border-bottom-color: #3a3a3a;
+  border-top-color: #787878;
+}
+
+kb-row:nth-child(n+3) kb-key:not(.dark):not(.active){
+  -webkit-box-shadow: inset 0px 1px #565656, inset 0px -1px #434343;
+  background-image: -webkit-linear-gradient(#484848, #474747);
+  background-size: cover;
+  border-bottom-color: #393939;
+  border-top-color: #717171;
+}
+
+kb-row:nth-child(2) kb-key:not([invert]) /shadow-deep/ .hint {
+  color: #2C2C2C;
+}
+
+kb-row:nth-child(3) kb-key:not([invert]) /shadow-deep/ .hint {
+  color: #272727;
+}
+
+kb-row:nth-child(n+3) kb-key:not([invert]) /shadow-deep/ .hint {
+  color: #232323;
 }
 
 .dark {
@@ -49,17 +91,4 @@ kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key .key{
   background-size: cover;
   border-bottom-color: #5b5b5b;
   border-top-color: #a4a4a4;
-}
-
-/**
- * The microphone key is handled separately from other images since the image
- * displayed changes depending on whether it's pressed or not.
- */
-.microphone .key {
-  background-image: url('images/microphone.svg');
-  background-position: 10%;
-}
-
-.audio .microphone .key {
-  background-image: url('images/microphone-green.svg');
 }
