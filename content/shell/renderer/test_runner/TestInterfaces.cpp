@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
-#include "content/shell/renderer/test_runner/EventSender.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
+#include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/text_input_controller.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
@@ -27,7 +27,7 @@ namespace WebTestRunner {
 
 TestInterfaces::TestInterfaces()
     : m_accessibilityController(new content::AccessibilityController())
-    , m_eventSender(new EventSender(this))
+    , m_eventSender(new content::EventSender(this))
     , m_gamepadController(new content::GamepadController())
     , m_textInputController(new content::TextInputController())
     , m_testRunner(new content::TestRunner(this))
@@ -44,13 +44,13 @@ TestInterfaces::TestInterfaces()
 TestInterfaces::~TestInterfaces()
 {
     m_accessibilityController->SetWebView(0);
-    m_eventSender->setWebView(0);
+    m_eventSender->SetWebView(0);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->SetWebView(NULL);
     m_testRunner->SetWebView(0, 0);
 
     m_accessibilityController->SetDelegate(0);
-    m_eventSender->setDelegate(0);
+    m_eventSender->SetDelegate(0);
     m_gamepadController->SetDelegate(0);
     // m_textInputController doesn't depend on WebTestDelegate.
     m_testRunner->SetDelegate(0);
@@ -60,7 +60,7 @@ void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 {
     m_proxy = proxy;
     m_accessibilityController->SetWebView(webView);
-    m_eventSender->setWebView(webView);
+    m_eventSender->SetWebView(webView);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->SetWebView(webView);
     m_testRunner->SetWebView(webView, proxy);
@@ -69,7 +69,7 @@ void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 void TestInterfaces::setDelegate(WebTestDelegate* delegate)
 {
     m_accessibilityController->SetDelegate(delegate);
-    m_eventSender->setDelegate(delegate);
+    m_eventSender->SetDelegate(delegate);
     m_gamepadController->SetDelegate(delegate);
     // m_textInputController doesn't depend on WebTestDelegate.
     m_testRunner->SetDelegate(delegate);
@@ -79,7 +79,7 @@ void TestInterfaces::setDelegate(WebTestDelegate* delegate)
 void TestInterfaces::bindTo(WebFrame* frame)
 {
     m_accessibilityController->Install(frame);
-    m_eventSender->bindToJavascript(frame, WebString::fromUTF8("eventSender"));
+    m_eventSender->Install(frame);
     m_gamepadController->Install(frame);
     m_textInputController->Install(frame);
     m_testRunner->Install(frame);
@@ -88,7 +88,7 @@ void TestInterfaces::bindTo(WebFrame* frame)
 void TestInterfaces::resetTestHelperControllers()
 {
     m_accessibilityController->Reset();
-    m_eventSender->reset();
+    m_eventSender->Reset();
     m_gamepadController->Reset();
     // m_textInputController doesn't have any state to reset.
     WebCache::clear();
@@ -157,7 +157,7 @@ content::AccessibilityController* TestInterfaces::accessibilityController()
     return m_accessibilityController.get();
 }
 
-EventSender* TestInterfaces::eventSender()
+content::EventSender* TestInterfaces::eventSender()
 {
     return m_eventSender.get();
 }

@@ -459,7 +459,7 @@ WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
 #endif
 
 // Convert a character string to a Windows virtual key code. Adapted from
-// src/third_party/WebKit/Tools/DumpRenderTree/chromium/EventSender.cpp. This
+// src/content/shell/renderer/test_runner/event_sender.cc. This
 // is used by CreateSimulatedWebInputEvents to convert keyboard events.
 void GetKeyCode(const std::string& char_text,
                 WebUChar* code,
@@ -606,7 +606,7 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
 }
 
 // Generate a coherent sequence of input events to simulate a user event.
-// From src/third_party/WebKit/Tools/DumpRenderTree/chromium/EventSender.cpp.
+// From src/content/shell/renderer/test_runner/event_sender.cc.
 std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
     const ppapi::InputEventData& event,
     int plugin_x,
