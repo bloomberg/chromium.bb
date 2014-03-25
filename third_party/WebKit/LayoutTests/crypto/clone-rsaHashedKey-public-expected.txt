@@ -1,4 +1,4 @@
-Tests structured cloning of RSA keys (with a hash)
+Tests structured cloning of RSA public keys (with a hash)
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
