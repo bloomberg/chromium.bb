@@ -27,7 +27,7 @@ class _RobohornetProMeasurement(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript('ToggleRoboHornet()')
     tab.WaitForJavaScriptExpression(
         'document.getElementById("results").innerHTML.indexOf("Total") != -1',
-        120)
+        600)
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)

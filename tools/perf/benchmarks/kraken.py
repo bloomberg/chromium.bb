@@ -30,7 +30,7 @@ class _KrakenMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.WaitForJavaScriptExpression(
-        'document.title.indexOf("Results") != -1', 500)
+        'document.title.indexOf("Results") != -1', 700)
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
