@@ -30,7 +30,15 @@ class GamepadController : public base::SupportsWeakPtr<GamepadController> {
  private:
   friend class GamepadControllerBindings;
 
+  // TODO(b.kelemen): for historical reasons Connect just initializes the
+  // object. The 'gamepadconnected' event will be dispatched via
+  // DispatchConnected. Tests for connected events need to first connect(),
+  // then set the gamepad data and finally call dispatchConnected().
+  // We should consider renaming Connect to Init and DispatchConnected to
+  // Connect and at the same time updating all the gamepad tests.
   void Connect(int index);
+  void DispatchConnected(int index);
+
   void Disconnect(int index);
   void SetId(int index, const std::string& src);
   void SetButtonCount(int index, int buttons);

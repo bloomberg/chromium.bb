@@ -11,6 +11,7 @@
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
+class WebGamepad;
 class WebGamepads;
 struct WebSize;
 }
@@ -41,6 +42,12 @@ void EnableWebTestProxyCreation(const base::Callback<
 // Sets the WebGamepads that should be returned by
 // WebKitPlatformSupport::sampleGamepads().
 void SetMockGamepads(const blink::WebGamepads& pads);
+
+// Notifies blink about a new gamepad.
+void MockGamepadConnected(int index, const blink::WebGamepad& pad);
+
+// Notifies blink that a gamepad has been disconnected.
+void MockGamepadDisconnected(int index, const blink::WebGamepad& pad);
 
 // Sets WebDeviceMotionData that should be used when registering
 // a listener through WebKitPlatformSupport::setDeviceMotionListener().

@@ -38,6 +38,7 @@ class GamepadControllerBindings
       v8::Isolate* isolate) OVERRIDE;
 
   void Connect(int index);
+  void DispatchConnected(int index);
   void Disconnect(int index);
   void SetId(int index, const std::string& src);
   void SetButtonCount(int index, int buttons);
@@ -82,6 +83,7 @@ gin::ObjectTemplateBuilder GamepadControllerBindings::GetObjectTemplateBuilder(
   return gin::Wrappable<GamepadControllerBindings>::GetObjectTemplateBuilder(
              isolate)
       .SetMethod("connect", &GamepadControllerBindings::Connect)
+      .SetMethod("dispatchConnected", &GamepadControllerBindings::DispatchConnected)
       .SetMethod("disconnect", &GamepadControllerBindings::Disconnect)
       .SetMethod("setId", &GamepadControllerBindings::SetId)
       .SetMethod("setButtonCount", &GamepadControllerBindings::SetButtonCount)
@@ -93,6 +95,11 @@ gin::ObjectTemplateBuilder GamepadControllerBindings::GetObjectTemplateBuilder(
 void GamepadControllerBindings::Connect(int index) {
   if (controller_)
     controller_->Connect(index);
+}
+
+void GamepadControllerBindings::DispatchConnected(int index) {
+  if (controller_)
+    controller_->DispatchConnected(index);
 }
 
 void GamepadControllerBindings::Disconnect(int index) {
@@ -158,17 +165,28 @@ void GamepadController::Connect(int index) {
     delegate_->setGamepadData(gamepads_);
 }
 
+void GamepadController::DispatchConnected(int index) {
+  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+    return;
+  const WebGamepad& pad = gamepads_.items[index];
+  if (pad.connected && delegate_)
+    delegate_->didConnectGamepad(index, pad);
+}
+
 void GamepadController::Disconnect(int index) {
   if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
     return;
-  gamepads_.items[index].connected = false;
+  WebGamepad& pad = gamepads_.items[index];
+  pad.connected = false;
   gamepads_.length = 0;
   for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     if (gamepads_.items[i].connected)
       gamepads_.length = i + 1;
   }
-  if (delegate_)
+  if (delegate_) {
     delegate_->setGamepadData(gamepads_);
+    delegate_->didDisconnectGamepad(index, pad);
+  }
 }
 
 void GamepadController::SetId(int index, const std::string& src) {

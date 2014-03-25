@@ -120,6 +120,7 @@ using blink::WebBlobRegistry;
 using blink::WebDatabaseObserver;
 using blink::WebFileInfo;
 using blink::WebFileSystem;
+using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;
@@ -136,6 +137,7 @@ using blink::WebVector;
 namespace content {
 
 static bool g_sandbox_enabled = true;
+static blink::WebGamepadListener* web_gamepad_listener = NULL;
 base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
     LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceMotionData>::Leaky
@@ -915,6 +917,11 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   }
 }
 
+void RendererWebKitPlatformSupportImpl::setGamepadListener(
+      blink::WebGamepadListener* listener) {
+  web_gamepad_listener = listener;
+}
+
 //------------------------------------------------------------------------------
 
 WebRTCPeerConnectionHandler*
@@ -964,6 +971,22 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
 void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
     const WebGamepads& pads) {
   g_test_gamepads.Get() = pads;
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::MockGamepadConnected(
+    int index,
+    const WebGamepad& pad) {
+  if (web_gamepad_listener)
+    web_gamepad_listener->didConnectGamepad(index, pad);
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::MockGamepadDisconnected(
+    int index,
+    const WebGamepad& pad) {
+  if (web_gamepad_listener)
+    web_gamepad_listener->didDisconnectGamepad(index, pad);
 }
 
 //------------------------------------------------------------------------------

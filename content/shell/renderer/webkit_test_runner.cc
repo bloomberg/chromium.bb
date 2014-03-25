@@ -236,6 +236,18 @@ void WebKitTestRunner::setGamepadData(const WebGamepads& gamepads) {
   SetMockGamepads(gamepads);
 }
 
+void WebKitTestRunner::didConnectGamepad(
+    int index,
+    const blink::WebGamepad& gamepad) {
+  MockGamepadConnected(index, gamepad);
+}
+
+void WebKitTestRunner::didDisconnectGamepad(
+    int index,
+    const blink::WebGamepad& gamepad) {
+  MockGamepadDisconnected(index, gamepad);
+}
+
 void WebKitTestRunner::setDeviceMotionData(const WebDeviceMotionData& data) {
   SetMockDeviceMotionData(data);
 }

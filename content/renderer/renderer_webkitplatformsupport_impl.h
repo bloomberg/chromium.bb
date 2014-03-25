@@ -126,7 +126,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       createMIDIAccessor(blink::WebMIDIAccessorClient* client);
 
   virtual blink::WebBlobRegistry* blobRegistry();
-  virtual void sampleGamepads(blink::WebGamepads&);
+  virtual void sampleGamepads(blink::WebGamepads&) OVERRIDE;
+  virtual void setGamepadListener(blink::WebGamepadListener*) OVERRIDE;
   virtual blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
   virtual blink::WebMediaStreamCenter* createMediaStreamCenter(
@@ -169,6 +170,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   // Set WebGamepads to return when sampleGamepads() is invoked.
   static void SetMockGamepadsForTesting(const blink::WebGamepads& pads);
+
+  // Notifies blink::WebGamepadListener about a new gamepad if a listener
+  // has been set via setGamepadListener.
+  static void MockGamepadConnected(int index, const blink::WebGamepad& pad);
+
+  // Notifies blink::WebGamepadListener that a gamepad has been disconnected if
+  // a listener has been set via setGamepadListener.
+  static void MockGamepadDisconnected(int index, const blink::WebGamepad& pad);
+
   // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
   static void SetMockDeviceMotionDataForTesting(
       const blink::WebDeviceMotionData& data);
