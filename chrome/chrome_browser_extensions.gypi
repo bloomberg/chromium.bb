@@ -609,6 +609,8 @@
         'browser/extensions/blacklist_state_fetcher.h',
         'browser/extensions/blob_reader.cc',
         'browser/extensions/blob_reader.h',
+        'browser/extensions/bookmark_app_helper.cc',
+        'browser/extensions/bookmark_app_helper.h',
         'browser/extensions/browser_action_test_util.h',
         'browser/extensions/browser_context_keyed_service_factories.cc',
         'browser/extensions/browser_context_keyed_service_factories.h',

@@ -35,6 +35,7 @@ class Image;
 }
 
 namespace extensions {
+class BookmarkAppHelper;
 class Extension;
 class LocationBarController;
 class ScriptExecutor;
@@ -85,21 +86,6 @@ class TabHelper : public content::WebContentsObserver,
 
     TabHelper* tab_helper_;
   };
-
-  // This finds the closest not-smaller bitmap in |bitmaps| for each size in
-  // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
-  // which contains only bitmaps of a size in |sizes| and at most one bitmap of
-  // each size.
-  static std::map<int, SkBitmap> ConstrainBitmapsToSizes(
-      const std::vector<SkBitmap>& bitmaps,
-      const std::set<int>& sizes);
-
-  // Adds a square container icon of |output_size| pixels to |bitmaps| by
-  // centering the biggest smaller icon in |bitmaps| and drawing a rounded
-  // rectangle with strip of the that icon's dominant color at the bottom.
-  // Does nothing if an icon of |output_size| already exists in |bitmaps|.
-  static void GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
-                                    int output_size);
 
   virtual ~TabHelper();
 
@@ -180,11 +166,9 @@ class TabHelper : public content::WebContentsObserver,
   explicit TabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabHelper>;
 
-  // Creates a hosted app for the current tab. Requires the |web_app_info_| to
-  // be populated.
-  void CreateHostedApp();
-  void FinishCreateHostedApp(
-      bool success, const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
+  // Displays UI for completion of creating a bookmark hosted app.
+  void FinishCreateBookmarkApp(const extensions::Extension* extension,
+                               const WebApplicationInfo& web_app_info);
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(
@@ -283,7 +267,7 @@ class TabHelper : public content::WebContentsObserver,
 
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
-  scoped_ptr<FaviconDownloader> favicon_downloader_;
+  scoped_ptr<BookmarkAppHelper> bookmark_app_helper_;
 
   Profile* profile_;
 
