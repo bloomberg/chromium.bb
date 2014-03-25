@@ -254,8 +254,7 @@ class NotificationsObserver : public content::NotificationObserver {
 class MockService : public TestExtensionService {
  public:
   explicit MockService(TestExtensionPrefs* prefs)
-      : prefs_(prefs), pending_extension_manager_(*this) {
-  }
+      : prefs_(prefs), pending_extension_manager_(*this, &profile_) {}
 
   virtual ~MockService() {}
 
@@ -300,8 +299,8 @@ class MockService : public TestExtensionService {
 
  protected:
   TestExtensionPrefs* const prefs_;
-  PendingExtensionManager pending_extension_manager_;
   TestingProfile profile_;
+  PendingExtensionManager pending_extension_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockService);

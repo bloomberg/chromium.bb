@@ -18,6 +18,10 @@ namespace base {
 class Version;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 FORWARD_DECLARE_TEST(ExtensionServiceTest,
                      UpdatePendingExtensionAlreadyInstalled);
 
@@ -43,7 +47,8 @@ class PendingExtensionManager {
   // extensions we are managing. The service creates an instance of
   // this class on construction, and destroys it on destruction.
   // The service remains valid over the entire lifetime of this class.
-  explicit PendingExtensionManager(const ExtensionServiceInterface& service);
+  explicit PendingExtensionManager(const ExtensionServiceInterface& service,
+                                   content::BrowserContext* context);
   ~PendingExtensionManager();
 
   // TODO(skerner): Many of these methods can be private once code in
@@ -139,6 +144,9 @@ class PendingExtensionManager {
   // and destroyed with |service_|. We only use methods from the interface
   // ExtensionServiceInterface.
   const ExtensionServiceInterface& service_;
+
+  // The BrowserContext with which the manager is associated.
+  content::BrowserContext* context_;
 
   PendingExtensionList pending_extension_list_;
 

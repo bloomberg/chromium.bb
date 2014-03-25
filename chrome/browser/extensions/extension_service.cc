@@ -362,7 +362,7 @@ ExtensionService::ExtensionService(Profile* profile,
       blacklist_(blacklist),
       extension_sync_service_(NULL),
       registry_(extensions::ExtensionRegistry::Get(profile)),
-      pending_extension_manager_(*this),
+      pending_extension_manager_(*this, profile),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
@@ -949,11 +949,6 @@ bool ExtensionService::IsExtensionEnabled(
   // enabled unless otherwise noted.
   return !extension_prefs_->IsExtensionDisabled(extension_id) &&
          !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
-}
-
-bool ExtensionService::IsExternalExtensionUninstalled(
-    const std::string& extension_id) const {
-  return extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 
 void ExtensionService::EnableExtension(const std::string& extension_id) {
@@ -2122,7 +2117,7 @@ void ExtensionService::OnExtensionInstalled(
     // We explicitly want to re-enable an uninstalled external
     // extension; if we're here, that means the user is manually
     // installing the extension.
-    if (IsExternalExtensionUninstalled(id)) {
+    if (extension_prefs_->IsExternalExtensionUninstalled(id)) {
       initial_enable = true;
     }
   }

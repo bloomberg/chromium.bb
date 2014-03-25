@@ -98,8 +98,6 @@ class ExtensionServiceInterface
   virtual void FinishDelayedInstallation(const std::string& extension_id) = 0;
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
-  virtual bool IsExternalExtensionUninstalled(
-      const std::string& extension_id) const = 0;
 
   virtual void CheckManagementPolicy() = 0;
 
@@ -247,8 +245,6 @@ class ExtensionService
                                   base::string16* error);
 
   virtual bool IsExtensionEnabled(
-      const std::string& extension_id) const OVERRIDE;
-  virtual bool IsExternalExtensionUninstalled(
       const std::string& extension_id) const OVERRIDE;
 
   // Enables the extension.  If the extension is already enabled, does

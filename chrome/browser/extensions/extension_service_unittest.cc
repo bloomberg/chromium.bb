@@ -5756,7 +5756,8 @@ TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   UninstallExtension(good_crx, false);
-  EXPECT_TRUE(service_->IsExternalExtensionUninstalled(good_crx));
+  EXPECT_TRUE(ExtensionPrefs::Get(profile_.get())
+                  ->IsExternalExtensionUninstalled(good_crx));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::AppSpecifics* app_specifics = specifics.mutable_app();
@@ -5775,7 +5776,8 @@ TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
   list[0] = sync_change;
 
   extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_TRUE(service_->IsExternalExtensionUninstalled(good_crx));
+  EXPECT_TRUE(ExtensionPrefs::Get(profile_.get())
+                  ->IsExternalExtensionUninstalled(good_crx));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {

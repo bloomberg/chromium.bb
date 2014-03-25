@@ -10,6 +10,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -31,9 +32,9 @@ std::string GetVersionString(const Version& version) {
 namespace extensions {
 
 PendingExtensionManager::PendingExtensionManager(
-    const ExtensionServiceInterface& service)
-    : service_(service) {
-}
+    const ExtensionServiceInterface& service,
+    content::BrowserContext* context)
+    : service_(service), context_(context) {}
 
 PendingExtensionManager::~PendingExtensionManager() {}
 
@@ -168,7 +169,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
     // If the new location has higher priority than the location of an existing
     // extension, let the update process overwrite the existing extension.
   } else {
-    if (service_.IsExternalExtensionUninstalled(id))
+    if (ExtensionPrefs::Get(context_)->IsExternalExtensionUninstalled(id))
       return false;
 
     if (extension) {

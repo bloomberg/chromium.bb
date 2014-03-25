@@ -43,8 +43,6 @@ class TestExtensionService : public ExtensionServiceInterface {
       const std::string& extension_id) OVERRIDE;
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;
-  virtual bool IsExternalExtensionUninstalled(
-      const std::string& extension_id) const OVERRIDE;
 
   virtual void CheckManagementPolicy() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;

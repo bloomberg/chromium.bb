@@ -385,7 +385,8 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
 
   // Extension from sync was uninstalled by the user as external extensions.
   // Honor user choice and skip installation/enabling.
-  if (extension_service_->IsExternalExtensionUninstalled(id)) {
+  if (extensions::ExtensionPrefs::Get(profile_)
+          ->IsExternalExtensionUninstalled(id)) {
     LOG(WARNING) << "Extension with id " << id
                  << " from sync was uninstalled as external extension";
     return true;
