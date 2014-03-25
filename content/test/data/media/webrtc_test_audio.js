@@ -53,7 +53,7 @@ function verifyIsSilent(samples) {
     average += samples[i] / samples.length;
 
   console.log('Average audio level: ' + average);
-  if (average > 10)
+  if (average > 500)
     throw 'Expected silence, but avg audio level was ' + average;
 }
 
