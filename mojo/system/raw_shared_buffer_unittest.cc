@@ -4,6 +4,7 @@
 
 #include "mojo/system/raw_shared_buffer.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,7 +113,47 @@ TEST(RawSharedBufferTest, InvalidArguments) {
   EXPECT_FALSE(buffer->Map(51, 50));
 }
 
-// TODO(vtl): Check that mappings can outlive the shared buffer.
+// Tests that separate mappings get distinct addresses.
+// Note: It's not inconceivable that the OS could ref-count identical mappings
+// and reuse the same address, in which case we'd have to be more careful about
+// using the address as the key for unmapping.
+TEST(RawSharedBufferTest, MappingsDistinct) {
+  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
+  scoped_ptr<RawSharedBuffer::Mapping> mapping1(buffer->Map(0, 100));
+  scoped_ptr<RawSharedBuffer::Mapping> mapping2(buffer->Map(0, 100));
+  EXPECT_NE(mapping1->base(), mapping2->base());
+}
+
+TEST(RawSharedBufferTest, BufferZeroInitialized) {
+  static const size_t kSizes[] = { 10, 100, 1000, 10000, 100000 };
+  for (size_t i = 0; i < arraysize(kSizes); i++) {
+    scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kSizes[i]));
+    scoped_ptr<RawSharedBuffer::Mapping> mapping(buffer->Map(0, kSizes[i]));
+    for (size_t j = 0; j < kSizes[i]; j++) {
+      // "Assert" instead of "expect" so we don't spam the output with thousands
+      // of failures if we fail.
+      ASSERT_EQ('\0', static_cast<char*>(mapping->base())[j])
+          << "size " << kSizes[i] << ", offset " << j;
+    }
+  }
+}
+
+TEST(RawSharedBufferTest, MappingsOutliveBuffer) {
+  scoped_ptr<RawSharedBuffer::Mapping> mapping1;
+  scoped_ptr<RawSharedBuffer::Mapping> mapping2;
+
+  {
+    scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
+    mapping1 = buffer->Map(0, 100).Pass();
+    mapping2 = buffer->Map(50, 50).Pass();
+    static_cast<char*>(mapping1->base())[50] = 'x';
+  }
+
+  EXPECT_EQ('x', static_cast<char*>(mapping2->base())[0]);
+
+  static_cast<char*>(mapping2->base())[1] = 'y';
+  EXPECT_EQ('y', static_cast<char*>(mapping1->base())[51]);
+}
 
 }  // namespace
 }  // namespace system
