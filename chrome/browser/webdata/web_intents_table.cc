@@ -41,9 +41,7 @@ WebDatabaseTable::TypeKey WebIntentsTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool WebIntentsTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
-
+bool WebIntentsTable::CreateTablesIfNecessary() {
   if (!db_->DoesTableExist("web_intents")) {
     if (!db_->Execute("CREATE TABLE web_intents ("
                       " service_url LONGVARCHAR,"
@@ -105,19 +103,19 @@ bool WebIntentsTable::MigrateToVersion(int version,
 // Updates the table by way of renaming the old tables, rerunning
 // the Init method, then selecting old values into the new tables.
 bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
+  // If the old table doesn't exist, there's nothing to migrate.
+  if (!db_->DoesTableExist("web_intents"))
+    return true;
 
-  if (!db_->Execute("ALTER TABLE web_intents RENAME TO old_web_intents")) {
-    DLOG(WARNING) << "Could not backup web_intents table.";
+  if (!db_->Execute("ALTER TABLE web_intents RENAME TO old_web_intents"))
     return false;
-  }
 
   if (!db_->Execute("ALTER TABLE web_intents_defaults"
-                    " RENAME TO old_web_intents_defaults")) {
-    DLOG(WARNING) << "Could not backup web_intents_defaults table.";
+                    " RENAME TO old_web_intents_defaults"))
     return false;
-  }
 
-  if (!Init(db_, meta_table_)) return false;
+  if (!CreateTablesIfNecessary())
+    return false;
 
   int error = db_->ExecuteAndReturnErrorCode(
       "INSERT INTO web_intents"

@@ -32,8 +32,7 @@ WebDatabaseTable::TypeKey TokenServiceTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool TokenServiceTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
+bool TokenServiceTable::CreateTablesIfNecessary() {
   if (!db_->DoesTableExist("token_service")) {
     if (!db_->Execute("CREATE TABLE token_service ("
                       "service VARCHAR PRIMARY KEY NOT NULL,"

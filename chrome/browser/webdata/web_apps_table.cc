@@ -31,9 +31,7 @@ WebDatabaseTable::TypeKey WebAppsTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool WebAppsTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
-
+bool WebAppsTable::CreateTablesIfNecessary() {
   return (InitWebAppIconsTable() && InitWebAppsTable());
 }
 

@@ -156,8 +156,7 @@ WebDatabaseTable::TypeKey KeywordTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool KeywordTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
+bool KeywordTable::CreateTablesIfNecessary() {
   return db_->DoesTableExist("keywords") ||
       db_->Execute("CREATE TABLE keywords ("
                    "id INTEGER PRIMARY KEY,"

@@ -380,8 +380,7 @@ WebDatabaseTable::TypeKey AutofillTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool AutofillTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
+bool AutofillTable::CreateTablesIfNecessary() {
   return (InitMainTable() && InitCreditCardsTable() && InitProfilesTable() &&
           InitProfileNamesTable() && InitProfileEmailsTable() &&
           InitProfilePhonesTable() && InitProfileTrashTable());
@@ -1330,6 +1329,24 @@ bool AutofillTable::InitProfileTrashTable() {
 }
 
 bool AutofillTable::MigrateToVersion22ClearAutofillEmptyValueElements() {
+  if (!db_->DoesTableExist("autofill") &&
+      (!db_->Execute("CREATE TABLE autofill ("
+                     "  name VARCHAR,"
+                     "  value VARCHAR,"
+                     "  value_lower VARCHAR,"
+                     "  pair_id INTEGER PRIMARY KEY,"
+                     "  count INTEGER DEFAULT 1)") ||
+       !db_->Execute("CREATE INDEX autofill_name ON autofill (name)") ||
+       !db_->Execute("CREATE INDEX autofill_name_value_lower ON"
+                     "  autofill (name, value_lower)") ||
+       !db_->Execute("CREATE TABLE autofill_dates ("
+                     "  pair_id INTEGER DEFAULT 0,"
+                     "  date_created INTEGER DEFAULT 0)") ||
+       !db_->Execute("CREATE INDEX autofill_dates_pair_id ON"
+                     "  autofill (pair_id)")))
+    return false;
+
+
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT pair_id FROM autofill WHERE TRIM(value) = \"\""));
   if (!s.is_valid())
@@ -1386,11 +1403,46 @@ bool AutofillTable::MigrateToVersion22ClearAutofillEmptyValueElements() {
 // the existence of the columns only AFTER we've executed the commands
 // to add them.
 bool AutofillTable::MigrateToVersion23AddCardNumberEncryptedColumn() {
+  if (!db_->DoesTableExist("autofill_profiles") &&
+      (!db_->Execute("CREATE TABLE autofill_profiles ( "
+                     "label VARCHAR, "
+                     "unique_id INTEGER PRIMARY KEY, "
+                     "first_name VARCHAR, "
+                     "middle_name VARCHAR, "
+                     "last_name VARCHAR, "
+                     "email VARCHAR, "
+                     "company_name VARCHAR, "
+                     "address_line_1 VARCHAR, "
+                     "address_line_2 VARCHAR, "
+                     "city VARCHAR, "
+                     "state VARCHAR, "
+                     "zipcode VARCHAR, "
+                     "country VARCHAR, "
+                     "phone VARCHAR, "
+                     "fax VARCHAR)") ||
+       !db_->Execute("CREATE INDEX autofill_profiles_label_index"
+                     "  ON autofill_profiles (label)")))
+    return false;
+
+  if (!db_->DoesTableExist("credit_cards") &&
+      (!db_->Execute("CREATE TABLE credit_cards ( "
+                     "label VARCHAR, "
+                     "unique_id INTEGER PRIMARY KEY, "
+                     "name_on_card VARCHAR, "
+                     "type VARCHAR, "
+                     "card_number VARCHAR, "
+                     "expiration_month INTEGER, "
+                     "expiration_year INTEGER, "
+                     "verification_code VARCHAR, "
+                     "billing_address VARCHAR, "
+                     "shipping_address VARCHAR)") ||
+       !db_->Execute("CREATE INDEX credit_cards_label_index"
+                     "  ON credit_cards (label)")))
+    return false;
+
   if (!db_->DoesColumnExist("credit_cards", "card_number_encrypted")) {
     if (!db_->Execute("ALTER TABLE credit_cards ADD COLUMN "
                       "card_number_encrypted BLOB DEFAULT NULL")) {
-      LOG(WARNING) << "Could not add card_number_encrypted to "
-                      "credit_cards table.";
       return false;
     }
   }
@@ -1398,8 +1450,6 @@ bool AutofillTable::MigrateToVersion23AddCardNumberEncryptedColumn() {
   if (!db_->DoesColumnExist("credit_cards", "verification_code_encrypted")) {
     if (!db_->Execute("ALTER TABLE credit_cards ADD COLUMN "
                       "verification_code_encrypted BLOB DEFAULT NULL")) {
-      LOG(WARNING) << "Could not add verification_code_encrypted to "
-                      "credit_cards table.";
       return false;
     }
   }
@@ -1723,6 +1773,27 @@ bool AutofillTable::MigrateToVersion32UpdateProfilesAndCreditCards() {
 // schema is in place because the table was newly created when migrating
 // from a pre-version-22 database.
 bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
+  if (!db_->DoesTableExist("autofill_profile_names") &&
+      !db_->Execute("CREATE TABLE autofill_profile_names ( "
+                    "guid VARCHAR, "
+                    "first_name VARCHAR, "
+                    "middle_name VARCHAR, "
+                    "last_name VARCHAR)"))
+    return false;
+
+  if (!db_->DoesTableExist("autofill_profile_emails") &&
+      !db_->Execute("CREATE TABLE autofill_profile_emails ( "
+                    "guid VARCHAR, "
+                    "email VARCHAR)"))
+    return false;
+
+  if (!db_->DoesTableExist("autofill_profile_phones") &&
+      !db_->Execute("CREATE TABLE autofill_profile_phones ( "
+                    "guid VARCHAR, "
+                    "type INTEGER DEFAULT 0, "
+                    "number VARCHAR)"))
+    return false;
+
   if (db_->DoesColumnExist("autofill_profiles", "first_name")) {
     // Create autofill_profiles_temp table that will receive the data.
     if (!db_->DoesTableExist("autofill_profiles_temp")) {
@@ -1880,6 +1951,10 @@ bool AutofillTable::MigrateToVersion35GreatBritainCountryCodes() {
 
 // Merge and cull older profiles where possible.
 bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
+  if (!db_->DoesTableExist("autofill_profiles_trash") &&
+      !db_->Execute("CREATE TABLE autofill_profiles_trash (guid VARCHAR)"))
+    return false;
+
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, date_modified FROM autofill_profiles"));
 

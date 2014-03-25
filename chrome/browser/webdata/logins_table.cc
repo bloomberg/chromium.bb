@@ -29,9 +29,7 @@ WebDatabaseTable::TypeKey LoginsTable::GetTypeKey() const {
   return GetKey();
 }
 
-bool LoginsTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
-  WebDatabaseTable::Init(db, meta_table);
-
+bool LoginsTable::CreateTablesIfNecessary() {
   if (db_->DoesTableExist("logins")) {
     // We don't check for success. It doesn't matter that much.
     // If we fail we'll just try again later anyway.

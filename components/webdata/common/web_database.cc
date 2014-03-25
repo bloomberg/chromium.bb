@@ -101,13 +101,8 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   }
 
   // Initialize the tables.
-  for (TableMap::iterator it = tables_.begin();
-       it != tables_.end();
-       ++it) {
-    if (!it->second->Init(&db_, &meta_table_)) {
-      LOG(WARNING) << "Unable to initialize the web database.";
-      return sql::INIT_FAILURE;
-    }
+  for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
+    it->second->Init(&db_, &meta_table_);
   }
 
   // If the file on disk is an older database version, bring it up to date.
@@ -116,6 +111,17 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   sql::InitStatus migration_status = MigrateOldVersionsAsNeeded();
   if (migration_status != sql::INIT_OK)
     return migration_status;
+
+  // Create the desired SQL tables if they do not already exist.
+  // It's important that this happen *after* the migration code runs.
+  // Otherwise, the migration code would have to explicitly check for empty
+  // tables created in the new format, and skip the migration in that case.
+  for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
+    if (!it->second->CreateTablesIfNecessary()) {
+      LOG(WARNING) << "Unable to initialize the web database.";
+      return sql::INIT_FAILURE;
+    }
+  }
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
@@ -140,8 +146,8 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
     // migrate. If we do encounter such a legacy database, we will need a
     // better solution to handle it (i.e., pop up a dialog to tell the user,
     // erase all their prefs and start over, etc.).
-    LOG(WARNING) << "Web database version " << current_version <<
-        " is too old to handle.";
+    LOG(WARNING) << "Web database version " << current_version
+                 << " is too old to handle.";
     NOTREACHED();
     return sql::INIT_FAILURE;
   }
@@ -150,9 +156,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
        next_version <= kCurrentVersionNumber;
        ++next_version) {
     // Give each table a chance to migrate to this version.
-    for (TableMap::iterator it = tables_.begin();
-         it != tables_.end();
-         ++it) {
+    for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
       // Any of the tables may set this to true, but by default it is false.
       bool update_compatible_version = false;
       if (!it->second->MigrateToVersion(next_version,

@@ -29,11 +29,12 @@ class WEBDATA_EXPORT WebDatabaseTable {
   // Retrieves the TypeKey for the concrete subtype.
   virtual TypeKey GetTypeKey() const = 0;
 
-  // Attempts to initialize the table and returns true if successful.
-  //
-  // The base class stores the members passed and always return true;
-  // subclasses may perform other initialization as needed.
-  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table);
+  // Stores the passed members as instance variables.
+  void Init(sql::Connection* db, sql::MetaTable* meta_table);
+
+  // Create all of the expected SQL tables if they do not already exist.
+  // Returns true on success, false on failure.
+  virtual bool CreateTablesIfNecessary() = 0;
 
   // In order to encourage developers to think about sync when adding or
   // or altering new tables, this method must be implemented. Please get in

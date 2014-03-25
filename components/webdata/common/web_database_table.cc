@@ -4,14 +4,10 @@
 
 #include "components/webdata/common/web_database_table.h"
 
-WebDatabaseTable::WebDatabaseTable() : db_(NULL), meta_table_(NULL) {
-}
+WebDatabaseTable::WebDatabaseTable() : db_(NULL), meta_table_(NULL) {}
+WebDatabaseTable::~WebDatabaseTable() {}
 
-WebDatabaseTable::~WebDatabaseTable() {
-}
-
-bool WebDatabaseTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
+void WebDatabaseTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
   db_ = db;
   meta_table_ = meta_table;
-  return true;
 }

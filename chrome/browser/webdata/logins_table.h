@@ -29,7 +29,7 @@ class LoginsTable : public WebDatabaseTable {
   static LoginsTable* FromWebDatabase(WebDatabase* db);
 
   virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
-  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
+  virtual bool CreateTablesIfNecessary() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
                                 bool* update_compatible_version) OVERRIDE;
