@@ -113,9 +113,8 @@ void CloseAllBrowsers() {
   // If there are no browsers and closing the last browser would quit the
   // application, send the APP_TERMINATING action here. Otherwise, it will be
   // sent by RemoveBrowser() when the last browser has closed.
-  if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
-      (chrome::GetTotalBrowserCount() == 0 &&
-       (browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive()))) {
+  if (chrome::GetTotalBrowserCount() == 0 &&
+      (browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive())) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
 

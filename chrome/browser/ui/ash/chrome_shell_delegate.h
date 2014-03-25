@@ -51,7 +51,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual bool IsIncognitoAllowed() const OVERRIDE;
   virtual bool IsRunningInForcedAppMode() const OVERRIDE;
   virtual void PreInit() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+  virtual void PreShutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
