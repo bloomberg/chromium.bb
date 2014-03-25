@@ -245,12 +245,12 @@ const char kPowerManagerInterface[] = "org.chromium.PowerManager";
 const char kPowerManagerServicePath[] = "/org/chromium/PowerManager";
 const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
 // Methods exposed by powerd.
-const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
-const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
-const char kGetScreenBrightnessPercent[] = "GetScreenBrightnessPercent";
-const char kSetScreenBrightnessPercent[] = "SetScreenBrightnessPercent";
-const char kDecreaseKeyboardBrightness[] = "DecreaseKeyboardBrightness";
-const char kIncreaseKeyboardBrightness[] = "IncreaseKeyboardBrightness";
+const char kDecreaseScreenBrightnessMethod[] = "DecreaseScreenBrightness";
+const char kIncreaseScreenBrightnessMethod[] = "IncreaseScreenBrightness";
+const char kGetScreenBrightnessPercentMethod[] = "GetScreenBrightnessPercent";
+const char kSetScreenBrightnessPercentMethod[] = "SetScreenBrightnessPercent";
+const char kDecreaseKeyboardBrightnessMethod[] = "DecreaseKeyboardBrightness";
+const char kIncreaseKeyboardBrightnessMethod[] = "IncreaseKeyboardBrightness";
 const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestShutdownMethod[] = "RequestShutdown";
 const char kRequestSuspendMethod[] = "RequestSuspend";
@@ -265,24 +265,19 @@ const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
 const char kHandlePowerButtonAcknowledgmentMethod[] =
     "HandlePowerButtonAcknowledgment";
 // Signals emitted by powerd.
-const char kCleanShutdown[] = "CleanShutdown";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPeripheralBatteryStatusSignal[] = "PeripheralBatteryStatus";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
-const char kSoftwareScreenDimmingRequestedSignal[] =
-    "SoftwareScreenDimmingRequested";
 const char kSuspendImminentSignal[] = "SuspendImminent";
 const char kInputEventSignal[] = "InputEvent";
 const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
 const char kIdleActionImminentSignal[] = "IdleActionImminent";
 const char kIdleActionDeferredSignal[] = "IdleActionDeferred";
 // Values
-const int  kBrightnessTransitionGradual = 1;
-const int  kBrightnessTransitionInstant = 2;
-const int  kSoftwareScreenDimmingNone = 1;
-const int  kSoftwareScreenDimmingIdle = 2;
+const int kBrightnessTransitionGradual = 1;
+const int kBrightnessTransitionInstant = 2;
 enum UserActivityType {
   USER_ACTIVITY_OTHER = 0,
   USER_ACTIVITY_BRIGHTNESS_UP_KEY_PRESS = 1,
