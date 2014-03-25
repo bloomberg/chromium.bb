@@ -80,6 +80,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
   friend class ShortcutsProviderTest;
   friend class ShortcutsBackendTest;
+  FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, EntitySuggestionTest);
 
   enum CurrentState {
     NOT_INITIALIZED,  // Backend created but not initialized.
@@ -93,7 +94,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   virtual ~ShortcutsBackend();
 
   static history::ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
-      const AutocompleteMatch& match);
+      const AutocompleteMatch& match, Profile* profile);
 
   // RefcountedBrowserContextKeyedService:
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -127,6 +128,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // Deletes all of the shortcuts.
   bool DeleteAllShortcuts();
 
+  Profile* profile_;
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;
   scoped_refptr<history::ShortcutsDatabase> db_;

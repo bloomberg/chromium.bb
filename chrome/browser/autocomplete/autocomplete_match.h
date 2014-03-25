@@ -162,6 +162,10 @@ struct AutocompleteMatch {
   // an extension).
   static bool IsSearchType(Type type);
 
+  // Convenience function to check if |type| is a special search suggest type -
+  // like entity, personalized, profile or postfix.
+  static bool IsSpecializedSearchType(Type type);
+
   // Copies the destination_url with "www." stripped off to
   // |stripped_destination_url| and also converts https protocol to
   // http.  These two conversions are merely to allow comparisons to
