@@ -1168,6 +1168,30 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- Update bubble -->
+      <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
+        Reinstall Chromium
+      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
+          Chromium is Out of Date
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
+          Chromium is out of date
+        </message>
+      </if>
+      <message name="IDS_UPGRADE_BUBBLE_TITLE" desc="Text for the title of the upgrade bubble view.">
+        Chromium is out of date
+      </message>
+      <message name="IDS_UPGRADE_BUBBLE_TEXT" desc="Text for the upgrade bubble view full description.">
+        Chromium could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to manually reinstall Chromium.
+      </message>
+      <message name="IDS_UPGRADE_BUBBLE_REENABLE_TEXT" desc="Text for the upgrade bubble view full description.">
+        Chromium could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to update Chromium.
+      </message>
+
       <!-- chrome://ntp -->
       <if expr="not is_android">
         <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
