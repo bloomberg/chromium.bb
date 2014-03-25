@@ -6,11 +6,13 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "build/build_config.h"  // TODO(vtl): Remove this.
+#include "build/build_config.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,13 +43,7 @@ class PlatformChannelPairPosixTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PlatformChannelPairPosixTest);
 };
 
-// TODO(vtl): crbug.com/356195
-#if defined(OS_MACOSX)
-#define MAYBE_NoSigPipe NoSigPipe
-#else
-#define MAYBE_NoSigPipe DISABLED_NoSigPipe
-#endif
-TEST_F(PlatformChannelPairPosixTest, MAYBE_NoSigPipe) {
+TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   PlatformChannelPair channel_pair;
 
   ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
@@ -74,8 +70,15 @@ TEST_F(PlatformChannelPairPosixTest, MAYBE_NoSigPipe) {
   if (result == -1)
     PLOG(WARNING) << "read (expected 0 for EOF)";
 
-  // However, |write()| should fail outright.
+  // However, |write()|/|send()| should fail outright.
+  // On Mac, |SIGPIPE| needs to be suppressed on the socket itself and we can
+  // use |write()|/|writev()|. On Linux, we have to suppress it by using
+  // |send()|/|sendmsg()| with |MSG_NOSIGNAL|.
+#if defined(OS_MACOSX)
   result = write(server_handle.get().fd, kHello, sizeof(kHello));
+#else
+  result = send(server_handle.get().fd, kHello, sizeof(kHello), MSG_NOSIGNAL);
+#endif
   EXPECT_EQ(-1, result);
   if (errno != EPIPE)
     PLOG(WARNING) << "write (expected EPIPE)";
