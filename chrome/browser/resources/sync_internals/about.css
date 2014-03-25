@@ -3,33 +3,36 @@
  * found in the LICENSE file.
  */
 
-#aboutInfo {
-  -webkit-columns: 3;
+#about-info {
+  -webkit-column-width: 350px;
 }
 
-#aboutInfo h2 {
+#about-info > div {
+  -webkit-column-break-inside: avoid;
+  width: 350px;
+}
+
+#about-info h2 {
   color: rgb(74, 142, 230);
   font-size: 100%;
   margin-bottom: 0;
 }
 
-#aboutInfo .err {
+#about-info .err {
   color: red;
 }
 
-#aboutInfo .section {
-  -webkit-column-break-inside: avoid;
+#about-info .section {
   display: inline-block;
   margin-left: auto;
   margin-right: auto;
+}
+
+.about-details {
   width: 100%;
 }
 
-.aboutDetails {
-  width: 100%;
-}
-
-.aboutDetails tr:nth-child(odd) {
+.about-details tr:nth-child(odd) {
   background: rgb(239, 243, 255);
 }
 
@@ -45,37 +48,7 @@
  background: rgb(204, 255, 204);
 }
 
-@-webkit-keyframes highlight1 {
-  0% {
-    background: rgb(255, 255, 0);
-  }
-  100% {
-    background: #fff;
-  }
-}
-
-@-webkit-keyframes highlight2 {
-  0% {
-    background: rgb(155, 158, 166);
-  }
-  100% {
-    background: rgb(239, 243, 255);
-  }
-}
-
-.aboutDetails [highlighted] {
-  -webkit-animation-duration: 3s;
-  -webkit-animation-name: highlight1;
-  -webkit-animation-timing-function: linear;
-}
-
-.aboutDetails [highlighted]:nth-child(odd) {
-  -webkit-animation-duration: 3s;
-  -webkit-animation-name: highlight2;
-  -webkit-animation-timing-function: linear;
-}
-
-.aboutDetails .uninitialized {
+.about-details .uninitialized {
   color: #7f7f7f;
 }
 
@@ -84,4 +57,50 @@
   margin-right: auto;
   text-align: center;
   width: 300px;
+}
+
+#traffic-event-container {
+  border: 1px solid;
+  height: 500px;
+  max-width: 500px;
+  overflow-y: auto;
+}
+
+.traffic-event-entry {
+  border: 2px outset;
+  padding: 0.5em;
+}
+
+.traffic-event-entry:hover {
+  background-color: #eee;
+}
+
+.traffic-event-entry .time {
+  color: #222;
+  font-family: sans-serif;
+}
+
+.traffic-event-entry .type {
+  font-family: sans-serif;
+  font-weight: bold;
+  margin: 0.5em;
+  white-space: nowrap;
+}
+
+.traffic-event-entry .details {
+  margin: 0.5em;
+  overflow-x: auto;
+}
+
+.traffic-event-entry .proto {
+  display: none;
+}
+
+.traffic-event-entry-expanded .proto {
+  background-color: #fff;
+  border: 1px solid #222;
+  display: block;
+  max-height: 300px;
+  overflow-x: auto;
+  overflow-y: auto;
 }

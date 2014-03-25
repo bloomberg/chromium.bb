@@ -38,6 +38,10 @@ cr.define('chrome.sync', function() {
     transaction: [
       'onTransactionWrite',
     ],
+
+    protocol: [
+      'onProtocolEvent',
+    ]
   };
 
   /**

@@ -4,6 +4,7 @@ include_rules = [
 
   "+sync/js",
   "+sync/internal_api/public/util/weak_handle.h",
+  "+sync/internal_api/public/events",
 
   # Other libraries.
   "+device/bluetooth",
