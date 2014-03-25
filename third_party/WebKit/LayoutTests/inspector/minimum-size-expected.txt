@@ -1,0 +1,61 @@
+Tests how view minimum size works.
+
+Creating simple hierarchy
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 250; top = 0; bottom = 500
+[sidebarView] left = 250; right = 500; top = 0; bottom = 500
+Changing sidebar size
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 460; top = 0; bottom = 500
+[sidebarView] left = 460; right = 500; top = 0; bottom = 500
+Changing sidebar view minimum size
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 410; top = 0; bottom = 500
+[sidebarView] left = 410; right = 500; top = 0; bottom = 500
+Changing orientation
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 250
+[sidebarView] left = 0; right = 500; top = 250; bottom = 500
+Changing main view minimum size
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 450
+[sidebarView] left = 0; right = 500; top = 450; bottom = 500
+Changing main view minimum size back and resizing
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+Wrapping main view to a split view
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 80
+Adding invisble sidebar
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 80
+[secondSidebarView] left = 0; right = 0; top = 0; bottom = 0
+Showing sidebar
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 140; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 140
+[secondSidebarView] left = 0; right = 500; top = 80; bottom = 140
+Detaching sidebar
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 100; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 100
+Attaching another sidebar
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 0; bottom = 80
+[sidebarView] left = 0; right = 500; top = 160; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 160
+[thirdSidebarView] left = 0; right = 500; top = 80; bottom = 160
+Swapping main and sidebar
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 340; bottom = 420
+[sidebarView] left = 0; right = 500; top = 0; bottom = 340
+[childSplitView] left = 0; right = 500; top = 340; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 420; bottom = 500
+
