@@ -12,7 +12,7 @@ function test()
     function test(timer)
     {
         WebInspector.showPanel("audits");
-        WebInspector.domAgent._setDocument(null);
+        WebInspector.domModel._setDocument(null);
 
         var showPanelTimerCookie = timer.start("first-open-elements");
         InspectorTest.addBackendResponseSniffer(DOMAgent, "requestChildNodes", function() {

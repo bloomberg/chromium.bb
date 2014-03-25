@@ -30,7 +30,7 @@ function inspectorIsReady()
 
 function test()
 {
-    WebInspector.domAgent._setDocument(null);
+    WebInspector.domModel._setDocument(null);
 
     InspectorTest.addBackendResponseSniffer(DOMAgent, "requestChildNodes", function() {
         WebInspector.inspectorView._lastActivePanelSetting.set("audits");

@@ -8,12 +8,12 @@ function test()
         function testSetUp(next)
         {
             WebInspector.inspectorView.showPanel("elements");
-            WebInspector.domAgent.requestDocument(next);
+            WebInspector.domModel.requestDocument(next);
         },
 
         function testNoCrash(next)
         {
-            WebInspector.domAgent.performSearch("FooBar", next);
+            WebInspector.domModel.performSearch("FooBar", next);
         }
     ]);
 }

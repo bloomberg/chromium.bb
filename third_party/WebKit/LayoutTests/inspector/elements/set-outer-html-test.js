@@ -22,9 +22,9 @@ InspectorTest.setUpTestSuite = function(next)
     {
         InspectorTest.containerText = text;
 
-        for (var key in WebInspector.DOMAgent.Events) {
-            var eventName = WebInspector.DOMAgent.Events[key];
-            WebInspector.domAgent.addEventListener(eventName, InspectorTest.recordEvent.bind(InspectorTest, eventName));
+        for (var key in WebInspector.DOMModel.Events) {
+            var eventName = WebInspector.DOMModel.Events[key];
+            WebInspector.domModel.addEventListener(eventName, InspectorTest.recordEvent.bind(InspectorTest, eventName));
         }
 
         next();
@@ -74,7 +74,7 @@ InspectorTest.setOuterHTMLUseUndo = function(newText, next)
     function bringBack()
     {
         InspectorTest.addResult("\nBringing things back\n");
-        WebInspector.domAgent.undo(InspectorTest._dumpOuterHTML.bind(InspectorTest, true, next));
+        WebInspector.domModel.undo(InspectorTest._dumpOuterHTML.bind(InspectorTest, true, next));
     }
 }
 

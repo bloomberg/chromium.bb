@@ -30,7 +30,7 @@ function test()
 
     function step4()
     {
-        WebInspector.domAgent.undo();
+        WebInspector.domModel.undo();
         InspectorTest.selectNodeAndWaitForStyles("other", step5);
     }
 
@@ -43,7 +43,7 @@ function test()
 
     function step6()
     {
-        WebInspector.domAgent.redo();
+        WebInspector.domModel.redo();
         InspectorTest.selectNodeAndWaitForStyles("inspected", step7);
     }
 

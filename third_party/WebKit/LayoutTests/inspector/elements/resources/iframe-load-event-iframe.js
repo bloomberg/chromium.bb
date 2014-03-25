@@ -10,7 +10,7 @@ function test()
 
     function step1()
     {
-        WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeInserted, nodeInserted);
+        WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.NodeInserted, nodeInserted);
         InspectorTest.evaluateInPage("loadSecondIFrame()");
 
         function nodeInserted(event)
@@ -18,7 +18,7 @@ function test()
             var node = event.data;
             if (node.getAttribute("id") === "myframe") {
                 InspectorTest.expandElementsTree(step2);
-                WebInspector.domAgent.removeEventListener(WebInspector.DOMAgent.Events.NodeInserted, nodeInserted);
+                WebInspector.domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInserted, nodeInserted);
             }
         }
     }

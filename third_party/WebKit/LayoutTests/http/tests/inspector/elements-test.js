@@ -35,7 +35,7 @@ InspectorTest.findNode = function(matchFunction, callback)
             callback(null);
     }
 
-    WebInspector.domAgent.requestDocument(documentRequested.bind(this));
+    WebInspector.domModel.requestDocument(documentRequested.bind(this));
     function documentRequested(doc)
     {
         pendingRequests++;
@@ -518,7 +518,7 @@ InspectorTest.expandElementsTree = function(callback)
 
 InspectorTest.dumpDOMAgentTree = function(node)
 {
-    if (!WebInspector.domAgent._document)
+    if (!WebInspector.domModel._document)
         return;
 
     function dump(node, prefix)
@@ -562,14 +562,14 @@ InspectorTest.generateUndoTest = function(testBody)
         {
             InspectorTest.addResult("Post-action:");
             InspectorTest.dumpElementsTree(testNode);
-            WebInspector.domAgent.undo(redo);
+            WebInspector.domModel.undo(redo);
         }
 
         function redo()
         {
             InspectorTest.addResult("Post-undo (initial):");
             InspectorTest.dumpElementsTree(testNode);
-            WebInspector.domAgent.redo(done);
+            WebInspector.domModel.redo(done);
         }
 
         function done()

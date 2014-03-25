@@ -11,12 +11,12 @@ function test()
     {
         if (resultCount == 0) {
             InspectorTest.addResult("Nothing found");
-            WebInspector.domAgent.cancelSearch();
+            WebInspector.domModel.cancelSearch();
             next();
         }
 
         for (var i = 0; i < resultCount; ++i)
-            WebInspector.domAgent.searchResult(i, searchResultCallback.bind(this, i + 1 === resultCount));
+            WebInspector.domModel.searchResult(i, searchResultCallback.bind(this, i + 1 === resultCount));
 
         function searchResultCallback(isLastItem, node)
         {
@@ -27,7 +27,7 @@ function test()
         {
             InspectorTest.addResult(markupVa_lue.split("").join(" "));
             if (isLastItem) {
-                WebInspector.domAgent.cancelSearch();
+                WebInspector.domModel.cancelSearch();
                 next();
             }
         }
@@ -36,92 +36,92 @@ function test()
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
-            WebInspector.domAgent.requestDocument(next);
+            WebInspector.domModel.requestDocument(next);
         },
 
         function testPlainText(next)
         {
-            WebInspector.domAgent.performSearch("Fo" + "o" + "Bar", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("Fo" + "o" + "Bar", searchCallback.bind(this, next));
         },
 
         function testPartialText(next)
         {
-            WebInspector.domAgent.performSearch("oo" + "Ba", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("oo" + "Ba", searchCallback.bind(this, next));
         },
 
         function testStartTag(next)
         {
-            WebInspector.domAgent.performSearch("<inpu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<inpu" + "t", searchCallback.bind(this, next));
         },
 
         function testEndTag(next)
         {
-            WebInspector.domAgent.performSearch("npu" + "t>", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + "t>", searchCallback.bind(this, next));
         },
 
         function testPartialTag(next)
         {
-            WebInspector.domAgent.performSearch("npu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + "t", searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagStart(next)
         {
-            WebInspector.domAgent.performSearch("<npu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<npu" + "t", searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagEnd(next)
         {
-            WebInspector.domAgent.performSearch("npu" + ">", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + ">", searchCallback.bind(this, next));
         },
 
         function testFullTag(next)
         {
-            WebInspector.domAgent.performSearch("<inpu" + "t>", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<inpu" + "t>", searchCallback.bind(this, next));
         },
 
         function testExactAttributeName(next)
         {
-            WebInspector.domAgent.performSearch("valu" + "e", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("valu" + "e", searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ue(next)
         {
-            WebInspector.domAgent.performSearch("In" + "putVa" + "l", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("In" + "putVa" + "l", searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ueWithQuotes(next)
         {
-            WebInspector.domAgent.performSearch("\"fo" + "o\"", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("\"fo" + "o\"", searchCallback.bind(this, next));
         },
 
         function testPartialAttributeVal_ue(next)
         {
-            WebInspector.domAgent.performSearch("n" + "putVa" + "l", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("n" + "putVa" + "l", searchCallback.bind(this, next));
         },
 
         function testXPathAttribute(next)
         {
-            WebInspector.domAgent.performSearch("//html" + "//@attr", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("//html" + "//@attr", searchCallback.bind(this, next));
         },
 
         function testSelector(next)
         {
-            WebInspector.domAgent.performSearch("d" + "iv.divclass span", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("d" + "iv.divclass span", searchCallback.bind(this, next));
         },
 
         function testCaseUpperFindsLower(next)
         {
-            WebInspector.domAgent.performSearch("K" +"OO", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("K" +"OO", searchCallback.bind(this, next));
         },
 
         function testCaseLowerFindsUpper(next)
         {
-            WebInspector.domAgent.performSearch("c" + "aseless", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("c" + "aseless", searchCallback.bind(this, next));
         },
 
         function testCaseAttribute(next)
         {
-            WebInspector.domAgent.performSearch("C" + "AMEL", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("C" + "AMEL", searchCallback.bind(this, next));
         }
     ]);
 

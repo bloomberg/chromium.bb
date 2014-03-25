@@ -49,7 +49,7 @@ function test()
             InspectorTest.addResult("(After adding property)");
             InspectorTest.dumpSelectedElementStyles(true);
 
-            WebInspector.domAgent.undo();
+            WebInspector.domModel.undo();
             InspectorTest.selectNodeAndWaitForStyles("other", step2);
         }
 
@@ -58,7 +58,7 @@ function test()
             InspectorTest.addResult("(After undo)");
             InspectorTest.dumpSelectedElementStyles(true);
 
-            WebInspector.domAgent.redo();
+            WebInspector.domModel.redo();
             InspectorTest.selectNodeAndWaitForStyles("container", step3);
         }
 

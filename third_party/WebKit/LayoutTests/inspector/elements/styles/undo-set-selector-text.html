@@ -29,7 +29,7 @@ function test()
     {
         InspectorTest.addResult("=== After selector modification ===");
         InspectorTest.dumpSelectedElementStyles(true);
-        WebInspector.domAgent.undo();
+        WebInspector.domModel.undo();
         InspectorTest.selectNodeAndWaitForStyles("inspected", step3);
     }
 
@@ -38,7 +38,7 @@ function test()
         InspectorTest.addResult("=== After undo ===");
         InspectorTest.dumpSelectedElementStyles(true);
 
-        WebInspector.domAgent.redo();
+        WebInspector.domModel.redo();
         InspectorTest.selectNodeAndWaitForStyles("other", step4);
     }
 

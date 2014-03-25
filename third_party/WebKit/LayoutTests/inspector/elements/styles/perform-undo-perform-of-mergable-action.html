@@ -30,7 +30,7 @@ function test()
         InspectorTest.addResult("After changing property");
         InspectorTest.dumpSelectedElementStyles(true);
 
-        WebInspector.domAgent.undo();
+        WebInspector.domModel.undo();
         InspectorTest.waitForStyles("container", step3);
     }
 

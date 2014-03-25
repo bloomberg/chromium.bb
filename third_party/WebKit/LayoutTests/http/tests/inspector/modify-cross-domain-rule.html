@@ -20,7 +20,7 @@ function test()
 
             function selectCallback()
             {
-                var idToDOMNode = WebInspector.domAgent._idToDOMNode;
+                var idToDOMNode = WebInspector.domModel._idToDOMNode;
                 for (var id in idToDOMNode) {
                     node = idToDOMNode[id];
                     if (node.getAttribute && node.getAttribute("id") === "inspected") {
