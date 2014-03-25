@@ -34,7 +34,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
   // Return the context for this window_number, if it exists.
   WindowMap::iterator found = window_map()->find(window_number);
   if (found != window_map()->end()) {
-    DCHECK(found->second->can_be_shared_);
+    DCHECK(!found->second->poisoned_);
     return found->second;
   }
 
@@ -154,12 +154,14 @@ CompositingIOSurfaceContext::Get(int window_number) {
       shader_program_cache.Pass());
 }
 
-// static
-void CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable() {
+void CompositingIOSurfaceContext::PoisonContextAndSharegroup() {
+  if (poisoned_)
+    return;
+
   for (WindowMap::iterator it = window_map()->begin();
        it != window_map()->end();
        ++it) {
-    it->second->can_be_shared_ = false;
+    it->second->poisoned_ = true;
   }
   window_map()->clear();
 }
@@ -177,7 +179,7 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       cgl_context_(cgl_context),
       is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()),
-      can_be_shared_(true),
+      poisoned_(false),
       initialized_is_intel_(false),
       is_intel_(false),
       screen_(0) {
@@ -190,7 +192,7 @@ CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
     gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context_);
     shader_program_cache_->Reset();
   }
-  if (can_be_shared_) {
+  if (!poisoned_) {
     DCHECK(window_map()->find(window_number_) != window_map()->end());
     DCHECK(window_map()->find(window_number_)->second == this);
     window_map()->erase(window_number_);

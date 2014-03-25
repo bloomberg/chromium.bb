@@ -51,7 +51,7 @@ class CompositingIOSurfaceMac {
       scoped_refptr<CompositingIOSurfaceContext> current_context,
       uint64 io_surface_handle,
       const gfx::Size& size,
-      float scale_factor);
+      float scale_factor) WARN_UNUSED_RESULT;
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -64,7 +64,7 @@ class CompositingIOSurfaceMac {
       scoped_refptr<CompositingIOSurfaceContext> drawing_context,
       const gfx::Rect& window_rect,
       float window_scale_factor,
-      bool flush_drawable);
+      bool flush_drawable) WARN_UNUSED_RESULT;
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The copied region is specified with |src_pixel_subrect| and
@@ -100,6 +100,10 @@ class CompositingIOSurfaceMac {
 
   // Returns true if asynchronous readback is supported on this system.
   bool IsAsynchronousReadbackSupported();
+
+  // Returns true if the offscreen context used by this surface has been
+  // poisoned.
+  bool HasBeenPoisoned() const;
 
  private:
   // Vertex structure for use in glDraw calls.
@@ -204,7 +208,7 @@ class CompositingIOSurfaceMac {
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTextureWithContextCurrent(
       const scoped_refptr<CompositingIOSurfaceContext>& current_context,
-      uint64 io_surface_handle);
+      uint64 io_surface_handle) WARN_UNUSED_RESULT;
 
   void UnrefIOSurfaceWithContextCurrent();
 

@@ -367,9 +367,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
                              const std::vector<ui::LatencyInfo>& latency_info);
 
   // Draw the IOSurface by making its context current to this view.
-  bool DrawIOSurfaceWithoutCoreAnimation();
+  void DrawIOSurfaceWithoutCoreAnimation();
 
-  // Called when a GPU error is detected. Deletes all compositing state.
+  // Called when a GPU error is detected. Posts a task to destroy all
+  // compositing state.
   void GotAcceleratedCompositingError();
 
   // Sets the overlay view, which should be drawn in the same IOSurface
@@ -535,11 +536,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // invoke it from the message loop.
   void ShutdownHost();
 
-  void CreateSoftwareLayer();
+  void EnsureSoftwareLayer();
   void DestroySoftwareLayer();
 
-  bool CreateCompositedIOSurface();
-  bool CreateCompositedIOSurfaceLayer();
+  bool EnsureCompositedIOSurface() WARN_UNUSED_RESULT;
+  void EnsureCompositedIOSurfaceLayer();
   enum DestroyContextBehavior {
     kLeaveContextBoundToView,
     kDestroyContext,
@@ -547,6 +548,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void DestroyCompositedIOSurfaceLayer();
   void DestroyCompositedIOSurfaceAndLayer(DestroyContextBehavior
       destroy_context_behavior);
+
+  void DestroyCompositingStateOnError();
 
   // Unbind the GL context (if any) that is bound to |cocoa_view_|.
   void ClearBoundContextDrawable();

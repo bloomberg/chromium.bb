@@ -38,11 +38,11 @@
 #else
 #define CHECK_GL_ERROR() do {                                           \
     GLenum gl_error = glGetError();                                     \
-    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
+    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
   } while (0)
 #define CHECK_AND_SAVE_GL_ERROR() do {                                  \
     GLenum gl_error = GetAndSaveGLError();                              \
-    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
+    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
   } while (0)
 #endif
 
@@ -393,6 +393,12 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   if (gl_error_ != GL_NO_ERROR) {
     LOG(ERROR) << "GL error in DrawIOSurface: " << gl_error_;
     result = false;
+    // If there was an error, clear the screen to a light grey to avoid
+    // rendering artifacts. If we're in a really bad way, this too may
+    // generate an error. Clear the GL error afterwards just in case.
+    glClearColor(0.8, 0.8, 0.8, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glGetError();
   }
 
   // Try to finish previous copy requests after flush to get better pipelining.
@@ -574,6 +580,10 @@ bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
   if (!base::mac::IsOSMountainLionOrLater())
     return false;
   return true;
+}
+
+bool CompositingIOSurfaceMac::HasBeenPoisoned() const {
+  return offscreen_context_->HasBeenPoisoned();
 }
 
 base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(

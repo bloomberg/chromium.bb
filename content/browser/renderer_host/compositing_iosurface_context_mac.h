@@ -43,10 +43,12 @@ class CompositingIOSurfaceContext
   // http://crbug.com/180463
   static scoped_refptr<CompositingIOSurfaceContext> Get(int window_number);
 
-  // Mark that all the currently existing GL contexts shouldn't be returned
-  // anymore by Get, but rather, new contexts should be created. This is
-  // called as a precaution when unexpected GL errors occur.
-  static void MarkExistingContextsAsNotShareable();
+  // Mark that all the GL contexts in the same sharegroup as this context as
+  // invalid, so they shouldn't be returned anymore by Get, but rather, new
+  // contexts should be created. This is called as a precaution when unexpected
+  // GL errors occur.
+  void PoisonContextAndSharegroup();
+  bool HasBeenPoisoned() const { return poisoned_; }
 
   CompositingIOSurfaceShaderPrograms* shader_program_cache() const {
     return shader_program_cache_.get();
@@ -78,7 +80,7 @@ class CompositingIOSurfaceContext
 
   bool is_vsync_disabled_;
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
-  bool can_be_shared_;
+  bool poisoned_;
 
   bool initialized_is_intel_;
   bool is_intel_;

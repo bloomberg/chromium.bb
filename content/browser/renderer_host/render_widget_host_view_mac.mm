@@ -476,7 +476,22 @@ void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
 
-bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
+bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
+  // If the context or the IOSurface's context has had an error, re-build
+  // everything from scratch.
+  if (compositing_iosurface_context_ &&
+      compositing_iosurface_context_->HasBeenPoisoned()) {
+    LOG(ERROR) << "Failing EnsureCompositedIOSurface because "
+               << "context was poisoned";
+    return false;
+  }
+  if (compositing_iosurface_ &&
+      compositing_iosurface_->HasBeenPoisoned()) {
+    LOG(ERROR) << "Failing EnsureCompositedIOSurface because "
+               << "surface was poisoned";
+    return false;
+  }
+
   int current_window_number = use_core_animation_ ?
       CompositingIOSurfaceContext::kOffscreenContextWindowNumber :
       window_number();
@@ -520,8 +535,8 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
   return true;
 }
 
-void RenderWidgetHostViewMac::CreateSoftwareLayer() {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::CreateSoftwareLayer");
+void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::EnsureSoftwareLayer");
   if (software_layer_ || !use_core_animation_)
     return;
 
@@ -530,10 +545,7 @@ void RenderWidgetHostViewMac::CreateSoftwareLayer() {
   // Create the layer.
   software_layer_.reset([[SoftwareLayer alloc]
       initWithRenderWidgetHostViewMac:this]);
-  if (!software_layer_) {
-    LOG(ERROR) << "Failed to create CALayer for software rendering";
-    return;
-  }
+  DCHECK(software_layer_);
 
   // Make the layer visible.
   [background_layer_ addSublayer:software_layer_];
@@ -549,29 +561,22 @@ void RenderWidgetHostViewMac::DestroySoftwareLayer() {
   software_layer_.reset();
 }
 
-bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
+void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
   TRACE_EVENT0("browser",
-               "RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer");
+               "RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer");
+  DCHECK(compositing_iosurface_context_);
   if (compositing_iosurface_layer_ || !use_core_animation_)
-    return true;
+    return;
 
   ScopedCAActionDisabler disabler;
 
   // Create the layer.
   compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
       initWithRenderWidgetHostViewMac:this]);
-  if (!compositing_iosurface_layer_) {
-    LOG(ERROR) << "Failed to create CALayer for IOSurface";
-    return false;
-  }
+  DCHECK(compositing_iosurface_layer_);
 
   // Make the layer visible.
   [background_layer_ addSublayer:compositing_iosurface_layer_];
-
-  // Creating the CompositingIOSurfaceLayer may attempt to draw inside
-  // addSublayer, which, if it fails, will promptly tear down everything that
-  // was just created. If that happened, return failure.
-  return compositing_iosurface_layer_;
 }
 
 void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer() {
@@ -780,7 +785,7 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
 
   if (software_layer_) {
     DestroySoftwareLayer();
-    CreateSoftwareLayer();
+    EnsureSoftwareLayer();
   }
 
   // Dynamically calling setContentsScale on a CAOpenGLLayer for which
@@ -789,7 +794,7 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
   // factor changes.
   if (compositing_iosurface_layer_) {
     DestroyCompositedIOSurfaceLayer();
-    CreateCompositedIOSurfaceLayer();
+    EnsureCompositedIOSurfaceLayer();
   }
 
   render_widget_host_->NotifyScreenInfoChanged();
@@ -1360,13 +1365,18 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (render_widget_host_->is_hidden())
     return;
 
+  // Ensure that if this function exits before the frame is set up (but not
+  // necessarily drawn) then it is treated as an error.
+  base::ScopedClosureRunner scoped_error(
+      base::Bind(&RenderWidgetHostViewMac::GotAcceleratedCompositingError,
+                 weak_factory_.GetWeakPtr()));
+
   AddPendingLatencyInfo(latency_info);
 
   // Ensure compositing_iosurface_ and compositing_iosurface_context_ be
   // allocated.
-  if (!CreateCompositedIOSurface()) {
-    LOG(ERROR) << "Failed to create CompositingIOSurface";
-    GotAcceleratedCompositingError();
+  if (!EnsureCompositedIOSurface()) {
+    LOG(ERROR) << "Failed EnsureCompositingIOSurface";
     return;
   }
 
@@ -1378,7 +1388,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
           compositing_iosurface_context_, surface_handle, size,
           surface_scale_factor)) {
     LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
-    GotAcceleratedCompositingError();
     return;
   }
 
@@ -1404,13 +1413,9 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     }
   }
 
-  // Create the layer for the composited content only after the IOSurface has
-  // been initialized.
-  if (!CreateCompositedIOSurfaceLayer()) {
-    LOG(ERROR) << "Failed to create CompositingIOSurface layer";
-    GotAcceleratedCompositingError();
-    return;
-  }
+  // At this point the surface, its context, and its layer have been set up, so
+  // don't generate an error (one may be generated when drawing).
+  ignore_result(scoped_error.Release());
 
   GotAcceleratedFrame();
 
@@ -1461,15 +1466,11 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     compositing_iosurface_layer_async_timer_.Reset();
     [compositing_iosurface_layer_ gotNewFrame];
   } else {
-    if (!DrawIOSurfaceWithoutCoreAnimation()) {
-      [cocoa_view_ setNeedsDisplay:YES];
-      GotAcceleratedCompositingError();
-      return;
-    }
+    DrawIOSurfaceWithoutCoreAnimation();
   }
 }
 
-bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
+void RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   CHECK(!use_core_animation_);
   CHECK(compositing_iosurface_);
 
@@ -1496,7 +1497,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
       underlay_view_->compositing_iosurface_ &&
       underlay_view_has_drawn_) {
     [underlay_view_->cocoa_view() setNeedsDisplayInRect:NSMakeRect(0, 0, 1, 1)];
-    return true;
+    return;
   }
 
   bool has_overlay = overlay_view_ && overlay_view_->compositing_iosurface_;
@@ -1512,7 +1513,8 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   if (!compositing_iosurface_->DrawIOSurface(
           compositing_iosurface_context_, view_rect,
           ViewScaleFactor(), !has_overlay)) {
-    return false;
+    GotAcceleratedCompositingError();
+    return;
   }
 
   if (has_overlay) {
@@ -1526,22 +1528,43 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
     if (!overlay_view_->compositing_iosurface_->DrawIOSurface(
             compositing_iosurface_context_, overlay_view_rect,
             overlay_view_->ViewScaleFactor(), true)) {
-      return false;
+      GotAcceleratedCompositingError();
+      return;
     }
   }
 
   SendPendingLatencyInfoToHost();
-  return true;
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  LOG(ERROR) << "Encountered accelerated compositing error";
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderWidgetHostViewMac::DestroyCompositingStateOnError,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void RenderWidgetHostViewMac::DestroyCompositingStateOnError() {
+  // This should be called with a clean stack. Make sure that no context is
+  // current.
+  DCHECK(!CGLGetCurrentContext());
+
   // The existing GL contexts may be in a bad state, so don't re-use any of the
   // existing ones anymore, rather, allocate new ones.
-  CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable();
-  // Request that a new frame be generated.
+  if (compositing_iosurface_context_)
+    compositing_iosurface_context_->PoisonContextAndSharegroup();
+
+  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+
+  // Request that a new frame be generated and dirty the view.
   if (render_widget_host_)
     render_widget_host_->ScheduleComposite();
+  [cocoa_view_ setNeedsDisplay:YES];
+
+  // Mark the last frame as not accelerated (so that the window is prepared for
+  // an underlay next time an accelerated frame comes in).
+  last_frame_was_accelerated_ = false;
+
   // TODO(ccameron): It may be a good idea to request that the renderer recreate
   // its GL context as well, and fall back to software if this happens
   // repeatedly.
@@ -1924,6 +1947,7 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
+  EnsureCompositedIOSurfaceLayer();
   SendVSyncParametersToRenderer();
   if (!last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = true;
@@ -1942,7 +1966,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 }
 
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
-  CreateSoftwareLayer();
+  EnsureSoftwareLayer();
   SendVSyncParametersToRenderer();
 
   // Draw the contents of the frame immediately. It is critical that this
@@ -2017,7 +2041,8 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
 
   if (compositing_iosurface_) {
     // This will migrate the context to the appropriate window.
-    CreateCompositedIOSurface();
+    if (!EnsureCompositedIOSurface())
+      GotAcceleratedCompositingError();
   }
 }
 
@@ -3044,12 +3069,8 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
 
     gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
         renderWidgetHostView_->compositing_iosurface_context_->cgl_context());
-    if (renderWidgetHostView_->DrawIOSurfaceWithoutCoreAnimation())
-      return;
-
-    // On error, fall back to software and fall through to the non-accelerated
-    // drawing path.
-    renderWidgetHostView_->GotAcceleratedCompositingError();
+    renderWidgetHostView_->DrawIOSurfaceWithoutCoreAnimation();
+    return;
   }
 
   CGContextRef context = static_cast<CGContextRef>(
