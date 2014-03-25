@@ -32,11 +32,11 @@
 #define WebSocketHandle_h
 
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
 
+class WebSerializedOrigin;
 class WebSocketHandleClient;
 class WebString;
 class WebURL;
@@ -59,16 +59,7 @@ public:
 
     virtual ~WebSocketHandle() { }
 
-    virtual void connect(const WebURL& url, const WebVector<WebString>& protocols, const WebString& origin, WebSocketHandleClient* client)
-    {
-        // This method is not pure-virtual to avoid a compile error during
-        // the transition from connect(..., WebString, ...) to
-        // connect(..., WebSerializedOrigin, ...).
-    }
-    virtual void connect(const WebURL& url, const WebVector<WebString>& protocols, const WebSerializedOrigin& origin, WebSocketHandleClient* client)
-    {
-        this->connect(url, protocols, origin.string(), client);
-    }
+    virtual void connect(const WebURL& /* url */, const WebVector<WebString>& protocols, const WebSerializedOrigin& /* origin */, WebSocketHandleClient*) = 0;
     virtual void send(bool fin, MessageType, const char* data, size_t /* size */) = 0;
     virtual void flowControl(int64_t quota) = 0;
     virtual void close(unsigned short code, const WebString& reason) = 0;
