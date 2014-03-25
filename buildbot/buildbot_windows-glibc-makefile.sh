@@ -40,8 +40,7 @@ export ac_cv_func_mmap_fixed_mapped=yes
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf scons-out tools/BUILD/* tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" \
-  "${TOOL_TOOLCHAIN}" .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" .tmp ||
   echo already_clean
 mkdir -p "tools/${TOOL_TOOLCHAIN}"
 ln -sfn "$PWD"/cygwin/tmp "tools/${TOOL_TOOLCHAIN}"
