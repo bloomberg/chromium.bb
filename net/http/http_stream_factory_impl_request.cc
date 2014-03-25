@@ -291,10 +291,15 @@ HttpStreamFactoryImpl::Request::RemoveRequestFromHttpPipeliningRequestMap() {
 
 void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     Job* job,
+    scoped_ptr<HttpStream> stream,
     const base::WeakPtr<SpdySession>& spdy_session,
     bool direct) {
   DCHECK(job);
   DCHECK(job->using_spdy());
+
+  // Note: |spdy_session| may be NULL. In that case, |delegate_| should still
+  // receive |stream| so the error propogates up correctly, however there is no
+  // point in broadcasting |spdy_session| to other requests.
 
   // The first case is the usual case.
   if (!bound_job_.get()) {
@@ -322,21 +327,20 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     // implemented.
     NOTREACHED();
   } else {
-    bool use_relative_url = direct || url().SchemeIs("https");
-    delegate_->OnStreamReady(
-        job->server_ssl_config(),
-        job->proxy_info(),
-        new SpdyHttpStream(spdy_session, use_relative_url));
+    delegate_->OnStreamReady(job->server_ssl_config(), job->proxy_info(),
+                             stream.release());
   }
   // |this| may be deleted after this point.
-  factory->OnNewSpdySessionReady(spdy_session,
-                                 direct,
-                                 used_ssl_config,
-                                 used_proxy_info,
-                                 was_npn_negotiated,
-                                 protocol_negotiated,
-                                 using_spdy,
-                                 net_log);
+  if (spdy_session) {
+    factory->OnNewSpdySessionReady(spdy_session,
+                                   direct,
+                                   used_ssl_config,
+                                   used_proxy_info,
+                                   was_npn_negotiated,
+                                   protocol_negotiated,
+                                   using_spdy,
+                                   net_log);
+  }
 }
 
 void HttpStreamFactoryImpl::Request::OrphanJobsExcept(Job* job) {

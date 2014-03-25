@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
@@ -149,6 +150,9 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   UploadProgress progress = stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());
+
+  // Pump the event loop so |reads| is consumed before the function returns.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(SpdyHttpStreamTest, SendRequest) {

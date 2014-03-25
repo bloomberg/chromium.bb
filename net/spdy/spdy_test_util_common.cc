@@ -540,15 +540,12 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   EXPECT_EQ(OK, rv);
 
-  base::WeakPtr<SpdySession> spdy_session;
-  EXPECT_EQ(
-      expected_status,
+  base::WeakPtr<SpdySession> spdy_session =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key, connection.Pass(), net_log, OK, &spdy_session,
-          is_secure));
-  EXPECT_EQ(expected_status == OK, spdy_session != NULL);
-  EXPECT_EQ(expected_status == OK,
-            HasSpdySession(http_session->spdy_session_pool(), key));
+          key, connection.Pass(), net_log, OK, is_secure);
+  // Failure is reported asynchronously.
+  EXPECT_TRUE(spdy_session != NULL);
+  EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
   return spdy_session;
 }
 
@@ -562,14 +559,14 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
                                  OK, false /* is_secure */);
 }
 
-void TryCreateInsecureSpdySessionExpectingFailure(
+base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     Error expected_error,
     const BoundNetLog& net_log) {
   DCHECK_LT(expected_error, ERR_IO_PENDING);
-  CreateSpdySessionHelper(http_session, key, net_log,
-                          expected_error, false /* is_secure */);
+  return CreateSpdySessionHelper(http_session, key, net_log,
+                                 expected_error, false /* is_secure */);
 }
 
 base::WeakPtr<SpdySession> CreateSecureSpdySession(
@@ -643,17 +640,15 @@ base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
     Error expected_status) {
   EXPECT_NE(expected_status, ERR_IO_PENDING);
   EXPECT_FALSE(HasSpdySession(pool, key));
-  base::WeakPtr<SpdySession> spdy_session;
   scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
   handle->SetSocket(scoped_ptr<StreamSocket>(new FakeSpdySessionClientSocket(
       expected_status == OK ? ERR_IO_PENDING : expected_status)));
-  EXPECT_EQ(
-      expected_status,
+  base::WeakPtr<SpdySession> spdy_session =
       pool->CreateAvailableSessionFromSocket(
-          key, handle.Pass(), BoundNetLog(), OK, &spdy_session,
-          true /* is_secure */));
-  EXPECT_EQ(expected_status == OK, spdy_session != NULL);
-  EXPECT_EQ(expected_status == OK, HasSpdySession(pool, key));
+          key, handle.Pass(), BoundNetLog(), OK, true /* is_secure */);
+  // Failure is reported asynchronously.
+  EXPECT_TRUE(spdy_session != NULL);
+  EXPECT_TRUE(HasSpdySession(pool, key));
   return spdy_session;
 }
 
@@ -664,11 +659,12 @@ base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
   return CreateFakeSpdySessionHelper(pool, key, OK);
 }
 
-void TryCreateFakeSpdySessionExpectingFailure(SpdySessionPool* pool,
-                                              const SpdySessionKey& key,
-                                              Error expected_error) {
+base::WeakPtr<SpdySession> TryCreateFakeSpdySessionExpectingFailure(
+    SpdySessionPool* pool,
+    const SpdySessionKey& key,
+    Error expected_error) {
   DCHECK_LT(expected_error, ERR_IO_PENDING);
-  CreateFakeSpdySessionHelper(pool, key, expected_error);
+  return CreateFakeSpdySessionHelper(pool, key, expected_error);
 }
 
 SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {
