@@ -15,8 +15,13 @@
 
 using content::BrowserThread;
 
-UploadList::UploadInfo::UploadInfo(const std::string& c, const base::Time& t)
-    : id(c), time(t) {}
+UploadList::UploadInfo::UploadInfo(const std::string& id,
+                                   const base::Time& t,
+                                   const std::string& local_id)
+    : id(id), time(t), local_id(local_id) {}
+
+UploadList::UploadInfo::UploadInfo(const std::string& id, const base::Time& t)
+    : id(id), time(t) {}
 
 UploadList::UploadInfo::~UploadInfo() {}
 
@@ -74,13 +79,18 @@ void UploadList::ParseLogEntries(
     std::vector<std::string> components;
     base::SplitString(*i, ',', &components);
     // Skip any blank (or corrupted) lines.
-    if (components.size() != 2)
+    if (components.size() != 2 && components.size() != 3)
       continue;
+    base::Time upload_time;
     double seconds_since_epoch;
-    if (!base::StringToDouble(components[0], &seconds_since_epoch))
-      continue;
-    UploadInfo info(components[1],
-                    base::Time::FromDoubleT(seconds_since_epoch));
+    if (!components[0].empty()) {
+      if (!base::StringToDouble(components[0], &seconds_since_epoch))
+        continue;
+      upload_time = base::Time::FromDoubleT(seconds_since_epoch);
+    }
+    UploadInfo info(components[1], upload_time);
+    if (components.size() == 3)
+      info.local_id = components[2];
     uploads_.push_back(info);
   }
 }

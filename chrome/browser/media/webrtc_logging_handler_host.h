@@ -119,7 +119,11 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Writes a formatted log |message| to the |circular_buffer_|.
   void LogToCircularBuffer(const std::string& message);
 
-  void TriggerUploadLog();
+  // Gets the log directory path for |profile_| and ensure it exists. Must be
+  // called on the FILE thread.
+  base::FilePath GetLogDirectoryAndEnsureExists();
+
+  void TriggerUploadLog(const base::FilePath& log_directory);
 
   void FireGenericDoneCallback(GenericDoneCallback* callback,
                                bool success,

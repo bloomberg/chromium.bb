@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -29,12 +30,17 @@ class URLRequestContextGetter;
 
 typedef struct z_stream_s z_stream;
 
-// Used when uploading is done to perform post-upload actions.
-typedef struct {
-  base::FilePath upload_list_path;
+// Used when uploading is done to perform post-upload actions. |log_path| is
+// also used pre-upload.
+struct WebRtcLogUploadDoneData {
+  WebRtcLogUploadDoneData();
+  ~WebRtcLogUploadDoneData();
+
+  base::FilePath log_path;
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
-} WebRtcLogUploadDoneData;
+  std::string local_log_id;
+};
 
 class WebRtcLogURLRequestContextGetter;
 
@@ -68,6 +74,8 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // granted by calling ApplyForStartLogging() and getting true in return. After
   // this function has been called, a new permission must be granted. Call
   // either this function or LoggingStoppedDontUpload().
+  // |upload_done_data.local_log_id| is set and used internally and should be
+  // left empty.
   void LoggingStoppedDoUpload(
       net::URLRequestContextGetter* request_context,
       scoped_ptr<unsigned char[]> log_buffer,
@@ -78,23 +86,32 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // For testing purposes. If called, the multipart will not be uploaded, but
   // written to |post_data_| instead.
   void OverrideUploadWithBufferForTesting(std::string* post_data) {
+    DCHECK((post_data && !post_data_) || (!post_data && post_data_));
     post_data_ = post_data;
   }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
+                           AddLocallyStoredLogInfoToUploadListFile);
+  FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
                            AddUploadedLogInfoToUploadListFile);
 
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
-  void SetupMultipart(std::string* post_data, uint8* log_buffer,
-                      uint32 log_buffer_length,
+  void SetupMultipart(std::string* post_data,
+                      const std::vector<uint8>& compressed_log,
                       const std::map<std::string, std::string>& meta_data);
 
-  void AddLogData(std::string* post_data, uint8* log_buffer,
-                  uint32 log_buffer_length);
-  void CompressLog(std::string* post_data, uint8* input, uint32 input_size);
-  void ResizeForNextOutput(std::string* post_data, z_stream* stream);
+  // Adds |compressed_log| to |post_data|.
+  void AddLogData(std::string* post_data,
+                  const std::vector<uint8>& compressed_log);
+
+  void CompressLog(std::vector<uint8>* compressed_log,
+                   uint8* input,
+                   uint32 input_size);
+
+  void ResizeForNextOutput(std::vector<uint8>* compressed_log,
+                           z_stream* stream);
 
   void CreateAndStartURLFetcher(
       scoped_refptr<net::URLRequestContextGetter> request_context,
@@ -103,16 +120,32 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
 
   void DecreaseLogCount();
 
-  // Append information (time and report ID) about this uploaded log to a log
-  // list file, limited to |kLogListLimitLines| entries. This list is used for
-  // viewing the uploaded logs under chrome://webrtc-logs, see
-  // WebRtcLogUploadList. The list has the format
-  // time,id
-  // time,id
+  // Must be called on the FILE thread.
+  void WriteCompressedLogToFile(const std::vector<uint8>& compressed_log,
+                                const base::FilePath& log_file_path);
+
+  // Append information (upload time, report ID and local ID) about a log to a
+  // log list file, limited to |kLogListLimitLines| entries. This list is used
+  // for viewing the logs under chrome://webrtc-logs, see WebRtcLogUploadList.
+  // The list has the format
+  // upload_time,report_id,local_id
+  // upload_time,report_id,local_id
   // etc.
-  // where each line represents an uploaded log and "time" is Unix time.
+  // where each line represents a log. "upload_time" is the time when the log
+  // was uploaded in Unix time. "report_id" is the ID reported back by the
+  // server. "local_id" is the ID for the locally stored log. It's the time
+  // stored in Unix time and it's also used as file name.
+  // AddLocallyStoredLogInfoToUploadListFile() will first be called,
+  // "upload_time" and "report_id" is the left empty in the entry written to the
+  // list file. If uploading is successful, AddUploadedLogInfoToUploadListFile()
+  // is called and those empty items are filled out.
+  // Must be called on the FILE thread.
+  void AddLocallyStoredLogInfoToUploadListFile(
+      const base::FilePath& upload_list_path,
+      const std::string& local_log_id);
   void AddUploadedLogInfoToUploadListFile(
       const base::FilePath& upload_list_path,
+      const std::string& local_log_id,
       const std::string& report_id);
 
   void NotifyUploadDone(int response_code,

@@ -341,9 +341,13 @@ class BrowsingDataRemover
   // been deleted.
   void OnClearedAutofillOriginURLs();
 
-
   // Callback on UI thread when the storage partition related data are cleared.
   void OnClearedStoragePartitionData();
+
+#if defined(ENABLE_WEBRTC)
+  // Callback on UI thread when the WebRTC logs have been deleted.
+  void OnClearedWebRtcLogs();
+#endif
 
   // Returns true if we're all done.
   bool AllDone();
@@ -400,6 +404,9 @@ class BrowsingDataRemover
   bool waiting_for_clear_pnacl_cache_;
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_storage_partition_data_;
+#if defined(ENABLE_WEBRTC)
+  bool waiting_for_clear_webrtc_logs_;
+#endif
 
   // The removal mask for the current removal operation.
   int remove_mask_;

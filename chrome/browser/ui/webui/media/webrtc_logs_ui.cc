@@ -11,11 +11,13 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/webrtc_log_upload_list.h"
+#include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/upload_list.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -49,9 +51,19 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
                              IDS_WEBRTC_LOGS_LOG_COUNT_BANNER_FORMAT);
   source->AddLocalizedString("webrtcLogHeaderFormat",
                              IDS_WEBRTC_LOGS_LOG_HEADER_FORMAT);
-  source->AddLocalizedString("webrtcLogTimeFormat",
-                             IDS_WEBRTC_LOGS_LOG_TIME_FORMAT);
+  source->AddLocalizedString("webrtcLogLocalFileLabelFormat",
+                             IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_LABEL_FORMAT);
+  source->AddLocalizedString("webrtcLogLocalFileFormat",
+                             IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_FORMAT);
+  source->AddLocalizedString("noLocalLogFileMessage",
+                             IDS_WEBRTC_LOGS_NO_LOCAL_LOG_FILE_MESSAGE);
+  source->AddLocalizedString("webrtcLogUploadTimeFormat",
+                             IDS_WEBRTC_LOGS_LOG_UPLOAD_TIME_FORMAT);
+  source->AddLocalizedString("webrtcLogReportIdFormat",
+                             IDS_WEBRTC_LOGS_LOG_REPORT_ID_FORMAT);
   source->AddLocalizedString("bugLinkText", IDS_WEBRTC_LOGS_BUG_LINK_LABEL);
+  source->AddLocalizedString("webrtcLogNotUploadedMessage",
+                             IDS_WEBRTC_LOGS_LOG_NOT_UPLOADED_MESSAGE);
   source->AddLocalizedString("noLogsMessage",
                              IDS_WEBRTC_LOGS_NO_LOGS_MESSAGE);
   source->SetJsonPath("strings.js");
@@ -68,7 +80,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
 
 // The handler for Javascript messages for the chrome://webrtc-logs/ page.
 class WebRtcLogsDOMHandler : public WebUIMessageHandler,
-                             public WebRtcLogUploadList::Delegate {
+                             public UploadList::Delegate {
  public:
   explicit WebRtcLogsDOMHandler(Profile* profile);
   virtual ~WebRtcLogsDOMHandler();
@@ -76,7 +88,7 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // WebRtcLogUploadList::Delegate implemenation.
+  // UploadList::Delegate implemenation.
   virtual void OnUploadListAvailable() OVERRIDE;
 
  private:
@@ -87,7 +99,10 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
   void UpdateUI();
 
   // Loads, parses and stores the list of uploaded WebRTC logs.
-  scoped_refptr<WebRtcLogUploadList> upload_list_;
+  scoped_refptr<UploadList> upload_list_;
+
+  // The directory where the logs are stored.
+  base::FilePath log_dir_;
 
   // Set when |upload_list_| has finished populating the list of logs.
   bool list_available_;
@@ -100,8 +115,11 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
 };
 
 WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
-    : list_available_(false), js_request_pending_(false) {
-  upload_list_ = WebRtcLogUploadList::Create(this, profile);
+    : log_dir_(
+          WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile->GetPath())),
+      list_available_(false),
+      js_request_pending_(false) {
+  upload_list_ = WebRtcLogList::CreateWebRtcLogList(this, profile);
 }
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {
@@ -131,15 +149,35 @@ void WebRtcLogsDOMHandler::OnUploadListAvailable() {
 }
 
 void WebRtcLogsDOMHandler::UpdateUI() {
-  std::vector<WebRtcLogUploadList::UploadInfo> uploads;
+  std::vector<UploadList::UploadInfo> uploads;
   upload_list_->GetUploads(50, &uploads);
 
   base::ListValue upload_list;
-  for (std::vector<WebRtcLogUploadList::UploadInfo>::iterator i =
-       uploads.begin(); i != uploads.end(); ++i) {
+  for (std::vector<UploadList::UploadInfo>::iterator i = uploads.begin();
+       i != uploads.end();
+       ++i) {
     base::DictionaryValue* upload = new base::DictionaryValue();
     upload->SetString("id", i->id);
-    upload->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
+
+    base::string16 value_w;
+    if (!i->time.is_null())
+      value_w = base::TimeFormatFriendlyDateAndTime(i->time);
+    upload->SetString("upload_time", value_w);
+
+    value_w.clear();
+    double seconds_since_epoch;
+    if (base::StringToDouble(i->local_id, &seconds_since_epoch)) {
+      base::Time capture_time = base::Time::FromDoubleT(seconds_since_epoch);
+      value_w = base::TimeFormatFriendlyDateAndTime(capture_time);
+    }
+    upload->SetString("capture_time", value_w);
+
+    base::FilePath::StringType value;
+    if (!i->local_id.empty())
+      value = log_dir_.AppendASCII(i->local_id)
+          .AddExtension(FILE_PATH_LITERAL(".gz")).value();
+    upload->SetString("local_file", value);
+
     upload_list.Append(upload);
   }
 

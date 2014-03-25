@@ -192,6 +192,10 @@
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_log_util.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
@@ -1089,6 +1093,15 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #if !defined(OS_ANDROID)
   // Allow ProcessSingleton to process messages.
   process_singleton_->Unlock();
+#endif
+#if defined(ENABLE_WEBRTC)
+  // Set up a task to delete old WebRTC log files for all profiles. Use a delay
+  // to reduce the impact on startup time.
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
+      base::TimeDelta::FromMinutes(1));
 #endif
 }
 

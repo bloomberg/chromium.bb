@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/media/webrtc_log_upload_list.h"
+#include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -183,7 +184,12 @@ void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
     return;
   }
   upload_callback_ = callback;
-  TriggerUploadLog();
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
+                 this),
+      base::Bind(&WebRtcLoggingHandlerHost::TriggerUploadLog, this));
 }
 
 void WebRtcLoggingHandlerHost::UploadLogDone() {
@@ -221,7 +227,12 @@ void WebRtcLoggingHandlerHost::OnChannelClosing() {
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
     if (upload_log_on_render_close_) {
       logging_state_ = STOPPED;
-      TriggerUploadLog();
+      content::BrowserThread::PostTaskAndReplyWithResult(
+          content::BrowserThread::FILE,
+          FROM_HERE,
+          base::Bind(&WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
+                     this),
+          base::Bind(&WebRtcLoggingHandlerHost::TriggerUploadLog, this));
     } else {
       g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
     }
@@ -400,14 +411,27 @@ void WebRtcLoggingHandlerHost::LogToCircularBuffer(const std::string& message) {
   circular_buffer_->Write(&eol, 1);
 }
 
-void WebRtcLoggingHandlerHost::TriggerUploadLog() {
+base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath log_dir_path =
+      WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath());
+  base::File::Error error;
+  if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
+    DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
+    return base::FilePath();
+  }
+  return log_dir_path;
+}
+
+void WebRtcLoggingHandlerHost::TriggerUploadLog(
+    const base::FilePath& log_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(logging_state_ == STOPPED);
 
   logging_state_ = UPLOADING;
   WebRtcLogUploadDoneData upload_done_data;
-  upload_done_data.upload_list_path =
-      WebRtcLogUploadList::GetFilePathForProfile(profile_);
+
+  upload_done_data.log_path = log_directory;
   upload_done_data.callback = upload_callback_;
   upload_done_data.host = this;
   upload_callback_.Reset();

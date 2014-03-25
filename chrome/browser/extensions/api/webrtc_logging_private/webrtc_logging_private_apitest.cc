@@ -80,6 +80,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
   ASSERT_FALSE(result.get());
 
   ASSERT_TRUE(multipart.empty());
+
+  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
+      NULL);
 }
 
 // Tests WebRTC diagnostic logging. Sets up the browser to save the multipart
@@ -269,4 +272,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   final_delimiter += "--";
   EXPECT_STREQ(final_delimiter.c_str(), multipart_lines[29].c_str());
   EXPECT_TRUE(multipart_lines[30].empty());
+
+  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
+      NULL);
 }

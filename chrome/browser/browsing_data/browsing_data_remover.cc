@@ -31,6 +31,10 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_log_list.h"
+#include "chrome/browser/media/webrtc_log_util.h"
+#endif
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -195,6 +199,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_pnacl_cache_(false),
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_storage_partition_data_(false),
+#if defined(ENABLE_WEBRTC)
+      waiting_for_clear_webrtc_logs_(false),
+#endif
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0),
@@ -375,6 +382,18 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         data_manager->Refresh();
     }
 
+#if defined(ENABLE_WEBRTC)
+    waiting_for_clear_webrtc_logs_ = true;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles,
+            WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath()),
+            delete_begin_),
+        base::Bind(&BrowsingDataRemover::OnClearedWebRtcLogs,
+                   base::Unretained(this)));
+#endif
   }
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
@@ -707,6 +726,9 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_hostname_resolution_cache_ &&
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_platform_keys_ &&
+#if defined(ENABLE_WEBRTC)
+         !waiting_for_clear_webrtc_logs_ &&
+#endif
          !waiting_for_clear_storage_partition_data_;
 }
 
@@ -1077,3 +1099,11 @@ void BrowsingDataRemover::OnClearedStoragePartitionData() {
   waiting_for_clear_storage_partition_data_ = false;
   NotifyAndDeleteIfDone();
 }
+
+#if defined(ENABLE_WEBRTC)
+void BrowsingDataRemover::OnClearedWebRtcLogs() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_webrtc_logs_ = false;
+  NotifyAndDeleteIfDone();
+}
+#endif

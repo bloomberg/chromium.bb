@@ -410,6 +410,9 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("failure"));
   base::string16 result = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(base::ASCIIToUTF16("success"), result);
+
+  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
+      NULL);
 }
 #endif  // defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
 

@@ -1057,6 +1057,7 @@
         'browser/media/desktop_media_list_ash_unittest.cc',
         'browser/media/native_desktop_media_list_unittest.cc',
         'browser/media/webrtc_log_uploader_unittest.cc',
+        'browser/media/webrtc_log_util_unittest.cc',
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
@@ -2268,6 +2269,7 @@
         ['enable_webrtc==0', {
           'sources!': [
             'browser/media/webrtc_log_uploader_unittest.cc',
+            'browser/media/webrtc_log_util_unittest.cc',
             'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
           ],
         }],

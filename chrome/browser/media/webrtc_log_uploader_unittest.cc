@@ -14,40 +14,64 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kTestReportId[] = "123456789";
-const char kTestTime[] = "987654321";
+const char kTestTime[] = "time";
+const char kTestReportId[] = "report-id";
+const char kTestLocalId[] = "local-id";
 
 class WebRtcLogUploaderTest : public testing::Test {
  public:
   WebRtcLogUploaderTest() {}
 
-  bool VerifyNumberOfLinesAndContentsOfLastLine(int expected_lines) {
-    std::string contents;
-    int read = base::ReadFileToString(test_list_path_, &contents);
-    EXPECT_GT(read, 0);
-    if (read <= 0)
-      return false;
+  bool VerifyNumberOfLines(int expected_lines) {
+    std::vector<std::string> lines = GetLinesFromListFile();
+    EXPECT_EQ(expected_lines, static_cast<int>(lines.size()));
+    return expected_lines == static_cast<int>(lines.size());
+  }
 
-    // Verify expected number of lines. Since every line should end with '\n',
-    // there should be an additional empty line after splitting.
-    std::vector<std::string> lines;
-    base::SplitString(contents, '\n', &lines);
-    EXPECT_EQ(expected_lines + 1, static_cast<int>(lines.size()));
-    if (expected_lines + 1 != static_cast<int>(lines.size()))
+  bool VerifyLastLineHasAllInfo() {
+    std::string last_line = GetLastLineFromListFile();
+    if (last_line.empty())
       return false;
-    EXPECT_TRUE(lines[expected_lines].empty());
-
-    // Verify the contents of the last line. The time (line_parts[0]) is the
-    // time when the info was written to the file which we don't know, so just
-    // verify that it's not empty.
     std::vector<std::string> line_parts;
-    base::SplitString(lines[expected_lines - 1], ',', &line_parts);
-    EXPECT_EQ(2u, line_parts.size());
-    if (2u != line_parts.size())
+    base::SplitString(last_line, ',', &line_parts);
+    EXPECT_EQ(3u, line_parts.size());
+    if (3u != line_parts.size())
+      return false;
+    // The time (line_parts[0]) is the time when the info was written to the
+    // file which we don't know, so just verify that it's not empty.
+    EXPECT_FALSE(line_parts[0].empty());
+    EXPECT_STREQ(kTestReportId, line_parts[1].c_str());
+    EXPECT_STREQ(kTestLocalId, line_parts[2].c_str());
+    return true;
+  }
+
+  bool VerifyLastLineHasLocalIdOnly() {
+    std::string last_line = GetLastLineFromListFile();
+    if (last_line.empty())
+      return false;
+    std::vector<std::string> line_parts;
+    base::SplitString(last_line, ',', &line_parts);
+    EXPECT_EQ(3u, line_parts.size());
+    if (3u != line_parts.size())
+      return false;
+    EXPECT_TRUE(line_parts[0].empty());
+    EXPECT_TRUE(line_parts[1].empty());
+    EXPECT_STREQ(kTestLocalId, line_parts[2].c_str());
+    return true;
+  }
+
+  bool VerifyLastLineHasUploadTimeAndIdOnly() {
+    std::string last_line = GetLastLineFromListFile();
+    if (last_line.empty())
+      return false;
+    std::vector<std::string> line_parts;
+    base::SplitString(last_line, ',', &line_parts);
+    EXPECT_EQ(3u, line_parts.size());
+    if (3u != line_parts.size())
       return false;
     EXPECT_FALSE(line_parts[0].empty());
     EXPECT_STREQ(kTestReportId, line_parts[1].c_str());
-
+    EXPECT_TRUE(line_parts[2].empty());
     return true;
   }
 
@@ -74,6 +98,10 @@ class WebRtcLogUploaderTest : public testing::Test {
                 base::WritePlatformFileAtCurrentPos(test_list_file,
                                                     kTestReportId,
                                                     sizeof(kTestReportId) - 1));
+      EXPECT_EQ(1, base::WritePlatformFileAtCurrentPos(test_list_file, ",", 1));
+      EXPECT_EQ(static_cast<int>(sizeof(kTestLocalId)) - 1,
+                base::WritePlatformFileAtCurrentPos(
+                    test_list_file, kTestLocalId, sizeof(kTestLocalId) - 1));
       EXPECT_EQ(1, base::WritePlatformFileAtCurrentPos(test_list_file,
                                                        "\n", 1));
     }
@@ -82,10 +110,39 @@ class WebRtcLogUploaderTest : public testing::Test {
     return true;
   }
 
+  std::vector<std::string> GetLinesFromListFile() {
+    std::string contents;
+    int read = base::ReadFileToString(test_list_path_, &contents);
+    EXPECT_GT(read, 0);
+    if (read == 0)
+      return std::vector<std::string>();
+    // Since every line should end with '\n', the last line should be empty. So
+    // we expect at least two lines including the final empty. Remove the empty
+    // line before returning.
+    std::vector<std::string> lines;
+    base::SplitString(contents, '\n', &lines);
+    EXPECT_GT(lines.size(), 1u);
+    if (lines.size() < 2)
+      return std::vector<std::string>();
+    EXPECT_TRUE(lines[lines.size() - 1].empty());
+    if (!lines[lines.size() - 1].empty())
+      return std::vector<std::string>();
+    lines.pop_back();
+    return lines;
+  }
+
+  std::string GetLastLineFromListFile() {
+    std::vector<std::string> lines = GetLinesFromListFile();
+    EXPECT_GT(lines.size(), 0u);
+    if (lines.empty())
+      return std::string();
+    return lines[lines.size() - 1];
+  }
+
   base::FilePath test_list_path_;
 };
 
-TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
+TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   // Get a temporary filename. We don't want the file to exist to begin with
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
@@ -93,24 +150,53 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_(
       new WebRtcLogUploader());
 
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(test_list_path_,
-                                                           kTestReportId);
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(test_list_path_,
-                                                           kTestReportId);
-  ASSERT_TRUE(VerifyNumberOfLinesAndContentsOfLastLine(2));
+  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                                kTestLocalId);
+  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                                kTestLocalId);
+  ASSERT_TRUE(VerifyNumberOfLines(2));
+  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
   const int expected_line_limit = 50;
   ASSERT_TRUE(AddLinesToTestFile(expected_line_limit - 2));
-  ASSERT_TRUE(VerifyNumberOfLinesAndContentsOfLastLine(expected_line_limit));
+  ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
+  ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(test_list_path_,
-                                                           kTestReportId);
-  ASSERT_TRUE(VerifyNumberOfLinesAndContentsOfLastLine(expected_line_limit));
+  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                                kTestLocalId);
+  ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
+  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
   ASSERT_TRUE(AddLinesToTestFile(10));
-  ASSERT_TRUE(VerifyNumberOfLinesAndContentsOfLastLine(60));
+  ASSERT_TRUE(VerifyNumberOfLines(60));
+  ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(test_list_path_,
-                                                           kTestReportId);
-  ASSERT_TRUE(VerifyNumberOfLinesAndContentsOfLastLine(expected_line_limit));
+  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                                kTestLocalId);
+  ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
+  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+}
+
+TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
+  // Get a temporary filename. We don't want the file to exist to begin with
+  // since that's the normal use case, hence the delete.
+  ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
+  EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
+  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_(new WebRtcLogUploader());
+
+  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                                kTestLocalId);
+  ASSERT_TRUE(VerifyNumberOfLines(1));
+  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+
+  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(
+      test_list_path_, kTestLocalId, kTestReportId);
+  ASSERT_TRUE(VerifyNumberOfLines(1));
+  ASSERT_TRUE(VerifyLastLineHasAllInfo());
+
+  // Use a local ID that should not be found in the list.
+  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(
+      test_list_path_, "dummy id", kTestReportId);
+  ASSERT_TRUE(VerifyNumberOfLines(2));
+  ASSERT_TRUE(VerifyLastLineHasUploadTimeAndIdOnly());
 }

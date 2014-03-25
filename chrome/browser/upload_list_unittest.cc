@@ -32,6 +32,7 @@ TEST(UploadListTest, ParseLogEntries) {
   double time_double = upload_list->uploads_[0].time.ToDoubleT();
   EXPECT_STREQ(kTestTime, base::DoubleToString(time_double).c_str());
   EXPECT_STREQ(kTestID, upload_list->uploads_[0].id.c_str());
+  EXPECT_STREQ("", upload_list->uploads_[0].local_id.c_str());
 
   // Add 3 more entries.
   log_entries.push_back(test_entry);
@@ -41,4 +42,39 @@ TEST(UploadListTest, ParseLogEntries) {
   time_double = upload_list->uploads_[3].time.ToDoubleT();
   EXPECT_STREQ(kTestTime, base::DoubleToString(time_double).c_str());
   EXPECT_STREQ(kTestID, upload_list->uploads_[3].id.c_str());
+  EXPECT_STREQ("", upload_list->uploads_[3].local_id.c_str());
+}
+
+TEST(UploadListTest, ParseLogEntriesWithLocalId) {
+  const char kTestTime[] = "1234567890";
+  const char kTestID[] = "0123456789abcdef";
+  const char kTestLocalID[] = "fedcba9876543210";
+  std::string test_entry = kTestTime;
+  test_entry += ",";
+  test_entry.append(kTestID, sizeof(kTestID));
+  test_entry += ",";
+  test_entry.append(kTestLocalID, sizeof(kTestLocalID));
+
+  scoped_refptr<UploadList> upload_list =
+      new UploadList(NULL, base::FilePath());
+
+  // 1 entry.
+  std::vector<std::string> log_entries;
+  log_entries.push_back(test_entry);
+  upload_list->ParseLogEntries(log_entries);
+  EXPECT_EQ(1u, upload_list->uploads_.size());
+  double time_double = upload_list->uploads_[0].time.ToDoubleT();
+  EXPECT_STREQ(kTestTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestID, upload_list->uploads_[0].id.c_str());
+  EXPECT_STREQ(kTestLocalID, upload_list->uploads_[0].local_id.c_str());
+
+  // Add 3 more entries.
+  log_entries.push_back(test_entry);
+  log_entries.push_back(test_entry);
+  upload_list->ParseLogEntries(log_entries);
+  EXPECT_EQ(4u, upload_list->uploads_.size());
+  time_double = upload_list->uploads_[3].time.ToDoubleT();
+  EXPECT_STREQ(kTestTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestID, upload_list->uploads_[3].id.c_str());
+  EXPECT_STREQ(kTestLocalID, upload_list->uploads_[3].local_id.c_str());
 }

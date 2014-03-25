@@ -14,20 +14,25 @@
 #include "base/time/time.h"
 
 // Loads and parses an upload list text file of the format
-// time,id
-// time,id
+// time,id[,local_id]
+// time,id[,local_id]
 // etc.
 // where each line represents an upload and "time" is Unix time. Must be used
 // from the UI thread. The loading and parsing is done on a blocking pool task
-// runner.
+// runner. A line may or may not contain "local_id".
 class UploadList : public base::RefCountedThreadSafe<UploadList> {
  public:
   struct UploadInfo {
-    UploadInfo(const std::string& c, const base::Time& t);
+    UploadInfo(const std::string& id,
+               const base::Time& t,
+               const std::string& local_id);
+    UploadInfo(const std::string& id, const base::Time& t);
     ~UploadInfo();
 
     std::string id;
     base::Time time;
+    // ID for a locally stored object that may or may not be uploaded.
+    std::string local_id;
   };
 
   class Delegate {
@@ -71,6 +76,7 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
   FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntries);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntriesWithLocalId);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
   void LoadUploadListAndInformDelegateOfCompletion();
