@@ -22,28 +22,27 @@
     SetWrapperReferenceFrom=element,
 ] interface NamedNodeMap {
 
-    Node getNamedItem([Default=Undefined] optional DOMString name);
+    [MeasureAs=NamedNodeMapGetNamedItem] Node getNamedItem([Default=Undefined] optional DOMString name);
     [NotEnumerable, ImplementedAs=getNamedItem] getter Node ([Default=Undefined] optional DOMString name);
 
-    [RaisesException, CustomElementCallbacks] Node setNamedItem([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Node setNamedItem([Default=Undefined] optional Node node);
 
-    [RaisesException, CustomElementCallbacks] Node removeNamedItem([Default=Undefined] optional DOMString name);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Node removeNamedItem([Default=Undefined] optional DOMString name);
 
-    getter Node item([Default=Undefined] optional unsigned long index);
+    [MeasureAs=NamedNodeMapItem] getter Node item([Default=Undefined] optional unsigned long index);
 
     readonly attribute unsigned long length;
 
 
     // Introduced in DOM Level 2:
 
-    // FIXME: the implementation does take an exceptioncode parameter.
-    /*[RaisesException]*/ Node getNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                              [Default=Undefined] optional DOMString localName);
+    [MeasureAs=NamedNodeMapGetNamedItemNS] Node getNamedItemNS([TreatNullAs=NullString, Default=Undefined] optional DOMString namespaceURI,
+                                                               [Default=Undefined] optional DOMString localName);
 
-    [RaisesException, CustomElementCallbacks] Node setNamedItemNS([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Node setNamedItemNS([Default=Undefined] optional Node node);
 
-    [RaisesException, CustomElementCallbacks] Node removeNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                          [Default=Undefined] optional DOMString localName);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Node removeNamedItemNS([TreatNullAs=NullString, Default=Undefined] optional DOMString namespaceURI,
+                                                                                                              [Default=Undefined] optional DOMString localName);
 
 };
 
