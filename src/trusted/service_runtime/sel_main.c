@@ -744,6 +744,9 @@ int NaClSelLdrMain(int argc, char **argv) {
                                            NULL);
       if (LOAD_OK == errcode) {
         nap->irt_loaded = 1;
+        CHECK(NULL == nap->irt_nexe_desc);
+        NaClDescRef(blob_file);
+        nap->irt_nexe_desc = blob_file;
       } else {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
                 blob_library_file,

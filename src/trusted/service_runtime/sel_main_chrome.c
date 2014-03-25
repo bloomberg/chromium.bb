@@ -130,8 +130,9 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
             NaClErrorString(errcode));
   }
 
+  CHECK(NULL == nap->irt_nexe_desc);
+  nap->irt_nexe_desc = nd;
   NaClMetadataDtor(&metadata);
-  NaClDescUnref(nd);
 }
 
 void NaClChromeMainStartApp(struct NaClApp *nap,

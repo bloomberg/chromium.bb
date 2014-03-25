@@ -785,14 +785,19 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* now actually spawn the thread */
   NaClXMutexLock(&nap->mu);
   /*
-   * Dereference the main nexe at this point if no debug stub callbacks have
-   * been registered, as this reference to the main nexe is only used to
-   * provide file access to the debugger.
+   * Unreference the main nexe and irt at this point if no debug stub callbacks
+   * have been registered, as these references to the main nexe and irt
+   * descriptors are only used when providing file access to the debugger.
+   * In the debug case, let shutdown take care of cleanup.
    */
   if (NULL == nap->debug_stub_callbacks) {
     if (NULL != nap->main_nexe_desc) {
       NaClDescUnref(nap->main_nexe_desc);
       nap->main_nexe_desc = NULL;
+    }
+    if (NULL != nap->irt_nexe_desc) {
+      NaClDescUnref(nap->irt_nexe_desc);
+      nap->irt_nexe_desc = NULL;
     }
   }
   nap->running = 1;

@@ -220,6 +220,15 @@ def MainNexe():
   assert False
 
 
+def IrtNexe():
+  # Assume that the irt starts with 'irt' and ends with '.nexe'.
+  for arg in reversed(SEL_LDR_COMMAND):
+    basename = os.path.basename(arg)
+    if basename.startswith('irt_') and basename.endswith('.nexe'):
+      return arg
+  return None
+
+
 def DecodeRegs(reply):
   defs = REG_DEFS[ARCH]
   names = [reg_name for reg_name, reg_fmt in defs]
@@ -728,38 +737,55 @@ class DebugStubTest(unittest.TestCase):
     finally:
       KillProcess(sel_ldr)
 
-  def test_remote_get(self):
-    with LaunchDebugStub('test_interrupt') as connection:
-      # Open the nexe.
-      reply = connection.RspRequest('vFile:open:%s,0,0' % EncodeHex('nexe'))
+  def RemoteGet(self, connection, download_filename, expected_filename):
+    """Use the vFile interface to remote get a file, checking the result.
+
+    Args:
+      connection: Rsp connection to debug stub to use.
+      download_filename: Remote filename to download.
+      expected_filename: Local filename to check downloaded result against.
+    """
+    # Open the nexe.
+    reply = connection.RspRequest(
+        'vFile:open:%s,0,0' % EncodeHex(download_filename))
+    self.assertEqual(reply[0], 'F')
+    fd = int(reply[1:], 16)
+    self.assertGreaterEqual(fd, 0)
+    # Read in the full contents of the file.
+    data = ''
+    offset = 0
+    while True:
+      # Read up to 4096 bytes at a time.
+      reply = connection.RspRequest(
+        'vFile:pread:%x,%x,%x' % (fd, 4096, offset))
       self.assertEqual(reply[0], 'F')
-      fd = int(reply[1:], 16)
-      self.assertGreaterEqual(fd, 0)
-      # Read in the full contents of the file.
-      data = ''
-      offset = 0
-      while True:
-        # Read up to 4096 bytes at a time.
-        reply = connection.RspRequest(
-            'vFile:pread:%x,%x,%x' % (fd, 4096, offset))
-        self.assertEqual(reply[0], 'F')
-        retcode, chunk = reply[1:].split(';', 1)
-        retcode = int(retcode, 16)
-        self.assertGreaterEqual(retcode, 0)
-        chunk = DecodeEscaping(chunk)
-        self.assertEqual(len(chunk), retcode)
-        if retcode == 0:
-          break
-        data += chunk
-        offset += retcode
-      expected_data = open(MainNexe(), 'rb').read()
-      # Check that the length matches first, so that large data mismatch spew
-      # is only emitted in the case of more subtle mismatches.
-      self.assertEqual(len(data), len(expected_data))
-      self.assertEqual(data, expected_data)
-      # Close the file handle.
-      reply = connection.RspRequest('vFile:close:%x' % fd)
-      self.assertEqual(reply, 'F0')
+      retcode, chunk = reply[1:].split(';', 1)
+      retcode = int(retcode, 16)
+      self.assertGreaterEqual(retcode, 0)
+      chunk = DecodeEscaping(chunk)
+      self.assertEqual(len(chunk), retcode)
+      if retcode == 0:
+        break
+      data += chunk
+      offset += retcode
+    expected_data = open(expected_filename, 'rb').read()
+    # Check that the length matches first, so that large data mismatch spew
+    # is only emitted in the case of more subtle mismatches.
+    self.assertEqual(len(data), len(expected_data))
+    self.assertEqual(data, expected_data)
+    # Close the file handle.
+    reply = connection.RspRequest('vFile:close:%x' % fd)
+    self.assertEqual(reply, 'F0')
+
+  def test_remote_get_main_nexe(self):
+    with LaunchDebugStub('test_interrupt') as connection:
+      self.RemoteGet(connection, 'nexe', MainNexe())
+
+  def test_remote_get_irt(self):
+    if IrtNexe() is None:
+      self.skipTest('Does not work in non-irt mode.')
+    with LaunchDebugStub('test_interrupt') as connection:
+      self.RemoteGet(connection, 'irt', IrtNexe())
 
   def test_remote_get_bad_fd(self):
     with LaunchDebugStub('test_interrupt') as connection:

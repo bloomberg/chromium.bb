@@ -41,7 +41,9 @@ namespace gdb_rsp {
 // Arbitrary descriptor to return when the main nexe is opened.
 // This can be shared as the file connections are stateless.
 static const char kMainNexeFilename[] = "nexe";
+static const char kIrtNexeFilename[] = "irt";
 static const uint64_t kMainNexeFd = 123;
+static const uint64_t kIrtNexeFd = 234;
 
 // The GDB debug protocol specifies particular values for return values,
 // errno values, and mode flags. Explicitly defining the subset used herein.
@@ -491,6 +493,13 @@ void Target::ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err) {
       } else {
         EmitFileError(pktOut, kGdbEPERM);
       }
+    } else if (filename == kIrtNexeFilename) {
+      if (flags == kGdbO_RDONLY) {
+        pktOut->AddString("F");
+        pktOut->AddNumberSep(kIrtNexeFd, 0);
+      } else {
+        EmitFileError(pktOut, kGdbEPERM);
+      }
     } else {
       EmitFileError(pktOut, kGdbENOENT);
     }
@@ -502,6 +511,9 @@ void Target::ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err) {
       return;
     }
     if (fd == kMainNexeFd) {
+      pktOut->AddString("F");
+      pktOut->AddNumberSep(0, 0);
+    } else if (fd == kIrtNexeFd) {
       pktOut->AddString("F");
       pktOut->AddNumberSep(0, 0);
     } else {
@@ -519,17 +531,22 @@ void Target::ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err) {
       *err = BAD_ARGS;
       return;
     }
-    if (fd != kMainNexeFd) {
+    NaClDesc *desc;
+    if (fd == kMainNexeFd) {
+      desc = nap_->main_nexe_desc;
+    } else if (fd == kIrtNexeFd) {
+      desc = nap_->irt_nexe_desc;
+    } else {
       EmitFileError(pktOut, kGdbEBADF);
       return;
     }
+    CHECK(NULL != desc);
     if (count > kGdbPreadChunkSize) {
       count = kGdbPreadChunkSize;
     }
     nacl::scoped_array<char> buffer(new char[kGdbPreadChunkSize]);
-    CHECK(NULL != nap_->main_nexe_desc);
-    ssize_t result = (*NACL_VTBL(NaClDesc, nap_->main_nexe_desc)->PRead)(
-        nap_->main_nexe_desc, buffer.get(),
+    ssize_t result = (*NACL_VTBL(NaClDesc, desc)->PRead)(
+        desc, buffer.get(),
         static_cast<size_t>(count),
         static_cast<nacl_off64_t>(offset));
     pktOut->AddString("F");

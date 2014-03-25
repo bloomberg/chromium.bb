@@ -265,6 +265,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
   nap->debug_stub_callbacks = NULL;
   nap->main_nexe_desc = NULL;
+  nap->irt_nexe_desc = NULL;
 
   nap->exception_handler = 0;
   if (!NaClMutexCtor(&nap->exception_mu)) {

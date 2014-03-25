@@ -320,10 +320,19 @@ class Gdb(object):
     self.Command('remote get nexe ' + FilenameToUnix(nexe_filename))
     return nexe_filename
 
+  def FetchIrtNexe(self):
+    nexe_filename = MakeOutFileName(
+        self._options.output_dir, 'remote', '.nexe')
+    self.Command('remote get irt ' + FilenameToUnix(nexe_filename))
+    return nexe_filename
+
   def GetMainNexe(self):
     if self._options.ld_so is not None:
       return self._options.ld_so
     return self._options.nexe
+
+  def GetIrtNexe(self):
+    return self._options.irt
 
 
 def DecodeOptions():

@@ -15,7 +15,11 @@ test_prog = env.ComponentProgram(
     'debugger_test', 'debugger_test.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
-sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-v', '-f', test_prog])
+sel_ldr_command = ['-v']
+if env.Bit('tests_use_irt'):
+  sel_ldr_command += ['-B', env.GetIrtNexe()]
+sel_ldr_command += ['-f', test_prog]
+sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), sel_ldr_command)
 if env.GetEmulator():
   # Run sel_ldr through qemu-arm.  Add "-Q" to disable the platform
   # qualification tests because they fail under qemu-arm.
