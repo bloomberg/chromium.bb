@@ -3,6 +3,7 @@
 <head>
 <script src="resources/audio-testing.js"></script>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 </head>
 
 <body>
@@ -105,7 +106,7 @@ function runTest()
     window.jsTestIsAsync = true;
 
     // Create offline audio context, rendering for renderTime seconds.
-    context = new webkitOfflineAudioContext(2, timeToSampleFrame(renderTime, sampleRate), sampleRate);
+    context = new OfflineAudioContext(2, timeToSampleFrame(renderTime, sampleRate), sampleRate);
 
     // This is only used so we can access the playback state constants.
     var bufferSource = context.createBufferSource();

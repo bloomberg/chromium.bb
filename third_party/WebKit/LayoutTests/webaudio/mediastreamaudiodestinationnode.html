@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 </head>
 
@@ -21,7 +22,7 @@ function runTest() {
         testRunner.dumpAsText();
     }
 
-    context = new webkitAudioContext();
+    context = new AudioContext();
 
     mediaStreamDestination = context.createMediaStreamDestination();
 

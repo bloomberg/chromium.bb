@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 </head>
 
@@ -19,7 +20,7 @@ if (window.testRunner) {
 }
 
 var doTest = function(fftSize, illegal) {
-    var c = new webkitOfflineAudioContext(1, 1000, 44100);
+    var c = new OfflineAudioContext(1, 1000, 44100);
     var a = c.createAnalyser();
     try {
         a.fftSize = fftSize;
@@ -48,7 +49,7 @@ for (var i = 2; i <= 0x20000; i *= 2) {
 
 if (window.testRunner)
     testRunner.notifyDone();
-testPassed("webkitAudioContext survived multiple invalid FFT array resizings.");
+testPassed("AudioContext survived multiple invalid FFT array resizings.");
 </script>
 
 </body>

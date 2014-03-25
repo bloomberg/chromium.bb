@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="resources/audio-testing.js"></script>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audiobuffersource-testing.js"></script>
 <script src="../resources/js-test.js"></script>
 </head>
@@ -96,7 +97,7 @@ function runTest() {
     window.jsTestIsAsync = true;
 
     // Create offline audio context.
-    var context = new webkitOfflineAudioContext(1, totalRenderLengthFrames, sampleRate);
+    var context = new OfflineAudioContext(1, totalRenderLengthFrames, sampleRate);
     buffer = createTestBuffer(context, bufferFrameLength);
 
     for (var i = 0; i < tests.length; ++i)

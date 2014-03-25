@@ -8,6 +8,7 @@ We use an impulse so we can tell exactly where the rendering is happening.
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 <script type="text/javascript" src="resources/buffer-loader.js"></script>
 </head>
@@ -113,7 +114,7 @@ function runTest() {
     window.jsTestIsAsync = true;
         
     // Create offline audio context.
-    context = new webkitOfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
+    context = new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
     createImpulse();    
 
     for (var i = 0; i < sampleOffsets.length; ++i) {

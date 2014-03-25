@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 </head>
 
@@ -282,7 +283,7 @@ function runTest() {
     // Create 8-channel offline audio context.
     // Each test will render 8 sample-frames starting at sample-frame position testNumber * 8.
     var totalFrameLength = numberOfTests * singleTestFrameLength;
-    context = new webkitOfflineAudioContext(renderNumberOfChannels, totalFrameLength, sampleRate);
+    context = new OfflineAudioContext(renderNumberOfChannels, totalFrameLength, sampleRate);
 
     // Set destination to discrete mixing.
     context.destination.channelCount = renderNumberOfChannels;

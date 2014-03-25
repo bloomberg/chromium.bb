@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 </head>
 
@@ -30,7 +31,7 @@ var analyser;
 
 function constructCommonGraph() {
     // Create offline audio context.
-    context = new webkitOfflineAudioContext(1, renderLengthInFrames, sampleRate);
+    context = new OfflineAudioContext(1, renderLengthInFrames, sampleRate);
     constantBuffer = createConstantBuffer(context, renderLengthInFrames, 1);
 
     bufferSource = context.createBufferSource();

@@ -5,6 +5,7 @@ Create an oscillator of each type and verify that the type is set correctly.
 -->
 <html>
 <head>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 <script type="text/javascript" src="../resources/js-test.js"></script>
 </head>
@@ -35,7 +36,7 @@ function runTest()
     window.jsTestIsAsync = true;
         
     // Create offline audio context.
-    var context = new webkitOfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
+    var context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
     var osc = context.createOscillator();
 
     // Set each possible oscillator type (except CUSTOM) and verify that the type is correct.

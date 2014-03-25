@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 </head>
 
@@ -22,7 +23,7 @@ function runTest() {
     
     window.jsTestIsAsync = true;
 
-    context = new webkitAudioContext();
+    context = new AudioContext();
     var panner = context.createPanner();
    
     if (panner.numberOfInputs === 1) 

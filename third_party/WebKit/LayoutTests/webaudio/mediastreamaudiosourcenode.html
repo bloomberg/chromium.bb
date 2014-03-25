@@ -3,6 +3,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 </head>
 
@@ -35,7 +36,7 @@ function gotStream(stream) {
     shouldBe('s.getAudioTracks().length', '1');
     shouldBe('s.getVideoTracks().length', '0');
 
-    context = new webkitAudioContext();
+    context = new AudioContext();
 
     // Create an AudioNode from the stream.
     var mediaStreamSource = context.createMediaStreamSource(stream);

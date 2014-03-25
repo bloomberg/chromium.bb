@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
+    <script src="resources/compatibility.js"></script>
     <script src="resources/audio-testing.js"></script>
     <script src="../resources/js-test.js"></script>
     <script src="resources/panner-model-testing.js"></script>
@@ -28,7 +29,7 @@
           window.jsTestIsAsync = true;
 
           // Create offline audio context.
-          context = new webkitOfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
+          context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
 
           createTestAndRun(context, nodesToCreate, 1);
       }

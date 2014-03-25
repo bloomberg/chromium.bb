@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <body>
 <script>
 description('Tests that a script processor node is not prematurely GCed');
@@ -17,7 +18,7 @@ function test(saveReference, nextStep) {
           'keeping a reference to the script processor node alive.');
 
     // Create an audio context
-    var context = new webkitOfflineAudioContext(
+    var context = new OfflineAudioContext(
         2,        // channels
         4096,     // length (frames)
         44100.0); // sample rate

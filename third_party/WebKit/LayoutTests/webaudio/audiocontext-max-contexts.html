@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 </head>
 <body>
 <script>
@@ -10,7 +11,7 @@ description("Check that the AudioContext constructor throws when the limit on ha
 function reachHardwareContextsLimit() {
     var context = [];
     for (var i=0; i<10; ++i) {
-        context[i] = new webkitAudioContext();
+        context[i] = new AudioContext();
         // Trigger lazy initialization.
         context[i].createBufferSource();
     }

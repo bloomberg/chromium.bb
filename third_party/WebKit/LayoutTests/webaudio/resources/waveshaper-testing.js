@@ -154,7 +154,7 @@ function runWaveShaperOversamplingTest(testParams) {
 
     // Create offline audio context.
     var numberOfRenderFrames = sampleRate * lengthInSeconds;
-    context = new webkitOfflineAudioContext(1, numberOfRenderFrames, sampleRate);
+    context = new OfflineAudioContext(1, numberOfRenderFrames, sampleRate);
 
     // source -> waveshaper -> destination
     var source = context.createBufferSource();

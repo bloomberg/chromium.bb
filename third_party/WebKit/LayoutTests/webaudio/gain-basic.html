@@ -7,6 +7,7 @@ Verifies GainNode attributes and their type.
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 
 </head>
@@ -21,7 +22,7 @@ function runTest() {
     }
 
     // Create audio context.
-    var context = new webkitAudioContext();
+    var context = new AudioContext();
 
     // Create gain node.
     var gainNode = context.createGain();

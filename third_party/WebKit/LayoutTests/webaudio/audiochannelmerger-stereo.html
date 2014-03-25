@@ -7,6 +7,7 @@ Tests that that we can merge two mono streams into a stereo stream.
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
 <script type="text/javascript" src="resources/buffer-loader.js"></script>
 </head>
@@ -78,7 +79,7 @@ function runTest() {
     window.jsTestIsAsync = true;
         
     // Create stereo offline audio context.
-    context = new webkitOfflineAudioContext(2, lengthInSampleFrames, sampleRate);
+    context = new OfflineAudioContext(2, lengthInSampleFrames, sampleRate);
 
     // Create two mono buffers, one having all -1 values, the other all +1.
     buffer1 = createBufferWithDCOffset(lengthInSampleFrames, sampleRate, -1);

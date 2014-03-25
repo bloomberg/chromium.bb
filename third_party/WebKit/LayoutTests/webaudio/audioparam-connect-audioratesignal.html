@@ -11,6 +11,7 @@ Thus it's easy to check that the resultant signal should be equal to the gain-sc
 
 <html>
 <head>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 <script src="../resources/js-test.js"></script>
 
@@ -68,7 +69,7 @@ function runTest() {
     var sampleFrameLength = sampleRate * lengthInSeconds;
 
     // Create offline audio context.
-    context = new webkitOfflineAudioContext(1, sampleFrameLength, sampleRate);
+    context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
 
     // Create buffer used by the source which will have its gain controlled.
     constantOneBuffer = createConstantBuffer(context, sampleFrameLength, 1);

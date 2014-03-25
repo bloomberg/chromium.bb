@@ -2,6 +2,7 @@
 <html>
   <head>
     <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
     <script type="text/javascript" src="resources/audio-testing.js"></script>
   </head>
 
@@ -53,7 +54,7 @@
 
         window.jsTestIsAsync = true;
       
-        context = new webkitOfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+        context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
         // Connect an oscillator to a gain node to the compressor.  The
         // oscillator frequency is set to a high value for the (original)
         // emphasis to kick in. The gain is a little extra boost to get the

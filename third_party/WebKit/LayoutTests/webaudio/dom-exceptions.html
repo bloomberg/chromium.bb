@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+<script src="resources/compatibility.js"></script>
 <script src="resources/audio-testing.js"></script>
 <script src="../resources/js-test.js"></script>
 <script src="resources/biquad-testing.js"></script>
@@ -24,8 +25,8 @@ function runTest() {
         testRunner.dumpAsText();
     }
     
-    context = new webkitAudioContext();
-    otherContext = new webkitAudioContext();
+    context = new AudioContext();
+    otherContext = new AudioContext();
 
     // Test creation of various objects
 
@@ -108,12 +109,12 @@ function runTest() {
 
     // OfflineAudioContext
     // Invalid number of channels (unspecified error)
-    shouldThrow("new webkitOfflineAudioContext(99, 100, context.sampleRate)");
+    shouldThrow("new OfflineAudioContext(99, 100, context.sampleRate)");
     // Invalid sample rate. (unspecified error)
-    shouldThrow("new webkitOfflineAudioContext(1, 100, 1)");
-    shouldThrow("new webkitOfflineAudioContext(1, 100, 1e6)");
+    shouldThrow("new OfflineAudioContext(1, 100, 1)");
+    shouldThrow("new OfflineAudioContext(1, 100, 1e6)");
     // Invalid frame length (crbug.com/351277)
-    shouldThrow("new webkitOfflineAudioContext(1, -88200000000000, 44100)");
+    shouldThrow("new OfflineAudioContext(1, -88200000000000, 44100)");
 
     // WaveShaper types
     node = context.createWaveShaper();
@@ -169,7 +170,7 @@ function runTest() {
     // Convolver buffer rate must match context rate. Create on offline context so we
     // specify the context rate exactly, in case the test is run on platforms with different
     // HW sample rates.
-    shouldNotThrow("oc = new webkitOfflineAudioContext(1, 44100, 44100)");
+    shouldNotThrow("oc = new OfflineAudioContext(1, 44100, 44100)");
     shouldNotThrow("conv = oc.createConvolver()");
     shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
 }

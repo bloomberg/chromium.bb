@@ -4,6 +4,7 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script type="text/javascript" src="resources/audio-testing.js"></script>
+<script src="resources/compatibility.js"></script>
 </head>
 
 <body>
@@ -24,7 +25,7 @@ function runTest() {
     
     window.jsTestIsAsync = true;
     
-    context = new webkitAudioContext();
+    context = new AudioContext();
     source = context.createBufferSource();
 
     // Make sure we can't set to something which isn't an AudioBuffer.

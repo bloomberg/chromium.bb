@@ -2,6 +2,7 @@
 <html>
   <head>
     <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
     <script src="resources/audio-testing.js"></script>
   </head>
 
@@ -95,7 +96,7 @@
 
           window.jsTestIsAsync = true;
 
-          context = new webkitOfflineAudioContext(1, 2048, sampleRate);
+          context = new OfflineAudioContext(1, 2048, sampleRate);
 
           // Use a sine wave oscillator as the reference source signal.
           osc = context.createOscillator();
