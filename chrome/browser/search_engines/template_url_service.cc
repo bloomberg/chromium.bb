@@ -2600,7 +2600,7 @@ void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
     } else {
       // The value from the preferences takes over.
       default_search_provider = NULL;
-      if (default_from_prefs.get()) {
+      if (default_from_prefs) {
         TemplateURLData data(default_from_prefs->data());
         data.created_by_policy = true;
         data.id = kInvalidTemplateURLID;
@@ -2643,6 +2643,9 @@ void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
     SetTemplateURLs(template_urls);
 
     if (default_search_provider) {
+      base::AutoReset<DefaultSearchChangeOrigin> change_origin(
+          &dsp_change_origin_, default_from_prefs ?
+              dsp_change_origin_ : DSP_CHANGE_NEW_ENGINE_NO_PREFS);
       // Note that this saves the default search provider to prefs.
       SetDefaultSearchProvider(default_search_provider);
     } else {

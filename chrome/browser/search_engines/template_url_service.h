@@ -421,13 +421,17 @@ class TemplateURLService : public WebDataServiceConsumer,
     // certain changes were intentionally from the system, or possibly some
     // unintentional change from when we were Syncing.
     DSP_CHANGE_SYNC_UNINTENTIONAL,
-    // All non-sync changes save PROFILE_RESET; we can't reorder the list for
-    // clarity as this would screw up stat collection.
+    // All changes that don't fall into another category; we can't reorder the
+    // list for clarity as this would screw up stat collection.
     DSP_CHANGE_OTHER,
     // Changed through "Profile Reset" feature.
     DSP_CHANGE_PROFILE_RESET,
     // Changed by an extension through the Override Settings API.
     DSP_CHANGE_OVERRIDE_SETTINGS_EXTENSION,
+    // New DSP during database/prepopulate data load, which was not previously
+    // in the known engine set, and with no previous value in prefs.  The
+    // typical time to see this is during first run.
+    DSP_CHANGE_NEW_ENGINE_NO_PREFS,
     // Boundary value.
     DSP_CHANGE_MAX,
   };
