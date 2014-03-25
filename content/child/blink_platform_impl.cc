@@ -401,10 +401,6 @@ WebString BlinkPlatformImpl::userAgent() {
   return WebString::fromUTF8(GetContentClient()->GetUserAgent());
 }
 
-WebString BlinkPlatformImpl::userAgent(const WebURL& url) {
-  return userAgent();
-}
-
 WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
                                         WebString& mimetype_out,
                                         WebString& charset_out) {

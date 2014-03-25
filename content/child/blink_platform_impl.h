@@ -76,8 +76,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebSocketStreamHandle* createSocketStreamHandle();
   virtual blink::WebSocketHandle* createWebSocketHandle() OVERRIDE;
   virtual blink::WebString userAgent();
-  // TODO(jam): remove this after Blink is updated
-  virtual blink::WebString userAgent(const blink::WebURL& url);
   virtual blink::WebData parseDataURL(
       const blink::WebURL& url, blink::WebString& mimetype,
       blink::WebString& charset);
