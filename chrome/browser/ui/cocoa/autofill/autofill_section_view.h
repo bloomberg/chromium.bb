@@ -18,6 +18,10 @@
   BOOL shouldHighlightOnHover_;  // Indicates if view should highlight on hover
 }
 
+// Resets tracking info. Useful if e.g. the mouse has changed inside/outside
+// status during a popup menu's runloop.
+- (void)updateHoverState;
+
 // Target for any mouse click.
 @property(assign, nonatomic) NSControl* clickTarget;
 

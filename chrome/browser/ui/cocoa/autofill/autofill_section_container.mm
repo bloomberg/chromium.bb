@@ -324,6 +324,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 - (void)update {
   [self updateAndClobber:YES];
+  [view_ updateHoverState];
 }
 
 - (void)fillForType:(const autofill::ServerFieldType)type {

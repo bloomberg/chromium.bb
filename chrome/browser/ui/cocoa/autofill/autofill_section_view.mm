@@ -20,6 +20,12 @@ SkColor kShadingColor = 0x07000000;  // SkColorSetARGB(7, 0, 0, 0);
 @synthesize shouldHighlightOnHover = shouldHighlightOnHover_;
 @synthesize isHighlighted = isHighlighted_;
 
+- (void)updateHoverState {
+  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+  mouseLoc = [self convertPoint:mouseLoc fromView:nil];
+  [self setIsHighlighted:NSPointInRect(mouseLoc, [self bounds])];
+}
+
 - (void)mouseEvent:(NSEvent*)event {
   if ([event type] == NSMouseExited)
     [self setIsHighlighted:NO];
