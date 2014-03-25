@@ -92,10 +92,6 @@ public:
     int modifierKeyState() const { return m_modifierKeyState; }
     void setModifierKeyState(int modifierKeyState) { m_modifierKeyState = modifierKeyState; }
 
-    // The accessor should only ever be called by DragData.
-    const String& filenameForNavigation() const { return m_filenameForNavigation; }
-    void setFilenameForNavigation(const String& filename) { m_filenameForNavigation = filename; }
-
     void trace(Visitor*);
 
 private:
@@ -107,8 +103,6 @@ private:
     void internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem>);
 
     WillBeHeapVector<RefPtrWillBeMember<DataObjectItem> > m_itemList;
-
-    String m_filenameForNavigation;
 
     // State of Shift/Ctrl/Alt/Meta keys.
     int m_modifierKeyState;

@@ -161,10 +161,4 @@ void WebDragData::setFilesystemId(const WebString& filesystemId)
     DraggedIsolatedFileSystem::provideTo(*m_private.get(), DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
 }
 
-void WebDragData::setFilenameForNavigation(const WebString& filename)
-{
-    ensureMutable();
-    m_private->setFilenameForNavigation(filename);
-}
-
 } // namespace blink

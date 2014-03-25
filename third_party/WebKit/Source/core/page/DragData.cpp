@@ -69,21 +69,16 @@ static bool containsHTML(const DataObject* dropData)
 bool DragData::containsURL(FilenameConversionPolicy filenamePolicy) const
 {
     return m_platformDragData->types().contains(mimeTypeTextURIList)
-        || (filenamePolicy == ConvertFilenames
-            && (m_platformDragData->containsFilenames() || !m_platformDragData->filenameForNavigation().isEmpty()));
+        || (filenamePolicy == ConvertFilenames && m_platformDragData->containsFilenames());
 }
 
 String DragData::asURL(FilenameConversionPolicy filenamePolicy, String* title) const
 {
     String url;
-    if (m_platformDragData->types().contains(mimeTypeTextURIList)) {
+    if (m_platformDragData->types().contains(mimeTypeTextURIList))
         m_platformDragData->urlAndTitle(url, title);
-    } else if (filenamePolicy == ConvertFilenames) {
-        if (containsFiles())
-            url = filePathToURL(m_platformDragData->filenames()[0]);
-        else
-            url = filePathToURL(m_platformDragData->filenameForNavigation());
-    }
+    else if (filenamePolicy == ConvertFilenames && containsFiles())
+        url = filePathToURL(m_platformDragData->filenames()[0]);
     return url;
 }
 
