@@ -13,7 +13,7 @@
 namespace content {
 
 class DevToolsGpuAgent;
-class GpuCommandBufferStub;
+class GpuChannel;
 
 class GpuEventsDispatcher : public base::NonThreadSafe {
  public:
@@ -28,15 +28,15 @@ class GpuEventsDispatcher : public base::NonThreadSafe {
   void AddProcessor(DevToolsGpuAgent* processor);
   void RemoveProcessor(DevToolsGpuAgent* processor);
 
-  static void FireEvent(EventPhase phase, GpuCommandBufferStub* stub) {
+  static void FireEvent(EventPhase phase, GpuChannel* channel) {
     if (!IsEnabled())
       return;
-    DoFireEvent(phase, stub);
+    DoFireEvent(phase, channel);
   }
 
 private:
   static bool IsEnabled() { return enabled_; }
-  static void DoFireEvent(EventPhase, GpuCommandBufferStub* stub);
+  static void DoFireEvent(EventPhase, GpuChannel* channel);
 
   static bool enabled_;
   std::vector<DevToolsGpuAgent*> processors_;
@@ -46,15 +46,15 @@ namespace devtools_gpu_instrumentation {
 
 class ScopedGpuTask {
  public:
-  explicit ScopedGpuTask(GpuCommandBufferStub* stub) :
-      stub_(stub) {
-    GpuEventsDispatcher::FireEvent(GpuEventsDispatcher::kEventStart, stub_);
+  explicit ScopedGpuTask(GpuChannel* channel) :
+      channel_(channel) {
+    GpuEventsDispatcher::FireEvent(GpuEventsDispatcher::kEventStart, channel_);
   }
   ~ScopedGpuTask() {
-    GpuEventsDispatcher::FireEvent(GpuEventsDispatcher::kEventFinish, stub_);
+    GpuEventsDispatcher::FireEvent(GpuEventsDispatcher::kEventFinish, channel_);
   }
  private:
-  GpuCommandBufferStub* stub_;
+  GpuChannel* channel_;
   DISALLOW_COPY_AND_ASSIGN(ScopedGpuTask);
 };
 

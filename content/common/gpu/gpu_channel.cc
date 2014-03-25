@@ -894,4 +894,13 @@ void GpuChannel::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel_->RemoveFilter(filter);
 }
 
+uint64 GpuChannel::GetMemoryUsage() {
+  uint64 size = 0;
+  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
+       !it.IsAtEnd(); it.Advance()) {
+    size += it.GetCurrentValue()->GetMemoryUsage();
+  }
+  return size;
+}
+
 }  // namespace content

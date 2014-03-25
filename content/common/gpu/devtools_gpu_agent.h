@@ -20,7 +20,6 @@ class Message;
 namespace content {
 
 class GpuChannel;
-class GpuCommandBufferStub;
 
 class DevToolsGpuAgent : public base::NonThreadSafe {
  public:
@@ -29,7 +28,7 @@ class DevToolsGpuAgent : public base::NonThreadSafe {
 
   void ProcessEvent(TimeTicks timestamp,
                     GpuEventsDispatcher::EventPhase,
-                    GpuCommandBufferStub* stub);
+                    GpuChannel* channel);
 
   void StartEventsRecording(int32* route_id);
   void StopEventsRecording();

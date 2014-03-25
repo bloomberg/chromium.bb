@@ -36,14 +36,14 @@ void GpuEventsDispatcher::RemoveProcessor(DevToolsGpuAgent* processor) {
 
 // static
 void GpuEventsDispatcher::DoFireEvent(EventPhase phase,
-                                      GpuCommandBufferStub* stub) {
+                                      GpuChannel* channel) {
   TimeTicks timestamp = base::TimeTicks::NowFromSystemTraceTime();
   GpuEventsDispatcher* self =
-      stub->channel()->gpu_channel_manager()->gpu_devtools_events_dispatcher();
+      channel->gpu_channel_manager()->gpu_devtools_events_dispatcher();
   DCHECK(self->CalledOnValidThread());
   std::vector<DevToolsGpuAgent*>::iterator it;
   for (it = self->processors_.begin(); it != self->processors_.end(); ++it) {
-    (*it)->ProcessEvent(timestamp, phase, stub);
+    (*it)->ProcessEvent(timestamp, phase, channel);
   }
 }
 

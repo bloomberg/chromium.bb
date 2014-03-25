@@ -147,6 +147,8 @@ class GpuChannel : public IPC::Listener,
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
   void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
 
+  uint64 GetMemoryUsage();
+
  protected:
   virtual ~GpuChannel();
 

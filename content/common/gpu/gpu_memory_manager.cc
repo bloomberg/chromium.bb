@@ -343,7 +343,7 @@ void GpuMemoryManager::SetClientStateManagedMemoryStats(
 }
 
 uint64 GpuMemoryManager::GetClientMemoryUsage(
-    const GpuMemoryManagerClient* client) const{
+    const GpuMemoryManagerClient* client) const {
   TrackingGroupMap::const_iterator tracking_group_it =
       tracking_groups_.find(client->GetMemoryTracker());
   DCHECK(tracking_group_it != tracking_groups_.end());

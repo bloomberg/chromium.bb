@@ -166,7 +166,7 @@ GpuMemoryManager* GpuCommandBufferStub::GetMemoryManager() const {
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
-  devtools_gpu_instrumentation::ScopedGpuTask task(this);
+  devtools_gpu_instrumentation::ScopedGpuTask task(channel());
   FastSetActiveURL(active_url_, active_url_hash_);
 
   // Ensure the appropriate GL context is current before handling any IPC
