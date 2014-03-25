@@ -28,9 +28,9 @@
 #include <string>
 
 #include "fallback_data_store.h"
+#include "time_to_string.h"
 #include "util/md5.h"
 #include "util/stl_util.h"
-#include "util/string_util.h"
 
 namespace i18n {
 namespace addressinput {

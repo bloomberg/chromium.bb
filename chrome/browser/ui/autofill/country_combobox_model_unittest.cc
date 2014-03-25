@@ -50,8 +50,7 @@ TEST_F(CountryComboboxModelTest, AllCountriesHaveComponents) {
 
     std::string country_code = model()->countries()[i]->country_code();
     std::vector< ::i18n::addressinput::AddressUiComponent> components =
-        ::i18n::addressinput::BuildComponents(
-            country_code, std::string(), NULL);
+        ::i18n::addressinput::BuildComponents(country_code);
     EXPECT_FALSE(components.empty());
   }
 }

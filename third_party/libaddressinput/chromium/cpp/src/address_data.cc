@@ -24,7 +24,6 @@
 
 #include "region_data_constants.h"
 #include "rule.h"
-#include "util/string_util.h"
 
 namespace i18n {
 namespace addressinput {
@@ -66,16 +65,7 @@ void AddressData::FormatForDisplay(std::vector<std::string>* lines) const {
   rule.CopyFrom(Rule::GetDefault());
   rule.ParseSerializedRule(RegionDataConstants::GetRegionData(country_code));
 
-  // If latinized rules are available and the |language_code| of this address is
-  // not the primary language code for the region, then use the latinized
-  // formatting rules.
-  const std::vector<std::vector<FormatElement> >& format =
-      rule.GetLatinFormat().empty() ||
-      language_code.empty() ||
-      NormalizeLanguageCode(language_code) ==
-          NormalizeLanguageCode(rule.GetLanguage())
-              ? rule.GetFormat() : rule.GetLatinFormat();
-
+  const std::vector<std::vector<FormatElement> >& format = rule.GetFormat();
   for (size_t i = 0; i < format.size(); ++i) {
     std::string line;
     for (size_t j = 0; j < format[i].size(); ++j) {
@@ -115,6 +105,29 @@ void AddressData::SetFieldValue(AddressField field, const std::string& value) {
   if (field_value != NULL) {
     *field_value = value;
   }
+}
+
+const std::string& AddressData::GuessLanguageCode() const {
+  Rule rule;
+  rule.CopyFrom(Rule::GetDefault());
+  if (!rule.ParseSerializedRule(
+          RegionDataConstants::GetRegionData(country_code))) {
+    return language_code;
+  }
+
+  std::vector<std::string>::const_iterator lang_it =
+      std::find(rule.GetLanguages().begin(),
+                rule.GetLanguages().end(),
+                language_code);
+  if (lang_it != rule.GetLanguages().end()) {
+    return *lang_it;
+  }
+
+  if (!rule.GetLanguage().empty()) {
+    return rule.GetLanguage();
+  }
+
+  return language_code;
 }
 
 }  // namespace addressinput

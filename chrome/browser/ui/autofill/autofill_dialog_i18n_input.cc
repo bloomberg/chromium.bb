@@ -6,7 +6,6 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -39,11 +38,8 @@ DetailInput::Length LengthFromHint(AddressUiComponent::LengthHint hint) {
 void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
                         DetailInputs* inputs) {
-  // TODO(rouslan): Store the language code for the autofill profile.
-  // http://crbug.com/354955
   std::vector<AddressUiComponent> components(
-      ::i18n::addressinput::BuildComponents(
-          country_code, g_browser_process->GetApplicationLocale(), NULL));
+      ::i18n::addressinput::BuildComponents(country_code));
 
   const bool billing = address_type == common::ADDRESS_TYPE_BILLING;
 
@@ -246,8 +242,7 @@ void CreateAddressData(
 bool CountryIsFullySupported(const std::string& country_code) {
   DCHECK_EQ(2U, country_code.size());
   std::vector< ::i18n::addressinput::AddressUiComponent> components =
-      ::i18n::addressinput::BuildComponents(
-          country_code, g_browser_process->GetApplicationLocale(), NULL);
+      ::i18n::addressinput::BuildComponents(country_code);
   for (size_t i = 0; i < components.size(); ++i) {
     if (components[i].field == ::i18n::addressinput::DEPENDENT_LOCALITY)
       return false;

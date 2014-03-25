@@ -28,7 +28,7 @@
 #include "fake_downloader.h"
 #include "fake_storage.h"
 #include "region_data_constants.h"
-#include "util/string_util.h"
+#include "time_to_string.h"
 
 namespace i18n {
 namespace addressinput {

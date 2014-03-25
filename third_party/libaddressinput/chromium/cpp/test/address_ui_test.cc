@@ -75,8 +75,7 @@ TEST(AddressUiTest, RegionsAndComponentsAreValid) {
   for (size_t i = 0; i < region_codes.size(); ++i) {
     SCOPED_TRACE("Region code: " + region_codes[i]);
     EXPECT_EQ(2U, region_codes[i].size());
-    EXPECT_TRUE(ComponentsAreValid(
-        BuildComponents(region_codes[i], std::string(), NULL)));
+    EXPECT_TRUE(ComponentsAreValid(BuildComponents(region_codes[i])));
     EXPECT_FALSE(GetRequiredFields(region_codes[i]).empty());
   }
 }
@@ -84,8 +83,7 @@ TEST(AddressUiTest, RegionsAndComponentsAreValid) {
 // Verifies that BuildComponents() and GetRequiredFields() return an empty
 // vector for an invalid region code.
 TEST(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
-  EXPECT_TRUE(
-      BuildComponents("INVALID-REGION-CODE", std::string(), NULL).empty());
+  EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE").empty());
   EXPECT_TRUE(GetRequiredFields("INVALID-REGION-CODE").empty());
 }
 
@@ -121,53 +119,6 @@ INSTANTIATE_TEST_CASE_P(
         SeparatorData("th", " "),
         SeparatorData("en", ", ")));
 
-TEST(AddressUiTest, ComponentLanguageCodeTest) {
-  static const struct LanguageCodeData {
-    const char* region_code;
-    const char* ui_language_code;
-    const char* components_language_code;
-  } kLangugeCodes[] = {
-    {"AM", "", "hy"},
-    {"AM", "hy", "hy"},
-    {"AM", "en", "hy-latn"},
-    {"CN", "zh-hans", "zh-hans"},
-    {"CN", "zh-hant", "zh-hant"},
-    {"CN", "zh", "zh"},
-    {"CN", "zh-latn", "zh-latn"},
-    {"CN", "en", "zh-latn"},
-    {"CN", "ja", "zh-latn"},
-    {"CN", "ko", "zh-latn"},
-    {"HK", "zh", "zh"},
-    {"HK", "zh-hans", "zh-hans"},
-    {"HK", "zh-hant", "zh-hant"},
-    {"HK", "zh-latn", "zh-latn"},
-    {"HK", "en", "en"},
-    {"HK", "fr", "zh-latn"},
-    {"HK", "ja", "zh-latn"},
-    {"HK", "ko", "zh-latn"},
-    {"MO", "zh", "zh"},
-    {"MO", "pt", "pt"},
-    {"MO", "en", "zh-latn"},
-    {"AQ", "en", "en"},
-    {"AQ", "fr", "fr"},
-    {"AQ", "es", "es"},
-    {"AQ", "zh", "zh"}
-  };
-  static const size_t kArraySize =
-      sizeof kLangugeCodes / sizeof (LanguageCodeData);
-  for (size_t i = 0; i < kArraySize; ++i) {
-    SCOPED_TRACE(std::string("region code = ") +
-        kLangugeCodes[i].region_code + ", ui language code = " +
-        kLangugeCodes[i].ui_language_code + ", components language code = " +
-        kLangugeCodes[i].components_language_code);
-    std::string components_language_code;
-    EXPECT_FALSE(BuildComponents(kLangugeCodes[i].region_code,
-                                 kLangugeCodes[i].ui_language_code,
-                                 &components_language_code).empty());
-    EXPECT_EQ(
-        kLangugeCodes[i].components_language_code, components_language_code);
-  }
-}
 
 }  // namespace
 

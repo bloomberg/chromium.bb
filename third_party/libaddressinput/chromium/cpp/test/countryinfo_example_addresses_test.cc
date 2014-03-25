@@ -32,7 +32,7 @@
 #include "fake_downloader.h"
 #include "fake_storage.h"
 #include "util/json.h"
-#include "util/string_util.h"
+#include "util/string_split.h"
 
 namespace i18n {
 namespace addressinput {

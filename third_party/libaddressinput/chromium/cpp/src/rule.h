@@ -108,12 +108,6 @@ class Rule {
     return format_;
   }
 
-  // Returns the latinized format of the address as it should appear on an
-  // envelope.
-  const std::vector<std::vector<FormatElement> >& GetLatinFormat() const {
-    return latin_format_;
-  }
-
   // Returns the required fields for this rule.
   const std::vector<AddressField>& GetRequired() const { return required_; }
 
@@ -126,12 +120,6 @@ class Rule {
   // Returns all of the language codes for which this rule has custom rules, for
   // example ["de", "fr", "it"].
   const std::vector<std::string>& GetLanguages() const { return languages_; }
-
-  // Returns all of the languages codes for addresses that adhere to this rule,
-  // for example ["de", "fr", "gsw", "it"].
-  const std::vector<std::string>& GetInputLanguages() const {
-    return input_languages_;
-  }
 
   // Returns the language code of this rule, for example "de".
   const std::string& GetLanguage() const { return language_; }
@@ -180,14 +168,12 @@ class Rule {
   std::string name_;
   std::string latin_name_;
   std::vector<std::vector<FormatElement> > format_;
-  std::vector<std::vector<FormatElement> > latin_format_;
   std::vector<AddressField> required_;
   std::vector<std::string> sub_keys_;
   std::vector<std::string> sub_names_;
   // The Latin names (when |sub_names_| is not in Latin characters).
   std::vector<std::string> sub_lnames_;
   std::vector<std::string> languages_;
-  std::vector<std::string> input_languages_;
   std::string language_;
   std::string postal_code_format_;
   int admin_area_name_message_id_;
