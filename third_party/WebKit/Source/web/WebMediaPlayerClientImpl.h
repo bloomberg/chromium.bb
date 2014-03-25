@@ -85,7 +85,6 @@ public:
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) OVERRIDE;
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
 
-    virtual bool needsWebLayerForVideo() const OVERRIDE;
     virtual void setWebLayer(WebLayer*) OVERRIDE;
     virtual void addTextTrack(WebInbandTextTrack*) OVERRIDE;
     virtual void removeTextTrack(WebInbandTextTrack*) OVERRIDE;
@@ -142,7 +141,6 @@ private:
     WebCore::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebCore::MediaPlayer::Preload m_preload;
-    bool m_needsWebLayerForVideo;
     double m_rate;
 
 #if OS(ANDROID)

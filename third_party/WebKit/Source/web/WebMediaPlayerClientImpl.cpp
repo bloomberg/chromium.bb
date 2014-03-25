@@ -187,12 +187,6 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
 
     WebURL poster = m_client->mediaPlayerPosterURL();
 
-    // This does not actually check whether the hardware can support accelerated
-    // compositing, but only if the flag is set. However, this is checked lazily
-    // in WebViewImpl::setIsAcceleratedCompositingActive() and will fail there
-    // if necessary.
-    m_needsWebLayerForVideo = frame->contentRenderer()->compositor()->hasAcceleratedCompositing();
-
     KURL kurl(ParsedURLString, url);
     m_webMediaPlayer = createWebMediaPlayer(this, kurl, frame);
     if (!m_webMediaPlayer)
@@ -458,11 +452,6 @@ AudioSourceProvider* WebMediaPlayerClientImpl::audioSourceProvider()
 }
 #endif
 
-bool WebMediaPlayerClientImpl::needsWebLayerForVideo() const
-{
-    return m_needsWebLayerForVideo;
-}
-
 PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* client)
 {
     return adoptPtr(new WebMediaPlayerClientImpl(client));
@@ -508,7 +497,6 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
     , m_preload(MediaPlayer::Auto)
-    , m_needsWebLayerForVideo(false)
     , m_rate(1.0)
 #if OS(ANDROID)
     , m_usePaintOnAndroid(false)
