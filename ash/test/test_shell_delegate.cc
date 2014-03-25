@@ -80,7 +80,7 @@ bool TestShellDelegate::IsRunningInForcedAppMode() const {
 void TestShellDelegate::PreInit() {
 }
 
-void TestShellDelegate::PreShutdown() {
+void TestShellDelegate::Shutdown() {
 }
 
 void TestShellDelegate::Exit() {

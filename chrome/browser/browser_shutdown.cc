@@ -18,7 +18,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
@@ -34,6 +36,8 @@
 #include "chrome/common/switch_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/browser_util_win.h"
@@ -57,6 +61,9 @@ namespace {
 
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
+
+// Whether the browser should quit without closing browsers.
+bool g_shutting_down_without_closing_browsers = false;
 
 #if defined(OS_WIN)
 upgrade_util::RelaunchMode g_relaunch_mode =
@@ -337,6 +344,14 @@ void SetTryingToQuit(bool quitting) {
 
 bool IsTryingToQuit() {
   return g_trying_to_quit;
+}
+
+bool ShuttingDownWithoutClosingBrowsers() {
+  return g_shutting_down_without_closing_browsers;
+}
+
+void SetShuttingDownWithoutClosingBrowsers(bool without_close) {
+  g_shutting_down_without_closing_browsers = without_close;
 }
 
 }  // namespace browser_shutdown

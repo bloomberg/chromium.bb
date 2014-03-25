@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -994,7 +995,12 @@ void BookmarkBarView::BookmarkModelLoaded(BookmarkModel* model,
 }
 
 void BookmarkBarView::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  NOTREACHED();
+  // In normal shutdown The bookmark model should never be deleted before us.
+  // When X exits suddenly though, it can happen, This code exists
+  // to check for regressions in shutdown code and not crash.
+  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
+    NOTREACHED();
+
   // Do minimal cleanup, presumably we'll be deleted shortly.
   model_->RemoveObserver(this);
   model_ = NULL;

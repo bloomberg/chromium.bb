@@ -630,8 +630,6 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  delegate_->PreShutdown();
-
   views::FocusManagerFactory::Install(NULL);
 
   // Remove the focus from any window. This will prevent overhead and side

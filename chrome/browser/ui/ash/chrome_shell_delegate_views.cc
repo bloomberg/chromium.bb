@@ -156,7 +156,7 @@ bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
 void ChromeShellDelegate::PreInit() {
 }
 
-void ChromeShellDelegate::PreShutdown() {
+void ChromeShellDelegate::Shutdown() {
 }
 
 ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {

@@ -35,6 +35,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -235,8 +237,10 @@ void ChromeShellDelegate::PreInit() {
       new chromeos::DisplayConfigurationObserver());
 }
 
-void ChromeShellDelegate::PreShutdown() {
-  display_configuration_observer_.reset();
+void ChromeShellDelegate::Shutdown() {
+  content::RecordAction(base::UserMetricsAction("Shutdown"));
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RequestShutdown();
 }
 
 ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
@@ -281,6 +285,11 @@ void ChromeShellDelegate::Observe(int type,
       InitAfterSessionStart();
       ash::Shell::GetInstance()->ShowShelf();
       break;
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      // Let classes unregister themselves as observers of the
+      // ash::Shell singleton before the shell is destroyed.
+      display_configuration_observer_.reset();
+      break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
@@ -292,5 +301,8 @@ void ChromeShellDelegate::PlatformInit() {
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_SESSION_STARTED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }

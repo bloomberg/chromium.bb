@@ -447,7 +447,9 @@ Browser::Browser(const CreateParams& params)
 
 Browser::~Browser() {
   // The tab strip should not have any tabs at this point.
-  DCHECK(tab_strip_model_->empty());
+  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
+    DCHECK(tab_strip_model_->empty());
+
   tab_strip_model_->RemoveObserver(this);
 
   // Destroy the BrowserCommandController before removing the browser, so that

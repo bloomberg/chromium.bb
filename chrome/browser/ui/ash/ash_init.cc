@@ -11,6 +11,7 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -82,8 +83,12 @@ void OpenAsh() {
 }
 
 void CloseAsh() {
-  if (ash::Shell::HasInstance())
+  // If shutdown is initiated by |BrowserX11IOErrorHandler|, don't
+  // try to cleanup resources.
+  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers() &&
+      ash::Shell::HasInstance()) {
     ash::Shell::DeleteInstance();
+  }
 }
 
 }  // namespace chrome
