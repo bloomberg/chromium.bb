@@ -31,7 +31,6 @@ const char kDarkThemeSearchUrl[] =
     "https://chrome.google.com/webstore/search-themes/dark";
 const char kLearnMoreUrl[] =
     "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
-const int kBubbleWidth = 500;
 
 class InvertBubbleView : public views::BubbleDelegateView,
                          public views::LinkListener {
@@ -75,10 +74,8 @@ void InvertBubbleView::Init() {
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(
-      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION),
-      original_font_list.Derive(2, gfx::Font::BOLD));
+      base::string16(), original_font_list.Derive(2, gfx::Font::BOLD));
   title->SetMultiLine(true);
-  title->SizeToFit(kBubbleWidth);
 
   learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more_->SetFontList(original_font_list);
@@ -89,8 +86,7 @@ void InvertBubbleView::Init() {
   high_contrast_->SetFontList(original_font_list);
   high_contrast_->set_listener(this);
 
-  dark_theme_ =
-      new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME));
+  dark_theme_ = new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME));
   dark_theme_->SetFontList(original_font_list);
   dark_theme_->set_listener(this);
 
@@ -116,6 +112,11 @@ void InvertBubbleView::Init() {
   layout->AddView(dark_theme_);
   layout->AddView(learn_more_);
   layout->AddView(close_);
+
+  // Fit the message to the width of the links in the bubble.
+  const gfx::Size size(GetPreferredSize());
+  title->SetText(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION));
+  title->SizeToFit(size.width());
 
   // Switching to high-contrast mode has a nasty habit of causing Chrome
   // top-level windows to lose focus, so closing the bubble on deactivate
