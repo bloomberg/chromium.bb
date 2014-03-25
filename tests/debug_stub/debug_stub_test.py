@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import re
 import struct
 import subprocess
@@ -208,7 +209,7 @@ ARM_USER_CPSR_FLAGS_MASK = (
 
 
 def UsingQemu():
-  return SEL_LDR_COMMAND[0].endswith('/run_under_qemu_arm')
+  return os.path.basename(SEL_LDR_COMMAND[0]).startswith('run_under_qemu_')
 
 
 def MainNexe():
@@ -518,7 +519,7 @@ class DebugStubTest(unittest.TestCase):
 
   def test_jump_to_address_zero(self):
     if UsingQemu():
-      # This test hangs under qemu-arm.
+      # This test hangs under qemu-arm or qemu-mips.
       return
     with LaunchDebugStub('test_jump_to_address_zero') as connection:
       # Continue from initial breakpoint.
@@ -887,8 +888,8 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
 
   def test_continuing_thread_with_others_suspended(self):
     if UsingQemu():
-      # Suspending a running thread doesn't work under qemu-arm, so
-      # disable this test there.
+      # Suspending a running thread doesn't work under qemu-arm or qemu-mips,
+      # so disable this test there.
       return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
@@ -916,8 +917,8 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
 
   def test_single_stepping_thread_with_others_suspended(self):
     if UsingQemu():
-      # Suspending a running thread doesn't work under qemu-arm, so
-      # disable this test there.
+      # Suspending a running thread doesn't work under qemu-arm or qemu-mips,
+      # so disable this test there.
       return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
