@@ -703,6 +703,13 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
 void ProfileSyncService::Shutdown() {
   UnregisterAuthNotifications();
 
+  if (sync_global_error_) {
+    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
+        sync_global_error_.get());
+    RemoveObserver(sync_global_error_.get());
+    sync_global_error_.reset(NULL);
+  }
+
   ShutdownImpl(browser_sync::SyncBackendHost::STOP);
 
   if (sync_thread_)
@@ -711,13 +718,6 @@ void ProfileSyncService::Shutdown() {
 
 void ProfileSyncService::ShutdownImpl(
     browser_sync::SyncBackendHost::ShutdownOption option) {
-  if (sync_global_error_) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-        sync_global_error_.get());
-    RemoveObserver(sync_global_error_.get());
-    sync_global_error_.reset(NULL);
-  }
-
   if (!backend_)
     return;
 
