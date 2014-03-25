@@ -3235,6 +3235,13 @@
             'tools/service_discovery_sniffer/service_discovery_sniffer.h',
             'tools/service_discovery_sniffer/service_discovery_sniffer.cc',
           ],
+          'conditions': [
+            ['enable_webrtc==1', {
+              'dependencies': [
+                '../third_party/libjingle/libjingle.gyp:libjingle_webrtc'
+              ]
+            }],
+          ],
         }]
     }],
   ],  # 'conditions'
