@@ -100,15 +100,6 @@ class ServerInstance(object):
         self.api_models,
         self.object_store_creator)
 
-    self.api_list_data_source_factory = APIListDataSource.Factory(
-        self.compiled_fs_factory,
-        host_fs_at_trunk,
-        self.features_bundle,
-        self.object_store_creator,
-        self.api_models,
-        self.availability_finder,
-        self.api_categorizer)
-
     self.ref_resolver_factory = ReferenceResolver.Factory(
         self.api_data_source_factory,
         self.api_models,

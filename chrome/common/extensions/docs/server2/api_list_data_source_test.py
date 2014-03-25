@@ -131,18 +131,12 @@ class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
     server_instance = ServerInstance.ForTest(
         TestFileSystem(_TEST_DATA, relative_to=CHROME_EXTENSIONS))
-    self._factory = APIListDataSource.Factory(
-        server_instance.compiled_fs_factory,
-        server_instance.host_file_system_provider.GetTrunk(),
-        server_instance.features_bundle,
-        server_instance.object_store_creator,
-        server_instance.api_models,
-        server_instance.availability_finder,
-        server_instance.api_categorizer)
+    # APIListDataSource takes a request but doesn't use it,
+    # so put None
+    self._api_list = APIListDataSource(server_instance, None)
     self.maxDiff = None
 
   def testApps(self):
-    api_list = self._factory.Create()
     self.assertEqual({
         'stable': [
           {
@@ -176,10 +170,9 @@ class APIListDataSourceTest(unittest.TestCase):
           }],
         'beta': [],
         'trunk': []
-        }, api_list.get('apps').get('chrome'))
+        }, self._api_list.get('apps').get('chrome'))
 
   def testExperimentalApps(self):
-    api_list = self._factory.Create()
     self.assertEqual([
         {
           'name': 'experimental.bluetooth',
@@ -191,10 +184,9 @@ class APIListDataSourceTest(unittest.TestCase):
           'platforms': ['apps', 'extensions'],
           'last': True,
           'description': u'<code>experimental.power</code>'
-        }], api_list.get('apps').get('experimental'))
+        }], self._api_list.get('apps').get('experimental'))
 
   def testExtensions(self):
-    api_list = self._factory.Create()
     self.assertEqual({
         'stable': [
           {
@@ -232,10 +224,9 @@ class APIListDataSourceTest(unittest.TestCase):
           }],
         'beta': [],
         'trunk': []
-        }, api_list.get('extensions').get('chrome'))
+        }, self._api_list.get('extensions').get('chrome'))
 
   def testExperimentalExtensions(self):
-    api_list = self._factory.Create()
     self.assertEqual([
         {
           'name': 'experimental.history',
@@ -247,7 +238,7 @@ class APIListDataSourceTest(unittest.TestCase):
           'platforms': ['apps', 'extensions'],
           'description': u'<code>experimental.power</code>',
           'last': True
-        }], api_list.get('extensions').get('experimental'))
+        }], self._api_list.get('extensions').get('experimental'))
 
 if __name__ == '__main__':
   unittest.main()
