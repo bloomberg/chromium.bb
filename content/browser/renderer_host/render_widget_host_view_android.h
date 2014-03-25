@@ -373,6 +373,7 @@ class RenderWidgetHostViewAndroid
   bool using_delegated_renderer_;
 
   size_t locks_on_frame_count_;
+  bool root_window_destroyed_;
 
   struct LastFrameInfo {
     LastFrameInfo(uint32 output_id,
