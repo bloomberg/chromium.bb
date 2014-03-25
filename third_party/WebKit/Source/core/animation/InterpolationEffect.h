@@ -28,7 +28,7 @@ private:
     {
     }
 
-    class InterpolationRecord : public NoBaseWillBeGarbageCollected<InterpolationRecord> {
+    class InterpolationRecord : public NoBaseWillBeGarbageCollectedFinalized<InterpolationRecord> {
     public:
         RefPtrWillBeMember<Interpolation> m_interpolation;
         RefPtr<TimingFunction> m_easing;
