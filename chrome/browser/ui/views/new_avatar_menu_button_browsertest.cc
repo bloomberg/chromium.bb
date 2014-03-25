@@ -22,6 +22,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
+#include "ui/views/controls/button/label_button.h"
 
 class NewAvatarMenuButtonTest : public InProcessBrowserTest {
  public:
@@ -121,10 +122,10 @@ IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, MAYBE_SignOut) {
       menu->GetItemAt(menu->GetActiveProfileIndex());
   EXPECT_FALSE(menu_item_before.signin_required);
 
-  ProfileChooserView::profile_bubble_->LinkClicked(
-      static_cast<views::Link*>(
-          ProfileChooserView::profile_bubble_->signout_current_profile_link_),
-      0);
+  ui::MouseEvent mouse_ev(
+      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0, 0);
+  ProfileChooserView::profile_bubble_->ButtonPressed(
+      ProfileChooserView::profile_bubble_->lock_button_, mouse_ev);
 
   EXPECT_TRUE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 

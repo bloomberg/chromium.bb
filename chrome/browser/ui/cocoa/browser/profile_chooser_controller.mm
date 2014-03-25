@@ -33,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/user_manager_mac.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -492,24 +493,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
       ui::NativeTheme::instance()->GetSystemColor(isHighlighted?
-          ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor :
-          ui::NativeTheme::kColorId_MenuBackgroundColor));
+          ui::NativeTheme::kColorId_MenuSeparatorColor :
+          ui::NativeTheme::kColorId_DialogBackground));
 
   [[self cell] setBackgroundColor:backgroundColor];
-
-  // When hovered, the button text should be white.
-  NSColor* textColor =
-      isHighlighted ? [NSColor whiteColor] : [NSColor blackColor];
-  base::scoped_nsobject<NSMutableParagraphStyle> textStyle(
-      [[NSMutableParagraphStyle alloc] init]);
-  [textStyle setAlignment:NSLeftTextAlignment];
-
-  base::scoped_nsobject<NSAttributedString> attributedTitle(
-      [[NSAttributedString alloc]
-          initWithString:[self title]
-              attributes:@{ NSParagraphStyleAttributeName : textStyle,
-                            NSForegroundColorAttributeName : textColor }]);
-  [self setAttributedTitle:attributedTitle];
 }
 
 @end
@@ -534,8 +521,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // switcher in the middle of the bubble.
 - (NSButton*)createOtherProfileView:(int)itemIndex;
 
-// Creates the Guest / Add person / View all persons buttons.
-- (NSView*)createOptionsViewWithRect:(NSRect)rect;
+// Creates the "Not you" and Lock option buttons.
+- (NSView*)createOptionsViewWithRect:(NSRect)rect
+                          enableLock:(BOOL)enableLock;
 
 // Creates the account management view for the active profile.
 - (NSView*)createCurrentProfileAccountsView:(NSRect)rect;
@@ -546,11 +534,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Creates the Gaia sign-in/add account view.
 - (NSView*)createGaiaEmbeddedView;
 
-// Creates a button with text given by |textResourceId|, an icon given by
-// |imageResourceId| and with |action|. The icon |alternateImageResourceId| is
-// displayed in the button's hovered and pressed states.
+// Creates a button with |text|, an icon given by |imageResourceId| and with
+// |action|. The icon |alternateImageResourceId| is displayed in the button's
+// hovered and pressed states.
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
-                  textResourceId:(int)textResourceId
+                            text:(NSString*)text
                  imageResourceId:(int)imageResourceId
         alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action;
@@ -577,13 +565,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return viewMode_;
 }
 
-- (IBAction)addNewProfile:(id)sender {
-  profiles::CreateAndSwitchToNewProfile(
-      browser_->host_desktop_type(),
-      profiles::ProfileSwitchingDoneCallback(),
-      ProfileMetrics::ADD_NEW_USER_ICON);
-}
-
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be created.
   bool alwaysCreate = ui::WindowOpenDispositionFromNSEvent(
@@ -596,15 +577,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Guest users cannot appear in the User Manager, nor display a tutorial.
   profiles::ShowUserManagerMaybeWithTutorial(
       isGuestSession_ ? NULL : browser_->profile());
-}
-
-- (IBAction)switchToGuestProfile:(id)sender {
-  profiles::SwitchToGuestProfile(browser_->host_desktop_type(),
-                                 profiles::ProfileSwitchingDoneCallback());
-}
-
-- (IBAction)exitGuestProfile:(id)sender {
-  profiles::CloseGuestProfileWindows();
 }
 
 - (IBAction)showAccountManagement:(id)sender {
@@ -679,7 +651,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // Guest profiles do not have a token service.
     isGuestSession_ = browser_->profile()->IsGuestSession();
 
-    [[self bubble] setArrowLocation:info_bubble::kTopRight];
+    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
+    [[self bubble] setArrowLocation:info_bubble::kNoArrow];
+    [[self bubble] setBackgroundColor:
+        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+            ui::NativeTheme::kColorId_DialogBackground))];
     [self initMenuContentsWithView:viewMode_];
   }
 
@@ -702,6 +679,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSView* currentProfileView = nil;
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
+  // Local and guest profiles cannot lock their profile.
+  bool enableLock = false;
 
   // Loop over the profiles in reverse, so that they are sorted by their
   // y-coordinate, and separate them into active and "other" profiles.
@@ -711,6 +690,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       if (viewMode_ == PROFILE_CHOOSER_VIEW)
         tutorialView = [self createTutorialViewIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
+      enableLock = item.signed_in;
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }
@@ -722,9 +702,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // coordinates.
   CGFloat yOffset = kSmallVerticalSpacing;
 
-  // Guest / Add Person / View All Persons buttons.
+  // Option buttons.
   NSView* optionsView = [self createOptionsViewWithRect:
-      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)
+                                        enableLock:enableLock];
   [contentView addSubview:optionsView];
   yOffset = NSMaxY([optionsView frame]) + kSmallVerticalSpacing;
 
@@ -733,7 +714,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [contentView addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
-  if (viewToDisplay == PROFILE_CHOOSER_VIEW) {
+  if (viewToDisplay == PROFILE_CHOOSER_VIEW &&
+      switches::IsFastUserSwitching()) {
     // Other profiles switcher. The profiles have already been sorted
     // by their y-coordinate, so they can be added in the existing order.
     for (NSView *otherProfileView in otherProfiles.get()) {
@@ -920,48 +902,26 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                 withXOffset:(CGFloat)xOffset {
   base::scoped_nsobject<NSView> container([[NSView alloc]
       initWithFrame:NSZeroRect]);
-  CGFloat maxX = 0;  // Ensure the container is wide enough for all the links.
-  CGFloat yOffset;
 
+  NSButton* link;
+  NSPoint frameOrigin = NSMakePoint(xOffset, kSmallVerticalSpacing);
   // The available links depend on the type of profile that is active.
   if (item.signed_in) {
-    yOffset = 0;
-    // We need to display 2 links instead of 1, so make the padding in between
-    // the links even smaller to fit.
-    const CGFloat kLinkSpacing = kSmallVerticalSpacing / 2;
-    NSButton* manageAccountsLink =
-        [self linkButtonWithTitle:l10n_util::GetNSString(
-            IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON)
-                      frameOrigin:NSMakePoint(xOffset, yOffset)
-                           action:@selector(showAccountManagement:)];
-    yOffset = NSMaxY([manageAccountsLink frame]) + kLinkSpacing;
-
-    NSButton* signOutLink =
-        [self linkButtonWithTitle:l10n_util::GetNSString(
-            IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
-                      frameOrigin:NSMakePoint(xOffset, yOffset)
-                           action:@selector(lockProfile:)];
-    yOffset = NSMaxY([signOutLink frame]);
-
-    maxX = std::max(NSMaxX([manageAccountsLink frame]),
-                                 NSMaxX([signOutLink frame]));
-    [container addSubview:manageAccountsLink];
-    [container addSubview:signOutLink];
+    link = [self linkButtonWithTitle:l10n_util::GetNSString(
+        IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON)
+                         frameOrigin:frameOrigin
+                              action:@selector(showAccountManagement:)];
   } else {
-    yOffset = kSmallVerticalSpacing;
-    NSButton* signInLink =
-        [self linkButtonWithTitle:l10n_util::GetNSStringFWithFixup(
-            IDS_SYNC_START_SYNC_BUTTON_LABEL,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))
-                      frameOrigin:NSMakePoint(xOffset, yOffset)
-                           action:@selector(showSigninPage:)];
-    yOffset = NSMaxY([signInLink frame]) + kSmallVerticalSpacing;
-    maxX = NSMaxX([signInLink frame]);
-
-    [container addSubview:signInLink];
+    link = [self linkButtonWithTitle:l10n_util::GetNSStringFWithFixup(
+        IDS_SYNC_START_SYNC_BUTTON_LABEL,
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))
+                         frameOrigin:frameOrigin
+                              action:@selector(showSigninPage:)];
   }
 
-  [container setFrameSize:NSMakeSize(maxX, yOffset)];
+  [container addSubview:link];
+  [container setFrameSize:NSMakeSize(
+      NSMaxX([link frame]), NSMaxY([link frame]) + kSmallVerticalSpacing)];
   return container.autorelease();
 }
 
@@ -1011,38 +971,38 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return profileButton.autorelease();
 }
 
-- (NSView*)createOptionsViewWithRect:(NSRect)rect {
-  NSRect viewRect = NSMakeRect(0, 0, rect.size.width, kBlueButtonHeight);
-  NSButton* allUsersButton =
+- (NSView*)createOptionsViewWithRect:(NSRect)rect
+                          enableLock:(BOOL)enableLock {
+  int widthOfLockButton = enableLock? 2 * kHorizontalSpacing + 12 : 0;
+  NSRect viewRect = NSMakeRect(0, 0,
+                               rect.size.width - widthOfLockButton,
+                               kBlueButtonHeight);
+  NSButton* notYouButton =
       [self hoverButtonWithRect:viewRect
-                 textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
-                imageResourceId:IDR_ICON_PROFILES_ADD_USER
-       alternateImageResourceId:IDR_ICON_PROFILES_ADD_USER_WHITE
+                           text:l10n_util::GetNSStringF(
+          IDS_PROFILES_NOT_YOU_BUTTON,
+          profiles::GetAvatarNameForProfile(browser_->profile()))
+                imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
+       alternateImageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
                          action:@selector(showUserManager:)];
-  viewRect.origin.y = NSMaxY([allUsersButton frame]);
 
-  NSButton* addUserButton =
-      [self hoverButtonWithRect:viewRect
-                 textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
-                imageResourceId:IDR_ICON_PROFILES_ADD_USER
-       alternateImageResourceId:IDR_ICON_PROFILES_ADD_USER_WHITE
-                         action:@selector(addNewProfile:)];
-  viewRect.origin.y = NSMaxY([addUserButton frame]);
-
-  int guestButtonText = isGuestSession_ ? IDS_PROFILES_EXIT_GUEST_BUTTON :
-                                          IDS_PROFILES_GUEST_BUTTON;
-  SEL guestButtonAction = isGuestSession_ ? @selector(exitGuestProfile:) :
-                                            @selector(switchToGuestProfile:);
-  NSButton* guestButton =
-      [self hoverButtonWithRect:viewRect
-                 textResourceId:guestButtonText
-                imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
-       alternateImageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST_WHITE
-                         action:guestButtonAction];
-  rect.size.height = NSMaxY([guestButton frame]);
+  rect.size.height = NSMaxY([notYouButton frame]);
   base::scoped_nsobject<NSView> container([[NSView alloc]
       initWithFrame:rect]);
-  [container setSubviews:@[allUsersButton, addUserButton, guestButton]];
+  [container addSubview:notYouButton];
+
+  if (enableLock) {
+    viewRect.origin.x = NSMaxX([notYouButton frame]);
+    viewRect.size.width = widthOfLockButton;
+    NSButton* lockButton =
+        [self hoverButtonWithRect:viewRect
+                             text:@""
+                  imageResourceId:IDR_ICON_PROFILES_MENU_LOCK
+         alternateImageResourceId:IDR_ICON_PROFILES_MENU_LOCK
+                           action:@selector(lockProfile:)];
+    [container addSubview:lockButton];
+  }
+
   return container.autorelease();
 }
 
@@ -1143,14 +1103,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
-                  textResourceId:(int)textResourceId
+                            text:(NSString*)text
                  imageResourceId:(int)imageResourceId
         alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action  {
   base::scoped_nsobject<BackgroundColorHoverButton> button(
       [[BackgroundColorHoverButton alloc] initWithFrame:rect]);
 
-  [button setTitle:l10n_util::GetNSString(textResourceId)];
+  [button setTitle:text];
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   NSImage* alternateImage = rb->GetNativeImageNamed(
       alternateImageResourceId).ToNSImage();

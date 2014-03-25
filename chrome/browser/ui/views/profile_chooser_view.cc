@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/user_manager_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -125,8 +126,6 @@ BackgroundColorHoverButton::BackgroundColorHoverButton(
   SetImage(STATE_NORMAL, normal_icon);
   SetImage(STATE_HOVERED, hover_icon);
   SetImage(STATE_PRESSED, hover_icon);
-  SetTextColor(STATE_HOVERED, GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
 }
 
 BackgroundColorHoverButton::~BackgroundColorHoverButton() {}
@@ -134,7 +133,7 @@ BackgroundColorHoverButton::~BackgroundColorHoverButton() {}
 void BackgroundColorHoverButton::OnPaint(gfx::Canvas* canvas) {
   if ((state() == STATE_PRESSED) || (state() == STATE_HOVERED) || HasFocus()) {
     canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
+        ui::NativeTheme::kColorId_MenuSeparatorColor));
   }
   LabelButton::OnPaint(canvas);
 }
@@ -383,6 +382,10 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
 
   ResetView();
 
+  set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this,
@@ -404,12 +407,9 @@ ProfileChooserView::~ProfileChooserView() {
 
 void ProfileChooserView::ResetView() {
   manage_accounts_link_ = NULL;
-  signout_current_profile_link_ = NULL;
   signin_current_profile_link_ = NULL;
-  guest_button_ = NULL;
-  end_guest_button_ = NULL;
   users_button_ = NULL;
-  add_user_button_ = NULL;
+  lock_button_ = NULL;
   add_account_button_ = NULL;
   current_profile_photo_ = NULL;
   current_profile_name_ = NULL;
@@ -486,13 +486,14 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   views::GridLayout* layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
   // Separate items into active and alternatives.
   Indexes other_profiles;
-  bool is_guest_view = true;
   views::View* tutorial_view = NULL;
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
+  views::View* option_buttons_view = NULL;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
+      option_buttons_view = CreateOptionsView(item.signed_in);
       if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         tutorial_view = CreateTutorialView(item, tutorial_shown);
         current_profile_view = CreateCurrentProfileView(item, false);
@@ -500,7 +501,6 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
         current_profile_view = CreateCurrentProfileEditableView(item);
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
       }
-      is_guest_view = false;
     } else {
       other_profiles.push_back(i);
     }
@@ -513,15 +513,19 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
   }
 
-  if (!current_profile_view)  // Guest windows don't have an active profile.
+  if (!current_profile_view) {
+    // Guest windows don't have an active profile.
     current_profile_view = CreateGuestProfileView();
+    option_buttons_view = CreateOptionsView(false);
+  }
 
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
   if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
     layout->StartRow(1, 0);
-    layout->AddView(CreateOtherProfilesView(other_profiles));
+    if (switches::IsFastUserSwitching())
+      layout->AddView(CreateOtherProfilesView(other_profiles));
   } else {
     DCHECK(current_profile_accounts);
     layout->StartRow(0, 0);
@@ -534,7 +538,6 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
   // Action buttons.
-  views::View* option_buttons_view = CreateOptionsView(is_guest_view);
   layout->StartRow(0, 0);
   layout->AddView(option_buttons_view);
 
@@ -556,20 +559,10 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   if (sender->parent())
     sender->SetEnabled(false);
 
-  if (sender == guest_button_) {
-    profiles::SwitchToGuestProfile(browser_->host_desktop_type(),
-                                   profiles::ProfileSwitchingDoneCallback());
-  } else if (sender == end_guest_button_) {
-    profiles::CloseGuestProfileWindows();
-  } else if (sender == users_button_) {
-    // Guest users cannot appear in the User Manager, nor display a tutorial.
-    profiles::ShowUserManagerMaybeWithTutorial(
-        end_guest_button_ ? NULL : browser_->profile());
-  } else if (sender == add_user_button_) {
-    profiles::CreateAndSwitchToNewProfile(
-        browser_->host_desktop_type(),
-        profiles::ProfileSwitchingDoneCallback(),
-        ProfileMetrics::ADD_NEW_USER_ICON);
+  if (sender == users_button_) {
+    chrome::ShowUserManager(base::FilePath());
+  } else if (sender == lock_button_) {
+    profiles::LockProfile(browser_->profile());
   } else if (sender == add_account_button_) {
     ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
   } else if (sender == tutorial_ok_button_) {
@@ -632,8 +625,6 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   if (sender == manage_accounts_link_) {
     // ShowView() will DCHECK if this view is displayed for non signed-in users.
     ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
-  } else if (sender == signout_current_profile_link_) {
-    profiles::LockProfile(browser_->profile());
   } else if (sender == tutorial_learn_more_link_) {
     // TODO(guohui): update |learn_more_url| once it is decided.
     const GURL lear_more_url("https://support.google.com/chrome/?hl=en#to");
@@ -811,14 +802,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     manage_accounts_link_ = CreateLink(
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON),
         this);
-    signout_current_profile_link_ = CreateLink(
-        l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON), this);
-    layout->StartRow(1, 0);
-    layout->SkipColumns(1);
-    layout->AddView(signout_current_profile_link_);
     layout->StartRow(1, 0);
     layout->SkipColumns(1);
     layout->AddView(manage_accounts_link_);
+    layout->StartRow(1, 0);
+    layout->SkipColumns(1);
   } else {
     signin_current_profile_link_ = CreateLink(
         l10n_util::GetStringFUTF16(
@@ -911,49 +899,52 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
   return view;
 }
 
-views::View* ProfileChooserView::CreateOptionsView(bool is_guest_view) {
+views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  views::GridLayout* layout;
+
+  // Only signed-in users have the ability to lock.
+  if (enable_lock) {
+    layout = new views::GridLayout(view);
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    int width_of_lock_button =
+        2 * views::kUnrelatedControlLargeHorizontalSpacing + 12;
+    int width_of_users_button = kFixedMenuWidth - width_of_lock_button;
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                       views::GridLayout::FIXED, width_of_users_button,
+                       width_of_users_button);
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                       views::GridLayout::FIXED, width_of_lock_button,
+                       width_of_lock_button);
+    view->SetLayoutManager(layout);
+  } else {
+    layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  }
+
   // The horizontal padding will be set by each button individually, so that
   // in the hovered state the button spans the entire parent view.
   layout->SetInsets(views::kRelatedControlVerticalSpacing, 0,
                     views::kRelatedControlVerticalSpacing, 0);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-
-  layout->StartRow(1, 0);
-  if (is_guest_view) {
-    end_guest_button_ = new BackgroundColorHoverButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST_BUTTON),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_BROWSE_GUEST),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_BROWSE_GUEST_WHITE));
-    layout->AddView(end_guest_button_);
-  } else {
-    guest_button_ = new BackgroundColorHoverButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_PROFILES_GUEST_BUTTON),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_BROWSE_GUEST),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_BROWSE_GUEST_WHITE));
-    layout->AddView(guest_button_);
-  }
-
-  add_user_button_ = new BackgroundColorHoverButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_PROFILES_ADD_PERSON_BUTTON),
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_ADD_USER),
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_ADD_USER_WHITE));
-  layout->StartRow(1, 0);
-  layout->AddView(add_user_button_);
-
   users_button_ = new BackgroundColorHoverButton(
       this,
-      l10n_util::GetStringUTF16(IDS_PROFILES_ALL_PEOPLE_BUTTON),
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_ADD_USER),
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_ADD_USER_WHITE));
+      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU_BUTTON,
+          profiles::GetAvatarNameForProfile(browser_->profile())),
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR),
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
+
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
 
+  if (enable_lock) {
+    lock_button_ = new BackgroundColorHoverButton(
+        this,
+        base::string16(),
+        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK),
+        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK));
+    layout->AddView(lock_button_);
+  }
   return view;
 }
 
@@ -1107,4 +1098,3 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 
   return view;
 }
-

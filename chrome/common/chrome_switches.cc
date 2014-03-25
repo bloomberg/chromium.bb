@@ -757,6 +757,10 @@ const char kFakeVariationsChannel[]         = "fake-variations-channel";
 // loaded. It is useful to tell the difference for tracking purposes.
 const char kFastStart[]            = "fast-start";
 
+// Allows displaying the list of existing profiles in the avatar bubble for
+// fast switching between profiles.
+const char kFastUserSwitching[]             = "fast-user-switching";
+
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags
 // on about:version. They don't have any effect.

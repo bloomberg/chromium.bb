@@ -11565,44 +11565,23 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
         Ok, Got it!
       </message>
+      <message name="IDS_PROFILES_NOT_YOU_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
+        Not <ph name="PROFILE_DISPLAY_NAME">$1<ex>Jessica</ex></ph>?
+      </message>
       <if expr="not use_titlecase">
-        <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
-          Add person
-        </message>
-        <message name="IDS_PROFILES_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
-          Browse as guest
-        </message>
-        <message name="IDS_PROFILES_EXIT_GUEST_BUTTON" desc="Button in the avatar menu bubble view to end guest browsing.">
-          End guest session
-        </message>
-        <message name="IDS_PROFILES_ALL_PEOPLE_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          View all people
-        </message>
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
           Add account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
         </message>
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
-          Manage accounts
+          Your accounts
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
-          Add Person
-        </message>
-        <message name="IDS_PROFILES_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
-          Browse as Guest
-        </message>
-        <message name="IDS_PROFILES_EXIT_GUEST_BUTTON" desc="Button in the avatar menu bubble view to end guest browsing.">
-          End Guest Session
-        </message>
-        <message name="IDS_PROFILES_ALL_PEOPLE_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          View All People
-        </message>
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
           Add Account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
         </message>
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
-          Manage Accounts
+          Your Accounts
         </message>
       </if>
       <message name="IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON" desc="Button in the avatar menu bubble view used to change the photo for a profile.">
@@ -14150,6 +14129,12 @@ Do you accept?
     </message>
     <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management">
       Enables the new profile management system, including profile sign-out and the new avatar menu UI.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_NAME" desc="Title for the flag to enable fast user switching.">
+      Enable fast user switching in the avatar menu
+    </message>
+    <message name="IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_DESCRIPTION" desc="Description for the flag to enable fast user switching">
+      Enables fast switching between users in the avatar menu.
     </message>
     <message name="IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_NAME" desc="Title for the flag to enable web-based sign-in flows.">
       Enable pure web-based sign-in flows

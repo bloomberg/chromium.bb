@@ -21,6 +21,9 @@ bool IsGoogleProfileInfo();
 // choosers.
 bool IsNewProfileManagement();
 
+// Checks whether the flag for fast user switching is enabled.
+bool IsFastUserSwitching();
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_PROFILE_MANAGEMENT_SWITCHES_H_

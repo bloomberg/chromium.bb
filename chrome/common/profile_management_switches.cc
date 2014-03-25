@@ -53,4 +53,9 @@ bool IsNewProfileManagement() {
   return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
 }
 
+bool IsFastUserSwitching() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kFastUserSwitching);
+}
+
 }  // namespace switches

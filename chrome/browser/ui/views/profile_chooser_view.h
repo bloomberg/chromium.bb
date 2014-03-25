@@ -141,7 +141,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
       bool is_guest);
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
-  views::View* CreateOptionsView(bool is_guest_view);
+  views::View* CreateOptionsView(bool enable_lock);
 
   // Account Management view for the profile |avatar_item|.
   views::View* CreateCurrentProfileEditableView(
@@ -176,7 +176,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Links displayed in the active profile card.
   views::Link* manage_accounts_link_;
-  views::Link* signout_current_profile_link_;
   views::Link* signin_current_profile_link_;
 
   // The profile name and photo in the active profile card. Owned by the
@@ -185,10 +184,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   EditableProfileName* current_profile_name_;
 
   // Action buttons.
-  views::LabelButton* guest_button_;
-  views::LabelButton* end_guest_button_;
-  views::LabelButton* add_user_button_;
   views::LabelButton* users_button_;
+  views::LabelButton* lock_button_;
   views::LabelButton* add_account_button_;
 
   // Buttons displayed in the gaia signin view.

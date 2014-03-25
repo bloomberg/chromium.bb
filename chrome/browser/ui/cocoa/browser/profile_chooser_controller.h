@@ -68,20 +68,11 @@ class WebContents;
 // Returns the view currently displayed by the bubble.
 - (BubbleViewMode)viewMode;
 
-// Creates a new profile.
-- (IBAction)addNewProfile:(id)sender;
-
 // Switches to a given profile. |sender| is an ProfileChooserItemController.
 - (IBAction)switchToProfile:(id)sender;
 
 // Shows the User Manager.
 - (IBAction)showUserManager:(id)sender;
-
-// Starts a guest browser window.
-- (IBAction)switchToGuestProfile:(id)sender;
-
-// Closes all guest browser windows.
-- (IBAction)exitGuestProfile:(id)sender;
 
 // Shows the account management view.
 - (IBAction)showAccountManagement:(id)sender;

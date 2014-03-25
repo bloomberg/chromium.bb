@@ -110,7 +110,11 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
         lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   }
 
-  NSPoint point = NSMakePoint(NSMidX([anchor bounds]),
+  // The new avatar bubble does not have an arrow, and it should be anchored
+  // to the edge of the avatar button.
+  int anchorX = switches::IsNewProfileManagement() ? NSMaxX([anchor bounds]) :
+                                                     NSMidX([anchor bounds]);
+  NSPoint point = NSMakePoint(anchorX,
                               NSMaxY([anchor bounds]) - kMenuYOffsetAdjust);
   point = [anchor convertPoint:point toView:nil];
   point = [[anchor window] convertBaseToScreen:point];
@@ -160,4 +164,3 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 }
 
 @end
-

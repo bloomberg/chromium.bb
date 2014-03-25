@@ -215,6 +215,7 @@ extern const char kExtensionsUpdateFrequency[];
 extern const char kExtraSearchQueryParams[];
 extern const char kFakeVariationsChannel[];
 extern const char kFastStart[];
+extern const char kFastUserSwitching[];
 extern const char kFlagSwitchesBegin[];
 extern const char kFlagSwitchesEnd[];
 extern const char kFeedbackServer[];
