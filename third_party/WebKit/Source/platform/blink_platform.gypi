@@ -894,6 +894,7 @@
       'geometry/FloatRoundedRectTest.cpp',
       'geometry/RegionTest.cpp',
       'geometry/RoundedRectTest.cpp',
+      'graphics/GraphicsContextTest.cpp',
       'graphics/ThreadSafeDataTransportTest.cpp',
       'graphics/test/MockDiscardablePixelRef.h',
       'image-decoders/ImageDecoderTest.cpp',

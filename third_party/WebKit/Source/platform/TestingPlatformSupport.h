@@ -67,6 +67,7 @@ public:
     // blink::Platform:
     virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) OVERRIDE;
     virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) OVERRIDE;
+    virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) OVERRIDE;
 
 private:
     const Config m_config;

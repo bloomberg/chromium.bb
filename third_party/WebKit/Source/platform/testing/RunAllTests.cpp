@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,63 +31,30 @@
 #include "config.h"
 
 #include "platform/TestingPlatformSupport.h"
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/MainThread.h"
+#include "wtf/WTF.h"
+#include <base/test/test_suite.h>
+#include <string.h>
 
-namespace WebCore {
-
-TestingDiscardableMemory::TestingDiscardableMemory(size_t size) : m_data(size), m_isLocked(true)
+static double CurrentTime()
 {
+    return 0.0;
 }
 
-TestingDiscardableMemory::~TestingDiscardableMemory()
+static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
 {
+    memset(buf, '\0', len);
 }
 
-bool TestingDiscardableMemory::lock()
+int main(int argc, char** argv)
 {
-    ASSERT(!m_isLocked);
-    m_isLocked = true;
-    return false;
-}
+    WTF::setRandomSource(AlwaysZeroNumberSource);
+    WTF::initialize(CurrentTime, 0);
+    WTF::initializeMainThread(0);
 
-void* TestingDiscardableMemory::data()
-{
-    ASSERT(m_isLocked);
-    return m_data.data();
-}
+    WebCore::TestingPlatformSupport::Config platformConfig;
+    WebCore::TestingPlatformSupport platform(platformConfig);
 
-void TestingDiscardableMemory::unlock()
-{
-    ASSERT(m_isLocked);
-    m_isLocked = false;
-    // Force eviction to catch clients not correctly checking the return value of lock().
-    memset(m_data.data(), 0, m_data.size());
+    return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }
-
-TestingPlatformSupport::TestingPlatformSupport(const Config& config)
-    : m_config(config)
-    , m_oldPlatform(blink::Platform::current())
-{
-    blink::Platform::initialize(this);
-}
-
-TestingPlatformSupport::~TestingPlatformSupport()
-{
-    blink::Platform::initialize(m_oldPlatform);
-}
-
-blink::WebDiscardableMemory* TestingPlatformSupport::allocateAndLockDiscardableMemory(size_t bytes)
-{
-    return !m_config.hasDiscardableMemorySupport ? 0 : new TestingDiscardableMemory(bytes);
-}
-
-void TestingPlatformSupport::cryptographicallyRandomValues(unsigned char* buffer, size_t length)
-{
-}
-
-const unsigned char* TestingPlatformSupport::getTraceCategoryEnabledFlag(const char* categoryName)
-{
-    static const unsigned char tracingIsDisabled = 0;
-    return &tracingIsDisabled;
-}
-
-} // namespace WebCore
