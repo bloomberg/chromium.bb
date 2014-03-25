@@ -18,9 +18,9 @@ import colorama
 
 CHROMIUM_SWARMING_OSES = {
     'darwin': 'Mac',
-    'cygwin': 'Win',
+    'cygwin': 'Windows',
     'linux2': 'Linux',
-    'win32': 'Win',
+    'win32': 'Windows',
 }
 
 
