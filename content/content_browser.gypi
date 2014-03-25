@@ -823,7 +823,6 @@
     'browser/power_monitor_message_broadcaster.cc',
     'browser/power_monitor_message_broadcaster.h',
     'browser/power_profiler/power_data_provider.h',
-    'browser/power_profiler/power_data_provider_dummy.cc',
     'browser/power_profiler/power_event.cc',
     'browser/power_profiler/power_event.h',
     'browser/power_profiler/power_profiler_observer.h',
@@ -1370,6 +1369,19 @@
       'dependencies': [
         '../ui/events/events.gyp:events',
       ],
+    }],
+    ['OS == "win"', {
+      'dependencies': [
+        '../third_party/power_gadget/power_gadget.gyp:power_gadget',
+      ],
+      'sources': [
+        'browser/power_profiler/power_data_provider_ia_win.cc',
+        'browser/power_profiler/power_data_provider_ia_win.h',
+      ]
+    }, { # os != "win"
+      'sources': [
+        'browser/power_profiler/power_data_provider_dummy.cc'
+      ]
     }],
     ['OS!="win" and OS!="mac" and (OS!="linux" or use_udev==0)', {
       'sources': [
