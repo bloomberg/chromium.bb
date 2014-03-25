@@ -1,33 +1,32 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dns/dns_api.h"
+#include "extensions/browser/api/dns/dns_api.h"
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/common/extensions/api/dns.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
+#include "extensions/browser/api/dns/host_resolver_wrapper.h"
+#include "extensions/common/api/dns.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
 using content::BrowserThread;
-using extensions::api::dns::ResolveCallbackResolveInfo;
+using extensions::core_api::dns::ResolveCallbackResolveInfo;
 
-namespace Resolve = extensions::api::dns::Resolve;
+namespace Resolve = extensions::core_api::dns::Resolve;
 
 namespace extensions {
 
 DnsResolveFunction::DnsResolveFunction()
-    : response_(false),
-      io_thread_(g_browser_process->io_thread()),
+    : resource_context_(NULL),
+      response_(false),
       request_handle_(new net::HostResolver::RequestHandle()),
-      addresses_(new net::AddressList) {
-}
+      addresses_(new net::AddressList) {}
 
 DnsResolveFunction::~DnsResolveFunction() {}
 
@@ -36,9 +35,11 @@ bool DnsResolveFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   hostname_ = params->hostname;
+  resource_context_ = browser_context()->GetResourceContext();
 
   bool result = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&DnsResolveFunction::WorkOnIOThread, this));
   DCHECK(result);
   return true;
@@ -49,7 +50,7 @@ void DnsResolveFunction::WorkOnIOThread() {
 
   net::HostResolver* host_resolver =
       HostResolverWrapper::GetInstance()->GetHostResolver(
-          io_thread_->globals()->host_resolver.get());
+          resource_context_->GetHostResolver());
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not
@@ -92,7 +93,8 @@ void DnsResolveFunction::OnLookupFinished(int resolve_result) {
   response_ = true;
 
   bool post_task_result = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&DnsResolveFunction::RespondOnUIThread, this));
   DCHECK(post_task_result);
 
