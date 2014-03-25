@@ -144,7 +144,7 @@ private:
 
     SQLiteDatabase m_sqliteDatabase;
 
-    RefPtr<DatabaseAuthorizer> m_databaseAuthorizer;
+    RefPtrWillBeMember<DatabaseAuthorizer> m_databaseAuthorizer;
 
     friend class DatabaseServer;
 };

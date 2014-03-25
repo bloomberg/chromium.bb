@@ -33,9 +33,9 @@
 
 namespace WebCore {
 
-PassRefPtr<DatabaseAuthorizer> DatabaseAuthorizer::create(const String& databaseInfoTableName)
+PassRefPtrWillBeRawPtr<DatabaseAuthorizer> DatabaseAuthorizer::create(const String& databaseInfoTableName)
 {
-    return adoptRef(new DatabaseAuthorizer(databaseInfoTableName));
+    return adoptRefWillBeNoop(new DatabaseAuthorizer(databaseInfoTableName));
 }
 
 DatabaseAuthorizer::DatabaseAuthorizer(const String& databaseInfoTableName)

@@ -27,6 +27,7 @@
 #ifndef SQLiteDatabase_h
 #define SQLiteDatabase_h
 
+#include "heap/Handle.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/CString.h"
@@ -97,7 +98,7 @@ public:
         return m_db;
     }
 
-    void setAuthorizer(PassRefPtr<DatabaseAuthorizer>);
+    void setAuthorizer(DatabaseAuthorizer*);
 
     Mutex& databaseMutex() { return m_lockingMutex; }
     bool isAutoCommitOn() const;
@@ -128,7 +129,7 @@ private:
     bool m_sharable;
 
     Mutex m_authorizerLock;
-    RefPtr<DatabaseAuthorizer> m_authorizer;
+    RefPtrWillBePersistent<DatabaseAuthorizer> m_authorizer;
 
     Mutex m_lockingMutex;
     ThreadIdentifier m_openingThread;

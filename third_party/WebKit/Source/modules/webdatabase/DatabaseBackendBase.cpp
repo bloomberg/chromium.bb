@@ -248,8 +248,9 @@ DatabaseBackendBase::~DatabaseBackendBase()
     ASSERT(!m_opened);
 }
 
-void DatabaseBackendBase::trace(Visitor*)
+void DatabaseBackendBase::trace(Visitor* visitor)
 {
+    visitor->trace(m_databaseAuthorizer);
 }
 
 void DatabaseBackendBase::closeDatabase()
@@ -412,7 +413,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
     }
 
     ASSERT(m_databaseAuthorizer);
-    m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer);
+    m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer.get());
 
     databaseContext()->didOpenDatabase(*this);
     // See comment at the top this file regarding calling addOpenDatabase().

@@ -28,6 +28,7 @@
 #ifndef DatabaseAuthorizer_h
 #define DatabaseAuthorizer_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -39,7 +40,7 @@ namespace WebCore {
 extern const int SQLAuthAllow;
 extern const int SQLAuthDeny;
 
-class DatabaseAuthorizer : public ThreadSafeRefCounted<DatabaseAuthorizer> {
+class DatabaseAuthorizer : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseAuthorizer> {
 public:
 
     enum Permissions {
@@ -48,7 +49,8 @@ public:
         NoAccessMask = 1 << 2
     };
 
-    static PassRefPtr<DatabaseAuthorizer> create(const String& databaseInfoTableName);
+    static PassRefPtrWillBeRawPtr<DatabaseAuthorizer> create(const String& databaseInfoTableName);
+    void trace(Visitor*) { }
 
     int createTable(const String& tableName);
     int createTempTable(const String& tableName);
