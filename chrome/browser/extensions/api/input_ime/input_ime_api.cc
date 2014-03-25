@@ -8,7 +8,9 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "content/public/browser/notification_details.h"
@@ -85,7 +87,16 @@ namespace chromeos {
 class ImeObserver : public InputMethodEngineInterface::Observer {
  public:
   ImeObserver(Profile* profile, const std::string& extension_id)
-      : profile_(profile), extension_id_(extension_id) {}
+      : profile_(profile), extension_id_(extension_id) {
+    // The original profile for login screen is called signin profile.
+    // And the active profile is the incognito profile based on signin profile.
+    // So if |profile| is signin profile, we need to make sure the
+    // observer runs under its incognito profile, because the component
+    // extensions were installed under its incognito profile.
+    if (ProfileHelper::IsSigninProfile(profile)) {
+      profile_ = ProfileManager::GetActiveUserProfile();
+    }
+  }
 
   virtual ~ImeObserver() {}
 
