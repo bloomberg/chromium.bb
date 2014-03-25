@@ -1650,7 +1650,8 @@ class SessionNotificationObserver : public content::NotificationObserver {
 };
 }  // namespace
 
-// Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent.
+// Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when processing
+// sync changes.
 TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
   SessionNotificationObserver observer;
   ASSERT_FALSE(observer.notified_of_update());
@@ -1678,6 +1679,27 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
   changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_DELETE));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_TRUE(observer.notified_of_update());
+}
+
+// Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when handling
+// local hide/removal of foreign session.
+TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
+  InitWithNoSyncData();
+  const std::string tag("tag1");
+  SessionID::id_type n[] = {5};
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  std::vector<SessionID::id_type> tab_list(n, n + arraysize(n));
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      tag, tab_list, &tabs1));
+
+  syncer::SyncChangeList changes;
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+
+  SessionNotificationObserver observer;
+  ASSERT_FALSE(observer.notified_of_update());
+  manager()->DeleteForeignSession(tag);
+  ASSERT_TRUE(observer.notified_of_update());
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

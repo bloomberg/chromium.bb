@@ -774,6 +774,10 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
         SyncData::CreateLocalDelete(TabNodePool2::TabIdToTag(tag, *it),
                                     syncer::SESSIONS)));
   }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+      content::Source<Profile>(profile_),
+      content::NotificationService::NoDetails());
 }
 
 bool SessionsSyncManager::DisassociateForeignSession(
