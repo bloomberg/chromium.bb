@@ -18,14 +18,22 @@ class NinjaBuilder(cr.Builder):
   # Some basic configuration installed if we are enabled.
   ENABLED = cr.Config.From(
       NINJA_BINARY=os.path.join('{DEPOT_TOOLS}', 'ninja'),
-      NINJA_JOBS=200,
-      NINJA_PROCESSORS=12,
+      NINJA_JOBS=10,
+      NINJA_PROCESSORS=4,
       NINJA_BUILD_FILE=os.path.join('{CR_BUILD_DIR}', 'build.ninja'),
       GOMA_DIR=os.path.join('{GOOGLE_CODE}', 'goma'),
       # Don't rename to GOMA_* or Goma will complain: "unkown GOMA_ parameter".
-      NINJA_GOMA_CTL=os.path.join('{GOMA_DIR}', 'goma_ctl.py'),
-      NINJA_GOMA_CC=os.path.join('{GOMA_DIR}', 'gomacc'),
-      NINJA_GOMA_LINE='cc = {NINJA_GOMA_CC} $',
+      NINJA_GOMA_LINE='cc = {CR_GOMA_CC} $',
+  )
+  # A config block only included if goma is detected.
+  GOMA = cr.Config.From(
+      CR_GOMA_CC=os.path.join('{GOMA_DIR}', 'gomacc'),
+      CR_GOMA_CTL=os.path.join('{GOMA_DIR}', 'goma_ctl.py'),
+      GOMA_DIR='{CR_GOMA_DIR}',
+      GYP_DEF_gomadir='{CR_GOMA_DIR}',
+      GYP_DEF_use_goma=1,
+      NINJA_JOBS=200,
+      NINJA_PROCESSORS=12,
   )
   # A placeholder for the system detected configuration
   DETECTED = cr.Config('DETECTED')
@@ -42,7 +50,7 @@ class NinjaBuilder(cr.Builder):
         if f.readline().rstrip('\n') == cr.context.Get('NINJA_GOMA_LINE'):
           # Goma is active, so make sure it's started.
           cr.Host.ExecuteSilently(
-              '{NINJA_GOMA_CTL}',
+              '{CR_GOMA_CTL}',
               'ensure_start'
           )
     except IOError:
@@ -97,3 +105,10 @@ class NinjaBuilder(cr.Builder):
     ninja_binaries = cr.Host.SearchPath('ninja')
     if ninja_binaries:
       cls.DETECTED.Set(NINJA_BINARY=ninja_binaries[0])
+
+    goma_binaries = cr.Host.SearchPath('gomacc', [
+      '/usr/local/google/code/goma',
+      os.path.expanduser('~/goma')])
+    if goma_binaries:
+      cls.DETECTED.Set(CR_GOMA_DIR=os.path.dirname(goma_binaries[0]))
+      cls.DETECTED.AddChildren(cls.GOMA)

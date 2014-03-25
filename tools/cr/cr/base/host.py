@@ -159,7 +159,7 @@ class Host(cr.Plugin, cr.Plugin.Type):
     return result in ['y', 'yes']
 
   @classmethod
-  def SearchPath(cls, name):
+  def SearchPath(cls, name, paths=[]):
     """Searches the PATH for an executable.
 
     Args:
@@ -170,7 +170,9 @@ class Host(cr.Plugin, cr.Plugin.Type):
     result = []
     extensions = ['']
     extensions.extend(os.environ.get('PATHEXT', '').split(os.pathsep))
-    for path in os.environ.get('PATH', '').split(os.pathsep):
+    paths = [cr.context.Substitute(path) for path in paths if path]
+    paths = paths + os.environ.get('PATH', '').split(os.pathsep)
+    for path in paths:
       partial = os.path.join(path, name)
       for extension in extensions:
         filename = partial + extension

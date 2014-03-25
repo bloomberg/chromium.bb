@@ -38,6 +38,7 @@ class AndroidPlatform(cr.Platform):
       CR_ADB_GDB=os.path.join('{CR_SRC}', 'build', 'android', 'adb_gdb'),
       CHROMIUM_OUT_DIR='{CR_OUT_BASE}',
       CR_DEFAULT_TARGET='chrome_shell',
+      GYP_DEF_OS='android'
   )
 
   def __init__(self):
@@ -59,8 +60,6 @@ class AndroidPlatform(cr.Platform):
       if not self._env_ready:
         # See what the env would be without env setup
         before = cr.context.exported
-        before['GYP_DEFINES'] = before.get(
-            'GYP_DEFINES', '') + ' target_arch={CR_ENVSETUP_ARCH}'
         # Run env setup and capture/parse its output
         envsetup = 'source {CR_ENVSETUP}'
         output = cr.Host.CaptureShell(envsetup + ' > /dev/null && env')
@@ -73,11 +72,6 @@ class AndroidPlatform(cr.Platform):
               env_setup[key] = env_setup.ParseValue(value.strip())
             if key == 'PATH':
               self._env_paths = value.strip().split(os.path.pathsep)
-            if key == 'GYP_DEFINES':
-              # Make a version of GYP_DEFINES that is the combination of base
-              # setting and envsetup, needs to override the overrides
-              # Note: Forcing it into the top level scope - sledge-hammer
-              cr.context[key] = value.strip() + ' ' + before.get(key, '')
         items = env_setup.exported.items()
         if not items:
           # Because of the way envsetup is run, the exit code does not make it
