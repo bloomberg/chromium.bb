@@ -124,7 +124,7 @@ class ChromotingHelperMac(ChromotingHelper):
 
     mock_pref_pane = os.path.join(pref_pane_dir, 'mock_pref_pane')
     pref_pane = os.path.join(pref_pane_dir,
-                             'org.chromium.chromoting.prefPane')
+                             'ChromeRemoteDesktop.prefPane')
     mock_pref_pane_python = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         'mock_pref_pane.py')

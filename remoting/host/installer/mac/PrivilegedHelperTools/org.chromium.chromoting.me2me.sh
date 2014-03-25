@@ -7,12 +7,14 @@
 # Version = @@VERSION@@
 
 NAME=org.chromium.chromoting
+HOST_BUNDLE_NAME=ChromeRemoteDesktopHost.bundle
+PREFPANE_BUNDLE_NAME=ChromeRemoteDesktop.prefPane
 CONFIG_DIR=/Library/PrivilegedHelperTools
-HOST_EXE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/MacOS/remoting_me2me_host
-PLIST_FILE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/Info.plist
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json
-PREF_PANE_BUNDLE=/Library/PreferencePanes/$NAME.prefPane
+HOST_EXE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host
+PLIST_FILE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/Info.plist
+PREF_PANE_BUNDLE=/Library/PreferencePanes/$PREFPANE_BUNDLE_NAME
 
 # The exit code returned by 'wait' when a process is terminated by SIGTERM.
 SIGTERM_EXIT_CODE=143
