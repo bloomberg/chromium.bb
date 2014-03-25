@@ -699,7 +699,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     RenderObject* renderer = targetNode->renderer();
     if (!renderer) {
-        Node* parent = EventPath::parent(targetNode);
+        Node* parent = NodeRenderingTraversal::parent(targetNode);
         if (!parent)
             return false;
 
@@ -1801,7 +1801,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
     RefPtr<Node> newTarget = mev.targetNode();
     if (newTarget && newTarget->isTextNode())
-        newTarget = EventPath::parent(newTarget.get());
+        newTarget = NodeRenderingTraversal::parent(newTarget.get());
 
     if (AutoscrollController* controller = autoscrollController())
         controller->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
@@ -1935,7 +1935,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
         if (result && result->isTextNode())
-            result = EventPath::parent(result);
+            result = NodeRenderingTraversal::parent(result);
     }
     m_nodeUnderMouse = result;
     m_instanceUnderMouse = instanceAssociatedWithShadowTreeElement(result);
@@ -2143,7 +2143,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
     if (node && node->isTextNode())
-        node = EventPath::parent(node);
+        node = NodeRenderingTraversal::parent(node);
 
     bool isOverWidget;
     if (e.useLatchedEventNode()) {
@@ -3664,7 +3664,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
             // Touch events should not go to text nodes
             if (node->isTextNode())
-                node = EventPath::parent(node);
+                node = NodeRenderingTraversal::parent(node);
 
             Document& doc = node->document();
             // Record the originating touch document even if it does not have a touch listener.

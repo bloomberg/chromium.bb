@@ -12,14 +12,15 @@
     <script>
         var sandbox = document.getElementById('sandbox');
 
-        // Makes sure an insertion point can receive a event when a distributed text node is clicked.
+        // Makes sure the parent of the insertion point can receive an event when a distributed text node is clicked.
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'shadow-host'},
                                 createShadowRoot({'id': 'shadow-root'},
-                                                 createDOM('content', {'id': 'content'})),
+                                                 createDOM('div', {'id': 'content-parent'},
+                                                           createDOM('content', {'id': 'content'}))),
                                 document.createTextNode('Text Node'))));
-        addEventListeners(['top', 'shadow-host', 'shadow-host/', 'shadow-host/content']);
+        addEventListeners(['top', 'shadow-host', 'shadow-host/', 'shadow-host/content-parent', 'shadow-host/content']);
         showSandboxTree();
 
         // Calculates the position of the text node.

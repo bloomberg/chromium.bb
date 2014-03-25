@@ -45,12 +45,6 @@
 
 namespace WebCore {
 
-Node* EventPath::parent(Node* node)
-{
-    EventPath eventPath(node);
-    return eventPath.size() > 1 ? eventPath[1].node() : 0;
-}
-
 EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 {
     ASSERT(referenceNode);

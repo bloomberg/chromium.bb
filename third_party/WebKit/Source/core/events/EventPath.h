@@ -63,7 +63,6 @@ public:
     void adjustForRelatedTarget(Node*, EventTarget* relatedTarget);
     void adjustForTouchEvent(Node*, TouchEvent&);
 
-    static Node* parent(Node*);
     static EventTarget* eventTargetRespectingTargetRules(Node*);
 
 private:
