@@ -243,22 +243,6 @@ void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
 #endif  // defined(USE_AURA) || defined(OS_WIN)
 }
 
-void WebContentsViewGuest::ShowPopupMenu(const gfx::Rect& bounds,
-                                         int item_height,
-                                         double item_font_size,
-                                         int selected_item,
-                                         const std::vector<MenuItem>& items,
-                                         bool right_aligned,
-                                         bool allow_multiple_selection) {
-  // External popup menus are only used on Mac and Android.
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewGuest::HidePopupMenu() {
-  // External popup menus are only used on Mac and Android.
-  NOTIMPLEMENTED();
-}
-
 void WebContentsViewGuest::StartDragging(
     const DropData& drop_data,
     WebDragOperationsMask ops,

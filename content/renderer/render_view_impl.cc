@@ -1632,6 +1632,7 @@ WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
 WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
     const WebPopupMenuInfo& popup_menu_info,
     WebExternalPopupMenuClient* popup_menu_client) {
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // An IPC message is sent to the browser to build and display the actual
   // popup.  The user could have time to click a different select by the time
   // the popup is shown.  In that case external_popup_menu_ is non NULL.
@@ -1647,6 +1648,9 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
         external_popup_menu_.get(), screen_metrics_emulator_.get());
   }
   return external_popup_menu_.get();
+#else
+  return NULL;
+#endif
 }
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
@@ -4759,11 +4763,13 @@ void RenderViewImpl::OnSelectPopupMenuItems(
 }
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderViewImpl::DidHideExternalPopupMenu() {
   // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
   // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
   external_popup_menu_.reset();
 }
+#endif
 
 void RenderViewImpl::OnShowContextMenu(const gfx::Point& location) {
   context_menu_source_type_ = ui::MENU_SOURCE_TOUCH_EDIT_MENU;

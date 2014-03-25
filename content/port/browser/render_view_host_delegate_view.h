@@ -45,10 +45,10 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
                              int selected_item,
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
-                             bool allow_multiple_selection) = 0;
+                             bool allow_multiple_selection) {};
 
   // Hides a popup menu opened by ShowPopupMenu().
-  virtual void HidePopupMenu() = 0;
+  virtual void HidePopupMenu() {};
 
   // The user started dragging content of the specified type within the
   // RenderView. Contextual information about the dragged content is supplied

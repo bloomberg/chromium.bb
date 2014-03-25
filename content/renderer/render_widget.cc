@@ -552,11 +552,13 @@ void RenderWidget::SetScreenMetricsEmulationParameters(
   NOTREACHED();
 }
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator) {
   popup->SetOriginScaleAndOffsetForEmulation(
       emulator->scale(), emulator->offset());
 }
+#endif
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
   if (screen_metrics_emulator_)

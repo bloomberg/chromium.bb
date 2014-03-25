@@ -270,7 +270,9 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
 #endif
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   void DidHideExternalPopupMenu();
+#endif
 
   bool is_loading() const { return frames_in_progress_ != 0; }
 
@@ -1399,8 +1401,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Shall be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;
+#endif
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.

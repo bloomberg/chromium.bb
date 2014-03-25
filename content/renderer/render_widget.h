@@ -325,8 +325,10 @@ class CONTENT_EXPORT RenderWidget
       float device_scale_factor,
       const gfx::Point& root_layer_offset,
       float root_layer_scale);
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   void SetExternalPopupOriginAdjustmentsForEmulation(
       ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator);
+#endif
 
   // RenderWidget IPC message handlers
   void OnHandleInputEvent(const blink::WebInputEvent* event,

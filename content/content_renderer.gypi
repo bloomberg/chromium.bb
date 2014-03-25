@@ -135,8 +135,6 @@
     'renderer/dom_storage/webstoragenamespace_impl.h',
     'renderer/drop_data_builder.cc',
     'renderer/drop_data_builder.h',
-    'renderer/external_popup_menu.cc',
-    'renderer/external_popup_menu.h',
     'renderer/fetchers/image_resource_fetcher.cc',
     'renderer/fetchers/image_resource_fetcher.h',
     'renderer/fetchers/multi_resolution_image_resource_fetcher.cc',
@@ -567,6 +565,10 @@
         'renderer/webscrollbarbehavior_impl_gtkoraura.cc',
         'renderer/webscrollbarbehavior_impl_gtkoraura.h',
       ],
+      'sources': [
+        'renderer/external_popup_menu.cc',
+        'renderer/external_popup_menu.h',
+      ],
     }, {
       'sources!': [
         'renderer/webscrollbarbehavior_impl_mac.mm',
@@ -601,6 +603,10 @@
         'renderer/media/audio_decoder.cc',
         'renderer/media/filter_helpers.cc',
         'renderer/media/webmediaplayer_impl.cc',
+      ],
+      'sources': [
+        'renderer/external_popup_menu.cc',
+        'renderer/external_popup_menu.h',
       ],
       'dependencies': [
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
