@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'jingle.gypi',
+  ],
   'variables': {
     'chromium_code': 1,
   },  # variables
@@ -14,25 +17,7 @@
           'target_name': 'jingle_glue',
           'type': 'static_library',
           'sources': [
-            'glue/channel_socket_adapter.cc',
-            'glue/channel_socket_adapter.h',
-            'glue/chrome_async_socket.cc',
-            'glue/chrome_async_socket.h',
-            'glue/fake_ssl_client_socket.cc',
-            'glue/fake_ssl_client_socket.h',
-            'glue/proxy_resolving_client_socket.cc',
-            'glue/proxy_resolving_client_socket.h',
-            'glue/pseudotcp_adapter.cc',
-            'glue/pseudotcp_adapter.h',
-            'glue/resolving_client_socket_factory.h',
-            'glue/task_pump.cc',
-            'glue/task_pump.h',
-            'glue/thread_wrapper.cc',
-            'glue/thread_wrapper.h',
-            'glue/utils.cc',
-            'glue/utils.h',
-            'glue/xmpp_client_socket_factory.cc',
-            'glue/xmpp_client_socket_factory.h',
+            '<@(jingle_glue_sources)',
           ],
           'dependencies': [
             '../base/base.gyp:base',
