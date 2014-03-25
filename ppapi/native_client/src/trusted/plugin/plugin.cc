@@ -606,6 +606,11 @@ Plugin::Plugin(PP_Instance pp_instance)
   nexe_downloader_.Initialize(this);
   nacl_interface_ = GetNaClInterface();
   CHECK(nacl_interface_ != NULL);
+
+  // Notify PPB_NaCl_Private that the instance is created before altering any
+  // state that it tracks.
+  nacl_interface_->InstanceCreated(pp_instance);
+
   set_nacl_ready_state(UNSENT);
   set_last_error_string("");
   // We call set_exit_status() here to ensure that the 'exitStatus' property is
@@ -1260,15 +1265,15 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
                  error_info.message().c_str()));
+  // Set the readyState attribute to indicate we need to start over.
+  set_nacl_ready_state(DONE);
+  set_nexe_error_reported(true);
+
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
                                    error_info.message().c_str(),
                                    error_info.console_message().c_str(),
                                    PP_FromBool(is_installed_));
-
-  // Set the readyState attribute to indicate we need to start over.
-  set_nacl_ready_state(DONE);
-  set_nexe_error_reported(true);
 }
 
 

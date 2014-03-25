@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Mar 20 14:02:02 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Mar 21 13:55:07 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -284,6 +284,8 @@ struct PPB_NaCl_Private_1_0 {
                           const char* error_message,
                           const char* console_message,
                           PP_Bool is_installed);
+  /* Performs internal setup when an instance is created. */
+  void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
   void (*InstanceDestroyed)(PP_Instance instance);
   /* Return true if the NaCl debug stub is enabled and the loaded app

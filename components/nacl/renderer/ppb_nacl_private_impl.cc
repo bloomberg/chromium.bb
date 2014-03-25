@@ -5,14 +5,15 @@
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 
 #include "base/command_line.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/renderer/nexe_load_manager.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
@@ -31,14 +32,6 @@
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
-#include "third_party/WebKit/public/web/WebDOMResourceProgressEvent.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebView.h"
-#include "url/gurl.h"
-#include "v8/include/v8.h"
 
 namespace {
 
@@ -75,23 +68,18 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef std::map<PP_Instance, nacl::TrustedPluginChannel*>
-    InstanceTrustedChannelMap;
+typedef base::ScopedPtrHashMap<PP_Instance, nacl::NexeLoadManager>
+    NexeLoadManagerMap;
 
-base::LazyInstance<InstanceTrustedChannelMap> g_channel_map =
+base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
-void HistogramEnumerate(const std::string& name,
-                        int32_t sample,
-                        int32_t boundary_value) {
-  base::HistogramBase* counter =
-      base::LinearHistogram::FactoryGet(
-          name,
-          1,
-          boundary_value,
-          boundary_value + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->Add(sample);
+nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  NexeLoadManagerMap::iterator iter = map.find(instance);
+  if (iter != map.end())
+    return iter->second;
+  return NULL;
 }
 
 static int GetRoutingID(PP_Instance instance) {
@@ -199,9 +187,16 @@ void LaunchSelLdr(PP_Instance instance,
     invalid_handle = (launch_result.trusted_ipc_channel_handle.socket.fd == -1);
 #endif
   if (!invalid_handle) {
-    g_channel_map.Get()[instance] = new nacl::TrustedPluginChannel(
-        launch_result.trusted_ipc_channel_handle, callback,
-        content::RenderThread::Get()->GetShutdownEvent());
+    nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+    DCHECK(load_manager);
+    if (load_manager) {
+      scoped_ptr<nacl::TrustedPluginChannel> trusted_plugin_channel(
+          new nacl::TrustedPluginChannel(
+              launch_result.trusted_ipc_channel_handle,
+              callback,
+              content::RenderThread::Get()->GetShutdownEvent()));
+      load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
+    }
   }
 
   *(static_cast<NaClHandle*>(imc_handle)) =
@@ -396,45 +391,12 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
   return handle;
 }
 
-blink::WebString EventTypeToString(PP_NaClEventType event_type) {
-  switch (event_type) {
-    case PP_NACL_EVENT_LOADSTART:
-      return blink::WebString::fromUTF8("loadstart");
-    case PP_NACL_EVENT_PROGRESS:
-      return blink::WebString::fromUTF8("progress");
-    case PP_NACL_EVENT_ERROR:
-      return blink::WebString::fromUTF8("error");
-    case PP_NACL_EVENT_ABORT:
-      return blink::WebString::fromUTF8("abort");
-    case PP_NACL_EVENT_LOAD:
-      return blink::WebString::fromUTF8("load");
-    case PP_NACL_EVENT_LOADEND:
-      return blink::WebString::fromUTF8("loadend");
-    case PP_NACL_EVENT_CRASH:
-      return blink::WebString::fromUTF8("crash");
-  }
-  NOTIMPLEMENTED();
-  return blink::WebString();
-}
-
-struct ProgressEvent {
-  explicit ProgressEvent(PP_Instance instance_param,
-                         PP_NaClEventType event_type_param)
-      : instance(instance_param),
-        event_type(event_type_param),
-        length_is_computable(false),
-        loaded_bytes(0),
-        total_bytes(0) {
-  }
-  PP_Instance instance;
-  PP_NaClEventType event_type;
-  std::string resource_url;
-  bool length_is_computable;
-  uint64_t loaded_bytes;
-  uint64_t total_bytes;
-};
-
-void DispatchEventOnMainThread(const ProgressEvent &event);
+void DispatchEventOnMainThread(PP_Instance instance,
+                               PP_NaClEventType event_type,
+                               const std::string& resource_url,
+                               PP_Bool length_is_computable,
+                               uint64_t loaded_bytes,
+                               uint64_t total_bytes);
 
 void DispatchEvent(PP_Instance instance,
                    PP_NaClEventType event_type,
@@ -442,63 +404,34 @@ void DispatchEvent(PP_Instance instance,
                    PP_Bool length_is_computable,
                    uint64_t loaded_bytes,
                    uint64_t total_bytes) {
-  ProgressEvent p(instance, event_type);
-  p.length_is_computable = PP_ToBool(length_is_computable);
-  p.loaded_bytes = loaded_bytes;
-  p.total_bytes = total_bytes;
-
-  // We have to copy resource_url into our struct manually since we don't have
-  // guarantees about the PP_Var lifetime.
-  p.resource_url = std::string();
-  if (resource_url)
-    p.resource_url = std::string(resource_url);
-
   ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
       FROM_HERE,
-      base::Bind(&DispatchEventOnMainThread, p));
+      base::Bind(&DispatchEventOnMainThread,
+                 instance,
+                 event_type,
+                 std::string(resource_url),
+                 length_is_computable,
+                 loaded_bytes,
+                 total_bytes));
 }
 
-void DispatchEventOnMainThread(const ProgressEvent &event) {
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(event.instance);
-  // The instance may have been destroyed after we were scheduled, so just
-  // return if it's gone.
-  if (!plugin_instance)
-    return;
-
-  blink::WebPluginContainer* container = plugin_instance->GetContainer();
-  // It's possible that container() is NULL if the plugin has been removed from
-  // the DOM (but the PluginInstance is not destroyed yet).
-  if (!container)
-    return;
-  blink::WebFrame* frame = container->element().document().frame();
-  if (!frame)
-    return;
-  v8::HandleScope handle_scope(plugin_instance->GetIsolate());
-  v8::Local<v8::Context> context(
-      plugin_instance->GetIsolate()->GetCurrentContext());
-  if (context.IsEmpty()) {
-    // If there's no JavaScript on the stack, we have to make a new Context.
-    context = v8::Context::New(plugin_instance->GetIsolate());
-  }
-  v8::Context::Scope context_scope(context);
-
-  if (!event.resource_url.empty()) {
-    blink::WebString url_string = blink::WebString::fromUTF8(
-        event.resource_url.data(), event.resource_url.size());
-    blink::WebDOMResourceProgressEvent blink_event(
-        EventTypeToString(event.event_type),
-        event.length_is_computable,
-        event.loaded_bytes,
-        event.total_bytes,
-        url_string);
-    container->element().dispatchEvent(blink_event);
-  } else {
-    blink::WebDOMProgressEvent blink_event(EventTypeToString(event.event_type),
-                                           event.length_is_computable,
-                                           event.loaded_bytes,
-                                           event.total_bytes);
-    container->element().dispatchEvent(blink_event);
+void DispatchEventOnMainThread(PP_Instance instance,
+                               PP_NaClEventType event_type,
+                               const std::string& resource_url,
+                               PP_Bool length_is_computable,
+                               uint64_t loaded_bytes,
+                               uint64_t total_bytes) {
+  nacl::NexeLoadManager* load_manager =
+      GetNexeLoadManager(instance);
+  // The instance may have been destroyed after we were scheduled, so do
+  // nothing if it's gone.
+  if (load_manager) {
+    nacl::NexeLoadManager::ProgressEvent event(event_type);
+    event.resource_url = resource_url;
+    event.length_is_computable = PP_ToBool(length_is_computable);
+    event.loaded_bytes = loaded_bytes;
+    event.total_bytes = total_bytes;
+    load_manager->DispatchEvent(event);
   }
 }
 
@@ -515,53 +448,26 @@ void ReportLoadError(PP_Instance instance,
                      const char* error_message,
                      const char* console_message,
                      PP_Bool is_installed) {
-  // Check that we are on the main renderer thread.
-  DCHECK(content::RenderThread::Get());
-
-  if (error == PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH) {
-    // A special case: the manifest may otherwise be valid but is missing
-    // a program/file compatible with the user's sandbox.
-    IPC::Sender* sender = content::RenderThread::Get();
-    sender->Send(
-        new NaClHostMsg_MissingArchError(GetRoutingID(instance)));
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager) {
+    load_manager->ReportLoadError(error, error_message,
+                                  PP_ToBool(is_installed));
   }
-  // TODO(dmichael): Move the following actions here:
-  // - Set ready state to DONE.
+  LogToConsole(instance, console_message);
+}
 
-  // Inform JavaScript that loading encountered an error and is complete.
-  DispatchEvent(instance, PP_NACL_EVENT_ERROR, NULL, PP_FALSE, 0, 0);
-  DispatchEvent(instance, PP_NACL_EVENT_LOADEND, NULL, PP_FALSE, 0, 0);
-
-  HistogramEnumerate("NaCl.LoadStatus.Plugin", error,
-                     PP_NACL_ERROR_MAX);
-  std::string uma_name = (is_installed == PP_TRUE) ?
-                         "NaCl.LoadStatus.Plugin.InstalledApp" :
-                         "NaCl.LoadStatus.Plugin.NotInstalledApp";
-  HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
-
-  std::string error_string = std::string("NaCl module load failed: ") +
-      std::string(error_message);
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  plugin_instance->SetEmbedProperty(
-      ppapi::StringVar::StringToPPVar("lastError"),
-      ppapi::StringVar::StringToPPVar(error_string));
-
-  std::string console_string = std::string("NaCl module load failed: ") +
-      std::string(console_message);
-  LogToConsole(instance, console_string.c_str());
+void InstanceCreated(PP_Instance instance) {
+  scoped_ptr<nacl::NexeLoadManager> new_load_manager(
+      new nacl::NexeLoadManager(instance));
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  DLOG_IF(ERROR, map.count(instance) != 0) << "Instance count should be 0";
+  map.add(instance, new_load_manager.Pass());
 }
 
 void InstanceDestroyed(PP_Instance instance) {
-  InstanceTrustedChannelMap& map = g_channel_map.Get();
-  InstanceTrustedChannelMap::iterator it = map.find(instance);
-  if (it == map.end()) {
-    DLOG(ERROR) << "Could not find instance ID";
-    return;
-  }
-  nacl::TrustedPluginChannel* instance_info = it->second;
-  map.erase(it);
-  delete instance_info;
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  DLOG_IF(ERROR, map.count(instance) == 0) << "Could not find instance ID";
+  map.erase(instance);
 }
 
 PP_Bool NaClDebugStubEnabled() {
@@ -610,6 +516,7 @@ const PPB_NaCl_Private nacl_interface = {
   &DispatchEvent,
   &SetReadOnlyProperty,
   &ReportLoadError,
+  &InstanceCreated,
   &InstanceDestroyed,
   &NaClDebugStubEnabled,
   &GetSandboxArch,

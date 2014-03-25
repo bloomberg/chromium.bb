@@ -142,6 +142,8 @@
           'target_name': 'nacl_renderer',
           'type': 'static_library',
           'sources': [
+            'nacl/renderer/nexe_load_manager.cc',
+            'nacl/renderer/nexe_load_manager.h',
             'nacl/renderer/pnacl_translation_resource_host.cc',
             'nacl/renderer/pnacl_translation_resource_host.h',
             'nacl/renderer/ppb_nacl_private_impl.cc',

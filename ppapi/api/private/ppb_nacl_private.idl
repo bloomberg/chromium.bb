@@ -278,6 +278,9 @@ interface PPB_NaCl_Private {
                        [in] str_t console_message,
                        [in] PP_Bool is_installed);
 
+  /* Performs internal setup when an instance is created. */
+  void InstanceCreated([in] PP_Instance instance);
+
   /* Performs internal cleanup when an instance is destroyed. */
   void InstanceDestroyed([in] PP_Instance instance);
 
