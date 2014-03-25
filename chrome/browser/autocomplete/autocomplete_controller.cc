@@ -238,7 +238,14 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     // TODO(mpearson): Remove timing code once bugs 178705 / 237703 / 168933
     // are resolved.
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
-    (*i)->Start(input_, minimal_changes);
+
+    // Call Start() on ZeroSuggestProvider with an INVALID AutocompleteInput
+    // to clear out zero-suggest |matches_|.
+    if (*i == zero_suggest_provider_)
+      (*i)->Start(AutocompleteInput(), minimal_changes);
+    else
+      (*i)->Start(input_, minimal_changes);
+
     if (input.matches_requested() != AutocompleteInput::ALL_MATCHES)
       DCHECK((*i)->done());
     base::TimeTicks provider_end_time = base::TimeTicks::Now();
@@ -297,28 +304,20 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 }
 
-void AutocompleteController::StartZeroSuggest(
-    const GURL& url,
-    AutocompleteInput::PageClassification page_classification,
-    const base::string16& permanent_text) {
+void AutocompleteController::StartZeroSuggest(const AutocompleteInput& input) {
   if (zero_suggest_provider_ != NULL) {
     DCHECK(!in_start_);  // We should not be already running a query.
 
-    // Call Start() on all providers with INVALID input to clear out cached
-    // |matches_| to ensure they aren't used with zero suggest.
+    // Call Start() on all prefix-based providers with an INVALID
+    // AutocompleteInput to clear out cached |matches_|, which ensures that
+    // they aren't used with zero suggest.
     for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
-        ++i)
-      (*i)->Start(AutocompleteInput(), false);
-
-    zero_suggest_provider_->StartZeroSuggest(
-        url, page_classification, permanent_text);
-  }
-}
-
-void AutocompleteController::StopZeroSuggest() {
-  if (zero_suggest_provider_ != NULL) {
-    DCHECK(!in_start_);  // We should not be already running a query.
-    zero_suggest_provider_->Stop(false);
+        ++i) {
+      if (*i == zero_suggest_provider_)
+        (*i)->Start(input, false);
+      else
+        (*i)->Start(AutocompleteInput(), false);
+    }
   }
 }
 

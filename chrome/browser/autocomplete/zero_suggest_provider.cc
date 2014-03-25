@@ -81,32 +81,17 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 }
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
-                                bool /*minimal_changes*/) {
-}
+                                bool minimal_changes) {
+  matches_.clear();
+  if (input.type() == AutocompleteInput::INVALID)
+    return;
 
-void ZeroSuggestProvider::ResetSession() {
-  // The user has started editing in the omnibox, so leave
-  // |field_trial_triggered_in_session_| unchanged and set
-  // |field_trial_triggered_| to false since zero suggest is inactive now.
-  field_trial_triggered_ = false;
-
-  // This call clears out |matches_| so that they don't pollute prefix-based
-  // queries.
-  // TODO(mariakhomenko): Change the model to clear |matches_| on Start() like
-  // all the other providers.
-  Stop(true);
-}
-
-void ZeroSuggestProvider::StartZeroSuggest(
-    const GURL& current_page_url,
-    AutocompleteInput::PageClassification page_classification,
-    const base::string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
-  permanent_text_ = permanent_text;
-  current_query_ = current_page_url.spec();
-  current_page_classification_ = page_classification;
+  permanent_text_ = input.text();
+  current_query_ = input.current_url().spec();
+  current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
 
   const TemplateURL* default_provider =
@@ -122,7 +107,7 @@ void ZeroSuggestProvider::StartZeroSuggest(
     return;
 
   // No need to send the current page URL in personalized suggest field trial.
-  if (CanSendURL(current_page_url, suggest_url, default_provider,
+  if (CanSendURL(input.current_url(), suggest_url, default_provider,
                  current_page_classification_, profile_) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
@@ -130,7 +115,7 @@ void ZeroSuggestProvider::StartZeroSuggest(
     suggest_url = GURL(default_provider->suggestions_url_ref().
                        ReplaceSearchTerms(search_term_args));
   } else if (!CanShowZeroSuggestWithoutSendingURL(suggest_url,
-                                                  current_page_url)) {
+                                                  input.current_url())) {
     return;
   }
 
@@ -139,6 +124,13 @@ void ZeroSuggestProvider::StartZeroSuggest(
   // These may be useful on the NTP or more relevant to the user than server
   // suggestions, if based on local browsing history.
   Run(suggest_url);
+}
+
+void ZeroSuggestProvider::ResetSession() {
+  // The user has started editing in the omnibox, so leave
+  // |field_trial_triggered_in_session_| unchanged and set
+  // |field_trial_triggered_| to false since zero suggest is inactive now.
+  field_trial_triggered_ = false;
 }
 
 ZeroSuggestProvider::ZeroSuggestProvider(
@@ -193,7 +185,6 @@ void ZeroSuggestProvider::ClearAllResults() {
   results_.suggest_results.clear();
   results_.navigation_results.clear();
   current_query_.clear();
-  matches_.clear();
 }
 
 int ZeroSuggestProvider::GetDefaultResultRelevance() const {
@@ -356,10 +347,6 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
-  AutocompleteInput input(permanent_text_, base::string16::npos, base::string16(),
-                          GURL(current_query_), current_page_classification_,
-                          false, false, true, AutocompleteInput::ALL_MATCHES);
-
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
       permanent_text_, false, true, current_page_classification_, &match, NULL);

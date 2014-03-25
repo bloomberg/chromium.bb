@@ -49,18 +49,10 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool /*minimal_changes*/) OVERRIDE;
+                     bool minimal_changes) OVERRIDE;
 
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
-
-  // Initiates a new fetch for the given |url| of classification
-  // |page_classification|. |permanent_text| is the omnibox text
-  // for the current page.
-  void StartZeroSuggest(
-      const GURL& curent_page_url,
-      AutocompleteInput::PageClassification page_classification,
-      const base::string16& permanent_text);
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,

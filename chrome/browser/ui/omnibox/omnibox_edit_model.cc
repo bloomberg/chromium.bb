@@ -924,9 +924,10 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // that we avoid PermanentURL() here because it's not guaranteed to give us
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    autocomplete_controller()->StartZeroSuggest(delegate_->GetURL(),
-                                                ClassifyPage(),
-                                                permanent_text_);
+    autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
+        permanent_text_, base::string16::npos, base::string16(),
+        delegate_->GetURL(), ClassifyPage(), false, false, true,
+        AutocompleteInput::ALL_MATCHES));
   }
 
   if (user_input_in_progress_ || !in_revert_)
@@ -942,9 +943,6 @@ void OmniboxEditModel::SetCaretVisibility(bool visible) {
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
-  // TODO(jered): Rip this out along with StartZeroSuggest.
-  autocomplete_controller()->StopZeroSuggest();
-
   if (user_input_in_progress_ || !in_revert_)
     delegate_->OnInputStateChanged();
 }
