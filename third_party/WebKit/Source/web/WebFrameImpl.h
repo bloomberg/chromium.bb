@@ -63,6 +63,7 @@ class WebDataSourceImpl;
 class WebInputElement;
 class WebFrameClient;
 class WebPerformance;
+class WebPlugin;
 class WebPluginContainerImpl;
 class WebView;
 class WebViewImpl;
@@ -182,6 +183,9 @@ public:
     virtual void selectRange(const WebRange&) OVERRIDE;
     virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent) OVERRIDE;
     virtual void moveCaretSelection(const WebPoint&) OVERRIDE;
+    virtual bool setEditableSelectionOffsets(int start, int end) OVERRIDE;
+    virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) OVERRIDE;
+    virtual void extendSelectionAndDelete(int before, int after) OVERRIDE;
     virtual void setCaretVisible(bool) OVERRIDE;
     virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode) OVERRIDE;
     virtual float printPage(int pageToPrint, WebCanvas*) OVERRIDE;
@@ -407,6 +411,8 @@ private:
 
     // Returns a hit-tested VisiblePosition for the given point
     WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
+
+    WebPlugin* focusedPluginIfInputMethodSupported();
 
     FrameLoaderClientImpl m_frameLoaderClientImpl;
 

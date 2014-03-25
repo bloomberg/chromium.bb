@@ -2290,13 +2290,6 @@ void WebViewImpl::extendSelectionAndDelete(int before, int after)
     focused->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
-bool WebViewImpl::isSelectionEditable() const
-{
-    if (const LocalFrame* frame = focusedWebCoreFrame())
-        return frame->selection().isContentEditable();
-    return false;
-}
-
 WebColor WebViewImpl::backgroundColor() const
 {
     if (isTransparent())

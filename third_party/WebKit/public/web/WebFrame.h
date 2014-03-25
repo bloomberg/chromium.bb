@@ -31,6 +31,7 @@
 #ifndef WebFrame_h
 #define WebFrame_h
 
+#include "WebCompositionUnderline.h"
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
@@ -465,6 +466,10 @@ public:
     // the root editable element.
     virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent) = 0;
     virtual void moveCaretSelection(const WebPoint&) = 0;
+
+    virtual bool setEditableSelectionOffsets(int start, int end) = 0;
+    virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) = 0;
+    virtual void extendSelectionAndDelete(int before, int after) = 0;
 
     virtual void setCaretVisible(bool) = 0;
 

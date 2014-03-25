@@ -153,7 +153,6 @@ public:
     virtual bool setEditableSelectionOffsets(int start, int end) OVERRIDE;
     virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) OVERRIDE;
     virtual void extendSelectionAndDelete(int before, int after) OVERRIDE;
-    virtual bool isSelectionEditable() const OVERRIDE;
     virtual WebColor backgroundColor() const OVERRIDE;
     virtual bool selectionBounds(WebRect& anchor, WebRect& focus) const OVERRIDE;
     virtual void didShowCandidateWindow() OVERRIDE;

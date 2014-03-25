@@ -74,6 +74,7 @@
 
 #include <algorithm>
 #include "AssociatedURLLoader.h"
+#include "CompositionUnderlineVectorBuilder.h"
 #include "EventListenerWrapper.h"
 #include "FindInPageCoordinates.h"
 #include "HTMLNames.h"
@@ -1359,6 +1360,36 @@ void WebFrameImpl::moveCaretSelection(const WebPoint& point)
     frame()->selection().moveTo(position, UserTriggered);
 }
 
+bool WebFrameImpl::setEditableSelectionOffsets(int start, int end)
+{
+    return frame()->inputMethodController().setEditableSelectionOffsets(PlainTextRange(start, end));
+}
+
+bool WebFrameImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
+{
+    if (!frame()->editor().canEdit())
+        return false;
+
+    InputMethodController& inputMethodController = frame()->inputMethodController();
+    inputMethodController.cancelComposition();
+
+    if (compositionStart == compositionEnd)
+        return true;
+
+    inputMethodController.setCompositionFromExistingText(CompositionUnderlineVectorBuilder(underlines), compositionStart, compositionEnd);
+
+    return true;
+}
+
+void WebFrameImpl::extendSelectionAndDelete(int before, int after)
+{
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
+        plugin->extendSelectionAndDelete(before, after);
+        return;
+    }
+    frame()->inputMethodController().extendSelectionAndDelete(before, after);
+}
+
 void WebFrameImpl::setCaretVisible(bool visible)
 {
     frame()->selection().setCaretVisible(visible);
@@ -1376,6 +1407,14 @@ VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& poin
     if (Node* node = result.targetNode())
         return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
     return VisiblePosition();
+}
+
+WebPlugin* WebFrameImpl::focusedPluginIfInputMethodSupported()
+{
+    WebPluginContainerImpl* container = WebFrameImpl::pluginContainerFromNode(frame(), WebNode(frame()->document()->focusedElement()));
+    if (container && container->supportsInputMethod())
+        return container->plugin();
+    return 0;
 }
 
 int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode)
