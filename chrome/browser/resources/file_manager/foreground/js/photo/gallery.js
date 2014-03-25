@@ -26,6 +26,7 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  *     {function(string)} onBack
  *     {function()} onClose
  *     {function()} onMaximize
+ *     {function()} onMinimize
  *     {function(boolean)} onAppRegionChanged
  *     {MetadataCache} metadataCache
  *     {Array.<Object>} shareActions
@@ -181,6 +182,13 @@ Gallery.prototype.initDom_ = function() {
   backButton.addEventListener('click', this.onBack_.bind(this));
 
   var preventDefault = function(event) { event.preventDefault(); };
+
+  var minimizeButton = util.createChild(this.header_,
+                                        'minimize-button tool dimmable',
+                                        'button');
+  minimizeButton.tabIndex = -1;
+  minimizeButton.addEventListener('click', this.onMinimize_.bind(this));
+  minimizeButton.addEventListener('mousedown', preventDefault);
 
   var maximizeButton = util.createChild(this.header_,
                                         'maximize-button tool dimmable',
@@ -376,6 +384,14 @@ Gallery.prototype.onClose_ = function() {
  */
 Gallery.prototype.onMaximize_ = function() {
   this.executeWhenReady(this.context_.onMaximize);
+};
+
+/**
+ * Handles user's 'Maximize' action (Escape or a click on the X icon).
+ * @private
+ */
+Gallery.prototype.onMinimize_ = function() {
+  this.executeWhenReady(this.context_.onMinimize);
 };
 
 /**

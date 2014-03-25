@@ -1359,6 +1359,13 @@ body {
   width: 32px;
 }
 
+.gallery > .header > .minimize-button {
+  background: -webkit-image-set(
+    url('chrome://resources/images/apps/topbar_button_minimize.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_minimize.png') 2x)
+    center;
+}
+
 .gallery > .header > .maximize-button {
   background: -webkit-image-set(
     url('chrome://resources/images/apps/topbar_button_maximize.png') 1x,

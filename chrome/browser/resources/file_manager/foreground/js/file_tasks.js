@@ -680,14 +680,6 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
     document.title = savedTitle;
   };
 
-  var onClose = function() {
-    fm.onClose();
-  };
-
-  var onMaximize = function() {
-    fm.onMaximize();
-  };
-
   var onAppRegionChanged = function(visible) {
     fm.onFilePopupAppRegionChanged(visible);
   };
@@ -726,8 +718,9 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
       pageState: this.params_,
       appWindow: chrome.app.window.current(),
       onBack: onBack,
-      onClose: onClose,
-      onMaximize: onMaximize,
+      onClose: fm.onClose.bind(fm),
+      onMaximize: fm.onMaximize.bind(fm),
+      onMinimize: fm.onMinimize.bind(fm),
       onAppRegionChanged: onAppRegionChanged,
       loadTimeData: fm.backgroundPage.background.stringData
     };
