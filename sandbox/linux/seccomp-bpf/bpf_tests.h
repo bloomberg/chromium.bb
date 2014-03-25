@@ -89,10 +89,9 @@ class BPFTests : public UnitTests {
       arg->test()(arg->aux_);
     } else {
       printf("This BPF test is not fully running in this configuration!\n");
-      // Android, ARM and Valgrind are the three only configurations where we
-      // accept not having kernel BPF support.
-      // TODO(jln): remote ARM from this list when possible (crbug.com/243478).
-      if (!IsAndroid() && !IsRunningOnValgrind() && !IsArchitectureArm()) {
+      // Android and Valgrind are the only configurations where we accept not
+      // having kernel BPF support.
+      if (!IsAndroid() && !IsRunningOnValgrind()) {
         const bool seccomp_bpf_is_supported = false;
         BPF_ASSERT(seccomp_bpf_is_supported);
       }
