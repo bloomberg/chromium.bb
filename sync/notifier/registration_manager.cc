@@ -101,8 +101,8 @@ void RegistrationManager::MarkRegistrationLost(
   DCHECK(CalledOnValidThread());
   RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    DLOG(WARNING) << "Attempt to mark non-existent registration for "
-                  << ObjectIdToString(id) << " as lost";
+    DVLOG(1) << "Attempt to mark non-existent registration for "
+             << ObjectIdToString(id) << " as lost";
     return;
   }
   if (!it->second->enabled) {
@@ -128,8 +128,8 @@ void RegistrationManager::DisableId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
   RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    DLOG(WARNING) << "Attempt to disable non-existent registration for "
-                  << ObjectIdToString(id);
+    DVLOG(1) << "Attempt to disable non-existent registration for "
+             << ObjectIdToString(id);
     return;
   }
   it->second->Disable();
@@ -204,8 +204,8 @@ void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
   DCHECK(CalledOnValidThread());
   RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    DLOG(FATAL) << "TryRegisterId called on " << ObjectIdToString(id)
-                << " which is not in the registration map";
+    NOTREACHED() << "TryRegisterId called on " << ObjectIdToString(id)
+                 << " which is not in the registration map";
     return;
   }
   RegistrationStatus* status = it->second;
@@ -258,8 +258,8 @@ void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
   invalidation_client_->Register(id);
   RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    DLOG(FATAL) << "DoRegisterId called on " << ObjectIdToString(id)
-                << " which is not in the registration map";
+    NOTREACHED() << "DoRegisterId called on " << ObjectIdToString(id)
+                 << " which is not in the registration map";
     return;
   }
   it->second->state = invalidation::InvalidationListener::REGISTERED;
@@ -271,8 +271,8 @@ void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
   invalidation_client_->Unregister(id);
   RegistrationStatusMap::iterator it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    DLOG(FATAL) << "UnregisterId called on " << ObjectIdToString(id)
-                << " which is not in the registration map";
+    NOTREACHED() << "UnregisterId called on " << ObjectIdToString(id)
+                 << " which is not in the registration map";
     return;
   }
   delete it->second;
