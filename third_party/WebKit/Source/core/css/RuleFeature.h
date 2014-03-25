@@ -144,6 +144,8 @@ private:
     DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
+    const CSSSelector* extractInvalidationSetFeatures(const CSSSelector&, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName, Vector<AtomicString>& attributes);
+    void addFeaturesToInvalidationSets(const CSSSelector&, const Vector<AtomicString>& classes, AtomicString id, AtomicString tagName, const Vector<AtomicString>& attributes);
 
     void addClassToInvalidationSet(const AtomicString& className, Element*);
 
