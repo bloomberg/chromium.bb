@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   content::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
-  if (!chromeos::ScreenLocker::GetTester()->IsLocked())
+  if (!tester->IsLocked())
     lock_state_observer.Wait();
 
   // Test to make sure that the widget is actually appearing and is of
