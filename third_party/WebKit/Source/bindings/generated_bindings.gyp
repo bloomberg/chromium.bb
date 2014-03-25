@@ -112,6 +112,14 @@
       '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
+    'generated_global_constructors_header_files': [
+      '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.h',
+      '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.h',
+    ],
+
 
     # Python source
     'jinja_module_files': [
@@ -195,6 +203,7 @@
       ],
       'outputs': [
         '<@(generated_global_constructors_idl_files)',
+        '<@(generated_global_constructors_header_files)',
       ],
       'action': [
         'python',

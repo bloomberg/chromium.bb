@@ -26,6 +26,12 @@ from utilities import get_file_contents, write_file, get_interface_extended_attr
 global_objects = {}
 
 
+HEADER_FORMAT = """
+// Stub header file for {{idl_basename}}
+// Required because the IDL compiler assumes that a corresponding header file
+// exists for each IDL file.
+"""
+
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--idl-files-list', help='file listing IDL files')
@@ -92,17 +98,18 @@ def generate_global_constructors_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def write_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list, only_if_changed):
+def write_global_constructors_partial_interface(interface_name, idl_filename, constructor_attributes_list, only_if_changed):
     # FIXME: replace this with a simple Jinja template
-    lines = (['[\n'] +
-             ['    NoHeader,\n'] +
-             [']\n'] +
-             ['partial interface %s {\n' % interface_name] +
+    lines = (['partial interface %s {\n' % interface_name] +
              ['    %s;\n' % constructor_attribute
               # FIXME: sort by interface name (not first by extended attributes)
               for constructor_attribute in sorted(constructor_attributes_list)] +
              ['};\n'])
-    write_file(''.join(lines), destination_filename, only_if_changed)
+    write_file(''.join(lines), idl_filename, only_if_changed)
+    header_filename = os.path.splitext(idl_filename)[0] + '.h'
+    idl_basename = os.path.basename(idl_filename)
+    write_file(HEADER_FORMAT.format(idl_basename=idl_basename),
+               header_filename, only_if_changed)
 
 
 ################################################################################
@@ -119,20 +126,24 @@ def main():
     # these are in the build directory, which is determined at build time, not
     # GYP time.
     # These are passed as pairs of GlobalObjectName, GlobalObject.idl
-    interface_name_filename = [(args[i], args[i + 1])
-                               for i in range(0, len(args), 2)]
+    interface_name_idl_filename = [(args[i], args[i + 1])
+                                   for i in range(0, len(args), 2)]
     global_objects.update(
         (interface_name, {
-            'filename': filename,
+            'idl_filename': idl_filename,
             'constructors': [],
         })
-        for interface_name, filename in interface_name_filename)
+        for interface_name, idl_filename in interface_name_idl_filename)
 
     for idl_filename in idl_files:
         record_global_constructors(idl_filename)
 
     for interface_name, global_object in global_objects.iteritems():
-        write_global_constructors_partial_interface(interface_name, global_object['filename'], global_object['constructors'], options.write_file_only_if_changed)
+        write_global_constructors_partial_interface(
+            interface_name,
+            global_object['idl_filename'],
+            global_object['constructors'],
+            options.write_file_only_if_changed)
 
 
 if __name__ == '__main__':

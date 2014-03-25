@@ -29,7 +29,6 @@
  */
 
 [
-    NoHeader,
     RuntimeEnabled=WebKitMediaSource,
 ] partial interface Window {
     attribute WebKitMediaSourceConstructor WebKitMediaSource;

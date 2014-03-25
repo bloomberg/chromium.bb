@@ -463,6 +463,7 @@
       'mediasource/WebKitSourceBuffer.h',
       'mediasource/WebKitSourceBufferList.cpp',
       'mediasource/WebKitSourceBufferList.h',
+      'mediasource/WindowMediaSource.h',
       'mediastream/MediaConstraintsImpl.cpp',
       'mediastream/MediaConstraintsImpl.h',
       'mediastream/MediaDeviceInfo.cpp',
