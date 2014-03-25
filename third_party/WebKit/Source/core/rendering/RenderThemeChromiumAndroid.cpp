@@ -58,16 +58,6 @@ RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
 {
 }
 
-Color RenderThemeChromiumAndroid::systemColor(CSSValueID cssValueId) const
-{
-    if (isRunningLayoutTest() && cssValueId == CSSValueButtonface) {
-        // Match Linux button color in layout tests.
-        static const Color linuxButtonGrayColor(0xffdddddd);
-        return linuxButtonGrayColor;
-    }
-    return RenderTheme::systemColor(cssValueId);
-}
-
 String RenderThemeChromiumAndroid::extraMediaControlsStyleSheet()
 {
     return String(mediaControlsAndroidUserAgentStyleSheet, sizeof(mediaControlsAndroidUserAgentStyleSheet));
