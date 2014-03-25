@@ -8364,6 +8364,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioTrackProcessingStates"
+    enum="AudioTrackProcessingStates">
+  <summary>
+    State of the media stream audio track processing, sampled once during the
+    life time of a MediaStreamAudioProcessor.
+  </summary>
+</histogram>
+
 <histogram name="Media.CacheUseful" enum="BooleanSuccess">
   <owner>scherkus@chromium.org</owner>
   <summary>
@@ -29360,6 +29368,12 @@ other types of suffix sets.
   <int value="8" label="k88200Hz"/>
   <int value="9" label="k176400Hz"/>
   <int value="10" label="k192000Hz"/>
+</enum>
+
+<enum name="AudioTrackProcessingStates" type="int">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Disabled"/>
+  <int value="2" label="Processing in WebRTC"/>
 </enum>
 
 <enum name="AutocheckoutBubble" type="int">

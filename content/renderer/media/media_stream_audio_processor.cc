@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
@@ -30,9 +31,22 @@ const int kAudioProcessingSampleRate = 16000;
 #else
 const int kAudioProcessingSampleRate = 32000;
 #endif
-const int kAudioProcessingNumberOfChannel = 1;
+const int kAudioProcessingNumberOfChannels = 1;
 
 const int kMaxNumberOfBuffersInFifo = 2;
+
+// Used by UMA histograms and entries shouldn't be re-ordered or removed.
+enum AudioTrackProcessingStates {
+  AUDIO_PROCESSING_ENABLED = 0,
+  AUDIO_PROCESSING_DISABLED,
+  AUDIO_PROCESSING_IN_WEBRTC,
+  AUDIO_PROCESSING_MAX
+};
+
+void RecordProcessingState(AudioTrackProcessingStates state) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioTrackProcessingStates",
+                            state, AUDIO_PROCESSING_MAX);
+}
 
 }  // namespace
 
@@ -265,8 +279,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints, int effects,
     MediaStreamType type) {
   DCHECK(!audio_processing_);
-  if (!IsAudioTrackProcessingEnabled())
+  if (!IsAudioTrackProcessingEnabled()) {
+    RecordProcessingState(AUDIO_PROCESSING_IN_WEBRTC);
     return;
+  }
 
   RTCMediaConstraints native_constraints(constraints);
 
@@ -319,6 +335,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
       !enable_high_pass_filter && !enable_typing_detection && !enable_agc &&
       !enable_experimental_ns) {
+    RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
 
@@ -356,11 +373,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Configure the audio format the audio processing is running on. This
   // has to be done after all the needed components are enabled.
-  CHECK_EQ(audio_processing_->set_sample_rate_hz(kAudioProcessingSampleRate),
-           0);
-  CHECK_EQ(audio_processing_->set_num_channels(kAudioProcessingNumberOfChannel,
-                                               kAudioProcessingNumberOfChannel),
-           0);
+  CHECK_EQ(0,
+           audio_processing_->set_sample_rate_hz(kAudioProcessingSampleRate));
+  CHECK_EQ(0, audio_processing_->set_num_channels(
+      kAudioProcessingNumberOfChannels, kAudioProcessingNumberOfChannels));
+
+  RecordProcessingState(AUDIO_PROCESSING_ENABLED);
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureConverter(
@@ -376,7 +394,7 @@ void MediaStreamAudioProcessor::InitializeCaptureConverter(
   const int sink_sample_rate = audio_processing_ ?
       kAudioProcessingSampleRate : source_params.sample_rate();
   const media::ChannelLayout sink_channel_layout = audio_processing_ ?
-      media::GuessChannelLayout(kAudioProcessingNumberOfChannel) :
+      media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
       source_params.channel_layout();
 
   // WebRtc AudioProcessing requires 10ms as its packet size. We use this
