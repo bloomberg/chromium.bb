@@ -96,6 +96,7 @@ class MetroViewerProcessHost : public IPC::Listener,
 
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<base::WaitableEvent> channel_connected_event_;
+  scoped_refptr<InternalMessageFilter> message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(MetroViewerProcessHost);
 };
