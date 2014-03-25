@@ -275,8 +275,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                                     false,
                                     SK_ColorTRANSPARENT,
                                     true);
-      quad_sink->Append(solid_color_draw_quad.PassAs<DrawQuad>(),
-                        append_quads_data);
+      quad_sink->Append(solid_color_draw_quad.PassAs<DrawQuad>());
       break;
     }
 #endif  // defined(VIDEO_HOLE)
