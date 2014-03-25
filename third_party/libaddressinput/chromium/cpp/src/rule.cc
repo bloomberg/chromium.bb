@@ -26,8 +26,7 @@
 #include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "util/json.h"
-#include "util/string_compare.h"
-#include "util/string_split.h"
+#include "util/string_util.h"
 
 namespace i18n {
 namespace addressinput {
@@ -219,11 +218,13 @@ Rule::Rule()
       name_(),
       latin_name_(),
       format_(),
+      latin_format_(),
       required_(),
       sub_keys_(),
       sub_names_(),
       sub_lnames_(),
       languages_(),
+      input_languages_(),
       language_(),
       postal_code_format_(),
       admin_area_name_message_id_(INVALID_MESSAGE_ID),
@@ -250,9 +251,11 @@ void Rule::CopyFrom(const Rule& rule) {
   name_ = rule.name_;
   latin_name_ = rule.latin_name_;
   format_ = rule.format_;
+  latin_format_ = rule.latin_format_;
   required_ = rule.required_;
   sub_keys_ = rule.sub_keys_;
   languages_ = rule.languages_;
+  input_languages_ = rule.input_languages_;
   language_ = rule.language_;
   sub_keys_ = rule.sub_keys_;
   sub_names_ = rule.sub_names_;
@@ -291,6 +294,10 @@ void Rule::ParseJsonRule(const Json& json_rule) {
     ParseAddressFieldsFormat(value, &format_);
   }
 
+  if (json_rule.GetStringValueForKey("lfmt", &value)) {
+    ParseAddressFieldsFormat(value, &latin_format_);
+  }
+
   if (json_rule.GetStringValueForKey("require", &value)) {
     ParseAddressFieldsRequired(value, &required_);
   }
@@ -314,6 +321,10 @@ void Rule::ParseJsonRule(const Json& json_rule) {
 
   if (json_rule.GetStringValueForKey("languages", &value)) {
     SplitString(value, kSeparator, &languages_);
+  }
+
+  if (json_rule.GetStringValueForKey("input_languages", &value)) {
+    SplitString(value, kSeparator, &input_languages_);
   }
 
   if (json_rule.GetStringValueForKey("lang", &value)) {

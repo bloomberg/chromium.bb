@@ -28,9 +28,26 @@ struct AddressUiComponent;
 // Returns the list of supported CLDR region codes.
 const std::vector<std::string>& GetRegionCodes();
 
-// Returns the UI components for the CLDR |region_code|. Returns an empty vector
-// on error.
-std::vector<AddressUiComponent> BuildComponents(const std::string& region_code);
+// Returns the UI components for the CLDR |region_code|. These components
+// represent the address input and formatting rules for |region_code|.
+//
+// Sets the |components_language_code| to the BCP 47 language code that should
+// be used to format the address that the user entered via the UI components.
+// The |components_language_code| parameter can be NULL.
+//
+// If |region_code| has rules for latinized address format and the BCP 47
+// |ui_language_code| is not the primary language code used in the region, then
+// returns the latinized version of the UI components.
+//
+// If the UI language has a variation, then the function ignores the variation.
+// For example, the function does not distinguish among zh-hans, zh-hant, and
+// zh.
+//
+// Returns an empty vector on error.
+std::vector<AddressUiComponent> BuildComponents(
+    const std::string& region_code,
+    const std::string& ui_language_code,
+    std::string* components_language_code);
 
 // Returns the fields which are required for the CLDR |region_code|. Returns an
 // empty vector on error.
