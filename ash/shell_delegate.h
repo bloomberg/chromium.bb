@@ -76,8 +76,9 @@ class ASH_EXPORT ShellDelegate {
   // can perform tasks necessary before the shell is initialized.
   virtual void PreInit() = 0;
 
-  // Shuts down the environment.
-  virtual void Shutdown() = 0;
+  // Called at the beginninig of Shell destructor so that
+  // delegate can use Shell instance to perform cleanup tasks.
+  virtual void PreShutdown() = 0;
 
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;

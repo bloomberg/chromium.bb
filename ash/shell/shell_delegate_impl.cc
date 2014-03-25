@@ -101,7 +101,7 @@ bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
 void ShellDelegateImpl::PreInit() {
 }
 
-void ShellDelegateImpl::Shutdown() {
+void ShellDelegateImpl::PreShutdown() {
 }
 
 void ShellDelegateImpl::Exit() {

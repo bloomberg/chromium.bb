@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/debug/debugger.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,7 +54,6 @@ int BrowserX11IOErrorHandler(Display* d) {
   if (!g_in_x11_io_error_handler) {
     g_in_x11_io_error_handler = true;
     LOG(ERROR) << "X IO error received (X server probably went away)";
-    browser_shutdown::SetShuttingDownWithoutClosingBrowsers(true);
     chrome::SessionEnding();
   }
 

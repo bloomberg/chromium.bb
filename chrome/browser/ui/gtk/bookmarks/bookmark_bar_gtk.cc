@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -893,8 +892,7 @@ void BookmarkBarGtk::BookmarkModelLoaded(BookmarkModel* model,
 void BookmarkBarGtk::BookmarkModelBeingDeleted(BookmarkModel* model) {
   // The bookmark model should never be deleted before us. This code exists
   // to check for regressions in shutdown code and not crash.
-  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
-    NOTREACHED();
+  NOTREACHED();
 
   // Do minimal cleanup, presumably we'll be deleted shortly.
   model_->RemoveObserver(this);
