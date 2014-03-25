@@ -31,14 +31,11 @@
 #include "platform/geometry/IntPoint.h"
 #include "wtf/MathExtras.h"
 
-
 #if OS(MACOSX)
 typedef struct CGSize CGSize;
 
-#ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-typedef struct CGSize NSSize;
-#else
-typedef struct _NSSize NSSize;
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
 #endif
 #endif
 
@@ -108,7 +105,7 @@ public:
 #if OS(MACOSX)
     explicit FloatSize(const CGSize&); // don't do this implicitly since it's lossy
     operator CGSize() const;
-#if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     explicit FloatSize(const NSSize &); // don't do this implicitly since it's lossy
     operator NSSize() const;
 #endif

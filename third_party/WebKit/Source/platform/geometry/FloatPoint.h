@@ -35,10 +35,8 @@
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;
 
-#ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-typedef struct CGPoint NSPoint;
-#else
-typedef struct _NSPoint NSPoint;
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
 #endif
 #endif
 
@@ -133,7 +131,7 @@ public:
 #if OS(MACOSX)
     FloatPoint(const CGPoint&);
     operator CGPoint() const;
-#if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     FloatPoint(const NSPoint&);
     operator NSPoint() const;
 #endif

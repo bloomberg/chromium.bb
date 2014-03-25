@@ -32,10 +32,9 @@
 
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;
-#ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-typedef struct CGPoint NSPoint;
-#else
-typedef struct _NSPoint NSPoint;
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
 #endif
 #endif
 
@@ -92,7 +91,7 @@ public:
     explicit IntPoint(const CGPoint&); // don't do this implicitly since it's lossy
     operator CGPoint() const;
 
-#if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     explicit IntPoint(const NSPoint&); // don't do this implicitly since it's lossy
     operator NSPoint() const;
 #endif

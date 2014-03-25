@@ -32,10 +32,9 @@
 
 #if OS(MACOSX)
 typedef struct CGRect CGRect;
-#ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-typedef struct CGRect NSRect;
-#else
-typedef struct _NSRect NSRect;
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
 #endif
 #endif
 
@@ -167,7 +166,7 @@ public:
 #if OS(MACOSX)
     FloatRect(const CGRect&);
     operator CGRect() const;
-#if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     FloatRect(const NSRect&);
     operator NSRect() const;
 #endif
