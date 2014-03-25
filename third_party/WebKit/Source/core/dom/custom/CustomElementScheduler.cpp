@@ -48,8 +48,8 @@ class HTMLImport;
 
 void CustomElementScheduler::scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
+    CustomElementCallbackQueue& queue = instance().schedule(element);
+    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 
 void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
@@ -57,8 +57,8 @@ void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomE
     if (!callbacks->hasAttributeChangedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
+    CustomElementCallbackQueue& queue = instance().schedule(element);
+    queue.append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
 void CustomElementScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
@@ -66,8 +66,8 @@ void CustomElementScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLi
     if (!callbacks->hasAttachedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Attached));
+    CustomElementCallbackQueue& queue = instance().schedule(element);
+    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Attached));
 }
 
 void CustomElementScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
@@ -75,8 +75,8 @@ void CustomElementScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLi
     if (!callbacks->hasDetachedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
+    CustomElementCallbackQueue& queue = instance().schedule(element);
+    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
 }
 
 void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
@@ -112,13 +112,12 @@ CustomElementScheduler& CustomElementScheduler::instance()
     return instance;
 }
 
-CustomElementCallbackQueue* CustomElementScheduler::ensureCallbackQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue& CustomElementScheduler::ensureCallbackQueue(PassRefPtr<Element> element)
 {
-    Element* key = element.get();
-    ElementCallbackQueueMap::iterator it = m_elementCallbackQueueMap.find(key);
-    if (it == m_elementCallbackQueueMap.end())
-        return m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(element)).storedValue->value.get();
-    return it->value.get();
+    ElementCallbackQueueMap::ValueType* it = m_elementCallbackQueueMap.add(element.get(), nullptr).storedValue;
+    if (!it->value)
+        it->value = CustomElementCallbackQueue::create(element);
+    return *it->value.get();
 }
 
 void CustomElementScheduler::callbackDispatcherDidFinish()
@@ -140,12 +139,12 @@ void CustomElementScheduler::clearElementCallbackQueueMap()
 }
 
 // Finds or creates the callback queue for element.
-CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element> passElement)
+CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtr<Element> passElement)
 {
     RefPtr<Element> element(passElement);
 
-    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
-    if (callbackQueue->inCreatedCallback()) {
+    CustomElementCallbackQueue& callbackQueue = ensureCallbackQueue(element);
+    if (callbackQueue.inCreatedCallback()) {
         // Don't move it. Authors use the createdCallback like a
         // constructor. By not moving it, the createdCallback
         // completes before any other callbacks are entered for this
@@ -155,11 +154,11 @@ CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element>
 
     if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
         // The processing stack is active.
-        CustomElementCallbackDispatcher::instance().enqueue(callbackQueue);
+        CustomElementCallbackDispatcher::instance().enqueue(&callbackQueue);
         return callbackQueue;
     }
 
-    CustomElementMicrotaskDispatcher::instance().enqueue(callbackQueue);
+    CustomElementMicrotaskDispatcher::instance().enqueue(&callbackQueue);
     return callbackQueue;
 }
 

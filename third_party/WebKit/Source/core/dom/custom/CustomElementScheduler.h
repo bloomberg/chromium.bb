@@ -63,8 +63,8 @@ private:
 
     static CustomElementScheduler& instance();
 
-    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
-    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
+    CustomElementCallbackQueue& ensureCallbackQueue(PassRefPtr<Element>);
+    CustomElementCallbackQueue& schedule(PassRefPtr<Element>);
 
     // FIXME: Consider moving the element's callback queue to
     // ElementRareData. Then the scheduler can become completely
