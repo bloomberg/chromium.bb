@@ -16,6 +16,11 @@
 namespace mojo {
 namespace system {
 
+namespace {
+
+
+}  // namespace
+
 struct MessageInTransit::PrivateStructForCompileAsserts {
   // The size of |Header| must be appropriate to maintain alignment of the
   // following data.
@@ -26,6 +31,14 @@ struct MessageInTransit::PrivateStructForCompileAsserts {
   COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
                      0x7fffffffULL,
                  kMaxMessageNumBytes_too_big);
+
+  // We assume (to avoid extra rounding code) that the maximum message (data)
+  // size is a multiple of the alignment.
+  COMPILE_ASSERT(kMaxMessageNumBytes % kMessageAlignment == 0,
+                 kMessageAlignment_not_a_multiple_of_alignment);
+
+  COMPILE_ASSERT(kMaxSerializedDispatcherSize % kMessageAlignment == 0,
+                 kMaxSerializedDispatcherSize_not_a_multiple_of_alignment);
 
   // The size of |HandleTableEntry| must be appropriate to maintain alignment.
   COMPILE_ASSERT(sizeof(HandleTableEntry) % kMessageAlignment == 0,
@@ -45,7 +58,12 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
+STATIC_CONST_MEMBER_DEFINITION const size_t
+    MessageInTransit::kMaxSerializedDispatcherSize;
 
+// static
+const size_t MessageInTransit::kMaxSecondaryBufferSize = kMaxMessageNumHandles *
+    (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize);
 
 MessageInTransit::View::View(size_t message_size, const void* buffer)
     : buffer_(buffer) {
@@ -55,6 +73,24 @@ MessageInTransit::View::View(size_t message_size, const void* buffer)
   DCHECK_EQ(message_size, next_message_size);
   // This should be equivalent.
   DCHECK_EQ(message_size, total_size());
+}
+
+bool MessageInTransit::View::IsValid(const char** error_message) const {
+  // Note: This also implies a check on the |main_buffer_size()|, which is just
+  // |RoundUpMessageAlignment(sizeof(Header) + num_bytes())|.
+  if (num_bytes() > kMaxMessageNumBytes) {
+    *error_message = "Message data payload too large";
+    return false;
+  }
+
+  if (const char* secondary_buffer_error_message =
+          ValidateSecondaryBuffer(num_handles(), secondary_buffer(),
+                                  secondary_buffer_size())) {
+    *error_message = secondary_buffer_error_message;
+    return false;
+  }
+
+  return true;
 }
 
 MessageInTransit::MessageInTransit(Type type,
@@ -178,15 +214,16 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   size_t size = handle_table_size;
   for (size_t i = 0; i < dispatchers_->size(); i++) {
     if (Dispatcher* dispatcher = (*dispatchers_)[i].get()) {
-      size += RoundUpMessageAlignment(
+      size_t max_serialized_size =
           Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-              dispatcher, channel));
-      // TODO(vtl): Check for overflow?
+              dispatcher, channel);
+      DCHECK_LE(max_serialized_size, kMaxSerializedDispatcherSize);
+      size += RoundUpMessageAlignment(max_serialized_size);
+      DCHECK_LE(size, kMaxSecondaryBufferSize);
     }
   }
 
   secondary_buffer_ = base::AlignedAlloc(size, kMessageAlignment);
-  // TODO(vtl): Check for overflow?
   secondary_buffer_size_ = static_cast<uint32_t>(size);
   // Entirely clear out the secondary buffer, since then we won't have to worry
   // about clearing padding or unused space (e.g., if a dispatcher fails to
@@ -228,11 +265,11 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
 void MessageInTransit::DeserializeDispatchers(Channel* channel) {
   DCHECK(!dispatchers_.get());
 
+  // This should have been checked by calling |IsValid()| on the |View| first.
+  DCHECK_LE(num_handles(), kMaxMessageNumHandles);
+
   if (!num_handles())
     return;
-
-  // TODO(vtl): Restrict |num_handles()| to a sane range. (Maybe this should be
-  // done earlier?)
 
   dispatchers_.reset(
       new std::vector<scoped_refptr<Dispatcher> >(num_handles()));
@@ -261,6 +298,50 @@ void MessageInTransit::DeserializeDispatchers(Channel* channel) {
     (*dispatchers_)[i] = Dispatcher::MessageInTransitAccess::Deserialize(
         channel, handle_table[i].type, source, size);
   }
+}
+
+// Validates the secondary buffer. Returns null on success, or a human-readable
+// error message on error.
+// static
+const char* MessageInTransit::ValidateSecondaryBuffer(
+    size_t num_handles,
+    const void* secondary_buffer,
+    size_t secondary_buffer_size) {
+  if (!num_handles)
+    return NULL;
+
+  if (num_handles > kMaxMessageNumHandles)
+    return "Message handle payload too large";
+
+  if (secondary_buffer_size > kMaxSecondaryBufferSize)
+    return "Message secondary buffer too large";
+
+  if (secondary_buffer_size < num_handles * sizeof(HandleTableEntry))
+    return "Message secondary buffer too small";
+
+  DCHECK(secondary_buffer);
+  const HandleTableEntry* handle_table =
+      static_cast<const HandleTableEntry*>(secondary_buffer);
+
+  static const char kInvalidSerializedDispatcher[] =
+      "Message contains invalid serialized dispatcher";
+  for (size_t i = 0; i < num_handles; i++) {
+    size_t offset = handle_table[i].offset;
+    if (offset % kMessageAlignment != 0)
+      return kInvalidSerializedDispatcher;
+
+    size_t size = handle_table[i].size;
+    if (size > kMaxSerializedDispatcherSize || size > secondary_buffer_size)
+      return kInvalidSerializedDispatcher;
+
+    // Note: This is an overflow-safe check for |offset + size >
+    // secondary_buffer_size()| (we know that |size <= secondary_buffer_size()|
+    // from the previous check).
+    if (offset > secondary_buffer_size - size)
+      return kInvalidSerializedDispatcher;
+  }
+
+  return NULL;
 }
 
 void MessageInTransit::UpdateTotalSize() {

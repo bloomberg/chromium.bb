@@ -275,8 +275,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // on a dispatcher attached to a |MessageInTransit| (and in particular not in
   // |CoreImpl|'s handle table).
   // Gets the maximum amount of space that'll be needed to serialize this
-  // dispatcher to the given |Channel|. Returns zero to indicate that this
-  // dispatcher cannot be serialized (to the given |Channel|).
+  // dispatcher to the given |Channel|. This amount must be no greater than
+  // |MessageInTransit::kMaxSerializedDispatcherSize| (message_in_transit.h).
+  // Returns zero to indicate that this dispatcher cannot be serialized (to the
+  // given |Channel|).
   size_t GetMaximumSerializedSize(const Channel* channel) const;
   // Serializes this dispatcher to the given |Channel| by writing to
   // |destination| and then closes this dispatcher. It may write no more than

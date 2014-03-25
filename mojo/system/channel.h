@@ -107,6 +107,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE;
 
   // Helpers for |OnReadMessage|:
+  bool ValidateReadMessage(const MessageInTransit::View& message_view);
   void OnReadMessageForDownstream(const MessageInTransit::View& message_view);
   void OnReadMessageForChannel(const MessageInTransit::View& message_view);
 

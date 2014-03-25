@@ -166,6 +166,10 @@ Channel::~Channel() {
 }
 
 void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
+  // Note: |ValidateReadMessage()| will call |HandleRemoteError()| if necessary.
+  if (!ValidateReadMessage(message_view))
+    return;
+
   switch (message_view.type()) {
     case MessageInTransit::kTypeMessagePipeEndpoint:
     case MessageInTransit::kTypeMessagePipe:
@@ -185,6 +189,17 @@ void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
 void Channel::OnFatalError(FatalError fatal_error) {
   // TODO(vtl): IMPORTANT. Notify all our endpoints that they're dead.
   NOTIMPLEMENTED();
+}
+
+bool Channel::ValidateReadMessage(const MessageInTransit::View& message_view) {
+  const char* error_message = NULL;
+  if (!message_view.IsValid(&error_message)) {
+    DCHECK(error_message);
+    HandleRemoteError(error_message);
+    return false;
+  }
+
+  return true;
 }
 
 void Channel::OnReadMessageForDownstream(
@@ -260,7 +275,8 @@ void Channel::OnReadMessageForChannel(
 }
 
 void Channel::HandleRemoteError(const base::StringPiece& error_message) {
-  // TODO(vtl): Is this how we really want to handle this?
+  // TODO(vtl): Is this how we really want to handle this? Probably we want to
+  // terminate the connection, since it's spewing invalid stuff.
   LOG(WARNING) << error_message;
 }
 

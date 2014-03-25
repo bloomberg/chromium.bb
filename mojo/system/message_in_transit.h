@@ -65,6 +65,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
 
+  // The maximum size of a single serialized dispatcher. This must be a multiple
+  // of |kMessageAlignment|.
+  static const size_t kMaxSerializedDispatcherSize = 10000;
+
   // Forward-declare |Header| so that |View| can use it:
  private:
   struct Header;
@@ -77,6 +81,18 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // must remain alive/unmodified through the lifetime of this object.
     // |buffer| should be |kMessageAlignment|-byte aligned.
     View(size_t message_size, const void* buffer);
+
+    // Checks the following things versus pre-determined limits:
+    //   - |num_bytes()| and |main_buffer_size()|,
+    //   - |num_handles()| and |secondary_buffer_size()|,
+    //   - the entries in the handle entry table (that the sizes and offsets are
+    //     valid).
+    // Note: It does not check the serialized dispatcher data itself.
+    //
+    // It returns true (and leaves |error_message| alone) if this object appears
+    // to be a valid message (according to the above) and false, pointing
+    // |*error_message| to a suitable error message, if not.
+    bool IsValid(const char** error_message) const;
 
     // API parallel to that for |MessageInTransit| itself (mostly getters for
     // header data).
@@ -232,6 +248,16 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     uint32_t size;  // (Not including any padding.)
     uint32_t unused;
   };
+
+  // The maximum possible size of a valid secondary buffer: for each handle,
+  // there'll be a handle table entry and its serialized data.
+  static const size_t kMaxSecondaryBufferSize;
+
+  // Validates the secondary buffer. Returns null on success, or a
+  // human-readable error message on error.
+  static const char* ValidateSecondaryBuffer(size_t num_handles,
+                                             const void* secondary_buffer,
+                                             size_t secondary_buffer_size);
 
   const Header* header() const {
     return static_cast<const Header*>(main_buffer_);
