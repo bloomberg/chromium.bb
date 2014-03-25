@@ -31,7 +31,7 @@ readonly REQUIRED_TOOLS="wget"
 # Package Config
 ######################################################################
 
-# this is where we get all the debian packages from
+# This is where we get all the debian packages from.
 readonly DEBIAN_REPO=http://http.us.debian.org/debian
 readonly REPO_BASEDIR="${DEBIAN_REPO}/dists/wheezy"
 
@@ -321,6 +321,18 @@ CreateTarBall() {
   tar zcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
+CheckBuildSysrootArgs() {
+  if [ "$#" -ne "1" ]; then
+    echo "ERROR: BuildSysroot commands only take 1 argument"
+    exit 1
+  fi
+
+  if [ -z "$1" ]; then
+    echo "ERROR: tarball name required"
+    exit 1
+  fi
+}
+
 ######################################################################
 #
 ######################################################################
@@ -439,11 +451,12 @@ CleanupJailSymlinks() {
 #@
 #@    Build everything and package it
 BuildSysrootAmd64() {
+  CheckBuildSysrootArgs $@
   ClearInstallDir
   InstallIntoSysroot ${DEBIAN_DEP_FILES_AMD64}
   CleanupJailSymlinks
   HacksAndPatchesAmd64
-  CreateTarBall $1
+  CreateTarBall "$1"
 }
 
 #@
@@ -451,11 +464,12 @@ BuildSysrootAmd64() {
 #@
 #@    Build everything and package it
 BuildSysrootI386() {
+  CheckBuildSysrootArgs $@
   ClearInstallDir
   InstallIntoSysroot ${DEBIAN_DEP_FILES_I386}
   CleanupJailSymlinks
   HacksAndPatchesI386
-  CreateTarBall $1
+  CreateTarBall "$1"
 }
 
 #
