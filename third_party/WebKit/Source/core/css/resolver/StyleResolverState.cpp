@@ -56,12 +56,12 @@ StyleResolverState::~StyleResolverState()
 {
 }
 
-void StyleResolverState::setAnimationUpdate(PassOwnPtr<CSSAnimationUpdate> update)
+void StyleResolverState::setAnimationUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> update)
 {
     m_animationUpdate = update;
 }
 
-PassOwnPtr<CSSAnimationUpdate> StyleResolverState::takeAnimationUpdate()
+PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> StyleResolverState::takeAnimationUpdate()
 {
     return m_animationUpdate.release();
 }
