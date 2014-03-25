@@ -142,6 +142,18 @@
             '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
           ],
         }],
+        [ 'target_arch == "arm64"',{
+          # TODO(rmcilroy): Update this once http://crrev.com/143423004/ lands.
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
+            '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
+          ],
+        }],
       ],
     },
     # For the same lame reasons as what is done for skia_opts, we have to
