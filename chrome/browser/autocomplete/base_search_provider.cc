@@ -124,20 +124,6 @@ bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
   return match.GetAdditionalInfo(kShouldPrefetchKey) == kTrue;
 }
 
-// static
-AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
-    const base::string16& suggestion,
-    AutocompleteMatchType::Type type,
-    bool from_keyword_provider,
-    const TemplateURL* template_url) {
-  return CreateSearchSuggestion(
-      NULL, AutocompleteInput(), BaseSearchProvider::SuggestResult(
-          suggestion, type, suggestion, base::string16(), base::string16(),
-          std::string(), std::string(), from_keyword_provider, 0, false, false,
-          base::string16()),
-      template_url, 0, 0, false);
-}
-
 void BaseSearchProvider::Stop(bool clear_cached_results) {
   StopSuggest();
   done_ = true;

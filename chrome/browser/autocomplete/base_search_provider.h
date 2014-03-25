@@ -54,16 +54,6 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Returns whether |match| is flagged as a query that should be prefetched.
   static bool ShouldPrefetch(const AutocompleteMatch& match);
 
-  // Returns a simpler AutocompleteMatch suitable for persistence like in
-  // ShortcutsDatabase.
-  // NOTE: Use with care. Most likely you want the other CreateSearchSuggestion
-  // with protected access.
-  static AutocompleteMatch CreateSearchSuggestion(
-      const base::string16& suggestion,
-      AutocompleteMatchType::Type type,
-      bool from_keyword_provider,
-      const TemplateURL* template_url);
-
   // AutocompleteProvider:
   virtual void Stop(bool clear_cached_results) OVERRIDE;
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;

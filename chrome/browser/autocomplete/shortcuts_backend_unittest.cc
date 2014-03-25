@@ -11,10 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/history/shortcuts_database.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 
@@ -33,7 +30,6 @@ class ShortcutsBackendTest : public testing::Test,
     const std::string& contents_class = std::string(),
     const std::string& description_class = std::string(),
     AutocompleteMatch::Type type = AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-  void SetSearchProvider();
 
   virtual void SetUp();
   virtual void TearDown();
@@ -56,10 +52,9 @@ class ShortcutsBackendTest : public testing::Test,
   bool DeleteShortcutsWithIDs(
       const history::ShortcutsDatabase::ShortcutIDs& deleted_ids);
 
- protected:
-  TestingProfile profile_;
 
  private:
+  TestingProfile profile_;
   scoped_refptr<ShortcutsBackend> backend_;
   base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -91,22 +86,7 @@ history::ShortcutsDatabase::Shortcut::MatchCore
       AutocompleteMatch::ClassificationsFromString(contents_class);
   match.description_class =
       AutocompleteMatch::ClassificationsFromString(description_class);
-  match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(match.contents));
-  return ShortcutsBackend::MatchToMatchCore(match, &profile_);
-}
-
-void ShortcutsBackendTest::SetSearchProvider() {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(&profile_);
-  TemplateURLData data;
-  data.SetURL("http://foo.com/search?bar={searchTerms}");
-  data.SetKeyword(base::UTF8ToUTF16("foo"));
-
-  TemplateURL* template_url = new TemplateURL(&profile_, data);
-  // Takes ownership of |template_url|.
-  template_url_service->Add(template_url);
-  template_url_service->SetDefaultSearchProvider(template_url);
+  return ShortcutsBackend::MatchToMatchCore(match);
 }
 
 void ShortcutsBackendTest::SetUp() {
@@ -116,12 +96,6 @@ void ShortcutsBackendTest::SetUp() {
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
   backend_->AddObserver(this);
-
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(&profile_);
-  ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 }
 
 void ShortcutsBackendTest::TearDown() {
@@ -182,23 +156,14 @@ TEST_F(ShortcutsBackendTest, SanitizeMatchCore) {
     std::string output_description_class;
     AutocompleteMatch::Type output_type;
   } cases[] = {
-    { "0,1,4,0", "0,3,4,1",  AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      "0,1,4,0", "0,1",      AutocompleteMatchType::HISTORY_URL },
-    { "0,3,5,1", "0,2,5,0",  AutocompleteMatchType::NAVSUGGEST,
-      "0,1",     "0,0",      AutocompleteMatchType::HISTORY_URL },
-    { "0,1",     "0,0,11,2,15,0",
-                             AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-      "0,1",     "0,0",      AutocompleteMatchType::SEARCH_HISTORY },
-    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST,
-      "0,1",     "0,0",      AutocompleteMatchType::SEARCH_HISTORY },
-    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
-      "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
-    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_INFINITE,
-      "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
-    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED,
-      "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
-    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_PROFILE,
-      "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
+    { "0,1,4,0", "0,3,4,1",       AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+      "0,1,4,0", "0,1",           AutocompleteMatchType::HISTORY_URL },
+    { "0,3,5,1", "0,2,5,0",       AutocompleteMatchType::NAVSUGGEST,
+      "0,1",     "0,0",           AutocompleteMatchType::HISTORY_URL },
+    { "0,1",     "0,0,11,2,15,0", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+      "0,1",     "0,0",           AutocompleteMatchType::SEARCH_HISTORY },
+    { "0,1",     "0,0",           AutocompleteMatchType::SEARCH_SUGGEST,
+      "0,1",     "0,0",           AutocompleteMatchType::SEARCH_HISTORY },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
@@ -206,40 +171,10 @@ TEST_F(ShortcutsBackendTest, SanitizeMatchCore) {
         MatchCoreForTesting(std::string(), cases[i].input_contents_class,
                             cases[i].input_description_class,
                             cases[i].input_type));
-    EXPECT_EQ(cases[i].output_contents_class, match_core.contents_class)
-        << ":i:" << i << ":type:" << cases[i].input_type;
-    EXPECT_EQ(cases[i].output_description_class, match_core.description_class)
-        << ":i:" << i << ":type:" << cases[i].input_type;
-    EXPECT_EQ(cases[i].output_type, match_core.type)
-        << ":i:" << i << ":type:" << cases[i].input_type;
+    EXPECT_EQ(cases[i].output_contents_class, match_core.contents_class);
+    EXPECT_EQ(cases[i].output_description_class, match_core.description_class);
+    EXPECT_EQ(cases[i].output_type, match_core.type);
   }
-}
-
-TEST_F(ShortcutsBackendTest, EntitySuggestionTest) {
-  SetSearchProvider();
-  AutocompleteMatch match;
-  match.fill_into_edit = base::UTF8ToUTF16("franklin d roosevelt");
-  match.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
-  match.contents = base::UTF8ToUTF16("roosevelt");
-  match.contents_class =
-      AutocompleteMatch::ClassificationsFromString("0,0,5,2");
-  match.description = base::UTF8ToUTF16("Franklin D. Roosevelt");
-  match.description_class = AutocompleteMatch::ClassificationsFromString("0,4");
-  match.destination_url = GURL(
-      "http://www.foo.com/search?bar=franklin+d+roosevelt&gs_ssp=1234");
-  match.keyword = base::UTF8ToUTF16("foo");
-  match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(match.fill_into_edit));
-
-  history::ShortcutsDatabase::Shortcut::MatchCore match_core =
-      ShortcutsBackend::MatchToMatchCore(match, &profile_);
-
-  EXPECT_EQ("http://foo.com/search?bar=franklin+d+roosevelt",
-            match_core.destination_url.spec());
-  EXPECT_EQ(match.fill_into_edit, match_core.contents);
-  EXPECT_EQ("0,0", match_core.contents_class);
-  EXPECT_EQ(base::string16(), match_core.description);
-  EXPECT_TRUE(match_core.description_class.empty());
 }
 
 TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
