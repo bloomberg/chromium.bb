@@ -3413,7 +3413,7 @@ xdg_get_xdg_surface(struct wl_client *client,
 	if (get_shell_surface(surface)) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "desktop_shell::get_shell_surface already requested");
+				       "xdg_shell::get_xdg_surface already requested");
 		return;
 	}
 
@@ -3507,7 +3507,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 	if (get_shell_surface(surface)) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "desktop_shell::get_shell_surface already requested");
+				       "xdg_shell::get_xdg_popup already requested");
 		return;
 	}
 
