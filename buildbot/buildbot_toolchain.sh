@@ -36,7 +36,7 @@ echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf ../scons-out \
     sdk-out \
     sdk \
-    ../toolchain/${PLATFORM}_x86/*newlib \
+    ../toolchain/${PLATFORM}_x86/nacl_*_newlib \
     BUILD/*
 
 echo @@@BUILD_STEP clean_sources@@@
