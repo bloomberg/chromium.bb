@@ -283,6 +283,18 @@ class ArchivingStageMixin(object):
       text_to_display = '%s%s' % (prefix, filename)
     cros_build_lib.PrintBuildbotLink(text_to_display, url)
 
+  def _GetUploadUrls(self):
+    """Returns a list of all urls to upload artifacts to."""
+    urls = [self.upload_url]
+    if hasattr(self, '_current_board'):
+      custom_artifacts_file = portage_utilities.ReadOverlayFile(
+          'scripts/artifacts.json', board=self._current_board)
+      if custom_artifacts_file is not None:
+        json_file = json.loads(custom_artifacts_file)
+        for url in json_file.get('extra_upload_urls', []):
+          urls.append('/'.join([url, self._bot_id, self.version]))
+    return urls
+
   def UploadArtifact(self, path, archive=True, strict=True):
     """Upload generated artifact to Google Storage.
 
@@ -295,9 +307,10 @@ class ArchivingStageMixin(object):
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
     try:
-      commands.UploadArchivedFile(
-          self.archive_path, self.upload_url, filename, self._run.debug,
-          update_list=True, acl=self.acl)
+      for url in self._GetUploadUrls():
+        commands.UploadArchivedFile(
+            self.archive_path, url, filename, self._run.debug,
+            update_list=True, acl=self.acl)
     except (cros_build_lib.RunCommandError, timeout_util.TimeoutError):
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
@@ -3545,15 +3558,19 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     """
     custom_artifacts_file = portage_utilities.ReadOverlayFile(
         'scripts/artifacts.json', board=board)
-    if custom_artifacts_file is None:
+    artifacts = None
+
+    if custom_artifacts_file is not None:
+      json_file = json.loads(custom_artifacts_file)
+      artifacts = json_file.get('artifacts')
+
+    if artifacts is None:
       artifacts = []
       for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
         basename = os.path.basename(image_file)
         if basename != constants.VM_IMAGE_BIN:
           info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
           artifacts.append(info)
-    else:
-      artifacts = json.loads(custom_artifacts_file)['artifacts']
 
     for artifact in artifacts:
       # Resolve the (possible) globs in the input list, and store
