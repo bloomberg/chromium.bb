@@ -51,9 +51,9 @@ void ShowBadFlagsPrompt(Browser* browser) {
 
     // These flags undermine HTTPS / connection security.
     switches::kDisableUserMediaSecurity,
-  #if defined(ENABLE_WEBRTC)
+#if defined(ENABLE_WEBRTC)
     switches::kDisableWebRtcEncryption,
-  #endif
+#endif
     switches::kIgnoreCertificateErrors,
     switches::kReduceSecurityForTesting,
     switches::kSyncAllowInsecureXmppConnection,
@@ -65,6 +65,12 @@ void ShowBadFlagsPrompt(Browser* browser) {
 
     // This flag gives extensions more powers.
     extensions::switches::kExtensionsOnChromeURLs,
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // Speech dispatcher is buggy, it can crash and it can make Chrome freeze.
+    // http://crbug.com/327295
+    switches::kEnableSpeechDispatcher,
+#endif
     NULL
   };
 

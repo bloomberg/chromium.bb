@@ -6,11 +6,13 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 #include "library_loaders/libspeechd.h"
@@ -93,6 +95,10 @@ SPDNotificationType TtsPlatformImplLinux::current_notification_ =
 
 TtsPlatformImplLinux::TtsPlatformImplLinux()
     : utterance_id_(0) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))
+    return;
+
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&TtsPlatformImplLinux::Initialize,

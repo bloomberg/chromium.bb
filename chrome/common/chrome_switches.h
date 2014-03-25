@@ -405,6 +405,7 @@ extern const char kPasswordStore[];
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+extern const char kEnableSpeechDispatcher[];
 extern const char kMigrateDataDirForSxS[];
 #endif
 
