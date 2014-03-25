@@ -38,10 +38,10 @@
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
-#include "chrome/test/chromedriver/chrome/zip.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "crypto/sha2.h"
+#include "third_party/zlib/google/zip.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>

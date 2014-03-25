@@ -18,8 +18,8 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
-#include "chrome/test/chromedriver/chrome/zip.h"
 #include "chrome/test/chromedriver/key_converter.h"
+#include "third_party/zlib/google/zip.h"
 
 std::string GenerateId() {
   uint64 msb = base::RandUint64();
