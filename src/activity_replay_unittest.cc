@@ -9,7 +9,7 @@
 #include <base/command_line.h>
 #include <base/file_util.h>
 #include <base/logging.h>
-#include <base/string_split.h>
+#include <base/strings/string_split.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
@@ -37,8 +37,8 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
     MetricsProperties mprops(prop_reg);
 
     string log_contents;
-    ASSERT_TRUE(file_util::ReadFileToString(cl->GetSwitchValuePath("in"),
-                                            &log_contents));
+    ASSERT_TRUE(base::ReadFileToString(cl->GetSwitchValuePath("in"),
+                                       &log_contents));
 
     ActivityReplay replay(prop_reg);
     std::vector<string> honor_props;

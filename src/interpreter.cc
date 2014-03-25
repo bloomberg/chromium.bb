@@ -16,13 +16,15 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/tracer.h"
 
+using base::DictionaryValue;
+using base::StringValue;
+
 namespace gestures {
 
 Interpreter::Interpreter(PropRegistry* prop_reg,
                          Tracer* tracer,
                          bool force_logging)
-    : log_(NULL),
-      requires_metrics_(false),
+    : requires_metrics_(false),
       initialized_(false),
       name_(NULL),
       tracer_(tracer) {

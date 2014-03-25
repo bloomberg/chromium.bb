@@ -6,6 +6,8 @@
 
 #include <base/values.h>
 
+using base::DictionaryValue;
+
 namespace gestures {
 
 void FilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,

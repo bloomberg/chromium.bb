@@ -7,7 +7,7 @@
 #include <set>
 #include <string>
 
-#include <base/string_util.h>
+#include <base/strings/string_util.h>
 #include <base/values.h>
 
 #include "gestures/include/activity_log.h"
@@ -15,6 +15,8 @@
 
 using base::FundamentalValue;
 using base::ListValue;
+using base::StringValue;
+using base::Value;
 using std::set;
 using std::string;
 
@@ -85,11 +87,11 @@ void BoolProperty::CreatePropImpl() {
     delegate_->BoolWasWritten(this);
 }
 
-::Value* BoolProperty::NewValue() const {
+Value* BoolProperty::NewValue() const {
   return new FundamentalValue(val_ != 0);
 }
 
-bool BoolProperty::SetValue(::Value* value) {
+bool BoolProperty::SetValue(Value* value) {
   if (value->GetType() != Value::TYPE_BOOLEAN) {
     return false;
   }
@@ -126,14 +128,14 @@ void BoolArrayProperty::CreatePropImpl() {
     delegate_->BoolArrayWasWritten(this);
 }
 
-::Value* BoolArrayProperty::NewValue() const {
+Value* BoolArrayProperty::NewValue() const {
   ListValue* list = new ListValue();
   for (size_t i = 0; i < count_; i++)
     list->Append(new FundamentalValue(vals_[i] != 0));
   return list;
 }
 
-bool BoolArrayProperty::SetValue(::Value* value) {
+bool BoolArrayProperty::SetValue(Value* value) {
   AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
   ListValue* list = static_cast<ListValue*>(value);
   AssertWithReturnValue(list->GetSize() == count_, false);
@@ -169,11 +171,11 @@ void DoubleProperty::CreatePropImpl() {
     delegate_->DoubleWasWritten(this);
 }
 
-::Value* DoubleProperty::NewValue() const {
+Value* DoubleProperty::NewValue() const {
   return new FundamentalValue(val_);
 }
 
-bool DoubleProperty::SetValue(::Value* value) {
+bool DoubleProperty::SetValue(Value* value) {
   if (value->GetType() != Value::TYPE_DOUBLE &&
       value->GetType() != Value::TYPE_INTEGER) {
     return false;
@@ -211,7 +213,7 @@ void DoubleArrayProperty::CreatePropImpl() {
     delegate_->DoubleArrayWasWritten(this);
 }
 
-::Value* DoubleArrayProperty::NewValue() const {
+Value* DoubleArrayProperty::NewValue() const {
   ListValue* list = new ListValue();
   for (size_t i = 0; i < count_; i++) {
     // Avoid infinity
@@ -221,7 +223,7 @@ void DoubleArrayProperty::CreatePropImpl() {
   return list;
 }
 
-bool DoubleArrayProperty::SetValue(::Value* value) {
+bool DoubleArrayProperty::SetValue(Value* value) {
   AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
   ListValue* list = static_cast<ListValue*>(value);
   AssertWithReturnValue(list->GetSize() == count_, false);
@@ -258,11 +260,11 @@ void IntProperty::CreatePropImpl() {
     delegate_->IntWasWritten(this);
 }
 
-::Value* IntProperty::NewValue() const {
+Value* IntProperty::NewValue() const {
   return new FundamentalValue(val_);
 }
 
-bool IntProperty::SetValue(::Value* value) {
+bool IntProperty::SetValue(Value* value) {
   if (value->GetType() != Value::TYPE_INTEGER) {
     return false;
   }
@@ -295,14 +297,14 @@ void IntArrayProperty::CreatePropImpl() {
     delegate_->IntArrayWasWritten(this);
 }
 
-::Value* IntArrayProperty::NewValue() const {
+Value* IntArrayProperty::NewValue() const {
   ListValue* list = new ListValue();
   for (size_t i = 0; i < count_; i++)
     list->Append(new FundamentalValue(vals_[i]));
   return list;
 }
 
-bool IntArrayProperty::SetValue(::Value* value) {
+bool IntArrayProperty::SetValue(Value* value) {
   AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
   ListValue* list = static_cast<ListValue*>(value);
   AssertWithReturnValue(list->GetSize() == count_, false);
@@ -338,11 +340,11 @@ void ShortProperty::CreatePropImpl() {
     delegate_->ShortWasWritten(this);
 }
 
-::Value* ShortProperty::NewValue() const {
+Value* ShortProperty::NewValue() const {
   return new FundamentalValue(val_);
 }
 
-bool ShortProperty::SetValue(::Value* value) {
+bool ShortProperty::SetValue(Value* value) {
   if (value->GetType() != Value::TYPE_INTEGER) {
     return false;
   }
@@ -379,14 +381,14 @@ void ShortArrayProperty::CreatePropImpl() {
     delegate_->ShortArrayWasWritten(this);
 }
 
-::Value* ShortArrayProperty::NewValue() const {
+Value* ShortArrayProperty::NewValue() const {
   ListValue* list = new ListValue();
   for (size_t i = 0; i < count_; i++)
     list->Append(new FundamentalValue(vals_[i]));
   return list;
 }
 
-bool ShortArrayProperty::SetValue(::Value* value) {
+bool ShortArrayProperty::SetValue(Value* value) {
   AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
   ListValue* list = static_cast<ListValue*>(value);
   AssertWithReturnValue(list->GetSize() == count_, false);
@@ -421,11 +423,11 @@ void StringProperty::CreatePropImpl() {
     delegate_->StringWasWritten(this);
 }
 
-::Value* StringProperty::NewValue() const {
+Value* StringProperty::NewValue() const {
   return new StringValue(val_);
 }
 
-bool StringProperty::SetValue(::Value* value) {
+bool StringProperty::SetValue(Value* value) {
   if (value->GetType() != Value::TYPE_STRING) {
     return false;
   }

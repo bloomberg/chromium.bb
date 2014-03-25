@@ -62,7 +62,7 @@ class Interpreter {
                           Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
-  virtual DictionaryValue* EncodeCommonInfo();
+  virtual base::DictionaryValue* EncodeCommonInfo();
   std::string Encode();
 
   virtual void Clear() {

@@ -58,7 +58,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
 
     HardwareState state_;
     unsigned short max_fingers_;
-    scoped_array<FingerState> fs_;
+    scoped_ptr<FingerState[]> fs_;
     map<short, short, kMaxFingers> output_ids_;  // input tracking ids -> output
 
     stime_t due_;

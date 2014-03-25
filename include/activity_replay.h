@@ -39,25 +39,25 @@ class ActivityReplay : public GestureConsumer {
 
  private:
   // These return true on success
-  bool ParseProperties(DictionaryValue* dict,
+  bool ParseProperties(base::DictionaryValue* dict,
                        const std::set<std::string>& honor_props);
-  bool ParseHardwareProperties(DictionaryValue* obj,
+  bool ParseHardwareProperties(base::DictionaryValue* obj,
                                HardwareProperties* out_props);
-  bool ParseEntry(DictionaryValue* entry);
-  bool ParseHardwareState(DictionaryValue* entry);
-  bool ParseFingerState(DictionaryValue* entry, FingerState* out_fs);
-  bool ParseTimerCallback(DictionaryValue* entry);
-  bool ParseCallbackRequest(DictionaryValue* entry);
-  bool ParseGesture(DictionaryValue* entry);
-  bool ParseGestureMove(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureScroll(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureSwipe(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureSwipeLift(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGesturePinch(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureButtonsChange(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureFling(DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureMetrics(DictionaryValue* entry, Gesture* out_gs);
-  bool ParsePropChange(DictionaryValue* entry);
+  bool ParseEntry(base::DictionaryValue* entry);
+  bool ParseHardwareState(base::DictionaryValue* entry);
+  bool ParseFingerState(base::DictionaryValue* entry, FingerState* out_fs);
+  bool ParseTimerCallback(base::DictionaryValue* entry);
+  bool ParseCallbackRequest(base::DictionaryValue* entry);
+  bool ParseGesture(base::DictionaryValue* entry);
+  bool ParseGestureMove(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureScroll(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureSwipe(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureSwipeLift(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGesturePinch(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureButtonsChange(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureFling(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureMetrics(base::DictionaryValue* entry, Gesture* out_gs);
+  bool ParsePropChange(base::DictionaryValue* entry);
 
   bool ReplayPropChange(const ActivityLog::PropChangeEntry& entry);
 

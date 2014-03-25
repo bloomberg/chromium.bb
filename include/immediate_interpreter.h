@@ -101,7 +101,7 @@ class ScrollEventBuffer {
   void GetSpeedSq(size_t num_events, float* dist_sq, float* dt) const;
 
  private:
-  scoped_array<ScrollEvent> buf_;
+  scoped_ptr<ScrollEvent[]> buf_;
   size_t max_size_;
   size_t size_;
   size_t head_;
@@ -134,7 +134,7 @@ class HardwareStateBuffer {
   }
 
  private:
-  scoped_array<HardwareState> states_;
+  scoped_ptr<HardwareState[]> states_;
   size_t newest_index_;
   size_t size_;
   size_t max_finger_cnt_;

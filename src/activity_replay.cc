@@ -16,6 +16,9 @@
 #include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 using std::endl;
 using std::set;
 using std::string;
@@ -37,8 +40,8 @@ bool ActivityReplay::Parse(const string& data,
 
   int error_code;
   string error_msg;
-  Value* root = base::JSONReader::ReadAndReturnError(data, true, &error_code,
-                                                     &error_msg);
+  Value* root =
+      base::JSONReader::ReadAndReturnError(data, true, &error_code, &error_msg);
   if (!root) {
     Err("Parse failed: %s", error_msg.c_str());
     return false;
@@ -722,19 +725,19 @@ bool ActivityReplay::ReplayPropChange(
     Err("Unable to find prop %s to set.", entry.name);
     return false;
   }
-  scoped_ptr< ::Value> value;
+  scoped_ptr<Value> value;
   switch (entry.type) {
     case ActivityLog::PropChangeEntry::kBoolProp:
-      value.reset(::Value::CreateBooleanValue(entry.value.bool_val));
+      value.reset(Value::CreateBooleanValue(entry.value.bool_val));
       break;
     case ActivityLog::PropChangeEntry::kDoubleProp:
-      value.reset(::Value::CreateDoubleValue(entry.value.double_val));
+      value.reset(Value::CreateDoubleValue(entry.value.double_val));
       break;
     case ActivityLog::PropChangeEntry::kIntProp:
-      value.reset(::Value::CreateIntegerValue(entry.value.int_val));
+      value.reset(Value::CreateIntegerValue(entry.value.int_val));
       break;
     case ActivityLog::PropChangeEntry::kShortProp:
-      value.reset(::Value::CreateIntegerValue(entry.value.short_val));
+      value.reset(Value::CreateIntegerValue(entry.value.short_val));
       break;
   }
   prop->SetValue(value.get());

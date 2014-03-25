@@ -284,7 +284,7 @@ static void RunTouchMajorAndMinorTest(
 
   float orientation, touch_major, touch_minor, pressure;
 
-  scoped_array<bool> has_zero_area(new bool[n_fs]);
+  scoped_ptr<bool[]> has_zero_area(new bool[n_fs]);
 
   for (size_t i = 0; i < n_fs; i++) {
     bool no_orientation = hwprops->orientation_maximum == 0;

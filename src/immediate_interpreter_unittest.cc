@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <base/logging.h>
-#include <base/stringprintf.h>
+#include <base/strings/stringprintf.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -15,6 +15,7 @@
 
 namespace gestures {
 
+using base::StringPrintf;
 using std::string;
 
 class ImmediateInterpreterTest : public ::testing::Test {};

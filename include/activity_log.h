@@ -75,8 +75,8 @@ class ActivityLog {
 
   // Returns a JSON string representing all the state in the buffer
   std::string Encode();
-  DictionaryValue* AddEncodeInfo(DictionaryValue* root);
-  DictionaryValue* EncodeCommonInfo();
+  base::DictionaryValue* AddEncodeInfo(base::DictionaryValue* root);
+  base::DictionaryValue* EncodeCommonInfo();
   size_t size() const { return size_; }
   size_t MaxSize() const { return kBufferSize; }
   Entry* GetEntry(size_t idx) {
@@ -191,15 +191,15 @@ class ActivityLog {
   size_t TailIdx() const { return (head_idx_ + size_ - 1) % kBufferSize; }
 
   // JSON-encoders for various types
-  ::Value* EncodeHardwareProperties() const;
-  ::Value* EncodeHardwareState(const HardwareState& hwstate);
-  ::Value* EncodeTimerCallback(stime_t timestamp);
-  ::Value* EncodeCallbackRequest(stime_t timestamp);
-  ::Value* EncodeGesture(const Gesture& gesture);
-  ::Value* EncodePropChange(const PropChangeEntry& prop_change);
+  base::Value* EncodeHardwareProperties() const;
+  base::Value* EncodeHardwareState(const HardwareState& hwstate);
+  base::Value* EncodeTimerCallback(stime_t timestamp);
+  base::Value* EncodeCallbackRequest(stime_t timestamp);
+  base::Value* EncodeGesture(const Gesture& gesture);
+  base::Value* EncodePropChange(const PropChangeEntry& prop_change);
 
   // Encode user-configurable properties
-  ::Value* EncodePropRegistry();
+  base::Value* EncodePropRegistry();
 
 #ifdef GESTURES_LARGE_LOGGING_BUFFER
   static const size_t kBufferSize = 65536;
@@ -214,7 +214,7 @@ class ActivityLog {
   // We allocate this to be number of entries * max fingers/entry, and
   // if buffer_[i] is a kHardwareState type, then the fingers for it are
   // at finger_states_[i * (max fingers/entry)].
-  scoped_array<FingerState> finger_states_;
+  scoped_ptr<FingerState[]> finger_states_;
   size_t max_fingers_;
 
   HardwareProperties hwprops_;

@@ -11,6 +11,8 @@
 #include "gestures/include/activity_log.h"
 #include "gestures/include/prop_registry.h"
 
+using base::DictionaryValue;
+using base::Value;
 using std::string;
 
 // Mock struct GesturesProp implementation (outside of namespace gestures)
@@ -195,7 +197,7 @@ TEST(PropRegistryTest, DoublePromoteIntTest) {
   DoubleProperty my_double(&reg, "MyDouble", 1234.5, &delegate);
   EXPECT_TRUE(strstr(ValueForProperty(my_double).c_str(), "1234.5"));
   IntProperty my_int(&reg, "MyInt", 321, &delegate);
-  ::Value* my_int_val = my_int.NewValue();
+  Value* my_int_val = my_int.NewValue();
   EXPECT_TRUE(my_double.SetValue(my_int_val));
   EXPECT_TRUE(strstr(ValueForProperty(my_double).c_str(), "321"));
 }

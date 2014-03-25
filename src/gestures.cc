@@ -7,7 +7,7 @@
 #include <cstring>
 #include <sys/time.h>
 
-#include <base/stringprintf.h>
+#include <base/strings/stringprintf.h>
 
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
@@ -39,6 +39,7 @@
 #include "gestures/include/trend_classifying_filter_interpreter.h"
 #include "gestures/include/util.h"
 
+using base::StringPrintf;
 using std::string;
 using std::min;
 
@@ -399,8 +400,7 @@ GestureInterpreter::GestureInterpreter(int version)
       timer_provider_(NULL),
       timer_provider_data_(NULL),
       interpret_timer_(NULL),
-      loggingFilter_(NULL),
-      consumer_(NULL) {
+      loggingFilter_(NULL) {
   prop_reg_.reset(new PropRegistry);
   tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
   TraceMarker::CreateTraceMarker();

@@ -12,9 +12,9 @@
 #include <sys/types.h>
 
 #include <base/file_util.h>
-#include <base/file_path.h>
+#include <base/files/file_path.h>
 #include <base/json/json_writer.h>
-#include <base/stringprintf.h>
+#include <base/strings/stringprintf.h>
 #include <base/values.h>
 
 #include "gestures/include/logging.h"
@@ -27,7 +27,11 @@
 
 #define QUINTTAP_COUNT 5  /* BTN_TOOL_QUINTTAP - Five fingers on trackpad */
 
+using base::DictionaryValue;
 using base::FundamentalValue;
+using base::ListValue;
+using base::StringValue;
+using base::Value;
 using std::set;
 using std::string;
 
@@ -116,7 +120,7 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return &buffer_[TailIdx()];
 }
 
-::Value* ActivityLog::EncodeHardwareProperties() const {
+Value* ActivityLog::EncodeHardwareProperties() const {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyHardwarePropLeft, new FundamentalValue(hwprops_.left));
   ret->Set(kKeyHardwarePropTop, new FundamentalValue(hwprops_.top));
@@ -146,7 +150,7 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return ret;
 }
 
-::Value* ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
+Value* ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyType, new StringValue(kKeyHardwareState));
   ret->Set(kKeyHardwareStateButtonsDown,
@@ -197,21 +201,21 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return ret;
 }
 
-::Value* ActivityLog::EncodeTimerCallback(stime_t timestamp) {
+Value* ActivityLog::EncodeTimerCallback(stime_t timestamp) {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyType, new StringValue(kKeyTimerCallback));
   ret->Set(kKeyTimerCallbackNow, new FundamentalValue(timestamp));
   return ret;
 }
 
-::Value* ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
+Value* ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyType, new StringValue(kKeyCallbackRequest));
   ret->Set(kKeyCallbackRequestWhen, new FundamentalValue(timestamp));
   return ret;
 }
 
-::Value* ActivityLog::EncodeGesture(const Gesture& gesture) {
+Value* ActivityLog::EncodeGesture(const Gesture& gesture) {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyType, new StringValue(kKeyGesture));
   ret->Set(kKeyGestureStartTime, new FundamentalValue(gesture.start_time));
@@ -323,11 +327,11 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   }
   if (!handled)
     ret->Set(kKeyGestureType,
-             new StringValue(StringPrintf("Unhandled %d", gesture.type)));
+             new StringValue(base::StringPrintf("Unhandled %d", gesture.type)));
   return ret;
 }
 
-::Value* ActivityLog::EncodePropChange(const PropChangeEntry& prop_change) {
+Value* ActivityLog::EncodePropChange(const PropChangeEntry& prop_change) {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyType, new StringValue(kKeyPropChange));
   ret->Set(kKeyPropChangeName, new StringValue(prop_change.name));
@@ -358,7 +362,7 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return ret;
 }
 
-::Value* ActivityLog::EncodePropRegistry() {
+Value* ActivityLog::EncodePropRegistry() {
   DictionaryValue* ret = new DictionaryValue;
   if (!prop_reg_)
     return ret;

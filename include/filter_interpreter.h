@@ -25,7 +25,7 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
       : Interpreter(prop_reg, tracer, force_logging) { next_.reset(next); }
   virtual ~FilterInterpreter() {}
 
-  DictionaryValue* EncodeCommonInfo();
+  base::DictionaryValue* EncodeCommonInfo();
   void Clear();
 
   virtual void Initialize(const HardwareProperties* hwprops,
