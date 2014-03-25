@@ -23,8 +23,8 @@
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableCoreAnimation)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableCoreAnimation)) {
       ScopedCAActionDisabler disabler;
       base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
       [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];

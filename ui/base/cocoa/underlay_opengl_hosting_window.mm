@@ -33,8 +33,8 @@
 namespace {
 
 bool CoreAnimationIsEnabled() {
-  static bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCoreAnimation);
+  static bool is_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCoreAnimation);
   return is_enabled;
 }
 
