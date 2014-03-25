@@ -114,7 +114,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_status(Pending)
     , m_wasPurged(false)
     , m_needsSynchronousCacheHit(false)
-#ifndef NDEBUG
+#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     , m_deleted(false)
 #endif
     , m_resourceToRevalidate(0)
@@ -140,11 +140,13 @@ Resource::~Resource()
     ASSERT(canDelete());
     RELEASE_ASSERT(!memoryCache()->contains(this));
     RELEASE_ASSERT(!ResourceCallback::callbackHandler()->isScheduled(this));
-    ASSERT(!m_deleted);
     ASSERT(url().isNull() || memoryCache()->resourceForURL(KURL(ParsedURLString, url())) != this);
+    assertAlive();
 
-#ifndef NDEBUG
+#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     m_deleted = true;
+#endif
+#ifndef NDEBUG
     cachedResourceLeakCounter.decrement();
 #endif
 }
@@ -733,7 +735,7 @@ void Resource::revalidationSucceeded(const ResourceResponse& response)
     memoryCache()->replace(m_resourceToRevalidate, this);
 
     switchClientsToRevalidatedResource();
-    ASSERT(!m_deleted);
+    assertAlive();
     // clearResourceToRevalidate deletes this.
     clearResourceToRevalidate();
 }
@@ -748,6 +750,7 @@ void Resource::revalidationFailed()
 
 void Resource::registerHandle(ResourcePtrBase* h)
 {
+    assertAlive();
     ++m_handleCount;
     if (m_resourceToRevalidate)
         m_handlesToRevalidate.add(h);
@@ -755,6 +758,7 @@ void Resource::registerHandle(ResourcePtrBase* h)
 
 void Resource::unregisterHandle(ResourcePtrBase* h)
 {
+    assertAlive();
     ASSERT(m_handleCount > 0);
     --m_handleCount;
 
@@ -847,11 +851,13 @@ void Resource::ResourceCallback::schedule(Resource* resource)
 {
     if (!m_callbackTimer.isActive())
         m_callbackTimer.startOneShot(0, FROM_HERE);
+    resource->assertAlive();
     m_resourcesWithPendingClients.add(resource);
 }
 
 void Resource::ResourceCallback::cancel(Resource* resource)
 {
+    resource->assertAlive();
     m_resourcesWithPendingClients.remove(resource);
     if (m_callbackTimer.isActive() && m_resourcesWithPendingClients.isEmpty())
         m_callbackTimer.stop();
@@ -869,8 +875,15 @@ void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
     for (HashSet<Resource*>::iterator it = m_resourcesWithPendingClients.begin(); it != end; ++it)
         resources.append(*it);
     m_resourcesWithPendingClients.clear();
-    for (size_t i = 0; i < resources.size(); i++)
+
+    for (size_t i = 0; i < resources.size(); i++) {
+        resources[i]->assertAlive();
         resources[i]->finishPendingClients();
+        resources[i]->assertAlive();
+    }
+
+    for (size_t i = 0; i < resources.size(); i++)
+        resources[i]->assertAlive();
 }
 
 static const char* initatorTypeNameToString(const AtomicString& initiatorTypeName)

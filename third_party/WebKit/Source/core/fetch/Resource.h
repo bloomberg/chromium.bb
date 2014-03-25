@@ -34,6 +34,9 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
+// FIXME(crbug.com/352043): This is temporarily enabled even on RELEASE to diagnose a wild crash.
+#define ENABLE_RESOURCE_IS_DELETED_CHECK
+
 namespace WebCore {
 
 struct FetchInitiatorInfo;
@@ -239,6 +242,12 @@ public:
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 
+#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
+    void assertAlive() const { RELEASE_ASSERT(!m_deleted); }
+#else
+    void assertAlive() const { }
+#endif
+
 protected:
     virtual void checkNotify();
     virtual void finishOnePart();
@@ -367,7 +376,7 @@ private:
 
     unsigned m_needsSynchronousCacheHit : 1;
 
-#ifndef NDEBUG
+#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     bool m_deleted;
 #endif
 
