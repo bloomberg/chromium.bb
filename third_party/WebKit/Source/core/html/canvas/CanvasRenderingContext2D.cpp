@@ -2283,21 +2283,24 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     if (!c)
         return;
 
+    // These should match the style defined in html.css.
+    Color focusRingColor = RenderTheme::theme().focusRingColor();
+    const int focusRingWidth = 5;
+    const int focusRingOutline = 0;
+
+    // We need to add focusRingWidth to dirtyRect.
+    StrokeData strokeData;
+    strokeData.setThickness(focusRingWidth);
+
     FloatRect dirtyRect;
-    if (!computeDirtyRect(path.boundingRect(), &dirtyRect))
+    if (!computeDirtyRect(path.strokeBoundingRect(strokeData), &dirtyRect))
         return;
 
     c->save();
     c->setAlphaAsFloat(1.0);
     c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
-
-    // These should match the style defined in html.css.
-    Color focusRingColor = RenderTheme::theme().focusRingColor();
-    const int focusRingWidth = 5;
-    const int focusRingOutline = 0;
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
-
     c->restore();
 
     didDraw(dirtyRect);
