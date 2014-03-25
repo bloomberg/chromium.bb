@@ -318,6 +318,8 @@ public:
         AnimationConstructorKeyframeListEffectDoubleTiming = 301,
         AnimationConstructorKeyframeListEffectNoTiming = 302,
         AttrSetValueWithElement = 303,
+        PrefixedCancelAnimationFrame = 304,
+        PrefixedCancelRequestAnimationFrame = 305,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

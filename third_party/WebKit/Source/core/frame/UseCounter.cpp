@@ -685,6 +685,15 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedGamepad:
         return "'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.";
 
+    case PrefixedRequestAnimationFrame:
+        return "'webkitRequestAnimationFrame' is vendor-specific. Please use the standard 'requestAnimationFrame' instead.";
+
+    case PrefixedCancelAnimationFrame:
+        return "'webkitCancelAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
+
+    case PrefixedCancelRequestAnimationFrame:
+        return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

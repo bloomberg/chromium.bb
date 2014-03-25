@@ -172,9 +172,9 @@
 
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(RequestAnimationFrameCallback callback);
     void cancelAnimationFrame(long id);
-    [MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(RequestAnimationFrameCallback callback);
-    [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
-    [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
+    [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(RequestAnimationFrameCallback callback);
+    [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
+    [DeprecateAs=PrefixedCancelRequestAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id);
 
     [Replaceable] readonly attribute CSS CSS;
 
