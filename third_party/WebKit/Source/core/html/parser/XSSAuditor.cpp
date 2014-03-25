@@ -696,12 +696,9 @@ String XSSAuditor::decodedSnippetForJavaScript(const FilterTokenRequest& request
         lastNonSpacePosition = kNotFound;
         for (foundPosition = startPosition; foundPosition < endPosition; foundPosition++) {
             if (!request.shouldAllowCDATA) {
-                if (startsSingleLineCommentAt(string, foundPosition) || startsMultiLineCommentAt(string, foundPosition)) {
-                    foundPosition += 2;
-                    break;
-                }
-                if (startsHTMLCommentAt(string, foundPosition)) {
-                    foundPosition += 4;
+                if (startsSingleLineCommentAt(string, foundPosition)
+                    || startsMultiLineCommentAt(string, foundPosition)
+                    || startsHTMLCommentAt(string, foundPosition)) {
                     break;
                 }
             }
