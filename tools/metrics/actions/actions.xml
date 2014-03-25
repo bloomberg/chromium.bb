@@ -2416,6 +2416,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="EasyUnlock_Enabled_Disable">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
+<action name="EasyUnlock_Enabled_Enable">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="EditApplicationSettings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -7120,88 +7130,120 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuAddToBookmarks">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>
+    User pressed the star icon in the app menu to add or remove a bookmark for
+    the current page.
+  </description>
+</action>
+
+<action name="MobileMenuAddToHomescreen">
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Add to homescreen' in the app menu.</description>
 </action>
 
 <action name="MobileMenuAllBookmarks">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Bookmarks' in the app menu.</description>
 </action>
 
 <action name="MobileMenuBack">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed the back icon in the app menu.</description>
 </action>
 
 <action name="MobileMenuCloseAllTabs">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Close all tabs' in the app menu.</description>
 </action>
 
 <action name="MobileMenuCloseTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Close tab' in the app menu.</description>
+  <obsolete>This menu item was never added to the app menu.</obsolete>
+</action>
+
+<action name="MobileMenuDirectShare">
+  <owner>aurimas@chromium.org</owner>
+  <description>
+    User pressed the application icon next to 'Share' to share directly with the
+    most recently used application.
+  </description>
 </action>
 
 <action name="MobileMenuFeedback">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Help and Feedback' in the app menu.</description>
 </action>
 
 <action name="MobileMenuFindInPage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Find in page' in the app menu.</description>
 </action>
 
 <action name="MobileMenuForward">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed the forward icon in the app menu.</description>
 </action>
 
 <action name="MobileMenuFullscreen">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Fullscreen' in the app menu.</description>
+  <obsolete>This menu item was never added to the app menu.</obsolete>
 </action>
 
 <action name="MobileMenuNewIncognitoTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'New incognito tab' in the app menu.</description>
 </action>
 
 <action name="MobileMenuNewTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'New tab' in the app menu.</description>
 </action>
 
 <action name="MobileMenuOpenTabs">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Recent tabs' in the app menu.</description>
+</action>
+
+<action name="MobileMenuPrint">
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Print' in the app menu.</description>
 </action>
 
 <action name="MobileMenuQuit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Quit' in the app menu.</description>
+  <obsolete>This menu item was never added to the app menu.</obsolete>
 </action>
 
 <action name="MobileMenuReload">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Reload' in the app menu.</description>
+  <obsolete>This menu item was never added to the app menu.</obsolete>
+</action>
+
+<action name="MobileMenuRequestDesktopSite">
+  <owner>aurimas@chromium.org</owner>
+  <description>
+    User pressed 'Request Desktop Site' in the app menu.
+  </description>
 </action>
 
 <action name="MobileMenuSettings">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Settings' in the app menu.</description>
 </action>
 
 <action name="MobileMenuShare">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User pressed 'Share' in the app menu.</description>
 </action>
 
 <action name="MobileMenuShow">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>aurimas@chromium.org</owner>
+  <description>User opened the app menu.</description>
 </action>
 
 <action name="MobileNTPBookmark">
@@ -8178,6 +8220,16 @@ should be able to be added at any place in this file.
 <action name="Options_HotwordCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_Hotword_AudioLogging_Checkbox_Disable">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
+<action name="Options_Hotword_AudioLogging_Checkbox_Enable">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
 </action>
 
 <action name="Options_ImagesCheckbox_Disable">
