@@ -1492,7 +1492,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         for message in messages:
           # If there are no tracebacks, that means that the builder did not
           # report its status properly. Don't submit anything.
-          if not message.tracebacks:
+          if not message or not message.tracebacks:
             break
           tracebacks.update(message.tracebacks)
         else:
