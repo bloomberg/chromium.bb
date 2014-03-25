@@ -12,7 +12,9 @@
         # Don't add this target to the dependencies of targets with type=none.
         'link_dependency': 1,
       },
-      'dependencies=': [],
+      'dependencies=': [
+        '../libc++abi/libc++abi.gyp:libc++abi',
+      ],
       'sources': [
         'trunk/src/algorithm.cpp',
         'trunk/src/bind.cpp',
@@ -85,13 +87,19 @@
       ],
       'ldflags': [
         '-nodefaultlibs',
+        '<(PRODUCT_DIR)/lib/libc++abi.so',
       ],
       'ldflags!': [
+        # This somehow causes a warning from clang about an unused compilation
+        # option. Use '-lpthread' instead.
+        # TODO(earthdok): find out what's causing the warning.
         '-pthread',
       ],
       'libraries': [
-        '-lrt',
         '-lc',
+        '-lgcc_s',
+        '-lpthread',
+        '-lrt',
       ],
     },
   ]
