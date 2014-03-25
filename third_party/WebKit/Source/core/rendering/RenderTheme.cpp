@@ -868,6 +868,9 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
         return;
 
     HTMLInputElement* input = toHTMLInputElement(node);
+    if (!input->isRangeControl())
+        return;
+
     HTMLDataListElement* dataList = input->dataList();
     if (!dataList)
         return;
