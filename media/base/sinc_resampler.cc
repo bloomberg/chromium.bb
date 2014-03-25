@@ -154,7 +154,7 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
           base::AlignedAlloc(sizeof(float) * input_buffer_size_, 16))),
       r1_(input_buffer_.get()),
       r2_(input_buffer_.get() + kKernelSize / 2),
-      currently_resampling_(0) {
+      not_currently_resampling_(1) {
   CHECK_GT(request_frames_, 0);
   Flush();
   CHECK_GT(block_size_, kKernelSize)
@@ -172,7 +172,7 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
 
 SincResampler::~SincResampler() {
   // TODO(dalecurtis): Remove debugging for http://crbug.com/295278
-  CHECK(base::AtomicRefCountIsZero(&currently_resampling_));
+  CHECK(!base::AtomicRefCountDec(&not_currently_resampling_));
 }
 
 void SincResampler::UpdateRegions(bool second_load) {
@@ -212,8 +212,8 @@ void SincResampler::InitializeKernel() {
 
       // Compute Blackman window, matching the offset of the sinc().
       const float x = (i - subsample_offset) / kKernelSize;
-      const float window = kA0 - kA1 * cos(2.0 * M_PI * x) + kA2
-          * cos(4.0 * M_PI * x);
+      const float window =
+          kA0 - kA1 * cos(2.0 * M_PI * x) + kA2 * cos(4.0 * M_PI * x);
       kernel_window_storage_[idx] = window;
 
       // Compute the sinc with offset, then window the sinc() function and store
@@ -256,7 +256,7 @@ void SincResampler::SetRatio(double io_sample_rate_ratio) {
 }
 
 void SincResampler::Resample(int frames, float* destination) {
-  base::AtomicRefCountInc(&currently_resampling_);
+  CHECK(!base::AtomicRefCountDec(&not_currently_resampling_));
 
   int remaining_frames = frames;
 
@@ -271,18 +271,12 @@ void SincResampler::Resample(int frames, float* destination) {
   const double current_io_ratio = io_sample_rate_ratio_;
   const float* const kernel_ptr = kernel_storage_.get();
   while (remaining_frames) {
-    // |i| may be negative if the last Resample() call ended on an iteration
-    // that put |virtual_source_idx_| over the limit.
-    //
     // Note: The loop construct here can severely impact performance on ARM
     // or when built with clang.  See https://codereview.chromium.org/18566009/
-    for (int i = ceil((block_size_ - virtual_source_idx_) / current_io_ratio);
-         i > 0; --i) {
-      DCHECK_LT(virtual_source_idx_, block_size_);
-
+    int source_idx = virtual_source_idx_;
+    while (source_idx < block_size_) {
       // |virtual_source_idx_| lies in between two kernel offsets so figure out
       // what they are.
-      const int source_idx = virtual_source_idx_;
       const double subsample_remainder = virtual_source_idx_ - source_idx;
 
       const double virtual_offset_idx =
@@ -310,14 +304,16 @@ void SincResampler::Resample(int frames, float* destination) {
 
       // Advance the virtual index.
       virtual_source_idx_ += current_io_ratio;
+      source_idx = virtual_source_idx_;
 
       if (!--remaining_frames) {
-        CHECK(!base::AtomicRefCountDec(&currently_resampling_));
+        base::AtomicRefCountInc(&not_currently_resampling_);
         return;
       }
     }
 
     // Wrap back around to the start.
+    DCHECK_GE(virtual_source_idx_, block_size_);
     virtual_source_idx_ -= block_size_;
 
     // Step (3) -- Copy r3_, r4_ to r1_, r2_.
@@ -332,7 +328,7 @@ void SincResampler::Resample(int frames, float* destination) {
     read_cb_.Run(request_frames_, r0_);
   }
 
-  CHECK(!base::AtomicRefCountDec(&currently_resampling_));
+  base::AtomicRefCountInc(&not_currently_resampling_);
 }
 
 #undef CONVOLVE_FUNC
@@ -342,7 +338,7 @@ int SincResampler::ChunkSize() const {
 }
 
 void SincResampler::Flush() {
-  CHECK(base::AtomicRefCountIsZero(&currently_resampling_));
+  CHECK(base::AtomicRefCountIsOne(&not_currently_resampling_));
   virtual_source_idx_ = 0;
   buffer_primed_ = false;
   memset(input_buffer_.get(), 0,

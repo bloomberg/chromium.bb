@@ -136,10 +136,10 @@ class MEDIA_EXPORT SincResampler {
   float* r3_;
   float* r4_;
 
-  // Atomic ref count indicating when when we're in the middle of resampling.
-  // Will be CHECK'd to find crashes...
+  // Atomic ref count indicating when when we're not currently resampling.  Will
+  // be CHECK'd to find crashes...
   // TODO(dalecurtis): Remove debug helpers for http://crbug.com/295278
-  base::AtomicRefCount currently_resampling_;
+  base::AtomicRefCount not_currently_resampling_;
 
   DISALLOW_COPY_AND_ASSIGN(SincResampler);
 };
