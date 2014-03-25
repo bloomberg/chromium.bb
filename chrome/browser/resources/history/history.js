@@ -237,8 +237,13 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     dropDown.addEventListener('mousedown', setActiveVisit);
     dropDown.addEventListener('focus', setActiveVisit);
 
-    // Prevent clicks on the drop down from affecting the checkbox.
-    dropDown.addEventListener('click', function(e) { e.preventDefault(); });
+    // Prevent clicks on the drop down from affecting the checkbox.  We need to
+    // call blur() explicitly because preventDefault() cancels any focus
+    // handling.
+    dropDown.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.activeElement.blur();
+    });
     entryBox.appendChild(dropDown);
   }
 
