@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_context.h"
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/socket/udp_socket.h"

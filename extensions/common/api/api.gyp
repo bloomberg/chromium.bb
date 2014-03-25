@@ -22,7 +22,6 @@
         ],
         # TODO: Eliminate these on Android. See crbug.com/305852.
         'schema_files': [
-          'dns.idl',
           'socket.idl',
           'sockets_tcp.idl',
           'sockets_tcp_server.idl',

@@ -1,12 +1,14 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
+#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 
 namespace extensions {
 
-HostResolverWrapper::HostResolverWrapper() : resolver_(NULL) {}
+HostResolverWrapper::HostResolverWrapper()
+    : resolver_(NULL) {
+}
 
 // static
 HostResolverWrapper* HostResolverWrapper::GetInstance() {

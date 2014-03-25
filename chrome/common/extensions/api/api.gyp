@@ -59,6 +59,7 @@
               'desktop_capture.json',
               'developer_private.idl',
               'dial.idl',
+              'dns.idl',
               'downloads.idl',
               'downloads_internal.idl',
               'echo_private.json',
