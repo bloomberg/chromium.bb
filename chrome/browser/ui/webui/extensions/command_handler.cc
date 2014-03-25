@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -124,8 +125,13 @@ void CommandHandler::HandleSetCommandScope(
 void CommandHandler::HandleSetShortcutHandlingSuspended(
     const base::ListValue* args) {
   bool suspended;
-  if (args->GetBoolean(0, &suspended))
+  if (args->GetBoolean(0, &suspended)) {
+    // Suspend/Resume normal shortcut handling.
     ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(suspended);
+
+    // Suspend/Resume global shortcut handling.
+    ExtensionCommandsGlobalRegistry::SetShortcutHandlingSuspended(suspended);
+  }
 }
 
 void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {

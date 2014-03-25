@@ -21,8 +21,17 @@ ExtensionCommandsGlobalRegistry::ExtensionCommandsGlobalRegistry(
 }
 
 ExtensionCommandsGlobalRegistry::~ExtensionCommandsGlobalRegistry() {
-  if (!IsEventTargetsEmpty())
-    GlobalShortcutListener::GetInstance()->UnregisterAccelerators(this);
+  if (!IsEventTargetsEmpty()) {
+    GlobalShortcutListener* global_shortcut_listener =
+        GlobalShortcutListener::GetInstance();
+
+    // Resume GlobalShortcutListener before we clean up if the shortcut handling
+    // is currently suspended.
+    if (global_shortcut_listener->IsShortcutHandlingSuspended())
+      global_shortcut_listener->SetShortcutHandlingSuspended(false);
+
+    global_shortcut_listener->UnregisterAccelerators(this);
+  }
 }
 
 static base::LazyInstance<
@@ -40,6 +49,13 @@ ExtensionCommandsGlobalRegistry* ExtensionCommandsGlobalRegistry::Get(
     content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>::Get(
       context);
+}
+
+// static
+void ExtensionCommandsGlobalRegistry::SetShortcutHandlingSuspended(
+    bool suspended) {
+  GlobalShortcutListener::GetInstance()->SetShortcutHandlingSuspended(
+      suspended);
 }
 
 void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(

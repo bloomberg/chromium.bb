@@ -32,20 +32,32 @@ class GlobalShortcutListener {
   static GlobalShortcutListener* GetInstance();
 
   // Register an observer for when a certain |accelerator| is struck. Returns
-  // true if register successfully, or false if the specificied |accelerator|
-  // has been registered by another caller or other native applications. Note
-  // that we do not support recognizing that an accelerator has been registered
-  // by another application on all platforms. This is a per-platform
+  // true if register successfully, or false if 1) the specificied |accelerator|
+  // has been registered by another caller or other native applications, or
+  // 2) shortcut handling is suspended.
+  //
+  // Note that we do not support recognizing that an accelerator has been
+  // registered by another application on all platforms. This is a per-platform
   // consideration.
   bool RegisterAccelerator(const ui::Accelerator& accelerator,
                            Observer* observer);
 
-  // Stop listening for the given |accelerator|.
+  // Stop listening for the given |accelerator|, does nothing if shortcut
+  // handling is suspended.
   void UnregisterAccelerator(const ui::Accelerator& accelerator,
                              Observer* observer);
 
-  // Stop listening for all accelerators of the given |observer|.
+  // Stop listening for all accelerators of the given |observer|, does nothing
+  // if shortcut handling is suspended.
   void UnregisterAccelerators(Observer* observer);
+
+  // Suspend/Resume global shortcut handling. Note that when suspending,
+  // RegisterAccelerator/UnregisterAccelerator/UnregisterAccelerators are not
+  // allowed to be called until shortcut handling has been resumed.
+  void SetShortcutHandlingSuspended(bool suspended);
+
+  // Returns whether shortcut handling is currently suspended.
+  bool IsShortcutHandlingSuspended() const;
 
  protected:
   GlobalShortcutListener();
@@ -75,6 +87,9 @@ class GlobalShortcutListener {
   // shortcuts and their observer.
   typedef std::map<ui::Accelerator, Observer*> AcceleratorMap;
   AcceleratorMap accelerator_map_;
+
+  // Keeps track of whether shortcut handling is currently suspended.
+  bool shortcut_handling_suspended_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalShortcutListener);
 };

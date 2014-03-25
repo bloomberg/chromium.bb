@@ -41,6 +41,9 @@ class ExtensionCommandsGlobalRegistry
   // profile.
   static ExtensionCommandsGlobalRegistry* Get(content::BrowserContext* context);
 
+  // Enables/Disables global shortcut handling in Chrome.
+  static void SetShortcutHandlingSuspended(bool suspended);
+
   explicit ExtensionCommandsGlobalRegistry(content::BrowserContext* context);
   virtual ~ExtensionCommandsGlobalRegistry();
 
