@@ -234,6 +234,13 @@ bool SettingsOverrides::RemovesBookmarkShortcut(
       *settings_overrides.bookmarks_ui->remove_bookmark_shortcut;
 }
 
+bool SettingsOverrides::RemovesBookmarkOpenPagesShortcut(
+    const SettingsOverrides& settings_overrides) {
+  return settings_overrides.bookmarks_ui &&
+      settings_overrides.bookmarks_ui->remove_bookmark_open_pages_shortcut &&
+      *settings_overrides.bookmarks_ui->remove_bookmark_open_pages_shortcut;
+}
+
 SettingsOverridesHandler::SettingsOverridesHandler() {}
 
 SettingsOverridesHandler::~SettingsOverridesHandler() {}

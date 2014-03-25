@@ -427,6 +427,8 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #if !defined(OS_LINUX) || defined(USE_AURA)
     case IDC_BOOKMARK_PAGE:
       return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
+    case IDC_BOOKMARK_ALL_TABS:
+      return !chrome::ShouldRemoveBookmarkOpenPagesUI(browser_->profile());
 #endif
     default:
       return true;

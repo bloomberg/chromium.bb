@@ -110,6 +110,10 @@ bool ShouldShowAppsShortcutInBookmarkBar(
 // the user interface.
 bool ShouldRemoveBookmarkThisPageUI(Profile* profile);
 
+// Whether the menu item and shortcut to bookmark open pages should be removed
+// from the user interface.
+bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UTILS_H_

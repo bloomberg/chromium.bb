@@ -35,6 +35,8 @@
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::SettingsOverrides;
+using extensions::UIOverrides;
 
 namespace {
 
@@ -173,8 +175,6 @@ CommandService* CommandService::Get(content::BrowserContext* context) {
 // static
 bool CommandService::RemovesBookmarkShortcut(
     const extensions::Extension* extension) {
-  using extensions::UIOverrides;
-  using extensions::SettingsOverrides;
   const UIOverrides* ui_overrides = UIOverrides::Get(extension);
   const SettingsOverrides* settings_overrides =
       SettingsOverrides::Get(extension);
@@ -188,6 +188,23 @@ bool CommandService::RemovesBookmarkShortcut(
           extensions::APIPermission::kBookmarkManagerPrivate) ||
        extensions::FeatureSwitch::enable_override_bookmarks_ui()->
            IsEnabled());
+}
+
+// static
+bool CommandService::RemovesBookmarkOpenPagesShortcut(
+    const extensions::Extension* extension) {
+  const UIOverrides* ui_overrides = UIOverrides::Get(extension);
+  const SettingsOverrides* settings_overrides =
+      SettingsOverrides::Get(extension);
+
+  return ((settings_overrides &&
+           SettingsOverrides::RemovesBookmarkOpenPagesShortcut(
+               *settings_overrides)) ||
+          (ui_overrides &&
+           UIOverrides::RemovesBookmarkOpenPagesShortcut(*ui_overrides))) &&
+      extensions::PermissionsData::HasAPIPermission(
+          extension,
+          extensions::APIPermission::kBookmarkManagerPrivate);
 }
 
 bool CommandService::GetBrowserActionCommand(const std::string& extension_id,

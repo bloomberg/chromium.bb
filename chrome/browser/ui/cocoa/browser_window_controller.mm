@@ -1147,6 +1147,17 @@ enum {
           [menuItem setHidden:shouldHide];
           break;
         }
+        case IDC_BOOKMARK_ALL_TABS: {
+          // Extensions have the ability to hide the bookmark all tabs menu
+          // item.  This only affects the bookmark page menu item under the main
+          // menu.  The bookmark page menu item under the wrench menu has its
+          // visibility controlled by WrenchMenuModel.
+          bool shouldHide =
+              chrome::ShouldRemoveBookmarkOpenPagesUI(browser_->profile());
+          NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+          [menuItem setHidden:shouldHide];
+          break;
+        }
         default:
           // Special handling for the contents of the Text Encoding submenu. On
           // Mac OS, instead of enabling/disabling the top-level menu item, we

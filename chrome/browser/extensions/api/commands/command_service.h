@@ -82,6 +82,11 @@ class CommandService : public BrowserContextKeyedAPI,
   // shortcut key.
   static bool RemovesBookmarkShortcut(const extensions::Extension* extension);
 
+  // Returns true if |extension| is permitted to and does remove the bookmark
+  // open pages shortcut key.
+  static bool RemovesBookmarkOpenPagesShortcut(
+      const extensions::Extension* extension);
+
   // Gets the command (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
   // the command is active. Returns false if the extension has no browser

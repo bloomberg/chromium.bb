@@ -1832,6 +1832,10 @@ void Browser::Observe(int type,
           this,
           IDC_BOOKMARK_PAGE,
           !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+      chrome::UpdateCommandEnabled(
+          this,
+          IDC_BOOKMARK_ALL_TABS,
+          !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
 
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
@@ -1876,6 +1880,10 @@ void Browser::Observe(int type,
           this,
           IDC_BOOKMARK_PAGE,
           !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+      chrome::UpdateCommandEnabled(
+          this,
+          IDC_BOOKMARK_ALL_TABS,
+          !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
     // fallthrough
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       // During window creation on Windows we may end up calling into

@@ -769,6 +769,7 @@ void BookmarkAllTabs(Browser* browser) {
 
 bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_strip_model()->count() > 1 &&
+             !chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile()) &&
              CanBookmarkCurrentPageInternal(browser, false);
 }
 

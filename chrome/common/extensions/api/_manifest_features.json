@@ -83,7 +83,7 @@
     "channel": "dev",
     "extension_types": ["extension"],
     "platforms": ["win"]
-  }, {  // TODO(wittman): remove this section for M36.
+  }, {  // TODO(wittman): remove this section for M37.
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [

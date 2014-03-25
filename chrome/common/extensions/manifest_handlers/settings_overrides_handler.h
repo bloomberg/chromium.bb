@@ -26,6 +26,8 @@ struct SettingsOverrides : public Extension::ManifestData {
       const SettingsOverrides& settings_overrides);
   static bool RemovesBookmarkShortcut(
       const SettingsOverrides& settings_overrides);
+  static bool RemovesBookmarkOpenPagesShortcut(
+      const SettingsOverrides& settings_overrides);
 
   scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Bookmarks_ui>
       bookmarks_ui;
