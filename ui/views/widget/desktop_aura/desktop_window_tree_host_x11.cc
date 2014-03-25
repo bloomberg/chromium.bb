@@ -135,7 +135,8 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       desktop_native_widget_aura_(desktop_native_widget_aura),
       content_window_(NULL),
       window_parent_(NULL),
-      custom_window_shape_(NULL) {
+      custom_window_shape_(NULL),
+      urgency_hint_set_(false) {
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
@@ -178,6 +179,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
 void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   if (active) {
+    FlashFrame(false);
     OnHostActivated();
     open_windows().remove(xwindow_);
     open_windows().insert(open_windows().begin(), xwindow_);
@@ -673,8 +675,24 @@ void DesktopWindowTreeHostX11::InitModalType(ui::ModalType modal_type) {
 }
 
 void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  if (urgency_hint_set_ == flash_frame)
+    return;
+
+  XWMHints* hints = XGetWMHints(xdisplay_, xwindow_);
+  if (!hints) {
+    // The window hasn't had its hints set yet.
+    hints = XAllocWMHints();
+  }
+
+  if (flash_frame)
+    hints->flags |= XUrgencyHint;
+  else
+    hints->flags &= ~XUrgencyHint;
+
+  XSetWMHints(xdisplay_, xwindow_, hints);
+  XFree(hints);
+
+  urgency_hint_set_ = flash_frame;
 }
 
 void DesktopWindowTreeHostX11::OnRootViewLayout() const {
@@ -1145,6 +1163,11 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
   }
+
+  // While we unset the urgency hint when we gain focus, we also must remove it
+  // on mouse clicks because we can call FlashFrame() on an active window.
+  if (event->IsAnyButton() || event->IsMouseWheelEvent())
+    FlashFrame(false);
 
   if (!g_current_capture || g_current_capture == this) {
     SendEventToProcessor(event);

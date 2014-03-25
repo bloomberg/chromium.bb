@@ -291,6 +291,12 @@ private:
 
   base::string16 window_title_;
 
+  // Whether we currently are flashing our frame. This feature is implemented
+  // by setting the urgency hint with the window manager, which can draw
+  // attention to the window or completely ignore the hint. We stop flashing
+  // the frame when |xwindow_| gains focus or handles a mouse button event.
+  bool urgency_hint_set_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };
 
