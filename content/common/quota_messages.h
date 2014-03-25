@@ -11,7 +11,7 @@
 
 #define IPC_MESSAGE_START QuotaMsgStart
 
-IPC_ENUM_TRAITS(quota::StorageType)
+IPC_ENUM_TRAITS_MAX_VALUE(quota::StorageType, quota::kStorageTypeLast)
 IPC_ENUM_TRAITS(quota::QuotaStatusCode)
 
 // Quota messages sent from the browser to the child process.

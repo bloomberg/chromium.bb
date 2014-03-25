@@ -15,6 +15,7 @@ enum StorageType {
   kStorageTypeSyncable,
   kStorageTypeQuotaNotManaged,
   kStorageTypeUnknown,
+  kStorageTypeLast = kStorageTypeUnknown
 };
 
 enum QuotaLimitType {
