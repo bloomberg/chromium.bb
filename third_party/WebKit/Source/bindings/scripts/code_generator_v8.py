@@ -56,11 +56,13 @@ import sys
 # If paths differ between pre-caching and individual file compilation, the cache
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
-module_path = os.path.dirname(os.path.realpath(__file__))
+module_path, module_filename = os.path.split(os.path.realpath(__file__))
 third_party_dir = os.path.normpath(os.path.join(
     module_path, os.pardir, os.pardir, os.pardir, os.pardir))
 templates_dir = os.path.normpath(os.path.join(
     module_path, os.pardir, 'templates'))
+# Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
+module_pyname = os.path.splitext(module_filename)[0] + '.py'
 
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
@@ -130,6 +132,7 @@ class CodeGeneratorV8(object):
 
         # Generate contents (input parameters for Jinja)
         template_contents = generate_contents(interface)
+        template_contents['code_generator'] = module_pyname
 
         # Add includes for interface itself and any dependencies
         interface_info = self.interfaces_info[interface_name]

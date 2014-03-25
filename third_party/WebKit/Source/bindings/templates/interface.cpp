@@ -86,9 +86,10 @@ static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, 
 {
     {% if is_check_security %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    v8::Isolate* isolate = info.GetIsolate();
     v8::String::Utf8Value attributeName(name);
-    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), isolate);
+    if (!BindingSecurity::shouldAllowAccessToFrame(isolate, impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -485,14 +486,15 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    v8::Isolate* isolate = info.GetIsolate();
     Vector<String> names;
-    ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), isolate);
     impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
+    v8::Handle<v8::Array> v8names = v8::Array::New(isolate, names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
+        v8names->Set(v8::Integer::New(isolate, i), v8String(isolate, names[i]));
     v8SetReturnValue(info, v8names);
 }
 
@@ -524,19 +526,19 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    {# FIXME: don't call GetIsolate 3 times #}
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), isolate);
     if (holder.IsEmpty())
         return;
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     v8::String::Utf8Value attributeName(name);
-    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), isolate);
+    if (!BindingSecurity::shouldAllowAccessToFrame(isolate, impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
 
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
+    V8HiddenValue::setHiddenValue(isolate, info.This(), name, jsValue);
 }
 
 static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -616,7 +618,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {% if has_event_constructor %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
     if (info.Length() < 1) {
         exceptionState.throwTypeError("An event name must be provided.");
         exceptionState.throwIfNeeded();
@@ -629,7 +632,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% endfor %}
     {{cpp_class}}Init eventInit;
     if (info.Length() >= 2) {
-        V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
+        V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], isolate));
         if (!initialize{{cpp_class}}(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;
@@ -639,7 +642,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% for attribute in any_type_attributes %}
         options.get("{{attribute.name}}", {{attribute.name}});
         if (!{{attribute.name}}.IsEmpty())
-            V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), {{attribute.name}});
+            V8HiddenValue::setHiddenValue(isolate, info.Holder(), v8AtomicString(isolate, "{{attribute.name}}"), {{attribute.name}});
         {% endfor %}
     }
     {% if is_constructor_raises_exception %}
@@ -659,16 +662,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
           thus passing it around would cause leakage.
        2) Errors cannot be cloned (or serialized):
        http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data #}
-    if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isIsolatedWorld()) {
         {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
-            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, info.GetIsolate()));
+            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, isolate));
         {% endfor %}
     }
 
     {% endif %}
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     v8SetReturnValue(info, wrapper);
 }
 

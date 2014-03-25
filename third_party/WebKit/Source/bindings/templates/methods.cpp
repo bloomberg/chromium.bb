@@ -321,13 +321,13 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     {% set signature = 'v8::Local<v8::Signature>()'
                        if method.is_do_not_check_signature else
                        'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate()))' % v8_class %}
-    {# FIXME: don't call GetIsolate() so often #}
+    v8::Isolate* isolate = info.GetIsolate();
     static int domTemplateKey; // This address is used for a key to look up the dom template.
-    V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
     v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.number_of_required_or_variadic_arguments}});
 
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), isolate);
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -335,14 +335,14 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(isolate, impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(isolate, "{{method.name}}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -364,8 +364,9 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 {% macro generate_constructor(constructor) %}
 static void constructor{{constructor.overload_index}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     {% if constructor.has_exception_state %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
     {% endif %}
     {% if interface_length and not constructor.overload_index %}
     {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
@@ -380,10 +381,10 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {{generate_argument(constructor, argument) | indent}}
     {% endfor %}
     {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    ExecutionContext* context = currentExecutionContext(isolate);
     {% endif %}
     {% if is_constructor_call_with_document %}
-    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+    Document& document = *toDocument(currentExecutionContext(isolate));
     {% endif %}
     {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
     {% if is_constructor_raises_exception %}
@@ -392,10 +393,10 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% endif %}
 
     {% if has_custom_wrap %}
-    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), isolate);
     {% else %}
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     {% endif %}
     v8SetReturnValue(info, wrapper);
 }
