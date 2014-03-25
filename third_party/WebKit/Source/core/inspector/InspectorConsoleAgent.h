@@ -111,7 +111,6 @@ protected:
     InspectorTimelineAgent* m_timelineAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
-    ConsoleMessage* m_previousMessage;
     Vector<OwnPtr<ConsoleMessage> > m_consoleMessages;
     int m_expiredConsoleMessageCount;
     HashCountedSet<String> m_counts;

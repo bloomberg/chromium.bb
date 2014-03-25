@@ -53,7 +53,6 @@ public:
     ScriptState* globalState() const;
 
     bool getFirstArgumentAsString(WTF::String& result, bool checkForNullOrUndefined = false);
-    bool isEqual(ScriptArguments*) const;
 
 private:
     ScriptArguments(ScriptState*, Vector<ScriptValue>& arguments);

@@ -53,7 +53,6 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_url()
     , m_line(0)
     , m_column(0)
-    , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(0))
     , m_timestamp(WTF::currentTime())
 {
@@ -68,7 +67,6 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_url(url)
     , m_line(line)
     , m_column(column)
-    , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
 {
@@ -83,7 +81,6 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     , m_arguments(nullptr)
     , m_line(0)
     , m_column(0)
-    , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
 {
@@ -105,7 +102,6 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_url()
     , m_line(0)
     , m_column(0)
-    , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
 {
@@ -198,7 +194,6 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     jsonObj->setLine(static_cast<int>(m_line));
     jsonObj->setColumn(static_cast<int>(m_column));
     jsonObj->setUrl(m_url);
-    jsonObj->setRepeatCount(static_cast<int>(m_repeatCount));
     if (m_source == NetworkMessageSource && !m_requestId.isEmpty())
         jsonObj->setNetworkRequestId(m_requestId);
     if (m_arguments && m_arguments->argumentCount()) {
@@ -230,46 +225,6 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     if (m_callStack)
         jsonObj->setStackTrace(m_callStack->buildInspectorArray());
     frontend->messageAdded(jsonObj);
-}
-
-void ConsoleMessage::incrementCount()
-{
-    m_timestamp = WTF::currentTime();
-    ++m_repeatCount;
-}
-
-void ConsoleMessage::updateRepeatCountInConsole(InspectorFrontend::Console* frontend)
-{
-    frontend->messageRepeatCountUpdated(m_repeatCount, m_timestamp);
-}
-
-bool ConsoleMessage::isEqual(ConsoleMessage* msg) const
-{
-    if (m_arguments) {
-        if (!m_arguments->isEqual(msg->m_arguments.get()))
-            return false;
-        // Never treat objects as equal - their properties might change over time.
-        for (size_t i = 0; i < m_arguments->argumentCount(); ++i) {
-            if (m_arguments->argumentAt(i).isObject())
-                return false;
-        }
-    } else if (msg->m_arguments)
-        return false;
-
-    if (m_callStack) {
-        if (!m_callStack->isEqual(msg->m_callStack.get()))
-            return false;
-    } else if (msg->m_callStack)
-        return false;
-
-    return msg->m_source == m_source
-        && msg->m_type == m_type
-        && msg->m_level == m_level
-        && msg->m_message == m_message
-        && msg->m_line == m_line
-        && msg->m_column == m_column
-        && msg->m_url == m_url
-        && msg->m_requestId == m_requestId;
 }
 
 void ConsoleMessage::windowCleared(DOMWindow* window)

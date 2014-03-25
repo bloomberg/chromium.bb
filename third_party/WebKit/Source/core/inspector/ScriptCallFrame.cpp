@@ -46,14 +46,6 @@ ScriptCallFrame::~ScriptCallFrame()
 {
 }
 
-bool ScriptCallFrame::isEqual(const ScriptCallFrame& o) const
-{
-    return m_functionName == o.m_functionName
-        && m_scriptId == o.m_scriptId
-        && m_scriptName == o.m_scriptName
-        && m_lineNumber == o.m_lineNumber;
-}
-
 PassRefPtr<TypeBuilder::Console::CallFrame> ScriptCallFrame::buildInspectorObject() const
 {
     return TypeBuilder::Console::CallFrame::create()

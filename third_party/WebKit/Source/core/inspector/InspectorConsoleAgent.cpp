@@ -67,7 +67,6 @@ InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAge
     , m_timelineAgent(timelineAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
-    , m_previousMessage(0)
     , m_expiredConsoleMessageCount(0)
     , m_enabled(false)
 {
@@ -122,7 +121,6 @@ void InspectorConsoleAgent::clearMessages(ErrorString*)
 {
     m_consoleMessages.clear();
     m_expiredConsoleMessageCount = 0;
-    m_previousMessage = 0;
     m_injectedScriptManager->releaseObjectGroup("console");
     if (m_frontend && m_enabled)
         m_frontend->messagesCleared();
@@ -302,27 +300,14 @@ void InspectorConsoleAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)
     m_state->setBoolean(ConsoleAgentState::monitoringXHR, enabled);
 }
 
-static bool isGroupMessage(MessageType type)
-{
-    return type == StartGroupMessageType
-        || type ==  StartGroupCollapsedMessageType
-        || type == EndGroupMessageType;
-}
-
 void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT_ARG(consoleMessage, consoleMessage);
 
-    if (m_previousMessage && !isGroupMessage(m_previousMessage->type()) && m_previousMessage->isEqual(consoleMessage.get())) {
-        m_previousMessage->incrementCount();
-        if (m_frontend && m_enabled)
-            m_previousMessage->updateRepeatCountInConsole(m_frontend);
-    } else {
-        m_previousMessage = consoleMessage.get();
-        m_consoleMessages.append(consoleMessage);
-        if (m_frontend && m_enabled)
-            m_previousMessage->addToFrontend(m_frontend, m_injectedScriptManager, true);
-    }
+    if (m_frontend && m_enabled)
+        consoleMessage->addToFrontend(m_frontend, m_injectedScriptManager, true);
+
+    m_consoleMessages.append(consoleMessage);
 
     if (!m_frontend && m_consoleMessages.size() >= maximumConsoleMessages) {
         m_expiredConsoleMessageCount += expireConsoleMessagesStep;

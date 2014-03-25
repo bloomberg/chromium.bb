@@ -59,23 +59,6 @@ size_t ScriptCallStack::size() const
     return m_frames.size();
 }
 
-bool ScriptCallStack::isEqual(ScriptCallStack* o) const
-{
-    if (!o)
-        return false;
-
-    size_t frameCount = o->m_frames.size();
-    if (frameCount != m_frames.size())
-        return false;
-
-    for (size_t i = 0; i < frameCount; ++i) {
-        if (!m_frames[i].isEqual(o->m_frames[i]))
-            return false;
-    }
-
-    return true;
-}
-
 PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > ScriptCallStack::buildInspectorArray() const
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > frames = TypeBuilder::Array<TypeBuilder::Console::CallFrame>::create();

@@ -50,8 +50,6 @@ public:
     const ScriptCallFrame &at(size_t) const;
     size_t size() const;
 
-    bool isEqual(ScriptCallStack*) const;
-
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
 
 private:

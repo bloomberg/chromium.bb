@@ -48,8 +48,6 @@ public:
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_column; }
 
-    bool isEqual(const ScriptCallFrame&) const;
-
     PassRefPtr<TypeBuilder::Console::CallFrame> buildInspectorObject() const;
 
 private:

@@ -57,10 +57,7 @@ public:
     ~ConsoleMessage();
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
-    void updateRepeatCountInConsole(InspectorFrontend::Console*);
-    void incrementCount();
     void setTimestamp(double timestamp) { m_timestamp = timestamp; }
-    bool isEqual(ConsoleMessage* msg) const;
 
     MessageType type() const { return m_type; }
 
@@ -80,7 +77,6 @@ private:
     String m_url;
     unsigned m_line;
     unsigned m_column;
-    unsigned m_repeatCount;
     String m_requestId;
     double m_timestamp;
 };

@@ -5,13 +5,6 @@
 
 function test()
 {
-    InspectorTest.assert = function(result, message)
-    {
-        if (!result) {
-            InspectorTest.log("FAIL: " + message);
-            InspectorTest.completeTest();
-        }
-    };
 
     var messages = [];
 
@@ -26,21 +19,11 @@ function test()
         InspectorTest.assert(payload.timestamp, "No timestamp found in message.");
 
         InspectorTest.assert(Math.abs(new Date().getTime() / 1000 - payload.timestamp) < 60, "Timestamp shouldn't differ very much from current time (one minute interval).");
-    }
-
-    function messageRepeatCountUpdated(data)
-    {
-        InspectorTest.assert(data.params.timestamp, "No timestamp found on repeat count update.");
-
-        var updatedTimestamp = data.params.timestamp;
-
-        InspectorTest.assert(updatedTimestamp >= messages[messages.length - 1].timestamp, "Timestamp shouldn't decrease over time.");
-
-        InspectorTest.completeTest();
+        if (messages.length === 3)
+            InspectorTest.completeTest();
     }
 
     InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
-    InspectorTest.eventHandler["Console.messageRepeatCountUpdated"] = messageRepeatCountUpdated;
     InspectorTest.sendCommand("Console.enable", {});
 
     InspectorTest.sendCommand("Runtime.evaluate", { expression: "console.log('testUnique'); for (var i = 0; i < 2; ++i) console.log('testDouble');" });

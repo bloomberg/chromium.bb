@@ -81,21 +81,4 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
     return true;
 }
 
-bool ScriptArguments::isEqual(ScriptArguments* other) const
-{
-    if (!other)
-        return false;
-
-    if (m_arguments.size() != other->m_arguments.size())
-        return false;
-    if (!globalState() && m_arguments.size())
-        return false;
-
-    for (size_t i = 0; i < m_arguments.size(); ++i) {
-        if (!m_arguments[i].isEqual(other->globalState(), other->m_arguments[i]))
-            return false;
-    }
-    return true;
-}
-
 } // namespace WebCore
