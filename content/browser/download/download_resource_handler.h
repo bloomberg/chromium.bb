@@ -32,6 +32,8 @@ class CONTENT_EXPORT DownloadResourceHandler
     : public ResourceHandler,
       public base::SupportsWeakPtr<DownloadResourceHandler> {
  public:
+  struct DownloadTabInfo;
+
   // Size of the buffer used between the DownloadResourceHandler and the
   // downstream receiver of its output.
   static const int kDownloadByteStreamSize;
@@ -108,6 +110,12 @@ class CONTENT_EXPORT DownloadResourceHandler
   // be called on the UI thread.
   DownloadUrlParameters::OnStartedCallback started_cb_;
   scoped_ptr<DownloadSaveInfo> save_info_;
+
+  // Stores information about the download that must be acquired on the UI
+  // thread before StartOnUIThread is called.
+  // Created on IO thread, but only accessed on UI thread. |tab_info_| holds
+  // the pointer until we pass it off to StartOnUIThread or DeleteSoon.
+  DownloadTabInfo* tab_info_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;       // From URLRequest.

@@ -24,6 +24,8 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -32,6 +34,12 @@
 #include "net/url_request/url_request_context.h"
 
 namespace content {
+
+struct DownloadResourceHandler::DownloadTabInfo {
+  GURL tab_url;
+  GURL tab_referrer_url;
+};
+
 namespace {
 
 void CallStartedCBOnUIThread(
@@ -49,6 +57,7 @@ void CallStartedCBOnUIThread(
 // DownloadResourceHandler members from the UI thread.
 static void StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
+    DownloadResourceHandler::DownloadTabInfo* tab_info,
     scoped_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -66,7 +75,25 @@ static void StartOnUIThread(
     return;
   }
 
+  info->tab_url = tab_info->tab_url;
+  info->tab_referrer_url = tab_info->tab_referrer_url;
+
   download_manager->StartDownload(info.Pass(), stream.Pass(), started_cb);
+}
+
+void InitializeDownloadTabInfoOnUIThread(
+    const DownloadRequestHandle& request_handle,
+    DownloadResourceHandler::DownloadTabInfo* tab_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContents* web_contents = request_handle.GetWebContents();
+  if (web_contents) {
+    NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+    if (entry) {
+      tab_info->tab_url = entry->GetURL();
+      tab_info->tab_referrer_url = entry->GetReferrer().url;
+    }
+  }
 }
 
 }  // namespace
@@ -88,6 +115,20 @@ DownloadResourceHandler::DownloadResourceHandler(
       was_deferred_(false),
       on_response_started_called_(false) {
   RecordDownloadCount(UNTHROTTLED_COUNT);
+
+  // Do UI thread initialization asap after DownloadResourceHandler creation
+  // since the tab could be navigated before StartOnUIThread gets called.
+  const ResourceRequestInfoImpl* request_info = GetRequestInfo();
+  tab_info_ = new DownloadTabInfo();
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&InitializeDownloadTabInfoOnUIThread,
+                 DownloadRequestHandle(AsWeakPtr(),
+                                       request_info->GetChildID(),
+                                       request_info->GetRouteID(),
+                                       request_info->GetRequestID()),
+                 tab_info_));
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,
@@ -198,11 +239,14 @@ bool DownloadResourceHandler::OnResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread,
                  base::Passed(&info),
+                 base::Owned(tab_info_),
                  base::Passed(&stream_reader),
                  // Pass to StartOnUIThread so that variable
                  // access is always on IO thread but function
                  // is called on UI thread.
                  started_cb_));
+  // Now owned by the task that was just posted.
+  tab_info_ = NULL;
   // Guaranteed to be called in StartOnUIThread
   started_cb_.Reset();
 
@@ -481,6 +525,11 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   // Remove output stream callback if a stream exists.
   if (stream_writer_)
     stream_writer_->RegisterCallback(base::Closure());
+
+  // tab_info_ must be destroyed on UI thread, since
+  // InitializeDownloadTabInfoOnUIThread might still be using it.
+  if (tab_info_)
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, tab_info_);
 
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
                       base::TimeTicks::Now() - download_start_time_);

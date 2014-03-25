@@ -18,6 +18,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -284,6 +286,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
       : item_(item),
         url_chain_(item->GetUrlChain()),
         referrer_url_(item->GetReferrerUrl()),
+        tab_url_(item->GetTabUrl()),
+        tab_referrer_url_(item->GetTabReferrerUrl()),
         zipped_executable_(false),
         callback_(callback),
         service_(service),
@@ -602,11 +606,51 @@ class DownloadProtectionService::CheckClientDownloadRequest
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(&CheckClientDownloadRequest::SendRequest, this));
+          base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
 #else
       PostFinishTask(SAFE, REASON_OS_NOT_SUPPORTED);
 #endif
     }
+  }
+
+  void GetTabRedirects() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!tab_url_.is_valid()) {
+      SendRequest();
+      return;
+    }
+
+    Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
+    HistoryService* history =
+        HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+    if (!history) {
+      SendRequest();
+      return;
+    }
+
+    history->QueryRedirectsTo(
+        tab_url_,
+        &request_consumer_,
+        base::Bind(&CheckClientDownloadRequest::OnGotTabRedirects,
+                   base::Unretained(this)));
+  }
+
+  void OnGotTabRedirects(HistoryService::Handle handle,
+                         GURL url,
+                         bool success,
+                         history::RedirectList* redirect_list) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(url, tab_url_);
+
+    if (success && redirect_list->size() > 0) {
+      for (history::RedirectList::reverse_iterator i = redirect_list->rbegin();
+           i != redirect_list->rend();
+           ++i) {
+        tab_redirects_.push_back(*i);
+      }
+    }
+
+    SendRequest();
   }
 
   void SendRequest() {
@@ -628,14 +672,36 @@ class DownloadProtectionService::CheckClientDownloadRequest
         // The last URL in the chain is the download URL.
         resource->set_type(ClientDownloadRequest::DOWNLOAD_URL);
         resource->set_referrer(item_->GetReferrerUrl().spec());
+        DVLOG(2) << "dl url " << resource->url();
         if (!item_->GetRemoteAddress().empty()) {
           resource->set_remote_ip(item_->GetRemoteAddress());
+          DVLOG(2) << "  dl url remote addr: " << resource->remote_ip();
         }
+        DVLOG(2) << "dl referrer " << resource->referrer();
       } else {
+        DVLOG(2) << "dl redirect " << i << " " << resource->url();
         resource->set_type(ClientDownloadRequest::DOWNLOAD_REDIRECT);
       }
       // TODO(noelutz): fill out the remote IP addresses.
     }
+    // TODO(mattm): fill out the remote IP addresses for tab resources.
+    for (size_t i = 0; i < tab_redirects_.size(); ++i) {
+      ClientDownloadRequest::Resource* resource = request.add_resources();
+      DVLOG(2) << "tab redirect " << i << " " << tab_redirects_[i].spec();
+      resource->set_url(tab_redirects_[i].spec());
+      resource->set_type(ClientDownloadRequest::TAB_REDIRECT);
+    }
+    if (tab_url_.is_valid()) {
+      ClientDownloadRequest::Resource* resource = request.add_resources();
+      resource->set_url(tab_url_.spec());
+      DVLOG(2) << "tab url " << resource->url();
+      resource->set_type(ClientDownloadRequest::TAB_URL);
+      if (tab_referrer_url_.is_valid()) {
+        resource->set_referrer(tab_referrer_url_.spec());
+        DVLOG(2) << "tab referrer " << resource->referrer();
+      }
+    }
+
     request.set_user_initiated(item_->HasUserGesture());
     request.set_file_basename(
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
@@ -747,6 +813,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Copies of data from |item_| for access on other threads.
   std::vector<GURL> url_chain_;
   GURL referrer_url_;
+  // URL chain of redirects leading to (but not including) |tab_url|.
+  std::vector<GURL> tab_redirects_;
+  // URL and referrer of the window the download was started from.
+  GURL tab_url_;
+  GURL tab_referrer_url_;
 
   bool zipped_executable_;
   ClientDownloadRequest_SignatureInfo signature_info_;
@@ -762,6 +833,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
   std::string client_download_request_data_;
+  CancelableRequestConsumer request_consumer_;  // For HistoryService lookup.
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
 

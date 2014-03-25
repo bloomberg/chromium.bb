@@ -181,6 +181,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual const std::vector<GURL>& GetUrlChain() const = 0;
   virtual const GURL& GetOriginalUrl() const = 0;
   virtual const GURL& GetReferrerUrl() const = 0;
+  virtual const GURL& GetTabUrl() const = 0;
+  virtual const GURL& GetTabReferrerUrl() const = 0;
   virtual std::string GetSuggestedFilename() const = 0;
   virtual std::string GetContentDisposition() const = 0;
   virtual std::string GetMimeType() const = 0;

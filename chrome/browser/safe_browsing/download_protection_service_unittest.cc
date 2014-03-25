@@ -20,11 +20,14 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -106,6 +109,35 @@ class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBinaryFeatureExtractor);
+};
+
+class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
+ public:
+  explicit TestURLFetcherWatcher(net::TestURLFetcherFactory* factory)
+      : factory_(factory), fetcher_id_(-1) {
+    factory_->SetDelegateForTests(this);
+  }
+  ~TestURLFetcherWatcher() {
+    factory_->SetDelegateForTests(NULL);
+  }
+
+  // TestURLFetcherDelegateForTests impl:
+  virtual void OnRequestStart(int fetcher_id) OVERRIDE {
+    fetcher_id_ = fetcher_id;
+    run_loop_.Quit();
+  }
+  virtual void OnChunkUpload(int fetcher_id) OVERRIDE {}
+  virtual void OnRequestEnd(int fetcher_id) OVERRIDE {}
+
+  int WaitForRequest() {
+    run_loop_.Run();
+    return fetcher_id_;
+  }
+
+ private:
+  net::TestURLFetcherFactory* factory_;
+  int fetcher_id_;
+  base::RunLoop run_loop_;
 };
 }  // namespace
 
@@ -333,6 +365,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   download_service_->CheckClientDownload(
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -348,6 +383,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   download_service_->CheckClientDownload(
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -379,6 +417,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -466,6 +507,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -508,6 +552,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -653,6 +700,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -703,6 +753,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -784,6 +837,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -830,6 +886,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_crx));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -869,6 +928,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -946,6 +1008,9 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -994,6 +1059,182 @@ TEST_F(DownloadProtectionServiceTest,
                  base::Unretained(this), fetcher));
   MessageLoop::current()->Run();
 #endif
+}
+
+// Similar to above, but with tab history.
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadValidateRequestTabHistory) {
+  net::TestURLFetcherFactory factory;
+
+  base::ScopedTempDir profile_dir;
+  ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
+  TestingProfile profile(profile_dir.path());
+  ASSERT_TRUE(
+      profile.CreateHistoryService(true /* delete_file */, false /* no_db */));
+
+  base::FilePath tmp_path(FILE_PATH_LITERAL("bla.tmp"));
+  base::FilePath final_path(FILE_PATH_LITERAL("bla.exe"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("http://www.google.com/"));
+  url_chain.push_back(GURL("http://www.google.com/bla.exe"));
+  GURL referrer("http://www.google.com/");
+  GURL tab_url("http://tab.com/final");
+  GURL tab_referrer("http://tab.com/referrer");
+  std::string hash = "hash";
+  std::string remote_address = "10.11.12.13";
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, AddObserver(_)).Times(2);
+  EXPECT_CALL(item, RemoveObserver(_)).Times(2);
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(tab_url));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(tab_referrer));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(remote_address));
+  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(&profile));
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
+      .WillRepeatedly(SetCertificateContents("dummy cert data"));
+
+  // First test with no history match for the tab URL.
+  {
+    TestURLFetcherWatcher fetcher_watcher(&factory);
+    download_service_->CheckClientDownload(
+        &item,
+        base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                   base::Unretained(this)));
+
+#if !defined(OS_WIN)
+    // SendRequest is not called.  Wait for FinishRequest to call our callback.
+    MessageLoop::current()->Run();
+    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+    EXPECT_EQ(NULL, fetcher);
+#else
+    EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
+    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    ClientDownloadRequest request;
+    EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
+    EXPECT_EQ("http://www.google.com/bla.exe", request.url());
+    EXPECT_EQ(hash, request.digests().sha256());
+    EXPECT_EQ(item.GetReceivedBytes(), request.length());
+    EXPECT_EQ(item.HasUserGesture(), request.user_initiated());
+    EXPECT_TRUE(RequestContainsServerIp(request, remote_address));
+    EXPECT_EQ(3, request.resources_size());
+    EXPECT_TRUE(
+        RequestContainsResource(request,
+                                ClientDownloadRequest::DOWNLOAD_REDIRECT,
+                                "http://www.google.com/",
+                                ""));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::DOWNLOAD_URL,
+                                        "http://www.google.com/bla.exe",
+                                        referrer.spec()));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::TAB_URL,
+                                        tab_url.spec(),
+                                        tab_referrer.spec()));
+    EXPECT_TRUE(request.has_signature());
+    ASSERT_EQ(1, request.signature().certificate_chain_size());
+    const ClientDownloadRequest_CertificateChain& chain =
+        request.signature().certificate_chain(0);
+    ASSERT_EQ(1, chain.element_size());
+    EXPECT_EQ("dummy cert data", chain.element(0).certificate());
+
+    // Simulate the request finishing.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                   base::Unretained(this),
+                   fetcher));
+    MessageLoop::current()->Run();
+#endif
+  }
+
+  // Now try with a history match.
+  {
+    history::RedirectList redirects;
+    redirects.push_back(GURL("http://tab.com/ref1"));
+    redirects.push_back(GURL("http://tab.com/ref2"));
+    redirects.push_back(tab_url);
+    HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
+        ->AddPage(tab_url,
+                  base::Time::Now(),
+                  static_cast<void*>(this),
+                  0,
+                  GURL(),
+                  redirects,
+                  content::PAGE_TRANSITION_TYPED,
+                  history::SOURCE_BROWSED,
+                  false);
+
+    TestURLFetcherWatcher fetcher_watcher(&factory);
+    download_service_->CheckClientDownload(
+        &item,
+        base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                   base::Unretained(this)));
+#if !defined(OS_WIN)
+    // SendRequest is not called.  Wait for FinishRequest to call our callback.
+    MessageLoop::current()->Run();
+    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+    EXPECT_EQ(NULL, fetcher);
+#else
+    EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
+    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    ClientDownloadRequest request;
+    EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
+    EXPECT_EQ("http://www.google.com/bla.exe", request.url());
+    EXPECT_EQ(hash, request.digests().sha256());
+    EXPECT_EQ(item.GetReceivedBytes(), request.length());
+    EXPECT_EQ(item.HasUserGesture(), request.user_initiated());
+    EXPECT_TRUE(RequestContainsServerIp(request, remote_address));
+    EXPECT_EQ(5, request.resources_size());
+    EXPECT_TRUE(
+        RequestContainsResource(request,
+                                ClientDownloadRequest::DOWNLOAD_REDIRECT,
+                                "http://www.google.com/",
+                                ""));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::DOWNLOAD_URL,
+                                        "http://www.google.com/bla.exe",
+                                        referrer.spec()));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::TAB_REDIRECT,
+                                        "http://tab.com/ref1",
+                                        ""));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::TAB_REDIRECT,
+                                        "http://tab.com/ref2",
+                                        ""));
+    EXPECT_TRUE(RequestContainsResource(request,
+                                        ClientDownloadRequest::TAB_URL,
+                                        tab_url.spec(),
+                                        tab_referrer.spec()));
+    EXPECT_TRUE(request.has_signature());
+    ASSERT_EQ(1, request.signature().certificate_chain_size());
+    const ClientDownloadRequest_CertificateChain& chain =
+        request.signature().certificate_chain(0);
+    ASSERT_EQ(1, chain.element_size());
+    EXPECT_EQ("dummy cert data", chain.element(0).certificate());
+
+    // Simulate the request finishing.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
+                   base::Unretained(this),
+                   fetcher));
+    MessageLoop::current()->Run();
+#endif
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
@@ -1078,6 +1319,9 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
@@ -1119,6 +1363,9 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));

@@ -175,6 +175,8 @@ DownloadItemImpl::DownloadItemImpl(
               TARGET_DISPOSITION_PROMPT : TARGET_DISPOSITION_OVERWRITE),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
+      tab_url_(info.tab_url),
+      tab_referrer_url_(info.tab_referrer_url),
       suggested_filename_(base::UTF16ToUTF8(info.save_info->suggested_name)),
       forced_file_path_(info.save_info->file_path),
       transition_type_(info.transition_type),
@@ -548,6 +550,14 @@ const GURL& DownloadItemImpl::GetOriginalUrl() const {
 
 const GURL& DownloadItemImpl::GetReferrerUrl() const {
   return referrer_url_;
+}
+
+const GURL& DownloadItemImpl::GetTabUrl() const {
+  return tab_url_;
+}
+
+const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
+  return tab_referrer_url_;
 }
 
 std::string DownloadItemImpl::GetSuggestedFilename() const {
