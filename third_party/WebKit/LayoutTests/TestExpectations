@@ -961,3 +961,5 @@ crbug.com/355459 [ Release ] inspector/elements/edit-dom-actions-shadow.html [ P
 crbug.com/355463 [ Win Debug ] css3/flexbox/repaint.html [ Pass Failure ]
 
 crbug.com/355489 media/activation-behavior.html [ Pass Failure ]
+
+crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
