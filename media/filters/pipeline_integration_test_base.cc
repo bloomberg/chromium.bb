@@ -17,6 +17,7 @@
 #include "media/filters/opus_audio_decoder.h"
 #include "media/filters/vpx_video_decoder.h"
 
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
 
@@ -102,16 +103,16 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         PipelineStatus expected_status) {
-  EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
-      .Times(AtMost(1));
-  EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
-      .Times(AtMost(1));
+  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
   pipeline_->Start(
       CreateFilterCollection(file_path, NULL),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
-      base::Bind(&PipelineIntegrationTestBase::OnBufferingState,
+      base::Bind(&PipelineIntegrationTestBase::OnMetadata,
+                 base::Unretained(this)),
+      base::Bind(&PipelineIntegrationTestBase::OnPrerollCompleted,
                  base::Unretained(this)),
       base::Closure());
   message_loop_.Run();
@@ -135,17 +136,17 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         Decryptor* decryptor) {
-  EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
-      .Times(AtMost(1));
-  EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
-      .Times(AtMost(1));
+  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
   pipeline_->Start(
       CreateFilterCollection(file_path, decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                  base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnBufferingState,
+      base::Bind(&PipelineIntegrationTestBase::OnMetadata,
+                 base::Unretained(this)),
+      base::Bind(&PipelineIntegrationTestBase::OnPrerollCompleted,
                  base::Unretained(this)),
       base::Closure());
   message_loop_.Run();
@@ -163,7 +164,7 @@ void PipelineIntegrationTestBase::Pause() {
 bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
   ended_ = false;
 
-  EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted));
+  EXPECT_CALL(*this, OnPrerollCompleted());
   pipeline_->Seek(seek_time, QuitOnStatusCB(PIPELINE_OK));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
