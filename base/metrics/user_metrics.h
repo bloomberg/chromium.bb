@@ -30,9 +30,10 @@ namespace base {
 // name from the hash later on.
 //
 // Once a new recorded action is added, run
-// tools/metrics/actions/extract_actions.py --hash
-// to generate a new mapping of [action hashes -> metric names] and send it
-// out for review to be updated.
+//   tools/metrics/actions/extract_actions.py
+// to add the metric to actions.xml, then update the <owner>s and <description>
+// sections. Make sure to include the actions.xml file when you upload your code
+// for review!
 //
 // For more complicated situations (like when there are many different
 // possible actions), see RecordComputedAction.
