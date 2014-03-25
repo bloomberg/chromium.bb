@@ -279,12 +279,18 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints, int effects,
     MediaStreamType type) {
   DCHECK(!audio_processing_);
+
+  RTCMediaConstraints native_constraints(constraints);
+
+  // Audio mirroring can be enabled even though audio processing is otherwise
+  // disabled.
+  audio_mirroring_ = GetPropertyFromConstraints(
+      &native_constraints, webrtc::MediaConstraintsInterface::kAudioMirroring);
+
   if (!IsAudioTrackProcessingEnabled()) {
     RecordProcessingState(AUDIO_PROCESSING_IN_WEBRTC);
     return;
   }
-
-  RTCMediaConstraints native_constraints(constraints);
 
   // Only apply the fixed constraints for gUM of MEDIA_DEVICE_AUDIO_CAPTURE.
   DCHECK(IsAudioMediaType(type));
@@ -327,9 +333,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         MediaConstraintsInterface::kExperimentalNoiseSuppression);
   const bool enable_high_pass_filter = GetPropertyFromConstraints(
       &native_constraints, MediaConstraintsInterface::kHighpassFilter);
-
-  audio_mirroring_ = GetPropertyFromConstraints(
-      &native_constraints, webrtc::MediaConstraintsInterface::kAudioMirroring);
 
   // Return immediately if no audio processing component is enabled.
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
