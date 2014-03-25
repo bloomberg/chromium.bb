@@ -9,7 +9,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/common/chrome_version_info.h"  // TODO(finnur): Remove.
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -448,8 +447,7 @@ bool Command::Parse(const base::DictionaryValue* command,
 
   // Check if this is a global or a regular shortcut.
   bool global = false;
-  if (FeatureSwitch::global_commands()->IsEnabled() &&
-      chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
+  if (FeatureSwitch::global_commands()->IsEnabled())
     command->GetBoolean(keys::kGlobal, &global);
 
   // Normalize the suggestions.
@@ -542,13 +540,8 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
   extension_data->SetBoolean("global", global());
   extension_data->SetBoolean("extension_action", extension_action);
 
-  if (FeatureSwitch::global_commands()->IsEnabled()) {
-    // TODO(finnur): This is to make sure we don't show the config UI beyond
-    // dev and will be removed when we launch.
-    static bool stable_or_beta =
-        chrome::VersionInfo::GetChannel() >= chrome::VersionInfo::CHANNEL_BETA;
-    extension_data->SetBoolean("scope_ui_visible", !stable_or_beta);
-  }
+  if (FeatureSwitch::global_commands()->IsEnabled())
+    extension_data->SetBoolean("scope_ui_visible", true);
 
   return extension_data;
 }

@@ -25,7 +25,11 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         global_commands(
             switches::kGlobalCommands,
+#if defined(OS_CHROMEOS)
             FeatureSwitch::DEFAULT_DISABLED),
+#else
+            FeatureSwitch::DEFAULT_ENABLED),
+#endif
         prompt_for_external_extensions(
             NULL,
 #if defined(OS_WIN)
