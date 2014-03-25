@@ -659,7 +659,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
     if (update->newAnimations().isEmpty() && update->cancelledAnimationAnimationPlayers().isEmpty()) {
-        HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority));
+        WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority));
         update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
@@ -670,7 +670,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
             newAnimations.append(animationsIter->get());
     }
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
@@ -679,7 +679,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForTransitions;
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForTransitions;
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
         activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority);
     } else {
@@ -702,7 +702,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
 
     // Properties being animated by animations don't get values from transitions applied.
     if (!update->activeInterpolationsForAnimations().isEmpty() && !activeInterpolationsForTransitions.isEmpty()) {
-        for (HashMap<CSSPropertyID, RefPtr<Interpolation> >::const_iterator iter = update->activeInterpolationsForAnimations().begin(); iter != update->activeInterpolationsForAnimations().end(); ++iter)
+        for (WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >::const_iterator iter = update->activeInterpolationsForAnimations().begin(); iter != update->activeInterpolationsForAnimations().end(); ++iter)
             activeInterpolationsForTransitions.remove(iter->key);
     }
     update->adoptActiveInterpolationsForTransitions(activeInterpolationsForTransitions);

@@ -53,7 +53,7 @@ public:
     bool isEmpty() const { return m_activeAnimations.isEmpty(); }
     bool affects(CSSPropertyID) const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolations(const AnimationStack*, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority);
+    static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolations(const AnimationStack*, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority);
 
 private:
     Vector<Animation*> m_activeAnimations;

@@ -117,7 +117,7 @@ PropertySet KeyframeEffectModel::properties() const
     return result;
 }
 
-PassOwnPtr<Vector<RefPtr<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction, double iterationDuration) const
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction, double iterationDuration) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));

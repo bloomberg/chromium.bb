@@ -20,21 +20,21 @@ protected:
 
     double interpolateNumbers(double a, double b, double progress)
     {
-        RefPtr<Interpolation> i = Interpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
+        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
         i->interpolate(0, progress);
         return toInterpolableNumber(interpolationValue(*i.get()))->value();
     }
 
     bool interpolateBools(bool a, bool b, double progress)
     {
-        RefPtr<Interpolation> i = Interpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
+        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
         i->interpolate(0, progress);
         return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
 
-    PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
+    PassRefPtrWillBeRawPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
-        RefPtr<Interpolation> i = Interpolation::create(listA, listB);
+        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(listA, listB);
         i->interpolate(0, progress);
         return i;
     }
@@ -72,7 +72,7 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
 
-    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
+    RefPtrWillBeRawPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(30, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(-30.6f, toInterpolableNumber(outList->get(1))->value());
@@ -95,7 +95,7 @@ TEST_F(AnimationInterpolableValueTest, NestedList)
     listB->set(1, subListB.release());
     listB->set(2, InterpolableBool::create(true));
 
-    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
+    RefPtrWillBeRawPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(50, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(75, toInterpolableNumber(toInterpolableList(outList->get(1))->get(0))->value());

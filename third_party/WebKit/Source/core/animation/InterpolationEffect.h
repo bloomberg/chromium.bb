@@ -13,45 +13,50 @@
 namespace WebCore {
 
 class InterpolationEffect : public RefCounted<InterpolationEffect> {
-
 public:
     static PassRefPtr<InterpolationEffect> create() { return adoptRef(new InterpolationEffect()); }
 
-    PassOwnPtr<Vector<RefPtr<Interpolation> > > getActiveInterpolations(double fraction, double iterationDuration) const;
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > getActiveInterpolations(double fraction, double iterationDuration) const;
 
-    void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+    void addInterpolation(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {
         m_interpolations.append(InterpolationRecord::create(interpolation, easing, start, end, applyFrom, applyTo));
     }
 
 private:
     InterpolationEffect()
-    { }
+    {
+    }
 
-    class InterpolationRecord {
+    class InterpolationRecord : public NoBaseWillBeGarbageCollected<InterpolationRecord> {
     public:
-        RefPtr<Interpolation> m_interpolation;
+        RefPtrWillBeMember<Interpolation> m_interpolation;
         RefPtr<TimingFunction> m_easing;
         double m_start;
         double m_end;
         double m_applyFrom;
         double m_applyTo;
-        static PassOwnPtr<InterpolationRecord> create(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+
+        static PassOwnPtrWillBeRawPtr<InterpolationRecord> create(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
         {
-            return adoptPtr(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
+            return adoptPtrWillBeNoop(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
         }
+
+        void trace(Visitor*);
+
     private:
-        InterpolationRecord(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
+        InterpolationRecord(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
             : m_interpolation(interpolation)
             , m_easing(easing)
             , m_start(start)
             , m_end(end)
             , m_applyFrom(applyFrom)
             , m_applyTo(applyTo)
-        { }
+        {
+        }
     };
 
-    Vector<OwnPtr<InterpolationRecord> > m_interpolations;
+    WillBePersistentHeapVector<OwnPtrWillBeMember<InterpolationRecord> > m_interpolations;
 };
 
 }

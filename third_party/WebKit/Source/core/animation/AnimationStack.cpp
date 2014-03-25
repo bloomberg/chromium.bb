@@ -38,10 +38,10 @@ namespace WebCore {
 
 namespace {
 
-void copyToActiveInterpolationMap(const Vector<RefPtr<WebCore::Interpolation> >& source, HashMap<CSSPropertyID, RefPtr<WebCore::Interpolation> >& target)
+void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<WebCore::Interpolation> >& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<WebCore::Interpolation> >& target)
 {
-    for (Vector<RefPtr<WebCore::Interpolation> >::const_iterator iter = source.begin(); iter != source.end(); ++iter) {
-        RefPtr<WebCore::Interpolation> interpolation = *iter;
+    for (WillBeHeapVector<RefPtrWillBeMember<WebCore::Interpolation> >::const_iterator iter = source.begin(); iter != source.end(); ++iter) {
+        RefPtrWillBeRawPtr<WebCore::Interpolation> interpolation = *iter;
         WebCore::StyleInterpolation *styleInterpolation = toStyleInterpolation(interpolation.get());
         target.set(styleInterpolation->id(), styleInterpolation);
     }
@@ -67,9 +67,9 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-HashMap<CSSPropertyID, RefPtr<Interpolation> > AnimationStack::activeInterpolations(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority)
+WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationStack::activeInterpolations(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority)
 {
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > result;
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result;
 
     if (animationStack) {
         const Vector<Animation*>& animations = animationStack->m_activeAnimations;
@@ -85,7 +85,7 @@ HashMap<CSSPropertyID, RefPtr<Interpolation> > AnimationStack::activeInterpolati
 
     if (newAnimations) {
         for (size_t i = 0; i < newAnimations->size(); ++i) {
-            OwnPtr<Vector<RefPtr<Interpolation> > > sample = newAnimations->at(i)->sample();
+            OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = newAnimations->at(i)->sample();
             if (sample) {
                 copyToActiveInterpolationMap(*sample, result);
             }

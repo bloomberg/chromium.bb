@@ -1083,8 +1083,8 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     if (!state.animationUpdate())
         return;
 
-    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
-    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
     applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForTransitions);
     applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForAnimations);
@@ -1102,11 +1102,11 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolations)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolations)
 {
     ASSERT(pass != AnimationProperties);
 
-    for (HashMap<CSSPropertyID, RefPtr<Interpolation> >::const_iterator iter = activeInterpolations.begin(); iter != activeInterpolations.end(); ++iter) {
+    for (WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >::const_iterator iter = activeInterpolations.begin(); iter != activeInterpolations.end(); ++iter) {
         CSSPropertyID property = iter->key;
         if (!isPropertyForPass<pass>(property))
             continue;

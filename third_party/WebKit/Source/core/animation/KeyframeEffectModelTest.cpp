@@ -66,13 +66,13 @@ KeyframeEffectModel::KeyframeVector keyframesAtZeroAndOne(PassRefPtrWillBeRawPtr
     return keyframes;
 }
 
-void expectProperty(CSSPropertyID property, PassRefPtr<Interpolation> interpolationValue)
+void expectProperty(CSSPropertyID property, PassRefPtrWillBeRawPtr<Interpolation> interpolationValue)
 {
     LegacyStyleInterpolation* interpolation = toLegacyStyleInterpolation(interpolationValue.get());
     ASSERT_EQ(property, interpolation->id());
 }
 
-void expectDoubleValue(double expectedValue, PassRefPtr<Interpolation> interpolationValue)
+void expectDoubleValue(double expectedValue, PassRefPtrWillBeRawPtr<Interpolation> interpolationValue)
 {
     LegacyStyleInterpolation* interpolation = toLegacyStyleInterpolation(interpolationValue.get());
     RefPtrWillBeRawPtr<AnimatableValue> value = interpolation->currentValue();
@@ -88,7 +88,7 @@ void expectDoubleValue(double expectedValue, PassRefPtr<Interpolation> interpola
     EXPECT_FLOAT_EQ(static_cast<float>(expectedValue), actualValue);
 }
 
-Interpolation* findValue(Vector<RefPtr<Interpolation> >& values, CSSPropertyID id)
+Interpolation* findValue(WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& values, CSSPropertyID id)
 {
     for (size_t i = 0; i < values.size(); ++i) {
         LegacyStyleInterpolation* value = toLegacyStyleInterpolation(values.at(i).get());
@@ -103,7 +103,7 @@ TEST(AnimationKeyframeEffectModel, BasicOperation)
 {
     KeyframeEffectModel::KeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
     RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
-    OwnPtr<Vector<RefPtr<Interpolation> > > values = effect->sample(0, 0.6, duration);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > values = effect->sample(0, 0.6, duration);
     ASSERT_EQ(1UL, values->size());
     expectProperty(CSSPropertyLeft, values->at(0));
     expectDoubleValue(5.0, values->at(0));
@@ -343,7 +343,7 @@ TEST(AnimationKeyframeEffectModel, MultipleProperties)
     keyframes[1]->setPropertyValue(CSSPropertyRight, unknownAnimatableValue(6.0).get());
 
     RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
-    OwnPtr<Vector<RefPtr<Interpolation> > > values = effect->sample(0, 0.6, duration);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > values = effect->sample(0, 0.6, duration);
     EXPECT_EQ(2UL, values->size());
     Interpolation* leftValue = findValue(*values.get(), CSSPropertyLeft);
     ASSERT_TRUE(leftValue);
@@ -360,7 +360,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue)
     keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
     keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
     RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
-    OwnPtr<Vector<RefPtr<Interpolation> > > values = effect->sample(0, 0.6, duration);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > values = effect->sample(0, 0.6, duration);
     expectDoubleValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, values->at(0));
     expectDoubleValue((9.0 + 3.0) * 0.4 + (9.0 + 5.0) * 0.6, values->at(0));
 }

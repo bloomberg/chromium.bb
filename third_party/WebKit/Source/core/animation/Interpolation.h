@@ -7,17 +7,18 @@
 
 #include "CSSPropertyNames.h"
 #include "core/animation/InterpolableValue.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class StyleResolverState;
 
-class Interpolation : public RefCounted<Interpolation> {
+class Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
 public:
-    static PassRefPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
+    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     {
-        return adoptRef(new Interpolation(start, end));
+        return adoptRefWillBeNoop(new Interpolation(start, end));
     }
 
     void interpolate(int iteration, double fraction) const;
@@ -25,8 +26,9 @@ public:
     virtual bool isStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
 
-    virtual ~Interpolation()
-    { }
+    virtual ~Interpolation() { }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     const OwnPtr<InterpolableValue> m_start;
@@ -60,20 +62,23 @@ public:
 
     CSSPropertyID id() const { return m_id; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     CSSPropertyID m_id;
 
     StyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : Interpolation(start, end)
         , m_id(id)
-    { }
+    {
+    }
 };
 
 class LegacyStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtr<LegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<AnimatableValue> start, PassRefPtrWillBeRawPtr<AnimatableValue> end, CSSPropertyID id)
+    static PassRefPtrWillBeRawPtr<LegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<AnimatableValue> start, PassRefPtrWillBeRawPtr<AnimatableValue> end, CSSPropertyID id)
     {
-        return adoptRef(new LegacyStyleInterpolation(InterpolableAnimatableValue::create(start), InterpolableAnimatableValue::create(end), id));
+        return adoptRefWillBeNoop(new LegacyStyleInterpolation(InterpolableAnimatableValue::create(start), InterpolableAnimatableValue::create(end), id));
     }
 
     virtual void apply(StyleResolverState&) const;
@@ -85,10 +90,13 @@ public:
         return value->value();
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     LegacyStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
-    { }
+    {
+    }
 };
 
 DEFINE_TYPE_CASTS(StyleInterpolation, Interpolation, value, value->isStyleInterpolation(), value.isStyleInterpolation());

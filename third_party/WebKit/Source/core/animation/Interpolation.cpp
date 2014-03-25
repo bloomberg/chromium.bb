@@ -54,10 +54,20 @@ void Interpolation::interpolate(int iteration, double fraction) const
     }
 }
 
+void StyleInterpolation::trace(Visitor* visitor)
+{
+    Interpolation::trace(visitor);
+}
+
 void LegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
     AnimatableValue* value = currentValue();
     AnimatedStyleBuilder::applyProperty(m_id, state, value);
+}
+
+void LegacyStyleInterpolation::trace(Visitor* visitor)
+{
+    StyleInterpolation::trace(visitor);
 }
 
 }

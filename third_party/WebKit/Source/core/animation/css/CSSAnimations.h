@@ -113,11 +113,11 @@ public:
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
-    void adoptActiveInterpolationsForAnimations(HashMap<CSSPropertyID, RefPtr<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
-    void adoptActiveInterpolationsForTransitions(HashMap<CSSPropertyID, RefPtr<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
-    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
-    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
-    HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
+    void adoptActiveInterpolationsForAnimations(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
+    void adoptActiveInterpolationsForTransitions(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
 
     bool isEmpty() const
     {
@@ -143,8 +143,8 @@ private:
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
 
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_activeInterpolationsForAnimations;
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_activeInterpolationsForTransitions;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForAnimations;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
 };
 
 class CSSAnimations FINAL {
@@ -189,7 +189,7 @@ private:
     TransitionMap m_transitions;
     OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
 
-    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_previousActiveInterpolationsForAnimations;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_previousActiveInterpolationsForAnimations;
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);

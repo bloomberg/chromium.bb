@@ -22,7 +22,7 @@ protected:
         return interpolation.getCachedValueForTesting();
     }
 
-    double getInterpolableNumber(PassRefPtr<Interpolation> value)
+    double getInterpolableNumber(PassRefPtrWillBeRawPtr<Interpolation> value)
     {
         return toInterpolableNumber(interpolationValue(*value.get()))->value();
     }
@@ -34,7 +34,7 @@ TEST_F(AnimationInterpolationEffectTest, SingleInterpolation)
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(10)),
         RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
-    OwnPtr<Vector<RefPtr<Interpolation> > > activeInterpolations = interpolationEffect->getActiveInterpolations(-2, duration);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > activeInterpolations = interpolationEffect->getActiveInterpolations(-2, duration);
     EXPECT_EQ(0ul, activeInterpolations->size());
 
     activeInterpolations = interpolationEffect->getActiveInterpolations(-0.5, duration);
@@ -63,7 +63,7 @@ TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(1), InterpolableNumber::create(6)),
         CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), 0.5, 1.5, 0.5, 1.5);
 
-    OwnPtr<Vector<RefPtr<Interpolation> > > activeInterpolations = interpolationEffect->getActiveInterpolations(-0.5, duration);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > activeInterpolations = interpolationEffect->getActiveInterpolations(-0.5, duration);
     EXPECT_EQ(0ul, activeInterpolations->size());
 
     activeInterpolations = interpolationEffect->getActiveInterpolations(0, duration);

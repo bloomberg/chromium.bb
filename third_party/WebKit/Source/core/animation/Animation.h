@@ -72,7 +72,7 @@ public:
 
     virtual bool isAnimation() const OVERRIDE { return true; }
 
-    const Vector<RefPtr<Interpolation> >& activeInterpolations() const
+    const WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& activeInterpolations() const
     {
         ASSERT(m_activeInterpolations);
         return *m_activeInterpolations;
@@ -108,7 +108,7 @@ private:
     RefPtrWillBePersistent<AnimationEffect> m_effect;
 
     bool m_activeInAnimationStack;
-    OwnPtr<Vector<RefPtr<Interpolation> > > m_activeInterpolations;
+    OwnPtrWillBePersistent<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > m_activeInterpolations;
 
     Priority m_priority;
 
