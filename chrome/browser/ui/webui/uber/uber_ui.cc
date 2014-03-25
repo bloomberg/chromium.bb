@@ -156,6 +156,12 @@ void UberUI::RegisterSubpage(const std::string& page_url,
   sub_uis_[page_url] = webui;
 }
 
+content::WebUI* UberUI::GetSubpage(const std::string& page_url) {
+  if (!sub_uis_.count(page_url))
+    return NULL;
+  return sub_uis_[page_url];
+}
+
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {

@@ -182,6 +182,9 @@ void CoreOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("coreOptionsInitialize",
       base::Bind(&CoreOptionsHandler::HandleInitialize,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onFinishedLoadingOptions",
+      base::Bind(&CoreOptionsHandler::OnFinishedLoading,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("fetchPrefs",
       base::Bind(&CoreOptionsHandler::HandleFetchPrefs,
                  base::Unretained(this)));
@@ -220,6 +223,11 @@ void CoreOptionsHandler::RegisterMessages() {
 void CoreOptionsHandler::HandleInitialize(const base::ListValue* args) {
   DCHECK(handlers_host_);
   handlers_host_->InitializeHandlers();
+}
+
+void CoreOptionsHandler::OnFinishedLoading(const base::ListValue* args) {
+  DCHECK(handlers_host_);
+  handlers_host_->OnFinishedLoading();
 }
 
 base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {

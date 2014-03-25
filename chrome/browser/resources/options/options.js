@@ -249,6 +249,7 @@ function load() {
 
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');
+    chrome.send('onFinishedLoadingOptions');
   });
 }
 

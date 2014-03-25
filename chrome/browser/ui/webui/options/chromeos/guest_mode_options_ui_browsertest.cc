@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace {
@@ -17,11 +19,15 @@ class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    chromeos::UserManager::kGuestUserName);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                    TestingProfile::kTestUserProfileDir);
     command_line->AppendSwitch(switches::kIncognito);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, DISABLED_LoadOptionsByURL) {
+IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();

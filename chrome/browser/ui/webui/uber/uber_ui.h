@@ -22,6 +22,8 @@ class UberUI : public content::WebUIController {
   explicit UberUI(content::WebUI* web_ui);
   virtual ~UberUI();
 
+  content::WebUI* GetSubpage(const std::string& page_url);
+
   // WebUIController implementation.
   virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
                                           const std::string& message,

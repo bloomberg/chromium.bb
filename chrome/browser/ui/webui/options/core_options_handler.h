@@ -116,6 +116,11 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // setup can be performed before the page is shown.
   void HandleInitialize(const base::ListValue* args);
 
+  // Callback for the "onFinishedLoadingOptions" message. This message is sent
+  // when the load() handler for the options frame, along with all asynchronous
+  // calls it has spawned, have finished running.
+  void OnFinishedLoading(const base::ListValue* args);
+
   // Callback for the "fetchPrefs" message. This message accepts the list of
   // preference names passed as the |args| parameter (ListValue). It passes
   // results dictionary of preference values by calling prefsFetched() JS method

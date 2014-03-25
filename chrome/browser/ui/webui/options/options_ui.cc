@@ -360,6 +360,11 @@ OptionsUI::~OptionsUI() {
     handlers_[i]->Uninitialize();
 }
 
+scoped_ptr<OptionsUI::OnFinishedLoadingCallbackList::Subscription>
+OptionsUI::RegisterOnFinishedLoadingCallback(const base::Closure& callback) {
+  return on_finished_loading_callbacks_.Add(callback);
+}
+
 // static
 void OptionsUI::ProcessAutocompleteSuggestions(
     const AutocompleteResult& result,
@@ -430,6 +435,10 @@ void OptionsUI::InitializeHandlers() {
 
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.notifyInitializationComplete");
+}
+
+void OptionsUI::OnFinishedLoading() {
+  on_finished_loading_callbacks_.Notify();
 }
 
 void OptionsUI::AddOptionsPageUIHandler(
