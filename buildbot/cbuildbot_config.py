@@ -1701,13 +1701,6 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
-internal_paladin.add_config('gizmo-paladin',
-  brillo_non_testable,
-  boards=['gizmo'],
-  important=False,
-  paladin_builder_name='gizmo paladin',
-)
-
 
 ### Arm paladins (CQ builders).
 
@@ -1743,6 +1736,13 @@ internal_brillo_paladin = internal_paladin.derive(brillo)
 internal_brillo_paladin.add_config('duck-paladin',
   boards=['duck'],
   paladin_builder_name='duck paladin',
+  trybot_list=True,
+)
+
+internal_brillo_paladin.add_config('gizmo-paladin',
+  boards=['gizmo'],
+  paladin_builder_name='gizmo paladin',
+  important=False,
   trybot_list=True,
 )
 
@@ -2117,6 +2117,10 @@ _brillo_release.add_config('duck-release',
    boards=['duck'],
 )
 
+_brillo_release.add_config('gizmo-release',
+   boards=['gizmo'],
+)
+
 _arm_brillo_release = _brillo_release.derive(arm)
 
 _beaglebone_release = _arm_brillo_release.derive(beaglebone)
@@ -2142,12 +2146,6 @@ _arm_brillo_release.add_config('daisy_winter-full',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
-  upload_hw_test_artifacts=False,
-)
-
-_release.add_config('gizmo-release',
-  brillo_non_testable,
-  boards=['gizmo'],
   upload_hw_test_artifacts=False,
 )
 
