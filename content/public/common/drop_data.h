@@ -35,6 +35,9 @@ struct CONTENT_EXPORT DropData {
   DropData();
   ~DropData();
 
+  // Whether this drag originated from a renderer.
+  bool did_originate_from_renderer;
+
   // User is dragging a link into the webview.
   GURL url;
   base::string16 url_title;  // The title associated with |url|.
@@ -46,7 +49,9 @@ struct CONTENT_EXPORT DropData {
   // a download.
   blink::WebReferrerPolicy referrer_policy;
 
-  // User is dropping one or more files on the webview.
+  // User is dropping one or more files on the webview. This field is only
+  // populated if the drag is not renderer tainted, as this allows File access
+  // from web content.
   std::vector<FileInfo> filenames;
 
   // Isolated filesystem ID for the files being dragged on the webview.

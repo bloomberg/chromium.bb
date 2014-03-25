@@ -121,7 +121,10 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     // text/plain with file URLs when dragging files, we want to handle
     // text/uri-list after text/plain so that the plain text can be cleared if
     // it's a file drag.
+    // Similarly, renderer taint must occur before anything else so we can
+    // ignore potentially forged filenames when handling text/uri-list.
     static int supported_targets[] = {
+      ui::RENDERER_TAINT,
       ui::TEXT_PLAIN,
       ui::TEXT_URI_LIST,
       ui::TEXT_HTML,
@@ -182,7 +185,9 @@ void WebDragDestGtk::OnDragDataReceived(
   if (raw_data && data_length > 0) {
     // If the source can't provide us with valid data for a requested target,
     // raw_data will be NULL.
-    if (target == ui::GetAtomForTarget(ui::TEXT_PLAIN)) {
+    if (target == ui::GetAtomForTarget(ui::RENDERER_TAINT)) {
+      drop_data_->did_originate_from_renderer = true;
+    } else if (target == ui::GetAtomForTarget(ui::TEXT_PLAIN)) {
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->text = base::NullableString16(

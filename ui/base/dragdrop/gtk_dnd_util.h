@@ -39,7 +39,11 @@ enum {
 
   // Custom data for web drag/drop.
   CUSTOM_DATA = 1 << 10,
-  INVALID_TARGET = 1 << 11,
+
+  // Tracks if the drag originated from the renderer.
+  RENDERER_TAINT = 1 << 11,
+
+  INVALID_TARGET = 1 << 12,
 };
 
 // Get the atom for a given target (of the above enum type). Will return NULL

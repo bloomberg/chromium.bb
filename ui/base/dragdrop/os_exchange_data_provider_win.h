@@ -149,6 +149,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
 
   // OSExchangeData::Provider methods.
   virtual Provider* Clone() const;
+  virtual void MarkOriginatedFromRenderer();
+  virtual bool DidOriginateFromRenderer() const;
   virtual void SetString(const base::string16& data);
   virtual void SetURL(const GURL& url, const base::string16& title);
   virtual void SetFilename(const base::FilePath& path);

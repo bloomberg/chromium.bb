@@ -253,6 +253,9 @@ int GetModifierFlags() {
   DCHECK(pboard);
   NSArray* types = [pboard types];
 
+  data->did_originate_from_renderer =
+      [types containsObject:ui::kChromeDragDummyPboardType];
+
   // Get URL if possible. To avoid exposing file system paths to web content,
   // filenames in the drag are not converted to file URLs.
   ui::PopulateURLAndTitleFromPasteboard(&data->url,

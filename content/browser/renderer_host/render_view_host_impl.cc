@@ -749,6 +749,9 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // and can't be interpreted as a capability.
   DropData filtered_data(drop_data);
   GetProcess()->FilterURL(true, &filtered_data.url);
+  if (drop_data.did_originate_from_renderer) {
+    filtered_data.filenames.clear();
+  }
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.

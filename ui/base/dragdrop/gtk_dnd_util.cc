@@ -55,6 +55,11 @@ void AddTargetToList(GtkTargetList* targets, int target_code) {
           ui::GetAtomForTarget(ui::CUSTOM_DATA), 0, ui::CUSTOM_DATA);
       break;
 
+    case ui::RENDERER_TAINT:
+      gtk_target_list_add(targets,
+          ui::GetAtomForTarget(ui::RENDERER_TAINT), 0, ui::RENDERER_TAINT);
+      break;
+
     default:
       NOTREACHED() << " Unexpected target code: " << target_code;
   }
@@ -113,6 +118,11 @@ GdkAtom GetAtomForTarget(int target) {
       static const GdkAtom kCustomData = gdk_atom_intern(
           kMimeTypeWebCustomData, false);
       return kCustomData;
+
+    case RENDERER_TAINT:
+      static const GdkAtom kRendererTaint = gdk_atom_intern(
+          "chromium/x-renderer-taint", false);
+      return kRendererTaint;
 
     default:
       NOTREACHED();

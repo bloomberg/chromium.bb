@@ -79,7 +79,7 @@ bool WebDragSourceGtk::StartDragging(const DropData& drop_data,
     return false;
   }
 
-  int targets_mask = 0;
+  int targets_mask = ui::RENDERER_TAINT;
 
   if (!drop_data.text.string().empty())
     targets_mask |= ui::TEXT_PLAIN;
@@ -282,6 +282,17 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
           kBitsPerByte,
           reinterpret_cast<const guchar*>(custom_data.data()),
           custom_data.size());
+      break;
+    }
+
+    case ui::RENDERER_TAINT: {
+      static const char kPlaceholder[] = "x";
+      gtk_selection_data_set(
+          selection_data,
+          ui::GetAtomForTarget(ui::RENDERER_TAINT),
+          kBitsPerByte,
+          reinterpret_cast<const guchar*>(kPlaceholder),
+          strlen(kPlaceholder));
       break;
     }
 

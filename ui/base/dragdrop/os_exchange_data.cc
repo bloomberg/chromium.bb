@@ -36,6 +36,14 @@ OSExchangeData::OSExchangeData(Provider* provider) : provider_(provider) {
 OSExchangeData::~OSExchangeData() {
 }
 
+void OSExchangeData::MarkOriginatedFromRenderer() {
+  provider_->MarkOriginatedFromRenderer();
+}
+
+bool OSExchangeData::DidOriginateFromRenderer() const {
+  return provider_->DidOriginateFromRenderer();
+}
+
 void OSExchangeData::SetString(const base::string16& data) {
   provider_->SetString(data);
 }

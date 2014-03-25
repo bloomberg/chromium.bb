@@ -327,6 +327,7 @@ void PrepareDragForDownload(
 void PrepareDragData(const DropData& drop_data,
                      ui::OSExchangeData::Provider* provider,
                      WebContentsImpl* web_contents) {
+  provider->MarkOriginatedFromRenderer();
 #if defined(OS_WIN)
   // Put download before file contents to prefer the download of a image over
   // its thumbnail link.
@@ -367,6 +368,8 @@ void PrepareDragData(const DropData& drop_data,
 
 // Utility to fill a DropData object from ui::OSExchangeData.
 void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
+  drop_data->did_originate_from_renderer = data.DidOriginateFromRenderer();
+
   base::string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())

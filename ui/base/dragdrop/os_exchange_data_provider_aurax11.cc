@@ -25,6 +25,7 @@ namespace ui {
 namespace {
 
 const char kDndSelection[] = "XdndSelection";
+const char kRendererTaint[] = "chromium/x-renderer-taint";
 
 const char* kAtomsToCache[] = {
   kString,
@@ -34,6 +35,7 @@ const char* kAtomsToCache[] = {
   Clipboard::kMimeTypeURIList,
   kMimeTypeMozillaURL,
   Clipboard::kMimeTypeText,
+  kRendererTaint,
   NULL
 };
 
@@ -106,6 +108,18 @@ OSExchangeData::Provider* OSExchangeDataProviderAuraX11::Clone() const {
   OSExchangeDataProviderAuraX11* ret = new OSExchangeDataProviderAuraX11();
   ret->format_map_ = format_map_;
   return ret;
+}
+
+void OSExchangeDataProviderAuraX11::MarkOriginatedFromRenderer() {
+  std::string empty;
+  format_map_.Insert(atom_cache_.GetAtom(kRendererTaint),
+                     scoped_refptr<base::RefCountedMemory>(
+                         base::RefCountedString::TakeString(&empty)));
+}
+
+bool OSExchangeDataProviderAuraX11::DidOriginateFromRenderer() const {
+  return format_map_.find(atom_cache_.GetAtom(kRendererTaint)) !=
+         format_map_.end();
 }
 
 void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {

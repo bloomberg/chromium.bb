@@ -762,8 +762,11 @@ void Clipboard::WriteBookmark(const char* title_data,
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void Clipboard::WriteWebSmartPaste() {
-  aurax11_details_->InsertMapping(kMimeTypeWebkitSmartPaste,
-                                  scoped_refptr<base::RefCountedMemory>());
+  std::string empty;
+  aurax11_details_->InsertMapping(
+      kMimeTypeWebkitSmartPaste,
+      scoped_refptr<base::RefCountedMemory>(
+          base::RefCountedString::TakeString(&empty)));
 }
 
 void Clipboard::WriteBitmap(const SkBitmap& bitmap) {

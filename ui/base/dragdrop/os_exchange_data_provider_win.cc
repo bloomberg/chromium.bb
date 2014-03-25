@@ -23,6 +23,14 @@
 
 namespace ui {
 
+static const OSExchangeData::CustomFormat& GetRendererTaintCustomType() {
+  CR_DEFINE_STATIC_LOCAL(
+      ui::OSExchangeData::CustomFormat,
+      format,
+      (ui::Clipboard::GetFormatType("chromium/x-renderer-taint")));
+  return format;
+}
+
 // Creates a new STGMEDIUM object to hold the specified text. The caller
 // owns the resulting object. The "Bytes" version does not NULL terminate, the
 // string version does.
@@ -267,6 +275,16 @@ OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 
 OSExchangeData::Provider* OSExchangeDataProviderWin::Clone() const {
   return new OSExchangeDataProviderWin(data_object());
+}
+
+void OSExchangeDataProviderWin::MarkOriginatedFromRenderer() {
+  STGMEDIUM* storage = GetStorageForString(std::string());
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
+      GetRendererTaintCustomType().ToFormatEtc(), storage));
+}
+
+bool OSExchangeDataProviderWin::DidOriginateFromRenderer() const {
+  return HasCustomFormat(GetRendererTaintCustomType());
 }
 
 void OSExchangeDataProviderWin::SetString(const base::string16& data) {

@@ -102,6 +102,9 @@ class UI_BASE_EXPORT OSExchangeData {
 
     virtual Provider* Clone() const = 0;
 
+    virtual void MarkOriginatedFromRenderer() = 0;
+    virtual bool DidOriginateFromRenderer() const = 0;
+
     virtual void SetString(const base::string16& data) = 0;
     virtual void SetURL(const GURL& url, const base::string16& title) = 0;
     virtual void SetFilename(const base::FilePath& path) = 0;
@@ -162,6 +165,12 @@ class UI_BASE_EXPORT OSExchangeData {
   // Returns the Provider, which actually stores and manages the data.
   const Provider& provider() const { return *provider_; }
   Provider& provider() { return *provider_; }
+
+  // Marks drag data as tainted if it originates from the renderer. This is used
+  // to avoid granting privileges to a renderer when dragging in tainted data,
+  // since it could allow potential escalation of privileges.
+  void MarkOriginatedFromRenderer();
+  bool DidOriginateFromRenderer() const;
 
   // These functions add data to the OSExchangeData object of various Chrome
   // types. The OSExchangeData object takes care of translating the data into
