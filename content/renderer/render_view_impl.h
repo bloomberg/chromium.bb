@@ -272,6 +272,14 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
   void DidHideExternalPopupMenu();
 
+  bool is_loading() const { return frames_in_progress_ != 0; }
+
+  void FrameDidStartLoading(blink::WebFrame* frame);
+  void FrameDidStopLoading(blink::WebFrame* frame);
+
+  void FrameDidChangeLoadProgress(blink::WebFrame* frame,
+                                  double load_progress);
+
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
@@ -427,10 +435,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didStartLoading(bool to_different_document);
   // DEPRECATED
   virtual void didStopLoading();
-  virtual void didStartLoading(blink::WebFrame* frame);
-  virtual void didStopLoading(blink::WebFrame* frame);
-  virtual void didChangeLoadProgress(blink::WebFrame* frame,
-                                     double load_progress);
+
   virtual void didCancelCompositionOnSelectionChange();
   virtual void didExecuteCommand(const blink::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
@@ -1184,6 +1189,12 @@ class CONTENT_EXPORT RenderViewImpl
   // processes.  We won't know about them until the next navigation in this
   // process.
   int history_list_length_;
+
+  // Counter to track how many frames have sent start notifications but not
+  // stop notifications.
+  // TODO(japhet): This state will need to move to the browser process
+  // (probably WebContents) for site isolation.
+  int frames_in_progress_;
 
   // The list of page IDs for each history item this RenderView knows about.
   // Some entries may be -1 if they were rendered by other processes or were

@@ -653,6 +653,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       next_page_id_(params->next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
+      frames_in_progress_(0),
       target_url_status_(TARGET_NONE),
 #if defined(OS_ANDROID)
       top_controls_constraints_(cc::BOTH),
@@ -1727,27 +1728,32 @@ void RenderViewImpl::didStopLoading() {
   main_render_frame_->didStopLoading();
 }
 
-void RenderViewImpl::didStartLoading(WebFrame* frame) {
+void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
   if (load_progress_tracker_ != NULL) {
     load_progress_tracker_->DidStartLoading(
         RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
   }
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
+  DCHECK_GE(frames_in_progress_, 0);
+  if (frames_in_progress_ == 0)
+    FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
+  frames_in_progress_++;
 }
 
-void RenderViewImpl::didStopLoading(WebFrame* frame) {
+void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
   if (load_progress_tracker_ != NULL) {
     load_progress_tracker_->DidStopLoading(
         RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
   }
-
-  DidStopLoadingIcons();
-
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
+  frames_in_progress_--;
+  DCHECK_GE(frames_in_progress_, 0);
+  if (frames_in_progress_ == 0) {
+    DidStopLoadingIcons();
+    FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
+  }
 }
 
-void RenderViewImpl::didChangeLoadProgress(WebFrame* frame,
-                                           double load_progress) {
+void RenderViewImpl::FrameDidChangeLoadProgress(WebFrame* frame,
+                                                double load_progress) {
   if (load_progress_tracker_ != NULL) {
     load_progress_tracker_->DidChangeLoadProgress(
         RenderFrameImpl::FromWebFrame(frame)->GetRoutingID(), load_progress);

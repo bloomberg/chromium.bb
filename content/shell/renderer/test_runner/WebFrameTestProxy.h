@@ -160,6 +160,11 @@ public:
             return true;
         return Base::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event);
     }
+    virtual void didStopLoading()
+    {
+        m_baseProxy->didStopLoading();
+        Base::didStopLoading();
+    }
 
 private:
     WebTestProxyBase* m_baseProxy;
