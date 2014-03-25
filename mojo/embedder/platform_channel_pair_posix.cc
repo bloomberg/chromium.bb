@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
@@ -39,6 +40,17 @@ PlatformChannelPair::PlatformChannelPair() {
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
   PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
+
+#if defined(OS_MACOSX)
+  // This turns off |SIGPIPE| when writing to a closed socket (causing it to
+  // fail with |EPIPE| instead). On Linux, we have to use |send...()| with
+  // |MSG_NOSIGNAL| -- which is not supported on Mac -- instead.
+  int no_sigpipe = 1;
+  PCHECK(setsockopt(fds[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                    sizeof(no_sigpipe)) == 0);
+  PCHECK(setsockopt(fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                    sizeof(no_sigpipe)) == 0);
+#endif  // defined(OS_MACOSX)
 
   server_handle_.reset(PlatformHandle(fds[0]));
   DCHECK(server_handle_.is_valid());
