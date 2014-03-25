@@ -68,3 +68,14 @@ class Arm32Arch(Arch):
   @property
   def enabled(self):
     return cr.AndroidPlatform.GetInstance().is_active
+
+
+class Arm64Arch(Arch):
+
+  ACTIVE = cr.Config.From(
+      CR_ENVSETUP_ARCH='arm64',
+  )
+
+  @property
+  def enabled(self):
+    return cr.AndroidPlatform.GetInstance().is_active
