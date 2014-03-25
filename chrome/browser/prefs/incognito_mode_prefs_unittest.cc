@@ -58,15 +58,8 @@ TEST_F(IncognitoModePrefsTest, GetAvailability) {
 
 typedef IncognitoModePrefsTest IncognitoModePrefsDeathTest;
 
-// Takes too long to execute on Mac. http://crbug.com/101109
-#if defined(OS_MACOSX)
-#define MAYBE_GetAvailabilityBadValue DISABLED_GetAvailabilityBadValue
-#else
-#define MAYBE_GetAvailabilityBadValue GetAvailabilityBadValue
-#endif
-
 #if GTEST_HAS_DEATH_TEST
-TEST_F(IncognitoModePrefsDeathTest, MAYBE_GetAvailabilityBadValue) {
+TEST_F(IncognitoModePrefsDeathTest, GetAvailabilityBadValue) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
                      base::Value::CreateIntegerValue(-1));
 #if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
