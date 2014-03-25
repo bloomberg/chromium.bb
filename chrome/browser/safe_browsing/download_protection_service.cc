@@ -526,6 +526,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
                         base::TimeTicks::Now() - start_time);
 
+    start_time = base::TimeTicks::Now();
+    binary_feature_extractor_->ExtractImageHeaders(file_path, &image_headers_);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractImageHeadersTime",
+                        base::TimeTicks::Now() - start_time);
+
     OnFileFeatureExtractionDone();
   }
 
@@ -707,6 +712,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
     request.set_download_type(type_);
     request.mutable_signature()->CopyFrom(signature_info_);
+    request.mutable_image_headers()->CopyFrom(image_headers_);
     if (!request.SerializeToString(&client_download_request_data_)) {
       FinishRequest(SAFE, REASON_INVALID_REQUEST_PROTO);
       return;
@@ -821,6 +827,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   bool zipped_executable_;
   ClientDownloadRequest_SignatureInfo signature_info_;
+  ClientDownloadRequest_ImageHeaders image_headers_;
   CheckDownloadCallback callback_;
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;

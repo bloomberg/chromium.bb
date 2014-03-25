@@ -1224,6 +1224,7 @@
         'browser/safe_browsing/download_protection_service_unittest.cc',
         'browser/safe_browsing/local_two_phase_testserver.cc',
         'browser/safe_browsing/malware_details_unittest.cc',
+        'browser/safe_browsing/pe_image_reader_win_unittest.cc',
         'browser/safe_browsing/ping_manager_unittest.cc',
         'browser/safe_browsing/prefix_set_unittest.cc',
         'browser/safe_browsing/protocol_manager_unittest.cc',

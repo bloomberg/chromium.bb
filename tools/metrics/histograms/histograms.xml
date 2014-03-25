@@ -21632,6 +21632,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.ExtractImageHeadersTime" units="milliseconds">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    Records the time it takes for the SafeBrowsing download service to extract
+    image headers from a downloaded binary.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.ExtractSignatureFeaturesTime"
     units="milliseconds">
   <owner>mattm@chromium.org</owner>

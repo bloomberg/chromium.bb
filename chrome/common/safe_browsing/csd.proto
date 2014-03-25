@@ -220,7 +220,38 @@ message ClientDownloadRequest {
   // Locale of the device, eg en, en_US.
   optional string locale = 11;
 
-  // Field 12 is only used on the server.
+  message PEImageHeaders {
+    // IMAGE_DOS_HEADER.
+    optional bytes dos_header = 1;
+    // IMAGE_FILE_HEADER.
+    optional bytes file_header = 2;
+    // IMAGE_OPTIONAL_HEADER32. Present only for 32-bit PE images.
+    optional bytes optional_headers32 = 3;
+    // IMAGE_OPTIONAL_HEADER64. Present only for 64-bit PE images.
+    optional bytes optional_headers64 = 4;
+    // IMAGE_SECTION_HEADER.
+    repeated bytes section_header = 5;
+    // Contents of the .edata section.
+    optional bytes export_section_data = 6;
+
+    message DebugData {
+      // IMAGE_DEBUG_DIRECTORY.
+      optional bytes directory_entry = 1;
+      optional bytes raw_data = 2;
+    }
+
+    repeated DebugData debug_data = 7;
+  }
+
+  message ImageHeaders {
+    // Windows Portable Executable image headers.
+    optional PEImageHeaders pe_headers = 1;
+  };
+
+  // Fields 12-17 are reserved for server-side use and are never sent by the
+  // client.
+
+  optional ImageHeaders image_headers = 18;
 }
 
 message ClientDownloadResponse {

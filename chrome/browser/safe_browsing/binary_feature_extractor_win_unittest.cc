@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
@@ -20,15 +21,14 @@ namespace safe_browsing {
 
 class BinaryFeatureExtractorWinTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     base::FilePath source_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
     testdata_path_ = source_path
-        .AppendASCII("chrome")
-        .AppendASCII("test")
-        .AppendASCII("data")
         .AppendASCII("safe_browsing")
         .AppendASCII("download_protection");
+
+    binary_feature_extractor_ = new BinaryFeatureExtractor();
   }
 
   // Given a certificate chain protobuf, parse it into X509Certificates.
@@ -44,15 +44,15 @@ class BinaryFeatureExtractorWinTest : public testing::Test {
   }
 
   base::FilePath testdata_path_;
+  scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor_;
 };
 
 TEST_F(BinaryFeatureExtractorWinTest, UntrustedSignedBinary) {
   // signed.exe is signed by an untrusted root CA.
-  scoped_refptr<BinaryFeatureExtractor> signature_util(
-      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
-  signature_util->CheckSignature(testdata_path_.Append(L"signed.exe"),
-                                 &signature_info);
+  binary_feature_extractor_->CheckSignature(
+      testdata_path_.Append(L"signed.exe"),
+      &signature_info);
   ASSERT_EQ(1, signature_info.certificate_chain_size());
   std::vector<scoped_refptr<net::X509Certificate> > certs;
   ParseCertificateChain(signature_info.certificate_chain(0), &certs);
@@ -66,11 +66,10 @@ TEST_F(BinaryFeatureExtractorWinTest, UntrustedSignedBinary) {
 
 TEST_F(BinaryFeatureExtractorWinTest, TrustedBinary) {
   // wow_helper.exe is signed using Google's signing certifiacte.
-  scoped_refptr<BinaryFeatureExtractor> signature_util(
-      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
-  signature_util->CheckSignature(testdata_path_.Append(L"wow_helper.exe"),
-                                 &signature_info);
+  binary_feature_extractor_->CheckSignature(
+      testdata_path_.Append(L"wow_helper.exe"),
+      &signature_info);
   ASSERT_EQ(1, signature_info.certificate_chain_size());
   std::vector<scoped_refptr<net::X509Certificate> > certs;
   ParseCertificateChain(signature_info.certificate_chain(0), &certs);
@@ -87,24 +86,58 @@ TEST_F(BinaryFeatureExtractorWinTest, TrustedBinary) {
 
 TEST_F(BinaryFeatureExtractorWinTest, UnsignedBinary) {
   // unsigned.exe has no signature information.
-  scoped_refptr<BinaryFeatureExtractor> signature_util(
-      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
-  signature_util->CheckSignature(testdata_path_.Append(L"unsigned.exe"),
-                                 &signature_info);
+  binary_feature_extractor_->CheckSignature(
+      testdata_path_.Append(L"unsigned.exe"),
+      &signature_info);
   EXPECT_EQ(0, signature_info.certificate_chain_size());
   EXPECT_FALSE(signature_info.has_trusted());
 }
 
 TEST_F(BinaryFeatureExtractorWinTest, NonExistentBinary) {
   // Test a file that doesn't exist.
-  scoped_refptr<BinaryFeatureExtractor> signature_util(
-      new BinaryFeatureExtractor());
   ClientDownloadRequest_SignatureInfo signature_info;
-  signature_util->CheckSignature(testdata_path_.Append(L"doesnotexist.exe"),
-                                 &signature_info);
+  binary_feature_extractor_->CheckSignature(
+      testdata_path_.Append(L"doesnotexist.exe"),
+      &signature_info);
   EXPECT_EQ(0, signature_info.certificate_chain_size());
   EXPECT_FALSE(signature_info.has_trusted());
+}
+
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersNoFile) {
+  // Test extracting headers from a file that doesn't exist.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  binary_feature_extractor_->ExtractImageHeaders(
+      testdata_path_.AppendASCII("this_file_does_not_exist"),
+      &image_headers);
+  EXPECT_FALSE(image_headers.has_pe_headers());
+}
+
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersNonImage) {
+  // Test extracting headers from something that is not a PE image.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  binary_feature_extractor_->ExtractImageHeaders(
+      testdata_path_.AppendASCII("simple_exe.cc"),
+      &image_headers);
+  EXPECT_FALSE(image_headers.has_pe_headers());
+}
+
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeaders) {
+  // Test extracting headers from something that is a PE image.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  binary_feature_extractor_->ExtractImageHeaders(
+      testdata_path_.AppendASCII("unsigned.exe"),
+      &image_headers);
+  EXPECT_TRUE(image_headers.has_pe_headers());
+  const ClientDownloadRequest_PEImageHeaders& pe_headers =
+      image_headers.pe_headers();
+  EXPECT_TRUE(pe_headers.has_dos_header());
+  EXPECT_TRUE(pe_headers.has_file_header());
+  EXPECT_TRUE(pe_headers.has_optional_headers32());
+  EXPECT_FALSE(pe_headers.has_optional_headers64());
+  EXPECT_NE(0, pe_headers.section_header_size());
+  EXPECT_FALSE(pe_headers.has_export_section_data());
+  EXPECT_EQ(0, pe_headers.debug_data_size());
 }
 
 }  // namespace safe_browsing

@@ -915,6 +915,8 @@
           'sources': [
             'browser/safe_browsing/binary_feature_extractor.h',
             'browser/safe_browsing/binary_feature_extractor_win.cc',
+            'browser/safe_browsing/pe_image_reader_win.cc',
+            'browser/safe_browsing/pe_image_reader_win.h',
             'tools/safe_browsing/sb_sigutil.cc',
           ],
         },

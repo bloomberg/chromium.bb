@@ -16,6 +16,7 @@ class FilePath;
 }
 
 namespace safe_browsing {
+class ClientDownloadRequest_ImageHeaders;
 class ClientDownloadRequest_SignatureInfo;
 
 class BinaryFeatureExtractor
@@ -28,6 +29,11 @@ class BinaryFeatureExtractor
   virtual void CheckSignature(
       const base::FilePath& file_path,
       ClientDownloadRequest_SignatureInfo* signature_info);
+
+  // Populates |image_headers| with the PE image headers of |file_path|.
+  virtual void ExtractImageHeaders(
+      const base::FilePath& file_path,
+      ClientDownloadRequest_ImageHeaders* image_headers);
 
  protected:
   friend class base::RefCountedThreadSafe<BinaryFeatureExtractor>;
