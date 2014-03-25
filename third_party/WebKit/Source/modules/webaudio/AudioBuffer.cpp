@@ -42,12 +42,14 @@ namespace WebCore {
 
 float AudioBuffer::minAllowedSampleRate()
 {
-    return 22050;
+    // crbug.com/344375
+    return 3000;
 }
 
 float AudioBuffer::maxAllowedSampleRate()
 {
-    return 96000;
+    // Windows can support up to this rate.
+    return 192000;
 }
 
 PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
