@@ -325,7 +325,7 @@
       Setting this to enabled causes Chrome to wait for a shorter interval for DNS-based WPAD servers.
 
       If this policy is left not set, this will be enabled and the user will not
-      be able to change it..''',
+      be able to change it.''',
     },
     {
       'name': 'DisableSpdy',
