@@ -243,14 +243,11 @@
                   # move the `'` to its own line, but until that's landed
                   # suppress the warning:
                   '-Wno-empty-body',
-                  # debugXML.c compares array 'arg' to NULL.
-                  '-Wno-tautological-pointer-compare',
                 ],
               },
               'cflags': [
                 '-Wno-pointer-sign',
                 '-Wno-empty-body',
-                '-Wno-tautological-pointer-compare',
 
                 # See http://crbug.com/138571#c8
                 '-Wno-ignored-attributes',
