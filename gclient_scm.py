@@ -255,7 +255,7 @@ class GitWrapper(SCMWrapper):
       quiet = ['--quiet']
     self._UpdateBranchHeads(options, fetch=False)
 
-    cfg = gclient_utils.DefaultIndexPackConfig()
+    cfg = gclient_utils.DefaultIndexPackConfig(self.url)
     fetch_cmd = cfg + ['fetch', self.remote, '--prune']
     self._Run(fetch_cmd + quiet, options, retry=True)
     self._Run(['reset', '--hard', revision] + quiet, options)
@@ -725,7 +725,7 @@ class GitWrapper(SCMWrapper):
       print('')
     template_path = os.path.join(
         os.path.dirname(THIS_FILE_PATH), 'git-templates')
-    cfg = gclient_utils.DefaultIndexPackConfig()
+    cfg = gclient_utils.DefaultIndexPackConfig(self.url)
     clone_cmd = cfg + [
         'clone', '--no-checkout', '--progress', '--template=%s' % template_path]
     if self.cache_dir:
@@ -937,7 +937,7 @@ class GitWrapper(SCMWrapper):
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
       if fetch:
-        cfg = gclient_utils.DefaultIndexPackConfig()
+        cfg = gclient_utils.DefaultIndexPackConfig(self.url)
         fetch_cmd =  cfg + ['fetch', self.remote]
         if options.verbose:
           fetch_cmd.append('--verbose')

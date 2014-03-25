@@ -30,6 +30,14 @@ RETRY_INITIAL_SLEEP = 0.5
 _WARNINGS = []
 
 
+# These repos are known to cause OOM errors on 32-bit platforms, due the the
+# very large objects they contain.  It is not safe to use threaded index-pack
+# when cloning/fetching them.
+THREADED_INDEX_PACK_BLACKLIST = [
+  'https://chromium.googlesource.com/chromium/reference_builds/chrome_win.git'
+]
+
+
 class Error(Exception):
   """gclient exception class."""
   def __init__(self, msg, *args, **kwargs):
@@ -990,10 +998,13 @@ def DefaultDeltaBaseCacheLimit():
   else:
     return '512m'
 
-def DefaultIndexPackConfig():
+def DefaultIndexPackConfig(url=''):
   """Return reasonable default values for configuring git-index-pack.
 
   Experiments suggest that higher values for pack.threads don't improve
   performance."""
-  return ['-c', 'pack.threads=5', '-c',
-          'core.deltaBaseCacheLimit=%s' % DefaultDeltaBaseCacheLimit()]
+  cache_limit = DefaultDeltaBaseCacheLimit()
+  result = ['-c', 'core.deltaBaseCacheLimit=%s' % cache_limit]
+  if url in THREADED_INDEX_PACK_BLACKLIST:
+    result.extend(['-c', 'pack.threads=1'])
+  return result
