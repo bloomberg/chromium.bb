@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/touch_fling_gesture_curve.h"
+#include "content/child/touch_fling_gesture_curve.h"
 
 #include <cmath>
 
@@ -41,7 +41,7 @@ inline double timeAtVelocity(double v, float* p) {
 } // namespace
 
 
-namespace webkit_glue {
+namespace content {
 
 // This curve implementation is based on the notion of a single, absolute
 // curve, which starts at a large velocity and smoothly decreases to
@@ -160,4 +160,4 @@ bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
   return false;
 }
 
-} // namespace webkit_glue
+} // namespace content

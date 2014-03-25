@@ -1,10 +1,10 @@
-  // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Tests for the TouchFlingGestureCurve.
 
-#include "webkit/child/touch_fling_gesture_curve.h"
+#include "content/child/touch_fling_gesture_curve.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +50,7 @@ TEST(TouchFlingGestureCurve, flingCurveTouch)
   double initialVelocity = 5000;
   MockGestureCurveTarget target;
 
-  scoped_ptr<WebGestureCurve> curve(webkit_glue::TouchFlingGestureCurve::Create(
+  scoped_ptr<WebGestureCurve> curve(content::TouchFlingGestureCurve::Create(
       WebFloatPoint(initialVelocity, 0),
       -5.70762e+03f, 1.72e+02f, 3.7e+00f, WebSize()));
 

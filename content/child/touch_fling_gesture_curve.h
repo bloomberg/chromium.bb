@@ -1,21 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
-#define WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
+#ifndef CONTENT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
+#define CONTENT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
 
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebGestureCurveTarget;
 }
 
-namespace webkit_glue {
+namespace content {
 
 // Implementation of WebGestureCurve suitable for touch pad/screen-based
 // fling scroll. Starts with a flat velocity profile based on 'velocity', which
@@ -24,7 +24,7 @@ namespace webkit_glue {
 class TouchFlingGestureCurve : public blink::WebGestureCurve {
  public:
 
-  WEBKIT_CHILD_EXPORT static WebGestureCurve* Create(
+  static CONTENT_EXPORT WebGestureCurve* Create(
       const blink::WebFloatPoint& initial_velocity,
       float p0, float p1, float p2,
       const blink::WebSize& cumulativeScroll);
@@ -50,6 +50,6 @@ class TouchFlingGestureCurve : public blink::WebGestureCurve {
   DISALLOW_COPY_AND_ASSIGN(TouchFlingGestureCurve);
 };
 
-} // namespace webkit_glue
+} // namespace content
 
-#endif // WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
+#endif // CONTENT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_

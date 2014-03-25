@@ -58,8 +58,6 @@
         'multipart_response_delegate.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
-        'touch_fling_gesture_curve.cc',
-        'touch_fling_gesture_curve.h',
         'webkit_child_export.h',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',

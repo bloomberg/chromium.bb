@@ -5,8 +5,8 @@
 #include "content/child/fling_curve_configuration.h"
 
 #include "base/logging.h"
+#include "content/child/touch_fling_gesture_curve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "webkit/child/touch_fling_gesture_curve.h"
 
 namespace content {
 
@@ -37,7 +37,7 @@ blink::WebGestureCurve* FlingCurveConfiguration::CreateCore(
     p2 = coefs[2];
   }
 
-  return webkit_glue::TouchFlingGestureCurve::Create(velocity, p0, p1, p2,
+  return TouchFlingGestureCurve::Create(velocity, p0, p1, p2,
       cumulativeScroll);
 }
 

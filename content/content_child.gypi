@@ -161,6 +161,8 @@
     'child/site_isolation_policy.h',
     'child/socket_stream_dispatcher.cc',
     'child/socket_stream_dispatcher.h',
+    'child/touch_fling_gesture_curve.cc',
+    'child/touch_fling_gesture_curve.h',
     'child/thread_safe_sender.cc',
     'child/thread_safe_sender.h',
     'child/web_database_observer_impl.cc',
