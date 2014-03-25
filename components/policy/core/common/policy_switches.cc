@@ -18,9 +18,6 @@ const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
 // device management backend.
 const char kDeviceManagementUrl[]           = "device-management-url";
 
-// Disables pushing cloud policy to Chrome using an invalidation service.
-const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
-
 // Enables fetching and storing cloud policy for components.
 const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 
