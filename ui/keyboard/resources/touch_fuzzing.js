@@ -55,7 +55,8 @@
       // row-centric.
       var splits = findSplits(this.keys, Orientation.HORIZONTAL);
       this.tree = createBinaryTree(0, splits.length - 1, splits);
-      this.tree.populate(this.keys);
+      if (this.tree)
+        this.tree.populate(this.keys);
     },
 
     /**
