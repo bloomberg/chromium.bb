@@ -22,8 +22,8 @@ FLAGS=""
 for arg in "$@"; do
   if [[ "$arg" = "enable-oilpan=1" ]]; then
     FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang enable-oilpan"
-  elif [[ "$arg" = "detect-cycles=1" ]]; then
-    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang detect-cycles"
+  elif [[ "$arg" = "dump-graph=1" ]]; then
+    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang dump-graph"
   fi
 done
 

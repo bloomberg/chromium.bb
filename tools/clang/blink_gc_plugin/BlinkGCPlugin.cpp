@@ -111,9 +111,9 @@ const char kDerivesNonStackAllocated[] =
     " which is not stack allocated.";
 
 struct BlinkGCPluginOptions {
-  BlinkGCPluginOptions() : enable_oilpan(false), detect_cycles(false) {}
+  BlinkGCPluginOptions() : enable_oilpan(false), dump_graph(false) {}
   bool enable_oilpan;
-  bool detect_cycles;
+  bool dump_graph;
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;
@@ -568,7 +568,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     CollectVisitor visitor;
     visitor.TraverseDecl(context.getTranslationUnitDecl());
 
-    if (options_.detect_cycles) {
+    if (options_.dump_graph) {
       string err;
       // TODO: Make createDefaultOutputFile or a shorter createOutputFile work.
       json_ = JsonWriter::from(instance_.createOutputFile(
@@ -1291,8 +1291,8 @@ class BlinkGCPluginAction : public PluginASTAction {
     for (size_t i = 0; i < args.size() && parsed; ++i) {
       if (args[i] == "enable-oilpan") {
         options_.enable_oilpan = true;
-      } else if (args[i] == "detect-cycles") {
-        options_.detect_cycles = true;
+      } else if (args[i] == "dump-graph") {
+        options_.dump_graph = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";
