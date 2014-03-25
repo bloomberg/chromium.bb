@@ -21,6 +21,7 @@ PASS createImageBitmap(testBitmap, 0, 0, 0, 10) threw exception IndexSizeError: 
 PASS createImageBitmap(blob, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
 PASS createImageBitmap(blob, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
 PASS createImageBitmap(invalidBlob) was rejected.
+PASS createImageBitmap(invalidCanvas) was rejected.
 PASS successfullyParsed is true
 
 TEST COMPLETE

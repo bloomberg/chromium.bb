@@ -16,12 +16,19 @@ var testBitmap; // an ImageBitmap that is uncropped. We use this to test createI
 var d;          // image.imageData
 var blob;
 var invalidBlob;
+var invalidBlobTestPassed = false;
+var invalidCanvasTestPassed = false;
 
 // Draw to an auxillary canvas.
 var aCanvas = document.createElement("canvas");
 aCanvas.setAttribute("width", "200");
 aCanvas.setAttribute("height", "200");
 var aCtx = aCanvas.getContext("2d");
+
+// Create a terapixel canvas to generate an invalid canvas through allocation failure
+var invalidCanvas = document.createElement("canvas");
+invalidCanvas.setAttribute("width", "1000000");
+invalidCanvas.setAttribute("height", "1000000");
 
 image = new Image();
 image.onload = imageLoaded;
@@ -84,6 +91,26 @@ xhr2.onload = function() {
     loaded();
 }
 
+var finishIfDoneCallsRemaining = 2;
+function finishIfDone() {
+    finishIfDoneCallsRemaining--;
+    if (!finishIfDoneCallsRemaining) {
+        // Because promise fulfillment is asynchonous, pass/fail messages
+        // must be handled here to ensure a deterministic message order.
+        if (invalidBlobTestPassed) {
+            testPassed("createImageBitmap(invalidBlob) was rejected.");
+        } else {
+            testFailed("Invalid blob fulfilled.");
+        }
+        if (invalidCanvasTestPassed) {
+            testPassed("createImageBitmap(invalidCanvas) was rejected.");
+        } else {
+            testFailed("Invalid canvas fulfilled.");
+        }
+        finishJSTest();
+    }
+}
+
 function loaded() {
     if (imageLoaded && videoLoaded && imageBitmapLoaded && blobLoaded && invalidBlobLoaded) {
         shouldThrow("createImageBitmap(undefined)", "TypeError");
@@ -110,15 +137,20 @@ function loaded() {
         shouldThrow("createImageBitmap(blob, 0, 0, 0, 10)");
 
         createImageBitmap(invalidBlob).then(function() {
-            testFailed("Invalid blob fulfilled.");
-            finishJSTest();
+            finishIfDone();
         }, function() {
-            testPassed("createImageBitmap(invalidBlob) was rejected.");
-            finishJSTest();
+            invalidBlobTestPassed = true;
+            finishIfDone();
         });
-    }
-}
 
+        createImageBitmap(invalidCanvas).then(function() {
+            finishIfDone();
+        }, function() {
+            invalidCanvasTestPassed = true;
+            finishIfDone();
+        });
+        }
+}
 </script>
 </body>
 </html>
