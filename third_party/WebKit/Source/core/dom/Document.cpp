@@ -705,13 +705,7 @@ Location* Document::location() const
 void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-
-    Element* newDocumentElement = ElementTraversal::firstWithin(*this);
-    if (newDocumentElement == m_documentElement)
-        return;
-    m_documentElement = newDocumentElement;
-    // The root style used for media query matching depends on the document element.
-    clearStyleResolver();
+    m_documentElement = ElementTraversal::firstWithin(*this);
 }
 
 PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& exceptionState)
