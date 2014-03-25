@@ -301,7 +301,7 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   base::JSONWriter::WriteWithOptions(toplevel_dict.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
-  return base::Value::CreateStringValue(json_string);
+  return new base::StringValue(json_string);
 }
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()
@@ -347,9 +347,9 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
     prefs->SetValue(prefs::kScreenMagnifierEnabled,
-                    base::Value::CreateBooleanValue(value_in_range != 0));
+                    new base::FundamentalValue(value_in_range != 0));
     prefs->SetValue(prefs::kScreenMagnifierType,
-                    base::Value::CreateIntegerValue(value_in_range));
+                    new base::FundamentalValue(value_in_range));
   }
 }
 

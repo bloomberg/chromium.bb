@@ -142,7 +142,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         .Set(key::kDeviceMetricsReportingEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_MACHINE,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
     EXPECT_TRUE(manager_->policies().Equals(bundle));
   }

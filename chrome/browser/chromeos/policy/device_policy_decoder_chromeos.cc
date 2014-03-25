@@ -105,7 +105,7 @@ base::Value* DecodeConnectionType(int value) {
   if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))
     return NULL;
 
-  return base::Value::CreateStringValue(kConnectionTypes[value]);
+  return new base::StringValue(kConnectionTypes[value]);
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -116,7 +116,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceGuestModeEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.guest_mode_enabled()),
                     NULL);
     }
@@ -128,7 +128,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceShowUserNamesOnSignin,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.show_user_names()),
                     NULL);
     }
@@ -140,7 +140,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceAllowNewUsers,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.allow_new_users()),
                     NULL);
     }
@@ -153,7 +153,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     for (entry = container.user_whitelist().begin();
          entry != container.user_whitelist().end();
          ++entry) {
-      whitelist->Append(base::Value::CreateStringValue(*entry));
+      whitelist->Append(new base::StringValue(*entry));
     }
     policies->Set(key::kDeviceUserWhitelist,
                   POLICY_LEVEL_MANDATORY,
@@ -169,7 +169,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceEphemeralUsersEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.ephemeral_users_enabled()),
                     NULL);
     }
@@ -218,7 +218,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceLocalAccountAutoLoginId,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(container.auto_login_id()),
+                    new base::StringValue(container.auto_login_id()),
                     NULL);
     }
     if (container.has_auto_login_delay()) {
@@ -232,7 +232,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceLocalAccountAutoLoginBailoutEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.enable_auto_login_bailout()),
                     NULL);
     }
@@ -240,7 +240,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceLocalAccountPromptForNetworkWhenOffline,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.prompt_for_network_when_offline()),
                     NULL);
     }
@@ -250,7 +250,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::SupervisedUsersSettingsProto& container =
         policy.supervised_users_settings();
     if (container.has_supervised_users_enabled()) {
-      base::Value* value = base::Value::CreateBooleanValue(
+      base::Value* value = new base::FundamentalValue(
           container.supervised_users_enabled());
       policies->Set(key::kSupervisedUsersEnabled,
                     POLICY_LEVEL_MANDATORY,
@@ -296,7 +296,7 @@ void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceLoginScreenSaverId,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(
+                    new base::StringValue(
                         container.screen_saver_extension_id()),
                     NULL);
     }
@@ -334,7 +334,7 @@ void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,
     base::ListValue* pinned_apps_list = new base::ListValue();
     for (int i = 0; i < container.app_id_size(); ++i) {
       pinned_apps_list->Append(
-          base::Value::CreateStringValue(container.app_id(i)));
+          new base::StringValue(container.app_id(i)));
     }
 
     policies->Set(key::kPinnedLauncherApps,
@@ -383,7 +383,7 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceDataRoamingEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.data_roaming_enabled()),
                     NULL);
     }
@@ -396,7 +396,7 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
     policies->Set(key::kDeviceOpenNetworkConfiguration,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE,
-                  base::Value::CreateStringValue(config),
+                  new base::StringValue(config),
                   NULL);
   }
 }
@@ -409,7 +409,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceVersionInfo,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.report_version_info()),
                     NULL);
     }
@@ -417,7 +417,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceActivityTimes,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.report_activity_times()),
                     NULL);
     }
@@ -425,7 +425,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceBootMode,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.report_boot_mode()),
                     NULL);
     }
@@ -433,7 +433,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceLocation,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.report_location()),
                     NULL);
     }
@@ -441,7 +441,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceNetworkInterfaces,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.report_network_interfaces()),
                     NULL);
     }
@@ -449,7 +449,7 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceUsers,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(container.report_users()),
+                    new base::FundamentalValue(container.report_users()),
                     NULL);
     }
   }
@@ -464,7 +464,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kChromeOsReleaseChannel,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(channel),
+                    new base::StringValue(channel),
                     NULL);
       // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
       // have to pass the channel in here, only ping the update engine to tell
@@ -476,7 +476,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kChromeOsReleaseChannelDelegated,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.release_channel_delegated()),
                     NULL);
     }
@@ -488,7 +488,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceAutoUpdateDisabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.update_disabled()),
                     NULL);
     }
@@ -497,7 +497,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceTargetVersionPrefix,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(
+                    new base::StringValue(
                         container.target_version_prefix()),
                     NULL);
     }
@@ -509,8 +509,8 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceUpdateScatterFactor,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateIntegerValue(
-                        container.scatter_factor_in_seconds()),
+                    new base::FundamentalValue(static_cast<int>(
+                        container.scatter_factor_in_seconds())),
                     NULL);
     }
 
@@ -536,7 +536,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceUpdateHttpDownloadsEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(container.http_downloads_enabled()),
+          new base::FundamentalValue(container.http_downloads_enabled()),
           NULL);
     }
 
@@ -544,7 +544,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kRebootAfterUpdate,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.reboot_after_update()),
                     NULL);
     }
@@ -553,7 +553,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceAutoUpdateP2PEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(container.p2p_enabled()),
+                    new base::FundamentalValue(container.p2p_enabled()),
                     NULL);
     }
   }
@@ -570,7 +570,7 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceLoginScreenDefaultLargeCursorEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(
+          new base::FundamentalValue(
               container.login_screen_default_large_cursor_enabled()),
           NULL);
     }
@@ -580,7 +580,7 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(
+          new base::FundamentalValue(
               container.login_screen_default_spoken_feedback_enabled()),
           NULL);
     }
@@ -590,7 +590,7 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceLoginScreenDefaultHighContrastEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(
+          new base::FundamentalValue(
               container.login_screen_default_high_contrast_enabled()),
           NULL);
     }
@@ -609,7 +609,7 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(
+          new base::FundamentalValue(
               container.login_screen_default_virtual_keyboard_enabled()),
           NULL);
     }
@@ -637,7 +637,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceMetricsReportingEnabled,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.metrics_enabled()),
                     NULL);
     }
@@ -650,7 +650,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     for (entry = container.start_up_urls().begin();
          entry != container.start_up_urls().end();
          ++entry) {
-      urls->Append(base::Value::CreateStringValue(*entry));
+      urls->Append(new base::StringValue(*entry));
     }
     policies->Set(key::kDeviceStartUpUrls,
                   POLICY_LEVEL_MANDATORY,
@@ -664,7 +664,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kSystemTimezone,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(
+                    new base::StringValue(
                         policy.system_timezone().timezone()),
                     NULL);
     }
@@ -675,7 +675,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kSystemUse24HourClock,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         policy.use_24hour_clock().use_24hour_clock()),
                     NULL);
     }
@@ -688,7 +688,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceAllowRedeemChromeOsRegistrationOffers,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         container.allow_redeem_offers()),
                     NULL);
     }
@@ -712,7 +712,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     for (entry = container.flags().begin();
          entry != container.flags().end();
          ++entry) {
-      flags->Append(base::Value::CreateStringValue(*entry));
+      flags->Append(new base::StringValue(*entry));
     }
     policies->Set(key::kDeviceStartUpFlags,
                   POLICY_LEVEL_MANDATORY,
@@ -726,7 +726,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceVariationsRestrictParameter,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(
+                    new base::StringValue(
                         policy.variations_parameter().parameter()),
                     NULL);
     }
@@ -737,7 +737,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kAttestationEnabledForDevice,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateBooleanValue(
+                    new base::FundamentalValue(
                         policy.attestation_settings().attestation_enabled()),
                     NULL);
     }
@@ -746,7 +746,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kAttestationForContentProtectionEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE,
-          base::Value::CreateBooleanValue(
+          new base::FundamentalValue(
               policy.attestation_settings().content_protection_enabled()),
           NULL);
     }
@@ -776,7 +776,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kAutoCleanUpStrategy,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    base::Value::CreateStringValue(
+                    new base::StringValue(
                         container.clean_up_strategy()),
                     NULL);
     }

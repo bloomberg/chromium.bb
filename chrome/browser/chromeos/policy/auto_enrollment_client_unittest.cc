@@ -339,9 +339,9 @@ TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
 TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
   EXPECT_CALL(*service_, CreateJob(_, _)).Times(0);
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            base::Value::CreateBooleanValue(true));
+                            new base::FundamentalValue(true));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            base::Value::CreateIntegerValue(8));
+                            new base::FundamentalValue(8));
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED);
@@ -354,9 +354,9 @@ TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
 
 TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            base::Value::CreateBooleanValue(false));
+                            new base::FundamentalValue(false));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            base::Value::CreateIntegerValue(8));
+                            new base::FundamentalValue(8));
   CreateClient(kStateKey, true, 5, 10);
   ServerWillReply(-1, true, true);
   ServerWillSendState(

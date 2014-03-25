@@ -113,7 +113,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     // Set up a policy map for testing.
     policy_map_.Set("HomepageLocation",
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    base::Value::CreateStringValue("http://chromium.org"),
+                    new base::StringValue("http://chromium.org"),
                     NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);

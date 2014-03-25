@@ -159,7 +159,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
       previous_policy.Set(key::kHomepageLocation,
                           POLICY_LEVEL_MANDATORY,
                           POLICY_SCOPE_USER,
-                          base::Value::CreateStringValue(previous_value), NULL);
+                          new base::StringValue(previous_value), NULL);
     }
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
     EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());

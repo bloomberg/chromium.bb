@@ -138,7 +138,7 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   expected_policy_map_.Set(key::kDisableSpdy,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           base::Value::CreateBooleanValue(true),
+                           new base::FundamentalValue(true),
                            NULL);
 
   device_local_account_policy_.payload().mutable_disablespdy()->set_value(
@@ -779,24 +779,24 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   expected_policy_map_.Set(key::kLidCloseAction,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           base::Value::CreateIntegerValue(
+                           new base::FundamentalValue(
                                chromeos::PowerPolicyController::
                                    ACTION_STOP_SESSION),
                            NULL);
   expected_policy_map_.Set(key::kShelfAutoHideBehavior,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           base::Value::CreateStringValue("Never"),
+                           new base::StringValue("Never"),
                            NULL);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           base::Value::CreateBooleanValue(true),
+                           new base::FundamentalValue(true),
                            NULL);
   expected_policy_map_.Set(key::kFullscreenAllowed,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           base::Value::CreateBooleanValue(false),
+                           new base::FundamentalValue(false),
                            NULL);
 }
 
@@ -862,7 +862,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       .Set(key::kDisableSpdy,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           base::Value::CreateBooleanValue(false),
+           new base::FundamentalValue(false),
            NULL);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 

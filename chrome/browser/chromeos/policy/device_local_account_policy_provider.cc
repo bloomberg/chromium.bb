@@ -58,7 +58,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kLidCloseAction,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateIntegerValue(
+        new base::FundamentalValue(
             chromeos::PowerPolicyController::ACTION_STOP_SESSION),
         NULL);
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
@@ -67,7 +67,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShelfAutoHideBehavior,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue("Never"),
+        new base::StringValue("Never"),
         NULL);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
@@ -75,7 +75,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShowLogoutButtonInTray,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateBooleanValue(true),
+        new base::FundamentalValue(true),
         NULL);
     // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
     // shelf cannot be hidden by entering fullscreen mode.
@@ -83,7 +83,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kFullscreenAllowed,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateBooleanValue(false),
+        new base::FundamentalValue(false),
         NULL);
   }
 

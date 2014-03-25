@@ -60,7 +60,7 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
   policy_.Set(key::kScreenMagnifierType,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              base::Value::CreateIntegerValue(0),
+              new base::FundamentalValue(0),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
@@ -79,7 +79,7 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
   policy_.Set(key::kScreenMagnifierType,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              base::Value::CreateIntegerValue(1),
+              new base::FundamentalValue(1),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
@@ -246,7 +246,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue(kTestONC),
+                 new base::StringValue(kTestONC),
                  NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
@@ -260,7 +260,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateBooleanValue(false),
+                 new base::FundamentalValue(false),
                  NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
@@ -275,7 +275,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue(kTestONC),
+                 new base::StringValue(kTestONC),
                  NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
@@ -303,7 +303,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue(kTestONC),
+                 new base::StringValue(kTestONC),
                  NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
@@ -371,7 +371,7 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
   policy_map.Set(key::kDeviceLoginScreenPowerManagement,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateBooleanValue(false),
+                 new base::FundamentalValue(false),
                  NULL);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
