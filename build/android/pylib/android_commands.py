@@ -26,6 +26,7 @@ import cmd_helper
 import constants
 import screenshot
 import system_properties
+from utils import host_utils
 
 try:
   from pylib import pexpect
@@ -1001,10 +1002,7 @@ class AndroidCommands(object):
         if host_path_mtime == os.stat(host_path).st_mtime:
           return
 
-    def GetHostSize(path):
-      return int(cmd_helper.GetCmdOutput(['du', '-sb', path]).split()[0])
-
-    size = GetHostSize(host_path)
+    size = host_utils.GetRecursiveDiskUsage(host_path)
     self._pushed_files.append(device_path)
     self._potential_push_size += size
 
@@ -1039,7 +1037,8 @@ class AndroidCommands(object):
 
     diff_size = 0
     if len(changed_files) <= MAX_INDIVIDUAL_PUSHES:
-      diff_size = sum(GetHostSize(f[0]) for f in changed_files)
+      diff_size = sum(host_utils.GetRecursiveDiskUsage(f[0])
+                      for f in changed_files)
 
     # TODO(craigdh): Replace this educated guess with a heuristic that
     # approximates the push time for each method.
