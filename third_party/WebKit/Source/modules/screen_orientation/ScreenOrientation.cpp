@@ -53,9 +53,14 @@ static const AtomicString& orientationToString(blink::WebScreenOrientation orien
 
 static blink::WebScreenOrientations stringToOrientations(const AtomicString& orientationString)
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, any, ("any", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape", AtomicString::ConstructFromLiteral));
 
+    if (orientationString == any) {
+        return blink::WebScreenOrientationPortraitPrimary | blink::WebScreenOrientationPortraitSecondary |
+            blink::WebScreenOrientationLandscapePrimary | blink::WebScreenOrientationLandscapeSecondary;
+    }
     if (orientationString == portrait)
         return blink::WebScreenOrientationPortraitPrimary | blink::WebScreenOrientationPortraitSecondary;
     if (orientationString == landscape)

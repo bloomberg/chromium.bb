@@ -4,17 +4,17 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation('invalid-orientation') is false
+PASS screen.lockOrientation('invalid-orientation') threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('invalid-orientation') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation(null) is false
+PASS screen.lockOrientation(null) threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('null') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation(undefined) is false
+PASS screen.lockOrientation(undefined) threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('undefined') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation(123) is false
+PASS screen.lockOrientation(123) threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('123') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation(window) is false
+PASS screen.lockOrientation(window) threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('[object Window]') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
-PASS screen.lockOrientation(['portrait-primary', 'landscape-primary']) is false
+PASS screen.lockOrientation(['portrait-primary', 'landscape-primary']) threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('portrait-primary,landscape-primary') is not a valid enum value..
 PASS screen.orientation is "portrait-primary"
 PASS screen.lockOrientation() threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': 1 argument required, but only 0 present..
 PASS screen.orientation is "portrait-primary"

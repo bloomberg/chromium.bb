@@ -7,9 +7,14 @@ description("Basic screen.lockOrientation() / screen.unlockOrientation() testing
 
 shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldNotThrow("screen.unlockOrientation()");
-shouldBeTrue("screen.lockOrientation('landscape-primary')");
-shouldBeEqualToString("screen.orientation", "portrait-primary"); // Should update asynchronously.
-shouldBeTrue("screen.lockOrientation('landscape-secondary')"); // Consecutive locking.
+
+[ 'any', 'portrait', 'landscape', 'portrait-primary', 'portrait-secondary',
+  'landscape-primary', 'landscape-secondary' ].forEach(function(orientation) {
+  shouldBeTrue("screen.lockOrientation('" + orientation + "')");
+});
+
+// Update is made asynchronously so that shouldn't change.
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldNotThrow("screen.unlockOrientation()");
 </script>
 </body>

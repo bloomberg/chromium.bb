@@ -9,12 +9,22 @@ enum OrientationType {
     "landscape-secondary"
 };
 
+enum OrientationLockType {
+    "any",
+    "landscape",
+    "portrait",
+    "portrait-primary",
+    "portrait-secondary",
+    "landscape-primary",
+    "landscape-secondary"
+};
+
 [
     RuntimeEnabled=ScreenOrientation
 ] partial interface Screen {
     readonly attribute OrientationType orientation;
 
-    boolean lockOrientation(DOMString orientation);
+    boolean lockOrientation(OrientationLockType orientation);
 
     void unlockOrientation();
     attribute EventHandler onorientationchange;

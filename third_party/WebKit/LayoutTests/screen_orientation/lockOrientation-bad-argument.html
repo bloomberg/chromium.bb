@@ -18,18 +18,22 @@ function completeTest() {
 
 screen.addEventListener("orientationchange", onOrientationChangeEvent);
 
+function typeErrorEnum(argStr) {
+  return "TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('" + argStr + "') is not a valid enum value.";
+}
+
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation('invalid-orientation')");
+shouldThrow("screen.lockOrientation('invalid-orientation')", "typeErrorEnum('invalid-orientation')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation(null)");
+shouldThrow("screen.lockOrientation(null)", "typeErrorEnum('null')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation(undefined)");
+shouldThrow("screen.lockOrientation(undefined)", "typeErrorEnum('undefined')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation(123)");
+shouldThrow("screen.lockOrientation(123)", "typeErrorEnum('123')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation(window)");
+shouldThrow("screen.lockOrientation(window)", "typeErrorEnum('[object Window]')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldBeFalse("screen.lockOrientation(['portrait-primary', 'landscape-primary'])");
+shouldThrow("screen.lockOrientation(['portrait-primary', 'landscape-primary'])", "typeErrorEnum('portrait-primary,landscape-primary')");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation()", '"TypeError: Failed to execute \'lockOrientation\' on \'Screen\': 1 argument required, but only 0 present."');
 
