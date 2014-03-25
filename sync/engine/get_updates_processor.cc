@@ -172,7 +172,8 @@ void GetUpdatesProcessor::PrepareGetUpdates(
 
   for (ModelTypeSet::Iterator it = gu_types.First(); it.Good(); it.Inc()) {
     UpdateHandlerMap::iterator handler_it = update_handler_map_->find(it.Get());
-    DCHECK(handler_it != update_handler_map_->end());
+    DCHECK(handler_it != update_handler_map_->end())
+        << "Failed to look up handler for " << ModelTypeToString(it.Get());
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
     handler_it->second->GetDownloadProgress(progress_marker);
@@ -317,8 +318,9 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
 }
 
 void GetUpdatesProcessor::ApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller) {
-  delegate_.ApplyUpdates(status_controller, update_handler_map_);
+  delegate_.ApplyUpdates(gu_types, status_controller, update_handler_map_);
 }
 
 void GetUpdatesProcessor::CopyClientDebugInfo(

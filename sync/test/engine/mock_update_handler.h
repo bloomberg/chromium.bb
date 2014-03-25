@@ -27,8 +27,17 @@ class MockUpdateHandler : public UpdateHandler {
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
 
+  // Returns the number of times ApplyUpdates() was invoked.
+  int GetApplyUpdatesCount();
+
+  // Returns the number of times PassiveApplyUpdates() was invoked.
+  int GetPassiveApplyUpdatesCount();
+
  private:
   sync_pb::DataTypeProgressMarker progress_marker_;
+
+  int apply_updates_count_;
+  int passive_apply_updates_count_;
 };
 
 }  // namespace syncer

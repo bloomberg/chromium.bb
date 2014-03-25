@@ -59,7 +59,9 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
       bool create_mobile_bookmarks_folder);
 
   // Applies any downloaded and processed updates.
-  void ApplyUpdates(sessions::StatusController* status_controller);
+  void ApplyUpdates(
+      ModelTypeSet gu_types,
+      sessions::StatusController* status_controller);
 
  private:
   // Populates a GetUpdates request message with per-type information.

@@ -30,7 +30,8 @@ class SYNC_EXPORT_PRIVATE GetUpdatesDelegate {
 
   // Applies pending updates to non-control types.
   virtual void ApplyUpdates(
-      sessions::StatusController* session,
+      ModelTypeSet gu_types,
+      sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const = 0;
 
   virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
@@ -50,6 +51,7 @@ class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
 
   // Applies pending updates on the appropriate data type threads.
   virtual void ApplyUpdates(
+      ModelTypeSet gu_types,
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 
@@ -79,6 +81,7 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
   // This is safe only if the ChangeProcessor is not listening to changes at
   // this time.
   virtual void ApplyUpdates(
+      ModelTypeSet gu_types,
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 
@@ -106,6 +109,7 @@ class SYNC_EXPORT_PRIVATE PollGetUpdatesDelegate : public GetUpdatesDelegate {
 
   // Applies updates on the appropriate data type thread.
   virtual void ApplyUpdates(
+      ModelTypeSet gu_types,
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const OVERRIDE;
 

@@ -504,7 +504,7 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
             << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->ConfigureSyncShare(
-      session_context_->GetEnabledTypes(),
+      pending_configure_params_->types_to_download,
       pending_configure_params_->source,
       session.get());
   AdjustPolling(FORCE_RESET);

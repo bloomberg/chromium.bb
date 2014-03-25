@@ -35,8 +35,8 @@ class GetUpdatesProcessorTest : public ::testing::Test {
     AddUpdateHandler(PREFERENCES);
   }
 
-  ModelTypeSet request_types() {
-    return request_types_;
+  ModelTypeSet enabled_types() {
+    return enabled_types_;
   }
 
   scoped_ptr<GetUpdatesProcessor> BuildGetUpdatesProcessor(
@@ -46,7 +46,7 @@ class GetUpdatesProcessorTest : public ::testing::Test {
   }
 
   void InitFakeUpdateResponse(sync_pb::GetUpdatesResponse* response) {
-    ModelTypeSet types = request_types();
+    ModelTypeSet types = enabled_types();
 
     for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
       sync_pb::DataTypeProgressMarker* marker =
@@ -58,17 +58,27 @@ class GetUpdatesProcessorTest : public ::testing::Test {
     response->set_changes_remaining(0);
   }
 
-  const base::TimeTicks kTestStartTime;
-
- private:
-  void AddUpdateHandler(ModelType type) {
-    request_types_.Put(type);
-
-    UpdateHandler* handler = new MockUpdateHandler(type);
-    update_handler_map_.insert(std::make_pair(type, handler));
+  const UpdateHandler* GetHandler(ModelType type) {
+    UpdateHandlerMap::iterator it = update_handler_map_.find(type);
+    if (it == update_handler_map_.end())
+      return NULL;
+    return it->second;
   }
 
-  ModelTypeSet request_types_;
+  const base::TimeTicks kTestStartTime;
+
+ protected:
+  MockUpdateHandler* AddUpdateHandler(ModelType type) {
+    enabled_types_.Put(type);
+
+    MockUpdateHandler* handler = new MockUpdateHandler(type);
+    update_handler_map_.insert(std::make_pair(type, handler));
+
+    return handler;
+  }
+
+ private:
+  ModelTypeSet enabled_types_;
   UpdateHandlerMap update_handler_map_;
   STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
   scoped_ptr<GetUpdatesProcessor> get_updates_processor_;
@@ -85,7 +95,7 @@ TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
@@ -133,7 +143,7 @@ TEST_F(GetUpdatesProcessorTest, NotifyMany) {
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
@@ -167,7 +177,7 @@ TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
       sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, gu_msg.get_updates_origin());
@@ -180,7 +190,7 @@ TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }
-  EXPECT_TRUE(request_types().Equals(progress_types));
+  EXPECT_TRUE(enabled_types().Equals(progress_types));
 }
 
 TEST_F(GetUpdatesProcessorTest, PollTest) {
@@ -188,7 +198,7 @@ TEST_F(GetUpdatesProcessorTest, PollTest) {
   PollGetUpdatesDelegate poll_delegate;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(poll_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu_msg.get_updates_origin());
@@ -201,7 +211,7 @@ TEST_F(GetUpdatesProcessorTest, PollTest) {
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }
-  EXPECT_TRUE(request_types().Equals(progress_types));
+  EXPECT_TRUE(enabled_types().Equals(progress_types));
 }
 
 TEST_F(GetUpdatesProcessorTest, RetryTest) {
@@ -218,7 +228,7 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
@@ -232,7 +242,7 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }
-  EXPECT_TRUE(request_types().Equals(progress_types));
+  EXPECT_TRUE(enabled_types().Equals(progress_types));
 }
 
 TEST_F(GetUpdatesProcessorTest, NudgeWithRetryTest) {
@@ -252,7 +262,7 @@ TEST_F(GetUpdatesProcessorTest, NudgeWithRetryTest) {
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &message);
+  processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_NE(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
@@ -277,7 +287,7 @@ TEST_F(GetUpdatesProcessorTest, InvalidResponse) {
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error = processor->ProcessResponse(gu_response,
-                                                 request_types(),
+                                                 enabled_types(),
                                                  &status);
   EXPECT_EQ(error, SERVER_RESPONSE_VALIDATION_FAILED);
 }
@@ -294,7 +304,7 @@ TEST_F(GetUpdatesProcessorTest, MoreToDownloadResponse) {
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error = processor->ProcessResponse(gu_response,
-                                                 request_types(),
+                                                 enabled_types(),
                                                  &status);
   EXPECT_EQ(error, SERVER_MORE_TO_DOWNLOAD);
 }
@@ -311,9 +321,102 @@ TEST_F(GetUpdatesProcessorTest, NormalResponseTest) {
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error = processor->ProcessResponse(gu_response,
-                                                 request_types(),
+                                                 enabled_types(),
                                                  &status);
   EXPECT_EQ(error, SYNCER_OK);
+}
+
+// Variant of GetUpdatesProcessor test designed to test update application.
+//
+// Maintains two enabled types, but requests that updates be applied for only
+// one of them.
+class GetUpdatesProcessorApplyUpdatesTest : public GetUpdatesProcessorTest {
+ public:
+  GetUpdatesProcessorApplyUpdatesTest() {}
+  virtual ~GetUpdatesProcessorApplyUpdatesTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    bookmarks_handler_ = AddUpdateHandler(BOOKMARKS);
+    autofill_handler_ = AddUpdateHandler(AUTOFILL);
+  }
+
+  ModelTypeSet GetGuTypes() {
+    return ModelTypeSet(AUTOFILL);
+  }
+
+  MockUpdateHandler* GetNonAppliedHandler() {
+    return bookmarks_handler_;
+  }
+
+  MockUpdateHandler* GetAppliedHandler() {
+    return autofill_handler_;
+  }
+
+ private:
+  MockUpdateHandler* bookmarks_handler_;
+  MockUpdateHandler* autofill_handler_;
+};
+
+// Verify that a normal cycle applies updates non-passively to the specified
+// types.
+TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
+  sessions::NudgeTracker nudge_tracker;
+  NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
+  scoped_ptr<GetUpdatesProcessor> processor(
+      BuildGetUpdatesProcessor(normal_delegate));
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
+
+  sessions::StatusController status;
+  processor->ApplyUpdates(GetGuTypes(), &status);
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(1, GetAppliedHandler()->GetApplyUpdatesCount());
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+}
+
+// Verify that a configure cycle applies updates passively to the specified
+// types.
+TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
+  ConfigureGetUpdatesDelegate configure_delegate(
+      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
+  scoped_ptr<GetUpdatesProcessor> processor(
+      BuildGetUpdatesProcessor(configure_delegate));
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+
+  sessions::StatusController status;
+  processor->ApplyUpdates(GetGuTypes(), &status);
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
+  EXPECT_EQ(1, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
+}
+
+// Verify that a poll cycle applies updates non-passively to the specified
+// types.
+TEST_F(GetUpdatesProcessorApplyUpdatesTest, Poll) {
+  PollGetUpdatesDelegate poll_delegate;
+  scoped_ptr<GetUpdatesProcessor> processor(
+      BuildGetUpdatesProcessor(poll_delegate));
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
+
+  sessions::StatusController status;
+  processor->ApplyUpdates(GetGuTypes(), &status);
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(1, GetAppliedHandler()->GetApplyUpdatesCount());
+
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
 }
 
 class DownloadUpdatesDebugInfoTest : public ::testing::Test {
@@ -337,7 +440,6 @@ class DownloadUpdatesDebugInfoTest : public ::testing::Test {
   sessions::StatusController status_;
   MockDebugInfoGetter debug_info_getter_;
 };
-
 
 // Verify CopyClientDebugInfo when there are no events to upload.
 TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyClientDebugInfo_Empty) {

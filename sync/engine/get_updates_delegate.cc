@@ -15,20 +15,24 @@ namespace syncer {
 namespace {
 
 void NonPassiveApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) {
   for (UpdateHandlerMap::iterator it = update_handler_map->begin();
        it != update_handler_map->end(); ++it) {
-    it->second->ApplyUpdates(status_controller);
+    if (gu_types.Has(it->first))
+      it->second->ApplyUpdates(status_controller);
   }
 }
 
 void PassiveApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) {
   for (UpdateHandlerMap::iterator it = update_handler_map->begin();
        it != update_handler_map->end(); ++it) {
-    it->second->PassiveApplyUpdates(status_controller);
+    if (gu_types.Has(it->first))
+      it->second->PassiveApplyUpdates(status_controller);
   }
 }
 
@@ -78,9 +82,10 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void NormalGetUpdatesDelegate::ApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
-  NonPassiveApplyUpdates(status_controller, update_handler_map);
+  NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
 scoped_ptr<ProtocolEvent> NormalGetUpdatesDelegate::GetNetworkRequestEvent(
@@ -102,9 +107,10 @@ void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void ConfigureGetUpdatesDelegate::ApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
-  PassiveApplyUpdates(status_controller, update_handler_map);
+  PassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
 scoped_ptr<ProtocolEvent> ConfigureGetUpdatesDelegate::GetNetworkRequestEvent(
@@ -151,9 +157,10 @@ void PollGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void PollGetUpdatesDelegate::ApplyUpdates(
+    ModelTypeSet gu_types,
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
-  NonPassiveApplyUpdates(status_controller, update_handler_map);
+  NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
 scoped_ptr<ProtocolEvent> PollGetUpdatesDelegate::GetNetworkRequestEvent(

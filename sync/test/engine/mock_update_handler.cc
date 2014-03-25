@@ -8,7 +8,9 @@
 
 namespace syncer {
 
-MockUpdateHandler::MockUpdateHandler(ModelType type) {
+MockUpdateHandler::MockUpdateHandler(ModelType type)
+    : apply_updates_count_(0),
+      passive_apply_updates_count_(0) {
   progress_marker_.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
   const std::string& token_str =
       std::string("Mock token: ") + std::string(ModelTypeToString(type));
@@ -29,9 +31,21 @@ void MockUpdateHandler::ProcessGetUpdatesResponse(
   progress_marker_.CopyFrom(progress_marker);
 }
 
-void MockUpdateHandler::ApplyUpdates(sessions::StatusController* status) {}
+void MockUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
+  apply_updates_count_++;
+}
 
 void MockUpdateHandler::PassiveApplyUpdates(
-    sessions::StatusController* status) {}
+    sessions::StatusController* status) {
+  passive_apply_updates_count_++;
+}
+
+int MockUpdateHandler::GetApplyUpdatesCount() {
+  return apply_updates_count_;
+}
+
+int MockUpdateHandler::GetPassiveApplyUpdatesCount() {
+  return passive_apply_updates_count_;
+}
 
 }  // namespace syncer

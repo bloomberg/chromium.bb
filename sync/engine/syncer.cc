@@ -146,7 +146,8 @@ bool Syncer::DownloadAndApplyUpdates(
     // Apply upates to the other types.  May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's
     // delegate.
-    get_updates_processor->ApplyUpdates(session->mutable_status_controller());
+    get_updates_processor->ApplyUpdates(request_types,
+                                        session->mutable_status_controller());
 
     session->context()->set_hierarchy_conflict_detected(
         session->status_controller().num_hierarchy_conflicts() > 0);
