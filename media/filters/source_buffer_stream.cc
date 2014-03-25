@@ -2175,7 +2175,7 @@ bool SourceBufferRange::GetBuffersInRange(base::TimeDelta start,
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     // Buffers without duration are not supported, so bail if we encounter any.
     if (buffer->duration() == kNoTimestamp() ||
-        buffer->duration() < base::TimeDelta()) {
+        buffer->duration() <= base::TimeDelta()) {
       return false;
     }
     if (buffer->end_of_stream() || buffer->timestamp() >= end)

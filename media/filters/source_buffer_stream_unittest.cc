@@ -3672,6 +3672,17 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_DoubleSpliceLaterOverlap) {
   CheckNoNextBuffer();
 }
 
+// Test that a splice is not created if an end timestamp and start timestamp
+// overlap.
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K");
+  NewSegmentAppend("12K 14K 16K 18K");
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K 14K 16K 18K");
+  CheckNoNextBuffer();
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 
