@@ -54,6 +54,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // For http, |is_https| is false and |cert_verifier| can be null.
   int Request(const HostPortPair& host_port_pair,
               bool is_https,
+              PrivacyMode privacy_mode,
               base::StringPiece method,
               const BoundNetLog& net_log,
               const CompletionCallback& callback);
@@ -108,6 +109,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // asynchronously.
   int Create(const HostPortPair& host_port_pair,
              bool is_https,
+             PrivacyMode privacy_mode,
              base::StringPiece method,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
@@ -164,7 +166,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   class Job;
   friend class test::QuicStreamFactoryPeer;
 
-  // The key used to find session by hostname. Includes
+  // The key used to find session by ip. Includes
   // the ip address, port, and scheme.
   struct NET_EXPORT_PRIVATE IpAliasKey {
     IpAliasKey();
@@ -200,8 +202,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const QuicSessionKey& session_key) const;
   bool HasActiveJob(const QuicSessionKey& session_key) const;
-  int CreateSession(const HostPortPair& host_port_pair,
-                    bool is_https,
+  int CreateSession(const QuicSessionKey& session_key,
                     scoped_ptr<QuicServerInfo> quic_server_info,
                     const AddressList& address_list,
                     const BoundNetLog& net_log,

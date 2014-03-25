@@ -156,7 +156,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     uint port = 0;
     server_address_ = IPEndPoint(ip, port);
-    server_key_ = QuicSessionKey("example.com", port, false);
+    server_key_ = QuicSessionKey("example.com", port, false,
+                                 kPrivacyModeDisabled);
 
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
@@ -225,8 +226,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
-    server_key_ = QuicSessionKey(server_key_.host(),
-                                  server_thread_->GetPort(), false);
+    server_key_ = QuicSessionKey(server_key_.host(), server_thread_->GetPort(),
+                                 false, kPrivacyModeDisabled);
 
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
