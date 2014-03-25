@@ -29,5 +29,5 @@
  */
 
 interface HTMLShadowElement : HTMLElement {
-    [RuntimeEnabled=ShadowDOM] NodeList getDistributedNodes();
+    NodeList getDistributedNodes();
 };

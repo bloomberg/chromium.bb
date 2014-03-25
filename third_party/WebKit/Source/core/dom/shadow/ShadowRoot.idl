@@ -29,7 +29,7 @@
 ] interface ShadowRoot : DocumentFragment {
     readonly attribute Element activeElement;
     [DeprecateAs=ShadowRootApplyAuthorStyles] attribute boolean applyAuthorStyles;
-    [RuntimeEnabled=ShadowDOM, ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
+    [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
 
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
 
@@ -44,6 +44,6 @@
     Element elementFromPoint([Default=Undefined] optional long x,
                              [Default=Undefined] optional long y);
 
-    [RuntimeEnabled=ShadowDOM] readonly attribute StyleSheetList styleSheets;
-    [RuntimeEnabled=ShadowDOM] readonly attribute Element host;
+    readonly attribute StyleSheetList styleSheets;
+    readonly attribute Element host;
 };

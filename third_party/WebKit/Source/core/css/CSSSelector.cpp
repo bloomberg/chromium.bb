@@ -372,7 +372,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
                 if (!RuntimeEnabledFeatures::shadowDOMEnabled())
                     continue;
             }
-
             const char* str = pseudoTypeMap[i].string;
             CSSSelector::PseudoType type;
             type = static_cast<CSSSelector::PseudoType>(pseudoTypeMap[i].type);

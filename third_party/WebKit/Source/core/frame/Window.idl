@@ -233,7 +233,7 @@
     // Unprefixed ShadowRoot constructor should be visible when the feature flag is enabled.
     // FIXME: When it's ready to remove WebKitShadowRoot, get rid of both constructors from Window.idl and remove
     // [NoInterfaceObject] from ShadowRoot interface definition.
-    [RuntimeEnabled=ShadowDOM] attribute ShadowRootConstructor ShadowRoot;
+    attribute ShadowRootConstructor ShadowRoot;
     [MeasureAs=PrefixedShadowRootConstructor] attribute ShadowRootConstructor WebKitShadowRoot;
 
     // window.toString() requires special handling in V8

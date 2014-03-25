@@ -1049,8 +1049,6 @@ combinator:
     // FIXME: implement named combinator and replace the following /shadow/, /shadow-child/ and
     // /shadow-deep/ with named combinator's implementation.
     | '/' IDENT '/' maybe_space {
-        if (!RuntimeEnabledFeatures::shadowDOMEnabled())
-            YYERROR;
         if ($2.equalIgnoringCase("shadow"))
             $$ = CSSSelector::Shadow;
         else if ($2.equalIgnoringCase("shadow-deep"))
@@ -1905,4 +1903,3 @@ rule_error_recovery:
     ;
 
 %%
-

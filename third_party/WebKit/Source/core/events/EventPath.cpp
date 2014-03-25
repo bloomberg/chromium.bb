@@ -131,7 +131,7 @@ void EventPath::resetWith(Node* node)
     m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
-    if (RuntimeEnabledFeatures::shadowDOMEnabled() && !node->isSVGElement())
+    if (!node->isSVGElement())
         calculateTreeScopePrePostOrderNumbers();
 }
 

@@ -71,7 +71,7 @@
     [ImplementedAs=legacyReturnValue, MeasureAs=EventReturnValue] attribute boolean returnValue;
              attribute boolean          cancelBubble;
 
-    [RuntimeEnabled=ShadowDOM] readonly attribute NodeList path;
+    readonly attribute NodeList path;
 
     [Custom=Getter] readonly attribute DataTransfer clipboardData;
 };
