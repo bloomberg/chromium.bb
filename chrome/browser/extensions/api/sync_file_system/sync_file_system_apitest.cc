@@ -104,13 +104,33 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
+// Flaky on WinXP Tests(1): http://crbug.com/354425
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_GetFileStatus DISABLED_GetFileStatus
+#else
+#define MAYBE_GetFileStatus GetFileStatus
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatus) {
   EXPECT_CALL(*mock_remote_service(), IsConflicting(_)).WillOnce(Return(true));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_status"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatuses) {
+#if defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && defined(ARCH_CPU_X86))
+// SyncFileSystemApiTest.GetFileStatuses fails under AddressSanitizer
+// on Precise. See http://crbug.com/230779.
+// Also fails on WinXP Tests(1). See crbug.com/354425 .
+#define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
+#else
+#define MAYBE_GetFileStatuses GetFileStatuses
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
   // Mocking to return IsConflicting() == true only for the path "Conflicting".
   base::FilePath conflicting = base::FilePath::FromUTF8Unsafe("Conflicting");
   EXPECT_CALL(*mock_remote_service(),
@@ -124,7 +144,14 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatuses) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
+// Test is flaky, it fails only on a certain bot, namely WinXP Tests(1).
+// See crbug.com/354425 .
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_GetUsageAndQuota DISABLED_GetUsageAndQuota
+#else
+#define MAYBE_GetUsageAndQuota GetUsageAndQuota
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetUsageAndQuota) {
   ASSERT_TRUE(RunExtensionTest("sync_file_system/get_usage_and_quota"))
       << message_;
 }
@@ -175,7 +202,14 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
+// Test is flaky, it fails only on a certain bot, namely WinXP Tests(1).
+// See crbug.com/354425 .
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_WriteFileThenGetUsage DISABLED_WriteFileThenGetUsage
+#else
+#define MAYBE_WriteFileThenGetUsage WriteFileThenGetUsage
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_WriteFileThenGetUsage) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/write_file_then_get_usage"))
       << message_;
 }
