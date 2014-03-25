@@ -1047,11 +1047,11 @@ combinator:
     | '~' maybe_space { $$ = CSSSelector::IndirectAdjacent; }
     | '>' maybe_space { $$ = CSSSelector::Child; }
     // FIXME: implement named combinator and replace the following /shadow/, /shadow-child/ and
-    // /shadow-deep/ with named combinator's implementation.
+    // /deep/ with named combinator's implementation.
     | '/' IDENT '/' maybe_space {
         if ($2.equalIgnoringCase("shadow"))
             $$ = CSSSelector::Shadow;
-        else if ($2.equalIgnoringCase("shadow-deep"))
+        else if ($2.equalIgnoringCase("deep"))
             $$ = CSSSelector::ShadowDeep;
         else
             YYERROR;

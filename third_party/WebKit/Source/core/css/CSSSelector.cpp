@@ -706,7 +706,7 @@ String CSSSelector::selectorText(const String& rightSide) const
         case CSSSelector::Shadow:
             return tagHistory->selectorText(" /shadow/ " + str.toString() + rightSide);
         case CSSSelector::ShadowDeep:
-            return tagHistory->selectorText(" /shadow-deep/ " + str.toString() + rightSide);
+            return tagHistory->selectorText(" /deep/ " + str.toString() + rightSide);
         case CSSSelector::DirectAdjacent:
             return tagHistory->selectorText(" + " + str.toString() + rightSide);
         case CSSSelector::IndirectAdjacent:
