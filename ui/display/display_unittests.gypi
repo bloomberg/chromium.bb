@@ -8,11 +8,13 @@
   'dependencies': [
     '../base/base.gyp:test_support_base',
     '../testing/gtest.gyp:gtest',
+    '../ui/display/display.gyp:display',
     '../ui/gfx/gfx.gyp:gfx_geometry',
   ],
   'sources': [
+    'edid_parser_unittest.cc',
     'chromeos/output_configurator_unittest.cc',
-    'chromeos/x11/display_util_unittest.cc',
+    'chromeos/x11/display_util_x11_unittest.cc',
     'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',
   ],
   'conditions': [
@@ -21,7 +23,6 @@
     # not like empty libraries.
     ['chromeos == 1', {
       'dependencies': [
-        '../ui/display/display.gyp:display',
         '../ui/display/display.gyp:display_test_util',
       ],
     }],

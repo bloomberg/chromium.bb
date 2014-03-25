@@ -1,17 +1,16 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/x11/edid_parser_x11.h"
+#include "ui/display/edid_parser.h"
 
-#include <X11/extensions/Xrandr.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
+#include <algorithm>
 
 #include "base/hash.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+
+namespace ui {
 
 namespace {
 
@@ -29,78 +28,11 @@ int64 GetID(uint16 manufacturer_id,
           (static_cast<int64>(product_code_hash) << 8) | output_index);
 }
 
-bool IsRandRAvailable() {
-  int randr_version_major = 0;
-  int randr_version_minor = 0;
-  static bool is_randr_available = XRRQueryVersion(
-      base::MessagePumpX11::GetDefaultXDisplay(),
-      &randr_version_major, &randr_version_minor);
-  return is_randr_available;
-}
-
 }  // namespace
-
-namespace base {
-
-bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
-  if (!IsRandRAvailable())
-    return false;
-
-  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
-
-  static Atom edid_property = XInternAtom(
-      base::MessagePumpX11::GetDefaultXDisplay(),
-      RR_PROPERTY_RANDR_EDID, false);
-
-  bool has_edid_property = false;
-  int num_properties = 0;
-  Atom* properties = XRRListOutputProperties(display, output, &num_properties);
-  for (int i = 0; i < num_properties; ++i) {
-    if (properties[i] == edid_property) {
-      has_edid_property = true;
-      break;
-    }
-  }
-  XFree(properties);
-  if (!has_edid_property)
-    return false;
-
-  Atom actual_type;
-  int actual_format;
-  unsigned long bytes_after;
-  XRRGetOutputProperty(display,
-                       output,
-                       edid_property,
-                       0,                // offset
-                       128,              // length
-                       false,            // _delete
-                       false,            // pending
-                       AnyPropertyType,  // req_type
-                       &actual_type,
-                       &actual_format,
-                       nitems,
-                       &bytes_after,
-                       prop);
-  DCHECK_EQ(XA_INTEGER, actual_type);
-  DCHECK_EQ(8, actual_format);
-  return true;
-}
-
-bool GetDisplayId(XID output_id, size_t output_index, int64* display_id_out) {
-  unsigned long nitems = 0;
-  unsigned char* prop = NULL;
-  if (!GetEDIDProperty(output_id, &nitems, &prop))
-    return false;
-
-  bool result =
-      GetDisplayIdFromEDID(prop, nitems, output_index, display_id_out);
-  XFree(prop);
-  return result;
-}
 
 bool GetDisplayIdFromEDID(const unsigned char* prop,
                           unsigned long nitems,
-                          size_t output_index,
+                          uint8 output_index,
                           int64* display_id_out) {
   uint16 manufacturer_id = 0;
   std::string product_name;
@@ -174,7 +106,8 @@ bool ParseOutputDeviceData(const unsigned char* prop,
       if (desc_buf[3] == kMonitorNameDescriptor) {
         std::string found_name(
             reinterpret_cast<const char*>(desc_buf + 5), kDescriptorLength - 5);
-        TrimWhitespaceASCII(found_name, TRIM_TRAILING, human_readable_name);
+        base::TrimWhitespaceASCII(
+            found_name, base::TRIM_TRAILING, human_readable_name);
         break;
       }
     }
@@ -193,4 +126,83 @@ bool ParseOutputDeviceData(const unsigned char* prop,
   return true;
 }
 
-}  // namespace base
+bool ParseOutputOverscanFlag(const unsigned char* prop,
+                             unsigned long nitems,
+                             bool* flag) {
+  // See http://en.wikipedia.org/wiki/Extended_display_identification_data
+  // for the extension format of EDID.  Also see EIA/CEA-861 spec for
+  // the format of the extensions and how video capability is encoded.
+  //  - byte 0: tag.  should be 02h.
+  //  - byte 1: revision.  only cares revision 3 (03h).
+  //  - byte 4-: data block.
+  const unsigned int kExtensionBase = 128;
+  const unsigned int kExtensionSize = 128;
+  const unsigned int kNumExtensionsOffset = 126;
+  const unsigned int kDataBlockOffset = 4;
+  const unsigned char kCEAExtensionTag = '\x02';
+  const unsigned char kExpectedExtensionRevision = '\x03';
+  const unsigned char kExtendedTag = 7;
+  const unsigned char kExtendedVideoCapabilityTag = 0;
+  const unsigned int kPTOverscan = 4;
+  const unsigned int kITOverscan = 2;
+  const unsigned int kCEOverscan = 0;
+
+  if (nitems <= kNumExtensionsOffset)
+    return false;
+
+  unsigned char num_extensions = prop[kNumExtensionsOffset];
+
+  for (size_t i = 0; i < num_extensions; ++i) {
+    // Skip parsing the whole extension if size is not enough.
+    if (nitems < kExtensionBase + (i + 1) * kExtensionSize)
+      break;
+
+    const unsigned char* extension = prop + kExtensionBase + i * kExtensionSize;
+    unsigned char tag = extension[0];
+    unsigned char revision = extension[1];
+    if (tag != kCEAExtensionTag || revision != kExpectedExtensionRevision)
+      continue;
+
+    unsigned char timing_descriptors_start =
+        std::min(extension[2], static_cast<unsigned char>(kExtensionSize));
+    const unsigned char* data_block = extension + kDataBlockOffset;
+    while (data_block < extension + timing_descriptors_start) {
+      // A data block is encoded as:
+      // - byte 1 high 3 bits: tag. '07' for extended tags.
+      // - byte 1 remaining bits: the length of data block.
+      // - byte 2: the extended tag.  '0' for video capability.
+      // - byte 3: the capability.
+      unsigned char tag = data_block[0] >> 5;
+      unsigned char payload_length = data_block[0] & 0x1f;
+      if (static_cast<unsigned long>(data_block + payload_length - prop) >
+          nitems)
+        break;
+
+      if (tag != kExtendedTag || payload_length < 2) {
+        data_block += payload_length + 1;
+        continue;
+      }
+
+      unsigned char extended_tag_code = data_block[1];
+      if (extended_tag_code != kExtendedVideoCapabilityTag) {
+        data_block += payload_length + 1;
+        continue;
+      }
+
+      // The difference between preferred, IT, and CE video formats
+      // doesn't matter. Sets |flag| to true if any of these flags are true.
+      if ((data_block[2] & (1 << kPTOverscan)) ||
+          (data_block[2] & (1 << kITOverscan)) ||
+          (data_block[2] & (1 << kCEOverscan))) {
+        *flag = true;
+      } else {
+        *flag = false;
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace ui

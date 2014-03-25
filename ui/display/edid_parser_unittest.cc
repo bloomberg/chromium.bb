@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/edid_parser.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <X11/extensions/Xrandr.h>
 
 namespace ui {
 
@@ -57,7 +55,7 @@ const unsigned char kOverscanDisplay[] =
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6";
 
 // The EDID info misdetecting overscan once. see crbug.com/226318
-const unsigned char kMisdetecedDisplay[] =
+const unsigned char kMisdetectedDisplay[] =
     "\x00\xff\xff\xff\xff\xff\xff\x00\x10\xac\x64\x40\x4c\x30\x30\x32"
     "\x0c\x15\x01\x03\x80\x40\x28\x78\xea\x8d\x85\xad\x4f\x35\xb1\x25"
     "\x0e\x50\x54\xa5\x4b\x00\x71\x4f\x81\x00\x81\x80\xd1\x00\xa9\x40"
@@ -75,9 +73,29 @@ const unsigned char kMisdetecedDisplay[] =
     "\x0a\xd0\x8a\x20\xe0\x2d\x10\x10\x3e\x96\x00\x81\x91\x21\x00\x00"
     "\x18\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x94";
 
+const unsigned char kLP2565A[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x76\x26\x01\x01\x01\x01"
+    "\x02\x12\x01\x03\x80\x34\x21\x78\xEE\xEF\x95\xA3\x54\x4C\x9B\x26"
+    "\x0F\x50\x54\xA5\x6B\x80\x81\x40\x81\x80\x81\x99\x71\x00\xA9\x00"
+    "\xA9\x40\xB3\x00\xD1\x00\x28\x3C\x80\xA0\x70\xB0\x23\x40\x30\x20"
+    "\x36\x00\x07\x44\x21\x00\x00\x1A\x00\x00\x00\xFD\x00\x30\x55\x1E"
+    "\x5E\x11\x00\x0A\x20\x20\x20\x20\x20\x20\x00\x00\x00\xFC\x00\x48"
+    "\x50\x20\x4C\x50\x32\x34\x36\x35\x0A\x20\x20\x20\x00\x00\x00\xFF"
+    "\x00\x43\x4E\x4B\x38\x30\x32\x30\x34\x48\x4D\x0A\x20\x20\x00\xA4";
+
+const unsigned char kLP2565B[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x75\x26\x01\x01\x01\x01"
+    "\x02\x12\x01\x03\x6E\x34\x21\x78\xEE\xEF\x95\xA3\x54\x4C\x9B\x26"
+    "\x0F\x50\x54\xA5\x6B\x80\x81\x40\x71\x00\xA9\x00\xA9\x40\xA9\x4F"
+    "\xB3\x00\xD1\xC0\xD1\x00\x28\x3C\x80\xA0\x70\xB0\x23\x40\x30\x20"
+    "\x36\x00\x07\x44\x21\x00\x00\x1A\x00\x00\x00\xFD\x00\x30\x55\x1E"
+    "\x5E\x15\x00\x0A\x20\x20\x20\x20\x20\x20\x00\x00\x00\xFC\x00\x48"
+    "\x50\x20\x4C\x50\x32\x34\x36\x35\x0A\x20\x20\x20\x00\x00\x00\xFF"
+    "\x00\x43\x4E\x4B\x38\x30\x32\x30\x34\x48\x4D\x0A\x20\x20\x00\x45";
+
 }  // namespace
 
-TEST(DisplayUtilTest, ParseOverscanFlag) {
+TEST(EDIDParserTest, ParseOverscanFlag) {
   bool flag = false;
   EXPECT_FALSE(
       ParseOutputOverscanFlag(kNormalDisplay, charsize(kNormalDisplay), &flag));
@@ -93,7 +111,7 @@ TEST(DisplayUtilTest, ParseOverscanFlag) {
 
   flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(
-      kMisdetecedDisplay, charsize(kMisdetecedDisplay), &flag));
+      kMisdetectedDisplay, charsize(kMisdetectedDisplay), &flag));
 
   flag = false;
   // Copy |kOverscanDisplay| and set flags to false in it. The overscan flags
@@ -109,7 +127,7 @@ TEST(DisplayUtilTest, ParseOverscanFlag) {
   EXPECT_FALSE(flag);
 }
 
-TEST(DisplayUtilTest, ParseBrokenOverscanData) {
+TEST(EDIDParserTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
   scoped_ptr<unsigned char[]> data(new unsigned char[126]);
   bool flag = false;
@@ -124,34 +142,90 @@ TEST(DisplayUtilTest, ParseBrokenOverscanData) {
   EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 150, &flag));
 }
 
-TEST(DisplayUtilTest, GetOutputTypeFromName) {
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("LVDS"));
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("eDP"));
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("DSI"));
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("LVDSxx"));
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("eDPzz"));
-  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("DSIyy"));
+TEST(EDIDParserTest, ParseEDID) {
+  uint16 manufacturer_id = 0;
+  std::string human_readable_name;
+  EXPECT_TRUE(ParseOutputDeviceData(
+      kNormalDisplay, charsize(kNormalDisplay),
+      &manufacturer_id, &human_readable_name));
+  EXPECT_EQ(0x22f0u, manufacturer_id);
+  EXPECT_EQ("HP ZR30w", human_readable_name);
 
-  EXPECT_EQ(OUTPUT_TYPE_VGA, GetOutputTypeFromName("VGA"));
-  EXPECT_EQ(OUTPUT_TYPE_VGA, GetOutputTypeFromName("VGAxx"));
-  EXPECT_EQ(OUTPUT_TYPE_HDMI, GetOutputTypeFromName("HDMI"));
-  EXPECT_EQ(OUTPUT_TYPE_HDMI, GetOutputTypeFromName("HDMIyy"));
-  EXPECT_EQ(OUTPUT_TYPE_DVI, GetOutputTypeFromName("DVI"));
-  EXPECT_EQ(OUTPUT_TYPE_DVI, GetOutputTypeFromName("DVIzz"));
-  EXPECT_EQ(OUTPUT_TYPE_DISPLAYPORT, GetOutputTypeFromName("DP"));
-  EXPECT_EQ(OUTPUT_TYPE_DISPLAYPORT, GetOutputTypeFromName("DPww"));
+  manufacturer_id = 0;
+  human_readable_name.clear();
+  EXPECT_TRUE(ParseOutputDeviceData(
+      kInternalDisplay, charsize(kInternalDisplay),
+      &manufacturer_id, NULL));
+  EXPECT_EQ(0x4ca3u, manufacturer_id);
+  EXPECT_EQ("", human_readable_name);
 
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("xyz"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("abcLVDS"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("cdeeDP"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("abcDSI"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("LVD"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("eD"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("DS"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("VG"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("HDM"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("DV"));
-  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("D"));
+  // Internal display doesn't have name.
+  EXPECT_TRUE(ParseOutputDeviceData(
+      kInternalDisplay, charsize(kInternalDisplay),
+      NULL, &human_readable_name));
+  EXPECT_TRUE(human_readable_name.empty());
+
+  manufacturer_id = 0;
+  human_readable_name.clear();
+  EXPECT_TRUE(ParseOutputDeviceData(
+      kOverscanDisplay, charsize(kOverscanDisplay),
+      &manufacturer_id, &human_readable_name));
+  EXPECT_EQ(0x4c2du, manufacturer_id);
+  EXPECT_EQ("SAMSUNG", human_readable_name);
 }
 
-}  // namespace ui
+TEST(EDIDParserTest, ParseBrokenEDID) {
+  uint16 manufacturer_id = 0;
+  std::string human_readable_name;
+
+  // length == 0
+  EXPECT_FALSE(ParseOutputDeviceData(
+      kNormalDisplay, 0,
+      &manufacturer_id, &human_readable_name));
+
+  // name is broken. Copying kNormalDisplay and substitute its name data by
+  // some control code.
+  std::string display_data(
+      reinterpret_cast<const char*>(kNormalDisplay), charsize(kNormalDisplay));
+
+  // display's name data is embedded in byte 95-107 in this specific example.
+  // Fix here too when the contents of kNormalDisplay is altered.
+  display_data[97] = '\x1b';
+  EXPECT_FALSE(ParseOutputDeviceData(
+      reinterpret_cast<const unsigned char*>(display_data.data()),
+      display_data.size(),
+      &manufacturer_id, &human_readable_name));
+
+  // If |human_readable_name| isn't specified, it skips parsing the name.
+  manufacturer_id = 0;
+  EXPECT_TRUE(ParseOutputDeviceData(
+      reinterpret_cast<const unsigned char*>(display_data.data()),
+      display_data.size(),
+      &manufacturer_id, NULL));
+  EXPECT_EQ(0x22f0u, manufacturer_id);
+}
+
+TEST(EDIDParserTest, GetDisplayId) {
+  // EDID of kLP2565A and B are slightly different but actually the same device.
+  int64 id1 = -1;
+  int64 id2 = -1;
+  EXPECT_TRUE(GetDisplayIdFromEDID(kLP2565A, charsize(kLP2565A), 0, &id1));
+  EXPECT_TRUE(GetDisplayIdFromEDID(kLP2565B, charsize(kLP2565B), 0, &id2));
+  EXPECT_EQ(id1, id2);
+  EXPECT_NE(-1, id1);
+}
+
+TEST(EDIDParserTest, GetDisplayIdFromInternal) {
+  int64 id = -1;
+  EXPECT_TRUE(GetDisplayIdFromEDID(
+      kInternalDisplay, charsize(kInternalDisplay), 0, &id));
+  EXPECT_NE(-1, id);
+}
+
+TEST(EDIDParserTest, GetDisplayIdFailure) {
+  int64 id = -1;
+  EXPECT_FALSE(GetDisplayIdFromEDID(NULL, 0, 0, &id));
+  EXPECT_EQ(-1, id);
+}
+
+}   // namespace ui

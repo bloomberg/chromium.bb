@@ -433,6 +433,11 @@
             'bubble/tray_bubble_view.h',
           ],
         }],
+        ['chromeos==0 and use_x11==1', {
+          'dependencies': [
+            '../display/display.gyp:display',
+          ],
+        }],
         ['OS=="linux" and chromeos==0', {
           'dependencies': [
             '../shell_dialogs/shell_dialogs.gyp:shell_dialogs',

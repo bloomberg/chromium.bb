@@ -12,12 +12,12 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/x11/edid_parser_x11.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/x11/edid_parser_x11.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -376,7 +376,7 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
                                          output_info->crtc);
 
       int64 display_id = -1;
-      if (!base::GetDisplayId(output_id, i, &display_id)) {
+      if (!ui::GetDisplayId(output_id, static_cast<uint8>(i), &display_id)) {
         // It isn't ideal, but if we can't parse the EDID data, fallback on the
         // display number.
         display_id = i;

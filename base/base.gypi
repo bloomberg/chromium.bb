@@ -712,14 +712,6 @@
           'win/wrapped_window_proc.cc',
           'win/wrapped_window_proc.h',
         ],
-        'conditions': [
-          ['use_aura==1 and use_x11==1', {
-            'sources': [
-              'x11/edid_parser_x11.cc',
-              'x11/edid_parser_x11.h',
-            ],
-          }],
-        ],
         'defines': [
           'BASE_IMPLEMENTATION',
         ],

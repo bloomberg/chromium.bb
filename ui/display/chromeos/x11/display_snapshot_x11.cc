@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
-#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/x11/edid_parser_x11.h"
 
 namespace ui {
 

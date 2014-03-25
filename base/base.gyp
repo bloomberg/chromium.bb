@@ -785,11 +785,6 @@
             '../third_party/libevent/libevent.gyp:libevent'
           ],
         }],
-        ['use_aura==1 and use_x11==1',  {
-          'sources': [
-            'x11/edid_parser_x11_unittest.cc',
-          ],
-        }],
       ],  # conditions
       'target_conditions': [
         ['OS == "ios" and _toolset != "host"', {

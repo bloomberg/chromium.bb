@@ -16,12 +16,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
-#include "base/x11/edid_parser_x11.h"
 #include "ui/display/chromeos/native_display_observer.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
-#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/chromeos/x11/display_util_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
+#include "ui/display/x11/edid_parser_x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
 namespace ui {
@@ -343,7 +343,8 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     RRCrtc* last_used_crtc,
     int index) {
   int64_t display_id = 0;
-  bool has_display_id = base::GetDisplayId(id, index, &display_id);
+  bool has_display_id = GetDisplayId(
+      id, static_cast<uint8>(index), &display_id);
 
   OutputType type = GetOutputTypeFromName(info->name);
   if (type == OUTPUT_TYPE_UNKNOWN)
