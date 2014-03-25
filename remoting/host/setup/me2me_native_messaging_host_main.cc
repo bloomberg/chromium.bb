@@ -10,16 +10,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/url_request/url_fetcher.h"
-#include "remoting/base/breakpad.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
-#include "remoting/host/usage_stats_consent.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -60,20 +54,6 @@ bool IsProcessElevated() {
 #endif  // defined(OS_WIN)
 
 int StartMe2MeNativeMessagingHost() {
-#if defined(OS_MACOSX)
-  // Needed so we don't leak objects when threads are created.
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif  // defined(OS_MACOSX)
-
-#if defined(REMOTING_ENABLE_BREAKPAD)
-  // Initialize Breakpad as early as possible. On Mac the command-line needs to
-  // be initialized first, so that the preference for crash-reporting can be
-  // looked up in the config file.
-  if (IsUsageStatsAllowed()) {
-    InitializeCrashReporting();
-  }
-#endif  // defined(REMOTING_ENABLE_BREAKPAD)
-
   // Mac OS X requires that the main thread be a UI message loop in order to
   // receive distributed notifications from the System Preferences pane. An
   // IO thread is needed for the pairing registry and URL context getter.

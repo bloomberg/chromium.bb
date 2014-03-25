@@ -4,10 +4,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-ME2ME_HOST="/Library/PrivilegedHelperTools/ChromeRemoteDesktopHost.bundle"
+ME2ME_HOST="/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app"
 UNINSTALLER_CHROME="/Applications/Chrome Remote Desktop Host Uninstaller.app"
 UNINSTALLER_CHROMIUM="/Applications/Chromoting Host Uninstaller.app"
-PREFPANE="/Library/PreferencePanes/ChromeRemoteDesktop.prefPane"
+PREFPANE="/Library/PreferencePanes/org.chromium.chromoting.prefPane"
 KEYSTONE="/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle"
 
 INFO_PLIST="Contents/Info.plist"
