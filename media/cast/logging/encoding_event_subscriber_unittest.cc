@@ -17,6 +17,14 @@ using media::cast::proto::AggregatedPacketEvent;
 using media::cast::proto::BasePacketEvent;
 using media::cast::proto::LogMetadata;
 
+namespace {
+
+int64 InMilliseconds(base::TimeTicks event_time) {
+  return (event_time - base::TimeTicks()).InMilliseconds();
+}
+
+}
+
 namespace media {
 namespace cast {
 
@@ -164,8 +172,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_FRAME_DECODED, event->event_type(0));
-  ASSERT_EQ(1, event->event_timestamp_micros_size());
-  EXPECT_EQ(now.ToInternalValue(), event->event_timestamp_micros(0));
+  ASSERT_EQ(1, event->event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
   EXPECT_EQ(0, event->encoded_frame_size());
   EXPECT_EQ(0, event->delay_millis());
@@ -197,8 +205,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
-  ASSERT_EQ(1, event->event_timestamp_micros_size());
-  EXPECT_EQ(now.ToInternalValue(), event->event_timestamp_micros(0));
+  ASSERT_EQ(1, event->event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
   EXPECT_EQ(0, event->encoded_frame_size());
   EXPECT_EQ(100, event->delay_millis());
@@ -227,8 +235,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_FRAME_ENCODED, event->event_type(0));
-  ASSERT_EQ(1, event->event_timestamp_micros_size());
-  EXPECT_EQ(now.ToInternalValue(), event->event_timestamp_micros(0));
+  ASSERT_EQ(1, event->event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
   EXPECT_EQ(size, event->encoded_frame_size());
   EXPECT_EQ(0, event->delay_millis());
@@ -270,9 +278,9 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
   EXPECT_EQ(media::cast::proto::AUDIO_FRAME_DECODED, event->event_type(1));
 
-  ASSERT_EQ(2, event->event_timestamp_micros_size());
-  EXPECT_EQ(now1.ToInternalValue(), event->event_timestamp_micros(0));
-  EXPECT_EQ(now3.ToInternalValue(), event->event_timestamp_micros(1));
+  ASSERT_EQ(2, event->event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now1), event->event_timestamp_ms(0));
+  EXPECT_EQ(InMilliseconds(now3), event->event_timestamp_ms(1));
 
   relative_rtp_timestamp = rtp_timestamp2 - first_rtp_timestamp_;
   it = frame_events_.find(relative_rtp_timestamp);
@@ -285,8 +293,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_FRAME_ENCODED, event->event_type(0));
 
-  ASSERT_EQ(1, event->event_timestamp_micros_size());
-  EXPECT_EQ(now2.ToInternalValue(), event->event_timestamp_micros(0));
+  ASSERT_EQ(1, event->event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEvent) {
@@ -317,8 +325,8 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   ASSERT_EQ(1, base_event.event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_PACKET_RECEIVED,
             base_event.event_type(0));
-  ASSERT_EQ(1, base_event.event_timestamp_micros_size());
-  EXPECT_EQ(now.ToInternalValue(), base_event.event_timestamp_micros(0));
+  ASSERT_EQ(1, base_event.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now), base_event.event_timestamp_ms(0));
 
   GetEventsAndReset();
   EXPECT_TRUE(packet_events_.empty());
@@ -368,9 +376,9 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
             base_event.event_type(0));
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
             base_event.event_type(1));
-  ASSERT_EQ(2, base_event.event_timestamp_micros_size());
-  EXPECT_EQ(now1.ToInternalValue(), base_event.event_timestamp_micros(0));
-  EXPECT_EQ(now2.ToInternalValue(), base_event.event_timestamp_micros(1));
+  ASSERT_EQ(2, base_event.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
+  EXPECT_EQ(InMilliseconds(now2), base_event.event_timestamp_ms(1));
 }
 
 TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
@@ -416,16 +424,16 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   ASSERT_EQ(1, base_event.event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_PACER,
             base_event.event_type(0));
-  ASSERT_EQ(1, base_event.event_timestamp_micros_size());
-  EXPECT_EQ(now1.ToInternalValue(), base_event.event_timestamp_micros(0));
+  ASSERT_EQ(1, base_event.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
 
   const BasePacketEvent& base_event_2 = event->base_packet_event(1);
   EXPECT_EQ(packet_id_2, base_event_2.packet_id());
   ASSERT_EQ(1, base_event_2.event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
             base_event_2.event_type(0));
-  ASSERT_EQ(1, base_event_2.event_timestamp_micros_size());
-  EXPECT_EQ(now2.ToInternalValue(), base_event_2.event_timestamp_micros(0));
+  ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
 }
 
 TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
@@ -472,8 +480,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   ASSERT_EQ(1, base_event.event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_PACER,
             base_event.event_type(0));
-  ASSERT_EQ(1, base_event.event_timestamp_micros_size());
-  EXPECT_EQ(now1.ToInternalValue(), base_event.event_timestamp_micros(0));
+  ASSERT_EQ(1, base_event.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
 
   relative_rtp_timestamp = rtp_timestamp_2 - first_rtp_timestamp_;
   it = packet_events_.find(relative_rtp_timestamp);
@@ -489,8 +497,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   ASSERT_EQ(1, base_event_2.event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
             base_event_2.event_type(0));
-  ASSERT_EQ(1, base_event_2.event_timestamp_micros_size());
-  EXPECT_EQ(now2.ToInternalValue(), base_event_2.event_timestamp_micros(0));
+  ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
+  EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
 }
 
 TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {

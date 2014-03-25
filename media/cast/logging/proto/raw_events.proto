@@ -75,7 +75,7 @@ message AggregatedFrameEvent {
   optional uint32 relative_rtp_timestamp = 1;
 
   repeated EventType event_type = 2 [packed = true];
-  repeated int64 event_timestamp_micros = 3 [packed = true];
+  repeated int64 event_timestamp_ms = 3 [packed = true];
 
   // Size is set only for kAudioFrameEncoded and kVideoFrameEncoded.
   optional int32 encoded_frame_size = 4;
@@ -87,7 +87,7 @@ message AggregatedFrameEvent {
 message BasePacketEvent {
   optional int32 packet_id = 1;
   repeated EventType event_type = 2 [packed = true];
-  repeated int64 event_timestamp_micros = 3 [packed = true];
+  repeated int64 event_timestamp_ms = 3 [packed = true];
 }
 
 message AggregatedPacketEvent {
@@ -95,8 +95,3 @@ message AggregatedPacketEvent {
   repeated BasePacketEvent base_packet_event = 2;
 };
 
-message AggregatedGenericEvent {
-  optional EventType event_type = 1;
-  repeated int64 event_timestamp_micros = 2 [packed = true];
-  repeated int32 value = 3 [packed = true];
-};

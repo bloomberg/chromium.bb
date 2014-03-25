@@ -50,7 +50,7 @@ class SerializeDeserializeTest : public ::testing::Test {
     metadata_.set_num_frame_events(10);
     metadata_.set_num_packet_events(10);
 
-    int64 event_time_micros = 0;
+    int64 event_time_ms = 0;
     // Insert frame and packet events with RTP timestamps 0, 90, 180, ...
     for (int i = 0; i < metadata_.num_frame_events(); i++) {
       linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
@@ -59,8 +59,8 @@ class SerializeDeserializeTest : public ::testing::Test {
            ++event_index) {
         frame_event->add_event_type(
             ToProtoEventType(kVideoFrameEvents[event_index]));
-        frame_event->add_event_timestamp_micros(event_time_micros);
-        event_time_micros += 1024;
+        frame_event->add_event_timestamp_ms(event_time_ms);
+        event_time_ms += 1024;
       }
       frame_event->set_encoded_frame_size(
           kEncodedFrameSize[i % arraysize(kEncodedFrameSize)]);
@@ -70,7 +70,7 @@ class SerializeDeserializeTest : public ::testing::Test {
           std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
     }
 
-    event_time_micros = 0;
+    event_time_ms = 0;
     int packet_id = 0;
     for (int i = 0; i < metadata_.num_packet_events(); i++) {
       linked_ptr<AggregatedPacketEvent> packet_event(new AggregatedPacketEvent);
@@ -84,8 +84,8 @@ class SerializeDeserializeTest : public ::testing::Test {
              ++event_index) {
           base_event->add_event_type(
               ToProtoEventType(kVideoPacketEvents[event_index]));
-          base_event->add_event_timestamp_micros(event_time_micros);
-          event_time_micros += 256;
+          base_event->add_event_timestamp_ms(event_time_ms);
+          event_time_ms += 256;
         }
       }
       packet_event_map_.insert(

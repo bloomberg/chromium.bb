@@ -12,7 +12,6 @@
 
 using google::protobuf::RepeatedPtrField;
 using media::cast::proto::AggregatedFrameEvent;
-using media::cast::proto::AggregatedGenericEvent;
 using media::cast::proto::AggregatedPacketEvent;
 using media::cast::proto::BasePacketEvent;
 using media::cast::proto::LogMetadata;
@@ -53,8 +52,8 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
     }
 
     event_proto->add_event_type(ToProtoEventType(frame_event.type));
-    event_proto->add_event_timestamp_micros(
-        frame_event.timestamp.ToInternalValue());
+    event_proto->add_event_timestamp_ms(
+        (frame_event.timestamp - base::TimeTicks()).InMilliseconds());
 
     if (frame_event.type == kAudioFrameEncoded ||
         frame_event.type == kVideoFrameEncoded) {
@@ -113,8 +112,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
 
     base_packet_event_proto->add_event_type(
         ToProtoEventType(packet_event.type));
-    base_packet_event_proto->add_event_timestamp_micros(
-        packet_event.timestamp.ToInternalValue());
+    base_packet_event_proto->add_event_timestamp_ms(
+        (packet_event.timestamp - base::TimeTicks()).InMilliseconds());
 
     TruncatePacketEventMapIfNeeded();
   }
