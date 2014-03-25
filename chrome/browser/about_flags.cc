@@ -1351,6 +1351,14 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableSwipeSelection)
   },
+  {
+    "enable-input-view",
+    IDS_FLAGS_ENABLE_INPUT_VIEW_NAME,
+    IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(keyboard::switches::kEnableInputView,
+                              keyboard::switches::kDisableInputView)
+  },
 #endif
   {
     "enable-simple-cache-backend",

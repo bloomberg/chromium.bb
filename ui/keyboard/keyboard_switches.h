@@ -13,6 +13,14 @@ namespace switches {
 // Enables the swipe selection feature on the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableSwipeSelection[];
 
+// Disables IME extension APIs from overriding the URL for specifying the
+// contents of the virtual keyboard container.
+KEYBOARD_EXPORT extern const char kDisableInputView[];
+
+// Enables an IME extension API to set a URL for specifying the contents
+// of the virtual keyboard container.
+KEYBOARD_EXPORT extern const char kEnableInputView[];
+
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 

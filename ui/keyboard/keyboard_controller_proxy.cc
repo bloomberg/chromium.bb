@@ -4,6 +4,7 @@
 
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +17,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace {
@@ -119,8 +121,12 @@ KeyboardControllerProxy::~KeyboardControllerProxy() {
 }
 
 const GURL& KeyboardControllerProxy::GetVirtualKeyboardUrl() {
-  const GURL& override_url = GetOverrideContentUrl();
-  return override_url.is_valid() ? override_url : default_url_;
+  if (keyboard::IsInputViewEnabled()) {
+    const GURL& override_url = GetOverrideContentUrl();
+    return override_url.is_valid() ? override_url : default_url_;
+  } else {
+    return default_url_;
+  }
 }
 
 void KeyboardControllerProxy::LoadContents(const GURL& url) {

@@ -114,6 +114,15 @@ bool IsKeyboardUsabilityExperimentEnabled() {
       switches::kKeyboardUsabilityExperiment);
 }
 
+bool IsInputViewEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableInputView))
+    return true;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableInputView))
+    return false;
+  // Default value if no command line flags specified.
+  return true;
+}
+
 bool InsertText(const base::string16& text, aura::Window* root_window) {
   if (!root_window)
     return false;

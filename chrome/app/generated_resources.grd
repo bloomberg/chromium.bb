@@ -14196,6 +14196,13 @@ Do you accept?
       Enable Swipe Selection support for the virtual keyboard. Unless the virtual keyboard is also enabled, this will do nothing.
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
+      Enable input views.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
+      Enable IME extensions to supply custom views for user input such as  virtual keyboards.
+    </message>
+
     <!-- Simple Cache Backend experiment. -->
     <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
       Simple Cache for HTTP.
