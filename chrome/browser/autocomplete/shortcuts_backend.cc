@@ -13,14 +13,17 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/base_search_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -52,16 +55,12 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
     case AutocompleteMatchType::NAVSUGGEST:
       return AutocompleteMatchType::HISTORY_URL;
 
-    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatchType::SEARCH_SUGGEST:
-    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
-    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE:
-    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
-      return AutocompleteMatchType::SEARCH_HISTORY;
+    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
+      return type;
 
     default:
-      return type;
+      return AutocompleteMatch::IsSearchType(type) ?
+          AutocompleteMatchType::SEARCH_HISTORY : type;
   }
 }
 
@@ -71,7 +70,8 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 // ShortcutsBackend -----------------------------------------------------------
 
 ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
-    : current_state_(NOT_INITIALIZED),
+    : profile_(profile),
+      current_state_(NOT_INITIALIZED),
       no_db_access_(suppress_db) {
   if (!suppress_db) {
     db_ = new history::ShortcutsDatabase(
@@ -124,13 +124,13 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
            StartsWith(it->first, text_lowercase, true); ++it) {
     if (match.destination_url == it->second.match_core.destination_url) {
       UpdateShortcut(history::ShortcutsDatabase::Shortcut(
-          it->second.id, text, MatchToMatchCore(match), now,
+          it->second.id, text, MatchToMatchCore(match, profile_), now,
           it->second.number_of_hits + 1));
       return;
     }
   }
   AddShortcut(history::ShortcutsDatabase::Shortcut(
-      base::GenerateGUID(), text, MatchToMatchCore(match), now, 1));
+      base::GenerateGUID(), text, MatchToMatchCore(match, profile_), now, 1));
 }
 
 ShortcutsBackend::~ShortcutsBackend() {
@@ -138,12 +138,24 @@ ShortcutsBackend::~ShortcutsBackend() {
 
 // static
 history::ShortcutsDatabase::Shortcut::MatchCore
-    ShortcutsBackend::MatchToMatchCore(const AutocompleteMatch& match) {
+    ShortcutsBackend::MatchToMatchCore(const AutocompleteMatch& match,
+                                       Profile* profile) {
+  const base::string16& suggestion = match.search_terms_args->search_terms;
+  const AutocompleteMatch::Type match_type = GetTypeForShortcut(match.type);
+  const AutocompleteMatch& normalized_match =
+      AutocompleteMatch::IsSpecializedSearchType(match.type) ?
+          BaseSearchProvider::CreateSearchSuggestion(
+              suggestion, match_type,
+              (match.transition == content::PAGE_TRANSITION_KEYWORD),
+              match.GetTemplateURL(profile, false)) :
+          match;
   return history::ShortcutsDatabase::Shortcut::MatchCore(
-      match.fill_into_edit, match.destination_url, match.contents,
-      StripMatchMarkers(match.contents_class), match.description,
-      StripMatchMarkers(match.description_class), match.transition,
-      GetTypeForShortcut(match.type), match.keyword);
+      normalized_match.fill_into_edit, normalized_match.destination_url,
+      normalized_match.contents,
+      StripMatchMarkers(normalized_match.contents_class),
+      normalized_match.description,
+      StripMatchMarkers(normalized_match.description_class),
+      normalized_match.transition, match_type, normalized_match.keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
