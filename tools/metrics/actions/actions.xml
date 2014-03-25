@@ -4415,22 +4415,22 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="KeySystemSupport.Widevine.Queried">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xhwang@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="KeySystemSupport.Widevine.Supported">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xhwang@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="KeySystemSupport.WidevineWithType.Queried">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xhwang@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="KeySystemSupport.WidevineWithType.Supported">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xhwang@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
@@ -7065,7 +7065,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileContextMenuSearchByImage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bdibello@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
@@ -8603,7 +8603,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="OriginChipPress">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>macourteau@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
@@ -9963,7 +9963,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SuspiciousExtensionBubbleDismissed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>finnur@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
