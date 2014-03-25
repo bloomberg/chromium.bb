@@ -106,10 +106,10 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     ScaleFactor scale_factor = GetSupportedScaleFactor(scale);
     bool found = rb_->LoadBitmap(resource_id_, &scale_factor,
                                  &image, &fell_back_to_1x);
-    // Force to a supported scale.
-    scale = ui::GetImageScale(scale_factor);
     if (!found)
       return gfx::ImageSkiaRep();
+
+    float loaded_image_scale = ui::GetImageScale(scale_factor);
 
     if (fell_back_to_1x) {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
@@ -131,8 +131,9 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
         mask.eraseColor(SK_ColorRED);
         image = SkBitmapOperations::CreateBlendedBitmap(image, mask, 0.2);
       }
+    } else {
+      image = PlatformScaleImage(image, loaded_image_scale, scale);
     }
-
     return gfx::ImageSkiaRep(image, scale);
   }
 
@@ -352,13 +353,8 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-    ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
-#else
-    ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
-#endif
+    float scale = PlatformGetImageScale();
 
-    float scale = GetImageScale(scale_factor_to_load);
     // TODO(oshima): Consider reading the image size from png IHDR chunk and
     // skip decoding here and remove #ifdef below.
     // ResourceBundle::GetSharedInstance() is destroyed after the
@@ -819,5 +815,23 @@ bool ResourceBundle::DecodePNG(const unsigned char* buf,
   *fell_back_to_1x = PNGContainsFallbackMarker(buf, size);
   return gfx::PNGCodec::Decode(buf, size, bitmap);
 }
+
+#if !defined(OS_WIN)
+// static
+SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
+                                            float loaded_image_scale,
+                                            float desired_scale) {
+  return image;
+}
+
+float ResourceBundle::PlatformGetImageScale() {
+#if defined(OS_CHROMEOS)
+  ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
+#else
+  ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
+#endif
+  return GetImageScale(scale_factor_to_load);
+}
+#endif
 
 }  // namespace ui

@@ -7,9 +7,13 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace ui {
@@ -59,6 +63,40 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Windows only uses SkBitmap for gfx::Image, so this is the same as
   // GetImageNamed.
   return GetImageNamed(resource_id);
+}
+
+// static
+SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
+                                            float loaded_image_scale,
+                                            float desired_bitmap_scale) {
+  if (!gfx::IsHighDPIEnabled())
+    return image;
+
+  // On Windows we can have multiple device scales like 1/1.25/1.5/2, etc.
+  // We only have 1x and 2x data packs. We need to scale the bitmaps
+  // accordingly.
+  if (loaded_image_scale == desired_bitmap_scale)
+    return image;
+
+  SkBitmap scaled_image;
+  gfx::Size unscaled_size(image.width(), image.height());
+  gfx::Size scaled_size = ToCeiledSize(
+      gfx::ScaleSize(unscaled_size,
+                      desired_bitmap_scale / loaded_image_scale));
+  scaled_image = skia::ImageOperations::Resize(
+      image,
+      skia::ImageOperations::RESIZE_LANCZOS3,
+      scaled_size.width(),
+      scaled_size.height());
+  DCHECK_EQ(scaled_image.width(), scaled_size.width());
+  DCHECK_EQ(scaled_image.height(), scaled_size.height());
+  return scaled_image;
+}
+
+float ResourceBundle::PlatformGetImageScale() {
+  if (!gfx::IsHighDPIEnabled())
+    return ui::GetImageScale(GetMaxScaleFactor());
+  return gfx::win::GetDeviceScaleFactor();
 }
 
 void SetResourcesDataDLL(HINSTANCE handle) {

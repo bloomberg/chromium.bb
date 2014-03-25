@@ -353,6 +353,21 @@ class UI_BASE_EXPORT ResourceBundle {
 
   const base::FilePath& GetOverriddenPakPath();
 
+  // Platform specific image scaling is done here. Currently only implemented
+  // for Windows.
+  // |image| is the bitmap to be scaled.
+  // |loaded_image_scale| is the current scale of the bitmap.
+  // |desired_scale| is the desired scale of the bitmap.
+  // Returns the scaled bitmap or the original bitmap.
+ static SkBitmap PlatformScaleImage(const SkBitmap& image,
+                                    float loaded_image_scale,
+                                    float desired_scale);
+
+ // Returns the scale to be used for loading an image. In all platforms except
+ // windows this is based on the scale factors of the loaded resource packs.
+ // On Windows this returns the device scale factor if high dpi is enabled.
+ float PlatformGetImageScale();
+
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be NULL.
   Delegate* delegate_;
