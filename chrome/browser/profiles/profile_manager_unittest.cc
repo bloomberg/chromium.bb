@@ -360,7 +360,6 @@ TEST_F(ProfileManagerTest, GetGuestProfilePath) {
   EXPECT_EQ(expected_path, guest_path);
 }
 
-#if defined(OS_CHROMEOS)
 class UnittestGuestProfileManager : public UnittestProfileManager {
  public:
   explicit UnittestGuestProfileManager(const base::FilePath& user_data_dir)
@@ -386,6 +385,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest,
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
         new UnittestGuestProfileManager(temp_dir_.path()));
 
+#if defined(OS_CHROMEOS)
     CommandLine* cl = CommandLine::ForCurrentProcess();
     if (GetParam())
       cl->AppendSwitch(switches::kMultiProfiles);
@@ -405,9 +405,24 @@ class ProfileManagerGuestTest : public ProfileManagerTest,
         chromeos::UserManager::kGuestUserName,
         chromeos::UserManager::kGuestUserName,
         false);
+#endif
   }
 };
 
+INSTANTIATE_TEST_CASE_P(ProfileManagerGuestTestInstantiation,
+                        ProfileManagerGuestTest,
+                        testing::Bool());
+
+TEST_P(ProfileManagerGuestTest, GetLastUsedProfileAllowedByPolicy) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  Profile* profile = profile_manager->GetLastUsedProfileAllowedByPolicy();
+  ASSERT_TRUE(profile);
+  EXPECT_TRUE(profile->IsOffTheRecord());
+}
+
+#if defined(OS_CHROMEOS)
 TEST_P(ProfileManagerGuestTest, GuestProfileIngonito) {
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
   EXPECT_TRUE(primary_profile->IsOffTheRecord());
@@ -422,10 +437,6 @@ TEST_P(ProfileManagerGuestTest, GuestProfileIngonito) {
 
   EXPECT_TRUE(last_used_profile->IsSameProfile(active_profile));
 }
-
-INSTANTIATE_TEST_CASE_P(ProfileManagerGuestTestInstantiation,
-                        ProfileManagerGuestTest,
-                        testing::Bool());
 #endif
 
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {

@@ -288,7 +288,8 @@ Profile* ProfileManager::GetLastUsedProfile() {
 // static
 Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
   Profile* profile = GetLastUsedProfile();
-  if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+  if (profile->IsGuestSession() ||
+      IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
       IncognitoModePrefs::FORCED) {
     return profile->GetOffTheRecordProfile();
   }
