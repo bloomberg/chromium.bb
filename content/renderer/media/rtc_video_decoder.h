@@ -151,9 +151,15 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Resets VDA.
   void ResetInternal();
 
+  // Static method is to allow it to run even after RVD is deleted.
+  static void ReleaseMailbox(
+      base::WeakPtr<RTCVideoDecoder> decoder,
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+      int64 picture_buffer_id,
+      uint32 texture_id,
+      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
   // Tells VDA that a picture buffer can be recycled.
-  void ReusePictureBuffer(int64 picture_buffer_id,
-                          scoped_ptr<gpu::MailboxHolder> mailbox_holder);
+  void ReusePictureBuffer(int64 picture_buffer_id);
 
   // Create |vda_| on |vda_loop_proxy_|.
   void CreateVDA(media::VideoCodecProfile profile, base::WaitableEvent* waiter);
@@ -219,13 +225,12 @@ class CONTENT_EXPORT RTCVideoDecoder
   // A map from picture buffer IDs to texture-backed picture buffers.
   std::map<int32, media::PictureBuffer> assigned_picture_buffers_;
 
-  // Picture buffers that are dismissed but not deleted yet.
-  std::map<int32, media::PictureBuffer> dismissed_picture_buffers_;
-
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via read_cb_, and which will be returned
   // to us via ReusePictureBuffer.
-  std::set<int32> picture_buffers_at_display_;
+  typedef std::map<int32 /* picture_buffer_id */, uint32 /* texture_id */>
+      PictureBufferTextureMap;
+  PictureBufferTextureMap picture_buffers_at_display_;
 
   // The id that will be given to the next picture buffer.
   int32 next_picture_buffer_id_;

@@ -347,18 +347,13 @@ void RTCVideoDecoder::DismissPictureBuffer(int32 id) {
   media::PictureBuffer buffer_to_dismiss = it->second;
   assigned_picture_buffers_.erase(it);
 
-  std::set<int32>::iterator at_display_it =
-      picture_buffers_at_display_.find(id);
-
-  if (at_display_it == picture_buffers_at_display_.end()) {
+  if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
     factories_->DeleteTexture(buffer_to_dismiss.texture_id());
-  } else {
-    // Texture in display. Postpone deletion until after it's returned to us.
-    bool inserted = dismissed_picture_buffers_
-        .insert(std::make_pair(id, buffer_to_dismiss)).second;
-    DCHECK(inserted);
+    return;
   }
+  // Not destroying a texture in display in |picture_buffers_at_display_|.
+  // Postpone deletion until after it's returned to us.
 }
 
 void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
@@ -382,7 +377,9 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   scoped_refptr<media::VideoFrame> frame =
       CreateVideoFrame(picture, pb, timestamp, width, height, size);
   bool inserted =
-      picture_buffers_at_display_.insert(picture.picture_buffer_id()).second;
+      picture_buffers_at_display_.insert(std::make_pair(
+                                             picture.picture_buffer_id(),
+                                             pb.texture_id())).second;
   DCHECK(inserted);
 
   // Create a WebRTC video frame.
@@ -443,9 +440,11 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   return media::VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(
           pb.texture_mailbox(), decoder_texture_target_, 0)),
-      media::BindToCurrentLoop(base::Bind(&RTCVideoDecoder::ReusePictureBuffer,
+      media::BindToCurrentLoop(base::Bind(&RTCVideoDecoder::ReleaseMailbox,
                                           weak_factory_.GetWeakPtr(),
-                                          picture.picture_buffer_id())),
+                                          factories_,
+                                          picture.picture_buffer_id(),
+                                          pb.texture_id())),
       pb.size(),
       visible_rect,
       visible_rect.size(),
@@ -639,35 +638,45 @@ void RTCVideoDecoder::ResetInternal() {
     vda_->Reset();
 }
 
-void RTCVideoDecoder::ReusePictureBuffer(
+// static
+void RTCVideoDecoder::ReleaseMailbox(
+    base::WeakPtr<RTCVideoDecoder> decoder,
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
     int64 picture_buffer_id,
+    uint32 texture_id,
     scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+  DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
+  factories->WaitSyncPoint(mailbox_holder->sync_point);
+
+  if (decoder) {
+    decoder->ReusePictureBuffer(picture_buffer_id);
+    return;
+  }
+  // It's the last chance to delete the texture after display,
+  // because RTCVideoDecoder was destructed.
+  factories->DeleteTexture(texture_id);
+}
+
+void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DVLOG(3) << "ReusePictureBuffer. id=" << picture_buffer_id;
 
-  if (!vda_)
-    return;
+  DCHECK(!picture_buffers_at_display_.empty());
+  PictureBufferTextureMap::iterator display_iterator =
+      picture_buffers_at_display_.find(picture_buffer_id);
+  uint32 texture_id = display_iterator->second;
+  DCHECK(display_iterator != picture_buffers_at_display_.end());
+  picture_buffers_at_display_.erase(display_iterator);
 
-  CHECK(!picture_buffers_at_display_.empty());
-
-  size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
-  DCHECK(num_erased);
-
-  factories_->WaitSyncPoint(mailbox_holder->sync_point);
-
-  std::map<int32, media::PictureBuffer>::iterator it =
-      assigned_picture_buffers_.find(picture_buffer_id);
-
-  if (it == assigned_picture_buffers_.end()) {
+  if (!assigned_picture_buffers_.count(picture_buffer_id)) {
     // This picture was dismissed while in display, so we postponed deletion.
-    it = dismissed_picture_buffers_.find(picture_buffer_id);
-    DCHECK(it != dismissed_picture_buffers_.end());
-    factories_->DeleteTexture(it->second.texture_id());
-    dismissed_picture_buffers_.erase(it);
+    factories_->DeleteTexture(texture_id);
     return;
   }
 
-  vda_->ReusePictureBuffer(picture_buffer_id);
+  // DestroyVDA() might already have been called.
+  if (vda_)
+    vda_->ReusePictureBuffer(picture_buffer_id);
 }
 
 void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
@@ -681,21 +690,23 @@ void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
 
 void RTCVideoDecoder::DestroyTextures() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  std::map<int32, media::PictureBuffer>::iterator it;
 
-  for (it = assigned_picture_buffers_.begin();
+  // Not destroying PictureBuffers in |picture_buffers_at_display_| yet, since
+  // their textures may still be in use by the user of this RTCVideoDecoder.
+  for (PictureBufferTextureMap::iterator it =
+           picture_buffers_at_display_.begin();
+       it != picture_buffers_at_display_.end();
+       ++it) {
+    assigned_picture_buffers_.erase(it->first);
+  }
+
+  for (std::map<int32, media::PictureBuffer>::iterator it =
+           assigned_picture_buffers_.begin();
        it != assigned_picture_buffers_.end();
        ++it) {
     factories_->DeleteTexture(it->second.texture_id());
   }
   assigned_picture_buffers_.clear();
-
-  for (it = dismissed_picture_buffers_.begin();
-       it != dismissed_picture_buffers_.end();
-       ++it) {
-    factories_->DeleteTexture(it->second.texture_id());
-  }
-  dismissed_picture_buffers_.clear();
 }
 
 void RTCVideoDecoder::DestroyVDA() {
