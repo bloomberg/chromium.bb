@@ -38,6 +38,13 @@ struct LibraryEntry {
   base::FilePath location;
 };
 
+// 'c' with combinding cedilla.
+const char kDeNormalizedName[] = {
+    'c', static_cast<unsigned char>(0xCC), static_cast<unsigned char>(0xA7), 0};
+// 'c' with cedilla.
+const char kNormalizedName[] = {
+    static_cast<unsigned char>(0xC3), static_cast<unsigned char>(0xA7), 0};
+
 }  // namespace
 
 class TestITunesDataProvider : public ITunesDataProvider {
@@ -410,6 +417,7 @@ class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
     entries.push_back(LibraryEntry("Artist:/name", "Album:name/", track));
     entries.push_back(LibraryEntry("Artist/name", "Album:name", track));
     entries.push_back(LibraryEntry("Artist/name", "Album:name", track));
+    entries.push_back(LibraryEntry(kDeNormalizedName, kNormalizedName, track));
     return entries;
   }
 
@@ -430,6 +438,10 @@ class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
               data_provider()->GetTrackLocation(
                   "Artist_name", "Album_name",
                   "Track_1 (3).mp3").NormalizePathSeparators().value());
+    EXPECT_EQ(track.value(),
+              data_provider()->GetTrackLocation(
+                  kNormalizedName, kNormalizedName,
+                  "Track_1.mp3").NormalizePathSeparators().value());
 
     TestDone();
   }

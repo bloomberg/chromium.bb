@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
+#include "base/i18n/i18n_constants.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
@@ -28,9 +30,10 @@ namespace itunes {
 namespace {
 
 // Colon and slash are not allowed in filenames, replace them with underscore.
-std::string EscapeBadCharacters(const std::string& input) {
+std::string SanitizeName(const std::string& input) {
   std::string result;
-  base::ReplaceChars(input, ":/", "_", &result);
+  base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &result);
+  base::ReplaceChars(result, ":/", "_", &result);
   return result;
 }
 
@@ -47,8 +50,7 @@ ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
   parser::Album::const_iterator album_it;
   for (album_it = album.begin(); album_it != album.end(); ++album_it) {
     const parser::Track& track = *album_it;
-    std::string name =
-        EscapeBadCharacters(track.location.BaseName().AsUTF8Unsafe());
+    std::string name = SanitizeName(track.location.BaseName().AsUTF8Unsafe());
     duped_tracks[name].insert(&track);
   }
 
@@ -67,8 +69,7 @@ ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
             base::StringPrintf(" (%" PRId64 ")", (*track_it)->id);
         std::string uniquified_track_name =
             track_file_name.InsertBeforeExtensionASCII(id).AsUTF8Unsafe();
-        std::string escaped_track_name =
-            EscapeBadCharacters(uniquified_track_name);
+        std::string escaped_track_name = SanitizeName(uniquified_track_name);
         result[escaped_track_name] = (*track_it)->location;
       }
     }
@@ -286,11 +287,11 @@ void ITunesDataProvider::OnLibraryParsed(const ReadyCallback& ready_callback,
     for (parser::Library::const_iterator artist_it = library.begin();
          artist_it != library.end();
          ++artist_it) {
-      std::string artist_name = EscapeBadCharacters(artist_it->first);
+      std::string artist_name = SanitizeName(artist_it->first);
       for (parser::Albums::const_iterator album_it = artist_it->second.begin();
            album_it != artist_it->second.end();
            ++album_it) {
-        std::string album_name = EscapeBadCharacters(album_it->first);
+        std::string album_name = SanitizeName(album_it->first);
         library_[artist_name][album_name] =
             MakeUniqueTrackNames(album_it->second);
       }
