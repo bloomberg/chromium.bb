@@ -140,7 +140,7 @@ private:
     void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, InvalidationSetMode);
 
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-    DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& className);
+    DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);

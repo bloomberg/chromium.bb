@@ -44,6 +44,7 @@ private:
         ~RecursionCheckpoint()
         {
             m_data->m_invalidationClasses.remove(m_prevClassLength, m_data->m_invalidationClasses.size() - m_prevClassLength);
+            m_data->m_invalidationAttributes.remove(m_prevAttributeLength, m_data->m_invalidationAttributes.size() - m_prevAttributeLength);
             m_data->m_foundInvalidationSet = m_prevFoundInvalidationSet;
         }
 
