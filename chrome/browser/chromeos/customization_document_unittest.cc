@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
-#include "base/at_exit.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -222,6 +221,8 @@ class ServicesCustomizationDocumentTest : public testing::Test {
 
   // testing::Test:
   virtual void SetUp() OVERRIDE {
+    ServicesCustomizationDocument::InitializeForTesting();
+
     EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
         .WillRepeatedly(Return(false));
     chromeos::system::StatisticsProvider::SetTestProvider(
@@ -249,6 +250,8 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     DBusThreadManager::Shutdown();
     NetworkPortalDetector::InitializeForTesting(NULL);
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+
+    ServicesCustomizationDocument::ShutdownForTesting();
   }
 
   void RunUntilIdle() {
@@ -306,7 +309,6 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
   NetworkPortalDetectorTestImpl network_portal_detector_;
-  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 TEST_F(ServicesCustomizationDocumentTest, Basic) {
@@ -315,7 +317,6 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
 
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
-  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   doc->StartFetching();
@@ -340,7 +341,6 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
 TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
-  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   scoped_ptr<TestingProfile> profile = CreateProfile();
@@ -380,7 +380,6 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
 
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
-  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   scoped_ptr<TestingProfile> profile = CreateProfile();
@@ -431,7 +430,6 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
 
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
-  doc->SetZeroNetworkDelayForTesting();
   EXPECT_FALSE(doc->IsReady());
 
   scoped_ptr<TestingProfile> profile = CreateProfile();

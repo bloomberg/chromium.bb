@@ -172,10 +172,12 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Returns the name of the folder for OEM apps for given |locale|.
   std::string GetOemAppsFolderName(const std::string& locale) const;
 
-  // Set delay between network checking for testing.
-  void SetZeroNetworkDelayForTesting() {
-    network_delay_ = base::TimeDelta();
-  }
+  // Initialize instance of ServicesCustomizationDocument for tests that will
+  // override singleton until ShutdownForTesting is called.
+  static void InitializeForTesting();
+
+  // Remove instance of ServicesCustomizationDocument for tests.
+  static void ShutdownForTesting();
 
  private:
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;

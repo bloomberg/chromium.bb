@@ -40,10 +40,10 @@
 
 using content::BrowserThread;
 
-// Manifest attributes names.
-
+namespace chromeos {
 namespace {
 
+  // Manifest attributes names.
 const char kVersionAttr[] = "version";
 const char kDefaultAttr[] = "default";
 const char kInitialLocaleAttr[] = "initial_locale";
@@ -79,6 +79,9 @@ const char kServicesCustomizationKey[] = "customization.manifest_cache";
 
 // Empty customization document that doesn't customize anything.
 const char kEmptyServicesCustomizationManifest[] = "{ \"version\": \"1.0\" }";
+
+// Global overrider for ServicesCustomizationDocument for tests.
+ServicesCustomizationDocument* g_test_services_customization_document = NULL;
 
 // Services customization document load results reported via the
 // "ServicesCustomization.LoadResult" histogram.
@@ -124,8 +127,6 @@ std::string GetLocaleSpecificStringImpl(
 }
 
 }  // anonymous namespace
-
-namespace chromeos {
 
 // Template URL where to fetch OEM services customization manifest from.
 const char ServicesCustomizationDocument::kManifestUrl[] =
@@ -348,6 +349,9 @@ ServicesCustomizationDocument::~ServicesCustomizationDocument() {}
 
 // static
 ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
+  if (g_test_services_customization_document)
+    return g_test_services_customization_document;
+
   return Singleton<ServicesCustomizationDocument,
       DefaultSingletonTraits<ServicesCustomizationDocument> >::get();
 }
@@ -645,6 +649,18 @@ std::string ServicesCustomizationDocument::GetOemAppsFolderNameImpl(
     const base::DictionaryValue& root) const {
   return GetLocaleSpecificStringImpl(
       &root, locale, kLocalizedContent, kDefaultAppsFolderName);
+}
+
+// static
+void ServicesCustomizationDocument::InitializeForTesting() {
+  g_test_services_customization_document = new ServicesCustomizationDocument;
+  g_test_services_customization_document->network_delay_ = base::TimeDelta();
+}
+
+// static
+void ServicesCustomizationDocument::ShutdownForTesting() {
+  delete g_test_services_customization_document;
+  g_test_services_customization_document = NULL;
 }
 
 }  // namespace chromeos
