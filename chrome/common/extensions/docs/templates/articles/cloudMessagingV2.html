@@ -21,6 +21,10 @@ help with GCM or to give us feedback, please see
 <p>Please note that GCM Chrome API is experimental. It is only available to Chrome
 users on the dev channel.</p>
 
+<p class="note"><strong>API Samples</strong>: Want to play with the code? Check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gcm-notifications">gcm-notifications</a>
+sample.</p>
+
 <h2 id="enable_gcm">Enable GCM</h2>
 
 <p>To use GCM for your app or extension, do the following:</p>
@@ -176,8 +180,25 @@ chrome.runtime.onStartup.addListener(function() {
 <p>If your app or extension is installed in different profiles and/or in different
 Chrome instances, each of them will receive a different registration ID.</p>
 
+<p>Your app or extension could call $(ref:gcm.unregister) to revoke the registration ID.
+The unregistration should only be done in rare cases, such as if your app or
+extension does not want to receive further messages, or the registration ID is
+suspected to be compromised.</p>
+
+<pre data-filename="background.js"><code>
+function unregisterCallback() {
+  if (chrome.runtime.lastError) {
+    // When the unregistration fails, handle the error and retry
+    // the unregistration later.
+    return;
+  }
+}
+
+chrome.gcm.unregister(unregisterCallback);
+</code></pre>
+
 <p>Your app or extension is automatically unregistered from the GCM service when a
-user uninstalls it. You can't unregister using the GCM API.</p>
+user uninstalls it.</p>
 
 <h3 id="receive_messages">Receive messages</h3>
 
@@ -353,6 +374,6 @@ errors.</li>
 <h2 id="feedback">Feedback</h2>
 
 <p>You can provide feedback about Google Cloud Messaging and the gcm API through
-the Google Group <a href="https://groups.google.com/forum/#!forum/gcm-for-chrome-v2-feedback">GCM for Chrome V2
+the Google Group <a href="https://groups.google.com/forum/#!forum/gcm-for-chrome-feedback">GCM for Chrome
 Feedback</a>.
 Use this group to ask for help, file bug reports, and request features.</p>
