@@ -919,7 +919,7 @@ AnimationManager.prototype._startAnimation = function() {
     if (this._isRunning)
         return;
     this._isRunning = true;
-    window.webkitRequestAnimationFrame(this._animationFrameCallbackBound);
+    window.requestAnimationFrame(this._animationFrameCallbackBound);
 };
 
 AnimationManager.prototype._stopAnimation = function() {
@@ -960,7 +960,7 @@ AnimationManager.prototype._animationFrameCallback = function(now) {
     }
     this.dispatchEvent(AnimationManager.EventTypeAnimationFrameWillFinish);
     if (this._isRunning)
-        window.webkitRequestAnimationFrame(this._animationFrameCallbackBound);
+        window.requestAnimationFrame(this._animationFrameCallbackBound);
 };
 
 /**
@@ -1044,7 +1044,7 @@ Animator.prototype.isRunning = function() {
 };
 
 Animator.prototype.start = function() {
-    this._lastStepTime = Date.now();
+    this._lastStepTime = performance.now();
     this._isRunning = true;
     AnimationManager.shared.add(this);
 };
@@ -1208,7 +1208,7 @@ FlingGestureAnimator.prototype._timeAtVelocity = function(v) {
 };
 
 FlingGestureAnimator.prototype.start = function() {
-    this._lastStepTime = Date.now();
+    this._lastStepTime = performance.now();
     Animator.prototype.start.call(this);
 };
 
