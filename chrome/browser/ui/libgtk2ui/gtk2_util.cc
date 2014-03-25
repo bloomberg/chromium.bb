@@ -4,17 +4,23 @@
 
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/size.h"
 
 namespace {
+
+const char kAuraTransientParent[] = "aura-transient-parent";
 
 void CommonInitFromCommandLine(const CommandLine& command_line,
                                void (*init_func)(gint*, gchar***)) {
@@ -95,6 +101,32 @@ int EventFlagsFromGdkState(guint state) {
       (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : ui::EF_NONE;
   flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : ui::EF_NONE;
   return flags;
+}
+
+// Set |dialog| as transient for |parent|, which will keep it on top and center
+// it above |parent|.
+void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
+  gtk_widget_realize(dialog);
+  GdkWindow* gdk_window = gtk_widget_get_window(dialog);
+
+  // TODO(erg): Check to make sure we're using X11 if wayland or some other
+  // display server ever happens. Otherwise, this will crash.
+  XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
+                       GDK_WINDOW_XID(gdk_window),
+                       parent->GetHost()->GetAcceleratedWidget());
+
+  // We also set the |parent| as a property of |dialog|, so that we can unlink
+  // the two later.
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, parent);
+}
+
+aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
+  return reinterpret_cast<aura::Window*>(
+      g_object_get_data(G_OBJECT(dialog), kAuraTransientParent));
+}
+
+void ClearAuraTransientParent(GtkWidget* dialog) {
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, NULL);
 }
 
 }  // namespace libgtk2ui

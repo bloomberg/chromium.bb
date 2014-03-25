@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_linux.h"
+#include "ui/aura/window_observer.h"
 
 namespace printing {
 class Metafile;
@@ -28,7 +29,8 @@ using printing::PrintingContextLinux;
 class PrintDialogGtk2
     : public printing::PrintDialogGtkInterface,
       public base::RefCountedThreadSafe<
-          PrintDialogGtk2, content::BrowserThread::DeleteOnUIThread> {
+          PrintDialogGtk2, content::BrowserThread::DeleteOnUIThread>,
+      public aura::WindowObserver {
  public:
   // Creates and returns a print dialog.
   static printing::PrintDialogGtkInterface* CreatePrintDialog(
@@ -69,6 +71,9 @@ class PrintDialogGtk2
   // Helper function for initializing |context_|'s PrintSettings with a given
   // |settings|.
   void InitPrintSettings(printing::PrintSettings* settings);
+
+  // aura::WindowObserver implementation.
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Printing dialog callback.
   PrintingContextLinux::PrintSettingsCallback callback_;
