@@ -64,9 +64,12 @@ ExternalPopupMenu::~ExternalPopupMenu()
 void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, int index)
 {
     IntRect rect(controlPosition.enclosingBoundingBox());
-    // WebCore reuses the PopupMenu of a page.
+    // WebCore reuses the PopupMenu of an element.
     // For simplicity, we do recreate the actual external popup everytime.
-    hide();
+    if (m_webExternalPopupMenu) {
+        m_webExternalPopupMenu->close();
+        m_webExternalPopupMenu = 0;
+    }
 
     WebPopupMenuInfo info;
     getPopupMenuInfo(&info);
