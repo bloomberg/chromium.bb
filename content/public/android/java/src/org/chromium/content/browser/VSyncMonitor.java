@@ -211,7 +211,7 @@ public class VSyncMonitor {
         final long currentTime = getCurrentNanoTime();
         final long lastRefreshTime = estimateLastVSyncTime(currentTime);
         long delay = (lastRefreshTime + mRefreshPeriodNano) - currentTime;
-        assert delay >= 0 && delay < mRefreshPeriodNano;
+        assert delay > 0 && delay <= mRefreshPeriodNano;
 
         if (currentTime + delay <= mLastPostedNano + mRefreshPeriodNano / 2) {
             delay += mRefreshPeriodNano;
