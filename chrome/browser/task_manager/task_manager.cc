@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_manager/background_resource_provider.h"
+#include "chrome/browser/task_manager/background_information.h"
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 #include "chrome/browser/task_manager/extension_information.h"
@@ -248,8 +248,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       goat_salt_(base::RandUint64()) {
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
-  AddResourceProvider(
-      new task_manager::BackgroundContentsResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WebContentsResourceProvider(
+      task_manager,
+      scoped_ptr<WebContentsInformation>(
+          new task_manager::BackgroundInformation())));
   AddResourceProvider(
       new task_manager::TabContentsResourceProvider(task_manager));
   AddResourceProvider(new task_manager::WebContentsResourceProvider(

@@ -153,7 +153,7 @@ bool ExtensionInformation::CheckOwnership(WebContents* web_contents) {
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
   // Don't add tab contents (those are handled by TabContentsResourceProvider)
-  // or background contents (handled by BackgroundResourceProvider) or panels
+  // or background contents (handled by BackgroundInformation) or panels
   // (handled by PanelInformation)
   return (view_type != extensions::VIEW_TYPE_INVALID &&
           view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
