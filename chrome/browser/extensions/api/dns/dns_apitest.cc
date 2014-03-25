@@ -4,11 +4,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/dns/dns_api.h"
-#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/dns/mock_host_resolver_creator.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "extensions/browser/api/dns/dns_api.h"
+#include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/common/switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
