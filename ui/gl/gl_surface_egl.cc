@@ -131,7 +131,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
 #elif defined(OS_WIN)
   g_native_display = EGL_DEFAULT_DISPLAY;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableD3D11)) {
     g_native_display = EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
   }
 #elif defined(USE_OZONE)
