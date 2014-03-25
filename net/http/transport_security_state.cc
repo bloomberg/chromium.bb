@@ -718,8 +718,18 @@ bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host,
 }
 
 // static
-const char* const* TransportSecurityState::GooglePinsForDebugging() {
-  return kGoogleAcceptableCerts;
+bool TransportSecurityState::GetPinsForDebugging(
+    const std::string& host,
+    const char* const** out_required_pins,
+    const char* const** out_excluded_pins) {
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  const struct HSTSPreload* entry =
+      GetHSTSPreload(canonicalized_host, kPreloadedSTS, kNumPreloadedSTS);
+  if (!entry)
+    return false;
+  *out_required_pins = entry->pins.required_hashes;
+  *out_excluded_pins = entry->pins.excluded_hashes;
+  return true;
 }
 
 // static
