@@ -648,13 +648,9 @@ void SoftwareRenderer::EnsureBackbuffer() {
 void SoftwareRenderer::GetFramebufferPixels(void* pixels,
                                             const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "SoftwareRenderer::GetFramebufferPixels");
-  SkBitmap subset_bitmap;
   gfx::Rect frame_rect(rect);
   frame_rect += current_viewport_rect_.OffsetFromOrigin();
-  output_device_->CopyToBitmap(frame_rect, &subset_bitmap);
-  subset_bitmap.copyPixelsTo(pixels,
-                             4 * frame_rect.width() * frame_rect.height(),
-                             4 * frame_rect.width());
+  output_device_->CopyToPixels(frame_rect, pixels);
 }
 
 void SoftwareRenderer::SetVisible(bool visible) {

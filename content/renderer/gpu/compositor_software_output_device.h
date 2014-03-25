@@ -89,7 +89,6 @@ private:
   unsigned next_buffer_id_;
   ScopedVector<Buffer> buffers_;
   ScopedVector<Buffer> awaiting_ack_;
-  SkBitmap bitmap_;
   RenderThread* render_thread_;
 };
 

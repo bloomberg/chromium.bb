@@ -92,12 +92,12 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
   }
 }
 
-void SoftwareOutputDeviceWin::CopyToBitmap(
-    const gfx::Rect& rect, SkBitmap* output) {
+void SoftwareOutputDeviceWin::CopyToPixels(const gfx::Rect& rect,
+                                           void* pixels) {
   DCHECK(contents_);
-  SkBaseDevice* device = contents_->sk_canvas()->getDevice();
-  const SkBitmap& bitmap = device->accessBitmap(false);
-  bitmap.extractSubset(output, gfx::RectToSkIRect(rect));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(rect.width(), rect.height());
+  contents_->sk_canvas()->readPixels(
+      info, pixels, info.minRowBytes(), rect.x(), rect.y());
 }
 
 }  // namespace content

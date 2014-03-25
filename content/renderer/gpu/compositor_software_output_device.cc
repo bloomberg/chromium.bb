@@ -144,12 +144,11 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(
   current->SetFree(false);
 
   // Set up a canvas for the current front buffer.
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                    viewport_size_.width(),
-                    viewport_size_.height());
-  bitmap_.setPixels(current->memory());
-  device_ = skia::AdoptRef(new SkBitmapDevice(bitmap_));
-  canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(viewport_size_.width(),
+                                                viewport_size_.height());
+  SkBitmap bitmap;
+  bitmap.installPixels(info, current->memory(), info.minRowBytes());
+  canvas_ = skia::AdoptRef(new SkCanvas(bitmap));
 
   if (!previous) {
     DCHECK(damage_rect == gfx::Rect(viewport_size_));

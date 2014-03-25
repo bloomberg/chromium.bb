@@ -50,8 +50,8 @@ class CC_EXPORT SoftwareOutputDevice {
   virtual void EndPaint(SoftwareFrameData* frame_data);
 
   // Copies pixels inside |rect| from the current software framebuffer to
-  // |output|. Fails if there is no current softwareframebuffer.
-  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output);
+  // |pixels|. Fails if there is no current softwareframebuffer.
+  virtual void CopyToPixels(const gfx::Rect& rect, void* pixels);
 
   // Blit the pixel content of the SoftwareOutputDevice by |delta| with the
   // write clipped to |clip_rect|.
@@ -76,7 +76,6 @@ class CC_EXPORT SoftwareOutputDevice {
  protected:
   gfx::Size viewport_size_;
   gfx::Rect damage_rect_;
-  skia::RefPtr<SkBaseDevice> device_;
   skia::RefPtr<SkCanvas> canvas_;
   scoped_ptr<gfx::VSyncProvider> vsync_provider_;
 

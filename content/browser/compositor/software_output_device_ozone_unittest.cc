@@ -173,7 +173,9 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
 }
 
 TEST_F(SoftwareOutputDeviceOzonePixelTest, CheckCopyToBitmap) {
-  const gfx::Rect area(6, 4);
+  const int width = 6;
+  const int height = 4;
+  const gfx::Rect area(width, height);
   output_device_->Resize(area.size());
   SkCanvas* canvas = output_device_->BeginPaint(area);
 
@@ -191,18 +193,19 @@ TEST_F(SoftwareOutputDeviceOzonePixelTest, CheckCopyToBitmap) {
 
   output_device_->EndPaint(&frame);
 
-  SkBitmap bitmap;
-  output_device_->CopyToBitmap(area, &bitmap);
+  SkPMColor pixels[width * height];
+  output_device_->CopyToPixels(area, pixels);
 
-  SkAutoLockPixels pixel_lock(bitmap);
   // Check that the copied bitmap contains the same pixel values as what we
   // painted.
+  const SkPMColor white = SkPreMultiplyColor(SK_ColorWHITE);
+  const SkPMColor black = SkPreMultiplyColor(SK_ColorBLACK);
   for (int i = 0; i < area.height(); ++i) {
     for (int j = 0; j < area.width(); ++j) {
       if (j < damage.width() && i < damage.height())
-        EXPECT_EQ(SK_ColorWHITE, bitmap.getColor(j, i));
+        EXPECT_EQ(white, pixels[i * area.width() + j]);
       else
-        EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(j, i));
+        EXPECT_EQ(black, pixels[i * area.width() + j]);
     }
   }
 }

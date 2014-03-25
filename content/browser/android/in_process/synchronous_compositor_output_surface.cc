@@ -56,7 +56,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   }
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE {
   }
-  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output) OVERRIDE {
+  virtual void CopyToPixels(const gfx::Rect& rect, void* pixels) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
