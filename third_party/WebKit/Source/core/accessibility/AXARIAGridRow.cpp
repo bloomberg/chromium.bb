@@ -31,7 +31,6 @@
 
 #include "core/accessibility/AXTable.h"
 
-using namespace std;
 
 namespace WebCore {
 

@@ -34,7 +34,6 @@
 #include "core/rendering/RenderText.h"
 #include "platform/LayoutUnit.h"
 
-using namespace std;
 
 namespace WebCore {
 

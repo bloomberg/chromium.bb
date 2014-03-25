@@ -32,7 +32,6 @@
 #include "core/html/HTMLUListElement.h"
 #include "core/rendering/RenderObject.h"
 
-using namespace std;
 
 namespace WebCore {
 

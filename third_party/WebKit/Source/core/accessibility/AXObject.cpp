@@ -43,7 +43,6 @@
 #include "wtf/text/WTFString.h"
 
 using blink::WebLocalizedString;
-using namespace std;
 
 namespace WebCore {
 

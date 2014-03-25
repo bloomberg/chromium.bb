@@ -32,7 +32,6 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/rendering/RenderTableCell.h"
 
-using namespace std;
 
 namespace WebCore {
 

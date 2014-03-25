@@ -43,7 +43,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
 
 namespace WebCore {
 

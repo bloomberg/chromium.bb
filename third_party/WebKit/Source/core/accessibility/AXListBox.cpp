@@ -34,7 +34,6 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderListBox.h"
 
-using namespace std;
 
 namespace WebCore {
 

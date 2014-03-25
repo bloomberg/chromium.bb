@@ -30,7 +30,6 @@
 #include "core/accessibility/AXTableHeaderContainer.h"
 
 
-using namespace std;
 
 namespace WebCore {
 

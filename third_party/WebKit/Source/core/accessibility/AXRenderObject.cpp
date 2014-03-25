@@ -72,7 +72,6 @@
 #include "wtf/StdLibExtras.h"
 
 using blink::WebLocalizedString;
-using namespace std;
 
 namespace WebCore {
 

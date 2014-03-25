@@ -33,7 +33,6 @@
 #include "core/accessibility/AXTableCell.h"
 #include "core/rendering/RenderTableCell.h"
 
-using namespace std;
 
 namespace WebCore {
 
