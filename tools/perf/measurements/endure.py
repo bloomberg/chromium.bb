@@ -37,6 +37,8 @@ _V8_MEMORY_ALLOCATED = [
 
 
 class Endure(page_measurement.PageMeasurement):
+  options = {'skip_navigate_on_repeat': True}
+
   def __init__(self):
     super(Endure, self).__init__('RunEndure')
     # Browser object, saved so that browser.memory_stats can be accessed.

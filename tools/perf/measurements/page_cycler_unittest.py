@@ -59,6 +59,7 @@ class PageCyclerUnitTest(unittest.TestCase):
     options = browser_options.BrowserFinderOptions()
     parser = options.CreateParser()
     cycler.AddCommandLineArgs(parser)
+    cycler.SetArgumentDefaults(parser)
     parser.parse_args(args)
     cycler.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options)

@@ -28,6 +28,8 @@ from telemetry.core import util
 from telemetry.page import page_measurement
 
 class PageCycler(page_measurement.PageMeasurement):
+  options = {'pageset_repeat': 10}
+
   def __init__(self, *args, **kwargs):
     super(PageCycler, self).__init__(*args, **kwargs)
 
@@ -45,8 +47,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
   @classmethod
   def AddCommandLineArgs(cls, parser):
-    parser.set_default('pageset_repeat', 10)
-
     parser.add_option('--v8-object-stats',
         action='store_true',
         help='Enable detailed V8 object statistics.')

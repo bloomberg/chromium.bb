@@ -20,12 +20,11 @@ class _EndureBenchmark(test.Test):
   test = endure.Endure
   # Default options for endure benchmarks. Could be overridden in subclasses.
   options = {
-      'skip_navigate_on_repeat': True,
       # Depending on the page and the actions performed on the page,
       # 2000 iterations should be between 1 and 2 hours.
       'page_repeat': 2000,
       # One sample per 10 iterations -> 200 points per run.
-      'perf_stats_interval': '10'
+      'perf_stats_interval': 10
   }
 
 
@@ -65,8 +64,7 @@ class EndureGmailRefresh(test.Test):
   test = endure.Endure
   # Options for endure gmail page refresh benchmark test.
   options = {
-      'skip_navigate_on_repeat': True,
       'page_repeat': 20,
-      'perf_stats_interval': '1'
+      'perf_stats_interval': 1
   }
   page_set = 'page_sets/endure_gmail_refresh.json'

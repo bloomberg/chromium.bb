@@ -63,6 +63,7 @@ class MeasurementUnitTest(unittest.TestCase):
 
       benchmark.AddCommandLineArgs(parser)
       test.AddCommandLineArgs(parser)
+      benchmark.SetArgumentDefaults(parser)
       options.MergeDefaultValues(parser.get_default_values())
 
       benchmark.ProcessCommandLineArgs(None, options)

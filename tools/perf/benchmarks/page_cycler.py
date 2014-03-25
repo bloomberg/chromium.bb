@@ -67,13 +67,13 @@ class PageCyclerNetsimTop10(test.Test):
   test = page_cycler.PageCycler
   page_set = 'page_sets/top_10.json'
   options = {
-    'cold_load_percent': 100,
-    'extra_wpr_args': [
-      '--shaping_type=proxy',
-      '--net=cable'
+      'cold_load_percent': 100,
+      'extra_wpr_args': [
+          '--shaping_type=proxy',
+          '--net=cable'
       ],
-    'pageset_repeat': 5,
-    }
+      'pageset_repeat': 5,
+  }
 
   def __init__(self):
     super(PageCyclerNetsimTop10, self).__init__()

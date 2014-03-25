@@ -8,5 +8,4 @@ from measurements import memory_pressure
 class MemoryPressure(test.Test):
   test = memory_pressure.MemoryPressure
   page_set = 'page_sets/typical_25.json'
-  options = {'cold': True,
-             'pageset_repeat': 6}
+  options = {'pageset_repeat': 6}

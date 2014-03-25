@@ -10,16 +10,14 @@ from telemetry.core.platform.profiler import perf_profiler
 from telemetry.page import page_measurement
 
 class LoadingProfile(page_measurement.PageMeasurement):
+  options = {'page_repeat': 2}
+
   def __init__(self):
     super(LoadingProfile, self).__init__(discard_first_result=True)
 
   @property
   def results_are_the_same_on_every_page(self):
     return False
-
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.set_default('page_repeat', 2)
 
   def CustomizeBrowserOptions(self, options):
     if not perf_profiler.PerfProfiler.is_supported(browser_type='any'):

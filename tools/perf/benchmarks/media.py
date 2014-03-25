@@ -39,8 +39,7 @@ class MediaAndroid(test.Test):
   tag = 'android'
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude 4k and 50 fps media files (garden* & crowd*).
-  options = {
-      'page_label_filter_exclude': '4k,50fps'}
+  options = {'page_label_filter_exclude': '4k,50fps'}
 
 
 class MediaChromeOS4kOnly(test.Test):
@@ -48,9 +47,11 @@ class MediaChromeOS4kOnly(test.Test):
   test = media.Media
   tag = 'chromeOS4kOnly'
   page_set = 'page_sets/tough_video_cases.json'
-  options = {'page_label_filter': '4k',
-             # Exclude 50fps test files: crbug/331816
-             'page_label_filter_exclude': '50fps'}
+  options = {
+      'page_label_filter': '4k',
+      # Exclude 50fps test files: crbug/331816
+      'page_label_filter_exclude': '50fps'
+  }
 
 
 class MediaChromeOS(test.Test):
