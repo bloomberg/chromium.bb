@@ -6,7 +6,9 @@
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
 
 #include <vector>
+
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "media/base/media_log.h"
 
 namespace base {
@@ -17,18 +19,25 @@ namespace content {
 
 // RenderMediaLog is an implementation of MediaLog that forwards events to the
 // browser process, throttling as necessary.
-class RenderMediaLog : public media::MediaLog {
+//
+// To minimize the number of events sent over the wire, only the latest event
+// added is sent for high frequency events (e.g., BUFFERED_EXTENTS_CHANGED).
+class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  public:
   RenderMediaLog();
 
   // MediaLog implementation.
   virtual void AddEvent(scoped_ptr<media::MediaLogEvent> event) OVERRIDE;
 
+  // Will reset |last_ipc_send_time_| with the value of NowTicks().
+  void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+
  private:
   virtual ~RenderMediaLog();
 
   scoped_refptr<base::MessageLoopProxy> render_loop_;
-  base::Time last_ipc_send_time_;
+  scoped_ptr<base::TickClock> tick_clock_;
+  base::TimeTicks last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
 
   // Limits the number buffered extents changed events we send over IPC to one.

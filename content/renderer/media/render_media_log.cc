@@ -8,22 +8,20 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread_impl.h"
-
-using base::Time;
-using base::TimeDelta;
+#include "content/public/renderer/render_thread.h"
 
 namespace content {
 
 RenderMediaLog::RenderMediaLog()
     : render_loop_(base::MessageLoopProxy::current()),
-      last_ipc_send_time_(Time::Now()) {
-  DCHECK(RenderThreadImpl::current()) <<
+      tick_clock_(new base::DefaultTickClock()),
+      last_ipc_send_time_(tick_clock_->NowTicks()) {
+  DCHECK(RenderThread::Get()) <<
       "RenderMediaLog must be constructed on the render thread";
 }
 
 void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
-  if (!RenderThreadImpl::current()) {
+  if (!RenderThread::Get()) {
     render_loop_->PostTask(FROM_HERE, base::Bind(
         &RenderMediaLog::AddEvent, this, base::Passed(&event)));
     return;
@@ -40,8 +38,8 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
     queued_media_events_.push_back(*event);
 
   // Limit the send rate of high frequency events.
-  Time curr_time = Time::Now();
-  if ((curr_time - last_ipc_send_time_) < TimeDelta::FromSeconds(1))
+  base::TimeTicks curr_time = tick_clock_->NowTicks();
+  if ((curr_time - last_ipc_send_time_) < base::TimeDelta::FromSeconds(1))
     return;
   last_ipc_send_time_ = curr_time;
 
@@ -52,11 +50,17 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
 
   DVLOG(1) << "media log events array size " << queued_media_events_.size();
 
-  RenderThreadImpl::current()->Send(
+  RenderThread::Get()->Send(
       new ViewHostMsg_MediaLogEvents(queued_media_events_));
   queued_media_events_.clear();
 }
 
 RenderMediaLog::~RenderMediaLog() {}
+
+void RenderMediaLog::SetTickClockForTesting(
+    scoped_ptr<base::TickClock> tick_clock) {
+  tick_clock_.swap(tick_clock);
+  last_ipc_send_time_ = tick_clock_->NowTicks();
+}
 
 }  // namespace content
