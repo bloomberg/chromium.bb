@@ -34,29 +34,6 @@ namespace {
 const char kParentWindowSwitchName[] = "parent-window";
 #endif  // defined(OS_WIN)
 
-base::FilePath GetHostManifestPathFromCommandLine(
-    const std::string& native_host_name) {
-  const std::string& value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNativeMessagingHosts);
-  if (value.empty())
-    return base::FilePath();
-
-  std::vector<std::string> hosts;
-  base::SplitString(value, ',', &hosts);
-  for (size_t i = 0; i < hosts.size(); ++i) {
-    std::vector<std::string> key_and_value;
-    base::SplitString(hosts[i], '=', &key_and_value);
-    if (key_and_value.size() != 2)
-      continue;
-    if (key_and_value[0] == native_host_name)
-      return base::FilePath::FromUTF8Unsafe(key_and_value[1]);
-  }
-
-  return base::FilePath();
-}
-
-
 // Default implementation on NativeProcessLauncher interface.
 class NativeProcessLauncherImpl : public NativeProcessLauncher {
  public:
@@ -147,15 +124,8 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   }
 
   std::string error_message;
-  scoped_ptr<NativeMessagingHostManifest> manifest;
-
-  // First check if the manifest location is specified in the command line.
   base::FilePath manifest_path =
-      GetHostManifestPathFromCommandLine(native_host_name);
-  if (manifest_path.empty()) {
-    manifest_path =
-        FindManifest(native_host_name, allow_user_level_hosts_, &error_message);
-  }
+      FindManifest(native_host_name, allow_user_level_hosts_, &error_message);
 
   if (manifest_path.empty()) {
     LOG(ERROR) << "Can't find manifest for native messaging host "
@@ -164,7 +134,8 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     return;
   }
 
-  manifest = NativeMessagingHostManifest::Load(manifest_path, &error_message);
+  scoped_ptr<NativeMessagingHostManifest> manifest =
+      NativeMessagingHostManifest::Load(manifest_path, &error_message);
 
   if (!manifest) {
     LOG(ERROR) << "Failed to load manifest for native messaging host "

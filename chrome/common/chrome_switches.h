@@ -256,7 +256,6 @@ extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];
-extern const char kNativeMessagingHosts[];
 extern const char kNetLogLevel[];
 extern const char kNewProfileManagement[];
 extern const char kNoDefaultBrowserCheck[];
