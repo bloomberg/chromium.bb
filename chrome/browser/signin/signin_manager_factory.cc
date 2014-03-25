@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -124,11 +125,12 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
   Profile* profile = static_cast<Profile*>(context);
+  SigninClient* client =
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
-  service = new SigninManagerBase();
+  service = new SigninManagerBase(client);
 #else
-  service = new SigninManager(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+  service = new SigninManager(client);
 #endif
   service->Initialize(profile, g_browser_process->local_state());
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));

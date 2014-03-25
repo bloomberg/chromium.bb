@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 #include <string>
 #include <vector>
@@ -13,47 +13,42 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
+#include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 
 using namespace signin_internals_util;
 
-SigninManagerBase::SigninManagerBase()
-    : profile_(NULL),
-      weak_pointer_factory_(this) {
-}
+SigninManagerBase::SigninManagerBase(SigninClient* client)
+    : client_(client), initialized_(false), weak_pointer_factory_(this) {}
 
-SigninManagerBase::~SigninManagerBase() {
-}
+SigninManagerBase::~SigninManagerBase() {}
 
 void SigninManagerBase::Initialize(Profile* profile, PrefService* local_state) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
-  profile_ = profile;
+  initialized_ = true;
 
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
   // tokens).
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kClearTokenService))
-    profile->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+    client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
-  std::string user = profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  std::string user =
+      client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
   if (!user.empty())
     SetAuthenticatedUsername(user);
 }
 
-bool SigninManagerBase::IsInitialized() const {
-  return profile_ != NULL;
-}
+bool SigninManagerBase::IsInitialized() const { return initialized_; }
 
 bool SigninManagerBase::IsSigninAllowed() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+  return client_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
 }
 
 const std::string& SigninManagerBase::GetAuthenticatedUsername() const {
@@ -66,9 +61,9 @@ const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {
 
 void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   if (!authenticated_username_.empty()) {
-    DLOG_IF(ERROR, !gaia::AreEmailsSame(username, authenticated_username_)) <<
-        "Tried to change the authenticated username to something different: " <<
-        "Current: " << authenticated_username_ << ", New: " << username;
+    DLOG_IF(ERROR, !gaia::AreEmailsSame(username, authenticated_username_))
+        << "Tried to change the authenticated username to something different: "
+        << "Current: " << authenticated_username_ << ", New: " << username;
 
 #if defined(OS_IOS)
     // Prior to M26, chrome on iOS did not normalize the email before setting
@@ -83,19 +78,18 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
     return;
 #endif
   }
-  std::string pref_username = profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
-  DCHECK(pref_username.empty() ||
-      gaia::AreEmailsSame(username, pref_username))
+  std::string pref_username =
+      client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+  DCHECK(pref_username.empty() || gaia::AreEmailsSame(username, pref_username))
       << "username: " << username << "; pref_username: " << pref_username;
   authenticated_username_ = username;
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
+  client_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   NotifyDiagnosticsObservers(USERNAME, username);
 
   // Go ahead and update the last signed in username here as well. Once a
   // user is signed in the two preferences should match. Doing it here as
   // opposed to on signin allows us to catch the upgrade scenario.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername, username);
+  client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername, username);
 }
 
 void SigninManagerBase::clear_authenticated_username() {
@@ -107,8 +101,7 @@ bool SigninManagerBase::AuthInProgress() const {
   return false;
 }
 
-void SigninManagerBase::Shutdown() {
-}
+void SigninManagerBase::Shutdown() {}
 
 void SigninManagerBase::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

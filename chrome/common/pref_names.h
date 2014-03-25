@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/signin/core/common/signin_pref_names.h"
 
 namespace prefs {
 
@@ -600,11 +601,8 @@ extern const char kDevToolsRemoteEnabled[];
 extern const char kSpdyProxyAuthEnabled[];
 extern const char kSpdyProxyAuthWasEnabledBefore[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-extern const char kSigninAllowed[];
 
-extern const char kGoogleServicesLastUsername[];
 extern const char kGoogleServicesUserAccountId[];
-extern const char kGoogleServicesUsername[];
 extern const char kGoogleServicesUsernamePattern[];
 extern const char kGoogleServicesPasswordHash[];
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,8 +20,8 @@
 // reason, SigninManagerBase is all that exists on Chrome OS. For desktop,
 // see signin/signin_manager.h.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_BASE_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_BASE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_
 
 #include <string>
 
@@ -32,12 +32,16 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class PrefService;
+
+// TODO(blundell): Eliminate this forward declaration once SigninManager no
+// longer needs Profile. crbug.com/334209
+class Profile;
+class SigninClient;
 
 // Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
 // TODO(blundell): Eliminate this struct once crbug.com/333997 is fixed.
@@ -46,8 +50,7 @@ class PrefService;
 struct GoogleServiceSigninSuccessDetails {
   GoogleServiceSigninSuccessDetails(const std::string& in_username,
                                     const std::string& in_password)
-      : username(in_username),
-        password(in_password) {}
+      : username(in_username), password(in_password) {}
   std::string username;
   std::string password;
 };
@@ -78,10 +81,12 @@ class SigninManagerBase : public KeyedService {
     virtual ~Observer() {}
   };
 
-  SigninManagerBase();
+  SigninManagerBase(SigninClient* client);
   virtual ~SigninManagerBase();
 
   // If user was signed in, load tokens from DB if available.
+  // TODO(blundell): Eliminate the |profile| argument once SigninManager no
+  // longer needs Profile. crbug.com/334209
   virtual void Initialize(Profile* profile, PrefService* local_state);
   bool IsInitialized() const;
 
@@ -158,7 +163,8 @@ class SigninManagerBase : public KeyedService {
   friend class FakeSigninManagerBase;
   friend class FakeSigninManager;
 
-  Profile* profile_;
+  SigninClient* client_;
+  bool initialized_;
 
   // Actual username after successful authentication.
   std::string authenticated_username_;
@@ -172,4 +178,4 @@ class SigninManagerBase : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(SigninManagerBase);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_BASE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_

@@ -74,11 +74,12 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
 
  private:
   static KeyedService* BuildFakeSignInManager(
-      content::BrowserContext* profile) {
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)
-    return new FakeSigninManagerBase();
+    return new FakeSigninManagerBase(profile);
 #else  // !defined(OS_CHROMEOS)
-    return new FakeSigninManager(static_cast<Profile*>(profile));
+    return new FakeSigninManager(profile);
 #endif
   }
 

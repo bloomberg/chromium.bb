@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"

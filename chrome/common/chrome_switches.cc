@@ -156,10 +156,6 @@ const char kCheckCloudPrintConnectorPolicy[] =
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 
-// Clears the token service before using it. This allows simulating the
-// expiration of credentials during testing.
-const char kClearTokenService[]             = "clear-token-service";
-
 // Tells chrome to display the cloud print dialog and upload the specified file
 // for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";

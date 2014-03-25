@@ -1820,9 +1820,6 @@ const char kSpdyProxyAuthEnabled[] = "spdy_proxy.enabled";
 const char kSpdyProxyAuthWasEnabledBefore[] = "spdy_proxy.was_enabled_before";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-// Boolean which stores if the user is allowed to signin to chrome.
-const char kSigninAllowed[] = "signin.allowed";
-
 // An ID to uniquely identify this client to the invalidator service.
 const char kInvalidatorClientId[] = "invalidator.client_id";
 
@@ -1839,19 +1836,9 @@ const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 const char kInvalidationServiceUseGCMChannel[] =
     "invalidation_service.use_gcm_channel";
 
-// String the identifies the last user that logged into sync and other
-// google services. As opposed to kGoogleServicesUsername, this value is not
-// cleared on signout, but while the user is signed in the two values will
-// be the same.
-const char kGoogleServicesLastUsername[] = "google.services.last_username";
-
 // Obfuscated account ID that identifies the current user logged into sync and
 // other google services.
 const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
-
-// String that identifies the current user logged into sync and other google
-// services.
-const char kGoogleServicesUsername[] = "google.services.username";
 
 // Local state pref containing a string regex that restricts which accounts
 // can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,

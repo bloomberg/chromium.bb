@@ -16,8 +16,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
-FakeSigninManagerBase::FakeSigninManagerBase() {
-}
+FakeSigninManagerBase::FakeSigninManagerBase(Profile* profile)
+    : SigninManagerBase(
+          ChromeSigninClientFactory::GetInstance()->GetForProfile(profile)) {}
 
 FakeSigninManagerBase::~FakeSigninManagerBase() {
 }
@@ -27,7 +28,7 @@ KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
   SigninManagerBase* manager;
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)
-  manager = new FakeSigninManagerBase();
+  manager = new FakeSigninManagerBase(profile);
 #else
   manager = new FakeSigninManager(profile);
 #endif

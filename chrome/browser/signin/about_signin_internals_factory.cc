@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/pref_names.h"

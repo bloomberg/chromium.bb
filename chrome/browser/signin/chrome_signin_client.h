@@ -23,6 +23,7 @@ class ChromeSigninClient : public SigninClient, public KeyedService {
   static bool SettingsAllowSigninCookies(CookieSettings* cookie_settings);
 
   // SigninClient implementation.
+  virtual PrefService* GetPrefs() OVERRIDE;
   virtual scoped_refptr<TokenWebData> GetDatabase() OVERRIDE;
   virtual bool CanRevokeCredentials() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;

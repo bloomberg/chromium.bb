@@ -10,6 +10,10 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/signin/signin_manager.h"
 
+namespace content {
+class BrowserContext;
+}
+
 class Profile;
 
 // SigninManager to use for testing. Tests should use the type
@@ -19,7 +23,7 @@ class Profile;
 // Overrides InitTokenService to do-nothing in tests.
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
-  explicit FakeSigninManagerBase();
+  explicit FakeSigninManagerBase(Profile* profile);
   virtual ~FakeSigninManagerBase();
 
   // Helper function to be used with

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"

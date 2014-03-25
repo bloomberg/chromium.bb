@@ -5,7 +5,7 @@
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_constants.h"

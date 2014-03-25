@@ -52,7 +52,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #else
 #include "chrome/browser/signin/signin_manager.h"
 #endif

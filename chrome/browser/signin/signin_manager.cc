@@ -68,7 +68,8 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
 }
 
 SigninManager::SigninManager(SigninClient* client)
-    : profile_(NULL),
+    : SigninManagerBase(client),
+      profile_(NULL),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),

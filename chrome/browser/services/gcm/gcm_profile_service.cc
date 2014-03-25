@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"

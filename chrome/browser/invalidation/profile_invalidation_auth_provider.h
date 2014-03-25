@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/invalidation/invalidation_auth_provider.h"
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 class LoginUIService;
 class ProfileOAuth2TokenService;

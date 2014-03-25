@@ -14,10 +14,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
-#include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
 class AppListControllerDelegate;

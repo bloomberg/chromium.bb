@@ -5,6 +5,19 @@
 {
   'targets': [
     {
+      'target_name': 'signin_core_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'signin/core/common/signin_pref_names.cc',
+        'signin/core/common/signin_pref_names.h',
+        'signin/core/common/signin_switches.cc',
+        'signin/core/common/signin_switches.h',
+      ],
+    },
+    {
       'target_name': 'signin_core_browser',
       'type': 'static_library',
       'dependencies': [
@@ -15,6 +28,7 @@
         '../sql/sql.gyp:sql',
         'keyed_service_core',
         'os_crypt',
+        'signin_core_common',
         'webdata_common',
       ],
       'include_dirs': [
@@ -30,6 +44,8 @@
         'signin/core/browser/signin_error_controller.h',
         'signin/core/browser/signin_internals_util.cc',
         'signin/core/browser/signin_internals_util.h',
+        'signin/core/browser/signin_manager_base.cc',
+        'signin/core/browser/signin_manager_base.h',
         'signin/core/browser/signin_manager_cookie_helper.cc',
         'signin/core/browser/signin_manager_cookie_helper.h',
         'signin/core/browser/webdata/token_service_table.cc',

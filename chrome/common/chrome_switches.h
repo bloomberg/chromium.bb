@@ -12,6 +12,7 @@
 #include "base/base_switches.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace switches {
@@ -57,7 +58,6 @@ extern const char kCertificateTransparencyLog[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];
 extern const char kCipherSuiteBlacklist[];
-extern const char kClearTokenService[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
 extern const char kCloudPrintFileType[];

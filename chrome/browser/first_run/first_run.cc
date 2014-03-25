@@ -31,6 +31,7 @@
 #include "chrome/browser/importer/importer_uma.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

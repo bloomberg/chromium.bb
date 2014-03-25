@@ -21,13 +21,15 @@
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
@@ -129,7 +131,10 @@ class Waiter {
 
 class FakeSigninManager : public SigninManagerBase {
  public:
-  explicit FakeSigninManager(Profile* profile) : profile_(profile) {
+  explicit FakeSigninManager(Profile* profile)
+      : SigninManagerBase(
+            ChromeSigninClientFactory::GetInstance()->GetForProfile(profile)),
+        profile_(profile) {
     Initialize(profile, NULL);
   }
 

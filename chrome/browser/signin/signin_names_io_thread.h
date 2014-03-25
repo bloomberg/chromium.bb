@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 // This class provides access to a list of email addresses for all profiles
 // connected to a Google account, from the IO thread.  The main purpose of

@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/signin_manager_base.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 class Profile;
 

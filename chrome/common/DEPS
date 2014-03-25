@@ -7,6 +7,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/password_manager/core/common",
   "+components/policy/core/common",
+  "+components/signin/core/common",
   "+components/translate/core/common",
   "+extensions/common",
   "+grit",  # For generated headers

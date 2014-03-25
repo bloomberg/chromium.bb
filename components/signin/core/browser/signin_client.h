@@ -7,6 +7,7 @@
 
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
+class PrefService;
 class TokenWebData;
 
 namespace net {
@@ -18,6 +19,9 @@ class URLRequestContextGetter;
 class SigninClient {
  public:
   virtual ~SigninClient() {}
+
+  // Gets the preferences associated with the client.
+  virtual PrefService* GetPrefs() = 0;
 
   // Gets the TokenWebData instance associated with the client.
   virtual scoped_refptr<TokenWebData> GetDatabase() = 0;

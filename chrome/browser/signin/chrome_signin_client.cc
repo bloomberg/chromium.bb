@@ -41,6 +41,8 @@ bool ChromeSigninClient::SettingsAllowSigninCookies(
                                                  GURL(kGoogleAccountsUrl));
 }
 
+PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
+
 scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
   return WebDataServiceFactory::GetTokenWebDataForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
