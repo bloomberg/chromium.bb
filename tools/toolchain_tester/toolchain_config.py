@@ -66,7 +66,7 @@ class ToolchainConfig(object):
 
 LOCAL_GCC = '/usr/bin/gcc'
 
-EMU_SCRIPT = 'toolchain/linux_x86_linux_arm/arm_trusted/run_under_qemu_arm'
+EMU_SCRIPT = 'toolchain/linux_x86/arm_trusted/run_under_qemu_arm'
 
 TEMPLATE_DIGITS = 'X' * 16
 BOOTSTRAP_ARGS = '--r_debug=0x%s --reserved_at_zero=0x%s' % (TEMPLATE_DIGITS,
@@ -87,7 +87,7 @@ SEL_LDR_X64 = 'scons-out/opt-linux-x86-64/staging/sel_ldr'
 IRT_X64 = 'scons-out/nacl_irt-x86-64/obj/src/untrusted/irt/irt_core.nexe'
 RUN_SEL_LDR_X64 = BOOTSTRAP_X64 + ' ' + SEL_LDR_X64 + ' ' + BOOTSTRAP_ARGS
 
-NACL_X86_NEWLIB = 'toolchain/linux_x86_nacl_x86/nacl_x86_newlib'
+NACL_X86_NEWLIB = 'toolchain/linux_x86/nacl_x86_newlib'
 NACL_GCC_X32 = NACL_X86_NEWLIB + '/bin/i686-nacl-gcc'
 NACL_GCC_X64 = NACL_X86_NEWLIB + '/bin/x86_64-nacl-gcc'
 
@@ -148,41 +148,6 @@ TOOLCHAIN_CONFIGS['local_gcc_x8664_O3'] = ToolchainConfig(
     CFLAGS = '-O3 -m64 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
-# CS ARM
-######################################################################
-# NOTE: you may need this if you see mmap: Permission denied
-# "echo 0 > /proc/sys/vm/mmap_min_addr"
-GCC_CS_ARM = ('toolchain/linux_x86_linux_arm/arm_trusted/arm-2009q3/' +
-              'bin/arm-none-linux-gnueabi-gcc')
-
-COMMANDS_gcc_cs_arm = [
-    ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -Wl,-Ttext-segment=20000  -o %(tmp)s.exe',
-     ),
-    ('emu',
-     '%(EMU_SCRIPT)s %(tmp)s.exe',
-     )
-    ]
-
-TOOLCHAIN_CONFIGS['gcc_cs_arm_O0'] = ToolchainConfig(
-    desc='codesourcery cross gcc [arm]',
-    attributes=['arm', 'O0'],
-    commands=COMMANDS_gcc_cs_arm,
-    tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
-    CC = GCC_CS_ARM,
-    EMU_SCRIPT = EMU_SCRIPT,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
-
-TOOLCHAIN_CONFIGS['gcc_cs_arm_O3'] = ToolchainConfig(
-    desc='codesourcery cross gcc [arm]',
-    attributes=['arm', 'O3'],
-    commands=COMMANDS_gcc_cs_arm,
-    tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
-    CC = GCC_CS_ARM,
-    EMU_SCRIPT = EMU_SCRIPT,
-    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
-
-######################################################################
 # # NACL + SEL_LDR [X86]
 ######################################################################
 COMMANDS_nacl_gcc = [
@@ -241,11 +206,13 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 
 # Locate the pnacl toolchain.  Path can be overridden externally.
 PNACL_TOOLCHAIN_LABEL = ''
-os_name = pynacl.platform.GetOS()
-PNACL_TOOLCHAIN_DIR = os.getenv('PNACL_TOOLCHAIN_DIR',
-                                '%s_x86_pnacl/pnacl_newlib' % os_name)
+if not 'PNACL_TOOLCHAIN_LABEL' in os.environ:
+  env_map = { 'linux2': 'linux', 'darwin': 'mac' }
+  PNACL_TOOLCHAIN_LABEL = 'pnacl_' + env_map[sys.platform] + '_x86'
+else:
+  PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
 
-PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_DIR)
+PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL)
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang++'
 PNACL_FINALIZE = PNACL_ROOT + '/bin/pnacl-finalize'
 
