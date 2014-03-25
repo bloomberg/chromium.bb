@@ -81,7 +81,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
-        power_manager::kDecreaseScreenBrightness);
+        power_manager::kDecreaseScreenBrightnessMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(allow_off);
     power_manager_proxy_->CallMethod(
@@ -91,22 +91,25 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void IncreaseScreenBrightness() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kIncreaseScreenBrightness);
+    SimpleMethodCallToPowerManager(
+        power_manager::kIncreaseScreenBrightnessMethod);
   }
 
   virtual void DecreaseKeyboardBrightness() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kDecreaseKeyboardBrightness);
+    SimpleMethodCallToPowerManager(
+        power_manager::kDecreaseKeyboardBrightnessMethod);
   }
 
   virtual void IncreaseKeyboardBrightness() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kIncreaseKeyboardBrightness);
+    SimpleMethodCallToPowerManager(
+        power_manager::kIncreaseKeyboardBrightnessMethod);
   }
 
   virtual void SetScreenBrightnessPercent(double percent,
                                           bool gradual) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
-        power_manager::kSetScreenBrightnessPercent);
+        power_manager::kSetScreenBrightnessPercentMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendDouble(percent);
     writer.AppendInt32(
@@ -121,8 +124,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   virtual void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kGetScreenBrightnessPercent);
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kGetScreenBrightnessPercentMethod);
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -409,7 +413,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
       dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Error calling "
-                 << power_manager::kGetScreenBrightnessPercent;
+                 << power_manager::kGetScreenBrightnessPercentMethod;
       return;
     }
     dbus::MessageReader reader(response);
