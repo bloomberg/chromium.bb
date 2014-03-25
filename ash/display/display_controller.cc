@@ -227,9 +227,7 @@ DisplayController::DisplayController()
     : primary_root_window_for_replace_(NULL),
       focus_activation_store_(new internal::FocusActivationStore()),
       cursor_window_controller_(new internal::CursorWindowController()),
-      mirror_window_controller_(new internal::MirrorWindowController()),
-      virtual_keyboard_window_controller_(
-          new internal::VirtualKeyboardWindowController) {
+      mirror_window_controller_(new internal::MirrorWindowController()) {
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
@@ -243,6 +241,10 @@ DisplayController::~DisplayController() {
 }
 
 void DisplayController::Start() {
+  // Created here so that Shell has finished being created. Adds itself
+  // as a ShellObserver.
+  virtual_keyboard_window_controller_.reset(
+      new internal::VirtualKeyboardWindowController);
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
 

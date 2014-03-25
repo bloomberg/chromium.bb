@@ -63,6 +63,8 @@ float GetKeyboardHeightRatio(){
   return kDefaultKeyboardHeightRatio;
 }
 
+bool g_touch_keyboard_enabled = false;
+
 }  // namespace
 
 namespace keyboard {
@@ -85,6 +87,14 @@ bool GetAccessibilityKeyboardEnabled() {
   return g_accessibility_keyboard_enabled;
 }
 
+void SetTouchKeyboardEnabled(bool enabled) {
+  g_touch_keyboard_enabled = enabled;
+}
+
+bool GetTouchKeyboardEnabled() {
+  return g_touch_keyboard_enabled;
+}
+
 std::string GetKeyboardLayout() {
   // TODO(bshe): layout string is currently hard coded. We should use more
   // standard keyboard layouts.
@@ -95,7 +105,8 @@ bool IsKeyboardEnabled() {
   return g_accessibility_keyboard_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVirtualKeyboard) ||
-      IsKeyboardUsabilityExperimentEnabled();
+      IsKeyboardUsabilityExperimentEnabled() ||
+      g_touch_keyboard_enabled;
 }
 
 bool IsKeyboardUsabilityExperimentEnabled() {

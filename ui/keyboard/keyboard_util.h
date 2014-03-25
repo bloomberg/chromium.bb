@@ -48,6 +48,12 @@ KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
 // Gets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT bool GetAccessibilityKeyboardEnabled();
 
+// Sets the state of the touch onscreen keyboard.
+KEYBOARD_EXPORT void SetTouchKeyboardEnabled(bool enabled);
+
+// Gets the state of the touch onscreen keyboard.
+KEYBOARD_EXPORT bool GetTouchKeyboardEnabled();
+
 // Gets the default keyboard layout.
 KEYBOARD_EXPORT std::string GetKeyboardLayout();
 

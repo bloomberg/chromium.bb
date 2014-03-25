@@ -19,14 +19,17 @@
 #include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 namespace internal {
 
 VirtualKeyboardWindowController::VirtualKeyboardWindowController() {
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 VirtualKeyboardWindowController::~VirtualKeyboardWindowController() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   // Make sure the root window gets deleted before cursor_window_delegate.
   Close();
 }
@@ -90,6 +93,17 @@ void VirtualKeyboardWindowController::FlipDisplay() {
       internal::CreateRootWindowTransformerForDisplay(host->window(),
           display_manager->non_desktop_display()));
   host->SetRootWindowTransformer(transformer.Pass());
+}
+
+void VirtualKeyboardWindowController::OnMaximizeModeStarted() {
+  keyboard::SetTouchKeyboardEnabled(true);
+  Shell::GetInstance()->CreateKeyboard();
+}
+
+void VirtualKeyboardWindowController::OnMaximizeModeEnded() {
+  keyboard::SetTouchKeyboardEnabled(false);
+  if (!keyboard::IsKeyboardEnabled())
+    Shell::GetInstance()->DeactivateKeyboard();
 }
 
 }  // namespace internal

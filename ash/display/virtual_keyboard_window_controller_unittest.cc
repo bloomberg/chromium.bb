@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 namespace test {
@@ -21,16 +22,6 @@ class VirtualKeyboardWindowControllerTest : public AshTestBase {
   VirtualKeyboardWindowControllerTest()
       : virtual_keyboard_window_controller_(NULL) {}
   virtual ~VirtualKeyboardWindowControllerTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    if (SupportsMultipleDisplays()) {
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          keyboard::switches::kKeyboardUsabilityExperiment);
-    }
-    test::AshTestBase::SetUp();
-  }
 
   void set_virtual_keyboard_window_controller(
       internal::VirtualKeyboardWindowController* controller) {
@@ -48,8 +39,28 @@ class VirtualKeyboardWindowControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWindowControllerTest);
 };
 
+class VirtualKeyboardUsabilityExperimentTest
+    : public VirtualKeyboardWindowControllerTest {
+ public:
+  VirtualKeyboardUsabilityExperimentTest()
+    : VirtualKeyboardWindowControllerTest() {}
+  virtual ~VirtualKeyboardUsabilityExperimentTest() {}
 
-TEST_F(VirtualKeyboardWindowControllerTest, VirtualKeyboardWindowTest) {
+  virtual void SetUp() OVERRIDE {
+    if (SupportsMultipleDisplays()) {
+      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          keyboard::switches::kKeyboardUsabilityExperiment);
+    }
+    test::AshTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardUsabilityExperimentTest);
+};
+
+TEST_F(VirtualKeyboardUsabilityExperimentTest, VirtualKeyboardWindowTest) {
   if (!SupportsMultipleDisplays())
     return;
   RunAllPendingInMessageLoop();
@@ -60,6 +71,20 @@ TEST_F(VirtualKeyboardWindowControllerTest, VirtualKeyboardWindowTest) {
   // Keyboard container is added to virtual keyboard window.
   EXPECT_TRUE(root_window_controller()->GetContainer(
       internal::kShellWindowId_VirtualKeyboardContainer));
+}
+
+// Tests that the onscreen keyboard becomes enabled when maximize mode is
+// enabled.
+TEST_F(VirtualKeyboardWindowControllerTest, EnabledDuringMaximizeMode) {
+  set_virtual_keyboard_window_controller(
+      Shell::GetInstance()->display_controller()->
+          virtual_keyboard_window_controller());
+
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
 }  // namespace test
