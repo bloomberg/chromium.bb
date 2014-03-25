@@ -5,6 +5,7 @@
 #include "net/quic/quic_http_stream.h"
 
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -61,9 +62,11 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
   if (request_info->url.SchemeIsSecure()) {
     SSLInfo ssl_info;
-    if (!session_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+    bool secure_session = session_->GetSSLInfo(&ssl_info) && ssl_info.cert;
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SecureResourceSecureSession",
+                          secure_session);
+    if (!secure_session)
       return ERR_REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC;
-    }
   }
 
   stream_net_log_ = stream_net_log;

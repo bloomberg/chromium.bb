@@ -12570,6 +12570,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.SecureResourceSecureSession">
+  <owner>rch@chromium.org.</owner>
+  <summary>
+    The number of request for secure resources over QUIC sessions. True if the
+    session is secure, false if it is not.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of truncated ACK frames received.</summary>
