@@ -490,8 +490,10 @@ MediaControls.prototype.encodeState = function() {
   if (!this.media_.duration)
     return;
 
-  window.appState.time = this.media_.currentTime;
-  util.saveAppState();
+  if (window.appState) {
+    window.appState.time = this.media_.currentTime;
+    util.saveAppState();
+  }
   return;
 };
 
@@ -500,11 +502,11 @@ MediaControls.prototype.encodeState = function() {
  * @return {boolean} True if decode succeeded.
  */
 MediaControls.prototype.decodeState = function() {
-  if (!('time' in window.appState))
+  if (!window.appState || !('time' in window.appState))
     return false;
   // There is no page reload for apps v2, only app restart.
   // Always restart in paused state.
-  this.media_.currentTime = appState.time;
+  this.media_.currentTime = window.appState.time;
   this.pause();
   return true;
 };
@@ -513,6 +515,9 @@ MediaControls.prototype.decodeState = function() {
  * Remove current state from the page URL or the app state.
  */
 MediaControls.prototype.clearState = function() {
+  if (!window.appState)
+    return;
+
   if ('time' in window.appState)
     delete window.appState.time;
   util.saveAppState();

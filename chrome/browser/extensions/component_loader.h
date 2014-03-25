@@ -126,6 +126,7 @@ class ComponentLoader {
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
   void AddFileManagerExtension();
+  void AddVideoPlayerExtension();
   void AddHangoutServicesExtension();
   void AddHotwordHelperExtension();
   void AddImageLoaderExtension();
