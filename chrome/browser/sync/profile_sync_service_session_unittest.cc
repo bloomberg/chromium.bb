@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -155,6 +157,8 @@ class ProfileSyncServiceSessionTest
         content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
         content::NotificationService::AllSources());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kSyncDeferredStartupTimeoutSeconds, "0");
   }
 
   virtual void Observe(int type,
