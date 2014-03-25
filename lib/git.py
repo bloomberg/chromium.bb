@@ -57,8 +57,7 @@ GIT_TRANSIENT_ERRORS = (
     r'The remote end hung up unexpectedly',
 
     # crbug.com/298189
-    r'error: gnutls_handshake\(\) failed: A TLS packet with unexpected length '
-    r'was received. while accessing',
+    r'TLS packet with unexpected length was received',
 
     # crbug.com/187444
     r'RPC failed; result=\d+, HTTP code = \d+',

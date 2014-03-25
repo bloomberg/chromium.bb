@@ -167,6 +167,16 @@ class GitPushTest(cros_test_lib.MockTestCase):
 
       # Another kind of error when pushing a branch.
       'fatal: remote error: Internal Server Error',
+
+      # crbug.com/298189
+      ('error: gnutls_handshake() failed: A TLS packet with unexpected length '
+       'was received. while accessing '
+       'http://localhost/repo.git/info/refs?service=git-upload-pack\n'
+       'fatal: HTTP request failed'),
+
+      # crbug.com/298189
+      ('fatal: unable to access \'https://localhost/repo.git\': GnuTLS recv '
+       'error (-9): A TLS packet with unexpected length was received.'),
   )
 
   def setUp(self):
