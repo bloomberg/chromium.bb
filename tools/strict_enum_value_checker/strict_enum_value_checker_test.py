@@ -8,7 +8,7 @@ import os
 import re
 import unittest
 
-import PRESUBMIT
+from strict_enum_value_checker import StrictEnumValueChecker
 
 class MockLogging(object):
   def __init__(self):
@@ -34,25 +34,25 @@ class MockInputApi(object):
 
 class MockOutputApi(object):
   class PresubmitResult(object):
-    def __init__(self, message, items=None, long_text=''):
+    def __init__(self, message, items=None, long_text=""):
       self.message = message
       self.items = items
       self.long_text = long_text
 
   class PresubmitError(PresubmitResult):
-    def __init__(self, message, items, long_text=''):
+    def __init__(self, message, items, long_text=""):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
-      self.type = 'error'
+      self.type = "error"
 
   class PresubmitPromptWarning(PresubmitResult):
-    def __init__(self, message, items, long_text=''):
+    def __init__(self, message, items, long_text=""):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
-      self.type = 'warning'
+      self.type = "warning"
 
   class PresubmitNotifyResult(PresubmitResult):
-    def __init__(self, message, items, long_text=''):
+    def __init__(self, message, items, long_text=""):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
-      self.type = 'notify'
+      self.type = "notify"
 
 
 class MockFile(object):
@@ -100,13 +100,13 @@ class MockFile(object):
       return []
 
     for line in self.GenerateScmDiff().splitlines():
-      m = re.match(r'^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@', line)
+      m = re.match(r"^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@", line)
       if m:
         line_num = int(m.groups(1)[0])
         continue
-      if line.startswith('+') and not line.startswith('++'):
+      if line.startswith("+") and not line.startswith("++"):
         self._cached_changed_contents.append((line_num, line[1:]))
-      if not line.startswith('-'):
+      if not line.startswith("-"):
         line_num += 1
     return self._cached_changed_contents[:]
 
@@ -119,15 +119,18 @@ class MockChange(object):
     return self._changed_files
 
 
-class HistogramValueCheckerTest(unittest.TestCase):
-  TEST_FILE_PATTERN = "PRESUBMIT_test_new_file_%s.txt"
+class StrictEnumValueCheckerTest(unittest.TestCase):
+  TEST_FILE_PATTERN = "changed_file_%s.h"
+  MOCK_FILE_LOCAL_PATH = "mock_enum.h"
+  START_MARKER = "enum MockEnum {"
+  END_MARKER = "  mBoundary"
 
   def _ReadTextFileContents(self, path):
     """Given a path, returns a list of strings corresponding to the text lines
     in the file. Reads files in text format.
 
     """
-    fo = open(path, 'r')
+    fo = open(path, "r")
     try:
       contents = fo.readlines()
     finally:
@@ -135,7 +138,7 @@ class HistogramValueCheckerTest(unittest.TestCase):
     return contents
 
   def _ReadInputFile(self):
-    return self._ReadTextFileContents("PRESUBMIT_test_old_file.txt")
+    return self._ReadTextFileContents("mock_enum.h")
 
   def _PrepareTest(self, new_file_path):
     old_contents = self._ReadInputFile()
@@ -144,7 +147,7 @@ class HistogramValueCheckerTest(unittest.TestCase):
     else:
       new_contents = self._ReadTextFileContents(new_file_path)
     input_api = MockInputApi()
-    mock_file = MockFile(PRESUBMIT.HistogramValueChecker.LOCAL_PATH,
+    mock_file = MockFile(self.MOCK_FILE_LOCAL_PATH,
                          old_contents,
                          new_contents)
     input_api.files.append(mock_file)
@@ -153,7 +156,8 @@ class HistogramValueCheckerTest(unittest.TestCase):
 
   def _RunTest(self, new_file_path):
     input_api, output_api = self._PrepareTest(new_file_path)
-    checker = PRESUBMIT.HistogramValueChecker(input_api, output_api)
+    checker = StrictEnumValueChecker(input_api, output_api, self.START_MARKER,
+                                     self.END_MARKER, self.MOCK_FILE_LOCAL_PATH)
     results = checker.Run()
     return results
 
@@ -161,7 +165,7 @@ class HistogramValueCheckerTest(unittest.TestCase):
     results = self._RunTest(new_file_path=None)
     # TODO(rpaquay) How to check it's the expected warning?'
     self.assertEquals(1, len(results),
-                      "We hould get a single warning about file deletion.")
+                      "We should get a single warning about file deletion.")
 
   def testSimpleValidEdit(self):
     results = self._RunTest(self.TEST_FILE_PATTERN % "1")
@@ -226,11 +230,6 @@ class HistogramValueCheckerTest(unittest.TestCase):
                       "We should not get a warning for a deletion outside of "
                       "the enum")
 
-  def testCommentIsNotEnumEndMarker(self):
-    results = self._RunTest(self.TEST_FILE_PATTERN % "11")
-    self.assertEquals(1, len(results),
-                      "We should get a warning if '// Last Entry' is not the "
-                      "enum end marker")
 
 if __name__ == '__main__':
   unittest.main()

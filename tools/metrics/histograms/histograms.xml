@@ -32302,6 +32302,71 @@ other types of suffix sets.
   <int value="28" label="SOCKET_SPECIFIC_HOSTS"/>
 </enum>
 
+<enum name="ExtensionPermission2" type="int">
+<!-- Generated from ../../../extensions/common/permissions/permission_message.h -->
+
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kNone"/>
+  <int value="2" label="kBookmarks"/>
+  <int value="3" label="kGeolocation"/>
+  <int value="4" label="kBrowsingHistory"/>
+  <int value="5" label="kTabs"/>
+  <int value="6" label="kManagement"/>
+  <int value="7" label="kDebugger"/>
+  <int value="8" label="kDesktopCapture"/>
+  <int value="9" label="kHid"/>
+  <int value="10" label="kHosts1"/>
+  <int value="11" label="kHosts2"/>
+  <int value="12" label="kHosts3"/>
+  <int value="13" label="kHosts4OrMore"/>
+  <int value="14" label="kHostsAll"/>
+  <int value="15" label="kFullAccess"/>
+  <int value="16" label="kClipboard"/>
+  <int value="17" label="kTtsEngine"/>
+  <int value="18" label="kContentSettings"/>
+  <int value="19" label="kPrivacy"/>
+  <int value="20" label="kManagedMode"/>
+  <int value="21" label="kInput"/>
+  <int value="22" label="kAudioCapture"/>
+  <int value="23" label="kVideoCapture"/>
+  <int value="24" label="kDownloads"/>
+  <int value="25" label="kFileSystemWrite"/>
+  <int value="26" label="kMediaGalleriesAllGalleriesRead"/>
+  <int value="27" label="kSerial"/>
+  <int value="28" label="kSocketAnyHost"/>
+  <int value="29" label="kSocketDomainHosts"/>
+  <int value="30" label="kSocketSpecificHosts"/>
+  <int value="31" label="kBluetooth"/>
+  <int value="32" label="kUsb"/>
+  <int value="33" label="kSystemIndicator"/>
+  <int value="34" label="kUsbDevice"/>
+  <int value="35" label="kMediaGalleriesAllGalleriesCopyTo"/>
+  <int value="36" label="kSystemInfoDisplay"/>
+  <int value="37" label="kNativeMessaging"/>
+  <int value="38" label="kSyncFileSystem"/>
+  <int value="39" label="kAudio"/>
+  <int value="40" label="kFavicon"/>
+  <int value="41" label="kMusicManagerPrivate"/>
+  <int value="42" label="kWebConnectable"/>
+  <int value="43" label="kActivityLogPrivate"/>
+  <int value="44" label="kBluetoothDevices"/>
+  <int value="45" label="kDownloadsOpen"/>
+  <int value="46" label="kNetworkingPrivate"/>
+  <int value="47" label="kDeclarativeWebRequest"/>
+  <int value="48" label="kFileSystemDirectory"/>
+  <int value="49" label="kFileSystemWriteDirectory"/>
+  <int value="50" label="kSignedInDevices"/>
+  <int value="51" label="kWallpaper"/>
+  <int value="52" label="kNetworkState"/>
+  <int value="53" label="kHomepage"/>
+  <int value="54" label="kSearchProvider"/>
+  <int value="55" label="kStartupPages"/>
+  <int value="56" label="kMediaGalleriesAllGalleriesDelete"/>
+  <int value="57" label="kScreenlockPrivate"/>
+  <int value="58" label="kOverrideBookmarksUI"/>
+  <int value="59" label="kAutomation"/>
+</enum>
+
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
   <int value="0" label="VERIFY_ALL_BOOTSTRAP_SUCCESS"/>
   <int value="1" label="VERIFY_ALL_BOOTSTRAP_FAILURE"/>
