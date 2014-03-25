@@ -316,14 +316,15 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     @Override
     public void prepareMenu(Menu menu) {
         menu.setGroupVisible(R.id.MAIN_MENU, true);
+        ChromeShellTab activeTab = getActiveTab();
 
         // Disable the "Back" menu item if there is no page to go to.
         MenuItem backMenuItem = menu.findItem(R.id.back_menu_id);
-        backMenuItem.setEnabled(getActiveTab().canGoBack());
+        backMenuItem.setEnabled(activeTab != null ? activeTab.canGoBack() : false);
 
         // Disable the "Forward" menu item if there is no page to go to.
         MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
-        forwardMenuItem.setEnabled(getActiveTab().canGoForward());
+        forwardMenuItem.setEnabled(activeTab != null ? activeTab.canGoForward() : false);
 
         // ChromeShell does not know about bookmarks yet
         menu.findItem(R.id.bookmark_this_page_id).setEnabled(true);
@@ -337,8 +338,15 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
         menu.findItem(R.id.print).setVisible(ApiCompatibilityUtils.isPrintingSupported());
 
-        menu.findItem(R.id.distill_page).setVisible(
-                CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER));
+        MenuItem distillPageItem = menu.findItem(R.id.distill_page);
+        if (CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER)) {
+            String url = activeTab != null ? activeTab.getUrl() : null;
+            distillPageItem.setEnabled(!TextUtils.isEmpty(url) &&
+                    !url.startsWith(CHROME_DISTILLER_SCHEME));
+            distillPageItem.setVisible(true);
+        } else {
+            distillPageItem.setVisible(false);
+        }
     }
 
     @VisibleForTesting
