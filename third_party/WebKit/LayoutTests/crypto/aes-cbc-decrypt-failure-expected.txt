@@ -1,0 +1,17 @@
+Decrypting truncated AES-CBC ciphertext should fail
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS: Decryption succeeded
+PASS: decrypting failed. ciphertext length: 0
+PASS: decrypting failed. ciphertext length: 79
+PASS: decrypting failed. ciphertext length: 64
+PASS: decrypting failed. ciphertext length: 1
+PASS: decrypting failed. ciphertext length: 15
+PASS: decrypting failed. ciphertext length: 16
+PASS: decrypting failed. ciphertext length: 17
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

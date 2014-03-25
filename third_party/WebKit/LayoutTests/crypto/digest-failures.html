@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests incorrect calls to crypto.subtle.digest()");
+
+jsTestIsAsync = true;
+
+// Pass invalid data to digest()
+shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
+shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
+shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
+
+// Pass invalid algorithmIdentifiers to digest()
+data = new Uint8Array([0]);
+shouldThrow("crypto.subtle.digest(null, data)");
+
+Promise.resolve(null).then(function(result) {
+    // "sha" is not a recognized algorithm name
+    return crypto.subtle.digest({name: 'sha'}, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Algorithm lacks a name.
+    return crypto.subtle.digest({}, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+  
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>

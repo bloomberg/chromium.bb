@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script src="resources/common.js"></script>
+<script src="resources/keys.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -34,7 +35,7 @@ addTask(importTestKeys().then(function(result) {
 
     return crypto.subtle.exportKey('spki', keys.rsaSsaSha1Public);
 }).then(function(result) {
-    bytesShouldMatchHexString("Key bytes", kPublicKeySpkiDerHex, result);
+    bytesShouldMatchHexString("Key bytes", kKeyData.rsa1.spki, result);
 }));
 
 completeTestWhenAllTasksDone();

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests bad algorithm inputs for AES-CTR");
+
+jsTestIsAsync = true;
+
+var keyData = hexStringToUint8Array("2b7e151628aed2a6abf7158809cf4f3c");
+var data = asciiToUint8Array("hello");
+var key = null;
+
+Promise.resolve(null).then(function(result) {
+    var usages = ['encrypt', 'decrypt'];
+    var extractable = false;
+    // FIXME: Should use aes-ctr here.
+    var algorithm = {name: 'aes-cbc'};
+
+    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+}).then(function(result) {
+    key = result;
+
+    return crypto.subtle.encrypt({name: 'AES-CTR', counter: null}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.encrypt({name: 'AES-CTR'}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(0)}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>

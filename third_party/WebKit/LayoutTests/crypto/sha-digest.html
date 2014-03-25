@@ -9,7 +9,7 @@
 <div id="console"></div>
 
 <script>
-description("Tests cypto.subtle.digest.");
+description("Tests the digest() operation for SHA-*");
 
 jsTestIsAsync = true;
 
@@ -83,12 +83,7 @@ kDigestTestVectors = [
   },
 ];
 
-// Run each test.
-for (var i = 0; i < kDigestTestVectors.length; ++i) {
-    addTask(runTestCase(kDigestTestVectors[i]));
-}
-
-function runTestCase(testCase)
+function runTest(testCase)
 {
     return crypto.subtle.digest({name: testCase.algorithm}, hexStringToUint8Array(testCase.input)).then(function(result) {
         var testDescription = testCase.algorithm + " of [" + testCase.input + "]";
@@ -96,18 +91,13 @@ function runTestCase(testCase)
     });
 }
 
-// Pass invalid data to digest()
-shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
-shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
-shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
+var lastPromise = Promise.resolve(null);
 
-// Pass invalid algorithmIdentifiers to digest()
-data = new Uint8Array([0]);
-shouldRejectPromiseWithNull("crypto.subtle.digest({name: 'sha'}, data)");
-shouldThrow("crypto.subtle.digest(null, data)");
-shouldRejectPromiseWithNull("crypto.subtle.digest({}, data)");
+kDigestTestVectors.forEach(function(test) {
+    lastPromise = lastPromise.then(runTest.bind(null, test));
+});
 
-completeTestWhenAllTasksDone();
+lastPromise.then(finishJSTest, failAndFinishJSTest);
 
 </script>
 

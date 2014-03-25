@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script src="resources/common.js"></script>
+<script src="resources/keys.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -24,37 +25,13 @@ var kPossibleKeyUsages = [[], ['sign'], ['verify'], ['sign', 'verify']];
 var kPossibleHashAlgorithms = ['SHA-1', 'SHA-256', 'SHA-512'];
 
 var kPossibleKeyData = [
-    {
-        modululusLengthBits: 1024,
-        publicExponent: "010001",
-
-        spkiData: "30819f300d06092a864886f70d010101050003818d0030818902818100b2" +
-        "89c62ecc3ddf64154817203439eaa0dc07a65954429a7b6098a77235673d" +
-        "96df1f06bd3c1ae73990867199e678bf95b3728fcd4686136e6ee9dd4c09" +
-        "eb490eb7cb953c388668b759263f61d6a7dfcabf27b5c9d6972455b12b66" +
-        "d483843286d6b871f35f912a773c97c1932255fcee05ce7b8af213879f01" +
-        "7de4232a306a410203010001"
-    },
-    {
-        modululusLengthBits: 2048,
-        publicExponent: "010001",
-
-        spkiData: "30820122300d06092a864886f70d01010105000382010f003082010a0282" +
-        "010100b4c8b631194aef0154b1479ab7a534b60ca878981108680f0ae6b7" +
-        "c88cb6010f6dbf9f665646208410575cb923b26bf874a24b4cd801c9bba9" +
-        "67062ae506cdcf307add4380d0d93077a4c1f0fc06d498dc729f811335c5" +
-        "30b90fe9bf9f3979ccec050a48e8923045b19368e1e89ea4157538e8059e" +
-        "53320f47c155f1741310a93ed153a7f3af2d46c388b95d82518527a02b7b" +
-        "d9ab7edc4bcb737677f679c5c6de5e1ebed3a29d6b99b8eace2d59ceb533" +
-        "e001cf39c5671495d51d3ee34406ea4fdb0c626dee68da256b8a12f9f650" +
-        "59ccc85a2190ce1385152d62785e00cae702e77c4c597b86a6268adbf043" +
-        "dda68881c790f1517671fb7d198fca5ba97bef0203010001"
-    }
+    kKeyData.rsa2,
+    kKeyData.rsa3
 ];
 
 function runTest(algorithmName, hashName, extractable, keyUsages, keyData)
 {
-    var importData = hexStringToUint8Array(keyData.spkiData);
+    var importData = hexStringToUint8Array(keyData.spki);
     var importAlgorithm = { name: algorithmName, hash: {name: hashName} };
 
     var results = {};
@@ -76,7 +53,7 @@ function runTest(algorithmName, hashName, extractable, keyUsages, keyData)
         shouldEvaluateAs("importedKey.type", "public");
         shouldEvaluateAs("importedKey.extractable", extractable);
         shouldEvaluateAs("importedKey.algorithm.name", algorithmName);
-        shouldEvaluateAs("importedKey.algorithm.modulusLength", keyData.modululusLengthBits);
+        shouldEvaluateAs("importedKey.algorithm.modulusLength", keyData.modulusLengthBits);
         bytesShouldMatchHexString("importedKey.algorithm.publicExponent", keyData.publicExponent, importedKey.algorithm.publicExponent);
         shouldEvaluateAs("importedKey.algorithm.hash.name", hashName);
         shouldEvaluateAs("importedKey.usages.join(',')", keyUsages.join(","));
@@ -87,7 +64,7 @@ function runTest(algorithmName, hashName, extractable, keyUsages, keyData)
         shouldEvaluateAs("clonedKey.type", "public");
         shouldEvaluateAs("clonedKey.extractable", extractable);
         shouldEvaluateAs("clonedKey.algorithm.name", algorithmName);
-        shouldEvaluateAs("clonedKey.algorithm.modulusLength", keyData.modululusLengthBits);
+        shouldEvaluateAs("clonedKey.algorithm.modulusLength", keyData.modulusLengthBits);
         bytesShouldMatchHexString("clonedKey.algorithm.publicExponent", keyData.publicExponent, clonedKey.algorithm.publicExponent);
         shouldEvaluateAs("clonedKey.algorithm.hash.name", hashName);
         shouldEvaluateAs("clonedKey.usages.join(',')", keyUsages.join(","));
@@ -95,7 +72,7 @@ function runTest(algorithmName, hashName, extractable, keyUsages, keyData)
         logSerializedKey(importedKey);
 
         if (extractable)
-            bytesShouldMatchHexString("Cloned key exported data", keyData.spkiData, clonedKeyData);
+            bytesShouldMatchHexString("Cloned key exported data", keyData.spki, clonedKeyData);
 
         debug("");
     });
