@@ -7,13 +7,14 @@ import operator
 import re
 
 import cr
+import cr.base.context
 
 DEFAULT = cr.Config.From(
     CR_DEFAULT_TARGET='chrome',
 )
 
 
-class Target(cr.Config, cr.AutoExport):
+class Target(cr.base.context.Context, cr.AutoExport):
   """Base class for implementing cr targets.
 
   A target is something that can be built and run.
@@ -44,6 +45,7 @@ class Target(cr.Config, cr.AutoExport):
         CR_RUN_ARGUMENTS='',
         CR_TEST_TYPE=test_type,
     )
+    self._data = cr.context.data
     self.AddChildren(config, cr.context)
     if hasattr(self, 'CONFIG'):
       self.AddChild(self.CONFIG)
@@ -55,14 +57,6 @@ class Target(cr.Config, cr.AutoExport):
   @property
   def build_target(self):
     return self.Get('CR_BUILD_TARGET')
-
-  @property
-  def verbose(self):
-    return cr.context.verbose
-
-  @property
-  def dry_run(self):
-    return cr.context.dry_run
 
   @property
   def valid(self):

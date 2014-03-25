@@ -22,7 +22,8 @@ class LinuxRunner(cr.Runner):
     print '**WARNING** Kill not yet implemented on linux'
 
   def Run(self, target, arguments):
-    cr.Host.Execute(target, '{CR_BINARY}', '{CR_RUN_ARGUMENTS}', *arguments)
+    with target:
+      cr.Host.Execute('{CR_BINARY}', '{CR_RUN_ARGUMENTS}', *arguments)
 
   def Test(self, target, arguments):
     self.Run(target, arguments)

@@ -98,32 +98,43 @@ class _ArgumentParser(argparse.ArgumentParser):
 _stack = []
 
 
-class _Context(cr.config.Config):
+class _ContextData:
+  pass
+
+
+class Context(cr.config.Config):
   """The base context holder for the cr system.
 
   This holds the common context shared throughout cr.
   Mostly this is stored in the Config structure of variables.
   """
 
-  def __init__(self, description='', epilog=''):
-    super(_Context, self).__init__('Context')
-    self._args = None
-    self._arguments = cr.config.Config('ARGS')
-    self._derived = cr.config.Config('DERIVED')
+  def __init__(self, name='Context'):
+    super(Context, self).__init__(name)
+    self._data = _ContextData()
+
+  def CreateData(self, description='', epilog=''):
+    self._data.args = None
+    self._data.arguments = cr.config.Config('ARGS')
+    self._data.derived = cr.config.Config('DERIVED')
     self.AddChildren(*cr.config.GLOBALS)
     self.AddChildren(
         cr.config.Config('ENVIRONMENT', literal=True, export=True).Set(
             {k: self.ParseValue(v) for k, v in os.environ.items()}),
-        self._arguments,
-        self._derived,
+        self._data.arguments,
+        self._data.derived,
     )
     # Build the command line argument parser
-    self._parser = _ArgumentParser(add_help=False, description=description,
-                                   epilog=epilog)
-    self._subparsers = self.parser.add_subparsers()
+    self._data.parser = _ArgumentParser(add_help=False, description=description,
+                                        epilog=epilog)
+    self._data.subparsers = self.parser.add_subparsers()
     # Add the global arguments
-    self.AddCommonArguments(self._parser)
-    self._gclient = {}
+    self.AddCommonArguments(self._data.parser)
+    self._data.gclient = {}
+
+  @property
+  def data(self):
+    return self._data
 
   def __enter__(self):
     """ To support using 'with cr.base.context.Create():'"""
@@ -138,7 +149,7 @@ class _Context(cr.config.Config):
     return False
 
   def AddSubParser(self, source):
-    parser = source.AddArguments(self._subparsers)
+    parser = source.AddArguments(self._data.subparsers)
 
   @classmethod
   def AddCommonArguments(cls, parser):
@@ -168,27 +179,27 @@ class _Context(cr.config.Config):
 
   @property
   def args(self):
-    return self._args
+    return self._data.args
 
   @property
   def arguments(self):
-    return self._arguments
+    return self._data.arguments
 
   @property
   def speculative(self):
-    return self._speculative
+    return self._data.speculative
 
   @property
   def derived(self):
-    return self._derived
+    return self._data.derived
 
   @property
   def parser(self):
-    return self._parser
+    return self._data.parser
 
   @property
   def remains(self):
-    remains = getattr(self._args, '_remains', None)
+    remains = getattr(self._data.args, '_remains', None)
     if remains and remains[0] == '--':
       remains = remains[1:]
     return remains
@@ -211,21 +222,24 @@ class _Context(cr.config.Config):
 
   @property
   def gclient(self):
-    if not self._gclient:
-      self._gclient = cr.base.client.ReadGClient()
-    return self._gclient
+    if not self._data.gclient:
+      self._data.gclient = cr.base.client.ReadGClient()
+    return self._data.gclient
 
   def ParseArgs(self, speculative=False):
     cr.plugin.DynamicChoices.only_active = not speculative
-    self._speculative = speculative
-    self._args = self._parser.parse_args()
-    self._arguments.Wipe()
-    if self._args:
-      self._arguments.Set(
-          {k: v for k, v in vars(self._args).items() if v is not None})
+    self._data.speculative = speculative
+    self._data.args = self._data.parser.parse_args()
+    self._data.arguments.Wipe()
+    if self._data.args:
+      self._data.arguments.Set(
+          {k: v for k, v in vars(self._data.args).items() if v is not None})
 
   def DumpValues(self, with_source):
     _DumpVisitor(with_source).VisitNode(self)
 
+
 def Create(description='', epilog=''):
-  return _Context(description=description, epilog=epilog)
+  context = Context()
+  context.CreateData(description=description, epilog=epilog)
+  return context
