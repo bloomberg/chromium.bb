@@ -16,6 +16,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::AnyNumber;
+
 namespace net {
 namespace test {
 namespace {
@@ -34,6 +37,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
     session_->SetCryptoStream(stream_.get());
     session_->config()->SetDefaults();
     crypto_config_.SetDefaults();
+    EXPECT_CALL(*session_, OnProofValid(_)).Times(AnyNumber());
   }
 
   void CompleteCryptoHandshake() {
