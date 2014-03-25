@@ -408,11 +408,6 @@
               '-Wl,-u_ZN15HeapLeakChecker12IgnoreObjectEPKv,-u_ZN15HeapLeakChecker14UnIgnoreObjectEPKv',
           ]},
         }],
-        # Need to distinguish a non-SDK build for Android WebView
-        # due to differences in C include files.
-        ['OS=="android" and android_webview_build==1', {
-          'defines': ['ANDROID_NON_SDK_BUILD'],
-        }],
         [ 'use_vtable_verify==1', {
           'cflags': [
             '-fvtable-verify=preinit',
