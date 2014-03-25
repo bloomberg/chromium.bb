@@ -1148,7 +1148,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
            request_data, sync_result, route_id, process_type, child_id,
            resource_context));
 
-  BeginRequestInternal(new_request.Pass(), handler.Pass());
+  if (handler)
+    BeginRequestInternal(new_request.Pass(), handler.Pass());
 }
 
 scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
@@ -1162,15 +1163,22 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
   // Construct the IPC resource handler.
   scoped_ptr<ResourceHandler> handler;
   if (sync_result) {
+    // download_to_file is not supported for synchronous requests.
+    if (request_data.download_to_file) {
+      RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
+      filter_->BadMessageReceived();
+      return scoped_ptr<ResourceHandler>();
+    }
+
     handler.reset(new SyncResourceHandler(request, sync_result, this));
   } else {
     handler.reset(new AsyncResourceHandler(request, this));
-  }
 
-  // The RedirectToFileResourceHandler depends on being next in the chain.
-  if (request_data.download_to_file) {
-    handler.reset(
-        new RedirectToFileResourceHandler(handler.Pass(), request));
+    // The RedirectToFileResourceHandler depends on being next in the chain.
+    if (request_data.download_to_file) {
+      handler.reset(
+          new RedirectToFileResourceHandler(handler.Pass(), request));
+    }
   }
 
   // Prefetches and <a ping> requests outlive their child process.

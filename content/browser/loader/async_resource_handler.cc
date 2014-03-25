@@ -201,8 +201,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   }
 
   // If the parent handler downloaded the resource to a file, grant the child
-  // read permissions on it. Note: there is similar logic in
-  // SyncResourceHandler.
+  // read permissions on it.
   if (!response->head.download_file_path.empty()) {
     rdh_->RegisterDownloadedTempFile(
         info->GetChildID(), info->GetRequestID(),
