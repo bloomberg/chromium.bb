@@ -59,6 +59,8 @@ class MacPort(base.Port):
 
     CONTENT_SHELL_NAME = 'Content Shell'
 
+    BUILD_REQUIREMENTS_URL = 'https://code.google.com/p/chromium/wiki/MacBuildInstructions'
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):

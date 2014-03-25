@@ -130,6 +130,9 @@ class Port(object):
 
     SUPPORTED_VERSIONS = []
 
+    # URL to the build requirements page.
+    BUILD_REQUIREMENTS_URL = ''
+
     @classmethod
     def latest_platform_fallback_path(cls):
         return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
@@ -383,6 +386,10 @@ class Port(object):
             _log.error('To override, invoke with --nocheck-sys-deps')
             _log.error('')
             _log.error(output)
+            if self.BUILD_REQUIREMENTS_URL is not '':
+                _log.error('')
+                _log.error('For complete build requirements, please see:')
+                _log.error(self.BUILD_REQUIREMENTS_URL)
             return test_run_results.SYS_DEPS_EXIT_STATUS
         return test_run_results.OK_EXIT_STATUS
 

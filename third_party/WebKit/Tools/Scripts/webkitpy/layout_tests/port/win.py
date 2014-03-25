@@ -58,6 +58,8 @@ class WinPort(base.Port):
 
     DEFAULT_BUILD_DIRECTORIES = ('build', 'out')
 
+    BUILD_REQUIREMENTS_URL = 'http://www.chromium.org/developers/how-tos/build-instructions-windows'
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('win'):

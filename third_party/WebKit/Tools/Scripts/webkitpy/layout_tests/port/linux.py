@@ -50,6 +50,8 @@ class LinuxPort(base.Port):
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
 
+    BUILD_REQUIREMENTS_URL = 'https://code.google.com/p/chromium/wiki/LinuxBuildInstructions'
+
     @classmethod
     def _determine_driver_path_statically(cls, host, options):
         config_object = config.Config(host.executive, host.filesystem)

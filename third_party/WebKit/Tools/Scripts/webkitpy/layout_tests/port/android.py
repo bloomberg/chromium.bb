@@ -412,6 +412,8 @@ class AndroidPort(base.Port):
     # Android has aac and mp3 codecs built in.
     PORT_HAS_AUDIO_CODECS_BUILT_IN = True
 
+    BUILD_REQUIREMENTS_URL = 'https://code.google.com/p/chromium/wiki/AndroidBuildInstructions'
+
     def __init__(self, host, port_name, **kwargs):
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
