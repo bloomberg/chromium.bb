@@ -275,7 +275,7 @@ private:
     // finish all deferred work.
     static void finishCompositingUpdateForFrameTree(LocalFrame*);
 
-    void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
+    void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 
     // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
