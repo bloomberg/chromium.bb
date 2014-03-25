@@ -6,6 +6,7 @@
 
 #include <cryptohi.h>
 #include <pk11pub.h>
+#include <secerr.h>
 #include <sechash.h>
 #include <secoid.h>
 
@@ -505,6 +506,13 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   // The plaintext length is always 64 bits less than the data size.
   const unsigned int plaintext_length = wrapped_key_data.byte_length() - 8;
 
+#if defined(USE_NSS)
+  // Part of workaround for
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=981170. See the explanation
+  // later in this function.
+  PORT_SetError(0);
+#endif
+
   crypto::ScopedPK11SymKey new_key(PK11_UnwrapSymKey(wrapping_key->key(),
                                                      CKM_NSS_AES_KEY_WRAP,
                                                      param_item.get(),
@@ -518,33 +526,16 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   if (!new_key)
     return Status::Error();
 
-// TODO(padolph): Change to "defined(USE_NSS)" once the NSS fix for
-// https://bugzilla.mozilla.org/show_bug.cgi?id=981170 rolls into chromium.
-#if 1
-  // ------- Start NSS bug workaround
-  // Workaround for https://code.google.com/p/chromium/issues/detail?id=349939
-  // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey, with
-  // a reasonable length but with key data pointing to uninitialized memory.
-  // This workaround re-wraps the key and compares the result with the incoming
-  // data, and fails if there is a difference. This prevents returning a bad key
-  // to the caller.
-  const unsigned int output_length = wrapped_key_data.byte_length();
-  std::vector<unsigned char> buffer(output_length, 0);
-  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(buffer));
-  if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
-                                    param_item.get(),
-                                    wrapping_key->key(),
-                                    new_key.get(),
-                                    &wrapped_key_item)) {
+#if defined(USE_NSS)
+  // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=981170
+  // which was fixed in NSS 3.16.0.
+  // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey,
+  // with a reasonable length but with key data pointing to uninitialized
+  // memory.
+  // To understand this workaround see the fix for 981170:
+  // https://hg.mozilla.org/projects/nss/rev/753bb69e543c
+  if (!NSS_VersionCheck("3.16") && PORT_GetError() == SEC_ERROR_BAD_DATA)
     return Status::Error();
-  }
-  if (wrapped_key_item.len != wrapped_key_data.byte_length() ||
-      memcmp(wrapped_key_item.data,
-             wrapped_key_data.bytes(),
-             wrapped_key_item.len) != 0) {
-    return Status::Error();
-  }
-// ------- End NSS bug workaround
 #endif
 
   *unwrapped_key = new_key.Pass();

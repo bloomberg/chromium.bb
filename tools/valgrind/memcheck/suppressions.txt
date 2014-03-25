@@ -6278,10 +6278,3 @@
    fun:_ZN3WTFL16threadEntryPointEPv
    fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
-{
-   bug_349939
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7content9webcrypto9UnwrapKeyEN5blink18WebCryptoKeyFormatERKNS0_10CryptoDataERKNS1_12WebCryptoKeyERKNS1_18WebCryptoAlgorithmESB_biPS6_
-   fun:_ZN7content9webcrypto53SharedCryptoTest_AesKwRawSymkeyUnwrapCorruptData_Test8TestBodyEv
-}
