@@ -1488,7 +1488,7 @@
               'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
             ['target_arch == "arm64"', {
-              'android_app_abi%': 'arm64',
+              'android_app_abi%': 'arm64-v8a',
               'android_gdbserver_executable%': 'gdbserver64',
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-arm64/gdbserver64/gdbserver64',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-19/arch-arm64',
