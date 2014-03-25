@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/skia_util.h"
 
 // NOTE: State Before Update.
 //
@@ -102,6 +103,25 @@ NSRect GfxToCocoaBounds(gfx::Rect bounds) {
   NSRect cocoa_bounds = NSRectFromCGRect(bounds.ToCGRect());
   cocoa_bounds.origin.y = NSHeight(main_screen_rect) - NSMaxY(cocoa_bounds);
   return cocoa_bounds;
+}
+
+// Return a vector of non-draggable regions that fill a window of size
+// |width| by |height|, but leave gaps where the window should be draggable.
+std::vector<gfx::Rect> CalculateNonDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions,
+    int width,
+    int height) {
+  scoped_ptr<SkRegion> draggable(
+      AppWindow::RawDraggableRegionsToSkRegion(regions));
+  scoped_ptr<SkRegion> non_draggable(new SkRegion);
+  non_draggable->op(0, 0, width, height, SkRegion::kUnion_Op);
+  non_draggable->op(*draggable, SkRegion::kDifference_Op);
+
+  std::vector<gfx::Rect> result;
+  for (SkRegion::Iterator it(*non_draggable); !it.done(); it.next()) {
+    result.push_back(gfx::SkIRectToRect(it.rect()));
+  }
+  return result;
 }
 
 }  // namespace
@@ -251,39 +271,17 @@ NSRect GfxToCocoaBounds(gfx::Rect bounds) {
 
 @end
 
-@interface ControlRegionView : NSView {
- @private
-  NativeAppWindowCocoa* appWindow_;  // Weak; owns self.
-}
-
+@interface ControlRegionView : NSView
 @end
 
 @implementation ControlRegionView
-
-- (id)initWithAppWindow:(NativeAppWindowCocoa*)appWindow {
-  if ((self = [super init]))
-    appWindow_ = appWindow;
-  return self;
-}
 
 - (BOOL)mouseDownCanMoveWindow {
   return NO;
 }
 
 - (NSView*)hitTest:(NSPoint)aPoint {
-  if (appWindow_->use_system_drag() ||
-      !appWindow_->IsWithinDraggableRegion(aPoint)) {
-    return nil;
-  }
-  return self;
-}
-
-- (void)mouseDown:(NSEvent*)event {
-  appWindow_->HandleMouseEvent(event);
-}
-
-- (void)mouseDragged:(NSEvent*)event {
-  appWindow_->HandleMouseEvent(event);
+  return nil;
 }
 
 @end
@@ -304,8 +302,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       is_resizable_(params.resizable),
       shows_resize_controls_(true),
       shows_fullscreen_controls_(true),
-      attention_request_id_(0),
-      use_system_drag_(true) {
+      attention_request_id_(0) {
   Observe(web_contents());
 
   base::scoped_nsobject<NSWindow> window;
@@ -642,127 +639,17 @@ void NativeAppWindowCocoa::UpdateDraggableRegions(
   if (has_frame_)
     return;
 
-  // To use system drag, the window has to be marked as draggable with
-  // non-draggable areas being excluded via overlapping views.
-  // 1) If no draggable area is provided, the window is not draggable at all.
-  // 2) If only one draggable area is given, as this is the most common
-  //    case, use the system drag. The non-draggable areas that are opposite of
-  //    the draggable area are computed.
-  // 3) Otherwise, use the custom drag. As such, we lose the capability to
-  //    support some features like snapping into other space.
-
-  // Determine how to perform the drag by counting the number of draggable
-  // areas.
-  const extensions::DraggableRegion* draggable_area = NULL;
-  use_system_drag_ = true;
-  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
-           regions.begin();
-       iter != regions.end();
-       ++iter) {
-    if (iter->draggable) {
-      // If more than one draggable area is found, use custom drag.
-      if (draggable_area) {
-        use_system_drag_ = false;
-        break;
-      }
-      draggable_area = &(*iter);
-    }
-  }
-
-  if (use_system_drag_)
-    UpdateDraggableRegionsForSystemDrag(regions, draggable_area);
-  else
-    UpdateDraggableRegionsForCustomDrag(regions);
+  // Draggable regions is implemented by having the whole web view draggable
+  // (mouseDownCanMoveWindow) and overlaying regions that are not draggable.
+  NSView* web_view = web_contents()->GetView()->GetNativeView();
+  system_drag_exclude_areas_ = CalculateNonDraggableRegions(
+      regions, NSWidth([web_view bounds]), NSHeight([web_view bounds]));
 
   InstallDraggableRegionViews();
 }
 
 SkRegion* NativeAppWindowCocoa::GetDraggableRegion() {
-  return draggable_region_.get();
-}
-
-void NativeAppWindowCocoa::UpdateDraggableRegionsForSystemDrag(
-    const std::vector<extensions::DraggableRegion>& regions,
-    const extensions::DraggableRegion* draggable_area) {
-  NSView* web_view = web_contents()->GetView()->GetNativeView();
-  NSInteger web_view_width = NSWidth([web_view bounds]);
-  NSInteger web_view_height = NSHeight([web_view bounds]);
-
-  system_drag_exclude_areas_.clear();
-
-  // The whole window is not draggable if no draggable area is given.
-  if (!draggable_area) {
-    gfx::Rect window_bounds(0, 0, web_view_width, web_view_height);
-    system_drag_exclude_areas_.push_back(window_bounds);
-    return;
-  }
-
-  // Otherwise, there is only one draggable area. Compute non-draggable areas
-  // that are the opposite of the given draggable area, combined with the
-  // remaining provided non-draggable areas.
-
-  // Copy all given non-draggable areas.
-  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
-           regions.begin();
-       iter != regions.end();
-       ++iter) {
-    if (!iter->draggable)
-      system_drag_exclude_areas_.push_back(iter->bounds);
-  }
-
-  gfx::Rect draggable_bounds = draggable_area->bounds;
-  gfx::Rect non_draggable_bounds;
-
-  // Add the non-draggable area above the given draggable area.
-  if (draggable_bounds.y() > 0) {
-    non_draggable_bounds.SetRect(0,
-                                 0,
-                                 web_view_width,
-                                 draggable_bounds.y() - 1);
-    system_drag_exclude_areas_.push_back(non_draggable_bounds);
-  }
-
-  // Add the non-draggable area below the given draggable area.
-  if (draggable_bounds.bottom() < web_view_height) {
-    non_draggable_bounds.SetRect(0,
-                                 draggable_bounds.bottom() + 1,
-                                 web_view_width,
-                                 web_view_height - draggable_bounds.bottom());
-    system_drag_exclude_areas_.push_back(non_draggable_bounds);
-  }
-
-  // Add the non-draggable area to the left of the given draggable area.
-  if (draggable_bounds.x() > 0) {
-    non_draggable_bounds.SetRect(0,
-                                 draggable_bounds.y(),
-                                 draggable_bounds.x() - 1,
-                                 draggable_bounds.height());
-    system_drag_exclude_areas_.push_back(non_draggable_bounds);
-  }
-
-  // Add the non-draggable area to the right of the given draggable area.
-  if (draggable_bounds.right() < web_view_width) {
-    non_draggable_bounds.SetRect(draggable_bounds.right() + 1,
-                                 draggable_bounds.y(),
-                                 web_view_width - draggable_bounds.right(),
-                                 draggable_bounds.height());
-    system_drag_exclude_areas_.push_back(non_draggable_bounds);
-  }
-}
-
-void NativeAppWindowCocoa::UpdateDraggableRegionsForCustomDrag(
-    const std::vector<extensions::DraggableRegion>& regions) {
-  // We still need one ControlRegionView to cover the whole window such that
-  // mouse events could be captured.
-  NSView* web_view = web_contents()->GetView()->GetNativeView();
-  gfx::Rect window_bounds(
-      0, 0, NSWidth([web_view bounds]), NSHeight([web_view bounds]));
-  system_drag_exclude_areas_.clear();
-  system_drag_exclude_areas_.push_back(window_bounds);
-
-  // Aggregate the draggable areas and non-draggable areas such that hit test
-  // could be performed easily.
-  draggable_region_.reset(AppWindow::RawDraggableRegionsToSkRegion(regions));
+  return NULL;
 }
 
 void NativeAppWindowCocoa::HandleKeyboardEvent(
@@ -799,7 +686,7 @@ void NativeAppWindowCocoa::InstallDraggableRegionViews() {
        iter != system_drag_exclude_areas_.end();
        ++iter) {
     base::scoped_nsobject<NSView> controlRegion(
-        [[ControlRegionView alloc] initWithAppWindow:this]);
+        [[ControlRegionView alloc] initWithFrame:NSZeroRect]);
     [controlRegion setFrame:NSMakeRect(iter->x(),
                                        webViewHeight - iter->bottom(),
                                        iter->width(),
@@ -967,32 +854,6 @@ void NativeAppWindowCocoa::WindowWillZoom() {
 bool NativeAppWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
   return extension_keybinding_registry_->ProcessKeyEvent(
       content::NativeWebKeyboardEvent(event));
-}
-
-void NativeAppWindowCocoa::HandleMouseEvent(NSEvent* event) {
-  if ([event type] == NSLeftMouseDown) {
-    last_mouse_location_ =
-        [window() convertBaseToScreen:[event locationInWindow]];
-  } else if ([event type] == NSLeftMouseDragged) {
-    NSPoint current_mouse_location =
-        [window() convertBaseToScreen:[event locationInWindow]];
-    NSPoint frame_origin = [window() frame].origin;
-    frame_origin.x += current_mouse_location.x - last_mouse_location_.x;
-    frame_origin.y += current_mouse_location.y - last_mouse_location_.y;
-    [window() setFrameOrigin:frame_origin];
-    last_mouse_location_ = current_mouse_location;
-  }
-}
-
-bool NativeAppWindowCocoa::IsWithinDraggableRegion(NSPoint point) const {
-  if (!draggable_region_)
-    return false;
-  NSView* webView = web_contents()->GetView()->GetNativeView();
-  NSInteger webViewHeight = NSHeight([webView bounds]);
-  // |draggable_region_| is stored in local platform-indepdent coordiate system
-  // while |point| is in local Cocoa coordinate system. Do the conversion
-  // to match these two.
-  return draggable_region_->contains(point.x, webViewHeight - point.y);
 }
 
 void NativeAppWindowCocoa::ShowWithApp() {

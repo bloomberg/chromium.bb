@@ -101,15 +101,11 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   // Called to handle a key event.
   bool HandledByExtensionCommand(NSEvent* event);
 
-  // Called to handle a mouse event.
-  void HandleMouseEvent(NSEvent* event);
-
   // Returns true if |point| in local Cocoa coordinate system falls within
   // the draggable region.
   bool IsWithinDraggableRegion(NSPoint point) const;
 
   NSRect restored_bounds() const { return restored_bounds_; }
-  bool use_system_drag() const { return use_system_drag_; }
 
  protected:
   // NativeAppWindow implementation.
@@ -176,11 +172,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   void InstallView();
   void UninstallView();
   void InstallDraggableRegionViews();
-  void UpdateDraggableRegionsForSystemDrag(
-      const std::vector<extensions::DraggableRegion>& regions,
-      const extensions::DraggableRegion* draggable_area);
-  void UpdateDraggableRegionsForCustomDrag(
-      const std::vector<extensions::DraggableRegion>& regions);
 
   // Cache |restored_bounds_| only if the window is currently restored.
   void UpdateRestoredBounds();
@@ -212,21 +203,9 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   base::scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
-  // Indicates whether system drag or custom drag should be used, depending on
-  // the complexity of draggable regions.
-  bool use_system_drag_;
-
   // For system drag, the whole window is draggable and the non-draggable areas
   // have to been explicitly excluded.
   std::vector<gfx::Rect> system_drag_exclude_areas_;
-
-  // For custom drag, the whole window is non-draggable and the draggable region
-  // has to been explicitly provided.
-  scoped_ptr<SkRegion> draggable_region_;  // used in custom drag.
-
-  // Mouse location since the last mouse event, in screen coordinates. This is
-  // used in custom drag to compute the window movement.
-  NSPoint last_mouse_location_;
 
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
