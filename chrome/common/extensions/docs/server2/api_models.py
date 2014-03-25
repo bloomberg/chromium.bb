@@ -44,7 +44,7 @@ class APIModels(object):
     # By default |api_name| is assumed to be given without a path or extension,
     # so combinations of known paths and extension types will be searched.
     api_extensions = ('.json', '.idl')
-    api_paths = (API, CHROME_API)
+    api_paths = (CHROME_API, API)
 
     # Callers sometimes include a file extension and/or prefix path with the
     # |api_name| argument. We believe them and narrow the search space

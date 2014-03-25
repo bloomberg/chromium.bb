@@ -103,7 +103,7 @@ class AvailabilityFinder(object):
       api_name = UnixName(api_name)
 
     futures = [(path, file_system.ReadSingle(path))
-               for path in (API, CHROME_API)]
+               for path in (CHROME_API, API)]
     for path, future in futures:
       try:
         filenames = future.Get()

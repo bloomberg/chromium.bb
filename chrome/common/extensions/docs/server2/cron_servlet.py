@@ -216,17 +216,6 @@ class CronServlet(Servlet):
         results.append(request_files_in_dir(EXAMPLES,
                                             prefix='extensions/examples'))
 
-        # Fetch the zip file of each example (contains all the individual
-        # files).
-        example_zips = []
-        for root, _, files in trunk_fs.Walk(EXAMPLES):
-          example_zips.extend(
-              root + '.zip' for name in files if name == 'manifest.json')
-        results.append(_RequestEachItem(
-            'example zips',
-            example_zips,
-            lambda path: render('extensions/examples/' + path)))
-
       # Resolve the hand-written Cron method futures.
       title = 'resolving %s parallel Cron targets' % len(targets)
       _cronlog.info(title)
