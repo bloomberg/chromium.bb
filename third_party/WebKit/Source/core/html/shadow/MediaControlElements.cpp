@@ -36,7 +36,6 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControls.h"

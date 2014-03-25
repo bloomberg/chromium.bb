@@ -5,7 +5,6 @@
 #include "config.h"
 #include "FetchEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "wtf/RefPtr.h"
 

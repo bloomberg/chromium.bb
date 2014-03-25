@@ -26,7 +26,6 @@
 #include "core/clipboard/Clipboard.h"
 #include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {

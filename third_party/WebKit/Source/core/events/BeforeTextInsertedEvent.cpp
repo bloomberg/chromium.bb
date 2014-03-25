@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)

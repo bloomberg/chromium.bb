@@ -29,7 +29,6 @@
 #include "core/events/TouchEvent.h"
 
 #include "core/events/EventDispatcher.h"
-#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

@@ -63,7 +63,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TextEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"

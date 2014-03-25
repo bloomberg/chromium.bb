@@ -31,7 +31,6 @@
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
 using namespace std;

@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/events/KeyboardEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
 

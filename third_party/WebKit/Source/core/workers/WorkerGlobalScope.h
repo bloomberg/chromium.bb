@@ -32,7 +32,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"

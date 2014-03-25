@@ -38,7 +38,6 @@
 #include "bindings/v8/V8HiddenValue.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
 

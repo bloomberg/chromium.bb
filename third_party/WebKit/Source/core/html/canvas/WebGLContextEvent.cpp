@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 WebGLContextEventInit::WebGLContextEventInit()

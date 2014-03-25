@@ -28,8 +28,6 @@
 
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 PassRefPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create()

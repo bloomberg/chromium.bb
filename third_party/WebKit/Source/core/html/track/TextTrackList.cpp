@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/GenericEventQueue.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/LoadableTextTrack.h"

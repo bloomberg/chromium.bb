@@ -55,7 +55,6 @@
 #include "core/events/MessageEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/PopStateEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/Console.h"
 #include "core/frame/DOMPoint.h"

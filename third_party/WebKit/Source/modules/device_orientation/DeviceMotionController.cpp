@@ -29,7 +29,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/page/Page.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceMotionDispatcher.h"

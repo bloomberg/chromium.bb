@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/events/PageTransitionEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 PageTransitionEventInit::PageTransitionEventInit()

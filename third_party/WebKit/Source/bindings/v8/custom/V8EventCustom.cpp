@@ -38,7 +38,6 @@
 #include "core/clipboard/Clipboard.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

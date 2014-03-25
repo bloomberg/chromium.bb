@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/events/MutationEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 MutationEvent::MutationEvent()

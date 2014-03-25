@@ -30,7 +30,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLCollection.h"

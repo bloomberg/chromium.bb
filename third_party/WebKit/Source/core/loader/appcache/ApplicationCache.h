@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "heap/Handle.h"

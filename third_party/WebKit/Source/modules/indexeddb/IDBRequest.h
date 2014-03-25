@@ -38,7 +38,6 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "heap/Handle.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBTransaction.h"

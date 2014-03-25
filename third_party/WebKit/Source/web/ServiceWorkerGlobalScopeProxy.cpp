@@ -38,7 +38,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"

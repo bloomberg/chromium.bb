@@ -32,7 +32,6 @@
 #include "InstallEvent.h"
 
 #include "bindings/v8/ScriptPromiseResolver.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 #include "wtf/RefPtr.h"

@@ -47,7 +47,6 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/events/BeforeTextInsertedEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"

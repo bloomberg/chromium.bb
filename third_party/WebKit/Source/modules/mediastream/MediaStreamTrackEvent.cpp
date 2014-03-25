@@ -25,7 +25,6 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
 namespace WebCore {

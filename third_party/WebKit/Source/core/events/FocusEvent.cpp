@@ -28,7 +28,6 @@
 
 #include "core/events/Event.h"
 #include "core/events/EventDispatcher.h"
-#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

@@ -49,7 +49,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/fetch/ImageResource.h"

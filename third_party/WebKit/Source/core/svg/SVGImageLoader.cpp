@@ -23,7 +23,6 @@
 #include "core/svg/SVGImageLoader.h"
 
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGImageElement.h"

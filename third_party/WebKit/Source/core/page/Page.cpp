@@ -27,7 +27,6 @@
 #include "core/editing/Caret.h"
 #include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"

@@ -36,7 +36,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"

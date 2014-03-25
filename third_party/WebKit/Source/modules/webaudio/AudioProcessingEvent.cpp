@@ -28,8 +28,6 @@
 
 #include "modules/webaudio/AudioProcessingEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 PassRefPtr<AudioProcessingEvent> AudioProcessingEvent::create()

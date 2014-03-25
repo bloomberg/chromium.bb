@@ -34,8 +34,6 @@
 
 #include "core/speech/SpeechInputEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 PassRefPtr<SpeechInputEvent> SpeechInputEvent::create()

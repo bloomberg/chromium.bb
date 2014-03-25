@@ -41,7 +41,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

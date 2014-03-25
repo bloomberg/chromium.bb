@@ -25,7 +25,6 @@
 
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

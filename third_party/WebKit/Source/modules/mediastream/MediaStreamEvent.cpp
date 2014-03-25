@@ -25,8 +25,6 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 MediaStreamEventInit::MediaStreamEventInit()

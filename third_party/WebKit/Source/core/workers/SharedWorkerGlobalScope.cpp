@@ -33,7 +33,6 @@
 #include "core/workers/SharedWorkerGlobalScope.h"
 
 #include "core/events/MessageEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"

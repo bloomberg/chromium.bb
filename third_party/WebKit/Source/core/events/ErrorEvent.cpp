@@ -32,7 +32,6 @@
 #include "core/events/ErrorEvent.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

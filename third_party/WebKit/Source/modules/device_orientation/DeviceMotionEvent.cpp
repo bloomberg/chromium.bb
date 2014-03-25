@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "modules/device_orientation/DeviceAcceleration.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceRotationRate.h"

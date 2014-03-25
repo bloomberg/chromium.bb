@@ -27,8 +27,6 @@
 
 #include "core/html/track/TrackEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 TrackEventInit::TrackEventInit()

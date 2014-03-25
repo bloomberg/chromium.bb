@@ -48,7 +48,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/FrameHost.h"

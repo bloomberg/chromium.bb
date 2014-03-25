@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 
 namespace WebCore {

@@ -29,7 +29,6 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLParserIdioms.h"

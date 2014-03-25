@@ -107,7 +107,6 @@
 #include "core/events/HashChangeEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameHost.h"

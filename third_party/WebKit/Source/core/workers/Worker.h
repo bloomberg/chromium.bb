@@ -31,7 +31,6 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/AbstractWorker.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
 #include "heap/Handle.h"

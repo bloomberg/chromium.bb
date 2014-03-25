@@ -28,7 +28,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

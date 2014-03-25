@@ -28,7 +28,6 @@
 #define TextEvent_h
 
 #include "core/events/TextEventInputType.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/UIEvent.h"
 
 namespace WebCore {

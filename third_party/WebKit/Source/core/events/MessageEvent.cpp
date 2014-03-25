@@ -30,7 +30,6 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
-#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

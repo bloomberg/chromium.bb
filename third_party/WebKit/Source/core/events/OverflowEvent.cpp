@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/events/OverflowEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 OverflowEventInit::OverflowEventInit()

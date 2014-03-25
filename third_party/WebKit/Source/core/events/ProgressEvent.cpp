@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/events/ProgressEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 ProgressEventInit::ProgressEventInit()

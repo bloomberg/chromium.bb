@@ -30,7 +30,6 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeysClient.h"

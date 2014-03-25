@@ -31,7 +31,6 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"

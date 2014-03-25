@@ -45,7 +45,6 @@
 #include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
 #include "core/events/PageTransitionEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"

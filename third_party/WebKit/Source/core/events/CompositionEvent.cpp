@@ -27,8 +27,6 @@
 #include "config.h"
 #include "core/events/CompositionEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 CompositionEventInit::CompositionEventInit()

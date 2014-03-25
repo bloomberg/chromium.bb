@@ -5,8 +5,6 @@
 #include "config.h"
 #include "modules/gamepad/GamepadEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 GamepadEventInit::GamepadEventInit()

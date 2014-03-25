@@ -43,7 +43,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/PseudoElement.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"

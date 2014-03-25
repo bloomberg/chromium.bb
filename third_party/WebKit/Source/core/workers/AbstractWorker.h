@@ -35,7 +35,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

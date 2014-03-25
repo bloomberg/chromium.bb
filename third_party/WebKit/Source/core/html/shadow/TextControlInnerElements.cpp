@@ -33,7 +33,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"

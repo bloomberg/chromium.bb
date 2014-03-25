@@ -70,7 +70,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/MutationEvent.h"
 #include "core/events/TextEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/UIEvent.h"
 #include "core/events/WheelEvent.h"

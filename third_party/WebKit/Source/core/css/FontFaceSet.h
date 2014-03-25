@@ -32,7 +32,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/RefCountedSupplement.h"
 #include "wtf/PassRefPtr.h"

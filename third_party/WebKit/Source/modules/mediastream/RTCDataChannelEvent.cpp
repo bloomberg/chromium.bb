@@ -25,8 +25,6 @@
 #include "config.h"
 #include "modules/mediastream/RTCDataChannelEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 PassRefPtr<RTCDataChannelEvent> RTCDataChannelEvent::create()

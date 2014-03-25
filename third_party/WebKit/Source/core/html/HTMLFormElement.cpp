@@ -36,7 +36,6 @@
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLImageElement.h"

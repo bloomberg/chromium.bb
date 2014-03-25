@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/events/WebKitAnimationEvent.h"
 
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
 WebKitAnimationEventInit::WebKitAnimationEventInit()
