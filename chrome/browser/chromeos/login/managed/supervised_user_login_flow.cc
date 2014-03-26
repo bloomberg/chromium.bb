@@ -182,8 +182,11 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
       UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   auth->StorePasswordData(user_id(), *password_data.get());
   auth->MarkKeyIncomplete(user_id());
-  // TODO (antrim): use RemoveKey to remove existing key once Will lands it.
-  OnOldKeyRemoved();
+  authenticator_->RemoveKey(
+      context_,
+      kLegacyCryptohomeManagedUserKeyLabel,
+      base::Bind(&SupervisedUserLoginFlow::OnOldKeyRemoved,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserLoginFlow::OnOldKeyRemoved() {

@@ -420,6 +420,14 @@ void FakeCryptohomeClient::AddKeyEx(
   ReturnProtobufMethodCallback(id.email(), callback);
 }
 
+void FakeCryptohomeClient::RemoveKeyEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::RemoveKeyRequest& request,
+    const ProtobufMethodCallback& callback) {
+  ReturnProtobufMethodCallback(id.email(), callback);
+}
+
 void FakeCryptohomeClient::UpdateKeyEx(
     const cryptohome::AccountIdentifier& id,
     const cryptohome::AuthorizationRequest& auth,

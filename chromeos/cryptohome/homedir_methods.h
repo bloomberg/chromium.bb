@@ -70,6 +70,13 @@ class CHROMEOS_EXPORT HomedirMethods {
                            const std::string& signature,
                            const Callback& callback) = 0;
 
+  // Asks cryptohomed to remove specific key labeled with |label| for user
+  // identified by |id| using |auth|.
+  virtual void RemoveKeyEx(const Identification& id,
+                           const Authorization& auth,
+                           const std::string& label,
+                           const Callback& callback) = 0;
+
   // Creates the global HomedirMethods instance.
   static void Initialize();
 

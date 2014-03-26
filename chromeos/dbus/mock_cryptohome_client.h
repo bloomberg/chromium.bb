@@ -185,6 +185,11 @@ class MockCryptohomeClient : public CryptohomeClient {
            const cryptohome::AuthorizationRequest& auth,
            const cryptohome::UpdateKeyRequest& request,
            const ProtobufMethodCallback& callback));
+  MOCK_METHOD4(RemoveKeyEx,
+               void(const cryptohome::AccountIdentifier& id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::RemoveKeyRequest& request,
+                    const ProtobufMethodCallback& callback));
 };
 
 }  // namespace chromeos

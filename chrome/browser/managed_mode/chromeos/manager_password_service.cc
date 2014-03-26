@@ -221,19 +221,23 @@ void ManagerPasswordService::OnContextTransformed(
 void ManagerPasswordService::OnNewManagerKeySuccess(
     const UserContext& master_key_context) {
   VLOG(1) << "Added new master key for " << master_key_context.username;
-  // TODO (antrim): Use RemoveKeyEx once Will lands it.
-  // authenticator_->RemoveKeyEx(master_key_context,
-  // kLegacyCryptohomeManagedUserKeyLabel)
-  OnOldManagedUserKeyDeleted(master_key_context);
+  authenticator_->RemoveKey(
+      master_key_context,
+      kLegacyCryptohomeManagedUserKeyLabel,
+      base::Bind(&ManagerPasswordService::OnOldManagedUserKeyDeleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 master_key_context));
 }
 
 void ManagerPasswordService::OnOldManagedUserKeyDeleted(
     const UserContext& master_key_context) {
   VLOG(1) << "Removed old managed user key for " << master_key_context.username;
-  // TODO (antrim): Use RemoveKeyEx once Will lands it.
-  // authenticator_->RemoveKeyEx(master_key_context,
-  // kLegacyCryptohomeManagerKeyLabel)
-  OnOldManagerKeyDeleted(master_key_context);
+  authenticator_->RemoveKey(
+      master_key_context,
+      kLegacyCryptohomeMasterKeyLabel,
+      base::Bind(&ManagerPasswordService::OnOldManagerKeyDeleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 master_key_context));
 }
 
 void ManagerPasswordService::OnOldManagerKeyDeleted(

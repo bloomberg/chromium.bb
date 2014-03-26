@@ -24,6 +24,7 @@ class BaseReply;
 class CheckKeyRequest;
 class MountRequest;
 class UpdateKeyRequest;
+class RemoveKeyRequest;
 
 } // namespace cryptohome
 
@@ -489,6 +490,14 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::UpdateKeyRequest& request,
       const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls RemoveKeyEx method. |callback| is called after method
+  // call, and with reply protobuf.
+  // RemoveKeyEx removes key from the given key set.
+  virtual void RemoveKeyEx(const cryptohome::AccountIdentifier& id,
+                           const cryptohome::AuthorizationRequest& auth,
+                           const cryptohome::RemoveKeyRequest& request,
+                           const ProtobufMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

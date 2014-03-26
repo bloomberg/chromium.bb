@@ -175,6 +175,27 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
+  virtual void RemoveKeyEx(const Identification& id,
+                           const Authorization& auth,
+                           const std::string& label,
+                           const Callback& callback) OVERRIDE {
+    cryptohome::AccountIdentifier id_proto;
+    cryptohome::AuthorizationRequest auth_proto;
+    cryptohome::RemoveKeyRequest request;
+
+    FillIdentificationProtobuf(id, &id_proto);
+    FillAuthorizationProtobuf(auth, &auth_proto);
+    request.mutable_key()->mutable_data()->set_label(label);
+
+    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveKeyEx(
+        id_proto,
+        auth_proto,
+        request,
+        base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void UpdateKeyEx(const Identification& id,
                            const Authorization& auth,
                            const KeyDefinition& new_key,

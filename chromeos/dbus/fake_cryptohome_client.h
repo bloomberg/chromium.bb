@@ -180,6 +180,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::UpdateKeyRequest& request,
       const ProtobufMethodCallback& callback) OVERRIDE;
+  virtual void RemoveKeyEx(const cryptohome::AccountIdentifier& id,
+                           const cryptohome::AuthorizationRequest& auth,
+                           const cryptohome::RemoveKeyRequest& request,
+                           const ProtobufMethodCallback& callback) OVERRIDE;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
