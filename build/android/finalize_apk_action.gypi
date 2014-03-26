@@ -20,6 +20,8 @@
   'message': 'Signing/aligning <(_target_name) APK: <(input_apk_path)',
   'variables': {
     'keystore_path%': '<(DEPTH)/build/android/ant/chromium-debug.keystore',
+    'keystore_name%': 'chromiumdebugkey',
+    'keystore_password%': 'chromium',
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -35,6 +37,8 @@
     '--android-sdk-root=<(android_sdk_root)',
     '--unsigned-apk-path=<(input_apk_path)',
     '--final-apk-path=<(output_apk_path)',
-    '--keystore-path=<(keystore_path)',
+    '--key-path=<(keystore_path)',
+    '--key-name=<(keystore_name)',
+    '--key-passwd=<(keystore_password)',
   ],
 }
