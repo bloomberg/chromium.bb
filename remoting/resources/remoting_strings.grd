@@ -420,6 +420,9 @@
         <message desc="Error that is shown if a network error occurs, including the case where the device is off-line." name="IDS_ERROR_NETWORK_ERROR" formatter_data="android_java">
           A network error occurred. Please check that your device is on-line and try again.
         </message>
+        <message desc="Text shown in tooltip when user touches an offline host on the device." name="IDS_HOST_OFFLINE_TOOLTIP" formatter_data="android_java">
+          Host is offline.
+        </message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">

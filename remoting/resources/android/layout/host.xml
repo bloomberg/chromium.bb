@@ -6,11 +6,14 @@
 -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/host_label"
         android:background="@drawable/list_item_selector"
+        android:drawablePadding="16sp"
+        android:gravity="center_vertical"
+        android:id="@+id/host_label"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:drawableLeft="@drawable/icon_host"
-        android:drawablePadding="15sp"
-        android:padding="15sp"
-        android:gravity="center_vertical"/>
+        android:paddingBottom="20sp"
+        android:paddingLeft="16sp"
+        android:paddingRight="16sp"
+        android:paddingTop="20sp"
+        style="@android:style/TextAppearance.Holo.Medium"/>

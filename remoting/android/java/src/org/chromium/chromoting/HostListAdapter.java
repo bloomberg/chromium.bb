@@ -4,11 +4,11 @@
 
 package org.chromium.chromoting;
 
-import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /** Describes the appearance and behavior of each host list entry. */
 class HostListAdapter extends ArrayAdapter<HostInfo> {
@@ -33,11 +33,9 @@ class HostListAdapter extends ArrayAdapter<HostInfo> {
 
         final HostInfo host = getItem(position);
 
-        // TODO(lambroslambrou): Don't use hardcoded ONLINE/OFFLINE strings here.
-        // See http://crbug.com/331103
-        target.setText(Html.fromHtml(host.name + " (<font color=\"" +
-                (host.isOnline ? HOST_COLOR_ONLINE : HOST_COLOR_OFFLINE) + "\">" +
-                (host.isOnline ? "ONLINE" : "OFFLINE") + "</font>)"));
+        target.setText(host.name);
+        target.setCompoundDrawablesWithIntrinsicBounds(
+                host.isOnline ? R.drawable.icon_host : R.drawable.icon_host_offline, 0, 0, 0);
 
         if (host.isOnline) {
             target.setOnClickListener(new View.OnClickListener() {
@@ -47,8 +45,16 @@ class HostListAdapter extends ArrayAdapter<HostInfo> {
                     }
             });
         } else {
-            // Disallow interaction with this entry.
-            target.setEnabled(false);
+            target.setTextColor(mChromoting.getResources().getColor(R.color.host_offline_text));
+            target.setBackgroundResource(R.drawable.list_item_disabled_selector);
+            target.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(mChromoting,
+                                mChromoting.getString(R.string.host_offline_tooltip),
+                                Toast.LENGTH_SHORT).show();
+                    }
+            });
         }
 
         return target;
