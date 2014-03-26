@@ -36,6 +36,9 @@ CHECK_INTERVAL = 5
 DEFAULT_SSH_PORT = 22
 SSH_ERROR_CODE = 255
 
+# Dev/test packages are installed in these paths.
+DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
+
 
 def NormalizePort(port, str_ok=True):
   """Checks if |port| is a valid port number and returns the number.
@@ -231,7 +234,7 @@ class RemoteAccess(object):
     return result
 
   def _CheckIfRebooted(self):
-    """"Checks whether a remote device has rebooted successfully.
+    """Checks whether a remote device has rebooted successfully.
 
     This uses a rapidly-retried SSH connection, which will wait for at most
     about ten seconds. If the network returns an error (e.g. host unreachable)
@@ -304,13 +307,10 @@ class RemoteAccess(object):
     rsync_cmd = ['rsync', '--perms', '--verbose', '--times', '--compress',
                  '--omit-dir-times', '--exclude', '.svn']
     rsync_cmd.append('--copy-links' if follow_symlinks else '--links')
-    # In cases where the developer sets up a ssh daemon manually on a device
-    # with a dev image, the ssh login $PATH can be incorrect, and the target
-    # rsync will not be found.  So we try to provide the right $PATH here.
     rsync_sudo = 'sudo' if (
         remote_sudo and self.username != ROOT_ACCOUNT) else ''
     rsync_cmd += ['--rsync-path',
-                  'PATH=/usr/local/bin:$PATH %s rsync' % rsync_sudo]
+                  'PATH=%s:$PATH %s rsync' % (DEV_BIN_PATHS, rsync_sudo)]
 
     if verbose:
       rsync_cmd.append('--progress')
@@ -359,6 +359,8 @@ class RemoteAccess(object):
       raise NotImplementedError('Cannot run scp with sudo!')
 
     kwargs.setdefault('debug_level', self.debug_level)
+    # scp relies on 'scp' being in the $PATH of the non-interactive,
+    # SSH login shell.
     scp_cmd = (['scp', '-P', str(self.port)] +
                CompileSSHConnectSettings(ConnectTimeout=60) +
                ['-i', self.private_key])
@@ -463,8 +465,10 @@ class RemoteDevice(object):
     self.debug_level = debug_level
     # Setup a working directory on the device.
     self.base_dir = base_dir
-    self.RunCommand(['mkdir', '-p', self.base_dir])
-    self.work_dir = self.RunCommand(
+
+    # Do not call RunCommand here because we have not set up work directory yet.
+    self._BaseRunCommand(['mkdir', '-p', self.base_dir])
+    self.work_dir = self._BaseRunCommand(
         ['mktemp', '-d', '--tmpdir=%s' % base_dir],
         capture_output=True).output.strip()
     logging.debug(
@@ -480,7 +484,8 @@ class RemoteDevice(object):
 
   def _HasRsync(self):
     """Checks if rsync exists on the device."""
-    result = self.agent.RemoteSh(['rsync', '--version'], error_code_ok=True)
+    result = self.agent.RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
+                                  '--version'], error_code_ok=True)
     return result.returncode == 0
 
   def RegisterCleanupCmd(self, cmd, **kwargs):
@@ -498,7 +503,7 @@ class RemoteDevice(object):
     for cmd, kwargs in self.cleanup_cmds:
       # We want to run through all cleanup commands even if there are errors.
       kwargs.setdefault('error_code_ok', True)
-      self.RunCommand(cmd, **kwargs)
+      self._BaseRunCommand(cmd, **kwargs)
 
     self.tempdir.Cleanup()
 
@@ -551,7 +556,7 @@ class RemoteDevice(object):
     """Reboot the device."""
     return self.agent.RemoteReboot()
 
-  def RunCommand(self, cmd, **kwargs):
+  def _BaseRunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Args:
@@ -561,6 +566,23 @@ class RemoteDevice(object):
     """
     kwargs.setdefault('debug_level', self.debug_level)
     kwargs.setdefault('connect_settings', self.connect_settings)
+    try:
+      return self.agent.RemoteSh(cmd, **kwargs)
+    except SSHConnectionError:
+      logging.error('Error connecting to device %s', self.hostname)
+      raise
+
+  def RunCommand(self, cmd, **kwargs):
+    """Executes a shell command on the device with output captured by default.
+
+    Also sets environment variables using dictionary provided by
+    keyword argument |extra_env|.
+
+    Args:
+      cmd: command to run. See RemoteAccess.RemoteSh documentation.
+      **kwargs: keyword arguments to pass along with cmd. See
+        RemoteAccess.RemoteSh documentation.
+    """
     new_cmd = cmd
     # Handle setting environment variables on the device by copying
     # and sourcing a temporary environment file.
@@ -571,20 +593,17 @@ class RemoteDevice(object):
       remote_sudo = kwargs.pop('remote_sudo', False)
       with tempfile.NamedTemporaryFile(dir=self.tempdir.tempdir,
                                        prefix='env') as f:
+        logging.debug('Environment variables: %s', ' '.join(env_list))
         osutils.WriteFile(f.name, '\n'.join(env_list))
         self.CopyToWorkDir(f.name)
         env_file = os.path.join(self.work_dir, os.path.basename(f.name))
         new_cmd = ['.', '%s;' % env_file]
-        if remote_sudo and self.username != ROOT_ACCOUNT:
+        if remote_sudo and self.agent.username != ROOT_ACCOUNT:
           new_cmd += ['sudo', '-E']
 
         new_cmd += cmd
 
-    try:
-      return self.agent.RemoteSh(new_cmd, **kwargs)
-    except SSHConnectionError:
-      logging.error('Error connecting to device %s', self.hostname)
-      raise
+    return self._BaseRunCommand(new_cmd, **kwargs)
 
 
 class ChromiumOSDevice(RemoteDevice):
@@ -598,6 +617,17 @@ class ChromiumOSDevice(RemoteDevice):
   def __init__(self, *args, **kwargs):
     super(ChromiumOSDevice, self).__init__(*args, **kwargs)
     self.board = self._LearnBoard()
+    self.path = self._GetPath()
+
+  def _GetPath(self):
+    """Gets $PATH on the device and prepend it with DEV_BIN_PATHS."""
+    try:
+      result = self._BaseRunCommand(['echo', "${PATH}"])
+    except cros_build_lib.RunCommandError:
+      logging.warning('Error detecting $PATH on the device.')
+      raise
+
+    return '%s:%s' % (DEV_BIN_PATHS, result.output.strip())
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
@@ -659,7 +689,7 @@ class ChromiumOSDevice(RemoteDevice):
     entry or if the command failed, returns an empty string.
     """
     try:
-      result = self.RunCommand(self.GET_BOARD_CMD)
+      result = self._BaseRunCommand(self.GET_BOARD_CMD)
     except cros_build_lib.RunCommandError:
       logging.warning('Error detecting the board.')
       return ''
@@ -670,3 +700,21 @@ class ChromiumOSDevice(RemoteDevice):
       logging.debug('More than one board entry found!  Using the first one.')
 
     return output[0].strip().partition('=')[-1]
+
+  def RunCommand(self, cmd, **kwargs):
+    """Executes a shell command on the device with output captured by default.
+
+    Also makes sure $PATH is set correctly by adding DEV_BIN_PATHS to
+    'PATH' in |extra_env|.
+
+    Args:
+      cmd: command to run. See RemoteAccess.RemoteSh documentation.
+      **kwargs: keyword arguments to pass along with cmd. See
+        RemoteAccess.RemoteSh documentation.
+    """
+    extra_env = kwargs.pop('extra_env', {})
+    path_env = extra_env.get('PATH', None)
+    path_env = self.path if not path_env else '%s:%s' % (path_env, self.path)
+    extra_env['PATH'] = path_env
+    kwargs['extra_env'] = extra_env
+    return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
