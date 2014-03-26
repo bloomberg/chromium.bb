@@ -50,11 +50,14 @@ static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 
     SVGLengthContext lengthContext(element);
     float rx = ellipse->rx()->currentValue()->value(lengthContext);
-    if (rx <= 0)
+    if (rx < 0)
         return;
     float ry = ellipse->ry()->currentValue()->value(lengthContext);
-    if (ry <= 0)
+    if (ry < 0)
         return;
+    if (!rx && !ry)
+        return;
+
     path.addEllipse(FloatRect(ellipse->cx()->currentValue()->value(lengthContext) - rx, ellipse->cy()->currentValue()->value(lengthContext) - ry, rx * 2, ry * 2));
 }
 
@@ -100,10 +103,12 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
 
     SVGLengthContext lengthContext(element);
     float width = rect->width()->currentValue()->value(lengthContext);
-    if (width <= 0)
+    if (width < 0)
         return;
     float height = rect->height()->currentValue()->value(lengthContext);
-    if (height <= 0)
+    if (height < 0)
+        return;
+    if (!width && !height)
         return;
     float x = rect->x()->currentValue()->value(lengthContext);
     float y = rect->y()->currentValue()->value(lengthContext);

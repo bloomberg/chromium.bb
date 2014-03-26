@@ -63,7 +63,9 @@ void RenderSVGRect::updateShapeFromElement()
 
     m_usePathFallback = false;
     FloatSize boundingBoxSize(rect->width()->currentValue()->value(lengthContext), rect->height()->currentValue()->value(lengthContext));
-    if (boundingBoxSize.isEmpty())
+
+    // Spec: "A negative value is an error. A value of zero disables rendering of the element."
+    if (boundingBoxSize.isZero() || boundingBoxSize.width() < 0 || boundingBoxSize.height() < 0)
         return;
 
     m_fillBoundingBox = FloatRect(FloatPoint(rect->x()->currentValue()->value(lengthContext), rect->y()->currentValue()->value(lengthContext)), boundingBoxSize);

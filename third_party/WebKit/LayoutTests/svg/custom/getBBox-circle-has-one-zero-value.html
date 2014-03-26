@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<!-- Test that svg bounding boxes are valid for a zero-width or zero-height circle -->
+    <head>
+        <script type="text/javascript">
+            function checkBoundingBoxHasZeroValue() {
+                if (window.testRunner)
+                    window.testRunner.dumpAsText();
+                var circle1 = document.getElementById('circle1').getBBox();
+                var circle2 = document.getElementById('circle2').getBBox();
+                var circle3 = document.getElementById('circle3').getBBox();
+                var circle4 = document.getElementById('circle4').getBBox();
+                var results = "FAIL";
+                if (circle1.width  == 100 &&
+                    circle1.height == 100 &&
+                    circle2.width  == 0 &&
+                    circle2.height == 0 &&
+                    circle3.width  == 100 &&
+                    circle3.height == 100 &&
+                    circle4.width  == 0 &&
+                    circle4.height == 0)
+                    results = "PASS";
+                document.body.innerHTML = results + ", bounding boxes sizes are (" +
+                    circle1.width + ", " + circle1.height + "), (" +
+                    circle2.width + ", " + circle2.height + "), (" +
+                    circle3.width + ", " + circle3.height + ") and (" +
+                    circle4.width + ", " + circle4.height + ")";
+            }
+        </script>
+    </head>
+    <body onload="checkBoundingBoxHasZeroValue()">
+        <svg>
+            <circle id="circle1" cx="300" cy="300" r="50"/>
+            <circle id="circle2" cx="300" cy="300" r="0"/>
+            <circle id="circle3" vector-effect="non-scaling-stroke" cx="300" cy="300" r="50"/>
+            <circle id="circle4" vector-effect="non-scaling-stroke" cx="300" cy="300" r="0"/>
+        </svg>
+    <body>
+</html>

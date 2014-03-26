@@ -63,8 +63,8 @@ void RenderSVGEllipse::updateShapeFromElement()
 
     calculateRadiiAndCenter();
 
-    // Spec: "A value of zero disables rendering of the element."
-    if (m_radii.width() <= 0 || m_radii.height() <= 0)
+    // Spec: "A negative value is an error. A value of zero disables rendering of the element."
+    if (m_radii.isZero() || m_radii.width() < 0 || m_radii.height() < 0)
         return;
 
     m_fillBoundingBox = FloatRect(m_center.x() - m_radii.width(), m_center.y() - m_radii.height(), 2 * m_radii.width(), 2 * m_radii.height());

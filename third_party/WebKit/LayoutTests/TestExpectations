@@ -970,3 +970,8 @@ crbug.com/355463 [ Win Debug ] css3/flexbox/repaint.html [ Pass Failure ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
+
+crbug.com/140472 svg/W3C-SVG-1.1/shapes-ellipse-02-t.svg [ NeedsRebaseline ]
+crbug.com/140472 svg/W3C-SVG-1.1/animate-elem-32-t.svg [ NeedsRebaseline ]
+crbug.com/140472 svg/W3C-SVG-1.1/shapes-intro-01-t.svg [ NeedsRebaseline ]
+crbug.com/140472 svg/W3C-SVG-1.1/shapes-rect-02-t.svg [ NeedsRebaseline ]
