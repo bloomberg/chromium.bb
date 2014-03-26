@@ -23,6 +23,18 @@
 namespace {
 const int kMaxTimesToShowOptInPopup = 10;
 
+// Allowed languages for hotwording.
+static const char* kSupportedLocales[] = {
+  "en",
+  "en_us",
+  "en_gb",
+  "en_ca",
+  "en_au",
+  "fr_fr",
+  "de_de",
+  "ru_ru"
+};
+
 // Enum describing the state of the hotword preference.
 // This is used for UMA stats -- do not reorder or delete items; only add to
 // the end.
@@ -101,10 +113,14 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 #else
       g_browser_process->GetApplicationLocale();
 #endif
-  // Only available for English now.
   std::string normalized_locale = l10n_util::NormalizeLocale(locale);
-  return normalized_locale == "en" || normalized_locale == "en_us" ||
-      normalized_locale =="en_US";
+  StringToLowerASCII(&normalized_locale);
+
+  for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
+    if (kSupportedLocales[i] == normalized_locale)
+      return true;
+  }
+  return false;
 }
 
 HotwordService::HotwordService(Profile* profile)
