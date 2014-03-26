@@ -239,6 +239,8 @@ public:
         CSSStyleSheetRules = 219,
         CSSStyleSheetAddRule = 220,
         CSSStyleSheetRemoveRule = 221,
+        // The above items are available in M33 branch.
+
         InitMessageEvent = 222,
         PrefixedInitMessageEvent = 223,
         ElementSetPrefix = 224, // Element.prefix is readonly in DOM4.
@@ -288,6 +290,8 @@ public:
         PromiseCast = 271,
         PromiseReject = 272,
         PromiseResolve = 273,
+        // The above items are available in M34 branch.
+
         TextAutosizing = 274,
         TextAutosizingLayout = 275,
         HTMLAnchorElementPingAttribute = 276,
