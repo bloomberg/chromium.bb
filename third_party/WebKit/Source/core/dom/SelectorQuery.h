@@ -52,14 +52,8 @@ public:
     PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
-    struct SelectorData {
-        SelectorData(const CSSSelector& selector, bool isFastCheckable) : selector(selector), isFastCheckable(isFastCheckable) { }
-        const CSSSelector& selector;
-        bool isFastCheckable;
-    };
-
     bool canUseFastQuery(const ContainerNode& rootNode) const;
-    bool selectorMatches(const SelectorData&, Element&, const ContainerNode&) const;
+    bool selectorMatches(const CSSSelector&, Element&, const ContainerNode&) const;
 
     template <typename SelectorQueryTrait>
     void collectElementsByClassName(ContainerNode& rootNode, const AtomicString& className, typename SelectorQueryTrait::OutputType&) const;
@@ -71,9 +65,9 @@ private:
 
     enum MatchTraverseRootState { DoesNotMatchTraverseRoots, MatchesTraverseRoots };
     template <typename SelectorQueryTrait>
-    void executeForTraverseRoot(const SelectorData&, ContainerNode* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeForTraverseRoot(const CSSSelector&, ContainerNode* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait, typename SimpleElementListType>
-    void executeForTraverseRoots(const SelectorData&, SimpleElementListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeForTraverseRoots(const CSSSelector&, SimpleElementListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
 
     template <typename SelectorQueryTrait>
     bool selectorListMatches(ContainerNode& rootNode, Element&, typename SelectorQueryTrait::OutputType&) const;
@@ -85,7 +79,7 @@ private:
     void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     const CSSSelector* selectorForIdLookup(const CSSSelector&) const;
 
-    Vector<SelectorData> m_selectors;
+    Vector<const CSSSelector*> m_selectors;
     bool m_crossesTreeBoundary;
 };
 

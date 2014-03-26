@@ -81,7 +81,6 @@ public:
     bool isLastInArray() const { return m_isLastInArray; }
     void setLastInArray(bool flag) { m_isLastInArray = flag; }
 
-    bool hasFastCheckableSelector() const { return m_hasFastCheckableSelector; }
     bool hasMultipartSelector() const { return m_hasMultipartSelector; }
     bool hasRightmostSelectorMatchingHTMLBasedOnRuleHash() const { return m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash; }
     bool containsUncommonAttributeSelector() const { return m_containsUncommonAttributeSelector; }
@@ -102,7 +101,6 @@ private:
     // This number was picked fairly arbitrarily. We can probably lower it if we need to.
     // Some simple testing showed <100,000 RuleData's on large sites.
     unsigned m_position : 18;
-    unsigned m_hasFastCheckableSelector : 1;
     unsigned m_specificity : 24;
     unsigned m_hasMultipartSelector : 1;
     unsigned m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash : 1;

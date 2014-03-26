@@ -828,8 +828,6 @@
             'css/SVGCSSComputedStyleDeclaration.cpp',
             'css/SelectorChecker.cpp',
             'css/SelectorChecker.h',
-            'css/SelectorCheckerFastPath.cpp',
-            'css/SelectorCheckerFastPath.h',
             'css/SelectorFilter.cpp',
             'css/SelectorFilter.h',
             'css/SiblingTraversalStrategies.h',

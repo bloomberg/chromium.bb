@@ -37,7 +37,6 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSupportsRule.h"
-#include "core/css/SelectorCheckerFastPath.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -259,29 +258,6 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
 inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, SelectorChecker::BehaviorAtBoundary behaviorAtBoundary, SelectorChecker::MatchResult* result)
 {
-    // Scoped rules can't match because the fast path uses a pool of tag/class/ids, collected from
-    // elements in that tree and those will never match the host, since it's in a different pool.
-    if (ruleData.hasFastCheckableSelector() && !scope) {
-        // We know this selector does not include any pseudo elements.
-        if (m_pseudoStyleRequest.pseudoId != NOPSEUDO)
-            return false;
-        // We know a sufficiently simple single part selector matches simply because we found it from the rule hash.
-        // This is limited to HTML only so we don't need to check the namespace.
-        ASSERT(m_context.element());
-        if (ruleData.hasRightmostSelectorMatchingHTMLBasedOnRuleHash() && m_context.element()->isHTMLElement()) {
-            if (!ruleData.hasMultipartSelector())
-                return true;
-        }
-        if (ruleData.selector().m_match == CSSSelector::Tag && !SelectorChecker::tagMatches(*m_context.element(), ruleData.selector().tagQName()))
-            return false;
-        SelectorCheckerFastPath selectorCheckerFastPath(ruleData.selector(), *m_context.element());
-        if (!selectorCheckerFastPath.matchesRightmostAttributeSelector())
-            return false;
-
-        return selectorCheckerFastPath.matches();
-    }
-
-    // Slow path.
     SelectorChecker selectorChecker(m_context.element()->document(), m_mode);
     SelectorChecker::SelectorCheckingContext context(ruleData.selector(), m_context.element(), SelectorChecker::VisitedMatchEnabled);
     context.elementStyle = m_style.get();
