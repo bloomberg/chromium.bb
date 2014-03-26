@@ -232,12 +232,14 @@ void BrowserMediaPlayerManager::SetVideoSurface(
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (!player)
     return;
-  if (!surface.IsEmpty()) {
-    Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(),
-                                               player->player_id()));
-  }
-  player->SetVideoSurface(surface.Pass());
 
+  bool empty_surface = surface.IsEmpty();
+  player->SetVideoSurface(surface.Pass());
+  if (empty_surface)
+    return;
+
+  Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(),
+                                             player->player_id()));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOverlayFullscreenVideoSubtitle)) {
     return;
