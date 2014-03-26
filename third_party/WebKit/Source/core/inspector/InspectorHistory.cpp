@@ -77,13 +77,13 @@ String InspectorHistory::Action::mergeId()
     return "";
 }
 
-void InspectorHistory::Action::merge(PassOwnPtr<Action>)
+void InspectorHistory::Action::merge(PassRefPtr<Action>)
 {
 }
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& exceptionState)
+bool InspectorHistory::perform(PassRefPtr<Action> action, ExceptionState& exceptionState)
 {
     if (!action->perform(exceptionState))
         return false;
@@ -100,7 +100,7 @@ bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& except
 
 void InspectorHistory::markUndoableState()
 {
-    perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION);
+    perform(adoptRef(new UndoableStateMark()), IGNORE_EXCEPTION);
 }
 
 bool InspectorHistory::undo(ExceptionState& exceptionState)

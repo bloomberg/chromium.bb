@@ -94,7 +94,7 @@ public:
     virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_node->parentNode()) {
-            m_removeChildAction = adoptPtr(new RemoveChildAction(m_node->parentNode(), m_node.get()));
+            m_removeChildAction = adoptRef(new RemoveChildAction(m_node->parentNode(), m_node.get()));
             if (!m_removeChildAction->perform(exceptionState))
                 return false;
         }
@@ -124,7 +124,7 @@ private:
     RefPtr<Node> m_parentNode;
     RefPtr<Node> m_node;
     RefPtr<Node> m_anchorNode;
-    OwnPtr<RemoveChildAction> m_removeChildAction;
+    RefPtr<RemoveChildAction> m_removeChildAction;
 };
 
 class DOMEditor::RemoveAttributeAction FINAL : public InspectorHistory::Action {
@@ -361,47 +361,46 @@ DOMEditor::~DOMEditor() { }
 
 bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new InsertBeforeAction(parentNode, node, anchorNode)), exceptionState);
+    return m_history->perform(adoptRef(new InsertBeforeAction(parentNode, node, anchorNode)), exceptionState);
 }
 
 bool DOMEditor::removeChild(Node* parentNode, Node* node, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new RemoveChildAction(parentNode, node)), exceptionState);
+    return m_history->perform(adoptRef(new RemoveChildAction(parentNode, node)), exceptionState);
 }
 
 bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new SetAttributeAction(element, AtomicString(name), AtomicString(value))), exceptionState);
+    return m_history->perform(adoptRef(new SetAttributeAction(element, AtomicString(name), AtomicString(value))), exceptionState);
 }
 
 bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new RemoveAttributeAction(element, AtomicString(name))), exceptionState);
+    return m_history->perform(adoptRef(new RemoveAttributeAction(element, AtomicString(name))), exceptionState);
 }
 
 bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& exceptionState)
 {
-    OwnPtr<SetOuterHTMLAction> action = adoptPtr(new SetOuterHTMLAction(node, html));
-    SetOuterHTMLAction* rawAction = action.get();
-    bool result = m_history->perform(action.release(), exceptionState);
+    RefPtr<SetOuterHTMLAction> action = adoptRef(new SetOuterHTMLAction(node, html));
+    bool result = m_history->perform(action, exceptionState);
     if (result)
-        *newNode = rawAction->newNode();
+        *newNode = action->newNode();
     return result;
 }
 
 bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new ReplaceWholeTextAction(textNode, text)), exceptionState);
+    return m_history->perform(adoptRef(new ReplaceWholeTextAction(textNode, text)), exceptionState);
 }
 
 bool DOMEditor::replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), exceptionState);
+    return m_history->perform(adoptRef(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), exceptionState);
 }
 
 bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new SetNodeValueAction(node, value)), exceptionState);
+    return m_history->perform(adoptRef(new SetNodeValueAction(node, value)), exceptionState);
 }
 
 static void populateErrorString(ExceptionState& exceptionState, ErrorString* errorString)

@@ -31,7 +31,7 @@
 #ifndef InspectorHistory_h
 #define InspectorHistory_h
 
-#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,7 +42,7 @@ class ExceptionState;
 class InspectorHistory FINAL {
     WTF_MAKE_NONCOPYABLE(InspectorHistory); WTF_MAKE_FAST_ALLOCATED;
 public:
-    class Action {
+    class Action : public RefCounted<Action> {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         Action(const String& name);
@@ -50,7 +50,7 @@ public:
         virtual String toString();
 
         virtual String mergeId();
-        virtual void merge(PassOwnPtr<Action>);
+        virtual void merge(PassRefPtr<Action>);
 
         virtual bool perform(ExceptionState&) = 0;
 
@@ -64,7 +64,7 @@ public:
 
     InspectorHistory();
 
-    bool perform(PassOwnPtr<Action>, ExceptionState&);
+    bool perform(PassRefPtr<Action>, ExceptionState&);
     void markUndoableState();
 
     bool undo(ExceptionState&);
@@ -72,7 +72,7 @@ public:
     void reset();
 
 private:
-    Vector<OwnPtr<Action> > m_history;
+    Vector<RefPtr<Action> > m_history;
     size_t m_afterLastActionIndex;
 };
 
