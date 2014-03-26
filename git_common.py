@@ -432,7 +432,7 @@ def rebase(parent, start, branch, abort=False):
   except subprocess2.CalledProcessError as cpe:
     if abort:
       run('rebase', '--abort')
-    return RebaseRet(False, cpe.output)
+    return RebaseRet(False, cpe.stdout)
 
 
 def remove_merge_base(branch):

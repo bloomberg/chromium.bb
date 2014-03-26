@@ -137,6 +137,9 @@ def rebase_branch(branch, parent, start_hash):
       else:
         # rebase and leave in mid-rebase state.
         git.rebase(parent, start_hash, branch)
+        print "Failed!"
+        print
+        print "Here's what git-rebase had to say:"
         print squash_ret.message
         print
         print textwrap.dedent(
