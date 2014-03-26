@@ -90,7 +90,7 @@ class SnapshotAuraTest : public testing::Test {
     bool enable_pixel_output = true;
     ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-    helper_.reset(new wm::WMTestHelper);
+    helper_.reset(new ::wm::WMTestHelper);
     helper_->SetUp();
   }
 
@@ -171,7 +171,7 @@ class SnapshotAuraTest : public testing::Test {
     bool completed_;
   };
 
-  scoped_ptr<wm::WMTestHelper> helper_;
+  scoped_ptr<::wm::WMTestHelper> helper_;
   scoped_ptr<aura::Window> test_window_;
   scoped_ptr<TestPaintingWindowDelegate> delegate_;
   std::vector<unsigned char> png_representation_;
