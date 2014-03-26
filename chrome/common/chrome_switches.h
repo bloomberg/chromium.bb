@@ -396,6 +396,7 @@ extern const char kEnableZeroSuggestEtherSerp[];
 extern const char kEnableZeroSuggestEtherNoSerp[];
 extern const char kEnableZeroSuggestMostVisited[];
 extern const char kEnableZeroSuggestPersonalized[];
+extern const char kEnableInstantSearchClicks[];
 #endif
 
 #if defined(USE_ASH)

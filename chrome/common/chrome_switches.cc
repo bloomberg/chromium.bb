@@ -1431,6 +1431,9 @@ const char kEnableZeroSuggestMostVisited[] =
 const char kEnableZeroSuggestPersonalized[] =
     "enable-zero-suggest-personalized";
 
+// Enables instant search clicks feature.
+const char kEnableInstantSearchClicks[] = "enable-instant-search-clicks";
+
 #endif
 
 #if defined(USE_ASH)
