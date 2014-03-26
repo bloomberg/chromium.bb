@@ -592,8 +592,6 @@ void KeywordProvider::Observe(int type,
         match->contents.assign(base::UTF8ToUTF16(suggestion.description));
         match->contents_class =
             extensions::StyleTypesToACMatchClassifications(suggestion);
-        match->description.clear();
-        match->description_class.clear();
       }
 
       done_ = true;

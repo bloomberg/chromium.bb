@@ -511,10 +511,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
   base::string16 last_keyword;
   for (AutocompleteResult::iterator i(result->begin()); i != result->end();
        ++i) {
-    if ((i->provider->type() == AutocompleteProvider::TYPE_KEYWORD &&
-         !i->keyword.empty()) ||
-        (i->provider->type() == AutocompleteProvider::TYPE_SEARCH &&
-         AutocompleteMatch::IsSearchType(i->type))) {
+    if (AutocompleteMatch::IsSearchType(i->type)) {
       if (AutocompleteMatchHasCustomDescription(*i))
         continue;
       i->description.clear();
