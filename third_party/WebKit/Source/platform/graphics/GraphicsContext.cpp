@@ -186,6 +186,10 @@ void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint, SkCa
 
     realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
 
+    // We should always save the matrix and clip to match upcoming Skia behavior.
+    ASSERT(saveFlags & SkCanvas::kMatrix_SaveFlag);
+    ASSERT(saveFlags & SkCanvas::kClip_SaveFlag);
+
     m_canvas->saveLayer(bounds, paint, saveFlags);
     if (bounds)
         m_canvas->clipRect(*bounds);
@@ -455,7 +459,8 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
     // (the surface of the page) but layers on top may have transparent parts.
     // Without explicitly setting the alpha flag, the layer will inherit the
     // opaque setting of the base and some things won't work properly.
-    SkCanvas::SaveFlags saveFlags = static_cast<SkCanvas::SaveFlags>(SkCanvas::kHasAlphaLayer_SaveFlag | SkCanvas::kFullColorLayer_SaveFlag);
+    SkCanvas::SaveFlags saveFlags = static_cast<SkCanvas::SaveFlags>(
+        SkCanvas::kMatrixClip_SaveFlag | SkCanvas::kHasAlphaLayer_SaveFlag | SkCanvas::kFullColorLayer_SaveFlag);
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
