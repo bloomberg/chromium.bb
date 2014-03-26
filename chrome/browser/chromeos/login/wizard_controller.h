@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
@@ -36,12 +35,14 @@ struct Geoposition;
 
 namespace chromeos {
 
+class AutoEnrollmentCheckStep;
 class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
+class LoginDisplayHost;
 class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
@@ -224,7 +225,7 @@ class WizardController : public ScreenObserver {
   void PerformPostEulaActions();
 
   // Actions that should be done right after update stage is finished.
-  void PerformPostUpdateActions();
+  void PerformOOBECompletedActions();
 
   // Overridden from ScreenObserver:
   virtual void OnExit(ExitCodes exit_code) OVERRIDE;
@@ -263,12 +264,9 @@ class WizardController : public ScreenObserver {
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);
 
-  // Checks auto enrollment state and eventually triggers the next wizard step.
-  void CheckAutoEnrollmentState();
-
-  // Handles update notifications regarding the auto-enrollment check.
-  void OnAutoEnrollmentCheckProgressed(
-      policy::AutoEnrollmentClient::State state);
+  // Kicks off the auto-enrollment check step. Once it finishes, it'll call
+  // back via ScreenObserver::OnExit().
+  void StartAutoEnrollmentCheck();
 
   // Returns local state.
   PrefService* GetLocalState();
@@ -332,6 +330,9 @@ class WizardController : public ScreenObserver {
   // Default WizardController.
   static WizardController* default_controller_;
 
+  // The auto-enrollment check step, currently active.
+  scoped_ptr<AutoEnrollmentCheckStep> auto_enrollment_check_step_;
+
   // Parameters for the first screen. May be NULL.
   scoped_ptr<base::DictionaryValue> screen_parameters_;
 
@@ -369,8 +370,6 @@ class WizardController : public ScreenObserver {
   friend class WizardControllerBrokenLocalStateTest;
 
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
-  scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
-      auto_enrollment_progress_subscription_;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
 

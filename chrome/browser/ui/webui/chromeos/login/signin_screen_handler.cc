@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -310,7 +311,6 @@ SigninScreenHandler::SigninScreenHandler(
       offline_login_active_(false),
       last_network_state_(NetworkStateInformer::UNKNOWN),
       has_pending_auth_ui_(false),
-      wait_for_auto_enrollment_check_(false),
       caps_lock_enabled_(false),
       gaia_screen_handler_(gaia_screen_handler) {
   DCHECK(network_state_informer_.get());
@@ -1258,11 +1258,13 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
       !auto_enrollment_progress_subscription_ &&
       !connector->IsEnterpriseManaged() &&
       LoginDisplayHostImpl::default_host()) {
+    AutoEnrollmentController* auto_enrollment_controller =
+        LoginDisplayHostImpl::default_host()->GetAutoEnrollmentController();
     auto_enrollment_progress_subscription_ =
-        LoginDisplayHostImpl::default_host()
-            ->RegisterAutoEnrollmentProgressHandler(
-                base::Bind(&SigninScreenHandler::ContinueKioskEnableFlow,
-                           weak_factory_.GetWeakPtr()));
+        auto_enrollment_controller->RegisterProgressCallback(
+            base::Bind(&SigninScreenHandler::ContinueKioskEnableFlow,
+                       weak_factory_.GetWeakPtr()));
+    ContinueKioskEnableFlow(auto_enrollment_controller->state());
   }
 }
 
@@ -1717,23 +1719,24 @@ void SigninScreenHandler::SubmitLoginFormForTest() {
 }
 
 void SigninScreenHandler::ContinueKioskEnableFlow(
-    policy::AutoEnrollmentClient::State state) {
+    policy::AutoEnrollmentState state) {
   // Do not proceed with kiosk enable when auto enroll will be enforced.
   // TODO(xiyuan): Add an error UI feedkback so user knows what happens.
   switch (state) {
-    case policy::AutoEnrollmentClient::STATE_PENDING:
-    case policy::AutoEnrollmentClient::STATE_CONNECTION_ERROR:
+    case policy::AUTO_ENROLLMENT_STATE_IDLE:
+    case policy::AUTO_ENROLLMENT_STATE_PENDING:
+    case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
       // Wait for the next callback.
       return;
-    case policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
       // Auto-enrollment is on.
       LOG(WARNING) << "Kiosk enable flow aborted because auto enrollment is "
                       "going to be enforced.";
       if (!kiosk_enable_flow_aborted_callback_for_test_.is_null())
         kiosk_enable_flow_aborted_callback_for_test_.Run();
       break;
-    case policy::AutoEnrollmentClient::STATE_SERVER_ERROR:
-    case policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+    case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       // Auto-enrollment not applicable.
       if (delegate_)
         delegate_->ShowKioskEnableScreen();

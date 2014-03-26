@@ -275,7 +275,6 @@ content::RenderFrameHost* LoginDisplayHostImpl::GetGaiaAuthIframe(
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
       pointer_factory_(this),
-      auto_enrollment_state_(policy::AutoEnrollmentClient::STATE_PENDING),
       shutting_down_(false),
       oobe_progress_bar_visible_(false),
       session_starting_(false),
@@ -454,10 +453,8 @@ void LoginDisplayHostImpl::Finalize() {
 }
 
 void LoginDisplayHostImpl::OnCompleteLogin() {
-  // Cancelling the |auto_enrollment_client_| now allows it to determine whether
-  // its protocol finished before login was complete.
-  if (auto_enrollment_client_.get())
-    auto_enrollment_client_.release()->CancelAndDeleteSoon();
+  if (auto_enrollment_controller_)
+    auto_enrollment_controller_->Cancel();
 }
 
 void LoginDisplayHostImpl::OpenProxySettings() {
@@ -472,34 +469,15 @@ void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
     login_view_->SetStatusAreaVisible(visible);
 }
 
-void LoginDisplayHostImpl::CheckForAutoEnrollment() {
-  // This method is called when the controller determines that the
-  // auto-enrollment check can start. This happens either after the EULA is
-  // accepted, or right after a reboot if the EULA has already been accepted.
-
-  if (policy::AutoEnrollmentClient::IsDisabled()) {
-    VLOG(1) << "CheckForAutoEnrollment: auto-enrollment disabled";
-    SetAutoEnrollmentState(policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT);
-    return;
+AutoEnrollmentController* LoginDisplayHostImpl::GetAutoEnrollmentController() {
+  if (!auto_enrollment_controller_) {
+    auto_enrollment_controller_.reset(new AutoEnrollmentController());
+    auto_enrollment_progress_subscription_ =
+        auto_enrollment_controller_->RegisterProgressCallback(
+            base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentProgress,
+                       base::Unretained(this)));
   }
-
-  // Start by checking if the device has already been owned.
-  pointer_factory_.InvalidateWeakPtrs();
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&LoginDisplayHostImpl::OnOwnershipStatusCheckDone,
-                 pointer_factory_.GetWeakPtr()));
-}
-
-scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
-LoginDisplayHostImpl::RegisterAutoEnrollmentProgressHandler(
-    const AutoEnrollmentProgressCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
-      subscription(auto_enrollment_progress_callbacks_.Add(callback));
-
-  callback.Run(auto_enrollment_state_);
-  return subscription.Pass();
+  return auto_enrollment_controller_.get();
 }
 
 void LoginDisplayHostImpl::StartWizard(
@@ -626,7 +604,10 @@ void LoginDisplayHostImpl::StartSignInScreen(
   // We might be here after a reboot that was triggered after OOBE was complete,
   // so check for auto-enrollment again. This might catch a cached decision from
   // a previous oobe flow, or might start a new check with the server.
-  CheckForAutoEnrollment();
+  if (GetAutoEnrollmentController()->ShouldEnrollSilently())
+    sign_in_controller_->DoAutoEnrollment();
+  else
+    GetAutoEnrollmentController()->Start();
 
   // Initiate mobile config load.
   MobileConfig::GetInstance();
@@ -860,56 +841,14 @@ void LoginDisplayHostImpl::ScheduleFadeOutAnimation() {
   layer->SetOpacity(0);
 }
 
-void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
-    DeviceSettingsService::OwnershipStatus status) {
-  if (status != DeviceSettingsService::OWNERSHIP_NONE) {
-    // The device is already owned. No need for auto-enrollment checks.
-    VLOG(1) << "CheckForAutoEnrollment: device already owned";
-    SetAutoEnrollmentState(policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT);
-    return;
-  }
+void LoginDisplayHostImpl::OnAutoEnrollmentProgress(
+    policy::AutoEnrollmentState state) {
+  VLOG(1) << "OnAutoEnrollmentProgress, state " << state;
 
-  // Kick off the auto-enrollment client.
-  if (auto_enrollment_client_.get()) {
-    // They client might have been started after the EULA screen, but we made
-    // it to the login screen before it finished. In that case let the current
-    // client proceed.
-    //
-    // CheckForAutoEnrollment() is also called when we reach the sign-in screen,
-    // because that's what happens after an auto-update.
-    VLOG(1) << "CheckForAutoEnrollment: client already started";
-
-    // If the client already started and already finished too, pass the decision
-    // to the |sign_in_controller_| now.
-    if (ShouldEnrollSilently())
-      ForceAutoEnrollment();
-  } else {
-    VLOG(1) << "CheckForAutoEnrollment: starting auto-enrollment client";
-    auto_enrollment_client_.reset(policy::AutoEnrollmentClient::Create(
-        base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentClientProgress,
-                   base::Unretained(this))));
-    auto_enrollment_client_->Start();
-  }
-}
-
-void LoginDisplayHostImpl::OnAutoEnrollmentClientProgress(
-    policy::AutoEnrollmentClient::State state) {
-  VLOG(1) << "OnAutoEnrollmentClientProgress, state " << state;
-  SetAutoEnrollmentState(state);
-
-  if (ShouldEnrollSilently())
-    ForceAutoEnrollment();
-}
-
-void LoginDisplayHostImpl::SetAutoEnrollmentState(
-    policy::AutoEnrollmentClient::State new_state) {
-  auto_enrollment_state_ = new_state;
-  auto_enrollment_progress_callbacks_.Notify(auto_enrollment_state_);
-}
-
-void LoginDisplayHostImpl::ForceAutoEnrollment() {
-  if (sign_in_controller_.get())
+  if (sign_in_controller_ &&
+      auto_enrollment_controller_->ShouldEnrollSilently()) {
     sign_in_controller_->DoAutoEnrollment();
+  }
 }
 
 void LoginDisplayHostImpl::LoadURL(const GURL& url) {
@@ -1086,13 +1025,6 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
     return;
   login_prompt_visible_time_ = base::TimeTicks::Now();
   TryToPlayStartupSound();
-}
-
-bool LoginDisplayHostImpl::ShouldEnrollSilently() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kEnterpriseEnableForcedReEnrollment) &&
-         auto_enrollment_state_ ==
-             policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

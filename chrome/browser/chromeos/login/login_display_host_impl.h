@@ -33,10 +33,6 @@ class RenderFrameHost;
 class WebContents;
 }
 
-namespace policy {
-class AutoEnrollmentClient;
-}  // namespace policy
-
 namespace chromeos {
 
 class FocusRingController;
@@ -75,10 +71,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void OnCompleteLogin() OVERRIDE;
   virtual void OpenProxySettings() OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
-  virtual void CheckForAutoEnrollment() OVERRIDE;
-  virtual scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
-      RegisterAutoEnrollmentProgressHandler(
-          const AutoEnrollmentProgressCallback& callback) OVERRIDE;
+  virtual AutoEnrollmentController* GetAutoEnrollmentController() OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
       scoped_ptr<base::DictionaryValue> screen_parameters) OVERRIDE;
@@ -153,19 +146,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Schedules fade out animation.
   void ScheduleFadeOutAnimation();
 
-  // Callback for the ownership status check.
-  void OnOwnershipStatusCheckDone(
-      DeviceSettingsService::OwnershipStatus status);
-
-  // Progress callback registered with |auto_enrollment_client_|.
-  void OnAutoEnrollmentClientProgress(
-      policy::AutoEnrollmentClient::State state);
-
-  // Records auto-enrollment progress and notifies subscribers.
-  void SetAutoEnrollmentState(policy::AutoEnrollmentClient::State new_state);
-
-  // Forces auto-enrollment on the appropriate controller.
-  void ForceAutoEnrollment();
+  // Progress callback registered with |auto_enrollment_controller_|.
+  void OnAutoEnrollmentProgress(policy::AutoEnrollmentState state);
 
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
@@ -197,21 +179,12 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
 
-  // Checks whether to silently enroll on login.
-  bool ShouldEnrollSilently();
-
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
 
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
-
-  // Current auto-enrollment check state.
-  policy::AutoEnrollmentClient::State auto_enrollment_state_;
-
-  // Callbacks to notify when auto enrollment client progresses.
-  AutoEnrollmentProgressCallbackList auto_enrollment_progress_callbacks_;
 
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
@@ -228,8 +201,12 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Demo app launcher.
   scoped_ptr<DemoAppLauncher> demo_app_launcher_;
 
-  // Client for enterprise auto-enrollment check.
-  scoped_ptr<policy::AutoEnrollmentClient> auto_enrollment_client_;
+  // The controller driving the auto-enrollment check.
+  scoped_ptr<AutoEnrollmentController> auto_enrollment_controller_;
+
+  // Subscription for progress callbacks from |auto_enrollement_controller_|.
+  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
+      auto_enrollment_progress_subscription_;
 
   // Has ShutdownDisplayHost() already been called?  Used to avoid posting our
   // own deletion to the message loop twice if the user logs out while we're

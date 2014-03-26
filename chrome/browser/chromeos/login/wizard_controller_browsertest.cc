@@ -36,11 +36,13 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
@@ -137,6 +139,25 @@ void SetUpCrasAndEnableChromeVox(int volume_percent, bool mute_on) {
   base::RunLoop().RunUntilIdle();
 }
 
+void QuitLoopOnAutoEnrollmentProgress(
+    policy::AutoEnrollmentState expected_state,
+    base::RunLoop* loop,
+    policy::AutoEnrollmentState actual_state) {
+  if (expected_state == actual_state)
+    loop->Quit();
+}
+
+void WaitForAutoEnrollmentState(policy::AutoEnrollmentState state) {
+  base::RunLoop loop;
+  AutoEnrollmentController* auto_enrollment_controller =
+      LoginDisplayHostImpl::default_host()->GetAutoEnrollmentController();
+  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
+      progress_subscription(
+          auto_enrollment_controller->RegisterProgressCallback(
+              base::Bind(&QuitLoopOnAutoEnrollmentProgress, state, &loop)));
+  loop.Run();
+}
+
 }  // namespace
 
 using ::testing::_;
@@ -174,6 +195,11 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
     AccessibilityManager::Get()->
         SetProfileForTest(ProfileHelper::GetSigninProfile());
     WizardInProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  ErrorScreen* GetErrorScreen() {
+    return static_cast<ScreenObserver*>(WizardController::default_controller())
+        ->GetErrorScreen();
   }
 
  private:
@@ -490,6 +516,63 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
 }
 
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowForcedReEnrollment) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnterpriseEnableForcedReEnrollment);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentInitialModulus, "1");
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentModulusLimit, "2");
+
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(WizardController::default_controller()->GetEulaScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(WizardController::default_controller()->GetUpdateScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  OnExit(ScreenObserver::UPDATE_INSTALLED);
+
+  // Wait for auto-enrollment controller to encounter the connection error.
+  WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+
+  // The error screen shows up if there's no auto-enrollment decision.
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
+  base::DictionaryValue device_state;
+  device_state.SetString(policy::kDeviceStateRestoreMode,
+                         policy::kDeviceStateRestoreModeReEnrollmentEnforced);
+  g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
+                                        device_state);
+  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+              SetParameters(mock_enrollment_screen_,
+                            false,  // auto_start_enrollmetn
+                            false,  // can_exit_enrollment
+                            "")).Times(1);
+  OnExit(ScreenObserver::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+  // Make sure enterprise enrollment page shows up.
+  EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),
+            WizardController::default_controller()->current_screen());
+  OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+}
+
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
  protected:
   WizardControllerBrokenLocalStateTest()
@@ -524,11 +607,6 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     WizardControllerTest::TearDownInProcessBrowserTestFixture();
-  }
-
-  ErrorScreen* GetErrorScreen() {
-    return ((ScreenObserver*) WizardController::default_controller())->
-        GetErrorScreen();
   }
 
   content::WebContents* GetWebContents() {
@@ -761,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 19,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 20,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

@@ -32,28 +32,35 @@ namespace policy {
 class DeviceManagementRequestJob;
 class DeviceManagementService;
 
+// Indicates the current state of the auto-enrollment check.
+enum AutoEnrollmentState {
+  // Not yet started.
+  AUTO_ENROLLMENT_STATE_IDLE,
+  // Working, another event will be fired eventually.
+  AUTO_ENROLLMENT_STATE_PENDING,
+  // Failed to connect to DMServer.
+  AUTO_ENROLLMENT_STATE_CONNECTION_ERROR,
+  // Connection successful, but the server failed to generate a valid reply.
+  AUTO_ENROLLMENT_STATE_SERVER_ERROR,
+  // Check completed successfully, enrollment should be triggered.
+  AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT,
+  // Check completed successfully, enrollment not applicable.
+  AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+};
+
 // Interacts with the device management service and determines whether this
 // machine should automatically enter the Enterprise Enrollment screen during
 // OOBE.
 class AutoEnrollmentClient
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // Indicates the current state of the auto-enrollment check.
-  enum State {
-    // Working, another event will be fired eventually.
-    STATE_PENDING,
-    // Failed to connect to DMServer.
-    STATE_CONNECTION_ERROR,
-    // Connection successful, but the server failed to generate a valid reply.
-    STATE_SERVER_ERROR,
-    // Check completed successfully, enrollment should be triggered.
-    STATE_TRIGGER_ENROLLMENT,
-    // Check completed successfully, enrollment not applicable.
-    STATE_NO_ENROLLMENT,
-  };
+  // The modulus value is sent in an int64 field in the protobuf, whose maximum
+  // value is 2^63-1. So 2^64 and 2^63 can't be represented as moduli and the
+  // max is 2^62 (when the moduli are restricted to powers-of-2).
+  static const int kMaximumPower = 62;
 
   // Used for signaling progress to a consumer.
-  typedef base::Callback<void(State)> ProgressCallback;
+  typedef base::Callback<void(AutoEnrollmentState)> ProgressCallback;
 
   // |progress_callback| will be invoked whenever some significant event happens
   // as part of the protocol, after Start() is invoked.
@@ -74,14 +81,6 @@ class AutoEnrollmentClient
   // Registers preferences in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Returns true if auto-enrollment is disabled in this device. In that case,
-  // instances returned by Create() fail immediately once Start() is invoked.
-  static bool IsDisabled();
-
-  // Convenience method to create instances of this class.
-  static AutoEnrollmentClient* Create(
-      const ProgressCallback& progress_callback);
-
   // Cancels auto-enrollment.
   // This function does not interrupt a running auto-enrollment check. It only
   // stores a pref in |local_state| that prevents the client from entering
@@ -93,6 +92,11 @@ class AutoEnrollmentClient
   // call can invoke the |progress_callback_| if errors occur.
   void Start();
 
+  // Triggers a retry of the currently pending step. This is intended to be
+  // called by consumers when they become aware of environment changes (such as
+  // captive portal setup being complete).
+  void Retry();
+
   // Cancels any pending requests. |progress_callback_| will not be invoked.
   // |this| will delete itself.
   void CancelAndDeleteSoon();
@@ -102,7 +106,7 @@ class AutoEnrollmentClient
   std::string device_id() const { return device_id_; }
 
   // Current state.
-  State state() const { return state_; }
+  AutoEnrollmentState state() const { return state_; }
 
   // Implementation of net::NetworkChangeNotifier::NetworkChangeObserver:
   virtual void OnNetworkChanged(
@@ -123,7 +127,7 @@ class AutoEnrollmentClient
   bool RetryStep();
 
   // Cleans up and invokes |progress_callback_|.
-  void ReportProgress(State state);
+  void ReportProgress(AutoEnrollmentState state);
 
   // Calls RetryStep() to make progress or determine that all is done. In the
   // latter case, calls ReportProgress().
@@ -167,7 +171,7 @@ class AutoEnrollmentClient
   ProgressCallback progress_callback_;
 
   // Current state.
-  State state_;
+  AutoEnrollmentState state_;
 
   // Whether the hash bucket check succeeded, indicating that the server knows
   // this device and might have keep state for it.

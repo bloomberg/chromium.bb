@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -15,14 +14,10 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,45 +41,14 @@ const char kUMARequestStatus[] = "Enterprise.AutoEnrollmentRequestStatus";
 const char kUMANetworkErrorCode[] =
     "Enterprise.AutoEnrollmentRequestNetworkErrorCode";
 
-// The modulus value is sent in an int64 field in the protobuf, whose maximum
-// value is 2^63-1. So 2^64 and 2^63 can't be represented as moduli and the
-// max is 2^62 (when the moduli are restricted to powers-of-2).
-const int kMaximumPower = 62;
-
-// Returns the int value of the |switch_name| argument, clamped to the [0, 62]
-// interval. Returns 0 if the argument doesn't exist or isn't an int value.
-int GetSanitizedArg(const std::string& switch_name) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switch_name))
-    return 0;
-  std::string value = command_line->GetSwitchValueASCII(switch_name);
-  int int_value;
-  if (!base::StringToInt(value, &int_value)) {
-    LOG(ERROR) << "Switch \"" << switch_name << "\" is not a valid int. "
-               << "Defaulting to 0.";
-    return 0;
-  }
-  if (int_value < 0) {
-    LOG(ERROR) << "Switch \"" << switch_name << "\" can't be negative. "
-               << "Using 0";
-    return 0;
-  }
-  if (int_value > kMaximumPower) {
-    LOG(ERROR) << "Switch \"" << switch_name << "\" can't be greater than "
-               << kMaximumPower << ". Using " << kMaximumPower;
-    return kMaximumPower;
-  }
-  return int_value;
-}
-
 // Returns the power of the next power-of-2 starting at |value|.
 int NextPowerOf2(int64 value) {
-  for (int i = 0; i <= kMaximumPower; ++i) {
+  for (int i = 0; i <= AutoEnrollmentClient::kMaximumPower; ++i) {
     if ((GG_INT64_C(1) << i) >= value)
       return i;
   }
   // No other value can be represented in an int64.
-  return kMaximumPower + 1;
+  return AutoEnrollmentClient::kMaximumPower + 1;
 }
 
 // Sets or clears a value in a dictionary.
@@ -128,7 +92,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(
     int power_initial,
     int power_limit)
     : progress_callback_(callback),
-      state_(STATE_PENDING),
+      state_(AUTO_ENROLLMENT_STATE_IDLE),
       has_server_state_(false),
       device_state_available_(false),
       device_id_(base::GenerateGUID()),
@@ -148,7 +112,6 @@ AutoEnrollmentClient::AutoEnrollmentClient(
     server_backed_state_key_hash_ =
         crypto::SHA256HashString(server_backed_state_key_);
   }
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 AutoEnrollmentClient::~AutoEnrollmentClient() {
@@ -162,64 +125,6 @@ void AutoEnrollmentClient::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-bool AutoEnrollmentClient::IsDisabled() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  // Do not communicate auto-enrollment data to the server if
-  // 1. we are running integration or perf tests with telemetry.
-  // 2. modulus configuration is not present.
-  return command_line->HasSwitch(chromeos::switches::kOobeSkipPostLogin) ||
-         (!command_line->HasSwitch(
-              chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
-          !command_line->HasSwitch(
-              chromeos::switches::kEnterpriseEnrollmentModulusLimit));
-}
-
-// static
-AutoEnrollmentClient* AutoEnrollmentClient::Create(
-    const ProgressCallback& progress_callback) {
-  // The client won't do anything if |service| is NULL.
-  DeviceManagementService* service = NULL;
-  if (IsDisabled()) {
-    VLOG(1) << "Auto-enrollment is disabled";
-  } else {
-    BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-    service = connector->device_management_service();
-    service->ScheduleInitialization(0);
-  }
-
-  int power_initial = GetSanitizedArg(
-      chromeos::switches::kEnterpriseEnrollmentInitialModulus);
-  int power_limit = GetSanitizedArg(
-      chromeos::switches::kEnterpriseEnrollmentModulusLimit);
-  if (power_initial > power_limit) {
-    LOG(ERROR) << "Initial auto-enrollment modulus is larger than the limit, "
-               << "clamping to the limit.";
-    power_initial = power_limit;
-  }
-
-  bool retrieve_device_state = false;
-  std::string device_id;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
-    retrieve_device_state = true;
-    device_id = DeviceCloudPolicyManagerChromeOS::GetDeviceStateKey();
-  } else {
-    device_id = DeviceCloudPolicyManagerChromeOS::GetMachineID();
-  }
-
-  return new AutoEnrollmentClient(
-      progress_callback,
-      service,
-      g_browser_process->local_state(),
-      g_browser_process->system_request_context(),
-      device_id,
-      retrieve_device_state,
-      power_initial,
-      power_limit);
-}
-
-// static
 void AutoEnrollmentClient::CancelAutoEnrollment() {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kShouldAutoEnroll, false);
@@ -228,15 +133,23 @@ void AutoEnrollmentClient::CancelAutoEnrollment() {
 }
 
 void AutoEnrollmentClient::Start() {
+  // (Re-)register the network change observer.
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
   // Drop the previous job and reset state.
   request_job_.reset();
-  state_ = STATE_PENDING;
+  state_ = AUTO_ENROLLMENT_STATE_PENDING;
   time_start_ = base::Time::Now();
   modulus_updates_received_ = 0;
   has_server_state_ = false;
   device_state_available_ = false;
 
   NextStep();
+}
+
+void AutoEnrollmentClient::Retry() {
+  RetryStep();
 }
 
 void AutoEnrollmentClient::CancelAndDeleteSoon() {
@@ -305,7 +218,7 @@ bool AutoEnrollmentClient::RetryStep() {
   return false;
 }
 
-void AutoEnrollmentClient::ReportProgress(State state) {
+void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
   state_ = state;
   if (progress_callback_.is_null()) {
     base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
@@ -330,8 +243,8 @@ void AutoEnrollmentClient::NextStep() {
       trigger_enrollment = has_server_state_;
     }
 
-    ReportProgress(trigger_enrollment ? STATE_TRIGGER_ENROLLMENT
-                                      : STATE_NO_ENROLLMENT);
+    ReportProgress(trigger_enrollment ? AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT
+                                      : AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
   }
 }
 
@@ -348,7 +261,7 @@ bool AutoEnrollmentClient::SendBucketDownloadRequest() {
   }
   remainder = remainder & ((GG_UINT64_C(1) << current_power_) - 1);
 
-  ReportProgress(STATE_PENDING);
+  ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
   request_job_.reset(
       device_management_service_->CreateJob(
@@ -367,7 +280,7 @@ bool AutoEnrollmentClient::SendBucketDownloadRequest() {
 }
 
 bool AutoEnrollmentClient::SendDeviceStateRequest() {
-  ReportProgress(STATE_PENDING);
+  ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
   request_job_.reset(
       device_management_service_->CreateJob(
@@ -400,8 +313,9 @@ void AutoEnrollmentClient::HandleRequestCompletion(
     if (progress_callback_.is_null()) {
       base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
     } else {
-      ReportProgress(status == DM_STATUS_REQUEST_FAILED ? STATE_CONNECTION_ERROR
-                                                        : STATE_SERVER_ERROR);
+      ReportProgress(status == DM_STATUS_REQUEST_FAILED
+                         ? AUTO_ENROLLMENT_STATE_CONNECTION_ERROR
+                         : AUTO_ENROLLMENT_STATE_SERVER_ERROR);
     }
     return;
   }
@@ -411,7 +325,7 @@ void AutoEnrollmentClient::HandleRequestCompletion(
   if (progress)
     NextStep();
   else
-    ReportProgress(STATE_SERVER_ERROR);
+    ReportProgress(AUTO_ENROLLMENT_STATE_SERVER_ERROR);
 }
 
 bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(

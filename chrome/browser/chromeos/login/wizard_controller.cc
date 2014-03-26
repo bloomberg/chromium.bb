@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_step.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -60,7 +60,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state.h"
@@ -443,7 +442,7 @@ void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
-  PerformPostUpdateActions();
+  PerformOOBECompletedActions();
   ShowLoginScreen(context);
 }
 
@@ -493,7 +492,7 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  CheckAutoEnrollmentState();
+  StartAutoEnrollmentCheck();
 }
 
 void WizardController::OnEulaAccepted() {
@@ -513,7 +512,7 @@ void WizardController::OnEulaAccepted() {
 
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
-    PerformPostUpdateActions();
+    PerformOOBECompletedActions();
     ShowEnrollmentScreen();
   } else {
     InitiateOOBEUpdate();
@@ -569,7 +568,7 @@ void WizardController::OnEnrollmentDone() {
   // Mark OOBE as completed only if enterprise enrollment was part of the
   // forced flow (i.e. app kiosk).
   if (ShouldAutoStartEnrollment())
-    PerformPostUpdateActions();
+    PerformOOBECompletedActions();
 
   // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
   // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
@@ -612,10 +611,11 @@ void WizardController::OnAutoEnrollmentDone() {
 }
 
 void WizardController::OnOOBECompleted() {
+  auto_enrollment_check_step_.reset();
   if (ShouldAutoStartEnrollment()) {
     ShowEnrollmentScreen();
   } else {
-    PerformPostUpdateActions();
+    PerformOOBECompletedActions();
     ShowLoginScreen(LoginScreenContext());
   }
 }
@@ -652,12 +652,12 @@ void WizardController::PerformPostEulaActions() {
   // ChromiumOS builds would go though this code path too.
   NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
       NetworkStateHandler::kDefaultCheckPortalList);
-  host_->CheckForAutoEnrollment();
+  host_->GetAutoEnrollmentController()->Start();
   host_->PrewarmAuthentication();
   NetworkPortalDetector::Get()->Enable(true);
 }
 
-void WizardController::PerformPostUpdateActions() {
+void WizardController::PerformOOBECompletedActions() {
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -781,6 +781,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case EULA_BACK:
       ShowNetworkScreen();
+      break;
+    case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
+      OnOOBECompleted();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
@@ -916,53 +919,10 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
   ShowErrorScreen();
 }
 
-void WizardController::CheckAutoEnrollmentState() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
-    auto_enrollment_progress_subscription_ =
-        host_->RegisterAutoEnrollmentProgressHandler(
-            base::Bind(&WizardController::OnAutoEnrollmentCheckProgressed,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    OnOOBECompleted();
-  }
-}
-
-void WizardController::OnAutoEnrollmentCheckProgressed(
-    policy::AutoEnrollmentClient::State state) {
-  ErrorScreen* error_screen = GetErrorScreen();
-  switch (state) {
-    case policy::AutoEnrollmentClient::STATE_PENDING:
-      if (current_screen_ == error_screen &&
-          error_screen->GetUIState() ==
-              ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR) {
-        error_screen->ShowConnectingIndicator(true);
-      }
-      return;
-    case policy::AutoEnrollmentClient::STATE_CONNECTION_ERROR: {
-      // Show an error screen and ask the user to fix the network connection.
-      const NetworkState* default_network =
-          NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-      DCHECK(default_network);
-      error_screen->SetUIState(ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR);
-      error_screen->SetErrorState(
-          ErrorScreen::ERROR_STATE_OFFLINE,
-          default_network ? default_network->name() : std::string());
-      error_screen->ShowConnectingIndicator(false);
-      ShowErrorScreen();
-      return;
-    }
-    case policy::AutoEnrollmentClient::STATE_SERVER_ERROR:
-      // Server errors don't block OOBE.
-    case policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT:
-    case policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT:
-      // Decision made, ready to proceed.
-      auto_enrollment_progress_subscription_.reset();
-      OnOOBECompleted();
-      return;
-  }
-
-  NOTREACHED();
+void WizardController::StartAutoEnrollmentCheck() {
+  auto_enrollment_check_step_.reset(
+      new AutoEnrollmentCheckStep(this, host_->GetAutoEnrollmentController()));
+  auto_enrollment_check_step_->Start();
 }
 
 PrefService* WizardController::GetLocalState() {

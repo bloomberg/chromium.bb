@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
@@ -23,6 +22,7 @@ class Widget;
 namespace chromeos {
 
 class AppLaunchController;
+class AutoEnrollmentController;
 class LoginScreenContext;
 class WebUILoginView;
 class WizardController;
@@ -32,15 +32,6 @@ class WizardController;
 // UI implementation (such as LoginDisplay).
 class LoginDisplayHost {
  public:
-  // Callback for RegisterAutoEnrollmentProgressHandler. It is invoked with when
-  // the auto-enrollment check progresses.
-  typedef base::Callback<void(policy::AutoEnrollmentClient::State)>
-      AutoEnrollmentProgressCallback;
-  typedef base::CallbackList<void(policy::AutoEnrollmentClient::State)>
-      AutoEnrollmentProgressCallbackList;
-  typedef AutoEnrollmentProgressCallbackList::Subscription
-      AutoEnrollmentProgressCallbackSubscription;
-
   virtual ~LoginDisplayHost() {}
 
   // Creates UI implementation specific login display instance (views/WebUI).
@@ -70,16 +61,8 @@ class LoginDisplayHost {
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
 
-  // Signals the LoginDisplayHost that it can proceed with the Enterprise
-  // Auto-Enrollment checks now.
-  virtual void CheckForAutoEnrollment() = 0;
-
-  // Registers a callback for auto enrollment state changes. The callback will
-  // be invoked synchronously once to report the initial state and then whenever
-  // the state changes until the subscription is dropped.
-  virtual scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
-      RegisterAutoEnrollmentProgressHandler(
-          const AutoEnrollmentProgressCallback& callback) = 0;
+  // Gets the auto-enrollment client.
+  virtual AutoEnrollmentController* GetAutoEnrollmentController() = 0;
 
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.

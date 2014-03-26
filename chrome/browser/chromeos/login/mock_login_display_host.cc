@@ -14,12 +14,6 @@ MockLoginDisplayHost::MockLoginDisplayHost() {
 MockLoginDisplayHost::~MockLoginDisplayHost() {
 }
 
-scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
-MockLoginDisplayHost::RegisterAutoEnrollmentProgressHandler(
-    const AutoEnrollmentProgressCallback& callback) {
-  return make_scoped_ptr(RegisterAutoEnrollmentProgressHandlerPtr(callback));
-}
-
 void MockLoginDisplayHost::StartWizard(
     const std::string& name,
     scoped_ptr<base::DictionaryValue> value) {
