@@ -111,10 +111,11 @@ using namespace HTMLNames;
 using namespace XMLNames;
 
 class StyleResolverParentPusher {
+    STACK_ALLOCATED();
 public:
     explicit StyleResolverParentPusher(Element& parent)
         : m_parent(parent)
-        , m_pushedStyleResolver(0)
+        , m_pushedStyleResolver(nullptr)
     {
     }
     void push()
@@ -141,7 +142,7 @@ public:
 
 private:
     Element& m_parent;
-    StyleResolver* m_pushedStyleResolver;
+    RawPtrWillBeMember<StyleResolver> m_pushedStyleResolver;
 };
 
 typedef Vector<RefPtr<Attr> > AttrNodeList;

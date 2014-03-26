@@ -397,7 +397,6 @@ void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
 
 StyleResolver::~StyleResolver()
 {
-    m_viewportStyleResolver->clearDocument();
 }
 
 inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
@@ -1423,6 +1422,17 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const
             return true;
     }
     return false;
+}
+
+void StyleResolver::trace(Visitor* visitor)
+{
+    visitor->trace(m_keyframesRuleMap);
+    visitor->trace(m_viewportDependentMediaQueryResults);
+    visitor->trace(m_viewportStyleResolver);
+    visitor->trace(m_siblingRuleSet);
+    visitor->trace(m_uncommonAttributeRuleSet);
+    visitor->trace(m_watchedSelectorsRules);
+    visitor->trace(m_treeBoundaryCrossingRules);
 }
 
 } // namespace WebCore

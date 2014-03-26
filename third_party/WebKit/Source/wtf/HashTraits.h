@@ -191,16 +191,16 @@ namespace WTF {
         static bool isEmptyValue(const RawPtr<T>& value) { return !value; }
 
         static const bool needsDestruction = false;
-        typedef T* PeekInType;
-        typedef T* PassInType;
+        typedef RawPtr<T> PeekInType;
+        typedef RawPtr<T> PassInType;
         typedef RawPtr<T>* IteratorGetType;
         typedef const RawPtr<T>* IteratorConstGetType;
         typedef RawPtr<T>& IteratorReferenceType;
         typedef T* const IteratorConstReferenceType;
         static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
         static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
-        typedef T* PeekOutType;
-        typedef T* PassOutType;
+        typedef RawPtr<T> PeekOutType;
+        typedef RawPtr<T> PassOutType;
 
         template<typename U>
         static void store(const U& value, RawPtr<T>& storage) { storage = value; }

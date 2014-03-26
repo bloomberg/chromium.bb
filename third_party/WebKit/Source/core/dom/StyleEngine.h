@@ -243,12 +243,12 @@ private:
 
     bool m_ignorePendingStylesheets;
     bool m_didCalculateResolver;
-    OwnPtr<StyleResolver> m_resolver;
+    OwnPtrWillBeMember<StyleResolver> m_resolver;
 
     RefPtr<CSSFontSelector> m_fontSelector;
 
-    HashMap<AtomicString, StyleSheetContents*> m_textToSheetCache;
-    HashMap<StyleSheetContents*, AtomicString> m_sheetToTextCache;
+    WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents> > m_textToSheetCache;
+    WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 };
 
 }

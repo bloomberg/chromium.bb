@@ -79,10 +79,10 @@ static const char defaultFont[] = "10px sans-serif";
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
-    , m_stateStack(1)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
     , m_hasAlpha(!attrs || attrs->alpha())
 {
+    m_stateStack.append(adoptPtrWillBeNoop(new State()));
     ScriptWrappable::init(this);
 }
 
@@ -118,7 +118,7 @@ void CanvasRenderingContext2D::reset()
 {
     unwindStateStack();
     m_stateStack.resize(1);
-    m_stateStack.first() = State();
+    m_stateStack.first() = adoptPtrWillBeNoop(new State());
     m_path.clear();
 }
 
@@ -185,8 +185,10 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     if (this == &other)
         return *this;
 
+#if !ENABLE(OILPAN)
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
+#endif
 
     m_unrealizedSaveCount = other.m_unrealizedSaveCount;
     m_unparsedStrokeColor = other.m_unparsedStrokeColor;
@@ -220,8 +222,10 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
 
 CanvasRenderingContext2D::State::~State()
 {
+#if !ENABLE(OILPAN)
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
+#endif
 }
 
 void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelector)
@@ -238,13 +242,13 @@ void CanvasRenderingContext2D::realizeSaves()
         ASSERT(m_stateStack.size() >= 1);
         // Reduce the current state's unrealized count by one now,
         // to reflect the fact we are saving one state.
-        m_stateStack.last().m_unrealizedSaveCount--;
-        m_stateStack.append(state());
+        m_stateStack.last()->m_unrealizedSaveCount--;
+        m_stateStack.append(adoptPtrWillBeNoop(new State(state())));
         // Set the new state's unrealized count to 0, because it has no outstanding saves.
         // We need to do this explicitly because the copy constructor and operator= used
         // by the Vector operations copy the unrealized count from the previous state (in
         // turn necessary to support correct resizing and unwinding of the stack).
-        m_stateStack.last().m_unrealizedSaveCount = 0;
+        m_stateStack.last()->m_unrealizedSaveCount = 0;
         GraphicsContext* context = drawingContext();
         if (context)
             context->save();
@@ -255,7 +259,7 @@ void CanvasRenderingContext2D::restore()
 {
     if (state().m_unrealizedSaveCount) {
         // We never realized the save, so just record that it was unnecessary.
-        --m_stateStack.last().m_unrealizedSaveCount;
+        --m_stateStack.last()->m_unrealizedSaveCount;
         return;
     }
     ASSERT(m_stateStack.size() >= 1);
@@ -1924,8 +1928,10 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     StyleResolver& styleResolver = canvas()->document().ensureStyleResolver();
     styleResolver.applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), newStyle.get());
 
+#if !ENABLE(OILPAN)
     if (state().m_realizedFont)
         static_cast<CSSFontSelector*>(state().m_font.fontSelector())->unregisterForInvalidationCallbacks(&modifiableState());
+#endif
     modifiableState().m_font = newStyle->font();
     modifiableState().m_font.update(canvas()->document().styleEngine()->fontSelector());
     modifiableState().m_realizedFont = true;

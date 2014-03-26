@@ -82,11 +82,6 @@ void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Ori
         m_propertySet->addParsedProperty(propertySet.propertyAt(i).toCSSProperty());
 }
 
-void ViewportStyleResolver::clearDocument()
-{
-    m_document = 0;
-}
-
 void ViewportStyleResolver::resolve()
 {
     if (!m_document)

@@ -39,7 +39,6 @@ class MediaQuerySet;
 class RenderStyle;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<MediaQueryResult> > MediaQueryResultList;
-typedef WillBePersistentHeapVector<RefPtrWillBeMember<MediaQueryResult> > WillBePersistentMediaQueryResultList;
 
 /**
  * Class that evaluates css media queries as defined in

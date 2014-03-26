@@ -42,19 +42,18 @@ class Document;
 class MutableStylePropertySet;
 class StyleRuleViewport;
 
-class ViewportStyleResolver : public RefCountedWillBeGarbageCollected<ViewportStyleResolver> {
+class ViewportStyleResolver : public NoBaseWillBeGarbageCollected<ViewportStyleResolver> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
 public:
-    static PassRefPtrWillBeRawPtr<ViewportStyleResolver> create(Document* document)
+    static PassOwnPtrWillBeRawPtr<ViewportStyleResolver> create(Document* document)
     {
-        return adoptRefWillBeNoop(new ViewportStyleResolver(document));
+        return adoptPtrWillBeNoop(new ViewportStyleResolver(document));
     }
 
     enum Origin { UserAgentOrigin, AuthorOrigin };
 
     void collectViewportRules(RuleSet*, Origin);
 
-    void clearDocument();
     void resolve();
 
     void trace(Visitor*);

@@ -28,6 +28,7 @@
 
 #include "core/css/FontFaceCache.h"
 #include "core/fetch/ResourcePtr.h"
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
@@ -84,7 +85,9 @@ public:
     virtual void fontCacheInvalidated() OVERRIDE;
 
     void registerForInvalidationCallbacks(CSSFontSelectorClient*);
+#if !ENABLE(OILPAN)
     void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
+#endif
 
     Document* document() const { return m_document; }
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
@@ -103,7 +106,7 @@ private:
     Document* m_document;
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
-    HashSet<CSSFontSelectorClient*> m_clients;
+    WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
 
     FontLoader m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;

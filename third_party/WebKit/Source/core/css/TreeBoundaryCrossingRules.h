@@ -36,6 +36,7 @@ class ContainerNode;
 class RuleFeatureSet;
 
 class TreeBoundaryCrossingRules {
+    DISALLOW_ALLOCATION();
 public:
     void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
     void clear() { m_treeBoundaryCrossingRuleSetMap.clear(); }
@@ -48,9 +49,11 @@ public:
     size_t size() const { return m_scopingNodes.size(); }
     RuleSet* ruleSetScopedBy(const ContainerNode* scopingNode) { return m_treeBoundaryCrossingRuleSetMap.get(scopingNode); }
 
+    void trace(Visitor* visitor) { visitor->trace(m_treeBoundaryCrossingRuleSetMap); }
+
 private:
     DocumentOrderedList m_scopingNodes;
-    typedef WillBePersistentHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<RuleSet> > TreeBoundaryCrossingRuleSetMap;
+    typedef WillBeHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<RuleSet> > TreeBoundaryCrossingRuleSetMap;
     TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 

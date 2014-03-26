@@ -115,7 +115,7 @@ public:
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
-    void save() { ++m_stateStack.last().m_unrealizedSaveCount; }
+    void save() { ++m_stateStack.last()->m_unrealizedSaveCount; }
     void restore();
 
     PassRefPtr<SVGMatrixTearOff> currentTransform() const
@@ -234,7 +234,8 @@ public:
     bool drawCustomFocusRing(Element*);
 
 private:
-    struct State FINAL : CSSFontSelectorClient {
+    class State FINAL : public CSSFontSelectorClient {
+    public:
         State();
         virtual ~State();
 
@@ -243,6 +244,8 @@ private:
 
         // CSSFontSelectorClient implementation
         virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
+
+        virtual void trace(Visitor*) OVERRIDE { }
 
         unsigned m_unrealizedSaveCount;
 
@@ -277,8 +280,8 @@ private:
 
     CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
 
-    State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return m_stateStack.last(); }
-    const State& state() const { return m_stateStack.last(); }
+    State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return *m_stateStack.last(); }
+    const State& state() const { return *m_stateStack.last(); }
 
     void applyLineDash() const;
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
@@ -332,7 +335,9 @@ private:
 
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
-    Vector<State, 1> m_stateStack;
+    // FIXME: Oilpan: Make this a vector of embedded State objects rather than pointers
+    // once we support having vectors with objects using a vtable in oilpan.
+    WillBePersistentHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
     MutableStylePropertyMap m_fetchedFonts;

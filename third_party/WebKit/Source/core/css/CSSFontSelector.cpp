@@ -129,14 +129,16 @@ void CSSFontSelector::registerForInvalidationCallbacks(CSSFontSelectorClient* cl
     m_clients.add(client);
 }
 
+#if !ENABLE(OILPAN)
 void CSSFontSelector::unregisterForInvalidationCallbacks(CSSFontSelectorClient* client)
 {
     m_clients.remove(client);
 }
+#endif
 
 void CSSFontSelector::dispatchInvalidationCallbacks()
 {
-    Vector<CSSFontSelectorClient*> clients;
+    WillBeHeapVector<RawPtrWillBeMember<CSSFontSelectorClient> > clients;
     copyToVector(m_clients, clients);
     for (size_t i = 0; i < clients.size(); ++i)
         clients[i]->fontsNeedUpdate(this);

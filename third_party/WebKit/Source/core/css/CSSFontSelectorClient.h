@@ -35,11 +35,13 @@ namespace WebCore {
 
 class CSSFontSelector;
 
-class CSSFontSelectorClient {
+class CSSFontSelectorClient : public NoBaseWillBeGarbageCollectedFinalized<CSSFontSelectorClient> {
 public:
     virtual ~CSSFontSelectorClient() { }
 
     virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
+
+    virtual void trace(Visitor*) = 0;
 };
 
 } // namespace WebCore
