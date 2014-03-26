@@ -636,9 +636,10 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
 
   // Called on the network task runner.
-  bool IsConnected();
-  bool HasPendingAsyncOperation();
-  bool HasUnhandledReceivedData();
+  bool IsConnected() const;
+  bool HasPendingAsyncOperation() const;
+  bool HasUnhandledReceivedData() const;
+  bool WasEverUsed() const;
 
   // Called on the network task runner.
   // Causes the associated SSL/TLS session ID to be added to NSS's session
@@ -841,6 +842,10 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   bool nss_waiting_write_;
   bool nss_is_closed_;
 
+  // Set when Read() or Write() successfully reads or writes data to or from the
+  // network.
+  bool was_ever_used_;
+
   ////////////////////////////////////////////////////////////////////////////
   // Members that are ONLY accessed on the NSS task runner:
   ////////////////////////////////////////////////////////////////////////////
@@ -936,6 +941,7 @@ SSLClientSocketNSS::Core::Core(
       nss_waiting_read_(false),
       nss_waiting_write_(false),
       nss_is_closed_(false),
+      was_ever_used_(false),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       nss_fd_(NULL),
@@ -1148,8 +1154,11 @@ int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
       return ERR_IO_PENDING;
     } else {
       DCHECK(!nss_waiting_read_);
-      if (rv <= 0)
+      if (rv <= 0) {
         nss_is_closed_ = true;
+      } else {
+        was_ever_used_ = true;
+      }
     }
   }
 
@@ -1202,27 +1211,35 @@ int SSLClientSocketNSS::Core::Write(IOBuffer* buf, int buf_len,
       return ERR_IO_PENDING;
     } else {
       DCHECK(!nss_waiting_write_);
-      if (rv < 0)
+      if (rv < 0) {
         nss_is_closed_ = true;
+      } else if (rv > 0) {
+        was_ever_used_ = true;
+      }
     }
   }
 
   return rv;
 }
 
-bool SSLClientSocketNSS::Core::IsConnected() {
+bool SSLClientSocketNSS::Core::IsConnected() const {
   DCHECK(OnNetworkTaskRunner());
   return !nss_is_closed_;
 }
 
-bool SSLClientSocketNSS::Core::HasPendingAsyncOperation() {
+bool SSLClientSocketNSS::Core::HasPendingAsyncOperation() const {
   DCHECK(OnNetworkTaskRunner());
   return nss_waiting_read_ || nss_waiting_write_;
 }
 
-bool SSLClientSocketNSS::Core::HasUnhandledReceivedData() {
+bool SSLClientSocketNSS::Core::HasUnhandledReceivedData() const {
   DCHECK(OnNetworkTaskRunner());
   return unhandled_buffer_size_ != 0;
+}
+
+bool SSLClientSocketNSS::Core::WasEverUsed() const {
+  DCHECK(OnNetworkTaskRunner());
+  return was_ever_used_;
 }
 
 void SSLClientSocketNSS::Core::CacheSessionIfNecessary() {
@@ -2656,16 +2673,22 @@ void SSLClientSocketNSS::Core::DidNSSRead(int result) {
   DCHECK(OnNetworkTaskRunner());
   DCHECK(nss_waiting_read_);
   nss_waiting_read_ = false;
-  if (result <= 0)
+  if (result <= 0) {
     nss_is_closed_ = true;
+  } else {
+    was_ever_used_ = true;
+  }
 }
 
 void SSLClientSocketNSS::Core::DidNSSWrite(int result) {
   DCHECK(OnNetworkTaskRunner());
   DCHECK(nss_waiting_write_);
   nss_waiting_write_ = false;
-  if (result < 0)
+  if (result < 0) {
     nss_is_closed_ = true;
+  } else if (result > 0) {
+    was_ever_used_ = true;
+  }
 }
 
 void SSLClientSocketNSS::Core::BufferSendComplete(int result) {
@@ -3025,11 +3048,9 @@ void SSLClientSocketNSS::SetOmniboxSpeculation() {
 }
 
 bool SSLClientSocketNSS::WasEverUsed() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->WasEverUsed();
-  }
-  NOTREACHED();
-  return false;
+  DCHECK(core_.get());
+
+  return core_->WasEverUsed();
 }
 
 bool SSLClientSocketNSS::UsingTCPFastOpen() const {

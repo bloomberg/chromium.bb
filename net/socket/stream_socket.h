@@ -70,9 +70,9 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   virtual void SetSubresourceSpeculation() = 0;
   virtual void SetOmniboxSpeculation() = 0;
 
-  // Returns true if the underlying transport socket ever had any reads or
-  // writes.  StreamSockets layered on top of transport sockets should forward
-  // this call to the transport socket.
+  // Returns true if the socket ever had any reads or writes.  StreamSockets
+  // layered on top of transport sockets should return if their own Read() or
+  // Write() methods had been called, not the underlying transport's.
   virtual bool WasEverUsed() const = 0;
 
   // Returns true if the underlying transport socket is using TCP FastOpen.

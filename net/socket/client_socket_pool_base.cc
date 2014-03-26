@@ -448,7 +448,7 @@ bool ClientSocketPoolBaseHelper::AssignIdleSocketToRequest(
   //   the |idle_socket_it| will be set to the newest used idle socket.
   for (std::list<IdleSocket>::iterator it = idle_sockets->begin();
        it != idle_sockets->end();) {
-    if (!it->socket->IsConnectedAndIdle()) {
+    if (!it->IsUsable()) {
       DecrementIdleCount();
       delete it->socket;
       it = idle_sockets->erase(it);
@@ -648,15 +648,19 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
   return dict;
 }
 
+bool ClientSocketPoolBaseHelper::IdleSocket::IsUsable() const {
+  if (socket->WasEverUsed())
+    return socket->IsConnectedAndIdle();
+  return socket->IsConnected();
+}
+
 bool ClientSocketPoolBaseHelper::IdleSocket::ShouldCleanup(
     base::TimeTicks now,
     base::TimeDelta timeout) const {
   bool timed_out = (now - start_time) >= timeout;
   if (timed_out)
     return true;
-  if (socket->WasEverUsed())
-    return !socket->IsConnectedAndIdle();
-  return !socket->IsConnected();
+  return !IsUsable();
 }
 
 void ClientSocketPoolBaseHelper::CleanupIdleSockets(bool force) {

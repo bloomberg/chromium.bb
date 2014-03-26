@@ -5,6 +5,7 @@
 #include "net/socket/socks5_client_socket.h"
 
 #include "base/basictypes.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/format_macros.h"
@@ -38,6 +39,7 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
       bytes_sent_(0),
       bytes_received_(0),
       read_header_size(kReadHeaderSize),
+      was_ever_used_(false),
       host_request_info_(req_info),
       net_log_(transport_->socket()->NetLog()) {
 }
@@ -109,11 +111,7 @@ void SOCKS5ClientSocket::SetOmniboxSpeculation() {
 }
 
 bool SOCKS5ClientSocket::WasEverUsed() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->WasEverUsed();
-  }
-  NOTREACHED();
-  return false;
+  return was_ever_used_;
 }
 
 bool SOCKS5ClientSocket::UsingTCPFastOpen() const {
@@ -156,19 +154,33 @@ int SOCKS5ClientSocket::Read(IOBuffer* buf, int buf_len,
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
+  DCHECK(!callback.is_null());
 
-  return transport_->socket()->Read(buf, buf_len, callback);
+  int rv = transport_->socket()->Read(
+      buf, buf_len,
+      base::Bind(&SOCKS5ClientSocket::OnReadWriteComplete,
+                 base::Unretained(this), callback));
+  if (rv > 0)
+    was_ever_used_ = true;
+  return rv;
 }
 
 // Write is called by the transport layer. This can only be done if the
 // SOCKS handshake is complete.
 int SOCKS5ClientSocket::Write(IOBuffer* buf, int buf_len,
-                             const CompletionCallback& callback) {
+                              const CompletionCallback& callback) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
+  DCHECK(!callback.is_null());
 
-  return transport_->socket()->Write(buf, buf_len, callback);
+  int rv = transport_->socket()->Write(
+      buf, buf_len,
+      base::Bind(&SOCKS5ClientSocket::OnReadWriteComplete,
+                 base::Unretained(this), callback));
+  if (rv > 0)
+    was_ever_used_ = true;
+  return rv;
 }
 
 bool SOCKS5ClientSocket::SetReceiveBufferSize(int32 size) {
@@ -185,9 +197,7 @@ void SOCKS5ClientSocket::DoCallback(int result) {
 
   // Since Run() may result in Read being called,
   // clear user_callback_ up front.
-  CompletionCallback c = user_callback_;
-  user_callback_.Reset();
-  c.Run(result);
+  base::ResetAndReturn(&user_callback_).Run(result);
 }
 
 void SOCKS5ClientSocket::OnIOComplete(int result) {
@@ -197,6 +207,16 @@ void SOCKS5ClientSocket::OnIOComplete(int result) {
     net_log_.EndEvent(NetLog::TYPE_SOCKS5_CONNECT);
     DoCallback(rv);
   }
+}
+
+void SOCKS5ClientSocket::OnReadWriteComplete(const CompletionCallback& callback,
+                                             int result) {
+  DCHECK_NE(ERR_IO_PENDING, result);
+  DCHECK(!callback.is_null());
+
+  if (result > 0)
+    was_ever_used_ = true;
+  callback.Run(result);
 }
 
 int SOCKS5ClientSocket::DoLoop(int last_io_result) {

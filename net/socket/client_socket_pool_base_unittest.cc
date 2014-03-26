@@ -116,14 +116,26 @@ class MockClientSocket : public StreamSocket {
  public:
   explicit MockClientSocket(net::NetLog* net_log)
       : connected_(false),
+        has_unread_data_(false),
         net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
         was_used_to_convey_data_(false) {
+  }
+
+  // Sets whether the socket has unread data. If true, the next call to Read()
+  // will return 1 byte and IsConnectedAndIdle() will return false.
+  void set_has_unread_data(bool has_unread_data) {
+    has_unread_data_ = has_unread_data;
   }
 
   // Socket implementation.
   virtual int Read(
       IOBuffer* /* buf */, int len,
       const CompletionCallback& /* callback */) OVERRIDE {
+    if (has_unread_data_ && len > 0) {
+      has_unread_data_ = false;
+      was_used_to_convey_data_ = true;
+      return 1;
+    }
     return ERR_UNEXPECTED;
   }
 
@@ -144,7 +156,9 @@ class MockClientSocket : public StreamSocket {
 
   virtual void Disconnect() OVERRIDE { connected_ = false; }
   virtual bool IsConnected() const OVERRIDE { return connected_; }
-  virtual bool IsConnectedAndIdle() const OVERRIDE { return connected_; }
+  virtual bool IsConnectedAndIdle() const OVERRIDE {
+    return connected_ && !has_unread_data_;
+  }
 
   virtual int GetPeerAddress(IPEndPoint* /* address */) const OVERRIDE {
     return ERR_UNEXPECTED;
@@ -176,6 +190,7 @@ class MockClientSocket : public StreamSocket {
 
  private:
   bool connected_;
+  bool has_unread_data_;
   BoundNetLog net_log_;
   bool was_used_to_convey_data_;
 
@@ -245,6 +260,7 @@ class TestConnectJob : public ConnectJob {
     kMockPendingRecoverableJob,
     kMockAdditionalErrorStateJob,
     kMockPendingAdditionalErrorStateJob,
+    kMockUnreadDataJob,
   };
 
   // The kMockPendingJob uses a slight delay before allowing the connect
@@ -372,6 +388,12 @@ class TestConnectJob : public ConnectJob {
                        false /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
+      case kMockUnreadDataJob: {
+        int ret = DoConnect(true /* successful */, false /* sync */,
+                            false /* recoverable */);
+        static_cast<MockClientSocket*>(socket())->set_has_unread_data(true);
+        return ret;
+      }
       default:
         NOTREACHED();
         SetSocket(scoped_ptr<StreamSocket>());
@@ -3541,7 +3563,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectJobsTakenByNormalRequests) {
 
   ASSERT_EQ(OK, callback1.WaitForResult());
 
-  // Make sure if a preconneced socket is not fully connected when a request
+  // Make sure if a preconnected socket is not fully connected when a request
   // starts, it has a connect start time.
   TestLoadTimingInfoConnectedNotReused(handle1);
   handle1.Reset();
@@ -3718,6 +3740,46 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithBackupJob) {
   EXPECT_EQ(0, pool_->NumUnassignedConnectJobsInGroup("a"));
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
+}
+
+// Tests that a preconnect that starts out with unread data can still be used.
+// http://crbug.com/334467
+TEST_F(ClientSocketPoolBaseTest, PreconnectWithUnreadData) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockUnreadDataJob);
+
+  pool_->RequestSockets("a", &params_, 1, BoundNetLog());
+
+  ASSERT_TRUE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->NumUnassignedConnectJobsInGroup("a"));
+  EXPECT_EQ(1, pool_->IdleSocketCountInGroup("a"));
+
+  // Fail future jobs to be sure that handle receives the preconnected socket
+  // rather than closing it and making a new one.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockFailingJob);
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, handle.Init("a",
+                             params_,
+                             DEFAULT_PRIORITY,
+                             callback.callback(),
+                             pool_.get(),
+                             BoundNetLog()));
+
+  ASSERT_TRUE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->NumUnassignedConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
+
+  // Drain the pending read.
+  EXPECT_EQ(1, handle.socket()->Read(NULL, 1, CompletionCallback()));
+
+  TestLoadTimingInfoConnectedReused(handle);
+  handle.Reset();
+
+  // The socket should be usable now that it's idle again.
+  EXPECT_EQ(1, pool_->IdleSocketCountInGroup("a"));
 }
 
 class MockLayeredPool : public HigherLayeredPool {

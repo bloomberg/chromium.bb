@@ -84,6 +84,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
 
   void DoCallback(int result);
   void OnIOComplete(int result);
+  void OnReadWriteComplete(const CompletionCallback& callback, int result);
 
   int DoLoop(int last_io_result);
   int DoResolveHost();
@@ -100,7 +101,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
 
   State next_state_;
 
-  // Stores the callback to the layer above, called on completing Connect().
+  // Stores the callbacks to the layer above, called on completing Connect().
   CompletionCallback user_callback_;
 
   // This IOBuffer is used by the class to read and write
@@ -119,6 +120,9 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   // These contain the bytes sent / received by the SOCKS handshake.
   size_t bytes_sent_;
   size_t bytes_received_;
+
+  // This becomes true when the socket is used to send or receive data.
+  bool was_ever_used_;
 
   // Used to resolve the hostname to which the SOCKS proxy will connect.
   SingleRequestHostResolver host_resolver_;

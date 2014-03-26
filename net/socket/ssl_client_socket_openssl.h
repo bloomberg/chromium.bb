@@ -187,6 +187,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   CertVerifyResult server_cert_verify_result_;
   bool completed_handshake_;
 
+  // Set when Read() or Write() successfully reads or writes data to or from the
+  // network.
+  bool was_ever_used_;
+
   // Stores client authentication information between ClientAuthHandler and
   // GetSSLCertRequestInfo calls.
   bool client_auth_cert_needed_;

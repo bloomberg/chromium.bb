@@ -487,6 +487,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       transport_write_error_(OK),
       server_cert_chain_(new PeerCertificateChain(NULL)),
       completed_handshake_(false),
+      was_ever_used_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
       server_bound_cert_service_(context.server_bound_cert_service),
@@ -675,11 +676,7 @@ void SSLClientSocketOpenSSL::SetOmniboxSpeculation() {
 }
 
 bool SSLClientSocketOpenSSL::WasEverUsed() const {
-  if (transport_.get() && transport_->socket())
-    return transport_->socket()->WasEverUsed();
-
-  NOTREACHED();
-  return false;
+  return was_ever_used_;
 }
 
 bool SSLClientSocketOpenSSL::UsingTCPFastOpen() const {
@@ -750,6 +747,8 @@ int SSLClientSocketOpenSSL::Read(IOBuffer* buf,
   if (rv == ERR_IO_PENDING) {
     user_read_callback_ = callback;
   } else {
+    if (rv > 0)
+      was_ever_used_ = true;
     user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
   }
@@ -768,6 +767,8 @@ int SSLClientSocketOpenSSL::Write(IOBuffer* buf,
   if (rv == ERR_IO_PENDING) {
     user_write_callback_ = callback;
   } else {
+    if (rv > 0)
+      was_ever_used_ = true;
     user_write_buf_ = NULL;
     user_write_buf_len_ = 0;
   }
@@ -907,6 +908,8 @@ bool SSLClientSocketOpenSSL::Init() {
 void SSLClientSocketOpenSSL::DoReadCallback(int rv) {
   // Since Run may result in Read being called, clear |user_read_callback_|
   // up front.
+  if (rv > 0)
+    was_ever_used_ = true;
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
   base::ResetAndReturn(&user_read_callback_).Run(rv);
@@ -915,6 +918,8 @@ void SSLClientSocketOpenSSL::DoReadCallback(int rv) {
 void SSLClientSocketOpenSSL::DoWriteCallback(int rv) {
   // Since Run may result in Write being called, clear |user_write_callback_|
   // up front.
+  if (rv > 0)
+    was_ever_used_ = true;
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
   base::ResetAndReturn(&user_write_callback_).Run(rv);

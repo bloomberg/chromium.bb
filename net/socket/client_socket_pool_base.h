@@ -339,14 +339,19 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   struct IdleSocket {
     IdleSocket() : socket(NULL) {}
 
+    // An idle socket can't be used if it is disconnected or has been used
+    // before and has received data unexpectedly (hence no longer idle).  The
+    // unread data would be mistaken for the beginning of the next response if
+    // we were to use the socket for a new request.
+    //
+    // Note that a socket that has never been used before (like a preconnected
+    // socket) may be used even with unread data.  This may be, e.g., a SPDY
+    // SETTINGS frame.
+    bool IsUsable() const;
+
     // An idle socket should be removed if it can't be reused, or has been idle
     // for too long. |now| is the current time value (TimeTicks::Now()).
     // |timeout| is the length of time to wait before timing out an idle socket.
-    //
-    // An idle socket can't be reused if it is disconnected or has received
-    // data unexpectedly (hence no longer idle).  The unread data would be
-    // mistaken for the beginning of the next response if we were to reuse the
-    // socket for a new request.
     bool ShouldCleanup(base::TimeTicks now, base::TimeDelta timeout) const;
 
     StreamSocket* socket;

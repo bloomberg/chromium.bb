@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
@@ -65,6 +66,7 @@ SOCKSClientSocket::SOCKSClientSocket(
       completed_handshake_(false),
       bytes_sent_(0),
       bytes_received_(0),
+      was_ever_used_(false),
       host_resolver_(host_resolver),
       host_request_info_(req_info),
       priority_(priority),
@@ -137,11 +139,7 @@ void SOCKSClientSocket::SetOmniboxSpeculation() {
 }
 
 bool SOCKSClientSocket::WasEverUsed() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->WasEverUsed();
-  }
-  NOTREACHED();
-  return false;
+  return was_ever_used_;
 }
 
 bool SOCKSClientSocket::UsingTCPFastOpen() const {
@@ -184,8 +182,15 @@ int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
+  DCHECK(!callback.is_null());
 
-  return transport_->socket()->Read(buf, buf_len, callback);
+  int rv = transport_->socket()->Read(
+      buf, buf_len,
+      base::Bind(&SOCKSClientSocket::OnReadWriteComplete,
+                 base::Unretained(this), callback));
+  if (rv > 0)
+    was_ever_used_ = true;
+  return rv;
 }
 
 // Write is called by the transport layer. This can only be done if the
@@ -195,8 +200,15 @@ int SOCKSClientSocket::Write(IOBuffer* buf, int buf_len,
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
+  DCHECK(!callback.is_null());
 
-  return transport_->socket()->Write(buf, buf_len, callback);
+  int rv = transport_->socket()->Write(
+      buf, buf_len,
+      base::Bind(&SOCKSClientSocket::OnReadWriteComplete,
+                 base::Unretained(this), callback));
+  if (rv > 0)
+    was_ever_used_ = true;
+  return rv;
 }
 
 bool SOCKSClientSocket::SetReceiveBufferSize(int32 size) {
@@ -213,10 +225,8 @@ void SOCKSClientSocket::DoCallback(int result) {
 
   // Since Run() may result in Read being called,
   // clear user_callback_ up front.
-  CompletionCallback c = user_callback_;
-  user_callback_.Reset();
   DVLOG(1) << "Finished setting up SOCKS handshake";
-  c.Run(result);
+  base::ResetAndReturn(&user_callback_).Run(result);
 }
 
 void SOCKSClientSocket::OnIOComplete(int result) {
@@ -226,6 +236,16 @@ void SOCKSClientSocket::OnIOComplete(int result) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SOCKS_CONNECT, rv);
     DoCallback(rv);
   }
+}
+
+void SOCKSClientSocket::OnReadWriteComplete(const CompletionCallback& callback,
+                                            int result) {
+  DCHECK_NE(ERR_IO_PENDING, result);
+  DCHECK(!callback.is_null());
+
+  if (result > 0)
+    was_ever_used_ = true;
+  callback.Run(result);
 }
 
 int SOCKSClientSocket::DoLoop(int last_io_result) {

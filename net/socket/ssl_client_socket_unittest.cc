@@ -2127,4 +2127,60 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
+// Tests that IsConnectedAndIdle and WasEverUsed behave as expected.
+TEST_F(SSLClientSocketTest, ReuseStates) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  int rv = transport->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+
+  rv = sock->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  // The socket was just connected. It should be idle because it is speaking
+  // HTTP. Although the transport has been used for the handshake, WasEverUsed()
+  // returns false.
+  EXPECT_TRUE(sock->IsConnected());
+  EXPECT_TRUE(sock->IsConnectedAndIdle());
+  EXPECT_FALSE(sock->WasEverUsed());
+
+  const char kRequestText[] = "GET / HTTP/1.0\r\n\r\n";
+  const size_t kRequestLen = arraysize(kRequestText) - 1;
+  scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestLen));
+  memcpy(request_buffer->data(), kRequestText, kRequestLen);
+
+  rv = sock->Write(request_buffer.get(), kRequestLen, callback.callback());
+  EXPECT_TRUE(rv >= 0 || rv == ERR_IO_PENDING);
+
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(static_cast<int>(kRequestLen), rv);
+
+  // The socket has now been used.
+  EXPECT_TRUE(sock->WasEverUsed());
+
+  // TODO(davidben): Read one byte to ensure the test server has responded and
+  // then assert IsConnectedAndIdle is false. This currently doesn't work
+  // because neither SSLClientSocketNSS nor SSLClientSocketOpenSSL check their
+  // SSL implementation's internal buffers. Either call PR_Available and
+  // SSL_pending, although the former isn't actually implemented or perhaps
+  // attempt to read one byte extra.
+}
+
 }  // namespace net
