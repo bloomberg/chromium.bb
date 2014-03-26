@@ -152,8 +152,9 @@ bool DomDistillerViewerSourceBrowserTest::expect_distillation_ = false;
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when the article exists in the database.
+// Flakiness: crbug.com/356866
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsArticleExists) {
+                       FLAKY_NoWebUIBindingsArticleExists) {
   // Ensure there is one item in the database, which will trigger distillation.
   const ArticleEntry entry = CreateEntry("DISTILLED", "http://example.com/1");
   AddEntry(entry, database_model_);
@@ -176,8 +177,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when requesting to view an arbitrary URL.
+// Flakiness: crbug.com/356866
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsViewUrl) {
+                       FLAKY_NoWebUIBindingsViewUrl) {
   // We should expect distillation for any valid URL.
   expect_distillation_ = true;
   GURL view_url("http://www.example.com/1");
