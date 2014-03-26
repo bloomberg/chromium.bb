@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -18,6 +19,17 @@ class InfoBar;
 class InfoBarService : public content::WebContentsObserver,
                        public content::WebContentsUserData<InfoBarService> {
  public:
+
+  // Observer class for infobar events.
+  class Observer {
+   public:
+    virtual void OnInfoBarAdded(InfoBar* infobar) = 0;
+    virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) = 0;
+    virtual void OnInfoBarReplaced(InfoBar* old_infobar,
+                                   InfoBar* new_infobar) = 0;
+    virtual void OnServiceShuttingDown(InfoBarService* service) = 0;
+  };
+
   // Adds the specified |infobar|, which already owns a delegate.
   //
   // If infobars are disabled for this tab or the tab already has an infobar
@@ -62,6 +74,9 @@ class InfoBarService : public content::WebContentsObserver,
     return content::WebContentsObserver::web_contents();
   }
 
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
  private:
   friend class content::WebContentsUserData<InfoBarService>;
 
@@ -92,6 +107,7 @@ class InfoBarService : public content::WebContentsObserver,
 
   InfoBars infobars_;
   bool infobars_enabled_;
+  ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarService);
 };

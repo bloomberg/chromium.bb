@@ -35,6 +35,9 @@ InfoBar* InfoBarService::AddInfoBar(scoped_ptr<InfoBar> infobar) {
   infobars_.push_back(infobar_ptr);
   infobar_ptr->SetOwner(this);
 
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnInfoBarAdded(infobar_ptr));
+  // TODO(droger): Remove the notifications and use observers instead.
+  // See http://crbug.com/354380
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarService>(this),
@@ -66,6 +69,11 @@ InfoBar* InfoBarService::ReplaceInfoBar(InfoBar* old_infobar,
   // to AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(++i);
 
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnInfoBarReplaced(old_infobar, new_infobar_ptr));
+  // TODO(droger): Remove the notifications and use observers instead.
+  // See http://crbug.com/354380
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       content::Source<InfoBarService>(this),
@@ -73,6 +81,14 @@ InfoBar* InfoBarService::ReplaceInfoBar(InfoBar* old_infobar,
 
   old_infobar->CloseSoon();
   return new_infobar_ptr;
+}
+
+void InfoBarService::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void InfoBarService::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
 }
 
 InfoBarService::InfoBarService(content::WebContents* web_contents)
@@ -87,6 +103,7 @@ InfoBarService::~InfoBarService() {
   // Destroy all remaining InfoBars.  It's important to not animate here so that
   // we guarantee that we'll delete all delegates before we do anything else.
   RemoveAllInfoBars(false);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnServiceShuttingDown(this));
 }
 
 void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
@@ -142,6 +159,10 @@ void InfoBarService::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {
 
   // This notification must happen before the call to CloseSoon() below, since
   // observers may want to access |infobar| and that call can delete it.
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnInfoBarRemoved(infobar, animate));
+  // TODO(droger): Remove the notifications and use observers instead.
+  // See http://crbug.com/354380
   InfoBar::RemovedDetails removed_details(infobar, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,

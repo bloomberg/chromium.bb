@@ -9,12 +9,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class InfoBar;
-class InfoBarService;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBarService owns the InfoBars, the
@@ -23,7 +21,7 @@ class InfoBarService;
 //
 // Platforms need to subclass this to implement a few platform-specific
 // functions, which are pure virtual here.
-class InfoBarContainer : public content::NotificationObserver {
+class InfoBarContainer : public InfoBarService::Observer {
  public:
   class Delegate {
    public:
@@ -101,13 +99,12 @@ class InfoBarContainer : public content::NotificationObserver {
  private:
   typedef std::vector<InfoBar*> InfoBars;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Hides all infobars in this container without animation.
-  void HideAllInfoBars();
+  // InfoBarService::Observer:
+  virtual void OnInfoBarAdded(InfoBar* infobar) OVERRIDE;
+  virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) OVERRIDE;
+  virtual void OnInfoBarReplaced(InfoBar* old_infobar,
+                                 InfoBar* new_infobar) OVERRIDE;
+  virtual void OnServiceShuttingDown(InfoBarService* service) OVERRIDE;
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to
@@ -123,7 +120,6 @@ class InfoBarContainer : public content::NotificationObserver {
   void UpdateInfoBarArrowTargetHeights();
   int ArrowTargetHeightForInfoBar(size_t infobar_index) const;
 
-  content::NotificationRegistrar registrar_;
   Delegate* delegate_;
   InfoBarService* infobar_service_;
   InfoBars infobars_;
