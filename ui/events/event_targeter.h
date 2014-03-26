@@ -26,8 +26,8 @@ class EVENTS_EXPORT EventTargeter {
 
   // Same as FindTargetForEvent(), but used for positional events. The location
   // etc. of |event| are in |root|'s coordinate system. When finding the target
-  // for the event, the targeter can mutate the |event| (e.g. chnage the
-  // coordinate to be in the returned target's coordinate sustem) so that it can
+  // for the event, the targeter can mutate the |event| (e.g. change the
+  // coordinate to be in the returned target's coordinate system) so that it can
   // be dispatched to the target without any farther modification.
   virtual EventTarget* FindTargetForLocatedEvent(EventTarget* root,
                                                  LocatedEvent* event);
@@ -37,6 +37,13 @@ class EVENTS_EXPORT EventTargeter {
   // coordinate system.
   virtual bool SubtreeShouldBeExploredForEvent(EventTarget* target,
                                                const LocatedEvent& event);
+
+  // Returns the next best target for |event| as compared to |previous_target|.
+  // Also mutates |event| so that it can be dispatched to the returned target
+  // (e.g., by changing |event|'s location to be in the returned target's
+  // coordinate space).
+  virtual EventTarget* FindNextBestTarget(EventTarget* previous_target,
+                                          Event* event);
 };
 
 }  // namespace ui

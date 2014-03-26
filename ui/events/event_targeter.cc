@@ -55,4 +55,9 @@ bool EventTargeter::SubtreeShouldBeExploredForEvent(EventTarget* target,
   return true;
 }
 
+EventTarget* EventTargeter::FindNextBestTarget(EventTarget* previous_target,
+                                               Event* event) {
+  return NULL;
+}
+
 }  // namespace ui

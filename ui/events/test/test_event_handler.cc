@@ -14,7 +14,9 @@ TestEventHandler::TestEventHandler()
       num_mouse_events_(0),
       num_scroll_events_(0),
       num_touch_events_(0),
-      num_gesture_events_(0) {
+      num_gesture_events_(0),
+      recorder_(NULL),
+      handler_name_("unknown") {
 }
 
 TestEventHandler::~TestEventHandler() {}
@@ -28,23 +30,33 @@ void TestEventHandler::Reset() {
 }
 
 void TestEventHandler::OnKeyEvent(KeyEvent* event) {
+  if (recorder_)
+    recorder_->push_back(handler_name_);
   num_key_events_++;
   event->SetHandled();
 }
 
 void TestEventHandler::OnMouseEvent(MouseEvent* event) {
+  if (recorder_)
+    recorder_->push_back(handler_name_);
   num_mouse_events_++;
 }
 
 void TestEventHandler::OnScrollEvent(ScrollEvent* event) {
+  if (recorder_)
+    recorder_->push_back(handler_name_);
   num_scroll_events_++;
 }
 
 void TestEventHandler::OnTouchEvent(TouchEvent* event) {
+  if (recorder_)
+    recorder_->push_back(handler_name_);
   num_touch_events_++;
 }
 
 void TestEventHandler::OnGestureEvent(GestureEvent* event) {
+  if (recorder_)
+    recorder_->push_back(handler_name_);
   num_gesture_events_++;
 }
 

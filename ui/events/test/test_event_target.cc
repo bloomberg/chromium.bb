@@ -12,7 +12,10 @@ namespace ui {
 namespace test {
 
 TestEventTarget::TestEventTarget()
-    : parent_(NULL) {}
+    : parent_(NULL),
+      mark_events_as_handled_(false),
+      recorder_(NULL),
+      target_name_("unknown") {}
 TestEventTarget::~TestEventTarget() {}
 
 void TestEventTarget::AddChild(scoped_ptr<TestEventTarget> child) {
@@ -70,8 +73,12 @@ EventTargeter* TestEventTarget::GetEventTargeter() {
 }
 
 void TestEventTarget::OnEvent(Event* event) {
+  if (recorder_)
+    recorder_->push_back(target_name_);
   received_.insert(event->type());
   EventTarget::OnEvent(event);
+  if (!event->handled() && mark_events_as_handled_)
+    event->SetHandled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

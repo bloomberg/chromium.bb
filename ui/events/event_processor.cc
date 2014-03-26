@@ -14,12 +14,22 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   CHECK(root);
   EventTargeter* targeter = root->GetEventTargeter();
   CHECK(targeter);
+
   PrepareEventForDispatch(event);
   EventTarget* target = targeter->FindTargetForEvent(root, event);
-  if (!target)
-    return EventDispatchDetails();
 
-  return DispatchEvent(target, event);
+  while (target) {
+    EventDispatchDetails details = DispatchEvent(target, event);
+    if (details.dispatcher_destroyed ||
+        details.target_destroyed ||
+        event->handled()) {
+      return details;
+    }
+
+    target = targeter->FindNextBestTarget(target, event);
+  }
+
+  return EventDispatchDetails();
 }
 
 void EventProcessor::PrepareEventForDispatch(Event* event) {
