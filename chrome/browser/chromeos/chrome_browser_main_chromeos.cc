@@ -15,7 +15,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -123,20 +122,6 @@ namespace {
 void ChromeOSVersionCallback(const std::string& version) {
   base::SetLinuxDistro(std::string("CrOS ") + version);
 }
-
-class MessageLoopObserver : public base::MessageLoopForUI::Observer {
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-    return base::EVENT_CONTINUE;
-  }
-
-  virtual void DidProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-  }
-};
-
-static base::LazyInstance<MessageLoopObserver> g_message_loop_observer =
-    LAZY_INSTANCE_INITIALIZER;
 
 // Login -----------------------------------------------------------------------
 
@@ -411,9 +396,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  base::MessageLoopForUI* message_loop = base::MessageLoopForUI::current();
-  message_loop->AddObserver(g_message_loop_observer.Pointer());
-
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
