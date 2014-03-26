@@ -59,7 +59,7 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    void didCommitLoad(LocalFrame*, DocumentLoader*);
+    virtual void didCommitLoadForMainFrame() OVERRIDE;
 
     // Called from the front-end.
     virtual void enable(ErrorString*) OVERRIDE;

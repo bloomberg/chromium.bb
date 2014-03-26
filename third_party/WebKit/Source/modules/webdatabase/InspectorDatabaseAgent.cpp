@@ -205,14 +205,8 @@ void InspectorDatabaseAgent::didOpenDatabase(PassRefPtrWillBeRawPtr<Database> da
         resource->bind(m_frontend);
 }
 
-void InspectorDatabaseAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
+void InspectorDatabaseAgent::didCommitLoadForMainFrame()
 {
-    // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
-    // then all we need to check here is loader->frame()->isMainFrame()
-    // and we don't need "frame" at all.
-    if (loader->frame() != frame->page()->mainFrame())
-        return;
-
     m_resources.clear();
 }
 
