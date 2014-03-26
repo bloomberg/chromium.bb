@@ -3202,7 +3202,8 @@ class PaygenStage(ArchivingStage):
         logging.info("Using explicit channels: %s", self.channels)
         # If we have an explicit list of channels, use it.
         for channel in self.channels:
-          per_channel.put((channel, board, version, self._run.debug))
+          per_channel.put((channel, board, version, self._run.debug,
+                           self._run.config.perform_paygen_testing))
       else:
         # Otherwise, wait for SignerResults to tell us which channels are ready.
         while True:

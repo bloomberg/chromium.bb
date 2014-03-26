@@ -1342,10 +1342,9 @@ class PaygenStageTest(StageTest):
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
-  def ConstructStage(self, channels=None):
+  def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.PaygenStage(
-        self.run, self._current_board, archive_stage, channels=channels)
+    return stages.PaygenStage(self.run, self._current_board, archive_stage)
 
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
@@ -1354,9 +1353,9 @@ class PaygenStageTest(StageTest):
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage._wait_for_channel_signing.put('stable')
-      stage.archive_stage._wait_for_channel_signing.put('beta')
-      stage.archive_stage._wait_for_channel_signing.put(
+      stage.archive_stage.AnnounceChannelSigned('stable')
+      stage.archive_stage.AnnounceChannelSigned('beta')
+      stage.archive_stage.AnnounceChannelSigned(
           stages.SignerResultsStage.FINISHED)
       stage.PerformStage()
 
@@ -1370,7 +1369,7 @@ class PaygenStageTest(StageTest):
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage._wait_for_channel_signing.put(
+      stage.archive_stage.AnnounceChannelSigned(
           stages.SignerResultsStage.FINISHED)
       stage.PerformStage()
 
@@ -1383,7 +1382,7 @@ class PaygenStageTest(StageTest):
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage._wait_for_channel_signing.put(None)
+      stage.archive_stage.AnnounceChannelSigned(None)
 
       self.assertRaises(stages.PaygenSigningRequirementsError,
                         stage.PerformStage)
@@ -1396,13 +1395,16 @@ class PaygenStageTest(StageTest):
     with patch(stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage(channels=['foo', 'bar'])
+      # The stage is constructed differently for trybots, so don't use
+      # ConstructStage.
+      stage = stages.PaygenStage(self.run, self._current_board,
+                                 archive_stage=None, channels=['foo', 'bar'])
       stage.PerformStage()
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but
       # still got results right away.
-      queue.put.assert_any_call(('foo', 'x86-mario', '0.0.1', False))
-      queue.put.assert_any_call(('bar', 'x86-mario', '0.0.1', False))
+      queue.put.assert_any_call(('foo', 'x86-mario', '0.0.1', False, True))
+      queue.put.assert_any_call(('bar', 'x86-mario', '0.0.1', False, True))
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
