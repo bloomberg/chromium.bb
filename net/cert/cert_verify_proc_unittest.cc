@@ -1013,6 +1013,9 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   EXPECT_EQ(0U, verify_result.cert_status);
   // But should not be marked as a known root.
   EXPECT_FALSE(verify_result.is_issued_by_known_root);
+
+  root_certs->Clear();
+  EXPECT_TRUE(root_certs->IsEmpty());
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -1133,6 +1136,8 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
+  TestRootCerts::GetInstance()->Clear();
+  EXPECT_TRUE(TestRootCerts::GetInstance()->IsEmpty());
 }
 #endif
 
