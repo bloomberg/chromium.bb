@@ -287,8 +287,17 @@ bool AutocompleteResult::ShouldHideTopMatch() const {
 }
 
 bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
-  return !empty() && match_at(0).IsVerbatimType() &&
-      ((size() == 1) || !match_at(1).IsVerbatimType());
+  if (empty() || !match_at(0).IsVerbatimType())
+    return false;
+
+  // Skip any copied matches, under the assumption that they'll be expired and
+  // disappear.  We don't want this disappearance to cause the visibility of the
+  // top match to change.
+  for (const_iterator i(begin() + 1); i != end(); ++i) {
+    if (!i->from_previous)
+      return !i->IsVerbatimType();
+  }
+  return true;
 }
 
 void AutocompleteResult::Reset() {

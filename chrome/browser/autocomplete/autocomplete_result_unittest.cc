@@ -591,6 +591,35 @@ TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
 
+TEST_F(AutocompleteResultTest, ShouldHideTopMatchAfterCopy) {
+  base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                         "Group1 hide_verbatim:1");
+  ACMatches matches;
+
+  // Case 1: Top match is a verbatim match followed by only copied matches.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
+                                          arraysize(kVerbatimMatches),
+                                          &matches);
+  for (size_t i = 1; i < arraysize(kVerbatimMatches); ++i)
+    matches[i].from_previous = true;
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.ShouldHideTopMatch());
+  result.Reset();
+
+  // Case 2: The copied matches are then followed by a non-verbatim match.
+  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.ShouldHideTopMatch());
+  result.Reset();
+
+  // Case 3: The copied matches are instead followed by a verbatim match.
+  matches.back().from_previous = true;
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
+  result.AppendMatches(matches);
+  EXPECT_FALSE(result.ShouldHideTopMatch());
+}
+
 TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
   // This test config is identical to ShouldHideTopMatch test ("Case 1") except
   // that the "hide_verbatim" flag is disabled in the field trials.
