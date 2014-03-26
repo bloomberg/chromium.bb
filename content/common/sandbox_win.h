@@ -33,6 +33,8 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
 bool InitTargetServices(sandbox::TargetServices* target_services);
 
+bool ShouldUseDirectWrite();
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_WIN_H_

@@ -758,7 +758,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
-  channel_->AddFilter(new FontCacheDispatcher());
+  // The FontCacheDispatcher is required only when we're using GDI rendering.
+  if (!ShouldUseDirectWrite())
+    channel_->AddFilter(new FontCacheDispatcher());
 #elif defined(OS_ANDROID)
   browser_demuxer_android_ = new BrowserDemuxerAndroid();
   AddFilter(browser_demuxer_android_);
@@ -1223,7 +1225,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kChildCleanExit,
 #endif
 #if defined(OS_WIN)
-    switches::kEnableDirectWrite,
     switches::kEnableHighResolutionTime,
     switches::kHighDPISupport,
 #endif

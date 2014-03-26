@@ -84,6 +84,7 @@
 #endif
 #if defined(OS_WIN)
 #include "content/common/font_cache_dispatcher_win.h"
+#include "content/common/sandbox_win.h"
 #endif
 #if defined(OS_ANDROID)
 #include "media/base/android/webaudio_media_codec_bridge.h"
@@ -1199,6 +1200,9 @@ void RenderMessageFilter::OnDidLose3DContext(
 #if defined(OS_WIN)
 void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
                                                    const base::string16& str) {
+  // TODO(scottmg): Move this to FontCacheDispatcher, http://crbug.com/356346.
+  if (!ShouldUseDirectWrite())
+    return;
   // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
   // Except that for True Type fonts,
   // GetTextMetrics will not load the font in memory.

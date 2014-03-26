@@ -41,6 +41,7 @@ enum {
                                   // of the Default user.
   DIR_TASKBAR_PINS,       // Directory for the shortcuts pinned to taskbar via
                           // base::win::TaskbarPinShortcutLink().
+  DIR_WINDOWS_FONTS,      // Usually C:\Windows\Fonts.
 
   PATH_WIN_END
 };

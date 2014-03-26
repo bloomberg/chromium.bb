@@ -191,6 +191,13 @@ bool PathProviderWin(int key, FilePath* result) {
       cur = cur.AppendASCII("User Pinned");
       cur = cur.AppendASCII("TaskBar");
       break;
+    case base::DIR_WINDOWS_FONTS:
+      if (FAILED(SHGetFolderPath(
+              NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT, system_buffer))) {
+        return false;
+      }
+      cur = FilePath(system_buffer);
+      break;
     default:
       return false;
   }

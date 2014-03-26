@@ -8,7 +8,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
+#include "content/common/sandbox_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/injection_test_win.h"
 #include "content/public/renderer/render_thread.h"
@@ -22,10 +25,13 @@
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
+#include <dwrite.h>
+
 namespace content {
 namespace {
 
 // Windows-only skia sandbox support
+// These are used for GDI-path rendering.
 void SkiaPreCacheFont(const LOGFONT& logfont) {
   RenderThread* render_thread = RenderThread::Get();
   if (render_thread) {
@@ -42,6 +48,51 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
         logfont,
         base::string16(text, text_length));
   }
+}
+
+// Windows-only DirectWrite support. These warm up the DirectWrite paths
+// before sandbox lock down to allow Skia access to the Font Manager service.
+bool CreateDirectWriteFactory(IDWriteFactory** factory) {
+  typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
+  DWriteCreateFactoryProc dwrite_create_factory_proc =
+      reinterpret_cast<DWriteCreateFactoryProc>(
+          GetProcAddress(LoadLibraryW(L"dwrite.dll"), "DWriteCreateFactory"));
+  if (!dwrite_create_factory_proc)
+    return false;
+  CHECK(SUCCEEDED(
+      dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
+                                 __uuidof(IDWriteFactory),
+                                 reinterpret_cast<IUnknown**>(factory))));
+  return true;
+}
+
+void WarmupDirectWrite() {
+  base::win::ScopedComPtr<IDWriteFactory> factory;
+  if (!CreateDirectWriteFactory(factory.Receive()))
+    return;
+
+  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  CHECK(SUCCEEDED(
+      factory->GetSystemFontCollection(font_collection.Receive(), FALSE)));
+  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+
+  UINT32 index;
+  BOOL exists;
+  CHECK(SUCCEEDED(
+      font_collection->FindFamilyName(L"Times New Roman", &index, &exists)));
+  CHECK(exists);
+  CHECK(
+      SUCCEEDED(font_collection->GetFontFamily(index, font_family.Receive())));
+  base::win::ScopedComPtr<IDWriteFont> font;
+  base::win::ScopedComPtr<IDWriteFontFace> font_face;
+  CHECK(SUCCEEDED(font_family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL,
+                                                    DWRITE_FONT_STRETCH_NORMAL,
+                                                    DWRITE_FONT_STYLE_NORMAL,
+                                                    font.Receive())));
+  CHECK(SUCCEEDED(font->CreateFontFace(font_face.Receive())));
+  DWRITE_GLYPH_METRICS gm;
+  UINT16 glyph = L'S';
+  CHECK(SUCCEEDED(font_face->GetDesignGlyphMetrics(&glyph, 1, &gm)));
 }
 
 }  // namespace
@@ -75,9 +126,14 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     // cached and there's no more need to access the registry. If the sandbox
     // is disabled, we don't have to make this dummy call.
     scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
-    SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
-    skia::SetSkiaEnsureTypefaceCharactersAccessible(
-        SkiaPreCacheFontCharacters);
+
+    if (ShouldUseDirectWrite()) {
+      WarmupDirectWrite();
+    } else {
+      SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
+      skia::SetSkiaEnsureTypefaceCharactersAccessible(
+          SkiaPreCacheFontCharacters);
+    }
   }
 }
 
