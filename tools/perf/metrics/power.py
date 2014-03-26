@@ -35,8 +35,9 @@ class PowerMetric(Metric):
       return
     self._running = False
     self._results = self._browser.platform.StopMonitoringPowerAsync()
-    self._results['cpu_stats'] = (
-        _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
+    if self._results: # StopMonitoringPowerAsync() can return None.
+      self._results['cpu_stats'] = (
+          _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
