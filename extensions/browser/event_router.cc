@@ -128,6 +128,11 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 }
 
 // static
+EventRouter* EventRouter::Get(content::BrowserContext* browser_context) {
+  return ExtensionSystem::Get(browser_context)->event_router();
+}
+
+// static
 std::string EventRouter::GetBaseEventName(const std::string& full_event_name) {
   size_t slash_sep = full_event_name.find('/');
   return full_event_name.substr(0, slash_sep);

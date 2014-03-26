@@ -68,6 +68,11 @@ class EventRouter : public content::NotificationObserver,
     virtual void OnListenerRemoved(const EventListenerInfo& details) {}
   };
 
+  // Gets the EventRouter for |browser_context|.
+  // Shorthand for ExtensionSystem::Get(browser_context)->event_router(); it's
+  // a very common operation.
+  static EventRouter* Get(content::BrowserContext* browser_context);
+
   // Converts event names like "foo.onBar/123" into "foo.onBar". Event names
   // without a "/" are returned unchanged.
   static std::string GetBaseEventName(const std::string& full_event_name);

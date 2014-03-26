@@ -54,6 +54,7 @@ using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::GrantedFileEntry;
 using extensions::app_file_handler_util::HasFileSystemWritePermission;
+using extensions::EventRouter;
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionSystem;
@@ -377,8 +378,7 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
   if (win8::IsSingleWindowMetroMode())
     return;
 #endif
-  extensions::EventRouter* event_router =
-      ExtensionSystem::Get(profile)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile);
   bool listening_to_restart = event_router->
       ExtensionHasEventListener(extension->id(),
                                 app_runtime::OnRestarted::kEventName);
