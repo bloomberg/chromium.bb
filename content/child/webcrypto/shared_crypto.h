@@ -17,7 +17,6 @@ namespace content {
 namespace webcrypto {
 
 class CryptoData;
-
 class Status;
 
 // Do one-time initialization. It is safe to call this multiple times.
@@ -122,15 +121,6 @@ CONTENT_EXPORT Status
                     const CryptoData& signature,
                     const CryptoData& data,
                     bool* signature_match);
-
-CONTENT_EXPORT Status ImportKeyJwk(const CryptoData& key_data,
-                                   const blink::WebCryptoAlgorithm& algorithm,
-                                   bool extractable,
-                                   blink::WebCryptoKeyUsageMask usage_mask,
-                                   blink::WebCryptoKey* key);
-
-CONTENT_EXPORT Status
-    ExportKeyJwk(const blink::WebCryptoKey& key, blink::WebArrayBuffer* buffer);
 
 CONTENT_EXPORT Status
     WrapKey(blink::WebCryptoKeyFormat format,

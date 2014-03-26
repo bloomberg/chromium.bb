@@ -516,6 +516,19 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
   return Decrypt(algorithm, key, CryptoData(cipher_text_with_tag), plain_text);
 }
 
+Status ImportKeyJwk(const CryptoData& key_data,
+                    const blink::WebCryptoAlgorithm& algorithm,
+                    bool extractable,
+                    blink::WebCryptoKeyUsageMask usage_mask,
+                    blink::WebCryptoKey* key) {
+  return ImportKey(blink::WebCryptoKeyFormatJwk,
+                   key_data,
+                   algorithm,
+                   extractable,
+                   usage_mask,
+                   key);
+}
+
 Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                             const blink::WebCryptoAlgorithm& algorithm,
                             bool extractable,
@@ -1720,7 +1733,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkSymmetricKey)) {
         HexStringToBytes(test.key_hex), test.algorithm, test.usage);
 
     // Export the key in JWK format and validate.
-    ASSERT_STATUS_SUCCESS(ExportKeyJwk(key, &json));
+    ASSERT_STATUS_SUCCESS(ExportKey(blink::WebCryptoKeyFormatJwk, key, &json));
     EXPECT_TRUE(VerifySecretJwk(json, test.jwk_alg, test.key_hex, test.usage));
 
     // Import the JWK-formatted key.

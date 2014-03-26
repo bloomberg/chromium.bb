@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
-#include "third_party/WebKit/public/platform/WebCrypto.h"  // TODO(eroman): delete
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
@@ -36,7 +35,6 @@ void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size);
 blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
                                         unsigned int data_size);
 
-// TODO(eroman): Move this to JWK file.
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.
@@ -79,21 +77,6 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id);
-
-// TODO(eroman): Move these to jwk.cc
-// Creates an RSASSA-PKCS1-v1_5 algorithm. It is an error to call this with a
-// hash_id that is not a SHA*.
-blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id);
-
-// Creates an RSA-OAEP algorithm. It is an error to call this with a hash_id
-// that is not a SHA*.
-blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id);
-
-// TODO(eroman): Move to shared_crypto.cc
-// Returns the internal block size for SHA-*
-unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id);
 
 bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned int keylen_bytes,

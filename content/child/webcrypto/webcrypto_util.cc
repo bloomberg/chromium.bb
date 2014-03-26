@@ -175,32 +175,6 @@ blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
       id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
 }
 
-blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id) {
-  return CreateRsaHashedImportAlgorithm(
-      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, hash_id);
-}
-
-blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id) {
-  return CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep,
-                                        hash_id);
-}
-
-unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
-  switch (hash_id) {
-    case blink::WebCryptoAlgorithmIdSha1:
-    case blink::WebCryptoAlgorithmIdSha256:
-      return 64;
-    case blink::WebCryptoAlgorithmIdSha384:
-    case blink::WebCryptoAlgorithmIdSha512:
-      return 128;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned int keylen_bytes,
                               blink::WebCryptoKeyAlgorithm* key_algorithm) {

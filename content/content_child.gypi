@@ -180,6 +180,7 @@
     'child/webcrypto/crypto_data.cc',
     'child/webcrypto/crypto_data.h',
     'child/webcrypto/jwk.cc',
+    'child/webcrypto/jwk.h',
     'child/webcrypto/platform_crypto.h',
     'child/webcrypto/platform_crypto_nss.cc',
     'child/webcrypto/platform_crypto_openssl.cc',

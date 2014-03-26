@@ -22,6 +22,22 @@ namespace webcrypto {
 
 namespace {
 
+// Creates an RSASSA-PKCS1-v1_5 algorithm. It is an error to call this with a
+// hash_id that is not a SHA*.
+blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id) {
+  return CreateRsaHashedImportAlgorithm(
+      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, hash_id);
+}
+
+// Creates an RSA-OAEP algorithm. It is an error to call this with a hash_id
+// that is not a SHA*.
+blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id) {
+  return CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep,
+                                        hash_id);
+}
+
 // Web Crypto equivalent usage mask for JWK 'use' = 'enc'.
 // TODO(padolph): Add 'deriveBits' once supported by Blink.
 const blink::WebCryptoKeyUsageMask kJwkEncUsage =
