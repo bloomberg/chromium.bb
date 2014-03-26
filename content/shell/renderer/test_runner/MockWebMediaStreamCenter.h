@@ -12,6 +12,7 @@
 #include "content/shell/renderer/test_runner/WebTask.h"
 
 namespace blink {
+class WebAudioSourceProvider;
 class WebMediaStreamCenterClient;
 };
 
@@ -31,6 +32,8 @@ public:
     virtual void didStopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
     virtual bool didStopMediaStreamTrack(const blink::WebMediaStreamTrack&) OVERRIDE;
     virtual void didCreateMediaStream(blink::WebMediaStream&) OVERRIDE;
+    virtual blink::WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
+        const blink::WebMediaStreamTrack&) OVERRIDE;
 
    // Task related methods
     WebTaskList* taskList() { return &m_taskList; }

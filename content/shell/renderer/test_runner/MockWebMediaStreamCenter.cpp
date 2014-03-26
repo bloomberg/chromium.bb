@@ -7,6 +7,7 @@
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
+#include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -114,6 +115,11 @@ void MockWebMediaStreamCenter::didCreateMediaStream(WebMediaStream& stream)
         }
     }
     m_interfaces->delegate()->postTask(new NewTrackTask(this, stream));
+}
+
+blink::WebAudioSourceProvider* MockWebMediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(const blink::WebMediaStreamTrack& track)
+{
+    return NULL;
 }
 
 }
