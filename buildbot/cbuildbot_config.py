@@ -2161,7 +2161,23 @@ _config.add_group('pineview-release-group',
   config['x86-zgb_he-release'].derive(_grouped_variant_config),
 )
 
-# sandybridge and ivybridge chipset boards
+# sandybridge chipset boards
+_config.add_group('sandybridge-release-group',
+  config['lumpy-release'],
+  config['stumpy-release'].derive(_grouped_config),
+  config['parrot-release'].derive(_grouped_config),
+  config['butterfly-release'].derive(_grouped_config)
+)
+
+# ivybridge chipset boards
+_config.add_group('ivybridge-release-group',
+  config['stout-release'],
+  config['parrot_ivb-release'].derive(_grouped_variant_config),
+)
+
+# sandybridge / ivybridge chipset boards
+# TODO(davidjames): Remove this once we've transitioned to separate builders for
+# sandybridge / ivybridge.
 _config.add_group('sandybridge-ivybridge-release-group',
   config['lumpy-release'],
   config['stumpy-release'].derive(_grouped_config),
