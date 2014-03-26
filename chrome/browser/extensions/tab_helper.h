@@ -191,7 +191,8 @@ class TabHelper : public content::WebContentsObserver,
   void OnInlineWebstoreInstall(int install_id,
                                int return_route_id,
                                const std::string& webstore_item_id,
-                               const GURL& requestor_url);
+                               const GURL& requestor_url,
+                               int listeners_mask);
   void OnGetAppInstallState(const GURL& requestor_url,
                             int return_route_id,
                             int callback_id);

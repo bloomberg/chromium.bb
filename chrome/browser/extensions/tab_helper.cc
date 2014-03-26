@@ -12,7 +12,9 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
+#include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -362,11 +364,27 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
 #endif
 }
 
-void TabHelper::OnInlineWebstoreInstall(
-    int install_id,
-    int return_route_id,
-    const std::string& webstore_item_id,
-    const GURL& requestor_url) {
+void TabHelper::OnInlineWebstoreInstall(int install_id,
+                                        int return_route_id,
+                                        const std::string& webstore_item_id,
+                                        const GURL& requestor_url,
+                                        int listeners_mask) {
+#if defined(ENABLE_EXTENSIONS)
+  // Check that the listener is reasonable. We should never get anything other
+  // than an install stage listener, a download listener, or both.
+  if ((listeners_mask & ~(api::webstore::INSTALL_STAGE_LISTENER |
+                          api::webstore::DOWNLOAD_PROGRESS_LISTENER)) != 0) {
+    NOTREACHED();
+    return;
+  }
+  // Inform the Webstore API that an inline install is happening, in case the
+  // page requested status updates.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  WebstoreAPI::Get(profile)->OnInlineInstallStart(
+      return_route_id, this, webstore_item_id, listeners_mask);
+#endif
+
   WebstoreStandaloneInstaller::Callback callback =
       base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
                  install_id, return_route_id);

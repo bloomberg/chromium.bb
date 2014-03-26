@@ -590,6 +590,8 @@
         'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',
         'browser/extensions/api/webstore_private/webstore_private_api.h',
+        'browser/extensions/api/webstore/webstore_api.cc',
+        'browser/extensions/api/webstore/webstore_api.h',
         'browser/extensions/api/webview/webview_api.cc',
         'browser/extensions/api/webview/webview_api.h',
         'browser/extensions/app_icon_loader.h',

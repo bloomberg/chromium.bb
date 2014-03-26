@@ -5,11 +5,12 @@
 #include "chrome/renderer/extensions/webstore_bindings.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -32,12 +33,6 @@ namespace {
 
 const char kWebstoreLinkRelation[] = "chrome-webstore-item";
 
-const char kPreferredStoreLinkUrlNotAString[] =
-    "The Chrome Web Store item link URL parameter must be a string.";
-const char kSuccessCallbackNotAFunctionError[] =
-    "The success callback parameter must be a function.";
-const char kFailureCallbackNotAFunctionError[] =
-    "The failure callback parameter must be a function.";
 const char kNotInTopFrameError[] =
     "Chrome Web Store installations can only be started by the top frame.";
 const char kNotUserGestureError[] =
@@ -64,28 +59,30 @@ WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
 
 void WebstoreBindings::Install(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  WebFrame* frame = WebFrame::frameForContext(context()->v8_context());
-  if (!frame || !frame->view())
-    return;
-
-  content::RenderView* render_view =
-      content::RenderView::FromWebView(frame->view());
+  content::RenderView* render_view = GetRenderView();
   if (!render_view)
     return;
 
+  // The first two arguments indicate whether or not there are install stage
+  // or download progress listeners.
+  int listener_mask = 0;
+  CHECK(args[0]->IsBoolean());
+  if (args[0]->BooleanValue())
+    listener_mask |= api::webstore::INSTALL_STAGE_LISTENER;
+  CHECK(args[1]->IsBoolean());
+  if (args[1]->BooleanValue())
+    listener_mask |= api::webstore::DOWNLOAD_PROGRESS_LISTENER;
+
   std::string preferred_store_link_url;
-  if (!args[0]->IsUndefined()) {
-    if (args[0]->IsString()) {
-      preferred_store_link_url = std::string(*v8::String::Utf8Value(args[0]));
-    } else {
-      args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
-          args.GetIsolate(), kPreferredStoreLinkUrlNotAString));
-      return;
-    }
+  if (!args[2]->IsUndefined()) {
+    CHECK(args[2]->IsString());
+    preferred_store_link_url = std::string(*v8::String::Utf8Value(args[2]));
   }
 
   std::string webstore_item_id;
   std::string error;
+  WebFrame* frame = context()->web_frame();
+
   if (!GetWebstoreItemIdFromFrame(
       frame, preferred_store_link_url, &webstore_item_id, &error)) {
     args.GetIsolate()->ThrowException(
@@ -94,24 +91,13 @@ void WebstoreBindings::Install(
   }
 
   int install_id = g_next_install_id++;
-  if (!args[1]->IsUndefined() && !args[1]->IsFunction()) {
-    args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
-        args.GetIsolate(), kSuccessCallbackNotAFunctionError));
-    return;
-  }
 
-  if (!args[2]->IsUndefined() && !args[2]->IsFunction()) {
-    args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
-        args.GetIsolate(), kFailureCallbackNotAFunctionError));
-    return;
-  }
-
-  Send(new ExtensionHostMsg_InlineWebstoreInstall(
-      render_view->GetRoutingID(),
-      install_id,
-      GetRoutingID(),
-      webstore_item_id,
-      frame->document().url()));
+  Send(new ExtensionHostMsg_InlineWebstoreInstall(render_view->GetRoutingID(),
+                                                  install_id,
+                                                  GetRoutingID(),
+                                                  webstore_item_id,
+                                                  frame->document().url(),
+                                                  listener_mask));
 
   args.GetReturnValue().Set(static_cast<int32_t>(install_id));
 }
@@ -207,6 +193,10 @@ bool WebstoreBindings::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebstoreBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_InlineWebstoreInstallResponse,
                         OnInlineWebstoreInstallResponse)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_InlineInstallStageChanged,
+                        OnInlineInstallStageChanged)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_InlineInstallDownloadProgress,
+                        OnInlineInstallDownloadProgress)
     IPC_MESSAGE_UNHANDLED(CHECK(false) << "Unhandled IPC message")
   IPC_END_MESSAGE_MAP()
   return true;
@@ -226,6 +216,37 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
   };
   context()->module_system()->CallModuleMethod(
       "webstore", "onInstallResponse", arraysize(argv), argv);
+}
+
+void WebstoreBindings::OnInlineInstallStageChanged(int stage) {
+  const char* stage_string = NULL;
+  api::webstore::InstallStage install_stage =
+      static_cast<api::webstore::InstallStage>(stage);
+  switch (install_stage) {
+    case api::webstore::INSTALL_STAGE_DOWNLOADING:
+      stage_string = api::webstore::kInstallStageDownloading;
+      break;
+    case api::webstore::INSTALL_STAGE_INSTALLING:
+      stage_string = api::webstore::kInstallStageInstalling;
+      break;
+  }
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+  v8::Handle<v8::Value> argv[] = {
+      v8::String::NewFromUtf8(isolate, stage_string)};
+  context()->module_system()->CallModuleMethod(
+      "webstore", "onInstallStageChanged", arraysize(argv), argv);
+}
+
+void WebstoreBindings::OnInlineInstallDownloadProgress(int percent_downloaded) {
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+  v8::Handle<v8::Value> argv[] = {
+      v8::Number::New(isolate, percent_downloaded / 100.0)};
+  context()->module_system()->CallModuleMethod(
+      "webstore", "onDownloadProgress", arraysize(argv), argv);
 }
 
 }  // namespace extensions

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -224,6 +225,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   // Starts downloading the extension to |file_path|.
   void StartDownload(const base::FilePath& file_path);
 
+  // Updates the InstallTracker with the latest download progress.
+  void UpdateDownloadProgress();
+
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.
   void ReportFailure(const std::string& error, FailureReason reason);
@@ -244,6 +248,10 @@ class WebstoreInstaller : public content::NotificationObserver,
   // The DownloadItem is owned by the DownloadManager and is valid from when
   // OnDownloadStarted is called (with no error) until OnDownloadDestroyed().
   content::DownloadItem* download_item_;
+  // Used to periodically update the extension's download status. This will
+  // trigger at least every second, though sometimes more frequently (depending
+  // on number of modules, etc).
+  base::OneShotTimer<WebstoreInstaller> download_progress_timer_;
   scoped_ptr<Approval> approval_;
   GURL download_url_;
 

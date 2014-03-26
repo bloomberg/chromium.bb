@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -83,6 +84,8 @@ const char kDependencyNotSharedModuleError[] =
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "ondemand";
 const char kAppLauncherInstallSource[] = "applauncher";
+
+const size_t kTimeRemainingMinutesThreshold = 1u;
 
 // Folder for downloading crx files from the webstore. This is used so that the
 // crx files don't go via the usual downloads folder.
@@ -303,10 +306,6 @@ void WebstoreInstaller::Start() {
   }
   ExtensionSystem::Get(profile_)->install_verifier()->AddProvisional(ids);
 
-  // TODO(crbug.com/305343): Query manifest of dependencises before
-  // downloading & installing those dependencies.
-  DownloadNextPendingModule();
-
   std::string name;
   if (!approval_->manifest->value()->GetString(manifest_keys::kName, &name)) {
     NOTREACHED();
@@ -321,6 +320,12 @@ void WebstoreInstaller::Start() {
       approval_->manifest->is_platform_app());
   params.is_ephemeral = approval_->is_ephemeral;
   tracker->OnBeginExtensionInstall(params);
+
+  tracker->OnBeginExtensionDownload(id_);
+
+  // TODO(crbug.com/305343): Query manifest of dependencies before
+  // downloading & installing those dependencies.
+  DownloadNextPendingModule();
 }
 
 void WebstoreInstaller::Observe(int type,
@@ -473,21 +478,15 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
             extensions::InstallTrackerFactory::GetForProfile(profile_);
         tracker->OnDownloadProgress(id_, 100);
       }
+      // Stop the progress timer if it's running.
+      download_progress_timer_.Stop();
       break;
     case DownloadItem::IN_PROGRESS: {
       if (delegate_ && pending_modules_.size() == 1) {
         // Only report download progress for the main module to |delegrate_|.
         delegate_->OnExtensionDownloadProgress(id_, download);
       }
-      int percent = download->PercentComplete();
-      // Only report progress if precent is more than 0
-      if (percent >= 0) {
-        int finished_modules = total_modules_ - pending_modules_.size();
-        percent = (percent + finished_modules * 100) / total_modules_;
-        extensions::InstallTracker* tracker =
-          extensions::InstallTrackerFactory::GetForProfile(profile_);
-        tracker->OnDownloadProgress(id_, percent);
-      }
+      UpdateDownloadProgress();
       break;
     }
     default:
@@ -612,6 +611,42 @@ void WebstoreInstaller::StartDownload(const base::FilePath& file) {
                           blink::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   download_manager->DownloadUrl(params.Pass());
+}
+
+void WebstoreInstaller::UpdateDownloadProgress() {
+  // If the download has gone away, or isn't in progress (in which case we can't
+  // give a good progress estimate), stop any running timers and return.
+  if (!download_item_ ||
+      download_item_->GetState() != DownloadItem::IN_PROGRESS) {
+    download_progress_timer_.Stop();
+    return;
+  }
+
+  int percent = download_item_->PercentComplete();
+  // Only report progress if precent is more than 0
+  if (percent >= 0) {
+    int finished_modules = total_modules_ - pending_modules_.size();
+    percent = (percent + (finished_modules * 100)) / total_modules_;
+    extensions::InstallTracker* tracker =
+        extensions::InstallTrackerFactory::GetForProfile(profile_);
+    tracker->OnDownloadProgress(id_, percent);
+  }
+
+  // If there's enough time remaining on the download to warrant an update,
+  // set the timer (overwriting any current timers). Otherwise, stop the
+  // timer.
+  base::TimeDelta time_remaining;
+  if (download_item_->TimeRemaining(&time_remaining) &&
+      time_remaining >
+          base::TimeDelta::FromSeconds(kTimeRemainingMinutesThreshold)) {
+    download_progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kTimeRemainingMinutesThreshold),
+        this,
+        &WebstoreInstaller::UpdateDownloadProgress);
+  } else {
+    download_progress_timer_.Stop();
+  }
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error,

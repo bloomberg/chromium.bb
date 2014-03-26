@@ -30,8 +30,10 @@ class InstallTracker : public KeyedService,
 
   void OnBeginExtensionInstall(
       const InstallObserver::ExtensionInstallParams& params);
+  void OnBeginExtensionDownload(const std::string& extension_id);
   void OnDownloadProgress(const std::string& extension_id,
                           int percent_downloaded);
+  void OnBeginCrxInstall(const std::string& extension_id);
   void OnInstallFailure(const std::string& extension_id);
 
   // Overriddes for KeyedService:

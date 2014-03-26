@@ -5,15 +5,38 @@
 // Custom binding for the webstore API.
 
 var webstoreNatives = requireNative('webstore');
+var Event = require('event_bindings').Event;
 
 function Installer() {
   this._pendingInstall = null;
+  this.onInstallStageChanged =
+      new Event(null, [{name: 'stage', type: 'string'}], {unmanaged: true});
+  this.onDownloadProgress =
+      new Event(null, [{name: 'progress', type: 'number'}], {unmanaged: true});
 }
 
 Installer.prototype.install = function(url, onSuccess, onFailure) {
   if (this._pendingInstall)
-    throw 'A Chrome Web Store installation is already pending.';
-  var installId = webstoreNatives.Install(url, onSuccess, onFailure);
+    throw new Error('A Chrome Web Store installation is already pending.');
+  if (url !== undefined && typeof(url) !== 'string') {
+    throw new Error(
+        'The Chrome Web Store item link URL parameter must be a string.');
+  }
+  if (onSuccess !== undefined && typeof(onSuccess) !== 'function')
+    throw new Error('The success callback parameter must be a function.');
+  if (onFailure !== undefined && typeof(onFailure) !== 'function')
+    throw new Error('The failure callback parameter must be a function.');
+
+  // Since we call Install() with a bool for if we have listeners, listeners
+  // must be set prior to the inline installation starting (this is also
+  // noted in the Event documentation in
+  // chrome/common/extensions/api/webstore.json).
+  var installId = webstoreNatives.Install(
+      this.onInstallStageChanged.hasListeners(),
+      this.onDownloadProgress.hasListeners(),
+      url,
+      onSuccess,
+      onFailure);
   if (installId !== undefined) {
     this._pendingInstall = {
       installId: installId,
@@ -43,20 +66,32 @@ Installer.prototype.onInstallResponse = function(installId, success, error) {
   }
 };
 
+Installer.prototype.onInstallStageChanged = function(installStage) {
+  this.onInstallStageChanged.dispatch(installStage);
+};
+
+Installer.prototype.onDownloadProgress = function(progress) {
+  this.onDownloadProgress.dispatch(progress);
+};
+
 var installer = new Installer();
 
 var chromeWebstore = {
-  install: function install(url, onSuccess, onFailure) {
+  install: function (url, onSuccess, onFailure) {
     installer.install(url, onSuccess, onFailure);
-  }
+  },
+  onInstallStageChanged: installer.onInstallStageChanged,
+  onDownloadProgress: installer.onDownloadProgress
 };
 
-// Called by webstore_binding.cc.
-function onInstallResponse(installId, success, error) {
-  installer.onInstallResponse(installId, success, error);
-}
-
-// These must match the names in InstallWebstorebinding in
+// This must match the name in InstallWebstoreBindings in
 // chrome/renderer/extensions/dispatcher.cc.
 exports.chromeWebstore = chromeWebstore;
-exports.onInstallResponse = onInstallResponse;
+
+// Called by webstore_bindings.cc.
+exports.onInstallResponse =
+    Installer.prototype.onInstallResponse.bind(installer);
+exports.onInstallStageChanged =
+    Installer.prototype.onInstallStageChanged.bind(installer);
+exports.onDownloadProgress =
+    Installer.prototype.onDownloadProgress.bind(installer);

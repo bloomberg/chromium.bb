@@ -161,6 +161,8 @@
         'common/extensions/api/system_indicator/system_indicator_handler.h',
         'common/extensions/api/url_handlers/url_handlers_parser.cc',
         'common/extensions/api/url_handlers/url_handlers_parser.h',
+        'common/extensions/api/webstore/webstore_api_constants.cc',
+        'common/extensions/api/webstore/webstore_api_constants.h',
         'common/extensions/chrome_extension_messages.h',
         'common/extensions/chrome_extensions_client.cc',
         'common/extensions/chrome_extensions_client.h',

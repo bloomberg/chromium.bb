@@ -56,10 +56,20 @@ void InstallTracker::OnBeginExtensionInstall(
                     OnBeginExtensionInstall(params));
 }
 
+void InstallTracker::OnBeginExtensionDownload(const std::string& extension_id) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnBeginExtensionDownload(extension_id));
+}
+
 void InstallTracker::OnDownloadProgress(const std::string& extension_id,
                                         int percent_downloaded) {
   FOR_EACH_OBSERVER(InstallObserver, observers_,
                     OnDownloadProgress(extension_id, percent_downloaded));
+}
+
+void InstallTracker::OnBeginCrxInstall(const std::string& extension_id) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnBeginCrxInstall(extension_id));
 }
 
 void InstallTracker::OnInstallFailure(

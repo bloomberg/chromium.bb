@@ -30,6 +30,10 @@ class WebstoreBindings : public ChromeV8Extension,
   void OnInlineWebstoreInstallResponse(
       int install_id, bool success, const std::string& error);
 
+  void OnInlineInstallStageChanged(int stage);
+
+  void OnInlineInstallDownloadProgress(int percent_downloaded);
+
   // Extracts a Web Store item ID from a <link rel="chrome-webstore-item"
   // href="https://chrome.google.com/webstore/detail/id"> node found in the
   // frame. On success, true will be returned and the |webstore_item_id|

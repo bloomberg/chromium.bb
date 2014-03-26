@@ -6,6 +6,40 @@
   {
     "namespace": "webstore",
     "description": "Use the <code>chrome.webstore</code> API to initiate app and extension installations \"inline\" from your site.",
+    "types": [
+      {
+        "id": "InstallStage",
+        "type": "string",
+        "enum": ["installing", "downloading"],
+        "description": "Enum used to indicate the stage of the installation process. 'downloading' indicates that the necessary files are being downloaded, and 'installing' indicates that the files are downloaded and are being actively installed."
+      }
+    ],  // types
+    "events": [
+      {
+        "name": "onInstallStageChanged",
+        "description": "Fired when an inline installation enters a new InstallStage. In order to receive notifications about this event, listeners must be registered before the inline installation begins.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "stage",
+            "$ref": "InstallStage",
+            "description": "The InstallStage that just began."
+          }
+        ]
+      },  // onInstallStageChanged
+      {
+        "name": "onDownloadProgress",
+        "description": "Fired periodically with the download progress of an inline install. In order to receive notifications about this event, listeners must be registered before the inline installation begins.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "percentDownloaded",
+            "type": "number",
+            "description": "The progress of the download, between 0 and 1. 0 indicates no progress; 1.0 indicates complete."
+          }
+        ]
+      }  // onDownloadProgress
+    ],  // events
     "functions": [
       {
         "name": "install",
@@ -39,6 +73,6 @@
           }
         ]
       }  // install
-    ]
+    ]  // functions
   }  // webstore
 ]

@@ -167,4 +167,33 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   ASSERT_TRUE(extension_service->IsExtensionEnabled(kTestExtensionId));
 }
 
+class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {
+ public:
+  WebstoreInlineInstallerListenerTest() {}
+  virtual ~WebstoreInlineInstallerListenerTest() {}
+
+ protected:
+  void RunTest(const std::string& file_name) {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+    ui_test_utils::NavigateToURL(browser(),
+                                 GenerateTestServerUrl(kAppDomain, file_name));
+    WebstoreInstallerTest::RunTest("runTest");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest,
+                       InstallStageListenerTest) {
+  RunTest("install_stage_listener.html");
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest,
+                       DownloadProgressListenerTest) {
+  RunTest("download_progress_listener.html");
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest, BothListenersTest) {
+  RunTest("both_listeners.html");
+}
+
 }  // namespace extensions

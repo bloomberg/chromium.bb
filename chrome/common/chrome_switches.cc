@@ -84,6 +84,12 @@ const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
 // confirmation dialog. A value of 'accept' means to always act as if the dialog
 // was accepted, and 'cancel' means to always act as if the dialog was
 // cancelled.
+//
+// TODO (rdevlin.cronin): Remove this.
+// This is not a good use of a command-line flag, as it would be equally
+// effective as a global boolean. Additionally, this opens up a dangerous way
+// for attackers to append a commandline flag and circumvent all user action for
+// installing an extension.
 const char kAppsGalleryInstallAutoConfirmForTests[] =
     "apps-gallery-install-auto-confirm-for-tests";
 

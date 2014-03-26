@@ -28,6 +28,8 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -175,6 +177,9 @@ void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
+
+  InstallTrackerFactory::GetForProfile(profile())
+      ->OnBeginCrxInstall(expected_id_);
 
   source_file_ = source_file;
 
