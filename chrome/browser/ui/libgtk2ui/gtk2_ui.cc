@@ -77,6 +77,9 @@ const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
 
+// The unknown content type.
+const char* kUnknownContentType = "application/octet-stream";
+
 // The size of the rendered toolbar image.
 const int kToolbarImageWidth = 64;
 const int kToolbarImageHeight = 128;
@@ -498,23 +501,30 @@ gfx::Image Gtk2UI::GetIconForContentType(
   // This call doesn't take a reference.
   GtkIconTheme* theme = gtk_icon_theme_get_default();
 
-  ScopedGIcon icon(g_content_type_get_icon(content_type.c_str()));
-  ScopedGtkIconInfo icon_info(
-      gtk_icon_theme_lookup_by_gicon(
-          theme, icon.get(), size,
-          static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
-  if (!icon_info)
-    return gfx::Image();
-  ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), NULL));
-  if (!pixbuf)
-    return gfx::Image();
+  std::string content_types[] = {
+    content_type, kUnknownContentType
+  };
 
-  SkBitmap bitmap = GdkPixbufToImageSkia(pixbuf.get());
-  DCHECK_EQ(size, bitmap.width());
-  DCHECK_EQ(size, bitmap.height());
-  gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  image_skia.MakeThreadSafe();
-  return gfx::Image(image_skia);
+  for (size_t i = 0; i < arraysize(content_types); ++i) {
+    ScopedGIcon icon(g_content_type_get_icon(content_types[i].c_str()));
+    ScopedGtkIconInfo icon_info(
+        gtk_icon_theme_lookup_by_gicon(
+            theme, icon.get(), size,
+            static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
+    if (!icon_info)
+      continue;
+    ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), NULL));
+    if (!pixbuf)
+      continue;
+
+    SkBitmap bitmap = GdkPixbufToImageSkia(pixbuf.get());
+    DCHECK_EQ(size, bitmap.width());
+    DCHECK_EQ(size, bitmap.height());
+    gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    image_skia.MakeThreadSafe();
+    return gfx::Image(image_skia);
+  }
+  return gfx::Image();
 }
 
 scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(

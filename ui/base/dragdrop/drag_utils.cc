@@ -41,8 +41,10 @@ class FileDragImageSource : public gfx::CanvasImageSource {
 
   // Overridden from gfx::CanvasImageSource.
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
-    // Paint the icon.
-    canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);
+    if (!icon_.isNull()) {
+      // Paint the icon.
+      canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);
+    }
 
     base::string16 name = file_name_.BaseName().LossyDisplayName();
     const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;
@@ -81,11 +83,10 @@ class FileDragImageSource : public gfx::CanvasImageSource {
 }  // namespace
 
 void CreateDragImageForFile(const base::FilePath& file_name,
-                            const gfx::ImageSkia* icon,
+                            const gfx::ImageSkia& icon,
                             ui::OSExchangeData* data_object) {
-  DCHECK(icon);
   DCHECK(data_object);
-  gfx::CanvasImageSource* source = new FileDragImageSource(file_name, *icon);
+  gfx::CanvasImageSource* source = new FileDragImageSource(file_name, icon);
   gfx::Size size = source->size();
   // ImageSkia takes ownership of |source|.
   gfx::ImageSkia image = gfx::ImageSkia(source, size);

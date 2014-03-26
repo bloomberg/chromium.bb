@@ -421,11 +421,9 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
       IconManager* im = g_browser_process->icon_manager();
       gfx::Image* icon = im->LookupIconFromFilepath(
           download()->GetTargetFilePath(), IconLoader::SMALL);
-      if (icon) {
-        views::Widget* widget = GetWidget();
-        DragDownloadItem(
-            download(), icon, widget ? widget->GetNativeView() : NULL);
-      }
+      views::Widget* widget = GetWidget();
+      DragDownloadItem(
+          download(), icon, widget ? widget->GetNativeView() : NULL);
     }
   } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {
     dragging_ = true;

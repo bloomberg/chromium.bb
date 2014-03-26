@@ -28,10 +28,10 @@ namespace drag_utils {
 
 // Creates a dragging image to be displayed when the user drags a file from
 // Chrome (via the download manager, for example). The drag image is set into
-// the supplied data_object. 'file_name' can be a full path, but the directory
-// portion will be truncated in the drag image.
+// the supplied data_object. |file_name| can be a full path, but the directory
+// portion will be truncated in the drag image. |icon| can be empty.
 UI_BASE_EXPORT void CreateDragImageForFile(const base::FilePath& file_name,
-                                           const gfx::ImageSkia* icon,
+                                           const gfx::ImageSkia& icon,
                                            ui::OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied canvas. width/height

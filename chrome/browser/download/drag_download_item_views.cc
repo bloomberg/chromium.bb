@@ -14,6 +14,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -38,10 +39,10 @@ void DragDownloadItem(const content::DownloadItem* download,
   // Set up our OLE machinery
   ui::OSExchangeData data;
 
-  if (icon) {
-    drag_utils::CreateDragImageForFile(
-        download->GetFileNameToReportUser(), icon->ToImageSkia(), &data);
-  }
+  drag_utils::CreateDragImageForFile(
+      download->GetFileNameToReportUser(),
+      icon ? icon->AsImageSkia() : gfx::ImageSkia(),
+      &data);
 
   base::FilePath full_path = download->GetTargetFilePath();
 #if defined(OS_CHROMEOS)
