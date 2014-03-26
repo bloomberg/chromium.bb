@@ -232,7 +232,23 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
             // Scale the CTM so the primitive is drawn to filterRes.
             context->scale(filterResScale);
             // Create a resize filter with the inverse scale.
-            imageFilter = builder.buildResize(1 / filterResScale.width(), 1 / filterResScale.height(), imageFilter.get());
+            AffineTransform resizeMatrix;
+            resizeMatrix.scale(1 / filterResScale.width(), 1 / filterResScale.height());
+            imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
+        }
+        // If the CTM contains rotation or shearing, apply the filter to
+        // the unsheared/unrotated matrix, and do the shearing/rotation
+        // as a final pass.
+        AffineTransform ctm = context->getCTM();
+        if (ctm.b() || ctm.c()) {
+            AffineTransform scaleAndTranslate;
+            scaleAndTranslate.translate(ctm.e(), ctm.f());
+            scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
+            ASSERT(scaleAndTranslate.isInvertible());
+            AffineTransform shearAndRotate = scaleAndTranslate.inverse();
+            shearAndRotate.multiply(ctm);
+            context->setCTM(scaleAndTranslate);
+            imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
         }
         context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
         return true;

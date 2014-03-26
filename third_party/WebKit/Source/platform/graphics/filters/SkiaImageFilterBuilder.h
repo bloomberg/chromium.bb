@@ -35,6 +35,7 @@
 class SkImageFilter;
 
 namespace WebCore {
+class AffineTransform;
 class FilterEffect;
 class FilterOperations;
 class GraphicsContext;
@@ -47,7 +48,7 @@ public:
 
     PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace);
     bool buildFilterOperations(const FilterOperations&, blink::WebFilterOperations*);
-    PassRefPtr<SkImageFilter> buildResize(float scaleX, float scaleY, SkImageFilter* input);
+    PassRefPtr<SkImageFilter> buildTransform(const AffineTransform&, SkImageFilter* input);
 
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
