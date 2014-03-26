@@ -1518,9 +1518,9 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
             fullRepaint = true;
     }
 
-    // If there is no intersection between the old and the new bounds, invalidating
-    // the difference is more expensive than just doing a full repaint.
-    if (!fullRepaint && !newBounds.intersects(oldBounds))
+    // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
+    // be caused by some layout property (left / top) or some in-flow renderer inserted / removed before us in the tree.
+    if (!fullRepaint && newBounds.location() != oldBounds.location())
         fullRepaint = true;
 
     if (!repaintContainer)
