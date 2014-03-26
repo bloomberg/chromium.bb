@@ -4,9 +4,13 @@
 
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 
+#include "base/command_line.h"
+#include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace chromeos {
 
@@ -14,7 +18,8 @@ ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
                          ErrorScreenActor* actor)
     : WizardScreen(screen_observer),
       actor_(actor),
-      parent_screen_(OobeDisplay::SCREEN_UNKNOWN) {
+      parent_screen_(OobeDisplay::SCREEN_UNKNOWN),
+      weak_factory_(this) {
   DCHECK(actor_);
   actor_->SetDelegate(this);
   AddObserver(NetworkPortalDetector::Get());
@@ -60,6 +65,53 @@ void ErrorScreen::OnErrorHide() {
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorScreenHide());
 }
 
+void ErrorScreen::OnLaunchOobeGuestSession() {
+  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+      base::Bind(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ErrorScreen::OnLoginFailure(const LoginFailure& error) {
+  // The only condition leading here is guest mount failure, which should not
+  // happen in practice. For now, just log an error so this situation is visible
+  // in logs if it ever occurs.
+  NOTREACHED() << "Guest login failed.";
+  guest_login_performer_.reset();
+}
+
+void ErrorScreen::OnLoginSuccess(const UserContext& user_context) {
+  LOG(FATAL);
+}
+
+void ErrorScreen::OnOffTheRecordLoginSuccess() {
+  // Restart Chrome to enter the guest session.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine command_line(browser_command_line.GetProgram());
+  std::string cmd_line_str =
+      GetOffTheRecordCommandLine(GURL(),
+                                 StartupUtils::IsOobeCompleted(),
+                                 browser_command_line,
+                                 &command_line);
+
+  RestartChrome(cmd_line_str);
+}
+
+void ErrorScreen::OnPasswordChangeDetected() {
+  LOG(FATAL);
+}
+
+void ErrorScreen::WhiteListCheckFailed(const std::string& email) {
+  LOG(FATAL);
+}
+
+void ErrorScreen::PolicyLoadFailed() {
+  LOG(FATAL);
+}
+
+void ErrorScreen::OnOnlineChecked(const std::string& username, bool success) {
+  LOG(FATAL);
+}
+
 void ErrorScreen::FixCaptivePortal() {
   DCHECK(actor_);
   actor_->FixCaptivePortal();
@@ -91,9 +143,49 @@ void ErrorScreen::SetErrorState(ErrorState error_state,
   actor_->SetErrorState(error_state, network);
 }
 
+void ErrorScreen::AllowGuestSignin(bool allow) {
+  DCHECK(actor_);
+  actor_->AllowGuestSignin(allow);
+}
+
 void ErrorScreen::ShowConnectingIndicator(bool show) {
   DCHECK(actor_);
   actor_->ShowConnectingIndicator(show);
+}
+
+void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
+    DeviceSettingsService::OwnershipStatus ownership_status) {
+
+  // Make sure to disallow guest login if it's explicitly disabled.
+  CrosSettingsProvider::TrustedStatus trust_status =
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
+                     weak_factory_.GetWeakPtr(),
+                     ownership_status));
+  switch (trust_status) {
+    case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
+      // Wait for a callback.
+      return;
+    case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
+      // Only allow guest sessions if there is no owner yet.
+      if (ownership_status == DeviceSettingsService::OWNERSHIP_NONE)
+        break;
+      return;
+    case CrosSettingsProvider::TRUSTED: {
+      // Honor kAccountsPrefAllowGuest.
+      bool allow_guest = false;
+      CrosSettings::Get()->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+      if (allow_guest)
+        break;
+      return;
+    }
+  }
+
+  if (guest_login_performer_)
+    return;
+
+  guest_login_performer_.reset(new LoginPerformer(this));
+  guest_login_performer_->LoginOffTheRecord();
 }
 
 }  // namespace chromeos

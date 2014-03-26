@@ -135,9 +135,15 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
           'guestSignin',
           '<a id="error-guest-signin-link" class="signin-link" href="#">',
           '</a>');
-      $('error-guest-signin-link').onclick = function() {
-        chrome.send('launchIncognito');
-      };
+      $('error-guest-signin-link').onclick = this.launchGuestSession_;
+
+      $('error-guest-signin-fix-network').innerHTML = loadTimeData.getStringF(
+          'guestSigninFixNetwork',
+          '<a id="error-guest-fix-network-signin-link" class="signin-link" ' +
+              'href="#">',
+          '</a>');
+      $('error-guest-fix-network-signin-link').onclick =
+          this.launchGuestSession_;
 
       $('error-offline-login').innerHTML = loadTimeData.getStringF(
           'offlineLogin',
@@ -281,6 +287,15 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     onContentChange_: function() {
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
+    },
+
+    /**
+     * Event handler for guest session launch.
+     * @private
+     */
+    launchGuestSession_: function() {
+      chrome.send(Oobe.getInstance().isOobeUI() ?
+          'launchOobeGuestSession' : 'launchIncognito');
     },
 
     /**

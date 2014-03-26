@@ -58,6 +58,7 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void HandleRebootButtonClicked();
   void HandleDiagnoseButtonClicked();
   void HandleConfigureCerts();
+  void HandleLaunchOobeGuestSession();
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

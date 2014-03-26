@@ -4795,6 +4795,9 @@ Battery full
   <message name="IDS_LOGIN_CONFIRM_KIOSK_DIAGNOSTIC_FORMAT" desc="Text to be shown on a dialog to confirm launching kiosk app in diagnostic mode.">
     Are you sure you want to launch "<ph name="APP_NAME">$1<ex>Kiosk App</ex></ph>" in diagnostic mode?
   </message>
+  <message name="IDS_LOGIN_GUEST_SIGNIN_FIX_NETWORK">
+    You may also try to <ph name="GUEST_SIGNIN_LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as guest<ph name="GUEST_SIGNIN_LINK_END">$2<ex>&gt;/a&lt;</ex></ph> to fix this network error.
+  </message>
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>

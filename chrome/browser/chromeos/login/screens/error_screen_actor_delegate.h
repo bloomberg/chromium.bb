@@ -12,6 +12,7 @@ class ErrorScreenActorDelegate {
   virtual ~ErrorScreenActorDelegate() {}
   virtual void OnErrorShow() = 0;
   virtual void OnErrorHide() = 0;
+  virtual void OnLaunchOobeGuestSession() = 0;
 };
 
 }  // namespace chromeos

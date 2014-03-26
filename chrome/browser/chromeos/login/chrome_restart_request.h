@@ -19,6 +19,7 @@ namespace chromeos {
 // the given command line.
 std::string GetOffTheRecordCommandLine(
     const GURL& start_url,
+    bool is_oobe_completed,
     const base::CommandLine& base_command_line,
     base::CommandLine* command_line);
 

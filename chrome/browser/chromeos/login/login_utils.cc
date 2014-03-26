@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -712,9 +713,11 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   // flag. We keep only some of the arguments of this process.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine command_line(browser_command_line.GetProgram());
-  std::string cmd_line_str = GetOffTheRecordCommandLine(start_url,
-                                                        browser_command_line,
-                                                        &command_line);
+  std::string cmd_line_str =
+      GetOffTheRecordCommandLine(start_url,
+                                 StartupUtils::IsOobeCompleted(),
+                                 browser_command_line,
+                                 &command_line);
 
   RestartChrome(cmd_line_str);
 }

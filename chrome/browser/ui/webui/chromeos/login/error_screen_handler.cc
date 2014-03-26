@@ -195,6 +195,11 @@ void ErrorScreenHandler::HandleConfigureCerts() {
   dialog->Show();
 }
 
+void ErrorScreenHandler::HandleLaunchOobeGuestSession() {
+  if (delegate_)
+    delegate_->OnLaunchOobeGuestSession();
+}
+
 void ErrorScreenHandler::RegisterMessages() {
   AddCallback("showCaptivePortal",
               &ErrorScreenHandler::HandleShowCaptivePortal);
@@ -208,6 +213,8 @@ void ErrorScreenHandler::RegisterMessages() {
               &ErrorScreenHandler::HandleDiagnoseButtonClicked);
   AddCallback("configureCertsClicked",
               &ErrorScreenHandler::HandleConfigureCerts);
+  AddCallback("launchOobeGuestSession",
+              &ErrorScreenHandler::HandleLaunchOobeGuestSession);
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
@@ -232,6 +239,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("localStateErrorPowerwashButton",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
   builder->Add("connectingIndicatorText", IDS_LOGIN_CONNECTING_INDICATOR_TEXT);
+  builder->Add("guestSigninFixNetwork", IDS_LOGIN_GUEST_SIGNIN_FIX_NETWORK);
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
   builder->Add("diagnoseButton", IDS_DIAGNOSE_BUTTON);
   builder->Add("configureCertsButton", IDS_MANAGE_CERTIFICATES);

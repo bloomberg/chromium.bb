@@ -160,6 +160,7 @@ void AutoEnrollmentCheckStep::ShowErrorScreen(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   ErrorScreen* error_screen = screen_observer_->GetErrorScreen();
   error_screen->SetUIState(ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR);
+  error_screen->AllowGuestSignin(true);
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());
   screen_observer_->ShowErrorScreen();

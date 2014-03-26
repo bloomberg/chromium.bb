@@ -157,6 +157,7 @@ class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
     command_line_copy.AppendSwitchASCII(
         chromeos::switches::kLoginProfile, "user");
     chromeos::GetOffTheRecordCommandLine(GetGoogleURL(),
+                                         true,
                                          command_line_copy,
                                          command_line);
   }
