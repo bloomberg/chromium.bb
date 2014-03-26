@@ -24,7 +24,7 @@ class CommandBufferEngine {
   // Gets the base address and size of a registered shared memory buffer.
   // Parameters:
   //   shm_id: the identifier for the shared memory buffer.
-  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) = 0;
+  virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) = 0;
 
   // Sets the token value.
   virtual void set_token(int32 token) = 0;

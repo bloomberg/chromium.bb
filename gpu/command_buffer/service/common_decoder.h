@@ -132,7 +132,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   }
 
   // Get the actual shared memory buffer.
-  Buffer GetSharedMemoryBuffer(unsigned int shm_id);
+  scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(unsigned int shm_id);
 
  protected:
   // Executes a common command.

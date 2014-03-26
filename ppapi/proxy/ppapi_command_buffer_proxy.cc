@@ -21,13 +21,8 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
 }
 
 PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
-  // Delete all the locally cached shared memory objects, closing the handle
-  // in this process.
-  for (TransferBufferMap::iterator it = transfer_buffers_.begin();
-       it != transfer_buffers_.end(); ++it) {
-    delete it->second.shared_memory;
-    it->second.shared_memory = NULL;
-  }
+  // gpu::Buffers are no longer referenced, allowing shared memory objects to be
+  // deleted, closing the handle in this process.
 }
 
 bool PpapiCommandBufferProxy::Initialize() {
@@ -116,20 +111,21 @@ void PpapiCommandBufferProxy::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-gpu::Buffer PpapiCommandBufferProxy::CreateTransferBuffer(size_t size,
-                                                          int32* id) {
+scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
+    size_t size,
+    int32* id) {
   *id = -1;
 
   if (last_state_.error != gpu::error::kNoError)
-    return gpu::Buffer();
+    return NULL;
 
   if (!Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
             ppapi::API_ID_PPB_GRAPHICS_3D, resource_, size, id))) {
-    return gpu::Buffer();
+    return NULL;
   }
 
   if ((*id) <= 0)
-    return gpu::Buffer();
+    return NULL;
 
   return GetTransferBuffer(*id);
 }
@@ -141,12 +137,10 @@ void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {
   // Remove the transfer buffer from the client side4 cache.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
 
-  if (it != transfer_buffers_.end()) {
-    // Delete the shared memory object, closing the handle in this process.
-    delete it->second.shared_memory;
-
+  // Remove reference to buffer, allowing the shared memory object to be
+  // deleted, closing the handle in the process.
+  if (it != transfer_buffers_.end())
     transfer_buffers_.erase(it);
-  }
 
   Send(new PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer(
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id));
@@ -161,9 +155,10 @@ uint32 PpapiCommandBufferProxy::CreateStreamTexture(uint32 texture_id) {
   return 0;
 }
 
-gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
+scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::GetTransferBuffer(
+    int32 id) {
   if (last_state_.error != gpu::error::kNoError)
-    return gpu::Buffer();
+    return NULL;
 
   // Check local cache to see if there is already a client side shared memory
   // object for this id.
@@ -178,10 +173,10 @@ gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
       ppapi::proxy::SerializedHandle::SHARED_MEMORY);
   if (!Send(new PpapiHostMsg_PPBGraphics3D_GetTransferBuffer(
             ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id, &handle))) {
-    return gpu::Buffer();
+    return NULL;
   }
   if (!handle.is_shmem())
-    return gpu::Buffer();
+    return NULL;
 
   // Cache the transfer buffer shared memory object client side.
   scoped_ptr<base::SharedMemory> shared_memory(
@@ -190,16 +185,13 @@ gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
   // Map the shared memory on demand.
   if (!shared_memory->memory()) {
     if (!shared_memory->Map(handle.size())) {
-      return gpu::Buffer();
+      return NULL;
     }
   }
 
-  gpu::Buffer buffer;
-  buffer.ptr = shared_memory->memory();
-  buffer.size = handle.size();
-  buffer.shared_memory = shared_memory.release();
+  scoped_refptr<gpu::Buffer> buffer =
+      new gpu::Buffer(shared_memory.Pass(), handle.size());
   transfer_buffers_[id] = buffer;
-
   return buffer;
 }
 

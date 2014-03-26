@@ -13,12 +13,14 @@
 
 namespace gpu {
 
-MemoryChunk::MemoryChunk(
-    int32 shm_id, gpu::Buffer shm, CommandBufferHelper* helper)
+MemoryChunk::MemoryChunk(int32 shm_id,
+                         scoped_refptr<gpu::Buffer> shm,
+                         CommandBufferHelper* helper)
     : shm_id_(shm_id),
       shm_(shm),
-      allocator_(shm.size, helper, shm.ptr) {
-}
+      allocator_(shm->size(), helper, shm->memory()) {}
+
+MemoryChunk::~MemoryChunk() {}
 
 MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
                                          size_t unused_memory_reclaim_limit)
@@ -82,7 +84,8 @@ void* MappedMemoryManager::Alloc(
       ((size + chunk_size_multiple_ - 1) / chunk_size_multiple_) *
       chunk_size_multiple_;
   int32 id = -1;
-  gpu::Buffer shm = cmd_buf->CreateTransferBuffer(chunk_size, &id);
+  scoped_refptr<gpu::Buffer> shm =
+      cmd_buf->CreateTransferBuffer(chunk_size, &id);
   if (id  < 0)
     return NULL;
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_);

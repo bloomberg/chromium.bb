@@ -33,9 +33,10 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
-  virtual Buffer CreateTransferBuffer(size_t size, int32* id) OVERRIDE;
+  virtual scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
+                                                     int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual Buffer GetTransferBuffer(int32 id) OVERRIDE;
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;
   virtual void SetContextLostReason(error::ContextLostReason) OVERRIDE;
@@ -69,7 +70,7 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
 
  private:
   int32 ring_buffer_id_;
-  Buffer ring_buffer_;
+  scoped_refptr<Buffer> ring_buffer_;
   scoped_ptr<base::SharedMemory> shared_state_shm_;
   CommandBufferSharedState* shared_state_;
   int32 num_entries_;

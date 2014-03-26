@@ -95,7 +95,8 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   }
 
   int32 id = -1;
-  Buffer buffer = command_buffer_->CreateTransferBuffer(ring_buffer_size_, &id);
+  scoped_refptr<Buffer> buffer =
+      command_buffer_->CreateTransferBuffer(ring_buffer_size_, &id);
   if (id < 0) {
     ClearUsable();
     return false;
@@ -108,7 +109,7 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   // TODO(gman): Do we really need to call GetState here? We know get & put = 0
   // Also do we need to check state.num_entries?
   CommandBuffer::State state = command_buffer_->GetState();
-  entries_ = static_cast<CommandBufferEntry*>(ring_buffer_.ptr);
+  entries_ = static_cast<CommandBufferEntry*>(ring_buffer_->memory());
   int32 num_ring_buffer_entries =
       ring_buffer_size_ / sizeof(CommandBufferEntry);
   if (num_ring_buffer_entries > state.num_entries) {

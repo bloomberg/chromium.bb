@@ -127,8 +127,9 @@ PP_Bool PPB_Graphics3D_Impl::DestroyTransferBuffer(int32_t id) {
 PP_Bool PPB_Graphics3D_Impl::GetTransferBuffer(int32_t id,
                                                int* shm_handle,
                                                uint32_t* shm_size) {
-  gpu::Buffer buffer = GetCommandBuffer()->GetTransferBuffer(id);
-  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size);
+  scoped_refptr<gpu::Buffer> buffer = GetCommandBuffer()->GetTransferBuffer(id);
+  return ShmToHandle(
+      buffer->shared_memory(), buffer->size(), shm_handle, shm_size);
 }
 
 PP_Bool PPB_Graphics3D_Impl::Flush(int32_t put_offset) {

@@ -33,11 +33,11 @@ class GpuSchedulerTest : public testing::Test {
   static const int32 kTransferBufferId = 123;
 
   virtual void SetUp() {
-    shared_memory_.reset(new ::base::SharedMemory);
-    shared_memory_->CreateAndMapAnonymous(kRingBufferSize);
-    buffer_ = static_cast<int32*>(shared_memory_->memory());
-    shared_memory_buffer_.ptr = buffer_;
-    shared_memory_buffer_.size = kRingBufferSize;
+    scoped_ptr<base::SharedMemory> shared_memory(new ::base::SharedMemory);
+    shared_memory->CreateAndMapAnonymous(kRingBufferSize);
+    buffer_ = static_cast<int32*>(shared_memory->memory());
+    shared_memory_buffer_ =
+        new gpu::Buffer(shared_memory.Pass(), kRingBufferSize);
     memset(buffer_, 0, kRingBufferSize);
 
     command_buffer_.reset(new MockCommandBuffer);
@@ -72,8 +72,7 @@ class GpuSchedulerTest : public testing::Test {
 #endif
   base::MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  Buffer shared_memory_buffer_;
+  scoped_refptr<Buffer> shared_memory_buffer_;
   int32* buffer_;
   scoped_ptr<gles2::MockGLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> scheduler_;
@@ -196,7 +195,7 @@ TEST_F(GpuSchedulerTest, CanGetAddressOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(&buffer_[0], scheduler_->GetSharedMemoryBuffer(7).ptr);
+  EXPECT_EQ(&buffer_[0], scheduler_->GetSharedMemoryBuffer(7)->memory());
 }
 
 ACTION_P2(SetPointee, address, value) {
@@ -207,7 +206,7 @@ TEST_F(GpuSchedulerTest, CanGetSizeOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(kRingBufferSize, scheduler_->GetSharedMemoryBuffer(7).size);
+  EXPECT_EQ(kRingBufferSize, scheduler_->GetSharedMemoryBuffer(7)->size());
 }
 
 TEST_F(GpuSchedulerTest, SetTokenForwardsToCommandBuffer) {

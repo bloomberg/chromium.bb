@@ -284,12 +284,13 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 #endif
 
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
-  gpu::Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
+  scoped_refptr<gpu::Buffer> buffer =
+      engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
-  shared_memory_address_ = reinterpret_cast<int8*>(buffer.ptr) +
-      shared_memory_offset_;
+  shared_memory_address_ =
+      reinterpret_cast<int8*>(buffer->memory()) + shared_memory_offset_;
   shared_memory_id_ = kSharedMemoryId;
-  shared_memory_base_ = buffer.ptr;
+  shared_memory_base_ = buffer->memory();
 
   int32 attributes[] = {
     EGL_ALPHA_SIZE, request_alpha ? 8 : 0,
@@ -1419,18 +1420,18 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0(
 
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 MockCommandBufferEngine() {
-  shm_.reset(new base::SharedMemory());
-  shm_->CreateAndMapAnonymous(kSharedBufferSize);
-  valid_buffer_.size = kSharedBufferSize;
-  valid_buffer_.shared_memory = shm_.get();
-  valid_buffer_.ptr = shm_->memory();
+
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  shm->CreateAndMapAnonymous(kSharedBufferSize);
+  valid_buffer_ = new gpu::Buffer(shm.Pass(), kSharedBufferSize);
+
   ClearSharedMemory();
 }
 
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 ~MockCommandBufferEngine() {}
 
-gpu::Buffer
+scoped_refptr<gpu::Buffer>
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::GetSharedMemoryBuffer(
     int32 shm_id) {
   return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;

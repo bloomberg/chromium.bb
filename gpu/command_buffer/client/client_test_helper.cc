@@ -15,6 +15,9 @@ using ::testing::Invoke;
 
 namespace gpu {
 
+MockCommandBufferBase::MockCommandBufferBase() {
+}
+
 MockCommandBufferBase::~MockCommandBufferBase() {
 }
 
@@ -47,29 +50,32 @@ void MockCommandBufferBase::WaitForGetOffsetInRange(int32 start, int32 end) {
 
 void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {
   ring_buffer_buffer_ = GetTransferBuffer(transfer_buffer_id);
-  ring_buffer_ = static_cast<CommandBufferEntry*>(ring_buffer_buffer_.ptr);
-  state_.num_entries = ring_buffer_buffer_.size / sizeof(ring_buffer_[0]);
+  ring_buffer_ =
+      static_cast<CommandBufferEntry*>(ring_buffer_buffer_->memory());
+  state_.num_entries = ring_buffer_buffer_->size() / sizeof(ring_buffer_[0]);
   state_.token = 10000;  // All token checks in the tests should pass.
 }
 
 // Get's the Id of the next transfer buffer that will be returned
 // by CreateTransferBuffer. This is useful for testing expected ids.
 int32 MockCommandBufferBase::GetNextFreeTransferBufferId() {
-  for (size_t ii = 0; ii < arraysize(transfer_buffers_); ++ii) {
-    if (!transfer_buffers_[ii].get()) {
+  for (size_t ii = 0; ii < arraysize(transfer_buffer_buffers_); ++ii) {
+    if (!transfer_buffer_buffers_[ii].get()) {
       return kTransferBufferBaseId + ii;
     }
   }
   return -1;
 }
 
-Buffer MockCommandBufferBase::CreateTransferBuffer(size_t size, int32* id) {
+scoped_refptr<gpu::Buffer> MockCommandBufferBase::CreateTransferBuffer(
+    size_t size,
+    int32* id) {
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
     int32 ndx = *id - kTransferBufferBaseId;
-    transfer_buffers_[ndx].reset(new int8[size]);
-    transfer_buffer_buffers_[ndx].ptr = transfer_buffers_[ndx].get();
-    transfer_buffer_buffers_[ndx].size = size;
+    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    shared_memory->CreateAndMapAnonymous(size);
+    transfer_buffer_buffers_[ndx] = new gpu::Buffer(shared_memory.Pass(), size);
   }
   return GetTransferBuffer(*id);
 }
@@ -78,11 +84,10 @@ void MockCommandBufferBase::DestroyTransferBufferHelper(int32 id) {
   DCHECK_GE(id, kTransferBufferBaseId);
   DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   id -= kTransferBufferBaseId;
-  transfer_buffers_[id].reset();
-  transfer_buffer_buffers_[id] = Buffer();
+  transfer_buffer_buffers_[id] = NULL;
 }
 
-Buffer MockCommandBufferBase::GetTransferBuffer(int32 id) {
+scoped_refptr<Buffer> MockCommandBufferBase::GetTransferBuffer(int32 id) {
   DCHECK_GE(id, kTransferBufferBaseId);
   DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   return transfer_buffer_buffers_[id - kTransferBufferBaseId];

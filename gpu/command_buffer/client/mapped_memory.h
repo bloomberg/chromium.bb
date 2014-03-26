@@ -18,7 +18,10 @@ class CommandBufferHelper;
 // Manages a shared memory segment.
 class GPU_EXPORT MemoryChunk {
  public:
-  MemoryChunk(int32 shm_id, gpu::Buffer shm, CommandBufferHelper* helper);
+  MemoryChunk(int32 shm_id,
+              scoped_refptr<gpu::Buffer> shm,
+              CommandBufferHelper* helper);
+  ~MemoryChunk();
 
   // Gets the size of the largest free block that is available without waiting.
   unsigned int GetLargestFreeSizeWithoutWaiting() {
@@ -33,7 +36,7 @@ class GPU_EXPORT MemoryChunk {
 
   // Gets the size of the chunk.
   unsigned int GetSize() const {
-    return static_cast<unsigned int>(shm_.size);
+    return static_cast<unsigned int>(shm_->size());
   }
 
   // The shared memory id for this chunk.
@@ -86,8 +89,9 @@ class GPU_EXPORT MemoryChunk {
 
   // Returns true if pointer is in the range of this block.
   bool IsInChunk(void* pointer) const {
-    return pointer >= shm_.ptr &&
-           pointer < reinterpret_cast<const int8*>(shm_.ptr) + shm_.size;
+    return pointer >= shm_->memory() &&
+           pointer <
+               reinterpret_cast<const int8*>(shm_->memory()) + shm_->size();
   }
 
   // Returns true of any memory in this chunk is in use.
@@ -101,7 +105,7 @@ class GPU_EXPORT MemoryChunk {
 
  private:
   int32 shm_id_;
-  gpu::Buffer shm_;
+  scoped_refptr<gpu::Buffer> shm_;
   FencedAllocatorWrapper allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryChunk);

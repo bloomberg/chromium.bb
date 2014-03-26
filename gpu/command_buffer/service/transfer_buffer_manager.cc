@@ -27,9 +27,8 @@ TransferBufferManager::TransferBufferManager()
 TransferBufferManager::~TransferBufferManager() {
   while (!registered_buffers_.empty()) {
     BufferMap::iterator it = registered_buffers_.begin();
-    DCHECK(shared_memory_bytes_allocated_ >= it->second.size);
-    shared_memory_bytes_allocated_ -= it->second.size;
-    delete it->second.shared_memory;
+    DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
+    shared_memory_bytes_allocated_ -= it->second->size();
     registered_buffers_.erase(it);
   }
   DCHECK(!shared_memory_bytes_allocated_);
@@ -71,13 +70,11 @@ bool TransferBufferManager::RegisterTransferBuffer(
   }
 
   // If it could be mapped register the shared memory with the ID.
-  Buffer buffer;
-  buffer.ptr = duped_shared_memory->memory();
-  buffer.size = size;
-  buffer.shared_memory = duped_shared_memory.release();
+  scoped_refptr<Buffer> buffer =
+      make_scoped_refptr(new gpu::Buffer(duped_shared_memory.Pass(), size));
 
   // Check buffer alignment is sane.
-  DCHECK(!(reinterpret_cast<uintptr_t>(buffer.ptr) &
+  DCHECK(!(reinterpret_cast<uintptr_t>(buffer->memory()) &
            (kCommandBufferEntrySize - 1)));
 
   shared_memory_bytes_allocated_ += size;
@@ -96,22 +93,21 @@ void TransferBufferManager::DestroyTransferBuffer(int32 id) {
     return;
   }
 
-  DCHECK(shared_memory_bytes_allocated_ >= it->second.size);
-  shared_memory_bytes_allocated_ -= it->second.size;
+  DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
+  shared_memory_bytes_allocated_ -= it->second->size();
   TRACE_COUNTER_ID1(
       "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 
-  delete it->second.shared_memory;
   registered_buffers_.erase(it);
 }
 
-Buffer TransferBufferManager::GetTransferBuffer(int32 id) {
+scoped_refptr<Buffer> TransferBufferManager::GetTransferBuffer(int32 id) {
   if (id == 0)
-    return Buffer();
+    return NULL;
 
   BufferMap::iterator it = registered_buffers_.find(id);
   if (it == registered_buffers_.end())
-    return Buffer();
+    return NULL;
 
   return it->second;
 }

@@ -118,14 +118,15 @@ class GPU_EXPORT CommandBuffer {
 
   // Create a transfer buffer of the given size. Returns its ID or -1 on
   // error.
-  virtual Buffer CreateTransferBuffer(size_t size, int32* id) = 0;
+  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                          int32* id) = 0;
 
   // Destroy a transfer buffer. The ID must be positive.
   virtual void DestroyTransferBuffer(int32 id) = 0;
 
   // Get the transfer buffer associated with an ID. Returns a null buffer for
   // ID 0.
-  virtual Buffer GetTransferBuffer(int32 id) = 0;
+  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) = 0;
 
   // Allows the reader to update the current token value.
   virtual void SetToken(int32 token) = 0;

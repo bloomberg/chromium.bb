@@ -81,26 +81,29 @@ class MockCommandBufferEngine : public CommandBufferEngine {
       : CommandBufferEngine(),
         token_(),
         get_offset_(0) {
+    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    shared_memory->CreateAndMapAnonymous(kBufferSize);
+    buffer_ = new gpu::Buffer(shared_memory.Pass(), kBufferSize);
   }
 
   // Overridden from CommandBufferEngine.
-  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
-    Buffer buffer;
-    if (IsValidSharedMemoryId(shm_id)) {
-      buffer.ptr = buffer_;
-      buffer.size = kBufferSize;
-    }
-    return buffer;
+  virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
+      OVERRIDE {
+    if (IsValidSharedMemoryId(shm_id))
+      return buffer_;
+    return NULL;
   }
 
   template <typename T>
   T GetSharedMemoryAs(uint32 offset) {
     DCHECK_LT(offset, kBufferSize);
-    return reinterpret_cast<T>(&buffer_[offset]);
+    int8* buffer_memory = static_cast<int8*>(buffer_->memory());
+    return reinterpret_cast<T>(&buffer_memory[offset]);
   }
 
   int32 GetSharedMemoryOffset(const void* memory) {
-    ptrdiff_t offset = reinterpret_cast<const int8*>(memory) - &buffer_[0];
+    int8* buffer_memory = static_cast<int8*>(buffer_->memory());
+    ptrdiff_t offset = static_cast<const int8*>(memory) - &buffer_memory[0];
     DCHECK_GE(offset, 0);
     DCHECK_LT(static_cast<size_t>(offset), kBufferSize);
     return static_cast<int32>(offset);
@@ -140,7 +143,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
     return shm_id == kValidShmId || shm_id == kStartValidShmId;
   }
 
-  int8 buffer_[kBufferSize];
+  scoped_refptr<gpu::Buffer> buffer_;
   int32 token_;
   int32 get_offset_;
 };

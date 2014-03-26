@@ -32,34 +32,36 @@ class TransferBufferManagerTest : public testing::Test {
 };
 
 TEST_F(TransferBufferManagerTest, ZeroHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(0).ptr);
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(0));
 }
 
 TEST_F(TransferBufferManagerTest, NegativeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(-1).ptr);
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(-1));
 }
 
 TEST_F(TransferBufferManagerTest, OutOfRangeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(1).ptr);
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(1));
 }
 
 TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
                                                                &buffers_[0],
                                                                kBufferSize));
-  Buffer registered = transfer_buffer_manager_->GetTransferBuffer(1);
+  scoped_refptr<Buffer> registered =
+      transfer_buffer_manager_->GetTransferBuffer(1);
 
   // Distinct memory range and shared memory handle from that originally
   // registered.
-  EXPECT_NE(static_cast<void*>(NULL), registered.ptr);
-  EXPECT_NE(buffers_[0].memory(), registered.ptr);
-  EXPECT_EQ(kBufferSize, registered.size);
-  EXPECT_NE(&buffers_[0], registered.shared_memory);
+  scoped_refptr<Buffer> null_buffer;
+  EXPECT_NE(null_buffer, registered);
+  EXPECT_NE(buffers_[0].memory(), registered->memory());
+  EXPECT_EQ(kBufferSize, registered->size());
+  EXPECT_NE(&buffers_[0], registered->shared_memory());
 
   // But maps to the same physical memory.
-  *static_cast<int*>(registered.ptr) = 7;
+  *static_cast<int*>(registered->memory()) = 7;
   *static_cast<int*>(buffers_[0].memory()) = 8;
-  EXPECT_EQ(8, *static_cast<int*>(registered.ptr));
+  EXPECT_EQ(8, *static_cast<int*>(registered->memory()));
 }
 
 TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
@@ -67,11 +69,11 @@ TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
                                                                &buffers_[0],
                                                                kBufferSize));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
-  Buffer registered = transfer_buffer_manager_->GetTransferBuffer(1);
+  scoped_refptr<Buffer> registered =
+      transfer_buffer_manager_->GetTransferBuffer(1);
 
-  EXPECT_EQ(static_cast<void*>(NULL), registered.ptr);
-  EXPECT_EQ(0U, registered.size);
-  EXPECT_EQ(static_cast<base::SharedMemory*>(NULL), registered.shared_memory);
+  scoped_refptr<Buffer> null_buffer;
+  EXPECT_EQ(null_buffer, registered);
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegregisterTransferBufferId) {

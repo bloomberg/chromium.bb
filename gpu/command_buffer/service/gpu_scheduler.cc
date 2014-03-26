@@ -181,7 +181,7 @@ void GpuScheduler::SetSchedulingChangedCallback(
   scheduling_changed_callback_ = callback;
 }
 
-Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
+scoped_refptr<Buffer> GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
   return command_buffer_->GetTransferBuffer(shm_id);
 }
 
@@ -190,8 +190,9 @@ void GpuScheduler::set_token(int32 token) {
 }
 
 bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
-  Buffer ring_buffer = command_buffer_->GetTransferBuffer(transfer_buffer_id);
-  if (!ring_buffer.ptr) {
+  scoped_refptr<Buffer> ring_buffer =
+      command_buffer_->GetTransferBuffer(transfer_buffer_id);
+  if (!ring_buffer) {
     return false;
   }
 
@@ -200,10 +201,7 @@ bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
   }
 
   parser_->SetBuffer(
-      ring_buffer.ptr,
-      ring_buffer.size,
-      0,
-      ring_buffer.size);
+      ring_buffer->memory(), ring_buffer->size(), 0, ring_buffer->size());
 
   SetGetOffset(0);
   return true;

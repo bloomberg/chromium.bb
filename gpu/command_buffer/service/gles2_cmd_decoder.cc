@@ -10394,9 +10394,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
 
   // We know the memory/size is safe, so get the real shared memory since
   // it might need to be duped to prevent use-after-free of the memory.
-  gpu::Buffer buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
-  base::SharedMemory* shared_memory = buffer.shared_memory;
-  uint32 shm_size = buffer.size;
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
+  base::SharedMemory* shared_memory = buffer->shared_memory();
+  uint32 shm_size = buffer->size();
   uint32 shm_data_offset = c.pixels_shm_offset;
   uint32 shm_data_size = pixels_size;
 
@@ -10484,9 +10484,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
 
   // We know the memory/size is safe, so get the real shared memory since
   // it might need to be duped to prevent use-after-free of the memory.
-  gpu::Buffer buffer = GetSharedMemoryBuffer(c.data_shm_id);
-  base::SharedMemory* shared_memory = buffer.shared_memory;
-  uint32 shm_size = buffer.size;
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(c.data_shm_id);
+  base::SharedMemory* shared_memory = buffer->shared_memory();
+  uint32 shm_size = buffer->size();
   uint32 shm_data_offset = c.data_shm_offset;
   uint32 shm_data_size = data_size;
 

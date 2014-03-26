@@ -570,8 +570,8 @@ void InProcessCommandBuffer::SetGetBuffer(int32 shm_id) {
   }
 }
 
-gpu::Buffer InProcessCommandBuffer::CreateTransferBuffer(size_t size,
-                                                         int32* id) {
+scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(size_t size,
+                                                                   int32* id) {
   CheckSequencedThread();
   base::AutoLock lock(command_buffer_lock_);
   return command_buffer_->CreateTransferBuffer(size, id);
@@ -586,9 +586,9 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32 id) {
   QueueTask(task);
 }
 
-gpu::Buffer InProcessCommandBuffer::GetTransferBuffer(int32 id) {
+scoped_refptr<gpu::Buffer> InProcessCommandBuffer::GetTransferBuffer(int32 id) {
   NOTREACHED();
-  return gpu::Buffer();
+  return NULL;
 }
 
 gpu::Capabilities InProcessCommandBuffer::GetCapabilities() {

@@ -24,8 +24,7 @@ class GPU_EXPORT TransferBufferManagerInterface {
                                       base::SharedMemory* shared_memory,
                                       size_t size) = 0;
   virtual void DestroyTransferBuffer(int32 id) = 0;
-  virtual Buffer GetTransferBuffer(int32 id) = 0;
-
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) = 0;
 };
 
 class GPU_EXPORT TransferBufferManager
@@ -38,12 +37,12 @@ class GPU_EXPORT TransferBufferManager
                                       base::SharedMemory* shared_memory,
                                       size_t size) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual Buffer GetTransferBuffer(int32 id) OVERRIDE;
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
 
  private:
   virtual ~TransferBufferManager();
 
-  typedef base::hash_map<int32, Buffer> BufferMap;
+  typedef base::hash_map<int32, scoped_refptr<Buffer> > BufferMap;
   BufferMap registered_buffers_;
   size_t shared_memory_bytes_allocated_;
 

@@ -38,9 +38,10 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
-  virtual gpu::Buffer CreateTransferBuffer(size_t size, int32* id) OVERRIDE;
+  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                          int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual gpu::Buffer GetTransferBuffer(int32 id) OVERRIDE;
+  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) OVERRIDE;
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason)
@@ -69,7 +70,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   bool Send(IPC::Message* msg);
   void UpdateState(const gpu::CommandBuffer::State& state, bool success);
 
-  typedef base::hash_map<int32, gpu::Buffer> TransferBufferMap;
+  typedef base::hash_map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
   State last_state_;

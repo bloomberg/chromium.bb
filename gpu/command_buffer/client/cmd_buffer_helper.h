@@ -244,9 +244,7 @@ class GPU_EXPORT CommandBufferHelper {
     return command_buffer_;
   }
 
-  Buffer get_ring_buffer() const {
-    return ring_buffer_;
-  }
+  scoped_refptr<Buffer> get_ring_buffer() const { return ring_buffer_; }
 
   uint32 flush_generation() const { return flush_generation_; }
 
@@ -287,7 +285,7 @@ class GPU_EXPORT CommandBufferHelper {
   CommandBuffer* command_buffer_;
   int32 ring_buffer_id_;
   int32 ring_buffer_size_;
-  Buffer ring_buffer_;
+  scoped_refptr<gpu::Buffer> ring_buffer_;
   CommandBufferEntry* entries_;
   int32 total_entry_count_;  // the total number of entries
   int32 immediate_entry_count_;

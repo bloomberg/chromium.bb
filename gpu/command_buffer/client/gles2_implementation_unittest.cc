@@ -167,11 +167,11 @@ class MockTransferBuffer : public TransferBufferInterface {
   static const int kNumBuffers = 2;
 
   uint8* actual_buffer() const {
-    return static_cast<uint8*>(buffers_[actual_buffer_index_].ptr);
+    return static_cast<uint8*>(buffers_[actual_buffer_index_]->memory());
   }
 
   uint8* expected_buffer() const {
-    return static_cast<uint8*>(buffers_[expected_buffer_index_].ptr);
+    return static_cast<uint8*>(buffers_[expected_buffer_index_]->memory());
   }
 
   uint32 AllocateExpectedTransferBuffer(size_t size) {
@@ -214,7 +214,7 @@ class MockTransferBuffer : public TransferBufferInterface {
   size_t result_size_;
   uint32 alignment_;
   int buffer_ids_[kNumBuffers];
-  gpu::Buffer buffers_[kNumBuffers];
+  scoped_refptr<Buffer> buffers_[kNumBuffers];
   int actual_buffer_index_;
   int expected_buffer_index_;
   void* last_alloc_;
@@ -455,8 +455,8 @@ class GLES2ImplementationTest : public testing::Test {
       helper_->CommandBufferHelper::Finish();
       ::testing::Mock::VerifyAndClearExpectations(gl_.get());
 
-      Buffer ring_buffer = helper_->get_ring_buffer();
-      commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
+      scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
+      commands_ = static_cast<CommandBufferEntry*>(ring_buffer->memory()) +
                   command_buffer()->GetState().put_offset;
       ClearCommands();
       EXPECT_TRUE(transfer_buffer_->InSync());
@@ -480,8 +480,8 @@ class GLES2ImplementationTest : public testing::Test {
     int GetNextToken() { return ++token_; }
 
     void ClearCommands() {
-      Buffer ring_buffer = helper_->get_ring_buffer();
-      memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
+      scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
+      memset(ring_buffer->memory(), kInitialValue, ring_buffer->size());
     }
 
     scoped_ptr<MockClientCommandBuffer> command_buffer_;
@@ -499,9 +499,9 @@ class GLES2ImplementationTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   bool NoCommandsWritten() {
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    const uint8* cmds = reinterpret_cast<const uint8*>(ring_buffer.ptr);
-    const uint8* end = cmds + ring_buffer.size;
+    scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
+    const uint8* cmds = reinterpret_cast<const uint8*>(ring_buffer->memory());
+    const uint8* end = cmds + ring_buffer->size();
     for (; cmds < end; ++cmds) {
       if (*cmds != kInitialValue) {
         return false;
@@ -539,8 +539,8 @@ class GLES2ImplementationTest : public testing::Test {
   }
 
   void ClearCommands() {
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
+    scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
+    memset(ring_buffer->memory(), kInitialValue, ring_buffer->size());
   }
 
   size_t MaxTransferBufferSize() {

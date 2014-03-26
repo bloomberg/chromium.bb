@@ -89,11 +89,12 @@ bool AsyncPixelTransfersCompletedQuery::End(
   AsyncMemoryParams mem_params;
   // Get the real shared memory since it might need to be duped to prevent
   // use-after-free of the memory.
-  Buffer buffer = manager()->decoder()->GetSharedMemoryBuffer(shm_id());
-  if (!buffer.shared_memory)
+  scoped_refptr<Buffer> buffer =
+      manager()->decoder()->GetSharedMemoryBuffer(shm_id());
+  if (!buffer)
     return false;
-  mem_params.shared_memory = buffer.shared_memory;
-  mem_params.shm_size = buffer.size;
+  mem_params.shared_memory = buffer->shared_memory();
+  mem_params.shm_size = buffer->size();
   mem_params.shm_data_offset = shm_offset();
   mem_params.shm_data_size = sizeof(QuerySync);
   base::CheckedNumeric<uint32> end = mem_params.shm_data_offset;

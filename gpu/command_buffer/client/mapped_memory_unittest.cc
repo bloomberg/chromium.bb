@@ -94,11 +94,10 @@ class MemoryChunkTest : public MappedMemoryTestBase {
   static const int32 kShmId = 123;
   virtual void SetUp() {
     MappedMemoryTestBase::SetUp();
-    buffer_.reset(new uint8[kBufferSize]);
-    gpu::Buffer buf;
-    buf.size = kBufferSize;
-    buf.ptr = buffer_.get();
-    chunk_.reset(new MemoryChunk(kShmId, buf, helper_.get()));
+    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    shared_memory->CreateAndMapAnonymous(kBufferSize);
+    buffer_ = new gpu::Buffer(shared_memory.Pass(), kBufferSize);
+    chunk_.reset(new MemoryChunk(kShmId, buffer_, helper_.get()));
   }
 
   virtual void TearDown() {
@@ -108,8 +107,10 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     MappedMemoryTestBase::TearDown();
   }
 
+  uint8* buffer_memory() { return static_cast<uint8*>(buffer_->memory()); }
+
   scoped_ptr<MemoryChunk> chunk_;
-  scoped_ptr<uint8[]> buffer_;
+  scoped_refptr<gpu::Buffer> buffer_;
 };
 
 #ifndef _MSC_VER
@@ -124,8 +125,9 @@ TEST_F(MemoryChunkTest, Basic) {
   EXPECT_EQ(kBufferSize, chunk_->GetSize());
   void *pointer = chunk_->Alloc(kSize);
   ASSERT_TRUE(pointer);
-  EXPECT_LE(buffer_.get(), static_cast<uint8 *>(pointer));
-  EXPECT_GE(kBufferSize, static_cast<uint8 *>(pointer) - buffer_.get() + kSize);
+  EXPECT_LE(buffer_->memory(), static_cast<uint8*>(pointer));
+  EXPECT_GE(kBufferSize,
+            static_cast<uint8*>(pointer) - buffer_memory() + kSize);
   EXPECT_EQ(kBufferSize - kSize, chunk_->GetLargestFreeSizeWithoutWaiting());
   EXPECT_EQ(kBufferSize - kSize, chunk_->GetLargestFreeSizeWithWaiting());
   EXPECT_EQ(kBufferSize, chunk_->GetSize());
@@ -136,8 +138,8 @@ TEST_F(MemoryChunkTest, Basic) {
 
   uint8 *pointer_char = static_cast<uint8*>(chunk_->Alloc(kSize));
   ASSERT_TRUE(pointer_char);
-  EXPECT_LE(buffer_.get(), pointer_char);
-  EXPECT_GE(buffer_.get() + kBufferSize, pointer_char + kSize);
+  EXPECT_LE(buffer_memory(), pointer_char);
+  EXPECT_GE(buffer_memory() + kBufferSize, pointer_char + kSize);
   EXPECT_EQ(kBufferSize - kSize, chunk_->GetLargestFreeSizeWithoutWaiting());
   EXPECT_EQ(kBufferSize - kSize, chunk_->GetLargestFreeSizeWithWaiting());
   chunk_->Free(pointer_char);

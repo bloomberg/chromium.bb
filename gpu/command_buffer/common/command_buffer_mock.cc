@@ -8,7 +8,7 @@ namespace gpu {
 
 MockCommandBuffer::MockCommandBuffer() {
   ON_CALL(*this, GetTransferBuffer(testing::_))
-      .WillByDefault(testing::Return(Buffer()));
+      .WillByDefault(testing::Return(scoped_refptr<gpu::Buffer>()));
 }
 
 MockCommandBuffer::~MockCommandBuffer() {}

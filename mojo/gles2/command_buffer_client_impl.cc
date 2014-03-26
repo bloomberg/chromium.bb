@@ -108,20 +108,20 @@ void CommandBufferClientImpl::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-gpu::Buffer CommandBufferClientImpl::CreateTransferBuffer(size_t size,
-                                                          int32* id) {
-  gpu::Buffer buffer;
+scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
+    size_t size,
+    int32* id) {
   if (size >= std::numeric_limits<uint32_t>::max())
-    return buffer;
+    return NULL;
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   if (!shared_memory->CreateAndMapAnonymous(size))
-    return buffer;
+    return NULL;
 
   base::SharedMemoryHandle handle;
   shared_memory->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
   if (!base::SharedMemory::IsHandleValid(handle))
-    return buffer;
+    return NULL;
 
   *id = ++next_transfer_buffer_id_;
   DCHECK(transfer_buffers_.find(*id) == transfer_buffers_.end());
@@ -130,9 +130,8 @@ gpu::Buffer CommandBufferClientImpl::CreateTransferBuffer(size_t size,
   command_buffer_->RegisterTransferBuffer(
       *id, handle, static_cast<uint32_t>(size));
 
-  buffer.ptr = shared_memory->memory();
-  buffer.size = size;
-  buffer.shared_memory = shared_memory.release();
+  scoped_refptr<gpu::Buffer> buffer =
+      new gpu::Buffer(shared_memory.Pass(), size);
   transfer_buffers_[*id] = buffer;
 
   return buffer;
@@ -140,19 +139,18 @@ gpu::Buffer CommandBufferClientImpl::CreateTransferBuffer(size_t size,
 
 void CommandBufferClientImpl::DestroyTransferBuffer(int32 id) {
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end()) {
-    delete it->second.shared_memory;
+  if (it != transfer_buffers_.end())
     transfer_buffers_.erase(it);
-  }
   command_buffer_->DestroyTransferBuffer(id);
 }
 
-gpu::Buffer CommandBufferClientImpl::GetTransferBuffer(int32 id) {
+scoped_refptr<gpu::Buffer> CommandBufferClientImpl::GetTransferBuffer(
+    int32 id) {
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
   if (it != transfer_buffers_.end()) {
     return it->second;
   } else {
-    return gpu::Buffer();
+    return NULL;
   }
 }
 

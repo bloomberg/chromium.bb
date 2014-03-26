@@ -519,10 +519,11 @@ class GLES2DecoderTestBase : public testing::Test {
 
     virtual ~MockCommandBufferEngine();
 
-    virtual gpu::Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
+    virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
+        OVERRIDE;
 
     void ClearSharedMemory() {
-      memset(shm_->memory(), kInitialMemoryValue, kSharedBufferSize);
+      memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
     virtual void set_token(int32 token) OVERRIDE;
@@ -536,9 +537,8 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual int32 GetGetOffset() OVERRIDE;
 
    private:
-    scoped_ptr<base::SharedMemory> shm_;
-    gpu::Buffer valid_buffer_;
-    gpu::Buffer invalid_buffer_;
+    scoped_refptr<gpu::Buffer> valid_buffer_;
+    scoped_refptr<gpu::Buffer> invalid_buffer_;
   };
 
   void AddExpectationsForVertexAttribManager();

@@ -64,17 +64,18 @@ void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,
                                             unsigned int size) {
   CHECK(engine_);
-  Buffer buffer = engine_->GetSharedMemoryBuffer(shm_id);
-  if (!buffer.ptr)
+  scoped_refptr<gpu::Buffer> buffer = engine_->GetSharedMemoryBuffer(shm_id);
+  if (!buffer)
     return NULL;
   unsigned int end = offset + size;
-  if (end > buffer.size || end < offset) {
+  if (end > buffer->size() || end < offset) {
     return NULL;
   }
-  return static_cast<int8*>(buffer.ptr) + offset;
+  return static_cast<int8*>(buffer->memory()) + offset;
 }
 
-Buffer CommonDecoder::GetSharedMemoryBuffer(unsigned int shm_id) {
+scoped_refptr<gpu::Buffer> CommonDecoder::GetSharedMemoryBuffer(
+    unsigned int shm_id) {
   return engine_->GetSharedMemoryBuffer(shm_id);
 }
 

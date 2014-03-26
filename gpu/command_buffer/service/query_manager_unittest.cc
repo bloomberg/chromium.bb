@@ -91,21 +91,23 @@ class QueryManagerTest : public testing::Test {
   class MockCommandBufferEngine : public CommandBufferEngine {
    public:
     MockCommandBufferEngine() {
-      data_.reset(new int8[kSharedBufferSize]);
+      scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+      shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
+      valid_buffer_ = new gpu::Buffer(shared_memory.Pass(), kSharedBufferSize);
+      data_ = static_cast<uint8*>(valid_buffer_->memory());
       ClearSharedMemory();
-      valid_buffer_.ptr = data_.get();
-      valid_buffer_.size = kSharedBufferSize;
     }
 
     virtual ~MockCommandBufferEngine() {
     }
 
-    virtual gpu::Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
+    virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
+        OVERRIDE {
       return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
     }
 
     void ClearSharedMemory() {
-      memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
+      memset(data_, kInitialMemoryValue, kSharedBufferSize);
     }
 
     virtual void set_token(int32 token) OVERRIDE {
@@ -130,9 +132,9 @@ class QueryManagerTest : public testing::Test {
     }
 
    private:
-    scoped_ptr<int8[]> data_;
-    gpu::Buffer valid_buffer_;
-    gpu::Buffer invalid_buffer_;
+    uint8* data_;
+    scoped_refptr<gpu::Buffer> valid_buffer_;
+    scoped_refptr<gpu::Buffer> invalid_buffer_;
   };
 
   scoped_ptr<MockCommandBufferEngine> engine_;
