@@ -55,6 +55,13 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop;
 
+  // Stop waiting for a response after a certain amount of time.
+  const int kMaxWaitTimeForClipboardResponse = 300;
+  loop->PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(kMaxWaitTimeForClipboardResponse));
+
   PendingRequest pending_request(target, run_loop.QuitClosure());
   pending_requests_.push_back(&pending_request);
   run_loop.Run();
