@@ -162,11 +162,13 @@
           'dependencies': [
             'app_shell_pak',
             'apps',
+            'common/extensions/api/api.gyp:chrome_api',
             'test_support_common',
             '../base/base.gyp:base',
             '../base/base.gyp:base_prefs_test_support',
             '../content/content.gyp:content',
             '../content/content_shell_and_tests.gyp:content_shell_lib',
+            '../extensions/common/api/api.gyp:extensions_api',
             '../skia/skia.gyp:skia',
             '../ui/views/views.gyp:views',
             '../ui/wm/wm.gyp:wm_test_support',

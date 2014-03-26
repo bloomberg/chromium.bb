@@ -1643,6 +1643,7 @@
     ['chromeos==1', {
       'dependencies': [
         '../build/linux/system.gyp:dbus',
+        '../chromeos/chromeos.gyp:power_manager_proto',
       ],
       'sources!': [
         'browser/geolocation/wifi_data_provider_linux.cc',
