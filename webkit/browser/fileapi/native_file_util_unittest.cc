@@ -5,9 +5,9 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 
@@ -49,28 +49,21 @@ class NativeFileUtilTest : public testing::Test {
 
 TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {
   base::FilePath file_name = Path("test_file");
-  base::PlatformFile file_handle;
-  bool created = false;
-  int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
-  ASSERT_EQ(base::File::FILE_OK,
-            NativeFileUtil::CreateOrOpen(file_name,
-                                         base::PLATFORM_FILE_CREATE | flags,
-                                         &file_handle, &created));
-  ASSERT_TRUE(created);
+  int flags = base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
+  base::File file =
+      NativeFileUtil::CreateOrOpen(file_name, base::File::FLAG_CREATE | flags);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_TRUE(file.created());
 
   EXPECT_TRUE(base::PathExists(file_name));
   EXPECT_TRUE(NativeFileUtil::PathExists(file_name));
   EXPECT_EQ(0, GetSize(file_name));
-  EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
+  file.Close();
 
-  ASSERT_EQ(base::File::FILE_OK, NativeFileUtil::Close(file_handle));
-
-  ASSERT_EQ(base::File::FILE_OK,
-            NativeFileUtil::CreateOrOpen(file_name,
-                                         base::PLATFORM_FILE_OPEN | flags,
-                                         &file_handle, &created));
-  ASSERT_FALSE(created);
-  ASSERT_EQ(base::File::FILE_OK, NativeFileUtil::Close(file_handle));
+  file = NativeFileUtil::CreateOrOpen(file_name, base::File::FLAG_OPEN | flags);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_FALSE(file.created());
+  file.Close();
 
   ASSERT_EQ(base::File::FILE_OK,
             NativeFileUtil::DeleteFile(file_name));

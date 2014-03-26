@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/scoped_platform_file_closer.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
@@ -60,19 +59,14 @@ NativeMediaFileUtil::~NativeMediaFileUtil() {
 // static
 base::File::Error NativeMediaFileUtil::IsMediaFile(
     const base::FilePath& path) {
-  base::PlatformFile file_handle;
-  const int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  base::File::Error error =
-      fileapi::NativeFileUtil::CreateOrOpen(path, flags, &file_handle, NULL);
-  if (error != base::File::FILE_OK)
-    return error;
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return file.error_details();
 
-  base::ScopedPlatformFileCloser scoped_platform_file(&file_handle);
   char buffer[net::kMaxBytesToSniff];
 
   // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.
-  int64 len =
-      base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
+  int64 len = file.Read(0, buffer, net::kMaxBytesToSniff);
   if (len < 0)
     return base::File::FILE_ERROR_FAILED;
 

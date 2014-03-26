@@ -292,7 +292,8 @@ base::File::Error ObfuscatedFileUtil::CreateOrOpen(
 base::File::Error ObfuscatedFileUtil::Close(
     FileSystemOperationContext* context,
     base::PlatformFile file) {
-  return NativeFileUtil::Close(file);
+  base::File auto_closed(file);
+  return base::File::FILE_OK;
 }
 
 base::File::Error ObfuscatedFileUtil::EnsureFileExists(
@@ -1080,17 +1081,23 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
     created = true;
   } else {
     if (base::PathExists(dest_local_path)) {
-      if (!base::DeleteFile(dest_local_path, true /* recursive */)) {
-        NOTREACHED();
+      if (!base::DeleteFile(dest_local_path, true /* recursive */))
         return base::File::FILE_ERROR_FAILED;
-      }
       LOG(WARNING) << "A stray file detected";
       InvalidateUsageCache(context, dest_url.origin(), dest_url.type());
     }
 
     if (handle) {
-      error = NativeFileUtil::CreateOrOpen(
-          dest_local_path, file_flags, handle, &created);
+      // TODO(rvargas): Remove PlatformFile from this code.
+      base::File file =
+          NativeFileUtil::CreateOrOpen(dest_local_path, file_flags);
+      if (file.IsValid()) {
+        created = file.created();
+        *handle = file.TakePlatformFile();
+        error = base::File::FILE_OK;
+      } else {
+        error = file.error_details();
+      }
       // If this succeeds, we must close handle on any subsequent error.
     } else {
       DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
@@ -1101,7 +1108,6 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
     return error;
 
   if (!created) {
-    NOTREACHED();
     if (handle) {
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
@@ -1396,23 +1402,30 @@ base::File::Error ObfuscatedFileUtil::CreateOrOpenInternal(
     AllocateQuota(context, delta);
   }
 
-  error = NativeFileUtil::CreateOrOpen(
-      local_path, file_flags, file_handle, created);
-  if (error == base::File::FILE_ERROR_NOT_FOUND) {
-    // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
-    // TODO(tzik): Delete database entry after ensuring the file lost.
-    InvalidateUsageCache(context, url.origin(), url.type());
-    LOG(WARNING) << "Lost a backing file.";
-    error = base::File::FILE_ERROR_FAILED;
+  // TODO(rvargas): make FileSystemFileUtil use base::File.
+  base::File file = NativeFileUtil::CreateOrOpen(local_path, file_flags);
+  if (!file.IsValid()) {
+    error = file.error_details();
+    if (error == base::File::FILE_ERROR_NOT_FOUND) {
+      // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
+      // TODO(tzik): Delete database entry after ensuring the file lost.
+      InvalidateUsageCache(context, url.origin(), url.type());
+      LOG(WARNING) << "Lost a backing file.";
+      error = base::File::FILE_ERROR_FAILED;
+    }
+    return error;
   }
 
+  *created = file.created();
+  *file_handle = file.TakePlatformFile();
+
   // If truncating we need to update the usage.
-  if (error == base::File::FILE_OK && delta) {
+  if (delta) {
     UpdateUsage(context, url, delta);
     context->change_observers()->Notify(
         &FileChangeObserver::OnModifyFile, MakeTuple(url));
   }
-  return error;
+  return base::File::FILE_OK;
 }
 
 bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {

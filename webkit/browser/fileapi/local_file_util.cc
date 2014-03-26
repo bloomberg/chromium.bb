@@ -89,13 +89,20 @@ base::File::Error LocalFileUtil::CreateOrOpen(
   if (base::IsLink(file_path))
     return base::File::FILE_ERROR_NOT_FOUND;
 
-  return NativeFileUtil::CreateOrOpen(file_path, file_flags, file_handle,
-                                      created);
+  // TODO(rvargas): make FileSystemFileUtil use base::File.
+  base::File file = NativeFileUtil::CreateOrOpen(file_path, file_flags);
+  if (!file.IsValid())
+    return file.error_details();
+
+  *created = file.created();
+  *file_handle = file.TakePlatformFile();
+  return base::File::FILE_OK;
 }
 
 base::File::Error LocalFileUtil::Close(FileSystemOperationContext* context,
                                        base::PlatformFile file) {
-  return NativeFileUtil::Close(file);
+  base::File auto_closed(file);
+  return base::File::FILE_OK;
 }
 
 base::File::Error LocalFileUtil::EnsureFileExists(

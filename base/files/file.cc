@@ -20,7 +20,7 @@ File::Info::~Info() {
 
 File::File()
     : file_(kInvalidPlatformFileValue),
-      error_details_(FILE_OK),
+      error_details_(FILE_ERROR_FAILED),
       created_(false),
       async_(false) {
 }
@@ -43,6 +43,13 @@ File::File(PlatformFile platform_file)
 #if defined(OS_POSIX)
   DCHECK_GE(platform_file, -1);
 #endif
+}
+
+File::File(Error error_details)
+    : file_(kInvalidPlatformFileValue),
+      error_details_(error_details),
+      created_(false),
+      async_(false) {
 }
 
 File::File(RValue other)

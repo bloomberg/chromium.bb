@@ -17,6 +17,17 @@ TEST(FileTest, Create) {
   FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
 
   {
+    // Don't create a File at all.
+    File file;
+    EXPECT_FALSE(file.IsValid());
+    EXPECT_EQ(base::File::FILE_ERROR_FAILED, file.error_details());
+
+    File file2(base::File::FILE_ERROR_TOO_MANY_OPENED);
+    EXPECT_FALSE(file2.IsValid());
+    EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, file2.error_details());
+  }
+
+  {
     // Open a file that doesn't exist.
     File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_FALSE(file.IsValid());

@@ -121,27 +121,18 @@ NativeFileUtil::CopyOrMoveMode NativeFileUtil::CopyOrMoveModeForDestination(
   return MOVE;
 }
 
-base::File::Error NativeFileUtil::CreateOrOpen(
-    const base::FilePath& path, int file_flags,
-    PlatformFile* file_handle, bool* created) {
+base::File NativeFileUtil::CreateOrOpen(const base::FilePath& path,
+                                        int file_flags) {
   if (!base::DirectoryExists(path.DirName())) {
     // If its parent does not exist, should return NOT_FOUND error.
-    return base::File::FILE_ERROR_NOT_FOUND;
+    return base::File(base::File::FILE_ERROR_NOT_FOUND);
   }
+
+  // TODO(rvargas): Check |file_flags| instead. See bug 356358.
   if (base::DirectoryExists(path))
-    return base::File::FILE_ERROR_NOT_A_FILE;
+    return base::File(base::File::FILE_ERROR_NOT_A_FILE);
 
-  // TODO(rvargas): convert this code to use base::File.
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  *file_handle = base::CreatePlatformFile(path, file_flags,
-                                          created, &error_code);
-  return static_cast<base::File::Error>(error_code);
-}
-
-base::File::Error NativeFileUtil::Close(PlatformFile file_handle) {
-  if (!base::ClosePlatformFile(file_handle))
-    return base::File::FILE_ERROR_FAILED;
-  return base::File::FILE_OK;
+  return base::File(path, file_flags);
 }
 
 base::File::Error NativeFileUtil::EnsureFileExists(

@@ -149,6 +149,9 @@ class BASE_EXPORT File {
   // Takes ownership of |platform_file|.
   explicit File(PlatformFile platform_file);
 
+  // Creates an object with a specific error_details code.
+  explicit File(Error error_details);
+
   // Move constructor for C++03 move emulation of this type.
   File(RValue other);
 

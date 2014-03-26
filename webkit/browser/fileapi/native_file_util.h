@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -39,12 +38,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
   static CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url, bool copy);
 
-  static base::File::Error CreateOrOpen(
-      const base::FilePath& path,
-      int file_flags,
-      base::PlatformFile* file_handle,
-      bool* created);
-  static base::File::Error Close(base::PlatformFile file);
+  static base::File CreateOrOpen(const base::FilePath& path,
+                                 int file_flags);
   static base::File::Error EnsureFileExists(const base::FilePath& path,
                                             bool* created);
   static base::File::Error CreateDirectory(const base::FilePath& path,
@@ -59,7 +54,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
                                  const base::Time& last_access_time,
                                  const base::Time& last_modified_time);
   static base::File::Error Truncate(const base::FilePath& path,
-                                          int64 length);
+                                    int64 length);
   static bool PathExists(const base::FilePath& path);
   static bool DirectoryExists(const base::FilePath& path);
   static base::File::Error CopyOrMoveFile(
