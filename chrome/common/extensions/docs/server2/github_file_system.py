@@ -21,51 +21,45 @@ ZIP_KEY = 'zipball'
 USERNAME = None
 PASSWORD = None
 
+
 def _MakeBlobstoreKey(version):
   return ZIP_KEY + '.' + str(version)
 
-class _AsyncFetchFutureZip(object):
-  def __init__(self,
-               fetcher,
-               username,
-               password,
-               blobstore,
-               key_to_set,
-               key_to_delete=None):
-    self._fetcher = fetcher
-    self._fetch = fetcher.FetchAsync(ZIP_KEY,
-                                     username=username,
-                                     password=password)
-    self._blobstore = blobstore
-    self._key_to_set = key_to_set
-    self._key_to_delete = key_to_delete
 
-  def Get(self):
+def _GetAsyncFetchCallback(fetcher,
+                           username,
+                           password,
+                           blobstore,
+                           key_to_set,
+                           key_to_delete=None):
+  fetch = fetcher.FetchAsync(ZIP_KEY, username=username, password=password)
+
+  def resolve():
     try:
-      result = self._fetch.Get()
+      result = fetch.Get()
       # Check if Github authentication failed.
       if result.status_code == 401:
         logging.error('Github authentication failed for %s, falling back to '
                       'unauthenticated.' % USERNAME)
-        blob = self._fetcher.Fetch(ZIP_KEY).content
+        blob = fetcher.Fetch(ZIP_KEY).content
       else:
         blob = result.content
     except urlfetch.DownloadError as e:
       logging.error('Bad github zip file: %s' % e)
       return None
-    if self._key_to_delete is not None:
-      self._blobstore.Delete(_MakeBlobstoreKey(self._key_to_delete),
-                             BLOBSTORE_GITHUB)
+    if key_to_delete is not None:
+      blobstore.Delete(_MakeBlobstoreKey(key_to_delete, BLOBSTORE_GITHUB))
     try:
       return_zip = ZipFile(StringIO(blob))
     except BadZipfile as e:
       logging.error('Bad github zip file: %s' % e)
       return None
 
-    self._blobstore.Set(_MakeBlobstoreKey(self._key_to_set),
-                        blob,
-                        BLOBSTORE_GITHUB)
+    blobstore.Set(_MakeBlobstoreKey(key_to_set), blob, BLOBSTORE_GITHUB)
     return return_zip
+
+  return resolve
+
 
 class GithubFileSystem(FileSystem):
   @staticmethod
@@ -114,12 +108,12 @@ class GithubFileSystem(FileSystem):
         self._zip_file = Future(value=None)
     else:
       self._zip_file = Future(
-          delegate=_AsyncFetchFutureZip(self._fetcher,
-                                        self._username,
-                                        self._password,
-                                        self._blobstore,
-                                        version,
-                                        key_to_delete=self._version))
+          callback=_GetAsyncFetchCallback(self._fetcher,
+                                          self._username,
+                                          self._password,
+                                          self._blobstore,
+                                          version,
+                                          key_to_delete=self._version))
     self._version = version
 
   def _ReadFile(self, path):

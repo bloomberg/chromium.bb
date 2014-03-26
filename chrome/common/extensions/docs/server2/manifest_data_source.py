@@ -6,7 +6,7 @@ import json
 
 from data_source import DataSource
 import features_utility
-from future import Gettable, Future
+from future import Future
 from manifest_features import ConvertDottedKeysToNested
 
 def _ListifyAndSortDocs(features, app_name):
@@ -121,7 +121,7 @@ class ManifestDataSource(DataSource):
         'apps': for_templates(manifest_features, 'app'),
         'extensions': for_templates(manifest_features, 'extension')
       }
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def _GetCachedManifestData(self):
     data = self._object_store.Get('manifest_data').Get()

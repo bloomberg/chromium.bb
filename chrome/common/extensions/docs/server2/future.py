@@ -11,40 +11,30 @@ def Collect(futures):
   '''Creates a Future which returns a list of results from each Future in
   |futures|.
   '''
-  return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
-
-
-class Gettable(object):
-  '''Allows a Future to accept a callable as a delegate. Wraps |f| in a .Get
-  interface required by Future.
-  '''
-  def __init__(self, f, *args):
-    self._g = lambda: f(*args)
-  def Get(self):
-    return self._g()
+  return Future(callback=lambda: [f.Get() for f in futures])
 
 
 class Future(object):
-  '''Stores a value, error, or delegate to be used later.
+  '''Stores a value, error, or callback to be used later.
   '''
-  def __init__(self, value=_no_value, delegate=None, exc_info=None):
+  def __init__(self, value=_no_value, callback=None, exc_info=None):
     self._value = value
-    self._delegate = delegate
+    self._callback = callback
     self._exc_info = exc_info
     if (self._value is _no_value and
-        self._delegate is None and
+        self._callback is None and
         self._exc_info is None):
-      raise ValueError('Must have either a value, error, or delegate.')
+      raise ValueError('Must have either a value, error, or callback.')
 
   def Get(self):
-    '''Gets the stored value, error, or delegate contents.
+    '''Gets the stored value, error, or callback contents.
     '''
     if self._value is not _no_value:
       return self._value
     if self._exc_info is not None:
       self._Raise()
     try:
-      self._value = self._delegate.Get()
+      self._value = self._callback()
       return self._value
     except:
       self._exc_info = sys.exc_info()

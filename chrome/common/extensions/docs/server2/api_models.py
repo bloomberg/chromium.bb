@@ -7,7 +7,7 @@ import posixpath
 from compiled_file_system import SingleFile, Unicode
 from extensions_paths import API, CHROME_API
 from file_system import FileNotFoundError
-from future import Gettable, Future
+from future import Future
 from schema_util import ProcessSchema
 from third_party.json_schema_compiler.model import Namespace, UnixName
 
@@ -81,7 +81,7 @@ class APIModels(object):
         except FileNotFoundError: pass
       # Propagate the first FileNotFoundError if neither were found.
       futures[0].Get()
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def IterModels(self):
     future_models = [(name, self.GetModel(name)) for name in self.GetNames()]

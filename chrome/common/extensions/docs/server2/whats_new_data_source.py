@@ -8,7 +8,7 @@ import posixpath
 
 from data_source import DataSource
 from extensions_paths import JSON_TEMPLATES, PUBLIC_TEMPLATES
-from future import Gettable, Future
+from future import Future
 
 
 class WhatsNewDataSource(DataSource):
@@ -84,7 +84,7 @@ class WhatsNewDataSource(DataSource):
         'apps': _MakeDictByPlatform('apps'),
         'extensions': _MakeDictByPlatform('extensions')
       }
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def _GetCachedWhatsNewData(self):
     data = self._object_store.Get('whats_new_data').Get()

@@ -5,7 +5,7 @@
 import os
 import posixpath
 
-from future import Gettable, Future
+from future import Future
 from path_util import AssertIsDirectory, IsDirectory
 
 
@@ -51,7 +51,7 @@ class FakeUrlFetcher(object):
     def resolve():
       self._async_resolve_count += 1
       return self._DoFetch(url)
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Fetch(self, url):
     self._sync_count += 1
@@ -128,7 +128,7 @@ class MockURLFetcher(object):
     def resolve():
       self._fetch_resolve_count += 1
       return future.Get()
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def CheckAndReset(self,
                     fetch_count=0,

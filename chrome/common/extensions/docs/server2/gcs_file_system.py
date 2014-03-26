@@ -8,7 +8,7 @@ from third_party.cloudstorage import errors
 
 from docs_server_utils import StringIdentity
 from file_system import FileSystem, FileNotFoundError, StatInfo
-from future import Gettable, Future
+from future import Future
 from path_util import (
     AssertIsDirectory, AssertIsFile, AssertIsValid, IsDirectory, Join)
 
@@ -96,7 +96,7 @@ class CloudStorageFileSystem(FileSystem):
         self._warnAboutAuthError()
         raise
 
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Refresh(self):
     return Future(value=())

@@ -6,7 +6,9 @@
 import traceback
 import unittest
 
+
 from future import Future
+
 
 class FutureTest(unittest.TestCase):
   def testNoValueOrDelegate(self):
@@ -18,16 +20,12 @@ class FutureTest(unittest.TestCase):
     self.assertEqual(42, future.Get())
 
   def testDelegateValue(self):
-    assertFalse = self.assertFalse
-    class delegate(object):
-      def __init__(self):
-        self._get_called = False
-      def Get(self):
-        assertFalse(self._get_called)
-        self._get_called = True
-        return 42
-
-    future = Future(delegate=delegate())
+    called = [False,]
+    def callback():
+      self.assertFalse(called[0])
+      called[0] = True
+      return 42
+    future = Future(callback=callback)
     self.assertEqual(42, future.Get())
     self.assertEqual(42, future.Get())
 
@@ -46,14 +44,11 @@ class FutureTest(unittest.TestCase):
       return bar()
     chain = [foo, bar, baz, qux]
 
-    assertFalse = self.assertFalse
-    class delegate(object):
-      def __init__(self):
-        self._get_called = False
-      def Get(self):
-        assertFalse(self._get_called)
-        self._get_called = True
-        return foo()
+    called = [False,]
+    def callback():
+      self.assertFalse(called[0])
+      called[0] = True
+      return foo()
 
     fail = self.fail
     assertTrue = self.assertTrue
@@ -66,9 +61,10 @@ class FutureTest(unittest.TestCase):
         stack = traceback.format_exc()
         assertTrue(all(stack.find(fn.__name__) != -1 for fn in chain))
 
-    future = Future(delegate=delegate())
+    future = Future(callback=callback)
     assert_raises_full_stack(future, FunkyException)
     assert_raises_full_stack(future, FunkyException)
+
 
 if __name__ == '__main__':
   unittest.main()

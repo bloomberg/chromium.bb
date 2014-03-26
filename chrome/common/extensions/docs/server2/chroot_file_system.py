@@ -6,7 +6,7 @@ import posixpath
 
 from docs_server_utils import StringIdentity
 from file_system import FileSystem
-from future import Gettable, Future
+from future import Future
 
 
 class ChrootFileSystem(FileSystem):
@@ -37,7 +37,7 @@ class ChrootFileSystem(FileSystem):
     def resolve():
       return dict((prefixed_paths[path], content)
                   for path, content in future_result.Get().iteritems())
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Refresh(self):
     return self._file_system.Refresh()

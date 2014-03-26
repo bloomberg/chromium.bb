@@ -5,7 +5,7 @@
 from collections import defaultdict
 import posixpath
 
-from future import Gettable, Future
+from future import Future
 from path_util import SplitParent
 from special_paths import SITE_VERIFICATION_FILE
 
@@ -74,7 +74,7 @@ class PathCanonicalizer(object):
 
       return canonical_paths, simplified_paths_map
 
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Canonicalize(self, path):
     '''Returns the canonical path for |path|.

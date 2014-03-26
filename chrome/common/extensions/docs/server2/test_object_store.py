@@ -26,11 +26,10 @@ class TestObjectStore(ObjectStore):
   #
 
   def GetMulti(self, keys):
-    class FutureImpl(object):
-      def Get(self2):
-        self._get_count += 1
-        return dict((k, self._store.get(k)) for k in keys if k in self._store)
-    return Future(delegate=FutureImpl())
+    def callback():
+      self._get_count += 1
+      return dict((k, self._store.get(k)) for k in keys if k in self._store)
+    return Future(callback=callback)
 
   def SetMulti(self, mapping):
     self._set_count += 1

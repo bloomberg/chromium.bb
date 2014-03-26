@@ -9,7 +9,7 @@ from compiled_file_system import SingleFile
 from directory_zipper import DirectoryZipper
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
-from future import Gettable, Future
+from future import Future
 from path_canonicalizer import PathCanonicalizer
 from path_util import AssertIsValid, Join, ToDirectory
 from special_paths import SITE_VERIFICATION_FILE
@@ -132,8 +132,8 @@ class ContentProvider(object):
     # Check for a zip file first, if zip is enabled.
     if self._directory_zipper and ext == '.zip':
       zip_future = self._directory_zipper.Zip(ToDirectory(base))
-      return Future(delegate=Gettable(
-          lambda: ContentAndType(zip_future.Get(), 'application/zip')))
+      return Future(callback=
+          lambda: ContentAndType(zip_future.Get(), 'application/zip'))
 
     # If there is no file extension, look for a file with one of the default
     # extensions.
@@ -159,7 +159,7 @@ class ContentProvider(object):
         if f != SITE_VERIFICATION_FILE and ext in self._default_extensions:
           futures.append(self.GetContentAndType(Join(root, base)))
       # TODO(kalman): Cache .zip files for each directory (if supported).
-    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
+    return Future(callback=lambda: [f.Get() for f in futures])
 
   def __repr__(self):
     return 'ContentProvider of <%s>' % repr(self.file_system)

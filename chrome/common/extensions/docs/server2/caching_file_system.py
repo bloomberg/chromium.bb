@@ -9,29 +9,6 @@ from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
 
 
-class _AsyncUncachedFuture(object):
-  def __init__(self,
-               uncached_read_futures,
-               stats_for_uncached,
-               current_results,
-               file_system,
-               object_store):
-    self._uncached_read_futures = uncached_read_futures
-    self._stats_for_uncached = stats_for_uncached
-    self._current_results = current_results
-    self._file_system = file_system
-    self._object_store = object_store
-
-  def Get(self):
-    new_results = self._uncached_read_futures.Get()
-    # Update the cached data in the object store. This is a path -> (read,
-    # version) mapping.
-    self._object_store.SetMulti(dict(
-        (path, (new_result, self._stats_for_uncached[path].version))
-        for path, new_result in new_results.iteritems()))
-    new_results.update(self._current_results)
-    return new_results
-
 class CachingFileSystem(FileSystem):
   '''FileSystem which implements a caching layer on top of |file_system|. It's
   smart, using Stat() to decided whether to skip Read()ing from |file_system|,
@@ -111,12 +88,17 @@ class CachingFileSystem(FileSystem):
     if not uncached:
       return Future(value=results)
 
-    return Future(delegate=_AsyncUncachedFuture(
-        self._file_system.Read(uncached.keys()),
-        uncached,
-        results,
-        self,
-        self._read_object_store))
+    uncached_read_futures = self._file_system.Read(uncached.keys())
+    def resolve():
+      new_results = uncached_read_futures.Get()
+      # Update the cached data in the object store. This is a path -> (read,
+      # version) mapping.
+      self._read_object_store.SetMulti(dict(
+          (path, (new_result, uncached[path].version))
+          for path, new_result in new_results.iteritems()))
+      new_results.update(results)
+      return new_results
+    return Future(callback=resolve)
 
   def GetIdentity(self):
     return self._file_system.GetIdentity()

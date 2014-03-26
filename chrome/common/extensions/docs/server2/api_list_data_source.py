@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from data_source import DataSource
-from future import Gettable, Future
+from future import Future
 from operator import itemgetter
 
 import docs_server_utils as utils
@@ -95,7 +95,7 @@ class APIListDataSource(DataSource):
         data = self._GenerateAPIDict()
         self._object_store.Set('api_data', data)
       return data
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def get(self, key):
     return self._GetCachedAPIData().Get().get(key)

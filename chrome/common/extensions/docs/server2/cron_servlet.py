@@ -15,7 +15,7 @@ from data_source_registry import CreateDataSources
 from environment import IsDevServer
 from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, STATIC_DOCS
 from file_system_util import CreateURLsFromPaths
-from future import Gettable, Future
+from future import Future
 from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
@@ -187,7 +187,7 @@ class CronServlet(Servlet):
                  init_timer.With(resolve_timer).FormatElapsed(),
                  init_timer.FormatElapsed(),
                  resolve_timer.FormatElapsed()))
-        return Future(delegate=Gettable(resolve))
+        return Future(callback=resolve)
 
       targets = (CreateDataSources(server_instance).values() +
                  [server_instance.content_providers])

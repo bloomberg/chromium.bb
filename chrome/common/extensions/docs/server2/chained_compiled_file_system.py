@@ -4,7 +4,7 @@
 
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
-from future import Gettable, Future
+from future import Future
 
 
 class ChainedCompiledFileSystem(object):
@@ -82,4 +82,4 @@ class ChainedCompiledFileSystem(object):
       # Try an arbitrary operation again to generate a realistic stack trace.
       return read_futures[0][0].Get()
 
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)

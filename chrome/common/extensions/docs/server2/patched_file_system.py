@@ -5,35 +5,32 @@
 from copy import deepcopy
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
-from future import Gettable, Future
+from future import Future
 
-class _AsyncFetchFuture(object):
-  def __init__(self,
-               unpatched_files_future,
-               patched_files_future,
-               dirs_value,
-               patched_file_system):
-    self._unpatched_files_future = unpatched_files_future
-    self._patched_files_future = patched_files_future
-    self._dirs_value  = dirs_value
-    self._patched_file_system = patched_file_system
 
-  def Get(self):
-    files = self._unpatched_files_future.Get()
-    files.update(self._patched_files_future.Get())
-    files.update(
-        dict((path, self._PatchDirectoryListing(path, self._dirs_value[path]))
-             for path in self._dirs_value))
-    return files
-
-  def _PatchDirectoryListing(self, path, original_listing):
+def _GetAsyncFetchCallback(unpatched_files_future,
+                           patched_files_future,
+                           dirs_value,
+                           patched_file_system):
+  def patch_directory_listing(path, original_listing):
     added, deleted, modified = (
-        self._patched_file_system._GetDirectoryListingFromPatch(path))
+        patched_file_system._GetDirectoryListingFromPatch(path))
     if original_listing is None:
       if len(added) == 0:
         raise FileNotFoundError('Directory %s not found in the patch.' % path)
       return added
     return list((set(original_listing) | set(added)) - set(deleted))
+
+  def resolve():
+    files = unpatched_files_future.Get()
+    files.update(patched_files_future.Get())
+    files.update(
+        dict((path, patch_directory_listing(path, dirs_value[path]))
+             for path in dirs_value))
+    return files
+
+  return resolve
+
 
 class PatchedFileSystem(FileSystem):
   ''' Class to fetch resources with a patch applied.
@@ -48,13 +45,13 @@ class PatchedFileSystem(FileSystem):
     if set(paths) & set(deleted):
       def raise_file_not_found():
         raise FileNotFoundError('Files are removed from the patch.')
-      return Future(delegate=Gettable(raise_file_not_found))
+      return Future(callback=raise_file_not_found)
     patched_files |= (set(added) | set(modified))
     dir_paths = set(path for path in paths if path.endswith('/'))
     file_paths = set(paths) - dir_paths
     patched_paths = file_paths & patched_files
     unpatched_paths = file_paths - patched_files
-    return Future(delegate=_AsyncFetchFuture(
+    return Future(callback=_GetAsyncFetchCallback(
         self._base_file_system.Read(unpatched_paths),
         self._patcher.Apply(patched_paths, self._base_file_system),
         self._TryReadDirectory(dir_paths),

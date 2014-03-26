@@ -9,7 +9,7 @@ import posixpath
 from compiled_file_system import SingleFile, Unicode
 from data_source import DataSource
 from extensions_paths import JSON_TEMPLATES
-from future import Gettable, Future
+from future import Future
 from third_party.json_schema_compiler.json_parse import Parse
 
 

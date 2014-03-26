@@ -8,7 +8,7 @@ from compiled_file_system import Unicode
 from extensions_paths import (
     API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
 import features_utility
-from future import Gettable, Future
+from future import Future
 from third_party.json_schema_compiler.json_parse import Parse
 
 
@@ -109,4 +109,4 @@ class FeaturesBundle(object):
             feature, api_features, manifest_features, permission_features)
       self._object_store.Set('api_features', api_features)
       return api_features
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)

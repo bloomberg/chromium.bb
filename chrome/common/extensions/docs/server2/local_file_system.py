@@ -7,7 +7,7 @@ import sys
 
 from docs_server_utils import StringIdentity
 from file_system import FileSystem, FileNotFoundError, StatInfo
-from future import Gettable, Future
+from future import Future
 from path_util import AssertIsDirectory, AssertIsValid
 from test_util import ChromiumPath
 
@@ -88,7 +88,7 @@ class LocalFileSystem(FileSystem):
         else:
           result[path] = _ReadFile(full_path)
       return result
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Refresh(self):
     return Future(value=())

@@ -8,7 +8,7 @@ from operator import itemgetter
 from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
 import features_utility as features
-from future import Gettable, Future
+from future import Future
 
 
 def _ListifyPermissions(permissions):
@@ -74,7 +74,7 @@ class PermissionsDataSource(DataSource):
         'declare_extensions': filter_for_platform(
             permission_features, 'extensions')
       }
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def _GetCachedPermissionsData(self):
     data = self._object_store.Get('permissions_data').Get()

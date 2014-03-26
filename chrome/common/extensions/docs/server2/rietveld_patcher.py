@@ -24,33 +24,25 @@ class RietveldPatcherError(Exception):
   def __init__(self, message):
     self.message = message
 
-class _AsyncFetchFuture(object):
-  def __init__(self,
-               issue,
-               patchset,
-               files,
-               fetcher):
-    self._issue = issue
-    self._patchset = patchset
-    self._files = files
-    self._tarball = fetcher.FetchAsync('tarball/%s/%s' % (issue, patchset))
 
-  def Get(self):
-    tarball_result = self._tarball.Get()
+def _GetAsyncFetchCallback(issue, patchset, files, fetcher):
+  tarball = fetcher.FetchAsync('tarball/%s/%s' % (issue, patchset))
+
+  def resolve():
+    tarball_result = tarball.Get()
     if tarball_result.status_code != 200:
       raise RietveldPatcherError(
           'Failed to download tarball for issue %s patchset %s. Status: %s' %
-          (self._issue, self._patchset, tarball_result.status_code))
+          (issue, patchset, tarball_result.status_code))
 
     try:
       tar = tarfile.open(fileobj=StringIO(tarball_result.content))
     except tarfile.TarError as e:
       raise RietveldPatcherError(
-          'Error loading tarball for issue %s patchset %s.' % (self._issue,
-                                                               self._patchset))
+          'Error loading tarball for issue %s patchset %s.' % (issue, patchset))
 
-    self._value = {}
-    for path in self._files:
+    value = {}
+    for path in files:
       tar_path = 'b/%s' % path
 
       patched_file = None
@@ -62,18 +54,21 @@ class _AsyncFetchFuture(object):
         # is corrupted.
         raise RietveldPatcherError(
             'Error extracting tarball for issue %s patchset %s file %s.' %
-            (self._issue, self._patchset, tar_path))
+            (issue, patchset, tar_path))
       except KeyError as e:
         raise FileNotFoundError(
             'File %s not found in the tarball for issue %s patchset %s' %
-            (tar_path, self._issue, self._patchset))
+            (tar_path, issue, patchset))
       finally:
         if patched_file:
           patched_file.close()
 
-      self._value[path] = data
+      value[path] = data
 
-    return self._value
+    return value
+
+  return resolve
+
 
 class RietveldPatcher(Patcher):
   ''' Class to fetch resources from a patchset in Rietveld.
@@ -146,10 +141,10 @@ class RietveldPatcher(Patcher):
   def Apply(self, paths, file_system, version=None):
     if version is None:
       version = self.GetVersion()
-    return Future(delegate=_AsyncFetchFuture(self._issue,
-                                             version,
-                                             paths,
-                                             self._fetcher))
+    return Future(callback=_GetAsyncFetchCallback(self._issue,
+                                                  version,
+                                                  paths,
+                                                  self._fetcher))
 
   def GetIdentity(self):
     return self._issue

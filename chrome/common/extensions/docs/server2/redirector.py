@@ -6,7 +6,7 @@ import posixpath
 from urlparse import urlsplit
 
 from file_system import FileNotFoundError
-from future import Gettable, Future
+from future import Future
 
 class Redirector(object):
   def __init__(self, compiled_fs_factory, file_system):
@@ -66,4 +66,4 @@ class Redirector(object):
       if 'redirects.json' in files:
         futures.append(
             self._cache.GetFromFile(posixpath.join(root, 'redirects.json')))
-    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
+    return Future(callback=lambda: [f.Get() for f in futures])

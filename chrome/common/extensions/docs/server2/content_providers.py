@@ -10,7 +10,7 @@ from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
 import environment
 from extensions_paths import CONTENT_PROVIDERS, LOCAL_DEBUG_DIR
-from future import Gettable, Future
+from future import Future
 from local_file_system import LocalFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -177,5 +177,5 @@ class ContentProviders(object):
                            'initializing',
                            self._CreateContentProvider(name, config).Cron))
                for name, config in self._GetConfig().iteritems()]
-    return Future(delegate=Gettable(
-        lambda: [safe(name, 'resolving', f.Get) for name, f in futures if f]))
+    return Future(callback=
+        lambda: [safe(name, 'resolving', f.Get) for name, f in futures if f])

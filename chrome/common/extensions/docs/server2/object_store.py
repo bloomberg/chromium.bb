@@ -4,13 +4,6 @@
 
 from future import Future
 
-class _SingleGetFuture(object):
-  def __init__(self, multi_get, key):
-    self._future = multi_get
-    self._key = key
-
-  def Get(self):
-    return self._future.Get().get(self._key)
 
 class ObjectStore(object):
   '''A class for caching picklable objects.
@@ -19,7 +12,8 @@ class ObjectStore(object):
     '''Gets a |Future| with the value of |key| in the object store, or None
     if |key| is not in the object store.
     '''
-    return Future(delegate=_SingleGetFuture(self.GetMulti([key]), key))
+    multi_get_future = self.GetMulti((key,))
+    return Future(callback=lambda: multi_get_future.Get().get(key))
 
   def GetMulti(self, keys):
     '''Gets a |Future| with values mapped to |keys| from the object store, with

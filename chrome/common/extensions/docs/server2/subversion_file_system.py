@@ -95,46 +95,42 @@ def _CreateStatInfo(html):
 
   return StatInfo(parent_version, child_versions)
 
-class _AsyncFetchFuture(object):
-  def __init__(self, paths, fetcher, args=None):
-    def apply_args(path):
-      return path if args is None else '%s?%s' % (path, args)
-    # A list of tuples of the form (path, Future).
-    self._fetches = [(path, fetcher.FetchAsync(apply_args(path)))
-                     for path in paths]
-    self._value = {}
-    self._error = None
+def _GetAsyncFetchCallback(paths, fetcher, args=None):
+  def apply_args(path):
+    return path if args is None else '%s?%s' % (path, args)
 
-  def _ListDir(self, directory):
+  def list_dir(directory):
     dom = xml.parseString(directory)
     files = [elem.childNodes[0].data for elem in dom.getElementsByTagName('a')]
     if '..' in files:
       files.remove('..')
     return files
 
-  def Get(self):
-    for path, future in self._fetches:
+  # A list of tuples of the form (path, Future).
+  fetches = [(path, fetcher.FetchAsync(apply_args(path))) for path in paths]
+
+  def resolve():
+    value = {}
+    for path, future in fetches:
       try:
         result = future.Get()
       except Exception as e:
         exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
         raise exc_type('%s fetching %s for Get: %s' %
                        (type(e).__name__, path, traceback.format_exc()))
-
       if result.status_code == 404:
         raise FileNotFoundError('Got 404 when fetching %s for Get, content %s' %
             (path, result.content))
       if result.status_code != 200:
         raise FileSystemError('Got %s when fetching %s for Get, content %s' %
             (result.status_code, path, result.content))
-
       if path.endswith('/'):
-        self._value[path] = self._ListDir(result.content)
+        value[path] = list_dir(result.content)
       else:
-        self._value[path] = result.content
-    if self._error is not None:
-      raise self._error
-    return self._value
+        value[path] = result.content
+    return value
+
+  return resolve
 
 class SubversionFileSystem(FileSystem):
   '''Class to fetch resources from src.chromium.org.
@@ -162,9 +158,9 @@ class SubversionFileSystem(FileSystem):
     if self._revision is not None:
       # |fetcher| gets from svn.chromium.org which uses p= for version.
       args = 'p=%s' % self._revision
-    return Future(delegate=_AsyncFetchFuture(paths,
-                                             self._file_fetcher,
-                                             args=args))
+    return Future(callback=_GetAsyncFetchCallback(paths,
+                                                  self._file_fetcher,
+                                                  args=args))
 
   def Refresh(self):
     return Future(value=())

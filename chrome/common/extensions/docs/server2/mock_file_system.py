@@ -5,7 +5,7 @@
 import posixpath
 
 from file_system import FileSystem, FileNotFoundError
-from future import Gettable, Future
+from future import Future
 from test_file_system import _List, _StatTracker, TestFileSystem
 from path_util import IsDirectory
 
@@ -51,7 +51,7 @@ class MockFileSystem(FileSystem):
         if update is not None:
           result[path] = update
       return result
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Refresh(self):
     return self._file_system.Refresh()

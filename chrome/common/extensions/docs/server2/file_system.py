@@ -5,7 +5,7 @@
 import posixpath
 import traceback
 
-from future import Gettable, Future
+from future import Future
 from path_util import (
     AssertIsDirectory, AssertIsValid, IsDirectory, IsValid, SplitParent,
     ToDirectory)
@@ -19,7 +19,7 @@ class _BaseFileSystemException(Exception):
   def RaiseInFuture(cls, message):
     stack = traceback.format_stack()
     def boom(): raise cls('%s. Creation stack:\n%s' % (message, ''.join(stack)))
-    return Future(delegate=Gettable(boom))
+    return Future(callback=boom)
 
 
 class FileNotFoundError(_BaseFileSystemException):
@@ -86,7 +86,7 @@ class FileSystem(object):
     '''
     AssertIsValid(path)
     read_single = self.Read([path])
-    return Future(delegate=Gettable(lambda: read_single.Get()[path]))
+    return Future(callback=lambda: read_single.Get()[path])
 
   def Exists(self, path):
     '''Returns a Future to the existence of |path|; True if |path| exists,
@@ -108,7 +108,7 @@ class FileSystem(object):
         return base in list_future.Get()
       except FileNotFoundError:
         return False
-    return Future(delegate=Gettable(resolve))
+    return Future(callback=resolve)
 
   def Refresh(self):
     '''Asynchronously refreshes the content of the FileSystem, returning a
