@@ -383,15 +383,6 @@
 
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
-
-          'conditions': [
-            [ 'enable_autofill_dialog != 1 or OS == "android" or OS == "ios"', {
-              'sources!': [
-                'autofill/content/browser/risk/fingerprint.cc',
-                'autofill/content/browser/risk/fingerprint.h',
-              ],
-            }],
-          ],
         },
 
         {
