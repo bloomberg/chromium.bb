@@ -275,6 +275,8 @@
         'scripts/generate_event_interfaces.py',
         'scripts/utilities.py',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        # Conservative: only needs to depend on Event IDL files
+        '<@(static_idl_files)',
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
@@ -437,7 +439,6 @@
     'type': 'none',
     'dependencies': [
       'aggregate_generated_bindings',
-      'event_interfaces',
       'individual_generated_bindings',
     ],
   },

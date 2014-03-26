@@ -95,6 +95,9 @@
       'hard_dependency': 1,
       'dependencies': [
         'generated_testing_idls',
+        # FIXME: this dependency creates a circular dependency between files,
+        # even though it is not a circular dependency of targets
+        # '../bindings/generated_bindings.gyp:event_interfaces',
         '../config.gyp:config',
       ],
       'sources': [
