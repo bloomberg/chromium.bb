@@ -651,7 +651,7 @@ function shouldHaveHadError(message)
 
 function gc() {
     if (typeof GCController !== "undefined")
-        GCController.collect();
+        GCController.collectAll();
     else {
         var gcRec = function (n) {
             if (n < 1)
