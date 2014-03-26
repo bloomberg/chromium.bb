@@ -63,9 +63,9 @@ public:
     // Other callback methods are implemented by each subclass.
 
 protected:
-    FileSystemCallbacksBase(PassOwnPtr<ErrorCallback>, DOMFileSystemBase*);
+    FileSystemCallbacksBase(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>);
     OwnPtr<ErrorCallback> m_errorCallback;
-    DOMFileSystemBase* m_fileSystem;
+    RefPtrWillBePersistent<DOMFileSystemBase> m_fileSystem;
 };
 
 // Subclasses ----------------------------------------------------------------
@@ -121,11 +121,11 @@ private:
 
 class MetadataCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<MetadataCallback>, PassOwnPtr<ErrorCallback>, DOMFileSystemBase*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<MetadataCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>);
     virtual void didReadMetadata(const FileMetadata&) OVERRIDE;
 
 private:
-    MetadataCallbacks(PassOwnPtr<MetadataCallback>, PassOwnPtr<ErrorCallback>, DOMFileSystemBase*);
+    MetadataCallbacks(PassOwnPtr<MetadataCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>);
     OwnPtr<MetadataCallback> m_successCallback;
 };
 
@@ -142,11 +142,11 @@ private:
 
 class VoidCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, DOMFileSystemBase*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>);
     virtual void didSucceed() OVERRIDE;
 
 private:
-    VoidCallbacks(PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, DOMFileSystemBase*);
+    VoidCallbacks(PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>);
     OwnPtr<VoidCallback> m_successCallback;
 };
 

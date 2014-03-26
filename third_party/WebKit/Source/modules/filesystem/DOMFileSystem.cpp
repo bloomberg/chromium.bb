@@ -88,6 +88,7 @@ PassRefPtrWillBeRawPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(Ex
 DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL)
     , ActiveDOMObject(context)
+    , m_numberOfPendingCallbacks(0)
 {
     ScriptWrappable::init(this);
 }
@@ -99,12 +100,19 @@ PassRefPtrWillBeRawPtr<DirectoryEntry> DOMFileSystem::root()
 
 void DOMFileSystem::addPendingCallbacks()
 {
-    setPendingActivity(this);
+    ++m_numberOfPendingCallbacks;
 }
 
 void DOMFileSystem::removePendingCallbacks()
 {
-    unsetPendingActivity(this);
+    ASSERT(m_numberOfPendingCallbacks > 0);
+    --m_numberOfPendingCallbacks;
+}
+
+bool DOMFileSystem::hasPendingActivity() const
+{
+    ASSERT(m_numberOfPendingCallbacks >= 0);
+    return m_numberOfPendingCallbacks;
 }
 
 void DOMFileSystem::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)

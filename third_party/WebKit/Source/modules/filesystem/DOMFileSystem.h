@@ -61,6 +61,9 @@ public:
     virtual void removePendingCallbacks() OVERRIDE;
     virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
 
+    // ActiveDOMObject overrides.
+    virtual bool hasPendingActivity() const OVERRIDE;
+
     void createWriter(const FileEntry*, PassOwnPtr<FileWriterCallback>, PassOwnPtr<ErrorCallback>);
     void createFile(const FileEntry*, PassOwnPtr<FileCallback>, PassOwnPtr<ErrorCallback>);
 
@@ -125,6 +128,8 @@ private:
         OwnPtr<CB> m_callback;
         CBArg m_callbackArg;
     };
+
+    int m_numberOfPendingCallbacks;
 };
 
 template <typename CB, typename CBArg>
