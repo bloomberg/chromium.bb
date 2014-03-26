@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -148,7 +149,9 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.PORTRAIT_SECONDARY));
     }
 
-    @MediumTest
+    // @MediumTest
+    // crbug.com/353500
+    @FlakyTest
     @Feature({"ScreenOrientation"})
     public void testLandscape() throws Exception {
         int initialOrientation = mObserver.mOrientation;
