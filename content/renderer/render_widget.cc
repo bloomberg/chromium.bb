@@ -185,6 +185,7 @@ class RenderWidget::ScreenMetricsEmulator {
   void OnShowContextMenu(ContextMenuParams* params);
 
  private:
+  void CalculateScaleAndOffset();
   void Apply(float overdraw_bottom_height,
       gfx::Rect resizer_rect, bool is_fullscreen);
 
@@ -254,8 +255,7 @@ void RenderWidget::ScreenMetricsEmulator::ChangeEmulationParams(
         widget_->resizer_rect_, widget_->is_fullscreen_);
 }
 
-void RenderWidget::ScreenMetricsEmulator::Apply(
-    float overdraw_bottom_height, gfx::Rect resizer_rect, bool is_fullscreen) {
+void RenderWidget::ScreenMetricsEmulator::CalculateScaleAndOffset() {
   if (fit_to_view_) {
     DCHECK(!original_size_.IsEmpty());
 
@@ -269,17 +269,42 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
         static_cast<float>(widget_rect_.height()) / height_with_gutter;
     float ratio = std::max(1.0f, std::max(width_ratio, height_ratio));
     scale_ = 1.f / ratio;
+
+    // Center emulated view inside available view space.
+    offset_.set_x((original_size_.width() - scale_ * widget_rect_.width()) / 2);
+    offset_.set_y(
+        (original_size_.height() - scale_ * widget_rect_.height()) / 2);
   } else {
     scale_ = 1.f;
+    offset_.SetPoint(0, 0);
+  }
+}
+
+void RenderWidget::ScreenMetricsEmulator::Apply(
+    float overdraw_bottom_height, gfx::Rect resizer_rect, bool is_fullscreen) {
+  gfx::Rect applied_widget_rect = widget_rect_;
+  if (widget_rect_.size().IsEmpty()) {
+    scale_ = 1.f;
+    offset_.SetPoint(0, 0);
+    applied_widget_rect =
+        gfx::Rect(original_view_screen_rect_.origin(), original_size_);
+  } else {
+    CalculateScaleAndOffset();
   }
 
-  // Center emulated view inside available view space.
-  offset_.set_x((original_size_.width() - scale_ * widget_rect_.width()) / 2);
-  offset_.set_y((original_size_.height() - scale_ * widget_rect_.height()) / 2);
+  if (device_rect_.size().IsEmpty()) {
+    widget_->screen_info_.rect = original_screen_info_.rect;
+    widget_->screen_info_.availableRect = original_screen_info_.availableRect;
+    widget_->window_screen_rect_ = original_window_screen_rect_;
+  } else {
+    widget_->screen_info_.rect = gfx::Rect(device_rect_.size());
+    widget_->screen_info_.availableRect = gfx::Rect(device_rect_.size());
+    widget_->window_screen_rect_ = widget_->screen_info_.availableRect;
+  }
 
-  widget_->screen_info_.rect = gfx::Rect(device_rect_.size());
-  widget_->screen_info_.availableRect = gfx::Rect(device_rect_.size());
-  widget_->screen_info_.deviceScaleFactor = device_scale_factor_;
+  float applied_device_scale_factor = device_scale_factor_ ?
+      device_scale_factor_ : original_screen_info_.deviceScaleFactor;
+  widget_->screen_info_.deviceScaleFactor = applied_device_scale_factor;
 
   // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
@@ -289,13 +314,12 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   widget_->SetScreenMetricsEmulationParameters(
       original_screen_info_.deviceScaleFactor, offset_, scale_);
 
-  widget_->SetDeviceScaleFactor(device_scale_factor_);
-  widget_->view_screen_rect_ = widget_rect_;
-  widget_->window_screen_rect_ = widget_->screen_info_.availableRect;
+  widget_->SetDeviceScaleFactor(applied_device_scale_factor);
+  widget_->view_screen_rect_ = applied_widget_rect;
 
   gfx::Size physical_backing_size = gfx::ToCeiledSize(gfx::ScaleSize(
       original_size_, original_screen_info_.deviceScaleFactor));
-  widget_->Resize(widget_rect_.size(), physical_backing_size,
+  widget_->Resize(applied_widget_rect.size(), physical_backing_size,
       overdraw_bottom_height, resizer_rect, is_fullscreen, NO_RESIZE_ACK);
 }
 
@@ -321,6 +345,10 @@ void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
     const gfx::Rect& window_screen_rect) {
   original_view_screen_rect_ = view_screen_rect;
   original_window_screen_rect_ = window_screen_rect;
+  if (device_rect_.size().IsEmpty())
+    widget_->window_screen_rect_ = window_screen_rect;
+  if (widget_rect_.size().IsEmpty())
+    widget_->view_screen_rect_ = view_screen_rect;
 }
 
 void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
