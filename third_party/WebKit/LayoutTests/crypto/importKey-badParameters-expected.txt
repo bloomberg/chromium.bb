@@ -1,0 +1,22 @@
+CONSOLE ERROR: Invalid keyFormat argument
+CONSOLE ERROR: Invalid keyUsages argument
+CONSOLE ERROR: Invalid keyFormat argument
+CONSOLE ERROR: Algorithm: HMAC: HmacImportParams: hash: Missing or not a dictionary
+CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
+Tests calling cypto.subtle.importKey with bad parameters
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
+PASS crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
+PASS crypto.subtle.importKey('raw', aesCbc, null, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
+PASS error is null
+PASS error is null
+PASS error is null
+PASS error is null
+PASS error is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -623,7 +623,7 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
         context.add("AesKeyGenParams");
         return parseAesKeyGenParams(raw, params, context, errorDetails);
     case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
-        context.add("HmacImporParams");
+        context.add("HmacImportParams");
         return parseHmacImportParams(raw, params, context, errorDetails);
     case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
         context.add("HmacKeyGenParams");

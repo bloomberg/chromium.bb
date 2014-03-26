@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests calling cypto.subtle.importKey with bad parameters");
+
+jsTestIsAsync = true;
+
+var aesCbc = {name: 'aes-cbc'};
+var aesKeyBytes = new Uint8Array(16);
+var extractable = true;
+
+// Undefined key usage.
+// FIXME: http://crbug.com/262383
+//shouldThrow("crypto.subtle.importKey('raw', aesKeyBytes, aesCbc, extractable, undefined)");
+
+// Invalid data
+shouldThrow("crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt'])");
+shouldThrow("crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt'])");
+
+// Invalid algorithm
+shouldThrow("crypto.subtle.importKey('raw', aesCbc, null, extractable, ['encrypt'])");
+
+Promise.resolve(null).then(function() {
+    // Invalid format.
+    return crypto.subtle.importKey('invalid format', aesKeyBytes, aesCbc, extractable, ['encrypt']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Invalid key usage (case sensitive).
+    return crypto.subtle.importKey('raw', aesKeyBytes, aesCbc, extractable, ['ENCRYPT']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // If both the format and key usage are bogus, should complain about the
+    // format first.
+    return crypto.subtle.importKey('invalid format', aesKeyBytes, aesCbc, extractable, ['ENCRYPT']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Missing hash parameter for HMAC.
+    return crypto.subtle.importKey('raw', new Uint8Array(20), {name: 'hmac'}, extractable, ['sign']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // SHA-1 doesn't support the importKey operation.
+    return crypto.subtle.importKey('raw', new Uint8Array(20), {name: 'sha-1'}, extractable, ['sign']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>
