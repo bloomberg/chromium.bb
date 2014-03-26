@@ -160,7 +160,7 @@ void AudioConverter::Convert(AudioBus* dest) {
 }
 
 void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
-  bool needs_downmix = channel_mixer_ && downmix_early_;
+  const bool needs_downmix = channel_mixer_ && downmix_early_;
 
   if (!mixer_input_audio_bus_ ||
       mixer_input_audio_bus_->frames() != dest->frames()) {
@@ -174,7 +174,7 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
   if (needs_downmix)
     CreateUnmixedAudioIfNecessary(dest->frames());
 
-  AudioBus* temp_dest = needs_downmix ? unmixed_audio_.get() : dest;
+  AudioBus* const temp_dest = needs_downmix ? unmixed_audio_.get() : dest;
 
   // Sanity check our inputs.
   DCHECK_EQ(temp_dest->frames(), mixer_input_audio_bus_->frames());
@@ -191,23 +191,27 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
         fifo_frame_delay * input_frame_duration_.InMicroseconds());
   }
 
+  // If we only have a single input, avoid an extra copy.
+  AudioBus* const provide_input_dest =
+      transform_inputs_.size() == 1 ? temp_dest : mixer_input_audio_bus_.get();
+
   // Have each mixer render its data into an output buffer then mix the result.
   for (InputCallbackSet::iterator it = transform_inputs_.begin();
        it != transform_inputs_.end(); ++it) {
     InputCallback* input = *it;
 
-    float volume = input->ProvideInput(
-        mixer_input_audio_bus_.get(), buffer_delay);
+    const float volume = input->ProvideInput(provide_input_dest, buffer_delay);
 
     // Optimize the most common single input, full volume case.
     if (it == transform_inputs_.begin()) {
       if (volume == 1.0f) {
-        mixer_input_audio_bus_->CopyTo(temp_dest);
+        if (temp_dest != provide_input_dest)
+          provide_input_dest->CopyTo(temp_dest);
       } else if (volume > 0) {
-        for (int i = 0; i < mixer_input_audio_bus_->channels(); ++i) {
+        for (int i = 0; i < provide_input_dest->channels(); ++i) {
           vector_math::FMUL(
-              mixer_input_audio_bus_->channel(i), volume,
-              mixer_input_audio_bus_->frames(), temp_dest->channel(i));
+              provide_input_dest->channel(i), volume,
+              provide_input_dest->frames(), temp_dest->channel(i));
         }
       } else {
         // Zero |temp_dest| otherwise, so we're mixing into a clean buffer.
