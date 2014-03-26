@@ -79,7 +79,6 @@ void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_textSize(0)
-    , m_emSizeInFontUnits(0)
     , m_syntheticBold(false)
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
@@ -89,7 +88,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 
 FontPlatformData::FontPlatformData()
     : m_textSize(0)
-    , m_emSizeInFontUnits(0)
     , m_syntheticBold(false)
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
@@ -99,7 +97,6 @@ FontPlatformData::FontPlatformData()
 
 FontPlatformData::FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic)
     : m_textSize(textSize)
-    , m_emSizeInFontUnits(0)
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(Horizontal)
@@ -111,7 +108,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     : m_typeface(src.m_typeface)
     , m_family(src.m_family)
     , m_textSize(src.m_textSize)
-    , m_emSizeInFontUnits(src.m_emSizeInFontUnits)
     , m_syntheticBold(src.m_syntheticBold)
     , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
@@ -125,7 +121,6 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     : m_typeface(tf)
     , m_family(family)
     , m_textSize(textSize)
-    , m_emSizeInFontUnits(0)
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
@@ -138,7 +133,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     : m_typeface(src.m_typeface)
     , m_family(src.m_family)
     , m_textSize(textSize)
-    , m_emSizeInFontUnits(src.m_emSizeInFontUnits)
     , m_syntheticBold(src.m_syntheticBold)
     , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
@@ -152,15 +146,6 @@ FontPlatformData::~FontPlatformData()
 {
 }
 
-int FontPlatformData::emSizeInFontUnits() const
-{
-    if (m_emSizeInFontUnits)
-        return m_emSizeInFontUnits;
-
-    m_emSizeInFontUnits = m_typeface->getUnitsPerEm();
-    return m_emSizeInFontUnits;
-}
-
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
 {
     m_typeface = src.m_typeface;
@@ -171,7 +156,6 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
     m_harfBuzzFace = nullptr;
     m_orientation = src.m_orientation;
     m_style = src.m_style;
-    m_emSizeInFontUnits = src.m_emSizeInFontUnits;
 
     return *this;
 }
