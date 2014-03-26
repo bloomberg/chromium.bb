@@ -8,17 +8,12 @@
 #include <string>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/common/extensions/api/runtime.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/update_observer.h"
 
 class Profile;
-
-namespace base {
-class Version;
-}
 
 namespace content {
 class BrowserContext;
@@ -53,6 +48,10 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   void OnExtensionInstalled(const Extension* extension);
   void OnExtensionUninstalled(const Extension* extension);
 
+  // Shows the uninstall URL in a new tab.
+  static void ShowUninstallURL(Profile* profile,
+                               const std::string& extension_id);
+
   // BrowserContextKeyedAPI implementation:
   static const char* service_name() { return "RuntimeAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
@@ -75,38 +74,6 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
-};
-
-class RuntimeEventRouter {
- public:
-  // Dispatches the onStartup event to all currently-loaded extensions.
-  static void DispatchOnStartupEvent(content::BrowserContext* context,
-                                     const std::string& extension_id);
-
-  // Dispatches the onInstalled event to the given extension.
-  static void DispatchOnInstalledEvent(content::BrowserContext* context,
-                                       const std::string& extension_id,
-                                       const base::Version& old_version,
-                                       bool chrome_updated);
-
-  // Dispatches the onUpdateAvailable event to the given extension.
-  static void DispatchOnUpdateAvailableEvent(
-      Profile* profile,
-      const std::string& extension_id,
-      const base::DictionaryValue* manifest);
-
-  // Dispatches the onBrowserUpdateAvailable event to all extensions.
-  static void DispatchOnBrowserUpdateAvailableEvent(Profile* profile);
-
-  // Dispatches the onRestartRequired event to the given app.
-  static void DispatchOnRestartRequiredEvent(
-      Profile* profile,
-      const std::string& app_id,
-      api::runtime::OnRestartRequired::Reason reason);
-
-  // Does any work needed at extension uninstall (e.g. load uninstall url).
-  static void OnExtensionUninstalled(Profile* profile,
-                                     const std::string& extension_id);
 };
 
 class RuntimeGetBackgroundPageFunction : public ChromeAsyncExtensionFunction {

@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/api/runtime/runtime_event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -771,8 +771,11 @@ void ProcessManager::CreateBackgroundHostsForProfileStartup() {
        ++extension) {
     CreateBackgroundHostForExtensionLoad(this, extension->get());
 
+#if defined(ENABLE_EXTENSIONS)
+    // Android cannot call API implementations.
     RuntimeEventRouter::DispatchOnStartupEvent(GetBrowserContext(),
                                                (*extension)->id());
+#endif
   }
   startup_background_hosts_created_ = true;
 

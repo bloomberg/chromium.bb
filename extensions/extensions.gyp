@@ -206,6 +206,8 @@
         'browser/api/dns/host_resolver_wrapper.h',
         'browser/api/extensions_api_client.cc',
         'browser/api/extensions_api_client.h',
+        'browser/api/runtime/runtime_event_router.cc',
+        'browser/api/runtime/runtime_event_router.h',
         'browser/api/socket/socket.cc',
         'browser/api/socket/socket.h',
         'browser/api/socket/socket_api.cc',

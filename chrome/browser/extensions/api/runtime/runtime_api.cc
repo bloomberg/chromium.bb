@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -25,7 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/browser/event_router.h"
+#include "extensions/browser/api/runtime/runtime_event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -56,11 +55,6 @@ namespace {
 
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
-const char kInstallReason[] = "reason";
-const char kInstallReasonChromeUpdate[] = "chrome_update";
-const char kInstallReasonUpdate[] = "update";
-const char kInstallReasonInstall[] = "install";
-const char kInstallPreviousVersion[] = "previousVersion";
 const char kInvalidUrlError[] = "Invalid URL.";
 const char kUpdatesDisabledError[] = "Autoupdate is not enabled.";
 const char kUpdateFound[] = "update_available";
@@ -74,49 +68,6 @@ const char kUninstallUrl[] = "uninstall_url";
 // particular value does not matter to user code, but is chosen for consistency
 // with the equivalent Pepper API.
 const char kPackageDirectoryPath[] = "crxfs";
-
-void DispatchOnStartupEventImpl(BrowserContext* browser_context,
-                                const std::string& extension_id,
-                                bool first_call,
-                                ExtensionHost* host) {
-  // A NULL host from the LazyBackgroundTaskQueue means the page failed to
-  // load. Give up.
-  if (!host && !first_call)
-    return;
-
-  // Don't send onStartup events to incognito browser contexts.
-  if (browser_context->IsOffTheRecord())
-    return;
-
-  if (ExtensionsBrowserClient::Get()->IsShuttingDown() ||
-      !ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
-    return;
-  ExtensionSystem* system = ExtensionSystem::Get(browser_context);
-  if (!system)
-    return;
-
-  // If this is a persistent background page, we want to wait for it to load
-  // (it might not be ready, since this is startup). But only enqueue once.
-  // If it fails to load the first time, don't bother trying again.
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
-          extension_id);
-  if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
-      first_call &&
-      system->lazy_background_task_queue()->
-          ShouldEnqueueTask(browser_context, extension)) {
-    system->lazy_background_task_queue()->AddPendingTask(
-        browser_context, extension_id,
-        base::Bind(&DispatchOnStartupEventImpl,
-                   browser_context, extension_id, false));
-    return;
-  }
-
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<Event> event(new Event(runtime::OnStartup::kEventName,
-                                    event_args.Pass()));
-  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
-}
 
 void SetUninstallURL(ExtensionPrefs* prefs,
                      const std::string& extension_id,
@@ -147,7 +98,7 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
+RuntimeAPI::RuntimeAPI(BrowserContext* context)
     : browser_context_(context),
       dispatch_chrome_updated_event_(false),
       registered_for_updates_(false) {
@@ -236,9 +187,9 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
     return;
 
   // Get the previous version to check if this is an upgrade.
-  ExtensionService* service = ExtensionSystem::Get(
-      browser_context_)->extension_service();
-  const Extension* old = service->GetExtensionById(extension->id(), true);
+  const Extension* old =
+      ExtensionRegistry::Get(browser_context_)
+          ->GetExtensionById(extension->id(), ExtensionRegistry::EVERYTHING);
   Version old_version;
   if (old)
     old_version = *old->version();
@@ -261,110 +212,12 @@ void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
     return;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  RuntimeEventRouter::OnExtensionUninstalled(profile, extension->id());
-}
-
-void RuntimeAPI::OnAppUpdateAvailable(const Extension* extension) {
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
-      profile, extension->id(), extension->manifest()->value());
-}
-
-void RuntimeAPI::OnChromeUpdateAvailable() {
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(profile);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// static
-void RuntimeEventRouter::DispatchOnStartupEvent(
-    content::BrowserContext* context, const std::string& extension_id) {
-  DispatchOnStartupEventImpl(context, extension_id, true, NULL);
+  ShowUninstallURL(profile, extension->id());
 }
 
 // static
-void RuntimeEventRouter::DispatchOnInstalledEvent(
-    content::BrowserContext* context,
-    const std::string& extension_id,
-    const Version& old_version,
-    bool chrome_updated) {
-  if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
-    return;
-  ExtensionSystem* system = ExtensionSystem::Get(context);
-  if (!system)
-    return;
-
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  base::DictionaryValue* info = new base::DictionaryValue();
-  event_args->Append(info);
-  if (old_version.IsValid()) {
-    info->SetString(kInstallReason, kInstallReasonUpdate);
-    info->SetString(kInstallPreviousVersion, old_version.GetString());
-  } else if (chrome_updated) {
-    info->SetString(kInstallReason, kInstallReasonChromeUpdate);
-  } else {
-    info->SetString(kInstallReason, kInstallReasonInstall);
-  }
-  DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(runtime::OnInstalled::kEventName,
-                                    event_args.Pass()));
-  system->event_router()->DispatchEventWithLazyListener(extension_id,
-                                                        event.Pass());
-}
-
-// static
-void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
-    Profile* profile,
-    const std::string& extension_id,
-    const base::DictionaryValue* manifest) {
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
-  if (!system)
-    return;
-
-  scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(manifest->DeepCopy());
-  DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(runtime::OnUpdateAvailable::kEventName,
-                                    args.Pass()));
-  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
-}
-
-// static
-void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
-    Profile* profile) {
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
-  if (!system)
-    return;
-
-  scoped_ptr<base::ListValue> args(new base::ListValue);
-  DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(
-      runtime::OnBrowserUpdateAvailable::kEventName, args.Pass()));
-  system->event_router()->BroadcastEvent(event.Pass());
-}
-
-// static
-void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
-    Profile* profile,
-    const std::string& app_id,
-    api::runtime::OnRestartRequired::Reason reason) {
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
-  if (!system)
-    return;
-
-  scoped_ptr<Event> event(
-      new Event(runtime::OnRestartRequired::kEventName,
-                api::runtime::OnRestartRequired::Create(reason)));
-
-  DCHECK(system->event_router());
-  system->event_router()->DispatchEventToExtension(app_id, event.Pass());
-}
-
-// static
-void RuntimeEventRouter::OnExtensionUninstalled(
-    Profile* profile,
-    const std::string& extension_id) {
+void RuntimeAPI::ShowUninstallURL(Profile* profile,
+                                  const std::string& extension_id) {
 #if defined(ENABLE_EXTENSIONS)
   GURL uninstall_url(GetUninstallURL(ExtensionPrefs::Get(profile),
                                      extension_id));
@@ -385,6 +238,17 @@ void RuntimeEventRouter::OnExtensionUninstalled(
   chrome::Navigate(&params);
 #endif  // defined(ENABLE_EXTENSIONS)
 }
+
+void RuntimeAPI::OnAppUpdateAvailable(const Extension* extension) {
+  RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
+      browser_context_, extension->id(), extension->manifest()->value());
+}
+
+void RuntimeAPI::OnChromeUpdateAvailable() {
+  RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(browser_context_);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
@@ -415,6 +279,8 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 bool RuntimeSetUninstallURLFunction::RunImpl() {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
@@ -430,6 +296,8 @@ bool RuntimeSetUninstallURLFunction::RunImpl() {
   return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 bool RuntimeReloadFunction::RunImpl() {
   // We can't call ReloadExtension directly, since when this method finishes
   // it tries to decrease the reference count for the extension, which fails
@@ -441,6 +309,8 @@ bool RuntimeReloadFunction::RunImpl() {
                  extension_id()));
   return true;
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 RuntimeRequestUpdateCheckFunction::RuntimeRequestUpdateCheckFunction() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
@@ -514,6 +384,8 @@ void RuntimeRequestUpdateCheckFunction::ReplyUpdateFound(
   SendResponse(true);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 bool RuntimeRestartFunction::RunImpl() {
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
@@ -526,6 +398,8 @@ bool RuntimeRestartFunction::RunImpl() {
   SetError("Function available only for ChromeOS kiosk mode.");
   return false;
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 bool RuntimeGetPlatformInfoFunction::RunImpl() {
   GetPlatformInfo::Results::PlatformInfo info;
@@ -575,6 +449,8 @@ bool RuntimeGetPlatformInfoFunction::RunImpl() {
   results_ = GetPlatformInfo::Results::Create(info);
   return true;
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 bool RuntimeGetPackageDirectoryEntryFunction::RunImpl() {
   fileapi::IsolatedContext* isolated_context =
