@@ -17,6 +17,9 @@
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
@@ -25,6 +28,7 @@
 #include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "rule.h"
+#include "util/string_util.h"
 
 namespace i18n {
 namespace addressinput {
@@ -58,6 +62,74 @@ int GetMessageIdForField(AddressField field,
   }
 }
 
+// Returns the BCP 47 language code that should be used to format the address
+// that the user entered.
+//
+// If the rule does not contain information about languages, then returns the
+// UI language.
+//
+// If the UI language is either the default language for the country, one of the
+// languages for rules, or one of the languages for address input, then returns
+// this UI language. If there're no matches, then picks one of the languages in
+// the rule and returns it.
+//
+// If latinized rules are available and the UI language code is not the primary
+// language code for this region, then returns the primary language with "-latn"
+// appended.
+std::string GetComponentsLanguageCode(const Rule& rule,
+                                      const std::string& ui_language_code) {
+  // Select the default language code for the region.
+  std::string default_language_code;
+  if (!rule.GetLanguage().empty()) {
+    default_language_code = rule.GetLanguage();
+  } else if (!rule.GetLanguages().empty()) {
+    default_language_code = rule.GetLanguages()[0];
+  } else if (!rule.GetInputLanguages().empty()) {
+    default_language_code = rule.GetInputLanguages()[0];
+  } else {
+    // Region does not have any language information (e.g. Antarctica). Use the
+    // UI language code as is.
+    return ui_language_code;
+  }
+
+  // If the UI language code is not set, then use default language code.
+  if (ui_language_code.empty()) {
+    return default_language_code;
+  }
+
+  const std::string& normalized_ui_language_code =
+      NormalizeLanguageCode(ui_language_code);
+  const std::string& normalized_default_language_code =
+      NormalizeLanguageCode(default_language_code);
+
+  // Check whether UI language code matches any language codes in the rule,
+  // normalized or as is.
+  if (normalized_default_language_code == normalized_ui_language_code ||
+      std::find(
+          rule.GetLanguages().begin(),
+          rule.GetLanguages().end(),
+          ui_language_code) != rule.GetLanguages().end() ||
+      std::find(
+          rule.GetLanguages().begin(),
+          rule.GetLanguages().end(),
+          normalized_ui_language_code) != rule.GetLanguages().end() ||
+      std::find(
+          rule.GetInputLanguages().begin(),
+          rule.GetInputLanguages().end(),
+          ui_language_code) != rule.GetInputLanguages().end() ||
+      std::find(
+          rule.GetInputLanguages().begin(),
+          rule.GetInputLanguages().end(),
+          normalized_ui_language_code) != rule.GetInputLanguages().end()) {
+    return ui_language_code;
+  }
+
+  // The UI language code does not match any language information in the rule.
+  return rule.GetLatinFormat().empty()
+             ? default_language_code
+             : normalized_default_language_code + "-latn";
+}
+
 }  // namespace
 
 const std::vector<std::string>& GetRegionCodes() {
@@ -65,7 +137,9 @@ const std::vector<std::string>& GetRegionCodes() {
 }
 
 std::vector<AddressUiComponent> BuildComponents(
-    const std::string& region_code) {
+    const std::string& region_code,
+    const std::string& ui_language_code,
+    std::string* components_language_code) {
   std::vector<AddressUiComponent> result;
 
   Rule rule;
@@ -75,13 +149,28 @@ std::vector<AddressUiComponent> BuildComponents(
     return result;
   }
 
+  if (components_language_code != NULL) {
+    *components_language_code =
+        GetComponentsLanguageCode(rule, ui_language_code);
+  }
+
   // For avoiding showing an input field twice, when the field is displayed
   // twice on an envelope.
   std::set<AddressField> fields;
 
+  // If latinized rules are available and the |ui_language_code| is not the
+  // primary language code for the region, then use the latinized formatting
+  // rules.
+  const std::vector<std::vector<FormatElement> >& format =
+      rule.GetLatinFormat().empty() ||
+      ui_language_code.empty() ||
+      NormalizeLanguageCode(ui_language_code) ==
+          NormalizeLanguageCode(rule.GetLanguage())
+              ? rule.GetFormat() : rule.GetLatinFormat();
+
   for (std::vector<std::vector<FormatElement> >::const_iterator
-           line_it = rule.GetFormat().begin();
-       line_it != rule.GetFormat().end();
+           line_it = format.begin();
+       line_it != format.end();
        ++line_it) {
     int num_fields_this_row = 0;
     for (std::vector<FormatElement>::const_iterator element_it =

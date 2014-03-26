@@ -40,7 +40,7 @@
 #include "rule.h"
 #include "ruleset.h"
 #include "util/stl_util.h"
-#include "util/string_compare.h"
+#include "util/string_util.h"
 
 namespace i18n {
 namespace addressinput {
