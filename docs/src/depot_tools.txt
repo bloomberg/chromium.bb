@@ -1,4 +1,4 @@
-depot_tools(1)
+depot_tools(7)
 ==============
 
 NAME

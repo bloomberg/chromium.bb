@@ -50,15 +50,15 @@ s/Git Manual/Chromium depot_tools Manual
 wq
 EOF
 
-  # fix Makefile to include non-_-prefixed files as MAN1 entries
+  # fix Makefile to include non-_-prefixed files as MAN7 entries
   {
     shopt -s extglob
     echo H
-    echo 16
+    echo 35
     for x in "$(echo !(git-*|_*).txt)"
     do
       echo i
-      echo MAN1_TXT += $x
+      echo MAN7_TXT += $x
       echo .
     done
     echo wq
@@ -132,6 +132,7 @@ do
   } > __${category}.txt
 done
 
+JOBS=0
 HTML_TARGETS=()
 MAN_TARGETS=()
 for x in *.txt *.css
@@ -147,7 +148,13 @@ do
   if [[ ${x:0:1} != _ && ${x:(-4)} == .txt ]]
   then
     HTML_TARGETS+=("${x%%.txt}.html")
-    MAN_TARGETS+=("${x%%.txt}.1")
+    if [[ ${x:0:3} == git ]]
+    then
+      MAN1_TARGETS+=("${x%%.txt}.1")
+    else
+      MAN7_TARGETS+=("${x%%.txt}.7")
+    fi
+    JOBS=$[$JOBS + 2]
   fi
 done
 
@@ -164,7 +171,7 @@ fi
 (
   export GIT_DIR="$(git rev-parse --git-dir)" &&
   cd git/Documentation &&
-  make -j"$[${#MAN_TARGETS} + ${#HTML_TARGETS}]" "${MAN_TARGETS[@]}" "${HTML_TARGETS[@]}"
+  make -j"$JOBS" "${MAN1_TARGETS[@]}" "${MAN7_TARGETS[@]}" "${HTML_TARGETS[@]}"
 )
 
 for x in "${HTML_TARGETS[@]}"
@@ -173,8 +180,14 @@ do
   tr -d '\015' <"git/Documentation/$x"  >"../html/$x"
 done
 
-for x in "${MAN_TARGETS[@]}"
+for x in "${MAN1_TARGETS[@]}"
 do
   echo Copying ../man1/$x
   cp "git/Documentation/$x" ../man1
+done
+
+for x in "${MAN7_TARGETS[@]}"
+do
+  echo Copying ../man7/$x
+  cp "git/Documentation/$x" ../man7
 done
