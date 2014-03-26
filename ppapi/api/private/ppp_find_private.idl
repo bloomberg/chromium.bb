@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,10 +7,7 @@ label Chrome {
   M14 = 0.3
 };
 
-/**
- * TODO(raymes): Make PPP/PPB_Find_Dev a private interface.
- */
-interface PPP_Find_Dev {
+interface PPP_Find_Private {
   /**
    * Finds the given UTF-8 text starting at the current selection. The number of
    * results will be updated asynchronously via NumberOfFindResultsChanged in

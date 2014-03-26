@@ -2020,8 +2020,6 @@ static int32_t Pnacl_M19_PPB_FileChooser_Dev_Show(PP_Resource chooser, struct PP
 
 /* End wrapper methods for PPB_FileChooser_Dev_0_6 */
 
-/* Not generating wrapper methods for PPB_Find_Dev_0_3 */
-
 /* Begin wrapper methods for PPB_Font_Dev_0_6 */
 
 static void Pnacl_M14_PPB_Font_Dev_GetFontFamilies(struct PP_Var* _struct_result, PP_Instance instance) {
@@ -2402,8 +2400,6 @@ static void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 
 /* Not generating wrapper methods for PPB_Zoom_Dev_0_2 */
 
-/* Not generating wrapper methods for PPP_Find_Dev_0_3 */
-
 /* Not generating wrapper methods for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_Printing_Dev_0_6 */
@@ -2544,6 +2540,8 @@ static void Pnacl_M15_PPB_FileRefPrivate_GetAbsolutePath(struct PP_Var* _struct_
 }
 
 /* End wrapper methods for PPB_FileRefPrivate_0_1 */
+
+/* Not generating wrapper methods for PPB_Find_Private_0_3 */
 
 /* Begin wrapper methods for PPB_Flash_12_4 */
 
@@ -4031,6 +4029,8 @@ static void Pnacl_M34_PPP_ContentDecryptor_Private_DecryptAndDecode(PP_Instance 
 
 /* End wrapper methods for PPP_ContentDecryptor_Private_0_11 */
 
+/* Not generating wrapper methods for PPP_Find_Private_0_3 */
+
 /* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_0 */
 
 /* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_2 */
@@ -4753,8 +4753,6 @@ static const struct PPB_FileChooser_Dev_0_6 Pnacl_Wrappers_PPB_FileChooser_Dev_0
     .Show = (int32_t (*)(PP_Resource chooser, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_FileChooser_Dev_Show
 };
 
-/* Not generating wrapper interface for PPB_Find_Dev_0_3 */
-
 static const struct PPB_Font_Dev_0_6 Pnacl_Wrappers_PPB_Font_Dev_0_6 = {
     .GetFontFamilies = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M14_PPB_Font_Dev_GetFontFamilies,
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_FontDescription_Dev* description))&Pnacl_M14_PPB_Font_Dev_Create,
@@ -4870,8 +4868,6 @@ static const struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_De
 
 /* Not generating wrapper interface for PPB_Zoom_Dev_0_2 */
 
-/* Not generating wrapper interface for PPP_Find_Dev_0_3 */
-
 /* Not generating wrapper interface for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_Printing_Dev_0_6 */
@@ -4926,6 +4922,8 @@ static const struct PPB_FileIO_Private_0_1 Pnacl_Wrappers_PPB_FileIO_Private_0_1
 static const struct PPB_FileRefPrivate_0_1 Pnacl_Wrappers_PPB_FileRefPrivate_0_1 = {
     .GetAbsolutePath = (struct PP_Var (*)(PP_Resource file_ref))&Pnacl_M15_PPB_FileRefPrivate_GetAbsolutePath
 };
+
+/* Not generating wrapper interface for PPB_Find_Private_0_3 */
 
 static const struct PPB_Flash_12_4 Pnacl_Wrappers_PPB_Flash_12_4 = {
     .SetInstanceAlwaysOnTop = (void (*)(PP_Instance instance, PP_Bool on_top))&Pnacl_M21_PPB_Flash_SetInstanceAlwaysOnTop,
@@ -5306,6 +5304,8 @@ static const struct PPP_ContentDecryptor_Private_0_11 Pnacl_Wrappers_PPP_Content
     .ResetDecoder = &Pnacl_M34_PPP_ContentDecryptor_Private_ResetDecoder,
     .DecryptAndDecode = &Pnacl_M34_PPP_ContentDecryptor_Private_DecryptAndDecode
 };
+
+/* Not generating wrapper interface for PPP_Find_Private_0_3 */
 
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_0 */
 

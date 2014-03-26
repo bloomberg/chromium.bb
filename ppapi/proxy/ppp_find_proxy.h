@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 namespace ppapi {
@@ -19,7 +19,7 @@ class PPP_Find_Proxy : public InterfaceProxy {
   explicit PPP_Find_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Find_Proxy();
 
-  static const PPP_Find_Dev* GetProxyInterface();
+  static const PPP_Find_Private* GetProxyInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -35,7 +35,7 @@ class PPP_Find_Proxy : public InterfaceProxy {
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.
   // In the host, this value is always NULL.
-  const PPP_Find_Dev* ppp_find_;
+  const PPP_Find_Private* ppp_find_;
 
   DISALLOW_COPY_AND_ASSIGN(PPP_Find_Proxy);
 };

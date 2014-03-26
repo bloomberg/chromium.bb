@@ -51,9 +51,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/sad_plugin.h"
 #include "media/base/audio_hardware_config.h"
-#include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
-#include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
@@ -65,6 +63,8 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
+#include "ppapi/c/private/ppb_find_private.h"
+#include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/host/ppapi_host.h"
@@ -1394,8 +1394,8 @@ bool PepperPluginInstanceImpl::LoadFindInterface() {
     return false;
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
-        static_cast<const PPP_Find_Dev*>(module_->GetPluginInterface(
-            PPP_FIND_DEV_INTERFACE));
+        static_cast<const PPP_Find_Private*>(module_->GetPluginInterface(
+            PPP_FIND_PRIVATE_INTERFACE));
   }
 
   return !!plugin_find_interface_;

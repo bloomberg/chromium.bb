@@ -170,7 +170,7 @@
           'thunk/ppb_file_ref_thunk.cc',
           'thunk/ppb_file_system_api.h',
           'thunk/ppb_file_system_thunk.cc',
-          'thunk/ppb_find_dev_thunk.cc',
+          'thunk/ppb_find_private_thunk.cc',
           'thunk/ppb_flash_clipboard_api.h',
           'thunk/ppb_flash_clipboard_thunk.cc',
           'thunk/ppb_flash_device_id_thunk.cc',

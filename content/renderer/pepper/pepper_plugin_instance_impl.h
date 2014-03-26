@@ -23,7 +23,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
-#include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
@@ -40,6 +39,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
@@ -718,7 +718,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The plugin-provided interfaces.
   // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
-  const PPP_Find_Dev* plugin_find_interface_;
+  const PPP_Find_Private* plugin_find_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
   const PPP_MouseLock* plugin_mouse_lock_interface_;

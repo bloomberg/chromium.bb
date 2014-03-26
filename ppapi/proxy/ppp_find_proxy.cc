@@ -20,7 +20,7 @@ PP_Bool StartFind(PP_Instance instance,
                   PP_Bool case_sensitive) {
   DCHECK(case_sensitive == PP_FALSE);
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiPluginMsg_PPPFind_StartFind(API_ID_PPP_FIND_DEV,
+      new PpapiPluginMsg_PPPFind_StartFind(API_ID_PPP_FIND_PRIVATE,
                                            instance,
                                            text));
   return PP_TRUE;
@@ -29,23 +29,23 @@ PP_Bool StartFind(PP_Instance instance,
 void SelectFindResult(PP_Instance instance,
                       PP_Bool forward) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiPluginMsg_PPPFind_SelectFindResult(API_ID_PPP_FIND_DEV,
+      new PpapiPluginMsg_PPPFind_SelectFindResult(API_ID_PPP_FIND_PRIVATE,
                                                   instance, forward));
 }
 
 void StopFind(PP_Instance instance) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiPluginMsg_PPPFind_StopFind(API_ID_PPP_FIND_DEV, instance));
+      new PpapiPluginMsg_PPPFind_StopFind(API_ID_PPP_FIND_PRIVATE, instance));
 }
 
-const PPP_Find_Dev ppp_find_interface = {
+const PPP_Find_Private ppp_find_interface = {
   &StartFind,
   &SelectFindResult,
   &StopFind
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
-const PPP_Find_Dev ppp_find_interface = {};
+const PPP_Find_Private ppp_find_interface = {};
 #endif
 
 }  // namespace
@@ -54,8 +54,8 @@ PPP_Find_Proxy::PPP_Find_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       ppp_find_(NULL) {
   if (dispatcher->IsPlugin()) {
-    ppp_find_ = static_cast<const PPP_Find_Dev*>(
-        dispatcher->local_get_interface()(PPP_FIND_DEV_INTERFACE));
+    ppp_find_ = static_cast<const PPP_Find_Private*>(
+        dispatcher->local_get_interface()(PPP_FIND_PRIVATE_INTERFACE));
   }
 }
 
@@ -63,7 +63,7 @@ PPP_Find_Proxy::~PPP_Find_Proxy() {
 }
 
 // static
-const PPP_Find_Dev* PPP_Find_Proxy::GetProxyInterface() {
+const PPP_Find_Private* PPP_Find_Proxy::GetProxyInterface() {
   return &ppp_find_interface;
 }
 

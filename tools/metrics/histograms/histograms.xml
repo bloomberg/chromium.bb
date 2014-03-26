@@ -37074,6 +37074,7 @@ other types of suffix sets.
   <int value="162107265" label="PPB_NetworkMonitor;1.0"/>
   <int value="180906214" label="PPB_Instance_Private;0.1"/>
   <int value="221802429" label="PPB_URLUtil(Dev);0.7"/>
+  <int value="225125520" label="PPB_Find(Private);0.3"/>
   <int value="226206264" label="PPB_FileRef;1.1"/>
   <int value="229560990" label="PPB_Var(Deprecated);0.3"/>
   <int value="250764663" label="PPB_Graphics2D(Dev);0.2"/>

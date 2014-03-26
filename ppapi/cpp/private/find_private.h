@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_FIND_DEV_H_
-#define PPAPI_CPP_DEV_FIND_DEV_H_
+#ifndef PPAPI_CPP_PRIVATE_FIND_PRIVATE_H_
+#define PPAPI_CPP_PRIVATE_FIND_PRIVATE_H_
 
 #include <string>
 
-#include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
@@ -20,8 +20,8 @@ class Instance;
 // browser calls.
 //
 // You would typically use this either via inheritance on your instance:
-//   class MyInstance : public pp::Instance, public pp::Find_Dev {
-//     class MyInstance() : pp::Find_Dev(this) {
+//   class MyInstance : public pp::Instance, public pp::Find_Private {
+//     class MyInstance() : pp::Find_Private(this) {
 //     }
 //     ...
 //   };
@@ -37,19 +37,19 @@ class Instance;
 //
 //     MyFinder finder_;
 //   };
-class Find_Dev {
+class Find_Private {
  public:
   // The instance parameter must outlive this class.
-  Find_Dev(Instance* instance);
-  virtual ~Find_Dev();
+  Find_Private(Instance* instance);
+  virtual ~Find_Private();
 
-  // PPP_Find_Dev functions exposed as virtual functions for you to
+  // PPP_Find_Private functions exposed as virtual functions for you to
   // override.
   virtual bool StartFind(const std::string& text, bool case_sensitive) = 0;
   virtual void SelectFindResult(bool forward) = 0;
   virtual void StopFind() = 0;
 
-  // PPB_Find_Dev functions for you to call to report find results.
+  // PPB_Find_Private functions for you to call to report find results.
   void SetPluginToHandleFindRequests();
   void NumberOfFindResultsChanged(int32_t total, bool final_result);
   void SelectedFindResultChanged(int32_t index);
@@ -60,4 +60,4 @@ class Find_Dev {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_FIND_DEV_H_
+#endif  // PPAPI_CPP_PRIVATE_FIND_PRIVATE_H_

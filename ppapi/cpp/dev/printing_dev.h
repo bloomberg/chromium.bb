@@ -15,7 +15,7 @@ namespace pp {
 class Instance;
 
 // You would typically use this either via inheritance on your instance or
-// by composition: see find_dev.h for an example.
+// by composition: see find_private.h for an example.
 class Printing_Dev : public Resource {
  public:
   // The instance parameter must outlive this class.

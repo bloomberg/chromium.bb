@@ -1,24 +1,24 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_find_dev.idl modified Thu Mar 13 11:05:53 2014. */
+/* From private/ppb_find_private.idl modified Thu Mar 13 11:56:31 2014. */
 
-#ifndef PPAPI_C_DEV_PPB_FIND_DEV_H_
-#define PPAPI_C_DEV_PPB_FIND_DEV_H_
+#ifndef PPAPI_C_PRIVATE_PPB_FIND_PRIVATE_H_
+#define PPAPI_C_PRIVATE_PPB_FIND_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FIND_DEV_INTERFACE_0_3 "PPB_Find(Dev);0.3"
-#define PPB_FIND_DEV_INTERFACE PPB_FIND_DEV_INTERFACE_0_3
+#define PPB_FIND_PRIVATE_INTERFACE_0_3 "PPB_Find_Private;0.3"
+#define PPB_FIND_PRIVATE_INTERFACE PPB_FIND_PRIVATE_INTERFACE_0_3
 
 /**
  * @file
- * This file defines the <code>PPB_Find_Dev</code> interface.
+ * This file defines the <code>PPB_Find_Private</code> interface.
  */
 
 
@@ -26,9 +26,10 @@
  * @addtogroup Interfaces
  * @{
  */
-/* TODO(raymes): Make PPP/PPB_Find_Dev a private interface. It's only used by
- * PDF currently and it's restrictive in the way it can be used. */
-struct PPB_Find_Dev_0_3 {
+/**
+ * This is a private interface for doing browser Find in the PDF plugin.
+ */
+struct PPB_Find_Private_0_3 {
   /**
    * Sets the instance of this plugin as the mechanism that will be used to
    * handle find requests in the renderer. This will only succeed if the plugin
@@ -61,10 +62,10 @@ struct PPB_Find_Dev_0_3 {
   void (*SelectedFindResultChanged)(PP_Instance instance, int32_t index);
 };
 
-typedef struct PPB_Find_Dev_0_3 PPB_Find_Dev;
+typedef struct PPB_Find_Private_0_3 PPB_Find_Private;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_FIND_DEV_H_ */
+#endif  /* PPAPI_C_PRIVATE_PPB_FIND_PRIVATE_H_ */
 

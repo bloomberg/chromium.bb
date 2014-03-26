@@ -1,20 +1,20 @@
-/* Copyright (c) 2014 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_find_dev.idl modified Wed Mar 19 14:02:22 2014. */
+/* From private/ppp_find_private.idl modified Thu Mar 20 11:34:17 2014. */
 
-#ifndef PPAPI_C_DEV_PPP_FIND_DEV_H_
-#define PPAPI_C_DEV_PPP_FIND_DEV_H_
+#ifndef PPAPI_C_PRIVATE_PPP_FIND_PRIVATE_H_
+#define PPAPI_C_PRIVATE_PPP_FIND_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPP_FIND_DEV_INTERFACE_0_3 "PPP_Find(Dev);0.3"
-#define PPP_FIND_DEV_INTERFACE PPP_FIND_DEV_INTERFACE_0_3
+#define PPP_FIND_PRIVATE_INTERFACE_0_3 "PPP_Find_Private;0.3"
+#define PPP_FIND_PRIVATE_INTERFACE PPP_FIND_PRIVATE_INTERFACE_0_3
 
 /**
  * @file
@@ -25,10 +25,7 @@
  * @addtogroup Interfaces
  * @{
  */
-/**
- * TODO(raymes): Make PPP/PPB_Find_Dev a private interface.
- */
-struct PPP_Find_Dev_0_3 {
+struct PPP_Find_Private_0_3 {
   /**
    * Finds the given UTF-8 text starting at the current selection. The number of
    * results will be updated asynchronously via NumberOfFindResultsChanged in
@@ -52,10 +49,10 @@ struct PPP_Find_Dev_0_3 {
   void (*StopFind)(PP_Instance instance);
 };
 
-typedef struct PPP_Find_Dev_0_3 PPP_Find_Dev;
+typedef struct PPP_Find_Private_0_3 PPP_Find_Private;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPP_FIND_DEV_H_ */
+#endif  /* PPAPI_C_PRIVATE_PPP_FIND_PRIVATE_H_ */
 

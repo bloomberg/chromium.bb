@@ -1,10 +1,10 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 /**
- * This file defines the <code>PPB_Find_Dev</code> interface.
+ * This file defines the <code>PPB_Find_Private</code> interface.
  */
 
 [generate_thunk]
@@ -13,9 +13,10 @@ label Chrome {
   M14 = 0.3
 };
 
-// TODO(raymes): Make PPP/PPB_Find_Dev a private interface. It's only used by
-// PDF currently and it's restrictive in the way it can be used.
-interface PPB_Find_Dev {
+/**
+ * This is a private interface for doing browser Find in the PDF plugin.
+ */
+interface PPB_Find_Private {
   /**
    * Sets the instance of this plugin as the mechanism that will be used to
    * handle find requests in the renderer. This will only succeed if the plugin
