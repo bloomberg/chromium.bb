@@ -37,6 +37,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 
 #if defined(USE_SYMBOLIZE)
 #include "base/third_party/symbolize/symbolize.h"
@@ -725,7 +726,10 @@ bool EnableInProcessStackDumping() {
   success &= (sigaction(SIGFPE, &action, NULL) == 0);
   success &= (sigaction(SIGBUS, &action, NULL) == 0);
   success &= (sigaction(SIGSEGV, &action, NULL) == 0);
+// On Linux, SIGSYS is reserved by the kernel for seccomp-bpf sandboxing.
+#if !defined(OS_LINUX)
   success &= (sigaction(SIGSYS, &action, NULL) == 0);
+#endif  // !defined(OS_LINUX)
 
   return success;
 }

@@ -82,8 +82,11 @@ Trap::Trap()
   }
 
   if (!IsDefaultSignalAction(old_sa)) {
-    // TODO(jln): make this FATAL, at least in DEBUG mode.
-    LOG(ERROR) << "Existing signal handler when trying to install SIGSYS";
+    static const char kExistingSIGSYSMsg[] =
+        "Existing signal handler when trying to install SIGSYS. SIGSYS needs "
+        "to be reserved for seccomp-bpf.";
+    DLOG(FATAL) << kExistingSIGSYSMsg;
+    LOG(ERROR) << kExistingSIGSYSMsg;
   }
 
   // Unmask SIGSYS
