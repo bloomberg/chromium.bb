@@ -260,6 +260,10 @@ static jboolean ShouldLoadPolicyForUser(JNIEnv* env,
 #endif
 }
 
+static jboolean IsNewProfileManagementEnabled(JNIEnv* env, jclass clazz) {
+  return switches::IsNewProfileManagement();
+}
+
 // static
 bool SigninManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);

@@ -377,6 +377,13 @@ public class SigninManager {
         }
     }
 
+    /**
+     * @return True if the new profile management is enabled.
+     */
+    public static boolean isNewProfileManagementEnabled() {
+        return nativeIsNewProfileManagementEnabled();
+    }
+
     // Native methods.
     private native long nativeInit();
     private native boolean nativeShouldLoadPolicyForUser(String username);
@@ -388,4 +395,5 @@ public class SigninManager {
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
+    private static native boolean nativeIsNewProfileManagementEnabled();
 }
