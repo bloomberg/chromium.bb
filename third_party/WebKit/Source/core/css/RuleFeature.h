@@ -22,7 +22,7 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
-#include "core/css/analyzer/DescendantInvalidationSet.h"
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"

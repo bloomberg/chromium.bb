@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/css/analyzer/DescendantInvalidationSet.h"
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"

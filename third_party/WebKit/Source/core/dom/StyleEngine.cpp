@@ -33,7 +33,6 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"
-#include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"

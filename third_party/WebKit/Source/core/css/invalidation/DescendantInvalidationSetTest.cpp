@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/analyzer/DescendantInvalidationSet.h"
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 
 #include <gtest/gtest.h>
 

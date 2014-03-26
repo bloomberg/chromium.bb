@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleInvalidationAnalysis_h
-#define StyleInvalidationAnalysis_h
+#ifndef StyleSheetInvalidationAnalysis_h
+#define StyleSheetInvalidationAnalysis_h
 
 #include "heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -37,9 +37,9 @@ class Document;
 class Node;
 class StyleSheetContents;
 
-class StyleInvalidationAnalysis {
+class StyleSheetInvalidationAnalysis {
 public:
-    StyleInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >&);
+    StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >&);
 
     bool dirtiesAllStyle() const { return m_dirtiesAllStyle; }
     void invalidateStyle(Document&);

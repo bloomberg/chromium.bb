@@ -28,9 +28,9 @@
 #include "core/dom/TreeScopeStyleSheetCollection.h"
 
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/invalidation/StyleSheetInvalidationAnalysis.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
@@ -161,7 +161,7 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
     }
 
     // FIXME: If styleResolverUpdateType is Reconstruct, we should return early here since
-    // we need to recalc the whole document. It's wrong to use StyleInvalidationAnalysis since
+    // we need to recalc the whole document. It's wrong to use StyleSheetInvalidationAnalysis since
     // it only looks at the addedSheets.
 
     // No point in doing the analysis work if we're just going to recalc the whole document anyways.
@@ -173,7 +173,7 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
     if (!document().body() || document().hasNodesWithPlaceholderStyle())
         return;
-    StyleInvalidationAnalysis invalidationAnalysis(addedSheets);
+    StyleSheetInvalidationAnalysis invalidationAnalysis(addedSheets);
     if (invalidationAnalysis.dirtiesAllStyle())
         return;
     invalidationAnalysis.invalidateStyle(document());

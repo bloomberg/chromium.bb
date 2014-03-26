@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/css/StyleInvalidationAnalysis.h"
+#include "core/css/invalidation/StyleSheetInvalidationAnalysis.h"
 
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleRuleImport.h"
@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-StyleInvalidationAnalysis::StyleInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& sheets)
+StyleSheetInvalidationAnalysis::StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& sheets)
     : m_dirtiesAllStyle(false)
 {
     for (unsigned i = 0; i < sheets.size() && !m_dirtiesAllStyle; ++i)
@@ -141,7 +141,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     return true;
 }
 
-void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheetContents)
+void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheetContents)
 {
     ASSERT(!styleSheetContents->isLoading());
 
@@ -195,7 +195,7 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
     return false;
 }
 
-void StyleInvalidationAnalysis::invalidateStyle(Document& document)
+void StyleSheetInvalidationAnalysis::invalidateStyle(Document& document)
 {
     ASSERT(!m_dirtiesAllStyle);
 
