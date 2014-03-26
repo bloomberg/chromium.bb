@@ -35,16 +35,40 @@
 
 namespace WebCore {
 
-class SQLError : public ThreadSafeRefCounted<SQLError>, public ScriptWrappable {
+class SQLErrorData {
 public:
-    static PassRefPtr<SQLError> create(unsigned code, const String& message) { return adoptRef(new SQLError(code, message)); }
-    static PassRefPtr<SQLError> create(unsigned code, const char* message, int sqliteCode, const char* sqliteMessage)
+    static PassOwnPtr<SQLErrorData> create(unsigned code, const String& message)
+    {
+        return adoptPtr(new SQLErrorData(code, message));
+    }
+
+    static PassOwnPtr<SQLErrorData> create(unsigned code, const char* message, int sqliteCode, const char* sqliteMessage)
     {
         return create(code, String::format("%s (%d %s)", message, sqliteCode, sqliteMessage));
     }
 
+    static PassOwnPtr<SQLErrorData> create(const SQLErrorData& data)
+    {
+        return create(data.code(), data.message());
+    }
+
     unsigned code() const { return m_code; }
     String message() const { return m_message.isolatedCopy(); }
+
+private:
+    SQLErrorData(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy()) { }
+
+    unsigned m_code;
+    String m_message;
+};
+
+class SQLError : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLError>, public ScriptWrappable {
+public:
+    static PassRefPtrWillBeRawPtr<SQLError> create(const SQLErrorData& data) { return adoptRefWillBeNoop(new SQLError(data)); }
+    void trace(Visitor*) { }
+
+    unsigned code() const { return m_data.code(); }
+    String message() const { return m_data.message(); }
 
     enum SQLErrorCode {
         UNKNOWN_ERR = 0,
@@ -62,13 +86,12 @@ public:
     static const char versionErrorMessage[];
 
 private:
-    SQLError(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy())
+    explicit SQLError(const SQLErrorData& data) : m_data(data)
     {
         ScriptWrappable::init(this);
     }
 
-    unsigned m_code;
-    String m_message;
+    const SQLErrorData m_data;
 };
 
 }

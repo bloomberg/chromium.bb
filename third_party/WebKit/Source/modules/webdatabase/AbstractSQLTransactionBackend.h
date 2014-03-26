@@ -45,7 +45,7 @@ public:
 
     virtual void requestTransitToState(SQLTransactionState) = 0;
 
-    virtual PassRefPtr<SQLError> transactionError() = 0;
+    virtual SQLErrorData* transactionError() = 0;
     virtual AbstractSQLStatement* currentStatement() = 0;
     virtual void setShouldRetryCurrentStatement(bool) = 0;
 

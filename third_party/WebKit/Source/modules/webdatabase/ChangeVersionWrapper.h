@@ -28,12 +28,13 @@
 #ifndef ChangeVersionWrapper_h
 #define ChangeVersionWrapper_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
 
-class SQLError;
+class SQLErrorData;
 
 class ChangeVersionWrapper FINAL : public SQLTransactionWrapper {
 public:
@@ -41,7 +42,7 @@ public:
 
     virtual bool performPreflight(SQLTransactionBackend*) OVERRIDE;
     virtual bool performPostflight(SQLTransactionBackend*) OVERRIDE;
-    virtual SQLError* sqlError() const OVERRIDE { return m_sqlError.get(); }
+    virtual SQLErrorData* sqlError() const OVERRIDE { return m_sqlError.get(); }
     virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) OVERRIDE;
 
 private:
@@ -49,7 +50,7 @@ private:
 
     String m_oldVersion;
     String m_newVersion;
-    RefPtr<SQLError> m_sqlError;
+    OwnPtr<SQLErrorData> m_sqlError;
 };
 
 } // namespace WebCore

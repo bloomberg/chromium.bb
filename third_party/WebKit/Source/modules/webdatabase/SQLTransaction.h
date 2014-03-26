@@ -43,7 +43,7 @@ namespace WebCore {
 class AbstractSQLTransactionBackend;
 class Database;
 class ExceptionState;
-class SQLError;
+class SQLErrorData;
 class SQLStatementCallback;
 class SQLStatementErrorCallback;
 class SQLTransactionCallback;
@@ -104,7 +104,7 @@ private:
     SQLCallbackWrapper<SQLTransactionErrorCallback> m_errorCallbackWrapper;
 
     bool m_executeSqlAllowed;
-    RefPtr<SQLError> m_transactionError;
+    OwnPtr<SQLErrorData> m_transactionError;
 
     bool m_readOnly;
 };

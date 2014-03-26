@@ -79,13 +79,15 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
 
     OwnPtr<SQLStatementCallback> callback = m_statementCallbackWrapper.unwrap();
     OwnPtr<SQLStatementErrorCallback> errorCallback = m_statementErrorCallbackWrapper.unwrap();
-    RefPtr<SQLError> error = m_backend->sqlError();
+    SQLErrorData* error = m_backend->sqlError();
 
     // Call the appropriate statement callback and track if it resulted in an error,
     // because then we need to jump to the transaction error callback.
     if (error) {
-        if (errorCallback)
-            callbackError = errorCallback->handleEvent(transaction, error.get());
+        if (errorCallback) {
+            RefPtrWillBeRawPtr<SQLError> sqlError = SQLError::create(*error);
+            callbackError = errorCallback->handleEvent(transaction, sqlError.get());
+        }
     } else if (callback) {
         RefPtrWillBeRawPtr<SQLResultSet> resultSet = m_backend->sqlResultSet();
         callbackError = !callback->handleEvent(transaction, resultSet.get());

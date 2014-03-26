@@ -38,7 +38,7 @@ public:
     virtual ~AbstractSQLStatementBackend() { }
     virtual void trace(Visitor*) = 0;
 
-    virtual PassRefPtr<SQLError> sqlError() const = 0;
+    virtual SQLErrorData* sqlError() const = 0;
     virtual SQLResultSet* sqlResultSet() const = 0;
 };
 

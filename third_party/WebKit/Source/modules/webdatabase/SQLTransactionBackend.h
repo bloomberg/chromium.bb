@@ -42,7 +42,7 @@ namespace WebCore {
 
 class AbstractSQLTransaction;
 class DatabaseBackend;
-class SQLError;
+class SQLErrorData;
 class SQLiteTransaction;
 class SQLStatementBackend;
 class SQLTransactionBackend;
@@ -53,7 +53,7 @@ public:
     virtual ~SQLTransactionWrapper() { }
     virtual bool performPreflight(SQLTransactionBackend*) = 0;
     virtual bool performPostflight(SQLTransactionBackend*) = 0;
-    virtual SQLError* sqlError() const = 0;
+    virtual SQLErrorData* sqlError() const = 0;
     virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
 };
 
@@ -78,7 +78,7 @@ private:
 
     // APIs called from the frontend published via AbstractSQLTransactionBackend:
     virtual void requestTransitToState(SQLTransactionState) OVERRIDE;
-    virtual PassRefPtr<SQLError> transactionError() OVERRIDE;
+    virtual SQLErrorData* transactionError() OVERRIDE;
     virtual AbstractSQLStatement* currentStatement() OVERRIDE;
     virtual void setShouldRetryCurrentStatement(bool) OVERRIDE;
     virtual void executeSQL(PassOwnPtr<AbstractSQLStatement>, const String& statement,
@@ -114,7 +114,7 @@ private:
 
     RefPtrWillBeMember<DatabaseBackend> m_database;
     RefPtr<SQLTransactionWrapper> m_wrapper;
-    RefPtr<SQLError> m_transactionError;
+    OwnPtr<SQLErrorData> m_transactionError;
 
     bool m_hasCallback;
     bool m_hasSuccessCallback;

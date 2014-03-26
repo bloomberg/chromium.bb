@@ -129,8 +129,9 @@ void Database::readTransaction(PassOwnPtr<SQLTransactionCallback> callback, Pass
     runTransaction(callback, errorCallback, successCallback, true);
 }
 
-static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtr<SQLTransactionErrorCallback> callback, PassRefPtr<SQLError> error)
+static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtr<SQLTransactionErrorCallback> callback, PassOwnPtr<SQLErrorData> errorData)
 {
+    RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*errorData);
     callback->handleEvent(error.get());
 }
 
@@ -149,7 +150,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
         OwnPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);
         if (callback) {
-            RefPtr<SQLError> error = SQLError::create(SQLError::UNKNOWN_ERR, "database has been closed");
+            OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
             executionContext()->postTask(createCallbackTask(&callTransactionErrorCallback, callback.release(), error.release()));
         }
     }
