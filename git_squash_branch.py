@@ -17,4 +17,4 @@ def main(args):
   squash_current_branch(opts.message)
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))
