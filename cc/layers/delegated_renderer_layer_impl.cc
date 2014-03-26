@@ -446,9 +446,16 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     }
     DCHECK(output_shared_quad_state);
 
+    gfx::Rect quad_visible_rect = quad_sink->UnoccludedContentRect(
+        delegated_quad->visible_rect,
+        output_shared_quad_state->content_to_target_transform);
+    if (quad_visible_rect.IsEmpty())
+      continue;
+
     scoped_ptr<DrawQuad> output_quad;
     if (delegated_quad->material != DrawQuad::RENDER_PASS) {
       output_quad = delegated_quad->Copy(output_shared_quad_state);
+      output_quad->visible_rect = quad_visible_rect;
     } else {
       RenderPass::Id delegated_contributing_render_pass_id =
           RenderPassDrawQuad::MaterialCast(delegated_quad)->render_pass_id;
@@ -467,11 +474,12 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         output_quad = RenderPassDrawQuad::MaterialCast(delegated_quad)->Copy(
             output_shared_quad_state,
             output_contributing_render_pass_id).PassAs<DrawQuad>();
+        output_quad->visible_rect = quad_visible_rect;
       }
     }
 
     if (output_quad)
-      quad_sink->MaybeAppend(output_quad.Pass());
+      quad_sink->Append(output_quad.Pass());
   }
 }
 

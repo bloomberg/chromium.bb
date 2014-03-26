@@ -72,12 +72,18 @@ void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
   // Quads that are fully occluded on one axis only should be shrunken.
   for (size_t i = 0; i < quads.size(); ++i) {
     DrawQuad* quad = quads[i];
-    bool fully_occluded_horizontal = quad->rect.x() >= occluded.x() &&
-                                     quad->rect.right() <= occluded.right();
-    bool fully_occluded_vertical = quad->rect.y() >= occluded.y() &&
-                                   quad->rect.bottom() <= occluded.bottom();
+    DCHECK(quad->quadTransform().IsIdentityOrIntegerTranslation());
+    gfx::Rect target_rect =
+        MathUtil::MapEnclosingClippedRect(quad->quadTransform(), quad->rect);
+    gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
+        quad->quadTransform(), quad->visible_rect);
+
+    bool fully_occluded_horizontal = target_rect.x() >= occluded.x() &&
+                                     target_rect.right() <= occluded.right();
+    bool fully_occluded_vertical = target_rect.y() >= occluded.y() &&
+                                   target_rect.bottom() <= occluded.bottom();
     bool should_be_occluded =
-        quad->rect.Intersects(occluded) &&
+        target_rect.Intersects(occluded) &&
         (fully_occluded_vertical || fully_occluded_horizontal);
     if (!should_be_occluded) {
       EXPECT_EQ(quad->rect.ToString(), quad->visible_rect.ToString());
@@ -114,7 +120,20 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
   AppendQuadsData data;
 
   quad_culler_.clear_lists();
-  quad_culler_.set_occluded_content_rect(occluded);
+  quad_culler_.set_occluded_target_rect(occluded);
+  layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
+  layer_impl->AppendQuads(&quad_culler_, &data);
+  layer_impl->DidDraw(resource_provider());
+}
+
+void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
+    LayerImpl* layer_impl,
+    const RenderPass::Id& id,
+    const gfx::Rect& occluded) {
+  AppendQuadsData data(id);
+
+  quad_culler_.clear_lists();
+  quad_culler_.set_occluded_target_rect(occluded);
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
   layer_impl->AppendQuads(&quad_culler_, &data);
   layer_impl->DidDraw(resource_provider());
@@ -126,7 +145,7 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   AppendQuadsData data;
 
   quad_culler_.clear_lists();
-  quad_culler_.set_occluded_content_rect_for_contributing_surface(occluded);
+  quad_culler_.set_occluded_target_rect_for_contributing_surface(occluded);
   bool for_replica = false;
   RenderPass::Id id(1, 1);
   surface_impl->AppendQuads(&quad_culler_, &data, for_replica, id);

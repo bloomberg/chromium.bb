@@ -80,6 +80,9 @@ class LayerTestCommon {
     void CalcDrawProps(const gfx::Size& viewport_size);
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);
+    void AppendQuadsForPassWithOcclusion(LayerImpl* layer_impl,
+                                         const RenderPass::Id& id,
+                                         const gfx::Rect& occluded);
     void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
                                          const gfx::Rect& occluded);
 
@@ -89,6 +92,7 @@ class LayerTestCommon {
     ResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
     }
+    LayerImpl* root_layer() const { return root_layer_impl_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     Proxy* proxy() const { return host_->host_impl()->proxy(); }
     const QuadList& quad_list() const { return quad_culler_.quad_list(); }

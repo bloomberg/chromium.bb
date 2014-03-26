@@ -4,6 +4,7 @@
 
 #include "cc/test/mock_quad_culler.h"
 
+#include "cc/base/math_util.h"
 #include "cc/quads/draw_quad.h"
 
 namespace cc {
@@ -30,19 +31,32 @@ SharedQuadState* MockQuadCuller::UseSharedQuadState(
 gfx::Rect MockQuadCuller::UnoccludedContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) {
-  DCHECK(draw_transform.IsIdentity() || occluded_content_rect_.IsEmpty());
-  gfx::Rect result = content_rect;
-  result.Subtract(occluded_content_rect_);
+  DCHECK(draw_transform.IsIdentityOrIntegerTranslation() ||
+         occluded_target_rect_.IsEmpty());
+  gfx::Rect target_rect =
+      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
+  target_rect.Subtract(occluded_target_rect_);
+  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
+  if (!draw_transform.GetInverse(&inverse_draw_transform))
+    NOTREACHED();
+  gfx::Rect result = MathUtil::ProjectEnclosingClippedRect(
+      inverse_draw_transform, target_rect);
   return result;
 }
 
 gfx::Rect MockQuadCuller::UnoccludedContributingSurfaceContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) {
-  DCHECK(draw_transform.IsIdentity() ||
-         occluded_content_rect_for_contributing_surface_.IsEmpty());
-  gfx::Rect result = content_rect;
-  result.Subtract(occluded_content_rect_for_contributing_surface_);
+  DCHECK(draw_transform.IsIdentityOrIntegerTranslation() ||
+         occluded_target_rect_for_contributing_surface_.IsEmpty());
+  gfx::Rect target_rect =
+      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
+  target_rect.Subtract(occluded_target_rect_for_contributing_surface_);
+  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
+  if (!draw_transform.GetInverse(&inverse_draw_transform))
+    NOTREACHED();
+  gfx::Rect result = MathUtil::ProjectEnclosingClippedRect(
+      inverse_draw_transform, target_rect);
   return result;
 }
 
