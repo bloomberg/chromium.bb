@@ -1768,6 +1768,64 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.OOBE.DetectionDuration" units="milliseconds">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Duration of the captive portal detection process for a particular network at
+    OOBE. Detection duration is recorded each time portal detection is completed
+    for an active network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.OOBE.DetectionResult" enum="CaptivePortalStatus">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts performed at OOBE. Detection
+    result is recorded when portal detection is completed for an active network
+    and when it differs from the previous result for the same network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"
+    enum="CaptivePortalStatus">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts at OOBE if it diverges from
+    network manager results. Detection result is recorded each time portal
+    detection is completed for an active network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Session.DetectionDuration" units="milliseconds">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Duration of the captive portal detection process for a particular network in
+    user session. Detection duration is recorded each time portal detection is
+    completed for an active network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Session.DetectionResult"
+    enum="CaptivePortalStatus">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts performed in user session.
+    Detection result is recorded when portal detection is completed for an
+    active network and when it differs from the previous result for the same
+    network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Session.DiscrepancyWithShill"
+    enum="CaptivePortalStatus">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts in session if it diverges
+    from network manager results. Detection result is recorded each time portal
+    detection is completed for an active network.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.CastButtonShown" enum="BooleanEnabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -29820,6 +29878,14 @@ other types of suffix sets.
   <int value="2" label="IGNORED"/>
 </enum>
 
+<enum name="CaptivePortalStatus" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="OFFLINE"/>
+  <int value="2" label="ONLINE"/>
+  <int value="3" label="PORTAL"/>
+  <int value="4" label="PROXY_AUTH_REQUIRED"/>
+</enum>
+
 <enum name="CapturePixelFormat" type="int">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="I420"/>
@@ -40621,6 +40687,17 @@ other types of suffix sets.
 <!-- Field trials -->
 
 <fieldtrials>
+
+<fieldtrial name="ActiveNetworkState">
+  <group name="Offline"
+      label="network manager thinks that the active network is offline"/>
+  <group name="Online"
+      label="network manager thinks that the active network is online"/>
+  <group name="RestrictedPool"
+      label="network manager thinks that the active network is behind portal"/>
+  <affected-histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"/>
+  <affected-histogram name="CaptivePortal.Session.DiscrepancyWithShill"/>
+</fieldtrial>
 
 <fieldtrial name="AsyncSlowStart">
   <group name="AsyncSlowStart" label="Async Slow Start on"/>

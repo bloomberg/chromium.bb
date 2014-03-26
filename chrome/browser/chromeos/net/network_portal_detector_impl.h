@@ -45,11 +45,17 @@ class NetworkPortalDetectorImpl
       public content::NotificationObserver,
       public PortalDetectorStrategy::Delegate {
  public:
-  static const char kDetectionResultHistogram[];
-  static const char kDetectionDurationHistogram[];
-  static const char kShillOnlineHistogram[];
-  static const char kShillPortalHistogram[];
-  static const char kShillOfflineHistogram[];
+  static const char kOobeDetectionResultHistogram[];
+  static const char kOobeDetectionDurationHistogram[];
+  static const char kOobeShillOnlineHistogram[];
+  static const char kOobeShillPortalHistogram[];
+  static const char kOobeShillOfflineHistogram[];
+
+  static const char kSessionDetectionResultHistogram[];
+  static const char kSessionDetectionDurationHistogram[];
+  static const char kSessionShillOnlineHistogram[];
+  static const char kSessionShillPortalHistogram[];
+  static const char kSessionShillOfflineHistogram[];
 
   explicit NetworkPortalDetectorImpl(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);

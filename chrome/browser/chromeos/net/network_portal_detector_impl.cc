@@ -36,24 +36,72 @@ const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 }
 
+bool InSession() {
+  return UserManager::IsInitialized() && UserManager::Get()->IsUserLoggedIn();
+}
+
+void RecordDetectionResult(NetworkPortalDetector::CaptivePortalStatus status) {
+  if (InSession()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        NetworkPortalDetectorImpl::kSessionDetectionResultHistogram,
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        NetworkPortalDetectorImpl::kOobeDetectionResultHistogram,
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  }
+}
+
+void RecordDetectionDuration(const base::TimeDelta& duration) {
+  if (InSession()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        NetworkPortalDetectorImpl::kSessionDetectionDurationHistogram,
+        duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        NetworkPortalDetectorImpl::kOobeDetectionDurationHistogram, duration);
+  }
+}
+
 void RecordDiscrepancyWithShill(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
-  if (network->connection_state() == shill::kStateOnline) {
-    UMA_HISTOGRAM_ENUMERATION(
-        NetworkPortalDetectorImpl::kShillOnlineHistogram,
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else if (network->connection_state() == shill::kStatePortal) {
-    UMA_HISTOGRAM_ENUMERATION(
-        NetworkPortalDetectorImpl::kShillPortalHistogram,
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else if (network->connection_state() == shill::kStateOffline) {
-    UMA_HISTOGRAM_ENUMERATION(
-        NetworkPortalDetectorImpl::kShillOfflineHistogram,
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  if (InSession()) {
+    if (network->connection_state() == shill::kStateOnline) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kSessionShillOnlineHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    } else if (network->connection_state() == shill::kStatePortal) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kSessionShillPortalHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    } else if (network->connection_state() == shill::kStateOffline) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kSessionShillOfflineHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    }
+  } else {
+    if (network->connection_state() == shill::kStateOnline) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kOobeShillOnlineHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    } else if (network->connection_state() == shill::kStatePortal) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kOobeShillPortalHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    } else if (network->connection_state() == shill::kStateOffline) {
+      UMA_HISTOGRAM_ENUMERATION(
+          NetworkPortalDetectorImpl::kOobeShillOfflineHistogram,
+          status,
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+    }
   }
 }
 
@@ -62,16 +110,27 @@ void RecordDiscrepancyWithShill(
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkPortalDetectorImpl, public:
 
-const char NetworkPortalDetectorImpl::kDetectionResultHistogram[] =
+const char NetworkPortalDetectorImpl::kOobeDetectionResultHistogram[] =
     "CaptivePortal.OOBE.DetectionResult";
-const char NetworkPortalDetectorImpl::kDetectionDurationHistogram[] =
+const char NetworkPortalDetectorImpl::kOobeDetectionDurationHistogram[] =
     "CaptivePortal.OOBE.DetectionDuration";
-const char NetworkPortalDetectorImpl::kShillOnlineHistogram[] =
+const char NetworkPortalDetectorImpl::kOobeShillOnlineHistogram[] =
     "CaptivePortal.OOBE.DiscrepancyWithShill_Online";
-const char NetworkPortalDetectorImpl::kShillPortalHistogram[] =
+const char NetworkPortalDetectorImpl::kOobeShillPortalHistogram[] =
     "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool";
-const char NetworkPortalDetectorImpl::kShillOfflineHistogram[] =
+const char NetworkPortalDetectorImpl::kOobeShillOfflineHistogram[] =
     "CaptivePortal.OOBE.DiscrepancyWithShill_Offline";
+
+const char NetworkPortalDetectorImpl::kSessionDetectionResultHistogram[] =
+    "CaptivePortal.Session.DetectionResult";
+const char NetworkPortalDetectorImpl::kSessionDetectionDurationHistogram[] =
+    "CaptivePortal.Session.DetectionDuration";
+const char NetworkPortalDetectorImpl::kSessionShillOnlineHistogram[] =
+    "CaptivePortal.Session.DiscrepancyWithShill_Online";
+const char NetworkPortalDetectorImpl::kSessionShillPortalHistogram[] =
+    "CaptivePortal.Session.DiscrepancyWithShill_RestrictedPool";
+const char NetworkPortalDetectorImpl::kSessionShillOfflineHistogram[] =
+    "CaptivePortal.Session.DiscrepancyWithShill_Offline";
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
@@ -448,13 +507,10 @@ void NetworkPortalDetectorImpl::RecordDetectionStats(
   if (!network)
     return;
 
-  if (!detection_start_time_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(kDetectionDurationHistogram,
-                               GetCurrentTimeTicks() - detection_start_time_);
-  }
-  UMA_HISTOGRAM_ENUMERATION(kDetectionResultHistogram,
-                            status,
-                            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  if (!detection_start_time_.is_null())
+    RecordDetectionDuration(GetCurrentTimeTicks() - detection_start_time_);
+  RecordDetectionResult(status);
+
   switch (status) {
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
       NOTREACHED();
@@ -484,7 +540,7 @@ void NetworkPortalDetectorImpl::RecordDetectionStats(
 }
 
 void NetworkPortalDetectorImpl::UpdateCurrentStrategy() {
-  if (UserManager::IsInitialized() && UserManager::Get()->IsUserLoggedIn()) {
+  if (InSession()) {
     SetStrategy(PortalDetectorStrategy::STRATEGY_ID_SESSION);
     return;
   }

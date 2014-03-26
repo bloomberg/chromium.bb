@@ -86,7 +86,7 @@ class NetworkPortalDetectorImplTest
 
     if (base::HistogramBase* histogram =
             base::StatisticsRecorder::FindHistogram(
-                NetworkPortalDetectorImpl::kDetectionResultHistogram)) {
+                "CaptivePortal.OOBE.DetectionResult")) {
       original_samples_.reset(histogram->SnapshotSamples().release());
     }
   }
@@ -141,9 +141,7 @@ class NetworkPortalDetectorImplTest
     network_portal_detector()->OnErrorScreenHide();
   }
 
-  void stop_detection() {
-    network_portal_detector()->StopDetection();
-  }
+  void stop_detection() { network_portal_detector()->StopDetection(); }
 
   bool attempt_timeout_is_cancelled() {
     return network_portal_detector()->AttemptTimeoutIsCancelledForTesting();
@@ -225,10 +223,10 @@ class NetworkPortalDetectorImplTest
 
   scoped_ptr<EnumHistogramChecker> MakeResultHistogramChecker() {
     return scoped_ptr<EnumHistogramChecker>(
-        new EnumHistogramChecker(
-            NetworkPortalDetectorImpl::kDetectionResultHistogram,
-            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT,
-            original_samples_.get())).Pass();
+               new EnumHistogramChecker(
+                   "CaptivePortal.OOBE.DetectionResult",
+                   NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT,
+                   original_samples_.get()));
   }
 
  private:
