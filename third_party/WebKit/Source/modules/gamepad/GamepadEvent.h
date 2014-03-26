@@ -43,7 +43,7 @@ private:
     GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad>);
     GamepadEvent(const AtomicString&, const GamepadEventInit&);
 
-    RefPtrWillBePersistent<Gamepad> m_gamepad;
+    RefPtrWillBeMember<Gamepad> m_gamepad;
 };
 
 } // namespace WebCore

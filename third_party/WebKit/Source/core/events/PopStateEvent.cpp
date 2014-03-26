@@ -81,6 +81,7 @@ const AtomicString& PopStateEvent::interfaceName() const
 
 void PopStateEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_history);
     Event::trace(visitor);
 }
 

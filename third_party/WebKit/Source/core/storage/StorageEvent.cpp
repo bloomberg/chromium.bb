@@ -101,9 +101,6 @@ const AtomicString& StorageEvent::interfaceName() const
 
 void StorageEvent::trace(Visitor* visitor)
 {
-    // FIXME: oilpan: this code is not called as of now since Event is not on
-    // the oilpan heap anymore. We are keeping this code to avoid having to
-    // rewrite it once Event is moved back onto the oilpan heap.
     visitor->trace(m_storageArea);
     Event::trace(visitor);
 }

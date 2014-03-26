@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
@@ -76,7 +77,7 @@ private:
     String m_oldValue;
     String m_newValue;
     String m_url;
-    RefPtrWillBePersistent<Storage> m_storageArea;
+    RefPtrWillBeMember<Storage> m_storageArea;
 };
 
 } // namespace WebCore

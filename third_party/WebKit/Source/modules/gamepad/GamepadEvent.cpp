@@ -41,6 +41,7 @@ const AtomicString& GamepadEvent::interfaceName() const
 
 void GamepadEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_gamepad);
     Event::trace(visitor);
 }
 

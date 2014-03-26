@@ -129,7 +129,7 @@ private:
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
-    RefPtrWillBePersistent<Blob> m_dataAsBlob;
+    RefPtrWillBeMember<Blob> m_dataAsBlob;
     RefPtr<ArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;

@@ -80,9 +80,9 @@ private:
             int pageY,
             bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    RefPtrWillBePersistent<TouchList> m_touches;
-    RefPtrWillBePersistent<TouchList> m_targetTouches;
-    RefPtrWillBePersistent<TouchList> m_changedTouches;
+    RefPtrWillBeMember<TouchList> m_touches;
+    RefPtrWillBeMember<TouchList> m_targetTouches;
+    RefPtrWillBeMember<TouchList> m_changedTouches;
 };
 
 class TouchEventDispatchMediator FINAL : public EventDispatchMediator {

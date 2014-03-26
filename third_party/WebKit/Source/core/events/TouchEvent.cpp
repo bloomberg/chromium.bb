@@ -89,6 +89,9 @@ bool TouchEvent::isTouchEvent() const
 
 void TouchEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_touches);
+    visitor->trace(m_targetTouches);
+    visitor->trace(m_changedTouches);
     MouseRelatedEvent::trace(visitor);
 }
 

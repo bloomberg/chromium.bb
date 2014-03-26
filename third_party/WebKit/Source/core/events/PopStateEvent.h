@@ -62,7 +62,7 @@ private:
     PopStateEvent(PassRefPtr<SerializedScriptValue>, PassRefPtrWillBeRawPtr<History>);
 
     RefPtr<SerializedScriptValue> m_serializedState;
-    RefPtrWillBePersistent<History> m_history;
+    RefPtrWillBeMember<History> m_history;
 };
 
 } // namespace WebCore

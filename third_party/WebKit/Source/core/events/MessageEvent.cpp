@@ -186,6 +186,7 @@ void MessageEvent::entangleMessagePorts(ExecutionContext* context)
 
 void MessageEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_dataAsBlob);
     Event::trace(visitor);
 }
 
