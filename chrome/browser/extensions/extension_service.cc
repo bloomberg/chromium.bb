@@ -1155,19 +1155,23 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   //
   // NOTE: It is important that this happen after notifying the renderers about
   // the new extensions so that if we navigate to an extension URL in
-  // NOTIFICATION_EXTENSION_LOADED, the renderer is guaranteed to know about it.
+  // ExtensionRegistryObserver::OnLoaded or NOTIFICATION_EXTENSION_LOADED, the
+  // renderer is guaranteed to know about it.
+  registry_->TriggerOnLoaded(extension);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
-  // Tell a random-ass collection of other subsystems about the new extension.
-  // TODO(aa): What should we do with all this goop? Can it move into the
-  // relevant objects via EXTENSION_LOADED?
-
+  // TODO(kalman): Convert ExtensionSpecialStoragePolicy to a
+  // BrowserContextKeyedService and use ExtensionRegistryObserver.
   profile_->GetExtensionSpecialStoragePolicy()->
       GrantRightsForExtension(extension);
 
+  // TODO(kalman): This is broken. The crash reporter is process-wide so doesn't
+  // work properly multi-profile. Besides which, it should be using
+  // ExtensionRegistryObserver. See http://crbug.com/355029.
   UpdateActiveExtensionsInCrashReporter();
 
   // If the extension has permission to load chrome://favicon/ resources we need
@@ -1219,6 +1223,9 @@ void ExtensionService::NotifyExtensionUnloaded(
   }
 
   system_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
+
+  // TODO(kalman): Convert ExtensionSpecialStoragePolicy to a
+  // BrowserContextKeyedService and use ExtensionRegistryObserver.
   profile_->GetExtensionSpecialStoragePolicy()->
       RevokeRightsForExtension(extension);
 
@@ -1237,6 +1244,9 @@ void ExtensionService::NotifyExtensionUnloaded(
   }
 #endif
 
+  // TODO(kalman): This is broken. The crash reporter is process-wide so doesn't
+  // work properly multi-profile. Besides which, it should be using
+  // ExtensionRegistryObserver::OnExtensionLoaded. See http://crbug.com/355029.
   UpdateActiveExtensionsInCrashReporter();
 }
 
@@ -1977,6 +1987,9 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
       extension_ids.insert(extension->id());
   }
 
+  // TODO(kalman): This is broken. ExtensionService is per-profile.
+  // crash_keys::SetActiveExtensions is per-process. See
+  // http://crbug.com/355029.
   crash_keys::SetActiveExtensions(extension_ids);
 }
 

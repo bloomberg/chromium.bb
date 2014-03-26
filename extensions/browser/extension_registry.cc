@@ -36,6 +36,12 @@ void ExtensionRegistry::RemoveObserver(ExtensionRegistryObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void ExtensionRegistry::TriggerOnLoaded(const Extension* extension) {
+  DCHECK(enabled_extensions_.Contains(extension->id()));
+  FOR_EACH_OBSERVER(
+      ExtensionRegistryObserver, observers_, OnExtensionLoaded(extension));
+}
+
 void ExtensionRegistry::TriggerOnUnloaded(const Extension* extension) {
   DCHECK(!enabled_extensions_.Contains(extension->id()));
   FOR_EACH_OBSERVER(

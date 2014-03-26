@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
@@ -23,8 +22,6 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -79,8 +76,6 @@ GalleryWatchStateTracker::GalleryWatchStateTracker(Profile* profile)
       scoped_extension_registry_observer_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_));
   scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
@@ -196,14 +191,8 @@ void GalleryWatchStateTracker::OnGalleryWatchRemoved(
   WriteToStorage(extension_id);
 }
 
-void GalleryWatchStateTracker::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void GalleryWatchStateTracker::OnExtensionLoaded(const Extension* extension) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
-
-  const Extension* extension = content::Details<const Extension>(details).ptr();
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (!storage)
     return;

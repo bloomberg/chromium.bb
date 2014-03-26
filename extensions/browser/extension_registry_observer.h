@@ -15,6 +15,10 @@ class ExtensionRegistryObserver {
  public:
   virtual ~ExtensionRegistryObserver() {}
 
+  // Called after an extension is loaded. The extension will exclusively exist
+  // in the enabled_extensions set of ExtensionRegistry.
+  virtual void OnExtensionLoaded(const Extension* extension) {}
+
   // Called after an extension is unloaded. The extension no longer exists in
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).
   virtual void OnExtensionUnloaded(const Extension* extension) {}

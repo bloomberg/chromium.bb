@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,6 +16,44 @@ namespace extensions {
 namespace {
 
 typedef testing::Test ExtensionRegistryTest;
+
+testing::AssertionResult HasSingleExtension(
+    const ExtensionList& list,
+    const scoped_refptr<const Extension>& extension) {
+  if (list.empty())
+    return testing::AssertionFailure() << "No extensions in list";
+  if (list.size() > 1)
+    return testing::AssertionFailure() << list.size()
+                                       << " extensions, expected 1";
+  const Extension* did_load = list[0].get();
+  if (did_load != extension)
+    return testing::AssertionFailure() << "Expected " << extension->id()
+                                       << " found " << did_load->id();
+  return testing::AssertionSuccess();
+}
+
+class TestObserver : public ExtensionRegistryObserver {
+ public:
+  void Reset() {
+    loaded_.clear();
+    unloaded_.clear();
+  }
+
+  const ExtensionList& loaded() { return loaded_; }
+  const ExtensionList& unloaded() { return unloaded_; }
+
+ private:
+  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE {
+    loaded_.push_back(extension);
+  }
+
+  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE {
+    unloaded_.push_back(extension);
+  }
+
+  ExtensionList loaded_;
+  ExtensionList unloaded_;
+};
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
   ExtensionRegistry registry;
@@ -163,6 +202,34 @@ TEST_F(ExtensionRegistryTest, GetExtensionById) {
   // Enabled isn't found if the wrong flags are set.
   EXPECT_FALSE(registry.GetExtensionById(
       "enabled", ExtensionRegistry::DISABLED | ExtensionRegistry::BLACKLISTED));
+}
+
+TEST_F(ExtensionRegistryTest, Observer) {
+  ExtensionRegistry registry;
+  TestObserver observer;
+  registry.AddObserver(&observer);
+
+  EXPECT_TRUE(observer.loaded().empty());
+  EXPECT_TRUE(observer.unloaded().empty());
+
+  scoped_refptr<const Extension> extension =
+      test_util::CreateExtensionWithID("id");
+
+  registry.AddEnabled(extension);
+  registry.TriggerOnLoaded(extension);
+
+  EXPECT_TRUE(HasSingleExtension(observer.loaded(), extension.get()));
+  EXPECT_TRUE(observer.unloaded().empty());
+  observer.Reset();
+
+  registry.RemoveEnabled(extension->id());
+  registry.TriggerOnUnloaded(extension);
+
+  EXPECT_TRUE(observer.loaded().empty());
+  EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));
+  observer.Reset();
+
+  registry.RemoveObserver(&observer);
 }
 
 }  // namespace

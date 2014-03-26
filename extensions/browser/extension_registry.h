@@ -65,6 +65,10 @@ class ExtensionRegistry : public KeyedService {
   void AddObserver(ExtensionRegistryObserver* observer);
   void RemoveObserver(ExtensionRegistryObserver* observer);
 
+  // Invokes the observer method OnExtensionLoaded(). The extension must be
+  // enabled at the time of the call.
+  void TriggerOnLoaded(const Extension* extension);
+
   // Invokes the observer method OnExtensionUnloaded(). The extension must not
   // be enabled at the time of the call.
   void TriggerOnUnloaded(const Extension* extension);
