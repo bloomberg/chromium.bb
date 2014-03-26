@@ -414,17 +414,9 @@ void ContentCaptureSubscription::Observe(
 
   // This message occurs on window resizes and visibility changes even when
   // accelerated compositing is active, so we need to filter out these cases.
-  if (!rwh || !rwh->GetView())
+  if (!rwh || !rwh->GetView() || (rwh->is_accelerated_compositing_active() &&
+                                  rwh->GetView()->IsSurfaceAvailableForCopy()))
     return;
-  // Mac sends DID_UPDATE_BACKING_STORE messages to inform the capture system
-  // of new software compositor frames, so always treat these messages as
-  // signals of a new frame on Mac.
-  // http://crbug.com/333986
-#if !defined(OS_MACOSX)
-  if (rwh->is_accelerated_compositing_active() &&
-      rwh->GetView()->IsSurfaceAvailableForCopy())
-    return;
-#endif
 
   TRACE_EVENT1("mirroring", "ContentCaptureSubscription::Observe",
                "instance", this);
