@@ -14,6 +14,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 class SlideAnimation;
 }
@@ -72,6 +73,12 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
 
   // Returns the bounds for the title.
   gfx::Rect GetTitleBounds() const;
+
+  // Returns the frame image to use when |frame_| is active.
+  gfx::ImageSkia* GetActiveFrameImage() const;
+
+  // Returns the frame image to use when |frame_| is inactive.
+  gfx::ImageSkia* GetInactiveFrameImage() const;
 
   views::Widget* frame_;
   views::View* view_;
