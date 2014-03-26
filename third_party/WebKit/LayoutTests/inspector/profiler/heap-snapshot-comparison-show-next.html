@@ -31,7 +31,7 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("object", "A");
+                var row = InspectorTest.findRow("A");
                 InspectorTest.assertEquals(true, !!row, "\"A\" row");
                 InspectorTest.expandRow(row, step3);
             }

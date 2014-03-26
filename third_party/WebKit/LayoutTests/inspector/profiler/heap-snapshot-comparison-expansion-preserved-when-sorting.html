@@ -31,7 +31,7 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 InspectorTest.expandRow(row, expandB);
                 function expandB()
@@ -51,18 +51,18 @@ function test()
 
             function step5()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 var bInstanceRow = row.children[0];
                 InspectorTest.assertEquals(true, !!bInstanceRow, "\"B\" instance row");
                 InspectorTest.expandRow(bInstanceRow, expandA);
                 function expandA(row)
                 {
-                    function propertyMatcher(data)
+                    function propertyMatcher(node)
                     {
-                        return data.name === "a" && data.value.charAt(0) === "A";
+                        return node._referenceName === "a" && node._name.charAt(0) === "A";
                     }
-                    var aRow = InspectorTest.findRow("object", propertyMatcher, row);
+                    var aRow = InspectorTest.findMatchingRow(propertyMatcher, row);
                     InspectorTest.assertEquals(true, !!aRow, "\"a: A\" row");
                     InspectorTest.expandRow(aRow, step6);
                 }
@@ -70,22 +70,22 @@ function test()
 
             function step6()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 function deletedNodeMatcher(data)
                 {
-                    return data.removedCount && data.object.value.charAt(0) === "B";
+                    return data._isDeletedNode && data._name.charAt(0) === "B";
                 }
-                var bInstanceRow = InspectorTest.findRow2(deletedNodeMatcher, row);
+                var bInstanceRow = InspectorTest.findMatchingRow(deletedNodeMatcher, row);
                 InspectorTest.assertEquals(true, !!bInstanceRow, "\"B\" instance row");
                 InspectorTest.expandRow(bInstanceRow, expandA);
                 function expandA(row)
                 {
                     function propertyMatcher(data)
                     {
-                        return data.name === "a" && data.value.charAt(0) === "A";
+                        return data._referenceName === "a" && data._name.charAt(0) === "A";
                     }
-                    var aRow = InspectorTest.findRow("object", propertyMatcher, row);
+                    var aRow = InspectorTest.findMatchingRow(propertyMatcher, row);
                     InspectorTest.assertEquals(true, !!aRow, "\"a: A\" row");
                     InspectorTest.expandRow(aRow, step7);
                 }

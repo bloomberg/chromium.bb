@@ -481,28 +481,15 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
     }
     function parseSize(size)
     {
-        if (size.substr(0, 1) === '"') size = JSON.parse(size);
         // Remove thousands separator.
-        return parseInt(size.replace(/[\u2009,]/g, ""));
-    }
-    function extractField(data, field)
-    {
-        if (data.substr(0, 1) !== "{") return data;
-        data = JSON.parse(data);
-        if (!data[field])
-            InspectorTest.addResult("No " + field + " field in " + JSON.stringify(data));
-        return data[field];
-    }
-    function extractId(data)
-    {
-        return parseInt(extractField(data, "nodeId"));
+        return parseInt(size.replace(/[\u2009,]/g, ""), 10);
     }
     var extractor = {
-        text: function (data) { return extractField(data, "value"); },
+        text: function (data) { data; },
         number: function (data) { return parseInt(data, 10); },
-        size: function (data) { return parseSize(data); },
-        name: function (data) { return extractField(data, "name"); },
-        id: function (data) { return extractId(data); }
+        size: parseSize,
+        name: function (data) { return data; },
+        id: function (data) { return parseInt(data, 10); }
     }[sortType];
     var acceptableComparisonResult = {
         ascending: -1,
@@ -522,8 +509,9 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
         var a = extractor(contents[i]);
         var b = extractor(contents[i + 1]);
         var result = simpleComparator(a, b);
-        if (result !== 0 && result !== acceptableComparisonResult)
+        if (result !== 0 && result !== acceptableComparisonResult) {
             InspectorTest.addResult("Elements " + i + " and " + (i + 1) + " are out of order: " + a + " " + b + " (" + sortOrder + ")");
+        }
     }
 };
 
@@ -593,10 +581,12 @@ InspectorTest.columnContents = function(column, row)
     for (var node = parent.children[0]; node; node = node.traverseNextNode(true, parent, true)) {
         if (!node.selectable)
             continue;
-        var data = node.data[column.identifier];
-        if (typeof data === "object")
-            data = JSON.stringify(data);
-        result.push(data);
+        var cell = node.element.children[column.ordinal];
+        var content = cell.firstElementChild;
+        // Do not inlcude percents
+        if (content.firstElementChild)
+            content = content.firstElementChild;
+        result.push(content.textContent);
     }
     return result;
 };
@@ -647,11 +637,7 @@ InspectorTest.findAndExpandWindow = function(callback)
 InspectorTest.findAndExpandRow = function(name, callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    function propertyMatcher(data)
-    {
-        return data.value === name;
-    }
-    var row = InspectorTest.findRow("object", propertyMatcher);
+    var row = InspectorTest.findRow(name);
     InspectorTest.assertEquals(true, !!row, '"' + name + '" row');
     InspectorTest.expandRow(row, callback);
 };
@@ -666,25 +652,20 @@ InspectorTest.findButtonsNode = function(row, startNode)
     return null;
 };
 
-InspectorTest.findRow = function(columnIdentifier, matcher, parent)
+InspectorTest.findRow = function(name, parent)
 {
-    parent = parent || this._currentGrid().rootNode();
-    if (typeof matcher !== "function") {
-        var value = matcher;
-        matcher = function(x) { return x === value; };
-    }
-    for (var node = parent.children[0]; node; node = node.traverseNextNode(true, parent, true)) {
-        if (matcher(node.data[columnIdentifier]))
-            return node;
-    }
-    return null;
+    function matcher(x)
+    {
+        return x._name === name;
+    };
+    return InspectorTest.findMatchingRow(matcher, parent);
 };
 
-InspectorTest.findRow2 = function(matcher, parent)
+InspectorTest.findMatchingRow = function(matcher, parent)
 {
     parent = parent || this._currentGrid().rootNode();
     for (var node = parent.children[0]; node; node = node.traverseNextNode(true, parent, true)) {
-        if (matcher(node.data))
+        if (matcher(node))
             return node;
     }
     return null;

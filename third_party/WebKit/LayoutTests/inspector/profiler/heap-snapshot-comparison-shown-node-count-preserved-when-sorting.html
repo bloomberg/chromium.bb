@@ -38,7 +38,7 @@ function test()
 
             function step3()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 InspectorTest.expandRow(row, showNext);
                 function showNext(row)
@@ -51,13 +51,13 @@ function test()
 
             function step4()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 function deletedNodeMatcher(data)
                 {
-                    return data.removedCount && data.object.value.charAt(0) === "B";
+                    return data._isDeletedNode && data._name.charAt(0) === "B";
                 }
-                var bInstanceRow = InspectorTest.findRow2(deletedNodeMatcher, row);
+                var bInstanceRow = InspectorTest.findMatchingRow(deletedNodeMatcher, row);
                 InspectorTest.assertEquals(true, !!bInstanceRow, "\"B\" instance row");
                 var buttonsNode = InspectorTest.findButtonsNode(row, bInstanceRow);
                 InspectorTest.assertEquals(false, !!buttonsNode, "buttons node found!");

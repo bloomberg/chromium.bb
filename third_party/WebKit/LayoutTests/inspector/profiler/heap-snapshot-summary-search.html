@@ -24,7 +24,7 @@ function test()
 
             function step1b()
             {
-                var row = InspectorTest.findRow("object", "Window");
+                var row = InspectorTest.findRow("Window");
                 InspectorTest.assertEquals(true, !!row, "\"Window\" class row");
                 InspectorTest.expandRow(row, step1c);
             }

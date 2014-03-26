@@ -33,7 +33,7 @@ function test()
 
             function step3()
             {
-                var row = InspectorTest.findRow("object", "B");
+                var row = InspectorTest.findRow("B");
                 InspectorTest.assertEquals(true, !!row, "\"B\" row");
                 InspectorTest.expandRow(row, showNext);
                 function showNext(row)

@@ -105,16 +105,16 @@ function test()
 
             function step3(row)
             {
-                InspectorTest.assertEquals("(GC roots)", row.data.object.value, "(GC roots) object");
-                InspectorTest.assertEquals(0, row.data.distance, "(GC roots) distance should be zero");
+                InspectorTest.assertEquals("(GC roots)", row._name, "(GC roots) object");
+                InspectorTest.assertEquals(0, row._distance, "(GC roots) distance should be zero");
                 InspectorTest.findAndExpandWindow(step4);
             }
 
             function step4(row)
             {
-                InspectorTest.assertEquals("Window", row.data.object.value, "Window object");
-                InspectorTest.assertEquals(distance, row.data.distance, "Window distance should be 1");
-                var child = InspectorTest.findRow("object", function (obj) { return obj.name === "next"; }, row);
+                InspectorTest.assertEquals("Window", row._name, "Window object");
+                InspectorTest.assertEquals(distance, row._distance, "Window distance should be 1");
+                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
                 InspectorTest.assertEquals(true, !!child, "next found");
                 InspectorTest.expandRow(child, step5);
             }
@@ -122,16 +122,16 @@ function test()
             function step5(row)
             {
                 ++distance;
-                InspectorTest.assertEquals(distance, row.data.distance, "Check distance of objects chain");
-                if (row.data.object.value === "Tail") {
+                InspectorTest.assertEquals(distance, row._distance, "Check distance of objects chain");
+                if (row._name === "Tail") {
                     InspectorTest.assertEquals(7, distance, "Tail distance");
                     setTimeout(next, 0);
                     return;
                 }
-                InspectorTest.assertEquals("Body", row.data.object.value, "Body");
-                var child = InspectorTest.findRow("object", function (obj) { return obj.name === "next"; }, row);
+                InspectorTest.assertEquals("Body", row._name, "Body");
+                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
                 InspectorTest.assertEquals(true, !!child, "next found");
-                if (child.data.object.value !== "Tail")
+                if (child._name !== "Tail")
                     InspectorTest.expandRow(child, step5);
                 else
                     step5(child);

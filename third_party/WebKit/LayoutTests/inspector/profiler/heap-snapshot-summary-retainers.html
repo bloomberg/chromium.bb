@@ -24,7 +24,7 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("object", "A");
+                var row = InspectorTest.findRow("A");
                 InspectorTest.assertEquals(true, !!row, "\"A\" row");
                 InspectorTest.expandRow(row, step3);
             }
@@ -89,7 +89,7 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("object", "L3");
+                var row = InspectorTest.findRow("L3");
                 InspectorTest.assertEquals(true, !!row, "\"L3\" row");
                 InspectorTest.expandRow(row, step3);
             }
@@ -113,12 +113,12 @@ function test()
                 var l3 = retainersRoot;
                 InspectorTest.assertEquals(1, l3.children.length, "One retainer of L3");
                 var l2 = l3.children[0];
-                InspectorTest.assertEquals("y", l2.data.object.name);
+                InspectorTest.assertEquals("y", l2._referenceName);
                 InspectorTest.assertEquals(1, l2.children.length, "One retainer of L2");
                 var l1 = l2.children[0];
-                InspectorTest.assertEquals("x", l1.data.object.name);
+                InspectorTest.assertEquals("x", l1._referenceName);
                 InspectorTest.assertEquals(2, l1.children.length, "Two retainers of L1");
-                var l1retainers = [l1.children[0].data.object.name, l1.children[1].data.object.name];
+                var l1retainers = [l1.children[0]._referenceName, l1.children[1]._referenceName];
                 l1retainers.sort();
                 InspectorTest.assertEquals("l1a", l1retainers[0]);
                 InspectorTest.assertEquals("l1b", l1retainers[1]);
@@ -168,7 +168,7 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("object", "Tail");
+                var row = InspectorTest.findRow("Tail");
                 InspectorTest.assertEquals(true, !!row, "\"Tail\" row");
                 InspectorTest.expandRow(row, step3);
             }

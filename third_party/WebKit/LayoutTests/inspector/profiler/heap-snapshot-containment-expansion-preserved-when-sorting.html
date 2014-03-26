@@ -50,9 +50,9 @@ function test()
                 {
                     function propertyMatcher(data)
                     {
-                        return data.name === "a" && data.value.charAt(0) === "A";
+                        return data._referenceName === "a" && data._name.charAt(0) === "A";
                     }
-                    var aRow = InspectorTest.findRow("object", propertyMatcher, row);
+                    var aRow = InspectorTest.findMatchingRow(propertyMatcher, row);
                     InspectorTest.assertEquals(true, !!aRow, "\"a: A\" row");
                     InspectorTest.expandRow(aRow, step6);
                 }
