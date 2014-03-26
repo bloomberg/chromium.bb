@@ -228,7 +228,7 @@ class PortTestCase(unittest.TestCase):
     def test_diff_image_crashed(self):
         port = self.make_port()
         port._executive = MockExecutive2(exit_code=2)
-        self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"), (None, 'image diff returned an exit code of 2'))
+        self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"), (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
 
     def test_check_wdiff(self):
         port = self.make_port()

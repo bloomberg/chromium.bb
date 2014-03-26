@@ -506,7 +506,7 @@ class Port(object):
             elif exit_code == 1:
                 result = self._filesystem.read_binary_file(native_diff_filename)
             else:
-                err_str = "image diff returned an exit code of %s" % exit_code
+                err_str = "Image diff returned an exit code of %s. See http://crbug.com/278596" % exit_code
         except OSError, e:
             err_str = 'error running image diff: %s' % str(e)
         finally:
