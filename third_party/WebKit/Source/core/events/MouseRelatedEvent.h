@@ -61,7 +61,7 @@ namespace WebCore {
 
     protected:
         MouseRelatedEvent();
-        MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
+        MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
                           int detail, const IntPoint& screenLocation, const IntPoint& windowLocation,
                           const IntPoint& movementDelta,
                           bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated = false);

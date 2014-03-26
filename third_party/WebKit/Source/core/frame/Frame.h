@@ -28,6 +28,7 @@
 #ifndef Frame_h
 #define Frame_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefCounted.h"
@@ -71,7 +72,7 @@ public:
 
     // FIXME: DOMWindow and Document should both be moved to LocalFrame
     // after RemoteFrame is complete enough to exist without them.
-    virtual void setDOMWindow(PassRefPtr<DOMWindow>);
+    virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>);
     DOMWindow* domWindow() const;
     Document* document() const;
 
@@ -93,7 +94,7 @@ protected:
     FrameHost* m_host;
     HTMLFrameOwnerElement* m_ownerElement;
 
-    RefPtr<DOMWindow> m_domWindow;
+    RefPtrWillBePersistent<DOMWindow> m_domWindow;
 
 private:
 

@@ -1555,7 +1555,7 @@ Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
     return result;
 }
 
-PassRefPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
+PassRefPtrWillBeRawPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
 {
     Page* page = contextDocument()->frame()->page();
     ASSERT(page);
@@ -2420,6 +2420,7 @@ ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromis
 
 void Internals::trace(Visitor* visitor)
 {
+    visitor->trace(m_frontendWindow);
     visitor->trace(m_runtimeFlags);
     visitor->trace(m_profilers);
 }

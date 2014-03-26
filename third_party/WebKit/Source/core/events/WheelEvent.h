@@ -65,7 +65,7 @@ public:
     }
 
     static PassRefPtr<WheelEvent> create(const FloatPoint& wheelTicks,
-        const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtr<AbstractView> view,
+        const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
     {
@@ -73,11 +73,11 @@ public:
         screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey, directionInvertedFromDevice));
     }
 
-    void initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<AbstractView>,
+    void initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView>,
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    void initWebKitWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<AbstractView>,
+    void initWebKitWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView>,
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
@@ -103,7 +103,7 @@ private:
     WheelEvent();
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
-        unsigned, PassRefPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
+        unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice);
 
     IntPoint m_wheelDelta;
@@ -118,9 +118,9 @@ DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
 class WheelEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtr<AbstractView>);
+    static PassRefPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
 private:
-    WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtr<AbstractView>);
+    WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
     WheelEvent* event() const;
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };

@@ -32,6 +32,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
+#include "heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
@@ -76,7 +77,7 @@ namespace WebCore {
 
         HTMLFrameOwnerElement* ownerElement() const;
 
-        virtual void setDOMWindow(PassRefPtr<DOMWindow>) OVERRIDE;
+        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>) OVERRIDE;
         FrameView* view() const;
 
         Editor& editor() const;

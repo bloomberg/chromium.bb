@@ -2421,7 +2421,7 @@ void Document::implicitClose()
 
     // The call to dispatchWindowLoadEvent can detach the DOMWindow and cause it (and its
     // attached Document) to be destroyed.
-    RefPtr<DOMWindow> protectedWindow(this->domWindow());
+    RefPtrWillBeRawPtr<DOMWindow> protectedWindow(this->domWindow());
 
     m_loadEventProgress = LoadEventInProgress;
 

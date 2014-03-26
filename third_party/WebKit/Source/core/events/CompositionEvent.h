@@ -45,7 +45,7 @@ public:
         return adoptRef(new CompositionEvent);
     }
 
-    static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
+    static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
     {
         return adoptRef(new CompositionEvent(type, view, data, underlines));
     }
@@ -57,7 +57,7 @@ public:
 
     virtual ~CompositionEvent();
 
-    void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, const String& data);
+    void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
     String data() const { return m_data; }
     int activeSegmentStart() const { return m_activeSegmentStart; }
@@ -70,7 +70,7 @@ public:
 
 private:
     CompositionEvent();
-    CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView>, const String&, const Vector<CompositionUnderline>& underlines);
+    CompositionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, const String&, const Vector<CompositionUnderline>& underlines);
     CompositionEvent(const AtomicString& type, const CompositionEventInit&);
     void initializeSegments(const Vector<CompositionUnderline>* = 0);
 

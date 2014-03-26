@@ -222,7 +222,7 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
     return resultSize;
 }
 
-void LocalFrame::setDOMWindow(PassRefPtr<DOMWindow> domWindow)
+void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow> domWindow)
 {
     InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     if (domWindow)

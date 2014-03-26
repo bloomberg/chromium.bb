@@ -35,7 +35,7 @@ typedef DOMWindow AbstractView;
 struct UIEventInit : public EventInit {
     UIEventInit();
 
-    RefPtr<AbstractView> view;
+    RefPtrWillBeMember<AbstractView> view;
     int detail;
 };
 
@@ -45,7 +45,7 @@ public:
     {
         return adoptRef(new UIEvent);
     }
-    static PassRefPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail)
+    static PassRefPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail)
     {
         return adoptRef(new UIEvent(type, canBubble, cancelable, view, detail));
     }
@@ -55,7 +55,7 @@ public:
     }
     virtual ~UIEvent();
 
-    void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int detail);
+    void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail);
 
     AbstractView* view() const { return m_view.get(); }
     AbstractView* view(bool& isNull) const { isNull = !m_view; return m_view.get(); }
@@ -79,11 +79,11 @@ public:
 
 protected:
     UIEvent();
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int detail);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail);
     UIEvent(const AtomicString&, const UIEventInit&);
 
 private:
-    RefPtr<AbstractView> m_view;
+    RefPtrWillBeMember<AbstractView> m_view;
     int m_detail;
 };
 

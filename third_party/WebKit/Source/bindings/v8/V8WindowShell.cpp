@@ -52,6 +52,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "heap/Handle.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -303,7 +304,7 @@ bool V8WindowShell::installDOMWindow()
 
     V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);
 
-    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window);
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -318,10 +319,17 @@ bool V8WindowShell::installDOMWindow()
     //       outer, inner, and DOMWindow instance all appear to be the same
     //       JavaScript object.
     //
+    // Note: With Oilpan, the DOMWindow object is garbage collected.
+    //       Persistent references to this inner global object view of the DOMWindow
+    //       aren't kept, as that would prevent the global object from ever being released.
+    //       It is safe not to do so, as the wrapper for the DOMWindow being installed here
+    //       already keeps a persistent reference, and it along with the inner global object
+    //       views of the DOMWindow will die together once that wrapper clears the persistent
+    //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_perContextData->context());
-    V8DOMWrapper::setNativeInfo(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtr<DOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<DOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
     return true;
 }
 

@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, const PlatformGestureEvent& event)
+PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
     AtomicString eventType;
     float deltaX = 0;
@@ -87,7 +87,7 @@ GestureEvent::GestureEvent()
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY)
     : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), ctrlKey, altKey, shiftKey, metaKey)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)

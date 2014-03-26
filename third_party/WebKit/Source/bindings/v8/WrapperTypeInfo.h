@@ -192,7 +192,8 @@ namespace WebCore {
 #if ENABLE(OILPAN)
         if (typeInfo->isGarbageCollected) {
             const PersistentNode* handle = toPersistentHandle(wrapper);
-            ASSERT(handle);
+            // This will be null iff a wrapper for a hidden wrapper object,
+            // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
             delete handle;
         } else {
             ASSERT(typeInfo->derefObjectFunction);

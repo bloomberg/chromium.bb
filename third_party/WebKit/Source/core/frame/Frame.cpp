@@ -125,7 +125,7 @@ Settings* Frame::settings() const
     return 0;
 }
 
-void Frame::setDOMWindow(PassRefPtr<DOMWindow> domWindow)
+void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow> domWindow)
 {
     if (m_domWindow)
         m_domWindow->reset();

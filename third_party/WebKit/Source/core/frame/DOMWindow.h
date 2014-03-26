@@ -91,11 +91,14 @@ enum PageshowEventPersistence {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow FINAL : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
-        REFCOUNTED_EVENT_TARGET(DOMWindow);
+    class DOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
+        DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<DOMWindow>);
     public:
         static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-        static PassRefPtr<DOMWindow> create(LocalFrame& frame) { return adoptRef(new DOMWindow(frame)); }
+        static PassRefPtrWillBeRawPtr<DOMWindow> create(LocalFrame& frame)
+        {
+            return adoptRefWillBeRefCountedGarbageCollected(new DOMWindow(frame));
+        }
         virtual ~DOMWindow();
 
         PassRefPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
@@ -148,7 +151,7 @@ enum PageshowEventPersistence {
         void print();
         void stop();
 
-        PassRefPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+        PassRefPtrWillBeRawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
             DOMWindow* callingWindow, DOMWindow* enteredWindow);
 
         typedef void (*PrepareDialogFunction)(DOMWindow*, void* context);
@@ -322,6 +325,8 @@ enum PageshowEventPersistence {
         // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
         void clearEventQueue();
 
+        void trace(Visitor*);
+
     protected:
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
@@ -343,27 +348,27 @@ enum PageshowEventPersistence {
 
         HashSet<DOMWindowProperty*> m_properties;
 
-        mutable RefPtrWillBePersistent<Screen> m_screen;
-        mutable RefPtrWillBePersistent<History> m_history;
-        mutable RefPtr<BarProp> m_locationbar;
-        mutable RefPtr<BarProp> m_menubar;
-        mutable RefPtr<BarProp> m_personalbar;
-        mutable RefPtr<BarProp> m_scrollbars;
-        mutable RefPtr<BarProp> m_statusbar;
-        mutable RefPtr<BarProp> m_toolbar;
-        mutable RefPtrWillBePersistent<Console> m_console;
-        mutable RefPtrWillBePersistent<Navigator> m_navigator;
-        mutable RefPtrWillBePersistent<Location> m_location;
+        mutable RefPtrWillBeMember<Screen> m_screen;
+        mutable RefPtrWillBeMember<History> m_history;
+        mutable RefPtrWillBeMember<BarProp> m_locationbar;
+        mutable RefPtrWillBeMember<BarProp> m_menubar;
+        mutable RefPtrWillBeMember<BarProp> m_personalbar;
+        mutable RefPtrWillBeMember<BarProp> m_scrollbars;
+        mutable RefPtrWillBeMember<BarProp> m_statusbar;
+        mutable RefPtrWillBeMember<BarProp> m_toolbar;
+        mutable RefPtrWillBeMember<Console> m_console;
+        mutable RefPtrWillBeMember<Navigator> m_navigator;
+        mutable RefPtrWillBeMember<Location> m_location;
         mutable RefPtr<StyleMedia> m_media;
 
         String m_status;
         String m_defaultStatus;
 
-        mutable RefPtrWillBePersistent<Storage> m_sessionStorage;
-        mutable RefPtrWillBePersistent<Storage> m_localStorage;
-        mutable RefPtrWillBePersistent<ApplicationCache> m_applicationCache;
+        mutable RefPtrWillBeMember<Storage> m_sessionStorage;
+        mutable RefPtrWillBeMember<Storage> m_localStorage;
+        mutable RefPtrWillBeMember<ApplicationCache> m_applicationCache;
 
-        mutable RefPtrWillBePersistent<Performance> m_performance;
+        mutable RefPtrWillBeMember<Performance> m_performance;
 
         mutable RefPtr<DOMWindowCSS> m_css;
 

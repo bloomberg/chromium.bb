@@ -111,9 +111,9 @@ namespace WebCore {
 
 class PostMessageTimer FINAL : public SuspendableTimer {
 public:
-    PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
+    PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
         : SuspendableTimer(window.document())
-        , m_window(window)
+        , m_window(&window)
         , m_message(message)
         , m_origin(sourceOrigin)
         , m_source(source)
@@ -125,7 +125,7 @@ public:
 
     PassRefPtr<MessageEvent> event()
     {
-        return MessageEvent::create(m_channels.release(), m_message, m_origin, String(), m_source);
+        return MessageEvent::create(m_channels.release(), m_message, m_origin, String(), m_source.get());
 
     }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
@@ -138,10 +138,10 @@ private:
         // This object is deleted now.
     }
 
-    RefPtr<DOMWindow> m_window;
+    RefPtrWillBePersistent<DOMWindow> m_window;
     RefPtr<SerializedScriptValue> m_message;
     String m_origin;
-    RefPtr<DOMWindow> m_source;
+    RefPtrWillBePersistent<DOMWindow> m_source;
     OwnPtr<MessagePortChannelArray> m_channels;
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtr<ScriptCallStack> m_stackTrace;
@@ -1759,7 +1759,7 @@ bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& u
     return true;
 }
 
-PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+PassRefPtrWillBeRawPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
     DOMWindow* callingWindow, DOMWindow* enteredWindow)
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1865,5 +1865,23 @@ PassOwnPtr<LifecycleNotifier<DOMWindow> > DOMWindow::createLifecycleNotifier()
     return DOMWindowLifecycleNotifier::create(this);
 }
 
+void DOMWindow::trace(Visitor* visitor)
+{
+    visitor->trace(m_screen);
+    visitor->trace(m_history);
+    visitor->trace(m_locationbar);
+    visitor->trace(m_menubar);
+    visitor->trace(m_personalbar);
+    visitor->trace(m_scrollbars);
+    visitor->trace(m_statusbar);
+    visitor->trace(m_toolbar);
+    visitor->trace(m_console);
+    visitor->trace(m_navigator);
+    visitor->trace(m_location);
+    visitor->trace(m_sessionStorage);
+    visitor->trace(m_localStorage);
+    visitor->trace(m_applicationCache);
+    visitor->trace(m_performance);
+}
 
 } // namespace WebCore

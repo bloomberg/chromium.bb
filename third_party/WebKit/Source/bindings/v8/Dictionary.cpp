@@ -320,7 +320,7 @@ bool Dictionary::get(const String& key, unsigned long long& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<DOMWindow>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<DOMWindow>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

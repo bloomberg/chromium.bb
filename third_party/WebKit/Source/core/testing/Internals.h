@@ -244,7 +244,7 @@ public:
     unsigned numberOfLiveDocuments() const;
     String dumpRefCountedInstanceCounts() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
-    PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
+    PassRefPtrWillBeRawPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
     void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionState&);
@@ -330,7 +330,7 @@ private:
     PassRefPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
-    RefPtr<DOMWindow> m_frontendWindow;
+    RefPtrWillBeMember<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtrWillBeMember<InternalRuntimeFlags> m_runtimeFlags;
     RefPtrWillBeMember<InternalProfilers> m_profilers;

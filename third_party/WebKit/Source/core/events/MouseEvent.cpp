@@ -49,7 +49,7 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, const MouseE
     return adoptRef(new MouseEvent(type, initializer));
 }
 
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, const PlatformMouseEvent& event, int detail, PassRefPtr<Node> relatedTarget)
+PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, const PlatformMouseEvent& event, int detail, PassRefPtr<Node> relatedTarget)
 {
     ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
@@ -64,7 +64,7 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
         relatedTarget, nullptr, false);
 }
 
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
+PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
@@ -83,7 +83,7 @@ MouseEvent::MouseEvent()
     ScriptWrappable::init(this);
 }
 
-MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
+MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
@@ -119,7 +119,7 @@ MouseEvent::~MouseEvent()
 {
 }
 
-void MouseEvent::initMouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
+void MouseEvent::initMouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
                                 int detail, int screenX, int screenY, int clientX, int clientY,
                                 bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
                                 unsigned short button, PassRefPtr<EventTarget> relatedTarget)
@@ -195,7 +195,7 @@ void MouseEvent::trace(Visitor* visitor)
     MouseRelatedEvent::trace(visitor);
 }
 
-PassRefPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
+PassRefPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
 {
     return adoptRef(new SimulatedMouseEvent(eventType, view, underlyingEvent));
 }
@@ -204,7 +204,7 @@ SimulatedMouseEvent::~SimulatedMouseEvent()
 {
 }
 
-SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
+SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
     : MouseEvent(eventType, true, true, view, 0, 0, 0, 0, 0,
                  0, 0,
                  false, false, false, false, 0, nullptr, nullptr, true)

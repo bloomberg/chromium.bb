@@ -27,6 +27,7 @@
 #ifndef WindowEventContext_h
 #define WindowEventContext_h
 
+#include "heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -46,7 +47,7 @@ public:
     bool handleLocalEvents(Event* event);
 
 private:
-    RefPtr<DOMWindow> m_window;
+    RefPtrWillBePersistent<DOMWindow> m_window;
     RefPtr<EventTarget> m_target;
 };
 

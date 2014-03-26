@@ -36,7 +36,7 @@ class GestureEvent FINAL : public MouseRelatedEvent {
 public:
     virtual ~GestureEvent() { }
 
-    static PassRefPtr<GestureEvent> create(PassRefPtr<AbstractView>, const PlatformGestureEvent&);
+    static PassRefPtr<GestureEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const PlatformGestureEvent&);
 
     virtual bool isGestureEvent() const OVERRIDE;
 
@@ -49,7 +49,7 @@ public:
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY);
+    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY);
 
     float m_deltaX;
     float m_deltaY;
