@@ -35,6 +35,15 @@
 
             # Configure the build for small devices. See crbug.com/318413
             'embedded%': 0,
+
+            'conditions': [
+              # Compute the architecture that we're building on.
+              ['OS=="win" or OS=="mac" or OS=="ios"', {
+                'host_arch%': 'ia32',
+              }, {
+                'host_arch%': '<!(python <(DEPTH)/build/linux/detect_host_arch.py)',
+              }],
+            ],
           },
           # Copy conditionally-set variables out one scope.
           'chromeos%': '<(chromeos)',
@@ -43,6 +52,7 @@
           'use_cras%': '<(use_cras)',
           'use_ozone%': '<(use_ozone)',
           'embedded%': '<(embedded)',
+          'host_arch%': '<(host_arch)',
 
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
@@ -96,13 +106,6 @@
               'desktop_linux%': 0,
             }],
 
-            # Compute the architecture that we're building on.
-            ['OS=="win" or OS=="mac" or OS=="ios"', {
-              'host_arch%': 'ia32',
-            }, {
-              'host_arch%': '<!(python <(DEPTH)/build/linux/detect_host_arch.py)',
-            }],
-
             # Embedded implies ozone.
             ['embedded==1', {
               'use_ozone%': 1,
@@ -112,6 +115,14 @@
               'use_system_fontconfig%': 0,
             }, {
               'use_system_fontconfig%': 1,
+            }],
+
+            ['OS=="android"', {
+              'target_arch%': 'arm',
+            }, {
+              # Default architecture we're building for is the architecture we're
+              # building on, and possibly sub-architecture (for iOS builds).
+              'target_arch%': '<(host_arch)',
             }],
           ],
         },
@@ -130,6 +141,7 @@
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
         'host_arch%': '<(host_arch)',
+        'target_arch%': '<(target_arch)',
 
         'target_subarch%': '',
 
@@ -150,6 +162,10 @@
         # If no gomadir is set, it uses the default gomadir.
         'use_goma%': 0,
         'gomadir%': '',
+
+        # The system root for cross-compiles. Default: none.
+        'sysroot%': '',
+        'chroot_cmd%': '',
 
         'conditions': [
           # Ash needs Aura.
@@ -221,13 +237,6 @@
           ['OS=="ios"', {
             'target_subarch%': 'arm32',
           }],
-          ['OS=="android"', {
-            'target_arch%': 'arm',
-          }, {
-            # Default architecture we're building for is the architecture we're
-            # building on, and possibly sub-architecture (for iOS builds).
-            'target_arch%': '<(host_arch)',
-          }],
         ],
       },
 
@@ -258,6 +267,8 @@
       'buildtype%': '<(buildtype)',
       'branding%': '<(branding)',
       'arm_version%': '<(arm_version)',
+      'sysroot%': '<(sysroot)',
+      'chroot_cmd%': '<(chroot_cmd)',
 
       # Whether content/chrome is using mojo: see http://crbug.com/353602
       'use_mojo%': 0,
@@ -285,10 +296,6 @@
 
       # Detect NEON support at run-time.
       'arm_neon_optional%': 0,
-
-      # The system root for cross-compiles. Default: none.
-      'sysroot%': '',
-      'chroot_cmd%': '',
 
       # The system libdir used for this ABI.
       'system_libdir%': 'lib',
@@ -3027,8 +3034,7 @@
     },
   },
   'conditions': [
-    # TODO(jochen): Enable this on chromeos. http://crbug.com/353127
-    ['os_posix==1 and chromeos==0', {
+    ['os_posix==1 and (chromeos==0 or target_arch!="arm")', {
       'target_defaults': {
         'ldflags': [
           '-Wl,--fatal-warnings',
