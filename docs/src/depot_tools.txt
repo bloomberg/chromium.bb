@@ -25,4 +25,4 @@ include::__essential.txt[maxdepth=1]
 
 include::__helper.txt[maxdepth=1]
 
-// vim: ft=asciidoc noexpandtab:
+// vim: ft=asciidoc:

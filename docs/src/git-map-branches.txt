@@ -18,13 +18,13 @@ Git map-branches displays all local branches such that:
 
 * Current branch is [aqua]#cyan#.
 ** The branch which will be modified with git-commit is denoted with an asterisk
-	 (`*`) after the name.
+   (`*`) after the name.
 * Local branches are [green]#green#.
 * Remote branches are [red]#red# (usually, the root of all other branches).
 * `{NO UPSTREAM}` is a special placeholder in [fuchsia]#magenta#.
 ** Branches which have this as their parent are usually misconfigured, and
-	 should be assigned a parent by checking out the branch and running git branch
-	 --set-upstream-to=<correct parent branch>.
+   should be assigned a parent by checking out the branch and running git branch
+   --set-upstream-to=<correct parent branch>.
 
 NOTE: If multiple branches are on the same commit, they will all be cyan.
 
@@ -48,10 +48,17 @@ assuming that the `frozen_changes` branch was currently checked out, running
   [aqua]#duplicate_cool_feature_no_upstream#
 ----
 
+include::_aliases.txt[]
+
+----
+[alias]
+  git bmap = map-branches
+----
+
 SEE ALSO
 --------
 linkgit:git-map[1]
 
 include::_footer.txt[]
 
-// vim: ft=asciidoc noexpandtab:
+// vim: ft=asciidoc:

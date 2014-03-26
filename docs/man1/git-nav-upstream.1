@@ -2,12 +2,12 @@
 .\"     Title: git-nav-upstream
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/14/2014
+.\"      Date: 03/25/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools a57ed8f
+.\"    Source: depot_tools 207bff1
 .\"  Language: English
 .\"
-.TH "GIT\-NAV\-UPSTREAM" "1" "03/14/2014" "depot_tools a57ed8f" "Chromium depot_tools Manual"
+.TH "GIT\-NAV\-UPSTREAM" "1" "03/25/2014" "depot_tools 207bff1" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,6 +61,21 @@ origin/master
   master
 {NO UPSTREAM}
   bogus_noparent
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "SUGGESTED ALIASES"
+.sp
+Some common short\-hand aliases\&. Feel free to add these to your \fI~/\&.gitconfig\fR file\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+[alias]
+  git up = nav\-upstream
 .fi
 .if n \{\
 .RE

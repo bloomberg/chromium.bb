@@ -2,12 +2,12 @@
 .\"     Title: depot_tools
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/14/2014
+.\"      Date: 03/25/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools a57ed8f
+.\"    Source: depot_tools 207bff1
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS" "1" "03/14/2014" "depot_tools a57ed8f" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS" "1" "03/25/2014" "depot_tools 207bff1" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -55,6 +55,11 @@ Helper script to display all local git branches with \(oqupstream\(cq hierarchy 
 Display history of all branches in a colorized terminal format\&.
 .RE
 .PP
+\fBgit-mark-merge-base\fR(1)
+.RS 4
+Manually interact with depot_tools\*(Aq merge\-base markers\&.
+.RE
+.PP
 \fBgit-nav-downstream\fR(1)
 .RS 4
 Checkout a downstream branch of the currently checked out branch\&.
@@ -65,9 +70,39 @@ Checkout a downstream branch of the currently checked out branch\&.
 Checkout the upstream branch of the currently checked out branch\&.
 .RE
 .PP
+\fBgit-new-branch\fR(1)
+.RS 4
+Create a new branch with correct tracking information\&.
+.RE
+.PP
+\fBgit-rebase-update\fR(1)
+.RS 4
+Updates all branches to have the latest changes from their upstreams\&.
+.RE
+.PP
+\fBgit-rename-branch\fR(1)
+.RS 4
+Rename a branch and correctly preserve all downstream relationships\&.
+.RE
+.PP
+\fBgit-reparent-branch\fR(1)
+.RS 4
+Alter the parentage (upstream) for the current branch\&.
+.RE
+.PP
+\fBgit-squash-branch\fR(1)
+.RS 4
+Takes all commits in a single branch and replaces them with a single commit\&.
+.RE
+.PP
 \fBgit-thaw\fR(1)
 .RS 4
 Un\-freeze all changes on a frozen branch\&.
+.RE
+.PP
+\fBgit-upstream-diff\fR(1)
+.RS 4
+Print a diff of the current branch, compared to its upstream\&.
 .RE
 .SH "NOTES"
 .IP " 1." 4

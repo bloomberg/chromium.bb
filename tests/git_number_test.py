@@ -17,7 +17,7 @@ from testing_support import coverage_utils
 
 
 class Basic(git_test_utils.GitRepoReadWriteTestBase):
-  REPO = """
+  REPO_SCHEMA = """
   A B C D E
     B   F E
   X Y     E

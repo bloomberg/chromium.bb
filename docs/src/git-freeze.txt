@@ -79,4 +79,4 @@ linkgit:git-thaw[1]
 
 include::_footer.txt[]
 
-// vim: ft=asciidoc noexpandtab:
+// vim: ft=asciidoc:

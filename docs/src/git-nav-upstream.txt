@@ -41,10 +41,17 @@ EXAMPLE
   [green]#bogus_noparent#
 ----
 
+include::_aliases.txt[]
+
+----
+[alias]
+  git up = nav-upstream
+----
+
 SEE ALSO
 --------
 linkgit:git-map-branches[1], linkgit:git-nav-downstream[1]
 
 include::_footer.txt[]
 
-// vim: ft=asciidoc noexpandtab:
+// vim: ft=asciidoc:

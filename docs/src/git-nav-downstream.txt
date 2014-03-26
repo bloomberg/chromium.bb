@@ -49,10 +49,18 @@ Selection (0-2)[0]: 0
   [green]#bogus_noparent#
 ----
 
+include::_aliases.txt[]
+
+----
+[alias]
+  git down = nav-downstream
+----
+
+
 SEE ALSO
 --------
 linkgit:git-map-branches[1], linkgit:git-nav-upstream[1]
 
 include::_footer.txt[]
 
-// vim: ft=asciidoc noexpandtab:
+// vim: ft=asciidoc:

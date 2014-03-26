@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,10 +16,12 @@ IMapIterator.__next__ = IMapIterator.next
 
 
 import binascii
+import collections
 import contextlib
 import functools
 import logging
 import os
+import re
 import signal
 import sys
 import tempfile
@@ -29,6 +31,14 @@ import subprocess2
 
 
 GIT_EXE = 'git.bat' if sys.platform.startswith('win') else 'git'
+TEST_MODE = False
+
+FREEZE = 'FREEZE'
+FREEZE_SECTIONS = {
+  'indexed': 'soft',
+  'unindexed': 'mixed'
+}
+FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 
 
 class BadCommitRefException(Exception):
@@ -200,12 +210,46 @@ class ProgressPrinter(object):
     del self._thread
 
 
+def once(function):
+  """@Decorates |function| so that it only performs its action once, no matter
+  how many times the decorated |function| is called."""
+  def _inner_gen():
+    yield function()
+    while True:
+      yield
+  return _inner_gen().next
+
+
+## Git functions
+
+
+def branch_config(branch, option, default=None):
+  return config('branch.%s.%s' % (branch, option), default=default)
+
+
+def branch_config_map(option):
+  """Return {branch: <|option| value>} for all branches."""
+  try:
+    reg = re.compile(r'^branch\.(.*)\.%s$' % option)
+    lines = run('config', '--get-regexp', reg.pattern).splitlines()
+    return {reg.match(k).group(1): v for k, v in (l.split() for l in lines)}
+  except subprocess2.CalledProcessError:
+    return {}
+
+
 def branches(*args):
-  NO_BRANCH = ('* (no branch)', '* (detached from ')
+  NO_BRANCH = ('* (no branch', '* (detached from ')
   for line in run('branch', *args).splitlines():
     if line.startswith(NO_BRANCH):
       continue
     yield line.split()[-1]
+
+
+def config(option, default=None):
+  try:
+    return run('config', '--get', option) or default
+  except subprocess2.CalledProcessError:
+    return default
 
 
 def config_list(option):
@@ -216,66 +260,96 @@ def config_list(option):
 
 
 def current_branch():
-  return run('rev-parse', '--abbrev-ref', 'HEAD')
-
-
-def parse_commitrefs(*commitrefs):
-  """Returns binary encoded commit hashes for one or more commitrefs.
-
-  A commitref is anything which can resolve to a commit. Popular examples:
-    * 'HEAD'
-    * 'origin/master'
-    * 'cool_branch~2'
-  """
   try:
-    return map(binascii.unhexlify, hash_multi(*commitrefs))
+    return run('rev-parse', '--abbrev-ref', 'HEAD')
   except subprocess2.CalledProcessError:
-    raise BadCommitRefException(commitrefs)
+    return None
 
 
-def run(*cmd, **kwargs):
-  """Runs a git command. Returns stdout as a string.
+def del_branch_config(branch, option, scope='local'):
+  del_config('branch.%s.%s' % (branch, option), scope=scope)
 
-  If logging is DEBUG, we'll print the command before we run it.
 
-  kwargs
-    autostrip (bool) - Strip the output. Defaults to True.
+def del_config(option, scope='local'):
+  try:
+    run('config', '--' + scope, '--unset', option)
+  except subprocess2.CalledProcessError:
+    pass
+
+
+def freeze():
+  took_action = False
+
+  try:
+    run('commit', '-m', FREEZE + '.indexed')
+    took_action = True
+  except subprocess2.CalledProcessError:
+    pass
+
+  try:
+    run('add', '-A')
+    run('commit', '-m', FREEZE + '.unindexed')
+    took_action = True
+  except subprocess2.CalledProcessError:
+    pass
+
+  if not took_action:
+    return 'Nothing to freeze.'
+
+
+def get_branch_tree():
+  """Get the dictionary of {branch: parent}, compatible with topo_iter.
+
+  Returns a tuple of (skipped, <branch_tree dict>) where skipped is a set of
+  branches without upstream branches defined.
   """
-  autostrip = kwargs.pop('autostrip', True)
+  skipped = set()
+  branch_tree = {}
 
-  retstream, proc = stream_proc(*cmd, **kwargs)
-  ret = retstream.read()
-  retcode = proc.wait()
-  if retcode != 0:
-    raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(), ret, None)
+  for branch in branches():
+    parent = upstream(branch)
+    if not parent:
+      skipped.add(branch)
+      continue
+    branch_tree[branch] = parent
 
-  if autostrip:
-    ret = (ret or '').strip()
-  return ret
+  return skipped, branch_tree
 
 
-def stream_proc(*cmd, **kwargs):
-  """Runs a git command. Returns stdout as a file.
+def get_or_create_merge_base(branch, parent=None):
+  """Finds the configured merge base for branch.
 
-  If logging is DEBUG, we'll print the command before we run it.
+  If parent is supplied, it's used instead of calling upstream(branch).
   """
-  cmd = (GIT_EXE,) + cmd
-  logging.debug('Running %s', ' '.join(repr(tok) for tok in cmd))
-  proc = subprocess2.Popen(cmd, stderr=subprocess2.VOID,
-                           stdout=subprocess2.PIPE, **kwargs)
-  return proc.stdout, proc
+  base = branch_config(branch, 'base')
+  if base:
+    try:
+      run('merge-base', '--is-ancestor', base, branch)
+      logging.debug('Found pre-set merge-base for %s: %s', branch, base)
+    except subprocess2.CalledProcessError:
+      logging.debug('Found WRONG pre-set merge-base for %s: %s', branch, base)
+      base = None
+
+  if not base:
+    base = run('merge-base', parent or upstream(branch), branch)
+    manual_merge_base(branch, base)
+
+  return base
 
 
-def stream(*cmd, **kwargs):
-  return stream_proc(*cmd, **kwargs)[0]
+def hash_multi(*reflike):
+  return run('rev-parse', *reflike).splitlines()
 
 
 def hash_one(reflike):
   return run('rev-parse', reflike)
 
 
-def hash_multi(*reflike):
-  return run('rev-parse', *reflike).splitlines()
+def in_rebase():
+  git_dir = run('rev-parse', '--git-dir')
+  return (
+    os.path.exists(os.path.join(git_dir, 'rebase-merge')) or
+    os.path.exists(os.path.join(git_dir, 'rebase-apply')))
 
 
 def intern_f(f, kind='blob'):
@@ -292,8 +366,214 @@ def intern_f(f, kind='blob'):
   return ret
 
 
+def is_dormant(branch):
+  # TODO(iannucci): Do an oldness check?
+  return branch_config(branch, 'dormant', 'false') != 'false'
+
+
+def manual_merge_base(branch, base):
+  set_branch_config(branch, 'base', base)
+
+
+def mktree(treedict):
+  """Makes a git tree object and returns its hash.
+
+  See |tree()| for the values of mode, type, and ref.
+
+  Args:
+    treedict - { name: (mode, type, ref) }
+  """
+  with tempfile.TemporaryFile() as f:
+    for name, (mode, typ, ref) in treedict.iteritems():
+      f.write('%s %s %s\t%s\0' % (mode, typ, ref, name))
+    f.seek(0)
+    return run('mktree', '-z', stdin=f)
+
+
+def parse_commitrefs(*commitrefs):
+  """Returns binary encoded commit hashes for one or more commitrefs.
+
+  A commitref is anything which can resolve to a commit. Popular examples:
+    * 'HEAD'
+    * 'origin/master'
+    * 'cool_branch~2'
+  """
+  try:
+    return map(binascii.unhexlify, hash_multi(*commitrefs))
+  except subprocess2.CalledProcessError:
+    raise BadCommitRefException(commitrefs)
+
+
+RebaseRet = collections.namedtuple('RebaseRet', 'success message')
+
+
+def rebase(parent, start, branch, abort=False):
+  """Rebases |start|..|branch| onto the branch |parent|.
+
+  Args:
+    parent - The new parent ref for the rebased commits.
+    start  - The commit to start from
+    branch - The branch to rebase
+    abort  - If True, will call git-rebase --abort in the event that the rebase
+             doesn't complete successfully.
+
+  Returns a namedtuple with fields:
+    success - a boolean indicating that the rebase command completed
+              successfully.
+    message - if the rebase failed, this contains the stdout of the failed
+              rebase.
+  """
+  try:
+    args = ['--onto', parent, start, branch]
+    if TEST_MODE:
+      args.insert(0, '--committer-date-is-author-date')
+    run('rebase', *args)
+    return RebaseRet(True, '')
+  except subprocess2.CalledProcessError as cpe:
+    if abort:
+      run('rebase', '--abort')
+    return RebaseRet(False, cpe.output)
+
+
+def remove_merge_base(branch):
+  del_branch_config(branch, 'base')
+
+
+def root():
+  return config('depot-tools.upstream', 'origin/master')
+
+
+def run(*cmd, **kwargs):
+  """The same as run_with_stderr, except it only returns stdout."""
+  return run_with_stderr(*cmd, **kwargs)[0]
+
+
+def run_stream(*cmd, **kwargs):
+  """Runs a git command. Returns stdout as a PIPE (file-like object).
+
+  stderr is dropped to avoid races if the process outputs to both stdout and
+  stderr.
+  """
+  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stdout', subprocess2.PIPE)
+  cmd = (GIT_EXE,) + cmd
+  proc = subprocess2.Popen(cmd, **kwargs)
+  return proc.stdout
+
+
+def run_with_stderr(*cmd, **kwargs):
+  """Runs a git command.
+
+  Returns (stdout, stderr) as a pair of strings.
+
+  kwargs
+    autostrip (bool) - Strip the output. Defaults to True.
+    indata (str) - Specifies stdin data for the process.
+  """
+  kwargs.setdefault('stdin', subprocess2.PIPE)
+  kwargs.setdefault('stdout', subprocess2.PIPE)
+  kwargs.setdefault('stderr', subprocess2.PIPE)
+  autostrip = kwargs.pop('autostrip', True)
+  indata = kwargs.pop('indata', None)
+
+  cmd = (GIT_EXE,) + cmd
+  proc = subprocess2.Popen(cmd, **kwargs)
+  ret, err = proc.communicate(indata)
+  retcode = proc.wait()
+  if retcode != 0:
+    raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(), ret, err)
+
+  if autostrip:
+    ret = (ret or '').strip()
+    err = (err or '').strip()
+
+  return ret, err
+
+
+def set_branch_config(branch, option, value, scope='local'):
+  set_config('branch.%s.%s' % (branch, option), value, scope=scope)
+
+
+def set_config(option, value, scope='local'):
+  run('config', '--' + scope, option, value)
+
+def squash_current_branch(header=None, merge_base=None):
+  header = header or 'git squash commit.'
+  merge_base = merge_base or get_or_create_merge_base(current_branch())
+  log_msg = header + '\n'
+  if log_msg:
+    log_msg += '\n'
+  log_msg += run('log', '--reverse', '--format=%H%n%B', '%s..HEAD' % merge_base)
+  run('reset', '--soft', merge_base)
+  run('commit', '-a', '-F', '-', indata=log_msg)
+
+
 def tags(*args):
   return run('tag', *args).splitlines()
+
+
+def thaw():
+  took_action = False
+  for sha in (s.strip() for s in run_stream('rev-list', 'HEAD').xreadlines()):
+    msg = run('show', '--format=%f%b', '-s', 'HEAD')
+    match = FREEZE_MATCHER.match(msg)
+    if not match:
+      if not took_action:
+        return 'Nothing to thaw.'
+      break
+
+    run('reset', '--' + FREEZE_SECTIONS[match.group(1)], sha)
+    took_action = True
+
+
+def topo_iter(branch_tree, top_down=True):
+  """Generates (branch, parent) in topographical order for a branch tree.
+
+  Given a tree:
+
+            A1
+        B1      B2
+      C1  C2    C3
+                D1
+
+  branch_tree would look like: {
+    'D1': 'C3',
+    'C3': 'B2',
+    'B2': 'A1',
+    'C1': 'B1',
+    'C2': 'B1',
+    'B1': 'A1',
+  }
+
+  It is OK to have multiple 'root' nodes in your graph.
+
+  if top_down is True, items are yielded from A->D. Otherwise they're yielded
+  from D->A. Within a layer the branches will be yielded in sorted order.
+  """
+  branch_tree = branch_tree.copy()
+
+  # TODO(iannucci): There is probably a more efficient way to do these.
+  if top_down:
+    while branch_tree:
+      this_pass = [(b, p) for b, p in branch_tree.iteritems()
+                   if p not in branch_tree]
+      assert this_pass, "Branch tree has cycles: %r" % branch_tree
+      for branch, parent in sorted(this_pass):
+        yield branch, parent
+        del branch_tree[branch]
+  else:
+    parent_to_branches = collections.defaultdict(set)
+    for branch, parent in branch_tree.iteritems():
+      parent_to_branches[parent].add(branch)
+
+    while branch_tree:
+      this_pass = [(b, p) for b, p in branch_tree.iteritems()
+                   if not parent_to_branches[b]]
+      assert this_pass, "Branch tree has cycles: %r" % branch_tree
+      for branch, parent in sorted(this_pass):
+        yield branch, parent
+        parent_to_branches[parent].discard(branch)
+        del branch_tree[branch]
 
 
 def tree(treeref, recurse=False):
@@ -339,18 +619,3 @@ def upstream(branch):
                branch+'@{upstream}')
   except subprocess2.CalledProcessError:
     return None
-
-
-def mktree(treedict):
-  """Makes a git tree object and returns its hash.
-
-  See |tree()| for the values of mode, type, and ref.
-
-  Args:
-    treedict - { name: (mode, type, ref) }
-  """
-  with tempfile.TemporaryFile() as f:
-    for name, (mode, typ, ref) in treedict.iteritems():
-      f.write('%s %s %s\t%s\0' % (mode, typ, ref, name))
-    f.seek(0)
-    return run('mktree', '-z', stdin=f)

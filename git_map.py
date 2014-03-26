@@ -10,13 +10,16 @@ commits with branches + tags that point to them. Items are colorized as follows:
   * Green   - Local branch
   * Red     - Remote branches
   * Magenta - Tags
+  * White   - Merge Base Markers
   * Blue background - The currently checked out commit
 """
+
 import sys
 
 import subprocess2
 
 from git_common import current_branch, branches, tags, config_list, GIT_EXE
+from git_common import branch_config_map
 
 from third_party import colorama
 
@@ -24,11 +27,15 @@ CYAN = colorama.Fore.CYAN
 GREEN = colorama.Fore.GREEN
 MAGENTA = colorama.Fore.MAGENTA
 RED = colorama.Fore.RED
+WHITE = colorama.Fore.WHITE
 
 BLUEBAK = colorama.Back.BLUE
 
 BRIGHT = colorama.Style.BRIGHT
 RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
+
+# Git emits combined color
+BRIGHT_RED = '\x1b[1;31m'
 
 def main():
   map_extra = config_list('depot_tools.map_extra')
@@ -40,6 +47,7 @@ def main():
     stdout=subprocess2.PIPE,
     shell=False)
 
+  merge_base_map = branch_config_map('base')
   current = current_branch()
   all_branches = set(branches())
   if current in all_branches:
@@ -47,6 +55,21 @@ def main():
   all_tags = set(tags())
   try:
     for line in log_proc.stdout.xreadlines():
+      if merge_base_map:
+        commit = line[line.find(BRIGHT_RED)+len(BRIGHT_RED):line.find('\t')]
+        base_for_branches = set()
+        for branch, sha in merge_base_map.iteritems():
+          if sha.startswith(commit):
+            base_for_branches.add(branch)
+        if base_for_branches:
+          newline = '\r\n' if line.endswith('\r\n') else '\n'
+          line = line.rstrip(newline)
+          line += ''.join(
+              (BRIGHT, WHITE, '    <(%s)' % (', '.join(base_for_branches)),
+               newline))
+          for b in base_for_branches:
+            del merge_base_map[b]
+
       start = line.find(GREEN+' (')
       end   = line.find(')', start)
       if start != -1 and end != -1:

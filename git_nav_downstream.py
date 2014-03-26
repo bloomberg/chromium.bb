@@ -8,6 +8,7 @@ Checks out a downstream branch from the currently checked out branch. If there
 is more than one downstream branch, then this script will prompt you to select
 which branch.
 """
+
 import sys
 
 from git_common import current_branch, branches, upstream, run, hash_one

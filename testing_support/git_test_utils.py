@@ -10,8 +10,11 @@ import hashlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
+
+from cStringIO import StringIO
 
 
 def git_hash_data(data, typ='blob'):
@@ -159,6 +162,12 @@ class GitRepoSchema(object):
         v.difference_update(empty_keys)
       is_root = False
 
+  def add_partial(self, commit, parent=None):
+    if commit not in self.par_map:
+      self.par_map[commit] = OrderedSet()
+    if parent is not None:
+      self.par_map[commit].add(parent)
+
   def add_commits(self, schema):
     """Adds more commits from a schema into the existing Schema.
 
@@ -170,10 +179,7 @@ class GitRepoSchema(object):
     for commits in (l.split() for l in schema.splitlines() if l.strip()):
       parent = None
       for commit in commits:
-        if commit not in self.par_map:
-          self.par_map[commit] = OrderedSet()
-        if parent is not None:
-          self.par_map[commit].add(parent)
+        self.add_partial(commit, parent)
         parent = commit
       if parent and not self.master:
         self.master = parent
@@ -194,6 +200,18 @@ class GitRepoSchema(object):
     if commit not in self.data_cache:
       self.data_cache[commit] = self.content_fn(commit)
     return self.data_cache[commit]
+
+  def simple_graph(self):
+    """Returns a dictionary of {commit_subject: {parent commit_subjects}}
+
+    This allows you to get a very simple connection graph over the whole repo
+    for comparison purposes. Only commit subjects (not ids, not content/data)
+    are considered
+    """
+    ret = {}
+    for commit in self.walk():
+      ret.setdefault(commit.name, set()).update(commit.parents)
+    return ret
 
 
 class GitRepo(object):
@@ -253,12 +271,16 @@ class GitRepo(object):
     self.commit_map = {}
     self._date = datetime.datetime(1970, 1, 1)
 
+    self.to_schema_refs = ['--branches']
+
     self.git('init')
+    self.git('config', 'user.name', 'testcase')
+    self.git('config', 'user.email', 'testcase@example.com')
     for commit in schema.walk():
       self._add_schema_commit(commit, schema.data_for(commit.name))
       self.last_commit = self[commit.name]
     if schema.master:
-      self.git('update-ref', 'master', self[schema.master])
+      self.git('update-ref', 'refs/heads/master', self[schema.master])
 
   def __getitem__(self, commit_name):
     """Gets the hash of a commit by its schema name.
@@ -269,8 +291,8 @@ class GitRepo(object):
     """
     return self.commit_map[commit_name]
 
-  def _add_schema_commit(self, commit, data):
-    data = data or {}
+  def _add_schema_commit(self, commit, commit_data):
+    commit_data = commit_data or {}
 
     if commit.parents:
       parents = list(commit.parents)
@@ -281,22 +303,9 @@ class GitRepo(object):
       self.git('checkout', '--orphan', 'root_%s' % commit.name)
       self.git('rm', '-rf', '.')
 
-    env = {}
-    for prefix in ('AUTHOR', 'COMMITTER'):
-      for suffix in ('NAME', 'EMAIL', 'DATE'):
-        singleton = '%s_%s' % (prefix, suffix)
-        key = getattr(self, singleton)
-        if key in data:
-          val = data[key]
-        else:
-          if suffix == 'DATE':
-            val = self._date
-            self._date += datetime.timedelta(days=1)
-          else:
-            val = getattr(self, 'DEFAULT_%s' % singleton)
-        env['GIT_%s' % singleton] = str(val)
+    env = self.get_git_commit_env(commit_data)
 
-    for fname, file_data in data.iteritems():
+    for fname, file_data in commit_data.iteritems():
       deleted = False
       if 'data' in file_data:
         data = file_data.get('data')
@@ -324,6 +333,25 @@ class GitRepo(object):
     if commit.is_branch:
       self.git('branch', '-f', 'branch_%s' % commit.name, self[commit.name])
 
+  def get_git_commit_env(self, commit_data=None):
+    commit_data = commit_data or {}
+    env = {}
+    for prefix in ('AUTHOR', 'COMMITTER'):
+      for suffix in ('NAME', 'EMAIL', 'DATE'):
+        singleton = '%s_%s' % (prefix, suffix)
+        key = getattr(self, singleton)
+        if key in commit_data:
+          val = commit_data[key]
+        else:
+          if suffix == 'DATE':
+            val = self._date
+            self._date += datetime.timedelta(days=1)
+          else:
+            val = getattr(self, 'DEFAULT_%s' % singleton)
+        env['GIT_%s' % singleton] = str(val)
+    return env
+
+
   def git(self, *args, **kwargs):
     """Runs a git command specified by |args| in this repo."""
     assert self.repo_path is not None
@@ -334,6 +362,9 @@ class GitRepo(object):
       return self.COMMAND_OUTPUT(0, output)
     except subprocess.CalledProcessError as e:
       return self.COMMAND_OUTPUT(e.returncode, e.output)
+
+  def git_commit(self, message):
+    return self.git('commit', '-am', message, env=self.get_git_commit_env())
 
   def nuke(self):
     """Obliterates the git repo on disk.
@@ -354,11 +385,59 @@ class GitRepo(object):
     finally:
       os.chdir(curdir)
 
+  def capture_stdio(self, fn, *args, **kwargs):
+    """Run a python function with the given args and kwargs with the cwd set to
+    the git repo.
+
+    Returns the (stdout, stderr) of whatever ran, instead of the what |fn|
+    returned.
+    """
+    stdout = sys.stdout
+    stderr = sys.stderr
+    try:
+      sys.stdout = StringIO()
+      sys.stderr = StringIO()
+      try:
+        self.run(fn, *args, **kwargs)
+      except SystemExit:
+        pass
+      return sys.stdout.getvalue(), sys.stderr.getvalue()
+    finally:
+      sys.stdout = stdout
+      sys.stderr = stderr
+
+  def open(self, path, mode='rb'):
+    return open(os.path.join(self.repo_path, path), mode)
+
+  def to_schema(self):
+    lines = self.git('rev-list', '--parents', '--reverse', '--topo-order',
+                     '--format=%s', *self.to_schema_refs).stdout.splitlines()
+    hash_to_msg = {}
+    ret = GitRepoSchema()
+    current = None
+    parents = []
+    for line in lines:
+      if line.startswith('commit'):
+        assert current is None
+        tokens = line.split()
+        current, parents = tokens[1], tokens[2:]
+        assert all(p in hash_to_msg for p in parents)
+      else:
+        assert current is not None
+        hash_to_msg[current] = line
+        ret.add_partial(line)
+        for parent in parents:
+          ret.add_partial(line, hash_to_msg[parent])
+        current = None
+        parents = []
+    assert current is None
+    return ret
+
 
 class GitRepoSchemaTestBase(unittest.TestCase):
   """A TestCase with a built-in GitRepoSchema.
 
-  Expects a class variable REPO to be a GitRepoSchema string in the form
+  Expects a class variable REPO_SCHEMA to be a GitRepoSchema string in the form
   described by that class.
 
   You may also set class variables in the form COMMIT_%(commit_name)s, which
@@ -367,7 +446,7 @@ class GitRepoSchemaTestBase(unittest.TestCase):
   You probably will end up using either GitRepoReadOnlyTestBase or
   GitRepoReadWriteTestBase for real tests.
   """
-  REPO = None
+  REPO_SCHEMA = None
 
   @classmethod
   def getRepoContent(cls, commit):
@@ -376,8 +455,8 @@ class GitRepoSchemaTestBase(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     super(GitRepoSchemaTestBase, cls).setUpClass()
-    assert cls.REPO is not None
-    cls.r_schema = GitRepoSchema(cls.REPO, cls.getRepoContent)
+    assert cls.REPO_SCHEMA is not None
+    cls.r_schema = GitRepoSchema(cls.REPO_SCHEMA, cls.getRepoContent)
 
 
 class GitRepoReadOnlyTestBase(GitRepoSchemaTestBase):
@@ -387,12 +466,12 @@ class GitRepoReadOnlyTestBase(GitRepoSchemaTestBase):
   This GitRepo will appear as self.repo, and will be deleted and recreated once
   for the duration of all the tests in the subclass.
   """
-  REPO = None
+  REPO_SCHEMA = None
 
   @classmethod
   def setUpClass(cls):
     super(GitRepoReadOnlyTestBase, cls).setUpClass()
-    assert cls.REPO is not None
+    assert cls.REPO_SCHEMA is not None
     cls.repo = cls.r_schema.reify()
 
   def setUp(self):
@@ -411,7 +490,7 @@ class GitRepoReadWriteTestBase(GitRepoSchemaTestBase):
   This GitRepo will appear as self.repo, and will be deleted and recreated for
   each test function in the subclass.
   """
-  REPO = None
+  REPO_SCHEMA = None
 
   def setUp(self):
     super(GitRepoReadWriteTestBase, self).setUp()
@@ -420,3 +499,7 @@ class GitRepoReadWriteTestBase(GitRepoSchemaTestBase):
   def tearDown(self):
     self.repo.nuke()
     super(GitRepoReadWriteTestBase, self).tearDown()
+
+  def assertSchema(self, schema_string):
+    self.assertEqual(GitRepoSchema(schema_string).simple_graph(),
+                     self.repo.to_schema().simple_graph())
