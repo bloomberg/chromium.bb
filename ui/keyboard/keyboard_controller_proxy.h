@@ -70,9 +70,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // necesasry animation, or delay the visibility change as it desires.
   virtual void HideKeyboardContainer(aura::Window* container);
 
-  // Updates the type of the focused text input box. The default implementation
-  // calls OnTextInputBoxFocused javascript function through webui to update the
-  // type the of focused input box.
+  // Updates the type of the focused text input box.
   virtual void SetUpdateInputType(ui::TextInputType type);
 
   // Ensures caret in current work area (not occluded by virtual keyboard

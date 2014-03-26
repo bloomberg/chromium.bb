@@ -9,11 +9,11 @@
 
 namespace keyboard {
 
-// The URL of the keyboard WebUI.
-KEYBOARD_EXPORT extern const char kKeyboardWebUIURL[];
+// The URL of the keyboard extension.
+KEYBOARD_EXPORT extern const char kKeyboardURL[];
 
-// The host of the keyboard WebUI URL.
-KEYBOARD_EXPORT extern const char kKeyboardWebUIHost[];
+// The host of the keyboard extension URL.
+KEYBOARD_EXPORT extern const char kKeyboardHost[];
 
 }  // namespace keyboard
 

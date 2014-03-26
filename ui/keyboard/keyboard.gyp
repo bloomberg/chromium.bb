@@ -69,10 +69,6 @@
         'keyboard_export.h',
         'keyboard_switches.cc',
         'keyboard_switches.h',
-        'keyboard_ui_controller.cc',
-        'keyboard_ui_controller.h',
-        'keyboard_ui_handler.cc',
-        'keyboard_ui_handler.h',
         'keyboard_util.cc',
         'keyboard_util.h',
       ]

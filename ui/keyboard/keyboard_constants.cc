@@ -6,7 +6,7 @@
 
 namespace keyboard {
 
-const char kKeyboardWebUIURL[] = "chrome://keyboard";
-const char kKeyboardWebUIHost[] = "keyboard";
+const char kKeyboardURL[] = "chrome://keyboard";
+const char kKeyboardHost[] = "keyboard";
 
 }  // namespace keyboard
