@@ -902,6 +902,8 @@ crbug.com/352466 [ Linux Win ] inspector/jump-to-previous-editing-location.html 
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
 crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
 
+crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
+
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
