@@ -388,14 +388,14 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host /deep/ span { border: 1px solid red; }')),
+                document.createTextNode(':host /deep/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
             createDOM('span', {'id': 'target'},
-                document.createTextNode('not red border')))));
+                document.createTextNode('green border')))));
 
-borderColorShouldNotBe('host//target', 'rgb(255, 0, 0)');
+borderColorShouldBe('host//target', 'rgb(0, 128, 0)');
 
 cleanUp();
 

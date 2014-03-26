@@ -171,18 +171,6 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     clearChildNeedsStyleRecalc();
 }
 
-bool ShadowRoot::isActiveForStyling() const
-{
-    if (!youngerShadowRoot())
-        return true;
-
-    if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
-        if (point->containingShadowRoot())
-            return true;
-    }
-    return false;
-}
-
 void ShadowRoot::setApplyAuthorStyles(bool value)
 {
     if (isOrphan())
@@ -192,8 +180,6 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
         return;
 
     m_applyAuthorStyles = value;
-    if (!isActiveForStyling())
-        return;
 
     ASSERT(host());
     ASSERT(host()->shadow());

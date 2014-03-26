@@ -129,8 +129,6 @@ void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* 
             if (ScopedStyleResolver* resolver = scopedStyleResolverFor(*shadowRoot))
                 resolvers.append(resolver);
         }
-        if (!shadowRoot->containsShadowElements())
-            break;
     }
 }
 

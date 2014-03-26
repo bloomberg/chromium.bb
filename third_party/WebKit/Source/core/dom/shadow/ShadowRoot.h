@@ -122,7 +122,6 @@ public:
     PassRefPtr<Node> cloneNode(ExceptionState& exceptionState) { return cloneNode(true, exceptionState); }
 
     StyleSheetList* styleSheets();
-    bool isActiveForStyling() const;
 
 private:
     ShadowRoot(Document&, ShadowRootType);

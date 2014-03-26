@@ -14,11 +14,10 @@ function borderColorOf(node)
     return document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color');
 }
 
-function borderColorShouldNotBe(selector, color)
+function borderColorShouldBe(selector, color)
 {
     var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
-    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
-    shouldNotBe(text, unevaledString);
+    shouldBeEqualToString(text, color);
 }
 
 function cleanUp()
@@ -26,14 +25,14 @@ function cleanUp()
     document.getElementById('sandbox').innerHTML = '';
 }
 
-description('crbug.com/341372: Test for rules with ::content declared in inert shadow trees');
+description('crbug.com/353406: Test for rules with ::content declared in older shadow trees');
 
 var sandbox = document.getElementById('sandbox');
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('content::content div { border: 1px solid red; }'),
+                document.createTextNode('content::content div { border: 1px solid green; }'),
             createDOM('div', {},
                 document.createTextNode('inert')))),
         createShadowRoot(
@@ -41,7 +40,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'target'},
             document.createTextNode('no border'))));
 
-borderColorShouldNotBe('target', 'rgb(255, 0, 0)');
+borderColorShouldBe('target', 'rgb(0, 128, 0)');
 
 cleanUp();
 </script>

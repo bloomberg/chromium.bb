@@ -264,12 +264,12 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div /shadow/ span in an insert shadow tree cannot match any element in active shadow tree.
+// div /shadow/ span in an older shadow tree cannot match any element in active shadow tree.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div /shadow/ span { border: 1px solid red; }')),
+                document.createTextNode('div /shadow/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -278,7 +278,7 @@ sandbox.appendChild(
                     createDOM('span', {'id': 'target'},
                         document.createTextNode('green border')))))));
 
-borderColorShouldNotBe('host//host2/target', 'rgb(255, 0, 0)');
+borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 

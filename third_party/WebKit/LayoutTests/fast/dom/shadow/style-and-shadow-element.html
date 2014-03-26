@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+  <div id='sandbox'></div>
+  <pre id='console'></pre>
+</body>
+<script>
+function backgroundColorOf(node)
+{
+    return document.defaultView.getComputedStyle(node, null).getPropertyValue('background-color');
+}
+
+function backgroundColorShouldBe(selector, color)
+{
+    var text = 'backgroundColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    shouldBeEqualToString(text, color);
+}
+
+function backgroundColorShouldNotBe(selector, color)
+{
+    var text = 'backgroundColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+description('Test for http://crbug.com/35340: Style should not be conditioned by the presence of the shadow element.');
+
+var sandbox = document.getElementById('sandbox');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /shadow/ div { background: green; }')),
+            createDOM('div', {},
+                document.createTextNode('older div'))),
+        createShadowRoot(
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('younger div should be green')))));
+
+backgroundColorShouldBe('host//target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /deep/ div { background: green; }')),
+            createDOM('div', {},
+                document.createTextNode('older div'))),
+        createShadowRoot(
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('younger div should be green')))));
+
+backgroundColorShouldBe('host//target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host div { background: green; }')),
+            createDOM('div', {},
+                document.createTextNode('older div'))),
+        createShadowRoot(
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('younger div should be green')))));
+
+backgroundColorShouldNotBe('host//target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host { display: block; background: green; }'))),
+        createShadowRoot(
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('younger div should be green')))));
+
+backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
+
+cleanUp();
+</script>
+</html>
+

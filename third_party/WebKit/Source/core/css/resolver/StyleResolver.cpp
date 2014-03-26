@@ -413,12 +413,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
 
     for (DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.begin(); it != m_treeBoundaryCrossingRules.end(); ++it) {
         const ContainerNode* scopingNode = toContainerNode(*it);
-
-        if (ShadowRoot* shadowRoot = scopingNode->containingShadowRoot()) {
-            if (!shadowRoot->isActiveForStyling())
-                continue;
-        }
-
         RuleSet* ruleSet = m_treeBoundaryCrossingRules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
         bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
