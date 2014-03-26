@@ -109,10 +109,10 @@ class ManagedUserRegistrationUtilityImpl
   std::string pending_managed_user_id_;
   std::string pending_managed_user_token_;
   bool pending_managed_user_acknowledged_;
-  bool pending_password_acknowledged_;
   bool is_existing_managed_user_;
   bool avatar_updated_;
   RegistrationCallback callback_;
+  scoped_ptr<ManagedUserSharedSettingsUpdate> password_update_;
 
   base::WeakPtrFactory<ManagedUserRegistrationUtilityImpl> weak_ptr_factory_;
 
@@ -209,7 +209,6 @@ ManagedUserRegistrationUtilityImpl::ManagedUserRegistrationUtilityImpl(
       managed_user_sync_service_(service),
       managed_user_shared_settings_service_(shared_settings_service),
       pending_managed_user_acknowledged_(false),
-      pending_password_acknowledged_(true),
       is_existing_managed_user_(false),
       avatar_updated_(false),
       weak_ptr_factory_(this) {
@@ -280,16 +279,14 @@ void ManagedUserRegistrationUtilityImpl::Register(
       pending_managed_user_id_, kAvatarKey,
       base::FundamentalValue(info.avatar_index));
   if (!info.password_data.empty()) {
-    pending_password_acknowledged_ = false;
-
-    ManagedUserSharedSettingsUpdate update(
+    password_update_.reset(new ManagedUserSharedSettingsUpdate(
         managed_user_shared_settings_service_,
         pending_managed_user_id_,
         managed_users::kChromeOSPasswordData,
         scoped_ptr<base::Value>(info.password_data.DeepCopy()),
         base::Bind(
             &ManagedUserRegistrationUtilityImpl::OnPasswordChangeAcknowledged,
-            weak_ptr_factory_.GetWeakPtr()));
+            weak_ptr_factory_.GetWeakPtr())));
   }
 
   browser_sync::DeviceInfo::GetClientName(
@@ -313,9 +310,9 @@ void ManagedUserRegistrationUtilityImpl::OnManagedUserAcknowledged(
 
 void ManagedUserRegistrationUtilityImpl::OnPasswordChangeAcknowledged(
     bool success) {
-  DCHECK(!pending_password_acknowledged_);
+  DCHECK(password_update_);
   DCHECK(success);
-  pending_password_acknowledged_ = true;
+  password_update_.reset();
   CompleteRegistrationIfReady();
 }
 
@@ -354,7 +351,7 @@ void ManagedUserRegistrationUtilityImpl::CompleteRegistrationIfReady() {
 
   if (!pending_managed_user_acknowledged_ && !skip_check)
     return;
-  if (!pending_password_acknowledged_ && !skip_check)
+  if (password_update_ && !skip_check)
     return;
   if (pending_managed_user_token_.empty())
     return;
