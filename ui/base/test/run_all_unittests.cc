@@ -75,7 +75,7 @@ void UIBaseTestSuite::Initialize() {
       exe_path.AppendASCII("ui_test.pak"));
 
   // ui_unittests can't depend on the locales folder which Chrome will make
-  // later, so use the path created by ui_locale_test_pak.
+  // later, so use the path created by ui_test_pak.
   PathService::Override(ui::DIR_LOCALES, exe_path.AppendASCII("ui"));
 #endif
 }

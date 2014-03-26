@@ -65,8 +65,65 @@
           'outputs': [
             '<(PRODUCT_DIR)/ui_test.pak',
           ],
-          'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+          'action': [
+            'python',
+            '<(repack_path)',
+            '<@(_outputs)',
+            '<@(pak_inputs)'
+          ],
         },
+      ],
+      'conditions': [
+        ['OS != "mac"', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/ui',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+              ],
+            },
+          ],
+        }],
+        ['OS == "ios"', {
+          'actions': [
+            {
+              'action_name': 'copy_ui_test_pak',
+              'message': 'Copying ui_test.pak into locale.pak',
+              'inputs': [
+                '<(PRODUCT_DIR)/ui_test.pak',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/ui/en.lproj/locale.pak',
+              ],
+              'action': [
+                'python',
+                '../../build/cp.py',
+                '<@(_inputs)',
+                '<@(_outputs)'
+              ],
+            },
+          ],
+        }],
+        ['OS != "mac" and OS !="ios"', {
+          'actions': [
+            {
+              'action_name': 'copy_ui_test_pak',
+              'message': 'Copying ui_test.pak into en-US.pak',
+              'inputs': [
+                '<(PRODUCT_DIR)/ui_test.pak',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/ui/en-US.pak',
+              ],
+              'action': [
+                'python',
+                '../../build/cp.py',
+                '<@(_inputs)',
+                '<@(_outputs)'
+              ],
+            },
+          ],
+        }],
       ],
     },
   ],

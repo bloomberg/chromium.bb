@@ -254,11 +254,6 @@
             ['exclude', 'cocoa/'],
           ],
         }],
-        ['desktop_linux == 1 or chromeos == 1 or OS == "ios"', {
-          'dependencies': [
-            '../base/strings/ui_strings.gyp:ui_locale_test_pak',
-          ],
-        }],
         # See http://crbug.com/162998#c4 for why this is needed.
         # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
         ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
