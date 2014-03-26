@@ -888,9 +888,6 @@ inline void CSSTokenizer::detectDashToken(int length)
         CASE("webkit-calc") {
             m_token = CALCFUNCTION;
         }
-        CASE("webkit-distributed") {
-            m_token = DISTRIBUTEDFUNCTION;
-        }
     }
 }
 

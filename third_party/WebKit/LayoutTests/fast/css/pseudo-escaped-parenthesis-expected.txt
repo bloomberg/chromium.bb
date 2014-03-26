@@ -8,7 +8,6 @@ PASS Drop ":nth-last-of-type\( {}"
 PASS Drop ":lang\( {}" 
 PASS Drop ":not\( {}" 
 PASS Drop ":cue\( {}" 
-PASS Drop ":-webkit-distributed\( {}" 
 PASS Drop ":part\( {}" 
 PASS Drop ":host\( {}" 
 Harness: the test ran to completion.

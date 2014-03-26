@@ -1901,10 +1901,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithNamespaceIfNeeded(CSSPar
 {
     if (m_defaultNamespace != starAtom || specifiers->needsCrossingTreeScopeBoundary())
         return rewriteSpecifiersWithElementName(nullAtom, starAtom, specifiers, /*tagIsForNamespaceRule*/true);
-    if (CSSParserSelector* distributedPseudoElementSelector = specifiers->findDistributedPseudoElementSelector()) {
-        specifiers->prependTagSelector(QualifiedName(nullAtom, starAtom, m_defaultNamespace), /*tagIsForNamespaceRule*/true);
-        return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
-    }
     return specifiers;
 }
 
@@ -1912,11 +1908,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
 {
     AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : m_defaultNamespace;
     QualifiedName tag(namespacePrefix, elementName, determinedNamespace);
-
-    if (CSSParserSelector* distributedPseudoElementSelector = specifiers->findDistributedPseudoElementSelector()) {
-        specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
-        return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
-    }
 
     if (specifiers->needsCrossingTreeScopeBoundary())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
@@ -1982,34 +1973,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForContentPse
     last->setTagHistory(elementNameSelector.release());
     last->setRelation(CSSSelector::SubSelector);
     return specifiers;
-}
-
-CSSParserSelector* BisonCSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector)
-{
-    if (m_context.useCounter())
-        m_context.useCounter()->count(UseCounter::CSSPseudoElementPrefixedDistributed);
-    CSSParserSelector* argumentSelector = distributedPseudoElementSelector->functionArgumentSelector();
-    ASSERT(argumentSelector);
-    ASSERT(!specifiers->isDistributedPseudoElement());
-    for (CSSParserSelector* end = specifiers; end->tagHistory(); end = end->tagHistory()) {
-        if (end->tagHistory()->isDistributedPseudoElement()) {
-            end->clearTagHistory();
-            break;
-        }
-    }
-    CSSParserSelector* end = argumentSelector;
-    while (end->tagHistory())
-        end = end->tagHistory();
-
-    switch (end->relation()) {
-    case CSSSelector::Child:
-    case CSSSelector::Descendant:
-        end->setTagHistory(sinkFloatingSelector(specifiers));
-        end->setRelationIsAffectedByPseudoContent();
-        return argumentSelector;
-    default:
-        return 0;
-    }
 }
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)

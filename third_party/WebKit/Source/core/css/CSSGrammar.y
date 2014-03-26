@@ -332,7 +332,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <selector> specifier_list
 %type <selector> simple_selector
 %type <selector> selector
-%type <selector> relative_selector
 %type <selectorList> selector_list
 %type <selectorList> simple_selector_list
 %type <selector> class
@@ -1117,17 +1116,6 @@ selector_list:
     }
    ;
 
-relative_selector:
-    combinator selector {
-        $$ = $2;
-        CSSParserSelector* end = $$;
-        while (end->tagHistory())
-            end = end->tagHistory();
-        end->setRelation($1);
-    }
-    | selector
-    ;
-
 selector:
     simple_selector
     | selector WHITESPACE
@@ -1369,16 +1357,6 @@ pseudo:
             YYERROR;
     }
     | ':' ':' CUEFUNCTION selector_recovery closing_parenthesis {
-        YYERROR;
-    }
-    | ':' ':' DISTRIBUTEDFUNCTION maybe_space relative_selector closing_parenthesis {
-        $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoElement);
-        $$->setFunctionArgumentSelector($5);
-        parser->tokenToLowerCase($3);
-        $$->setValue($3);
-    }
-    | ':' ':' DISTRIBUTEDFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
     // use by :-webkit-any.

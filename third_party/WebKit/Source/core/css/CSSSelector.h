@@ -214,16 +214,10 @@ namespace WebCore {
             PseudoCue,
             PseudoFutureCue,
             PseudoPastCue,
-            PseudoDistributed,
             PseudoUnresolved,
             PseudoContent,
             PseudoHost,
             PseudoHostContext
-        };
-
-        enum OptionalPseudoTypeRequirements {
-            // 0 is used to mean "no requirements".
-            RequiresShadowDOM = 1
         };
 
         enum MarginBoxType {
@@ -292,7 +286,6 @@ namespace WebCore {
         bool isDirectAdjacentSelector() const { return m_relation == DirectAdjacent; }
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
-        bool isDistributedPseudoElement() const;
         bool isContentPseudoElement() const;
         bool isHostPseudoClass() const;
 
@@ -417,11 +410,6 @@ inline bool CSSSelector::isAttributeSelector() const
         || m_match == CSSSelector::Contain
         || m_match == CSSSelector::Begin
         || m_match == CSSSelector::End;
-}
-
-inline bool CSSSelector::isDistributedPseudoElement() const
-{
-    return m_match == PseudoElement && pseudoType() == PseudoDistributed;
 }
 
 inline bool CSSSelector::isContentPseudoElement() const

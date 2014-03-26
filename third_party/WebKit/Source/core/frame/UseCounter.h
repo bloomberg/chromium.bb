@@ -141,7 +141,6 @@ public:
         LineClamp = 96,
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
-        CSSPseudoElementPrefixedDistributed = 99,
         TextReplaceWholeText = 100,
         PrefixedShadowRootConstructor = 101,
         ConsoleMarkTimeline = 102,

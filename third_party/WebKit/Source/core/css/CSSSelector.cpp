@@ -250,7 +250,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoCue:
     case PseudoFutureCue:
     case PseudoPastCue:
-    case PseudoDistributed:
     case PseudoUnresolved:
     case PseudoContent:
     case PseudoHost:
@@ -347,7 +346,6 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"cue",                           CSSSelector::PseudoWebKitCustomElement},
 {"future",                        CSSSelector::PseudoFutureCue},
 {"past",                          CSSSelector::PseudoPastCue},
-{"-webkit-distributed(",          CSSSelector::PseudoDistributed},
 {"in-range",                      CSSSelector::PseudoInRange},
 {"out-of-range",                  CSSSelector::PseudoOutOfRange},
 {"scope",                         CSSSelector::PseudoScope},
@@ -445,7 +443,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoFirstLine:
         compat = true;
     case PseudoBackdrop:
-    case PseudoDistributed:
     case PseudoResizer:
     case PseudoScrollbar:
     case PseudoScrollbarCorner:
@@ -690,12 +687,8 @@ String CSSSelector::selectorText(const String& rightSide) const
     if (const CSSSelector* tagHistory = cs->tagHistory()) {
         switch (cs->relation()) {
         case CSSSelector::Descendant:
-            if (cs->relationIsAffectedByPseudoContent() && tagHistory->pseudoType() != CSSSelector::PseudoContent)
-                return tagHistory->selectorText("::-webkit-distributed(" + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" " + str.toString() + rightSide);
         case CSSSelector::Child:
-            if (cs->relationIsAffectedByPseudoContent() && tagHistory->pseudoType() != CSSSelector::PseudoContent)
-                return tagHistory->selectorText("::-webkit-distributed(> " + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
         case CSSSelector::Shadow:
             return tagHistory->selectorText(" /shadow/ " + str.toString() + rightSide);

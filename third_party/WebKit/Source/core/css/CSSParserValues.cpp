@@ -162,13 +162,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
 
 CSSParserSelector::CSSParserSelector()
     : m_selector(adoptPtr(new CSSSelector()))
-    , m_functionArgumentSelector(0)
 {
 }
 
 CSSParserSelector::CSSParserSelector(const QualifiedName& tagQName)
     : m_selector(adoptPtr(new CSSSelector(tagQName)))
-    , m_functionArgumentSelector(0)
 {
 }
 
@@ -241,16 +239,6 @@ void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool t
 
     m_selector = adoptPtr(new CSSSelector(tagQName, tagIsForNamespaceRule));
     m_selector->m_relation = CSSSelector::SubSelector;
-}
-
-CSSParserSelector* CSSParserSelector::findDistributedPseudoElementSelector() const
-{
-    CSSParserSelector* selector = const_cast<CSSParserSelector*>(this);
-    do {
-        if (selector->isDistributedPseudoElement())
-            return selector;
-    } while ((selector = selector->tagHistory()));
-    return 0;
 }
 
 bool CSSParserSelector::hasHostPseudoSelector() const

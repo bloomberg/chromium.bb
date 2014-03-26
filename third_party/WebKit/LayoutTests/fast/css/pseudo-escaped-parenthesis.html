@@ -12,7 +12,6 @@
     <style>:lang\( {}</style>
     <style>:not\( {}</style>
     <style>:cue\( {}</style>
-    <style>:-webkit-distributed\( {}</style>
     <style>:part\( {}</style>
     <style>:host\( {}</style>
 </head>
@@ -22,7 +21,7 @@
         var sheets = document.styleSheets;
 
         test(function(){
-            assert_equals(sheets.length, 11, "StyleSheets.length");
+            assert_equals(sheets.length, 10, "StyleSheets.length");
         }, "All stylesheets present")
 
         for (var i=0; i<sheets.length; i++) {
