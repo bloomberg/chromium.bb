@@ -55,7 +55,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
   virtual scoped_refptr<cc::Layer> GetLayer() const OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
-  virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
   virtual void GetScaledContentBitmap(
       float scale,
@@ -232,6 +231,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jint y,
                             jint width,
                             jint height);
+
+  jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj);
+
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
