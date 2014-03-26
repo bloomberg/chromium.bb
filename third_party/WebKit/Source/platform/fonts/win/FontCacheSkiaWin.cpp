@@ -37,8 +37,8 @@
 #include "SkTypeface_win.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/harfbuzz/FontPlatformDataHarfbuzz.h"
 #include "platform/fonts/win/FontFallbackWin.h"
-#include "platform/fonts/win/FontPlatformDataWin.h"
 
 namespace WebCore {
 

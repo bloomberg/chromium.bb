@@ -51,11 +51,6 @@ namespace WebCore {
 class GraphicsContext;
 class HarfBuzzFace;
 
-// -----------------------------------------------------------------------------
-// FontPlatformData is the handle which WebKit has on a specific face. A face
-// is the tuple of (font, size, ...etc). Here we are just wrapping a Skia
-// SkTypeface pointer and dealing with the reference counting etc.
-// -----------------------------------------------------------------------------
 class PLATFORM_EXPORT FontPlatformData {
 public:
     // Used for deleted values in the font cache's hash tables. The hash table
@@ -67,32 +62,18 @@ public:
     FontPlatformData();
     FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic);
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = FontDescription::subpixelPositioning());
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
     FontPlatformData(const FontPlatformData& src, float textSize);
     ~FontPlatformData();
 
     String fontFamilyName() const;
-
-    // -------------------------------------------------------------------------
-    // Return true iff this font is monospaced (i.e. every glyph has an equal x
-    // advance)
-    // -------------------------------------------------------------------------
+    float size() const { return m_textSize; }
     bool isFixedPitch() const;
 
-    // -------------------------------------------------------------------------
-    // Setup a Skia painting context to use this font.
-    // -------------------------------------------------------------------------
-    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
-
-    // -------------------------------------------------------------------------
-    // Return Skia's unique id for this font. This encodes both the style and
-    // the font's file name so refers to a single face.
-    // -------------------------------------------------------------------------
-    SkFontID uniqueID() const;
     SkTypeface* typeface() const { return m_typeface.get(); }
-
+    HarfBuzzFace* harfBuzzFace() const;
+    SkFontID uniqueID() const;
     unsigned hash() const;
-    float size() const { return m_textSize; }
 
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
@@ -111,26 +92,31 @@ public:
     String description() const;
 #endif
 
-    HarfBuzzFace* harfBuzzFace() const;
-
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.
     const FontRenderStyle& fontRenderStyle() const { return m_style; }
+    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
 
-    // -------------------------------------------------------------------------
-    // Global font preferences...
-
+#if OS(WIN)
+    int paintTextFlags() const { return m_paintTextFlags; }
+#else
     static void setHinting(SkPaint::Hinting);
     static void setAutoHint(bool);
     static void setUseBitmaps(bool);
     static void setAntiAlias(bool);
     static void setSubpixelRendering(bool);
+#endif
 
 private:
+    bool static defaultUseSubpixelPositioning();
+#if !OS(WIN)
     void getRenderStyleForStrike(const char*, int);
     void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
+#endif
 
     RefPtr<SkTypeface> m_typeface;
+#if !OS(WIN)
     CString m_family;
+#endif
     float m_textSize;
     bool m_syntheticBold;
     bool m_syntheticItalic;
@@ -138,6 +124,10 @@ private:
     FontRenderStyle m_style;
     mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
     bool m_isHashTableDeletedValue;
+#if OS(WIN)
+    int m_paintTextFlags;
+    bool m_useSubpixelPositioning;
+#endif
 };
 
 } // namespace WebCore

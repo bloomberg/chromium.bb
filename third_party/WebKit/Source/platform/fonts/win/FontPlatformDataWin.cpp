@@ -32,6 +32,7 @@
 #include "config.h"
 #include "platform/fonts/FontPlatformData.h"
 
+#include "SkTypeface.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
@@ -196,6 +197,10 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     m_paintTextFlags = computePaintTextFlags(fontFamilyName());
 }
 
+FontPlatformData::~FontPlatformData()
+{
+}
+
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
 {
     if (this != &data) {
@@ -207,10 +212,6 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_paintTextFlags = data.m_paintTextFlags;
     }
     return *this;
-}
-
-FontPlatformData::~FontPlatformData()
-{
 }
 
 String FontPlatformData::fontFamilyName() const
@@ -244,6 +245,11 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
         m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
 
     return m_harfBuzzFace.get();
+}
+
+SkFontID FontPlatformData::uniqueID() const
+{
+    return m_typeface->uniqueID();
 }
 
 bool FontPlatformData::defaultUseSubpixelPositioning()

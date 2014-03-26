@@ -323,7 +323,7 @@
           ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
-          ['include', 'fonts/win/FontPlatformDataWin\\.(cpp|h)$'],
+          ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],
           ['exclude', 'fonts/harfbuzz/FontPlatformDataHarfBuzz\\.cpp$'],
 
           # SystemInfo.cpp is useful and we don't want to copy it.

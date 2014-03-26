@@ -22,10 +22,8 @@
  *
  */
 
-// FIXME: This is temporary until all ports switch to using this file.
-#if OS(WIN)
-#include "platform/fonts/win/FontPlatformDataWin.h"
-#elif !OS(MACOSX)
+// FIXME: This is temporary until mac switch to using FontPlatformDataHarfBuzz.h and we merge it with this file.
+#if !OS(MACOSX)
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
 
 #else

@@ -285,4 +285,9 @@ void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning
         m_style.useSubpixelPositioning = useSkiaSubpixelPositioning;
 }
 
+bool FontPlatformData::defaultUseSubpixelPositioning()
+{
+    return FontDescription::subpixelPositioning();
+}
+
 } // namespace WebCore

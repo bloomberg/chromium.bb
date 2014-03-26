@@ -405,7 +405,6 @@
       'fonts/win/FontFallbackWin.cpp',
       'fonts/win/FontFallbackWin.h',
       'fonts/win/FontPlatformDataWin.cpp',
-      'fonts/win/FontPlatformDataWin.h',
       'geometry/FloatBoxExtent.h',
       'geometry/FloatPolygon.cpp',
       'geometry/FloatPolygon.h',
