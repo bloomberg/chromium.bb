@@ -11,6 +11,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/cursor_delegate.h"
 
 namespace views {
 
@@ -102,8 +103,11 @@ gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
 }
 
 gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
-  if (host_->native_view())
-    return host_->native_view()->GetCursor(gfx::Point(x, y));
+  if (host_->native_view()) {
+    wm::CursorDelegate* delegate = wm::GetCursorDelegate(host_->native_view());
+    if (delegate)
+      return delegate->GetCursorForPoint(gfx::Point(x, y));
+  }
   return gfx::kNullCursor;
 }
 

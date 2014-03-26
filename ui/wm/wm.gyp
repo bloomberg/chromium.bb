@@ -85,6 +85,8 @@
         'core/wm_core_switches.h',
         'core/wm_state.cc',
         'core/wm_state.h',
+        'public/cursor_delegate.cc',
+        'public/cursor_delegate.h',
       ],
     },
     {

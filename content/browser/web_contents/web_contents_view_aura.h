@@ -154,7 +154,6 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,

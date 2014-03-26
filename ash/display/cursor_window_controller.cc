@@ -34,9 +34,6 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   virtual gfx::Size GetMaximumSize() const OVERRIDE { return size_; }
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return gfx::kNullCursor;
-  }
   virtual int GetNonClientComponent(
       const gfx::Point& point) const OVERRIDE {
     return HTNOWHERE;

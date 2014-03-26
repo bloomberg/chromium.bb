@@ -54,9 +54,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
 
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return gfx::kNullCursor;
-  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCAPTION;
   }

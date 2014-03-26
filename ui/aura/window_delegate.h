@@ -44,10 +44,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) = 0;
 
-  // Returns the native cursor for the specified point, in window coordinates,
-  // or NULL for the default cursor.
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) = 0;
-
   // Returns the non-client component (see hit_test.h) containing |point|, in
   // window coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;

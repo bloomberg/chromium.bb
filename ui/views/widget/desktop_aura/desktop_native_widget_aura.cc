@@ -259,6 +259,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       widget_type_(Widget::InitParams::TYPE_WINDOW) {
   aura::client::SetFocusChangeObserver(content_window_, this);
   aura::client::SetActivationChangeObserver(content_window_, this);
+  wm::SetCursorDelegate(content_window_, this);
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
@@ -929,10 +930,6 @@ gfx::Size DesktopNativeWidgetAura::GetMaximumSize() const {
   return native_widget_delegate_->GetMaximumSize();
 }
 
-gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
-  return cursor_;
-}
-
 int DesktopNativeWidgetAura::GetNonClientComponent(
     const gfx::Point& point) const {
   return native_widget_delegate_->GetNonClientComponent(point);
@@ -1157,6 +1154,14 @@ void DesktopNativeWidgetAura::OnHostMoved(const aura::WindowTreeHost* host,
                "new_origin", new_origin.ToString());
 
   native_widget_delegate_->OnNativeWidgetMove();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, wm::CursorDelegate implementation:
+
+gfx::NativeCursor DesktopNativeWidgetAura::GetCursorForPoint(
+    const gfx::Point& point) {
+  return cursor_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

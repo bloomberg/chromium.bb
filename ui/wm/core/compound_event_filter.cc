@@ -15,6 +15,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/public/cursor_delegate.h"
 #include "ui/wm/public/drag_drop_client.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
@@ -158,7 +159,9 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
-    gfx::NativeCursor cursor = target->GetCursor(event->location());
+    CursorDelegate* delegate = GetCursorDelegate(target);
+    gfx::NativeCursor cursor = delegate ?
+        delegate->GetCursorForPoint(event->location()) : gfx::kNullCursor;
     if ((event->flags() & ui::EF_IS_NON_CLIENT)) {
       if (target->delegate()) {
         int window_component =

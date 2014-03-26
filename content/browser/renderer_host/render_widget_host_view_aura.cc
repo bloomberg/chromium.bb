@@ -2604,12 +2604,6 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   SetSize(new_bounds.size());
 }
 
-gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
-  if (mouse_locked_)
-    return ui::kCursorNone;
-  return current_cursor_.GetNativeCursor();
-}
-
 int RenderWidgetHostViewAura::GetNonClientComponent(
     const gfx::Point& point) const {
   return HTCLIENT;
@@ -3049,6 +3043,16 @@ void RenderWidgetHostViewAura::OnWindowActivated(aura::Window* gained_active,
 
 void RenderWidgetHostViewAura::OnCursorVisibilityChanged(bool is_visible) {
   NotifyRendererOfCursorVisibilityState(is_visible);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, wm::CursorDelegate implementation:
+
+gfx::NativeCursor RenderWidgetHostViewAura::GetCursorForPoint(
+    const gfx::Point& point) {
+  if (mouse_locked_)
+    return ui::kCursorNone;
+  return current_cursor_.GetNativeCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

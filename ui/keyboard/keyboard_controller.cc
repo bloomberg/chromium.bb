@@ -84,9 +84,6 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
                                const gfx::Rect& new_bounds) OVERRIDE {
     bounds_ = new_bounds;
   }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return gfx::kNullCursor;
-  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTNOWHERE;
   }

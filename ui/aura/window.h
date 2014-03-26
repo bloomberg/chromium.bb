@@ -217,9 +217,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Moves the cursor to the specified location relative to the window.
   virtual void MoveCursorTo(const gfx::Point& point_in_window);
 
-  // Returns the cursor for the specified point, in window coordinates.
-  gfx::NativeCursor GetCursor(const gfx::Point& point) const;
-
   // Sets an 'event filter' for the window. An 'event filter' for a Window is
   // a pre-target event handler, where the window owns the handler. A window
   // can have only one such event filter. Setting a new filter removes and
