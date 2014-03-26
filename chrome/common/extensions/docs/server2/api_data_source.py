@@ -390,7 +390,14 @@ class _JSCModel(object):
     assert feature, ('"%s" not found in _api_features.json.'
                      % self._namespace.name)
 
-    dependencies = feature.get('dependencies')
+    # TODO(tbarzic, kalman): Move this logic into features_utility.
+    if isinstance(feature, list):
+      dependencies_set = set()
+      for subfeature in feature:
+        dependencies_set.update(subfeature.get('dependencies', ()))
+      dependencies = list(dependencies_set)
+    else:
+      dependencies = feature.get('dependencies')
     if dependencies is None:
       return []
 

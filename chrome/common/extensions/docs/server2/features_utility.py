@@ -13,6 +13,7 @@ A Feature may have other keys from a _features.json file as well. Features with
 a whitelist are ignored as they are only useful to specific apps or extensions.
 '''
 
+from branch_utility import BranchUtility
 from copy import deepcopy
 
 def _GetPlatformsForExtensionTypes(extension_types):
@@ -65,9 +66,14 @@ def Parse(features_json):
         # See http://crbug.com/316194.
         extension_types = set()
         for value in available_values:
-          extension_types.update(value['extension_types'])
-        value = [subvalue for subvalue in available_values
-                 if subvalue['channel'] == 'stable'][0]
+          extension_types.update(value.get('extension_types', ()))
+
+        # For the base value, select the one with the most recent availability.
+        channel_names = BranchUtility.GetAllChannelNames()
+        available_values.sort(
+            key=lambda v: channel_names.index(v.get('channel', 'stable')))
+        value = available_values[0]
+
         value['extension_types'] = list(extension_types)
 
     if ignore_feature(name, value):

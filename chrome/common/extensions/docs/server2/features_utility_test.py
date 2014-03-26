@@ -56,6 +56,50 @@ class FeaturesUtilityTest(unittest.TestCase):
 
     self.assertEqual(expected, Parse(raw_features_json))
 
+  def testFeatureList(self):
+    raw_features_json = {
+      'doc1': [
+        { 'extension_types': ['extension'] },
+        { 'extension_types': ['platform_app'] }
+      ],
+      'doc2': [
+        { 'channel': 'dev', 'extension_types': ['extension', 'platform_app'] },
+        { 'channel': 'stable' }
+      ],
+      'doc3': [
+        { 'channel': 'beta' },
+        { 'channel': 'dev' }
+      ],
+      'doc4': [
+        { 'channel': 'beta' },
+        { 'dependencies': ['permission:perm1'] }
+      ]
+    }
+
+    expected = {
+      'doc1': {
+        'platforms': ['apps', 'extensions'],
+        'name': 'doc1'
+      },
+      'doc2': {
+        'channel': 'stable',
+        'platforms': ['apps', 'extensions'],
+        'name': 'doc2'
+      },
+      'doc3': {
+        'platforms': [],
+        'channel': 'beta',
+        'name': 'doc3'
+      },
+      'doc4': {
+        'platforms': [],
+        'dependencies': ['permission:perm1'],
+        'name': 'doc4'
+      }
+    }
+
+    self.assertEqual(expected, Parse(raw_features_json))
+
   def testFilter(self):
     unfiltered = {
       'doc1': { 'platforms': ['apps'] },
