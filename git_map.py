@@ -19,7 +19,7 @@ import sys
 import subprocess2
 
 from git_common import current_branch, branches, tags, config_list, GIT_EXE
-from git_common import branch_config_map
+from git_common import branch_config_map, root
 
 from third_party import colorama
 
@@ -41,8 +41,8 @@ def main():
   map_extra = config_list('depot_tools.map_extra')
   fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
   log_proc = subprocess2.Popen(
-    [GIT_EXE, 'log', '--graph', '--full-history', '--branches', '--tags',
-     '--remotes', '--color=always', '--date=short', ('--pretty=format:' + fmt)
+    [GIT_EXE, 'log', '--graph', '--branches', '--tags', root(),
+     '--color=always', '--date=short', ('--pretty=format:' + fmt)
     ] + map_extra + sys.argv[1:],
     stdout=subprocess2.PIPE,
     shell=False)
