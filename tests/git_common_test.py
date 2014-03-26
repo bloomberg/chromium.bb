@@ -436,6 +436,14 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
 
     self.assertEqual({}, self.repo.run(self.gc.branch_config_map, 'base'))
 
+    # if it's too old, then it caps at merge-base
+    self.repo.run(self.gc.manual_merge_base, 'branch_K', self.repo['A'])
+
+    self.assertEqual(
+      self.repo['B'],
+      self.repo.run(self.gc.get_or_create_merge_base, 'branch_K', 'branch_G')
+    )
+
   def testGetBranchTree(self):
     skipped, tree = self.repo.run(self.gc.get_branch_tree)
     self.assertEqual(skipped, {'master', 'root_X'})

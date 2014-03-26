@@ -245,6 +245,15 @@ def branches(*args):
     yield line.split()[-1]
 
 
+def run_with_retcode(*cmd, **kwargs):
+  """Run a command but only return the status code."""
+  try:
+    run(*cmd, **kwargs)
+    return 0
+  except subprocess2.CalledProcessError as cpe:
+    return cpe.returncode
+
+
 def config(option, default=None):
   try:
     return run('config', '--get', option) or default
@@ -322,16 +331,24 @@ def get_or_create_merge_base(branch, parent=None):
   If parent is supplied, it's used instead of calling upstream(branch).
   """
   base = branch_config(branch, 'base')
+  parent = parent or upstream(branch)
+  actual_merge_base = run('merge-base', parent, branch)
+
+  def is_ancestor(a, b):
+    return run_with_retcode('merge-base', '--is-ancestor', a, b) == 0
+
   if base:
-    try:
-      run('merge-base', '--is-ancestor', base, branch)
-      logging.debug('Found pre-set merge-base for %s: %s', branch, base)
-    except subprocess2.CalledProcessError:
+    if not is_ancestor(base, branch):
       logging.debug('Found WRONG pre-set merge-base for %s: %s', branch, base)
       base = None
+    elif is_ancestor(base, actual_merge_base):
+      logging.debug('Found OLD pre-set merge-base for %s: %s', branch, base)
+      base = None
+    else:
+      logging.debug('Found pre-set merge-base for %s: %s', branch, base)
 
   if not base:
-    base = run('merge-base', parent or upstream(branch), branch)
+    base = actual_merge_base
     manual_merge_base(branch, base)
 
   return base
