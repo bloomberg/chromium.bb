@@ -54,6 +54,10 @@ class HotwordService : public content::NotificationObserver,
   // and language.
   virtual bool IsHotwordAllowed();
 
+  // Checks if the user has opted into audio logging. Returns true if the user
+  // is opted in, false otherwise..
+  bool IsOptedIntoAudioLogging();
+
   // Used in the case of an error with the current hotword extension. Tries
   // to reload the extension or in the case of failure, tries to re-download it.
   // Returns true upon successful attempt at reload or if the extension has

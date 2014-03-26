@@ -151,3 +151,18 @@ TEST_F(HotwordServiceTest, IsHotwordAllowedLocale) {
   SetApplicationLocale(static_cast<Profile*>(otr_profile.get()), "en");
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile.get()));
 }
+
+TEST_F(HotwordServiceTest, AudioLoggingPrefSetCorrectly) {
+  TestingProfile::Builder profile_builder;
+  scoped_ptr<TestingProfile> profile = profile_builder.Build();
+
+  HotwordServiceFactory* hotword_service_factory =
+      HotwordServiceFactory::GetInstance();
+  HotwordService* hotword_service =
+      hotword_service_factory->GetForProfile(profile.get());
+  EXPECT_TRUE(hotword_service != NULL);
+
+  // If it's a fresh profile, although the default value is true,
+  // it should return false if the preference has never been set.
+  EXPECT_FALSE(hotword_service->IsOptedIntoAudioLogging());
+}

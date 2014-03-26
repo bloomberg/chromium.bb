@@ -207,6 +207,13 @@ bool HotwordService::IsHotwordAllowed() {
       DoesHotwordSupportLanguage(profile_);
 }
 
+bool HotwordService::IsOptedIntoAudioLogging() {
+  // Do not opt the user in if the preference has not been set.
+  return
+      profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAudioLoggingEnabled) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
+}
+
 bool HotwordService::RetryHotwordExtension() {
   ExtensionService* extension_service = GetExtensionService(profile_);
   if (!extension_service)
