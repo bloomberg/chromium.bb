@@ -26,7 +26,6 @@
 #ifndef WebGLRenderingContextBase_h
 #define WebGLRenderingContextBase_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLExtensionName.h"
@@ -95,7 +94,7 @@ class WebGLVertexArrayObjectOES;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-class WebGLRenderingContextBase: public ScriptWrappable, public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
+class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
 public:
     virtual ~WebGLRenderingContextBase();
 

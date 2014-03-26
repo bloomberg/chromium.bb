@@ -23,5 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface WebGLRenderingContext : WebGLRenderingContextBase {
-};
+[
+    DoNotCheckConstants,
+    StrictTypeChecking,
+] interface WebGLRenderingContext { };
+WebGLRenderingContext implements WebGLRenderingContextBase;

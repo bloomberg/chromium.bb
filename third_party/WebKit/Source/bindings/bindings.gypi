@@ -228,7 +228,7 @@
             'v8/custom/V8Uint32ArrayCustom.h',
             'v8/custom/V8Uint8ArrayCustom.h',
             'v8/custom/V8Uint8ClampedArrayCustom.h',
-            'v8/custom/V8WebGLRenderingContextBaseCustom.cpp',
+            'v8/custom/V8WebGLRenderingContextCustom.cpp',
             'v8/custom/V8WebKitPointCustom.cpp',
             'v8/custom/V8WindowCustom.cpp',
             'v8/custom/V8WorkerGlobalScopeCustom.cpp',

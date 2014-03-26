@@ -26,11 +26,12 @@
 #ifndef WebGLRenderingContext_h
 #define WebGLRenderingContext_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-class WebGLRenderingContext FINAL : public WebGLRenderingContextBase {
+class WebGLRenderingContext FINAL : public ScriptWrappable, public WebGLRenderingContextBase {
 public:
     static PassOwnPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
     virtual ~WebGLRenderingContext();

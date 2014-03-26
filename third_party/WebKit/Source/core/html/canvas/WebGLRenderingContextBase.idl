@@ -40,8 +40,9 @@ typedef /*unrestricted*/ float GLclampf;
 
 [
     DoNotCheckConstants,
+    ImplementedInBaseClass,
+    NoInterfaceObject,
     StrictTypeChecking,
-    NoInterfaceObject
 ] interface WebGLRenderingContextBase {
 
     readonly attribute HTMLCanvasElement canvas;

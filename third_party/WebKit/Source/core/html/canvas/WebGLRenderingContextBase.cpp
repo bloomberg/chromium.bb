@@ -516,7 +516,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_onePlusMaxNonDefaultTextureUnit(0)
 {
     ASSERT(m_context);
-    ScriptWrappable::init(this);
 
     m_contextGroup = WebGLContextGroup::create();
     m_contextGroup->addContext(this);
