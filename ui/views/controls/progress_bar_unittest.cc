@@ -29,7 +29,7 @@ TEST(ProgressBarTest, Accessibility) {
   bar.GetAccessibleState(&state);
   EXPECT_EQ(ui::AX_ROLE_PROGRESS_INDICATOR, state.role);
   EXPECT_EQ(base::string16(), state.name);
-  EXPECT_TRUE(ui::AX_STATE_READ_ONLY & state.state);
+  EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
 }  // namespace views

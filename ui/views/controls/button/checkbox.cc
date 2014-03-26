@@ -97,7 +97,8 @@ const char* Checkbox::GetClassName() const {
 void Checkbox::GetAccessibleState(ui::AXViewState* state) {
   LabelButton::GetAccessibleState(state);
   state->role = ui::AX_ROLE_CHECK_BOX;
-  state->state = checked() ? ui::AX_STATE_CHECKED : 0;
+  if (checked())
+    state->AddStateFlag(ui::AX_STATE_CHECKED);
 }
 
 void Checkbox::OnFocus() {

@@ -8,12 +8,20 @@ namespace ui {
 
 AXViewState::AXViewState()
     : role(AX_ROLE_CLIENT),
-      state(0),
       selection_start(-1),
       selection_end(-1),
       index(-1),
-      count(-1) { }
+      count(-1),
+      state_(0) { }
 
 AXViewState::~AXViewState() { }
+
+void AXViewState::AddStateFlag(ui::AXState state_flag) {
+  state_ |= (1 << state_flag);
+}
+
+bool AXViewState::HasStateFlag(ui::AXState state_flag) const {
+  return 0 != (state_ & (1 << state_flag));
+}
 
 }  // namespace ui

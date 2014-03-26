@@ -291,7 +291,7 @@ bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
 
 void Label::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_STATIC_TEXT;
-  state->state = ui::AX_STATE_READ_ONLY;
+  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
   state->name = text_;
 }
 

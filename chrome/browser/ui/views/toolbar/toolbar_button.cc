@@ -125,7 +125,7 @@ void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
   CustomButton::GetAccessibleState(state);
   state->role = ui::AX_ROLE_BUTTON_DROP_DOWN;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AX_STATE_HASPOPUP;
+  state->AddStateFlag(ui::AX_STATE_HASPOPUP);
 }
 
 void ToolbarButton::ShowContextMenuForView(View* source,

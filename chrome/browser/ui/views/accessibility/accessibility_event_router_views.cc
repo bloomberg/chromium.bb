@@ -343,8 +343,7 @@ void AccessibilityEventRouterViews::SendTextfieldNotification(
   view->GetAccessibleState(&state);
   std::string name = base::UTF16ToUTF8(state.name);
   std::string context = GetViewContext(view);
-  bool password =
-      (state.state & ui::AX_STATE_PROTECTED) != 0;
+  bool password = state.HasStateFlag(ui::AX_STATE_PROTECTED);
   AccessibilityTextBoxInfo info(profile, name, context, password);
   std::string value = base::UTF16ToUTF8(state.value);
   info.SetValue(value, state.selection_start, state.selection_end);
@@ -379,7 +378,7 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
       profile,
       name,
       context,
-      state.state == ui::AX_STATE_CHECKED);
+      state.HasStateFlag(ui::AX_STATE_CHECKED));
   SendControlAccessibilityNotification(event, &info);
 }
 

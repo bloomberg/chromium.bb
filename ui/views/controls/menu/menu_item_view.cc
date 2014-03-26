@@ -168,12 +168,12 @@ void MenuItemView::GetAccessibleState(ui::AXViewState* state) {
 
   switch (GetType()) {
     case SUBMENU:
-      state->state |= ui::AX_STATE_HASPOPUP;
+      state->AddStateFlag(ui::AX_STATE_HASPOPUP);
       break;
     case CHECKBOX:
     case RADIO:
-      state->state |= GetDelegate()->IsItemChecked(GetCommand()) ?
-          ui::AX_STATE_CHECKED : 0;
+      if (GetDelegate()->IsItemChecked(GetCommand()))
+        state->AddStateFlag(ui::AX_STATE_CHECKED);
       break;
     case NORMAL:
     case SEPARATOR:

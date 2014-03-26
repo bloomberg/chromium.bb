@@ -25,6 +25,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/app_list/app_list.gyp:app_list',
         '../ui/aura/aura.gyp:aura',
         '../ui/base/strings/ui_strings.gyp:ui_strings',

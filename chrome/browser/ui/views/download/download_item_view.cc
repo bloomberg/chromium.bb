@@ -494,11 +494,10 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
 void DownloadItemView::GetAccessibleState(ui::AXViewState* state) {
   state->name = accessible_name_;
   state->role = ui::AX_ROLE_BUTTON;
-  if (model_.IsDangerous()) {
-    state->state = ui::AX_STATE_DISABLED;
-  } else {
-    state->state = ui::AX_STATE_HASPOPUP;
-  }
+  if (model_.IsDangerous())
+    state->AddStateFlag(ui::AX_STATE_DISABLED);
+  else
+    state->AddStateFlag(ui::AX_STATE_HASPOPUP);
 }
 
 void DownloadItemView::OnThemeChanged() {

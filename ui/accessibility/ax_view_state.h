@@ -26,12 +26,12 @@ struct AX_EXPORT AXViewState {
   AXViewState();
   ~AXViewState();
 
+  // Set or check bits in |state_|.
+  void AddStateFlag(ui::AXState state);
+  bool HasStateFlag(ui::AXState state) const;
+
   // The view's role, like button or list box.
   AXRole role;
-
-  // The view's state, a bitmask containing fields such as checked
-  // (for a checkbox) and protected (for a password text box).
-  uint32 state;
 
   // The view's name / label.
   base::string16 name;
@@ -66,6 +66,11 @@ struct AX_EXPORT AXViewState {
   // be a safe no-op if the view is deleted. Typically, accessible views
   // should use a WeakPtr when binding the callback.
   base::Callback<void(const base::string16&)> set_value_callback;
+
+ private:
+  // The view's state, a bitmask containing fields such as checked
+  // (for a checkbox) and protected (for a password text box).
+  uint32 state_;
 };
 
 }  // namespace ui

@@ -142,7 +142,8 @@ void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
 
   if (checkable_) {
     state->role = ui::AX_ROLE_CHECK_BOX;
-    state->state = checked_ ? ui::AX_STATE_CHECKED : 0;
+    if (checked_)
+      state->AddStateFlag(ui::AX_STATE_CHECKED);
   }
 }
 

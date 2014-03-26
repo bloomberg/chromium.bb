@@ -154,7 +154,7 @@ TEST(LabelTest, Accessibility) {
   label.GetAccessibleState(&state);
   EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, state.role);
   EXPECT_EQ(test_text, state.name);
-  EXPECT_TRUE(ui::AX_STATE_READ_ONLY & state.state);
+  EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
 TEST(LabelTest, SingleLineSizing) {

@@ -1140,7 +1140,7 @@ void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
   state->selection_end = entry_end;
 
   if (is_popup_mode_) {
-    state->state |= ui::AX_STATE_READ_ONLY;
+    state->AddStateFlag(ui::AX_STATE_READ_ONLY);
   } else {
     state->set_value_callback =
         base::Bind(&LocationBarView::AccessibilitySetValue,

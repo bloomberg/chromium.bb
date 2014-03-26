@@ -736,9 +736,9 @@ void Textfield::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TEXT_FIELD;
   state->name = accessible_name_;
   if (read_only())
-    state->state |= ui::AX_STATE_READ_ONLY;
+    state->AddStateFlag(ui::AX_STATE_READ_ONLY);
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    state->state |= ui::AX_STATE_PROTECTED;
+    state->AddStateFlag(ui::AX_STATE_PROTECTED);
   state->value = text();
 
   const gfx::Range range = GetSelectedRange();

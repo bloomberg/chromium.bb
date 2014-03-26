@@ -837,7 +837,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_states(AccessibleStates* states) {
   // in IAccessible2. If any more are added, we may want to
   // add a helper function like MSAAState.
   *states = IA2_STATE_OPAQUE;
-  if (state.state & ui::AX_STATE_EDITABLE)
+  if (state.HasStateFlag(ui::AX_STATE_EDITABLE))
     *states |= IA2_STATE_EDITABLE;
 
   return S_OK;
@@ -1245,40 +1245,40 @@ int32 NativeViewAccessibilityWin::MSAARole(ui::AXRole role) {
   }
 }
 
-int32 NativeViewAccessibilityWin::MSAAState(uint32 state) {
+int32 NativeViewAccessibilityWin::MSAAState(const ui::AXViewState& state) {
   // This maps MSAA states for get_accState(). See also the IAccessible2
   // interface get_states().
 
   int32 msaa_state = 0;
-  if (state & ui::AX_STATE_CHECKED)
+  if (state.HasStateFlag(ui::AX_STATE_CHECKED))
     msaa_state |= STATE_SYSTEM_CHECKED;
-  if (state & ui::AX_STATE_COLLAPSED)
+  if (state.HasStateFlag(ui::AX_STATE_COLLAPSED))
     msaa_state |= STATE_SYSTEM_COLLAPSED;
-  if (state & ui::AX_STATE_DEFAULT)
+  if (state.HasStateFlag(ui::AX_STATE_DEFAULT))
     msaa_state |= STATE_SYSTEM_DEFAULT;
-  if (state & ui::AX_STATE_EXPANDED)
+  if (state.HasStateFlag(ui::AX_STATE_EXPANDED))
     msaa_state |= STATE_SYSTEM_EXPANDED;
-  if (state & ui::AX_STATE_HASPOPUP)
+  if (state.HasStateFlag(ui::AX_STATE_HASPOPUP))
     msaa_state |= STATE_SYSTEM_HASPOPUP;
-  if (state & ui::AX_STATE_HOVERED)
+  if (state.HasStateFlag(ui::AX_STATE_HOVERED))
     msaa_state |= STATE_SYSTEM_HOTTRACKED;
-  if (state & ui::AX_STATE_INVISIBLE)
+  if (state.HasStateFlag(ui::AX_STATE_INVISIBLE))
     msaa_state |= STATE_SYSTEM_INVISIBLE;
-  if (state & ui::AX_STATE_LINKED)
+  if (state.HasStateFlag(ui::AX_STATE_LINKED))
     msaa_state |= STATE_SYSTEM_LINKED;
-  if (state & ui::AX_STATE_OFFSCREEN)
+  if (state.HasStateFlag(ui::AX_STATE_OFFSCREEN))
     msaa_state |= STATE_SYSTEM_OFFSCREEN;
-  if (state & ui::AX_STATE_PRESSED)
+  if (state.HasStateFlag(ui::AX_STATE_PRESSED))
     msaa_state |= STATE_SYSTEM_PRESSED;
-  if (state & ui::AX_STATE_PROTECTED)
+  if (state.HasStateFlag(ui::AX_STATE_PROTECTED))
     msaa_state |= STATE_SYSTEM_PROTECTED;
-  if (state & ui::AX_STATE_READ_ONLY)
+  if (state.HasStateFlag(ui::AX_STATE_READ_ONLY))
     msaa_state |= STATE_SYSTEM_READONLY;
-  if (state & ui::AX_STATE_SELECTED)
+  if (state.HasStateFlag(ui::AX_STATE_SELECTED))
     msaa_state |= STATE_SYSTEM_SELECTED;
-  if (state & ui::AX_STATE_FOCUSED)
+  if (state.HasStateFlag(ui::AX_STATE_FOCUSED))
     msaa_state |= STATE_SYSTEM_FOCUSED;
-  if (state & ui::AX_STATE_DISABLED)
+  if (state.HasStateFlag(ui::AX_STATE_DISABLED))
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   return msaa_state;
 }
@@ -1339,7 +1339,7 @@ void NativeViewAccessibilityWin::SetState(
   // Add on any view-specific states.
   ui::AXViewState view_state;
   view->GetAccessibleState(&view_state);
-  msaa_state->lVal |= MSAAState(view_state.state);
+  msaa_state->lVal |= MSAAState(view_state);
 }
 
 base::string16 NativeViewAccessibilityWin::TextForIAccessibleText() {

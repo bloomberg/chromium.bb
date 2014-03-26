@@ -406,7 +406,7 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
 
 void TreeView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TREE;
-  state->state = ui::AX_STATE_READ_ONLY;
+  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
   if (!selected_node_)
     return;
 

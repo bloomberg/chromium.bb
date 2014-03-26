@@ -180,7 +180,7 @@ bool ProgressBar::GetTooltipText(const gfx::Point& p,
 
 void ProgressBar::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_PROGRESS_INDICATOR;
-  state->state = ui::AX_STATE_READ_ONLY;
+  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
 }
 
 gfx::Size ProgressBar::GetPreferredSize() {
