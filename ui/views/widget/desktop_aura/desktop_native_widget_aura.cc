@@ -1136,7 +1136,7 @@ int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 void DesktopNativeWidgetAura::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
-  Close();
+  GetWidget()->Close();
 }
 
 void DesktopNativeWidgetAura::OnHostResized(const aura::WindowTreeHost* host) {
