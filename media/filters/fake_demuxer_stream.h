@@ -33,6 +33,7 @@ class FakeDemuxerStream : public DemuxerStream {
   virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
+  virtual bool SupportsConfigChanges() OVERRIDE;
 
   int num_buffers_returned() const { return num_buffers_returned_; }
 
@@ -60,6 +61,7 @@ class FakeDemuxerStream : public DemuxerStream {
 
   int num_configs_left_;
   int num_buffers_in_one_config_;
+  bool config_changes_;
   bool is_encrypted_;
 
   // Number of frames left with the current decoder config.

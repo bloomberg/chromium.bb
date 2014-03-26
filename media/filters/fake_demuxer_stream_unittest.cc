@@ -72,6 +72,7 @@ class FakeDemuxerStreamTest : public testing::Test {
         break;
 
       case CONFIG_CHANGED:
+        EXPECT_TRUE(stream_->SupportsConfigChanges());
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kConfigChanged, status_);
         EXPECT_FALSE(buffer_.get());
@@ -241,6 +242,15 @@ TEST_F(FakeDemuxerStreamTest, Reset_BeforeEOS) {
   stream_->HoldNextRead();
   ReadAndExpect(PENDING);
   Reset();
+  ReadAndExpect(EOS);
+}
+
+TEST_F(FakeDemuxerStreamTest, NoConfigChanges) {
+  stream_.reset(
+      new FakeDemuxerStream(1, kNumBuffersInOneConfig, false));
+  EXPECT_FALSE(stream_->SupportsConfigChanges());
+  for (int i = 0; i < kNumBuffersInOneConfig; ++i)
+    ReadAndExpect(OK);
   ReadAndExpect(EOS);
 }
 

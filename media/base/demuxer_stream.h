@@ -40,6 +40,8 @@ class MEDIA_EXPORT DemuxerStream {
   //                  new configuration to properly decode the buffers read
   //                  from this point forward. The second parameter MUST be NULL
   //                  when this status is returned.
+  //                  This will only be returned if SupportsConfigChanges()
+  //                  returns 'true' for this DemuxerStream.
   enum Status {
     kOk,
     kAborted,
@@ -67,6 +69,16 @@ class MEDIA_EXPORT DemuxerStream {
   virtual Type type() = 0;
 
   virtual void EnableBitstreamConverter() = 0;
+
+  // Whether or not this DemuxerStream allows midstream configuration changes.
+  //
+  // A DemuxerStream that returns 'true' to this may return the 'kConfigChange'
+  // status from a Read() call. In this case the client is expected to be
+  // capable of taking appropriate action to handle config changes. Otherwise
+  // audio_decoder_config() and video_decoder_config()'s return values are
+  // guaranteed to remain constant, and the client may make optimizations based
+  // on this.
+  virtual bool SupportsConfigChanges() = 0;
 
  protected:
   // Only allow concrete implementations to get deleted.

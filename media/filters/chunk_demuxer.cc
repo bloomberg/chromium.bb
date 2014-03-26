@@ -903,6 +903,8 @@ VideoDecoderConfig ChunkDemuxerStream::video_decoder_config() {
   return stream_->GetCurrentVideoDecoderConfig();
 }
 
+bool ChunkDemuxerStream::SupportsConfigChanges() { return true; }
+
 TextTrackConfig ChunkDemuxerStream::text_track_config() {
   CHECK_EQ(type_, TEXT);
   base::AutoLock auto_lock(lock_);

@@ -85,6 +85,7 @@ class ChunkDemuxerStream : public DemuxerStream {
   virtual void EnableBitstreamConverter() OVERRIDE;
   virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
   virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
+  virtual bool SupportsConfigChanges() OVERRIDE;
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.

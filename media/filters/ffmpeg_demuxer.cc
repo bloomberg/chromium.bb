@@ -268,6 +268,8 @@ void FFmpegDemuxerStream::EnableBitstreamConverter() {
   bitstream_converter_enabled_ = true;
 }
 
+bool FFmpegDemuxerStream::SupportsConfigChanges() { return false; }
+
 AudioDecoderConfig FFmpegDemuxerStream::audio_decoder_config() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK_EQ(type_, AUDIO);

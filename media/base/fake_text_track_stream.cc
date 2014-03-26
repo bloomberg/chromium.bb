@@ -36,6 +36,8 @@ DemuxerStream::Type FakeTextTrackStream::type() {
   return DemuxerStream::TEXT;
 }
 
+bool FakeTextTrackStream::SupportsConfigChanges() { return false; }
+
 void FakeTextTrackStream::SatisfyPendingRead(
     const base::TimeDelta& start,
     const base::TimeDelta& duration,

@@ -161,6 +161,10 @@ void DecryptingDemuxerStream::EnableBitstreamConverter() {
   demuxer_stream_->EnableBitstreamConverter();
 }
 
+bool DecryptingDemuxerStream::SupportsConfigChanges() {
+  return demuxer_stream_->SupportsConfigChanges();
+}
+
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
 }

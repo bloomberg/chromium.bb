@@ -36,6 +36,7 @@ FakeDemuxerStream::FakeDemuxerStream(int num_configs,
     : task_runner_(base::MessageLoopProxy::current()),
       num_configs_left_(num_configs),
       num_buffers_in_one_config_(num_buffers_in_one_config),
+      config_changes_(num_configs > 1),
       is_encrypted_(is_encrypted),
       num_buffers_left_in_current_config_(num_buffers_in_one_config),
       num_buffers_returned_(0),
@@ -83,6 +84,10 @@ DemuxerStream::Type FakeDemuxerStream::type() {
 
 void FakeDemuxerStream::EnableBitstreamConverter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+}
+
+bool FakeDemuxerStream::SupportsConfigChanges() {
+  return config_changes_;
 }
 
 void FakeDemuxerStream::HoldNextRead() {
