@@ -32,15 +32,13 @@ function createAnimatedRect() {
 
 function cleanup() {
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    // FIXME: Unclear why two calls to collect() are required, see crbug.com/307614
-    GCController.collect();
-    GCController.collect();
+    GCController.collectAll();
     var originalLiveElements = internals.numberOfLiveNodes();
 
     while (g.hasChildNodes())
         g.removeChild(g.lastChild);
 
-    GCController.collect();
+    GCController.collectAll();
 
     var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 200;
     if (liveDelta == 0)

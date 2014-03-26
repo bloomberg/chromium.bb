@@ -34,17 +34,15 @@ function createAnimatedRectInstance() {
 
 function cleanup() {
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    // FIXME: Unclear why two calls to collect() are required, see crbug.com/307614
-    GCController.collect();
-    GCController.collect();
+    GCController.collectAll();
     var originalLiveElements = internals.numberOfLiveNodes();
 
     while (g.hasChildNodes())
         g.removeChild(g.lastChild);
 
-    GCController.collect();
+    GCController.collectAll();
 
-    // FIXME: Why is this 400 instead of 200?
+    // This is 400 instead of 200 as it creates shadow tree elements.
     var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
     if (liveDelta == 0)
         log("PASS");
