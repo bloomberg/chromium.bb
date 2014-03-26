@@ -23,18 +23,17 @@
         android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
 
     <View
-        android:layout_width="@dimen/menu_item_divider_width"
+        android:id="@+id/divider"
+        android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/menu_item_divider_width"
         android:background="?android:attr/listDivider" />
 
     <ImageButton
         android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:background="?android:attr/selectableItemBackground"
-        android:paddingEnd="10dp"
-        android:paddingStart="10dp"
-        android:scaleType="center" />
+        android:padding="10dp"
+        android:scaleType="fitCenter" />
 
 </LinearLayout>

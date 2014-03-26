@@ -148,6 +148,7 @@ class AppMenuAdapter extends BaseAdapter {
                     holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, null);
                     holder.title = (Button) convertView.findViewById(R.id.title);
+                    holder.divider = convertView.findViewById(R.id.divider);
                     holder.button = (ImageButton) convertView.findViewById(R.id.button);
                     convertView.setTag(holder);
                 } else {
@@ -163,7 +164,14 @@ class AppMenuAdapter extends BaseAdapter {
                         mAppMenu.onItemClick(titleItem);
                     }
                 });
-                setupImageButton(holder.button, item.getSubMenu().getItem(1));
+                if (item.getSubMenu().getItem(1).getIcon() != null) {
+                    holder.button.setVisibility(View.VISIBLE);
+                    holder.divider.setVisibility(View.VISIBLE);
+                    setupImageButton(holder.button, item.getSubMenu().getItem(1));
+                } else {
+                    holder.button.setVisibility(View.GONE);
+                    holder.divider.setVisibility(View.GONE);
+                }
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
                 break;
@@ -200,6 +208,7 @@ class AppMenuAdapter extends BaseAdapter {
 
     static class TitleButtonMenuItemViewHolder {
         public Button title;
+        public View divider;
         public ImageButton button;
     }
 }

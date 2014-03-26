@@ -19,9 +19,8 @@
         android:scaleType="center" />
 
     <View
-        android:layout_width="@dimen/menu_item_divider_width"
+        android:layout_width="1dp"
         android:layout_height="?android:attr/listPreferredItemHeightSmall"
-        android:layout_marginBottom="@dimen/menu_item_divider_width"
         android:background="?android:attr/listDivider" />
 
     <ImageButton
@@ -33,9 +32,8 @@
         android:scaleType="center" />
 
     <View
-        android:layout_width="@dimen/menu_item_divider_width"
+        android:layout_width="1dp"
         android:layout_height="?android:attr/listPreferredItemHeightSmall"
-        android:layout_marginBottom="@dimen/menu_item_divider_width"
         android:background="?android:attr/listDivider" />
 
     <ImageButton

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
@@ -291,6 +292,11 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                     activeTab.goForward();
                 }
                 return true;
+            case R.id.share_menu_id:
+            case R.id.direct_share_menu_id:
+                ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
+                        activeTab.getTitle(), activeTab.getUrl(), null);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -347,6 +353,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         } else {
             distillPageItem.setVisible(false);
         }
+        ShareHelper.configureDirectShareMenuItem(this, menu.findItem(R.id.direct_share_menu_id));
     }
 
     @VisibleForTesting

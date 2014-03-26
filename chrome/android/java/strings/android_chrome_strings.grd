@@ -215,6 +215,15 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR-LIMIT=27]">
         Print…
       </message>
+      <message name="IDS_MENU_SHARE_PAGE" desc="Menu item for sharing the current page. [CHAR-LIMIT=27]">
+        Share…
+      </message>
+      <message name="IDS_SHARE_LINK_CHOOSER_TITLE" desc="title for the share dialog when sharing the current address [CHAR-LIMIT=27]">
+        Share via
+      </message>
+      <message name="IDS_ACCESSIBILITY_MENU_SHARE_VIA" desc="Content description share current page via the most recently used application menu item">
+        Share via <ph name="APPLICATION">%s<ex>Gmail</ex></ph>
+      </message>
       <message name="IDS_ERROR_PRINTING_FAILED" desc="Generic error message shown when Chrome fails to print the current page for some reason.">
         There was a problem printing the page. Please try again.
       </message>
