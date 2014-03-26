@@ -39,7 +39,7 @@ bool TransportEncryptionHandler::Initialize(std::string aes_key,
 }
 
 bool TransportEncryptionHandler::Encrypt(uint32 frame_id,
-                                         std::string data,
+                                         const base::StringPiece& data,
                                          std::string* encrypted_data) {
   if (!initialized_)
     return false;
