@@ -6,7 +6,7 @@ if (!window.gc)
     window.gc = function()
     {
         if (window.GCController)
-            return GCController.collect();
+            return GCController.collectAll();
         function gcRec(n) {
             if (n < 1)
                 return {};

@@ -5,7 +5,7 @@ description(
 function gc()
 {
     if (this.GCController)
-        GCController.collect();
+        GCController.collectAll();
     else
         for (var i = 0; i < 10000; ++i) // Allocate a sufficient number of objects to force a GC.
             ({});

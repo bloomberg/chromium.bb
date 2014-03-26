@@ -102,8 +102,6 @@ shouldBeTrue('$("radio1-3").checked');
 // If there is no elements with ID specified by form= attribute, the form
 // control is not associated to any forms.
 parent.removeChild($('form1'));
-// FIXME: We need to call gc() twice on Apple Mac.
-gc();
 gc();
 shouldBeTrue('$("radio1-4").checked');
 debug('(The following test depends on gc(). It might fail on a real browser.)');

@@ -30,7 +30,6 @@ function verifyWrappers(evt)
             preamble(evt);
             evalAndLog("cursor = null");
             gc();
-            gc(); // FIXME: Shouldn't need to call twice. http://crbug.com/288072
             setTimeout(checkCursorType, 0);
         };
     };

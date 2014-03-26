@@ -7,7 +7,7 @@
 
     function gc() {
         if (window.GCController)
-            return GCController.collect();
+            return GCController.collectAll();
         for (var i = 0; i < 10000; ++i)
             var s = new String("foo");
     }

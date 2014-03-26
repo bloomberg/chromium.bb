@@ -15,7 +15,6 @@ var observeOptions = internals.observeGC(options);
 select = null;
 option = null;
 gc();
-gc();
 
 shouldBeTrue('observeSelect.wasCollected');
 shouldBeTrue('observeOption.wasCollected');

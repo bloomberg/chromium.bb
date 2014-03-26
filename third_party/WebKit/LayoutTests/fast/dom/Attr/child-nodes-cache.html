@@ -26,8 +26,6 @@ function test()
     elem.getAttributeNode('rows').removeChild(nodes[0]);
     setTimeout(function() {
         gc();
-        gc();
-        gc();
         try { nodes[0].textContent } catch (ex) { }
 
         document.getElementsByTagName("p")[0].innerHTML = "PASS"

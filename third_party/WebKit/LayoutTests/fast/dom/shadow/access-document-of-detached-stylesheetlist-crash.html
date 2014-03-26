@@ -18,7 +18,6 @@ function runTest()
 
     setTimeout(function() {
         gc();
-        gc(); // FIXME: remove one gc() after refactoring gc()'s c++ code.
 
         if (window.testRunner)
             testRunner.notifyDone();

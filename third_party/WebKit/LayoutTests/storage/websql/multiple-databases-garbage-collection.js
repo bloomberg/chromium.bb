@@ -2,7 +2,7 @@ function GC()
 {
     // Force GC.
     if (window.GCController)
-        GCController.collect();
+        GCController.collectAll();
     else {
         for (var i = 0; i < 10000; ++i) {
             ({ });

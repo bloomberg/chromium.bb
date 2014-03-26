@@ -9,7 +9,7 @@
             function forceGC()
             {
                 if (window.GCController)
-                    return GCController.collect();
+                    return GCController.collectAll();
             
                 // Force garbage collection
                 for (var ndx = 0; ndx < 99000; ndx++)

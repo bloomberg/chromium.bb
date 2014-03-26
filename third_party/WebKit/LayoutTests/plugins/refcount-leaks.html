@@ -4,10 +4,7 @@
 
   function doGC() {
     if (window.GCController) {
-      // GC twice to make sure everything is cleaned up.
-      for (var i = 0; i < 2; i++) {
-        window.GCController.collect();
-      }
+      window.GCController.collectAll();
     }
   }
 

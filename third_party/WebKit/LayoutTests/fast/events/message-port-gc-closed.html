@@ -8,7 +8,6 @@ window.onmessage = function(evt) {
     iframeDocGC = internals.observeGC(document.querySelector('iframe').contentDocument);
     document.querySelector('iframe').remove();
     gc();
-    gc();
     shouldBeTrue("iframeDocGC.wasCollected");
     finishJSTest();
 }

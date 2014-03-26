@@ -199,11 +199,7 @@ Magnitude._runTime = function(setup, test, magnitude)
         if (GCController.getJSObjectCount)
             debugStr += ' jsObjectCountBefore ' + GCController.getJSObjectCount();
 
-        // Do a gc to reduce likelihood of gc during the test run.
-        // Do multiple gc's for V8 to clear DOM wrappers.
-        GCController.collect();
-        GCController.collect();
-        GCController.collect();
+        GCController.collectAll();
 
         if (GCController.getJSObjectCount)
             debugStr += ' jsObjectCountAfter ' + GCController.getJSObjectCount();

@@ -3,12 +3,8 @@
   }
 
   function doGC() {
-    if (window.gc) {
-      // GC twice to make sure everything is cleaned up.
-      for (var i = 0; i < 4; i++) {
-        window.gc();
-      }
-    }
+    if (window.GCController)
+      GCController.collectAll();
   }
 
   function runtest() {
