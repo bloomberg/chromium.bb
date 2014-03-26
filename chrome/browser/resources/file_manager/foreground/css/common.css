@@ -319,6 +319,8 @@ input[type='submit'][disabled]:hover {
   color: rgb(150, 150, 150);
 }
 
+select:not([size]):hover,
+select[size='0']:hover,
 select[size='1']:hover {
   /* Original value is '5 fill', which hides the dropdown triangle. */
   border-image-slice: 5;
