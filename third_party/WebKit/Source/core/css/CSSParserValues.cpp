@@ -87,14 +87,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
     if (id)
         return CSSPrimitiveValue::createIdentifier(id);
 
-    if (unit == CSSParserValue::Operator) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> primitiveValue = CSSPrimitiveValue::createParserOperator(iValue);
-        primitiveValue->setPrimitiveType(CSSPrimitiveValue::CSS_PARSER_OPERATOR);
-        return primitiveValue;
-    }
-    if (unit == CSSParserValue::Function) {
+    if (unit == CSSParserValue::Operator)
+        return CSSPrimitiveValue::createParserOperator(iValue);
+    if (unit == CSSParserValue::Function)
         return CSSFunctionValue::create(function);
-    }
     if (unit == CSSParserValue::ValueList)
         return CSSValueList::createFromParserValueList(valueList);
     if (unit >= CSSParserValue::Q_EMS)
@@ -148,9 +144,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
     case CSSPrimitiveValue::CSS_DPCM:
     case CSSPrimitiveValue::CSS_PAIR:
     case CSSPrimitiveValue::CSS_UNICODE_RANGE:
-    case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_PARSER_INTEGER:
     case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
+    case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
     case CSSPrimitiveValue::CSS_SHAPE:
     case CSSPrimitiveValue::CSS_QUAD:

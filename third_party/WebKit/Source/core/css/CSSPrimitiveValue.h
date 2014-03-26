@@ -65,6 +65,10 @@ template<> inline float roundForImpreciseConversion(double value)
     return static_cast<float>(value);
 }
 
+// CSSPrimitiveValues are immutable. This class has manual ref-counting
+// of unioned types and does not have the code necessary
+// to handle any kind of mutations. All DOM-exposed "setters" just throw
+// exceptions.
 class CSSPrimitiveValue : public CSSValue {
 public:
     enum UnitTypes {
@@ -209,11 +213,11 @@ public:
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createParserOperator(int parserOperator)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(parserOperator));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(parserOperator, CSS_PARSER_OPERATOR));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(unsigned rgbValue)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(rgbValue));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(rgbValue, CSS_RGBCOLOR));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitTypes type)
     {
@@ -284,9 +288,6 @@ public:
     // Converts to a Length, mapping various unit types appropriately.
     template<int> Length convertToLength(const CSSToLengthConversionData&);
 
-    // use with care!!!
-    void setPrimitiveType(unsigned short type) { m_primitiveUnitType = type; }
-
     double getDoubleValue(unsigned short unitType, ExceptionState&) const;
     double getDoubleValue(unsigned short unitType) const;
     double getDoubleValue() const;
@@ -349,9 +350,9 @@ public:
 private:
     CSSPrimitiveValue(CSSValueID);
     CSSPrimitiveValue(CSSPropertyID);
-    // FIXME: int vs. unsigned overloading is too subtle to distinguish the color and operator cases.
-    CSSPrimitiveValue(int parserOperator);
-    CSSPrimitiveValue(unsigned color); // RGB value
+    // int vs. unsigned is too subtle to distinguish types, so require a UnitType.
+    CSSPrimitiveValue(int parserOperator, UnitTypes);
+    CSSPrimitiveValue(unsigned color, UnitTypes); // RGB value
     CSSPrimitiveValue(const Length& length)
         : CSSValue(PrimitiveClass)
     {

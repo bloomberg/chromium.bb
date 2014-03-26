@@ -268,9 +268,10 @@ CSSPrimitiveValue::CSSPrimitiveValue(CSSPropertyID propertyID)
     m_value.propertyID = propertyID;
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(int parserOperator)
+CSSPrimitiveValue::CSSPrimitiveValue(int parserOperator, UnitTypes type)
     : CSSValue(PrimitiveClass)
 {
+    ASSERT(type == CSS_PARSER_OPERATOR);
     m_primitiveUnitType = CSS_PARSER_OPERATOR;
     m_value.parserOperator = parserOperator;
 }
@@ -297,9 +298,10 @@ CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize)
     init(lengthSize);
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
+CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color, UnitTypes type)
     : CSSValue(PrimitiveClass)
 {
+    ASSERT(type == CSS_RGBCOLOR);
     m_primitiveUnitType = CSS_RGBCOLOR;
     m_value.rgbcolor = color;
 }
