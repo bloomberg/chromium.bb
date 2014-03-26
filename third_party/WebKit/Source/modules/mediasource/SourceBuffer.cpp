@@ -177,7 +177,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
 {
     // Enforce throwing an exception on restricted double values.
     if (!std::isfinite(offset)) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::notAFiniteNumber(offset));
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(offset));
         return;
     }
 
@@ -213,10 +213,8 @@ double SourceBuffer::appendWindowStart() const
 void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionState)
 {
     // Enforce throwing an exception on restricted double values.
-    if (std::isnan(start)
-        || start == std::numeric_limits<double>::infinity()
-        || start == -std::numeric_limits<double>::infinity()) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::notAFiniteNumber(start));
+    if (!std::isfinite(start)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(start));
         return;
     }
 

@@ -16,8 +16,8 @@
                   var segmentInfo = MediaSourceUtil.SEGMENT_INFO;
                   var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
 
-                  if (expected == 'TypeMismatchError')  {
-                      assert_throws('TypeMismatchError',
+                  if (expected == 'TypeError')  {
+                      assert_throws({name: 'TypeError'},
                           function() { sourceBuffer.timestampOffset = value; },
                           'setting timestampOffset to ' + description + ' throws an exception.');
                   } else {
@@ -32,10 +32,10 @@
           simpleTimestampOffsetTest(10.5, 10.5, 'a positive number');
           simpleTimestampOffsetTest(-10.4, -10.4, 'a negative number');
           simpleTimestampOffsetTest(0, 0, 'zero');
-          simpleTimestampOffsetTest(Number.POSITIVE_INFINITY, 'TypeMismatchError', 'positive infinity');
-          simpleTimestampOffsetTest(Number.NEGATIVE_INFINITY, 'TypeMismatchError', 'negative infinity');
-          simpleTimestampOffsetTest(Number.NaN, 'TypeMismatchError', 'NaN');
-          simpleTimestampOffsetTest(undefined, 'TypeMismatchError', 'undefined');
+          simpleTimestampOffsetTest(Number.POSITIVE_INFINITY, 'TypeError', 'positive infinity');
+          simpleTimestampOffsetTest(Number.NEGATIVE_INFINITY, 'TypeError', 'negative infinity');
+          simpleTimestampOffsetTest(Number.NaN, 'TypeError', 'NaN');
+          simpleTimestampOffsetTest(undefined, 'TypeError', 'undefined');
           simpleTimestampOffsetTest(null, 0, 'null');
           simpleTimestampOffsetTest(false, 0, 'false');
           simpleTimestampOffsetTest(true, 1, 'true');
