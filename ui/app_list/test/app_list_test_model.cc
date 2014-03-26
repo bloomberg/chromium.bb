@@ -69,17 +69,6 @@ void AppListTestModel::PopulateApps(int n) {
     CreateAndAddItem(GetItemName(start_index + i));
 }
 
-void AppListTestModel::CreateAndPopulateFolderWithApps(size_t n) {
-  DCHECK_GT(n, 1u);
-  size_t start_index = top_level_item_list()->item_count();
-  AppListTestItem* item = CreateAndAddItem(GetItemName(start_index));
-  std::string merged_item_id = item->id();
-  for (size_t i = 1; i < n; ++i) {
-    AppListTestItem* new_item = CreateAndAddItem(GetItemName(start_index + i));
-    merged_item_id = AppListModel::MergeItems(merged_item_id, new_item->id());
-  }
-}
-
 void AppListTestModel::PopulateAppWithId(int id) {
   CreateAndAddItem(GetItemName(id));
 }

@@ -64,12 +64,6 @@ const int kPreferredIconDimension = 48;
 const int kExperimentalPreferredCols = 6;
 const int kExperimentalPreferredRows = 3;
 
-// Radius of the circle, in which if entered, show re-order preview.
-const int kReorderDroppingCircleRadius = 35;
-
-// Max items allowed in a folder.
-size_t kMaxFolderItems = 16;
-
 // Number of the top items in a folder, which are shown inside the folder icon
 // and animated when opening and closing a folder.
 const size_t kNumFolderTopItems = 4;

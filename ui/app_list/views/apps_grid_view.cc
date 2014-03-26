@@ -95,6 +95,11 @@ const int kFolderItemReparentDealy = 50;
 // UI.
 const int kFolderDroppingCircleRadius = 15;
 
+// Radius of the circle, in which if entered, show re-order preview.
+const int kReorderDroppingCircleRadius = 35;
+
+// Max items allowed in a folder.
+size_t kMaxFolderItems = 16;
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
@@ -2079,7 +2084,7 @@ views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
 
   for (int i = 0; i < view_model_.view_size(); ++i) {
     views::View* view = view_model_.view_at(i);
-    if (view->bounds() == tile_rect && view != drag_view_)
+    if (view->bounds() == tile_rect)
       return view;
   }
   return NULL;
