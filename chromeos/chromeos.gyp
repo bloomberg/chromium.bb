@@ -559,5 +559,19 @@
       },
       'includes': ['../build/protoc.gypi'],
     },
+    {
+      # Protobuf compiler/generator for cryptohome key signing protocol buffer.
+      'target_name': 'cryptohome_signkey_proto',
+      'type': 'static_library',
+      'sources': [
+        '../third_party/cros_system_api/dbus/cryptohome/signed_secret.proto',
+      ],
+      'variables': {
+        'proto_in_dir': '../third_party/cros_system_api/dbus/cryptohome',
+        'proto_out_dir': 'chromeos/cryptohome',
+      },
+      'includes': ['../build/protoc.gypi'],
+    },
+
   ],
 }

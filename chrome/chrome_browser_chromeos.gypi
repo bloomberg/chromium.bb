@@ -46,6 +46,8 @@
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:chromeos_memory',
+        # browser_chromeos #includes signed_secret.pb.h directly.
+        '../chromeos/chromeos.gyp:cryptohome_signkey_proto',
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',

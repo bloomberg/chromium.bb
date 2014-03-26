@@ -17,7 +17,9 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/signed_secret.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/hmac.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
 
@@ -28,11 +30,15 @@ namespace {
 // Byte size of hash salt.
 const unsigned kSaltSize = 32;
 
-// Parameters of cryptographic hashing.
+// Parameters of cryptographic hashing for new user schema.
 const unsigned kNumIterations = 1234;
 const unsigned kKeySizeInBits = 256;
 
+// Size of key signature.
 const unsigned kHMACKeySizeInBits = 256;
+const int kSignatureLength = 32;
+
+// Size of master key (in bytes).
 const int kMasterKeySize = 32;
 
 std::string CreateSalt() {
@@ -69,8 +75,26 @@ std::string BuildRawHMACKey() {
 std::string BuildPasswordSignature(const std::string& password,
                                    int revision,
                                    const std::string& base64_signature_key) {
-  std::string raw_result, result;
-  // TODO(antrim) : implement signature as soon as wad@ lands sample code.
+  ac::chrome::managedaccounts::account::Secret secret;
+  secret.set_revision(revision);
+  secret.set_secret(password);
+  std::string buffer;
+  if (!secret.SerializeToString(&buffer))
+    LOG(FATAL) << "Protobuf::SerializeToString failed";
+  std::string signature_key;
+  base::Base64Decode(base64_signature_key, &signature_key);
+
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  if (!hmac.Init(signature_key))
+    LOG(FATAL) << "HMAC::Init failed";
+
+  unsigned char out_bytes[kSignatureLength];
+  if (!hmac.Sign(buffer, out_bytes, sizeof(out_bytes)))
+    LOG(FATAL) << "HMAC::Sign failed";
+
+  std::string raw_result(out_bytes, out_bytes + sizeof(out_bytes));
+
+  std::string result;
   base::Base64Encode(raw_result, &result);
   return result;
 }
