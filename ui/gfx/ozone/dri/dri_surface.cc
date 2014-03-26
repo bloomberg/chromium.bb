@@ -56,11 +56,11 @@ bool DriSurface::Initialize() {
     bitmaps_[i].reset(CreateBuffer());
     // TODO(dnicoara) Should select the configuration based on what the
     // underlying system supports.
-    bitmaps_[i]->setConfig(SkBitmap::kARGB_8888_Config,
-                           size_.width(),
-                           size_.height());
-
-    if (!bitmaps_[i]->Initialize()) {
+    SkImageInfo info = SkImageInfo::Make(size_.width(),
+                                         size_.height(),
+                                         kPMColor_SkColorType,
+                                         kPremul_SkAlphaType);
+    if (!bitmaps_[i]->Initialize(info)) {
       return false;
     }
   }

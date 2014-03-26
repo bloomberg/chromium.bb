@@ -151,8 +151,8 @@ class MockDriSkBitmap : public gfx::DriSkBitmap {
   MockDriSkBitmap(int fd) : DriSkBitmap(fd) {}
   virtual ~MockDriSkBitmap() {}
 
-  virtual bool Initialize() OVERRIDE {
-    return allocPixels();
+  virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
+    return allocPixels(info);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);

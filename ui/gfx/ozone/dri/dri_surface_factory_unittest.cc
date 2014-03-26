@@ -115,8 +115,8 @@ class MockDriSkBitmap : public gfx::DriSkBitmap {
   MockDriSkBitmap() : DriSkBitmap(kFd) {}
   virtual ~MockDriSkBitmap() {}
 
-  virtual bool Initialize() OVERRIDE {
-    allocPixels();
+  virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
+    allocPixels(info);
     eraseColor(SK_ColorBLACK);
     return true;
   }

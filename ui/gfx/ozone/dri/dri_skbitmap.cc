@@ -23,22 +23,25 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
-void* CreateDumbBuffer(DriSkBitmap* bitmap, int width, int height) {
+bool CreateDumbBuffer(
+    DriSkBitmap* bitmap,
+    const SkImageInfo& info,
+    size_t* stride,
+    void** pixels) {
   struct drm_mode_create_dumb request;
-  request.width = width;
-  request.height = height;
-  request.bpp = bitmap->bytesPerPixel() << 3;
+  request.width = info.width();
+  request.height = info.height();
+  request.bpp = info.bytesPerPixel() << 3;
   request.flags = 0;
 
   if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
     DLOG(ERROR) << "Cannot create dumb buffer (" << errno << ") "
                 << strerror(errno);
-    return NULL;
+    return false;
   }
 
-  CHECK(request.size == bitmap->getSize());
-
   bitmap->set_handle(request.handle);
+  *stride = request.pitch;
 
   struct drm_mode_map_dumb map_request;
   map_request.handle = bitmap->get_handle();
@@ -46,156 +49,35 @@ void* CreateDumbBuffer(DriSkBitmap* bitmap, int width, int height) {
     DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
                 << strerror(errno);
     DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-    return NULL;
+    return false;
   }
 
-  void* pixels = mmap(0,
-                      bitmap->getSize(),
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED,
-                      bitmap->get_fd(),
-                      map_request.offset);
-  if (pixels == MAP_FAILED) {
+  *pixels = mmap(0,
+                 request.size,
+                 PROT_READ | PROT_WRITE,
+                 MAP_SHARED,
+                 bitmap->get_fd(),
+                 map_request.offset);
+  if (*pixels == MAP_FAILED) {
     DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
                 << strerror(errno);
     DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-    return NULL;
+    return false;
   }
 
-  return pixels;
-}
-
-// Special DRM implementation of a SkPixelRef. The DRM allocator will create a
-// SkPixelRef for the backing pixels. It will then associate the SkPixelRef with
-// the SkBitmap. SkBitmap will access the allocated memory by locking the pixels
-// in the SkPixelRef.
-// At the end of its life the SkPixelRef is responsible for deallocating the
-// pixel memory.
-class DriSkPixelRef : public SkPixelRef {
- public:
-  DriSkPixelRef(const SkImageInfo& info,
-                void* pixels,
-                SkColorTable* color_table_,
-                size_t size,
-                size_t row_bites,
-                int fd,
-                uint32_t handle);
-  virtual ~DriSkPixelRef();
-
-  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
-  virtual void onUnlockPixels() OVERRIDE;
-
-  SK_DECLARE_UNFLATTENABLE_OBJECT()
- private:
-  // Raw pointer to the pixel memory.
-  void* pixels_;
-
-  // Optional color table associated with the pixel memory.
-  SkColorTable* color_table_;
-
-  // Size of the allocated memory.
-  size_t size_;
-
-  // Number of bytes between subsequent rows in the bitmap (stride).
-  size_t row_bytes_;
-
-  // File descriptor to the graphics card used to allocate/deallocate the
-  // memory.
-  int fd_;
-
-  // Handle for the allocated memory.
-  uint32_t handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(DriSkPixelRef);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// DriSkPixelRef implementation
-
-DriSkPixelRef::DriSkPixelRef(
-    const SkImageInfo& info,
-    void* pixels,
-    SkColorTable* color_table,
-    size_t size,
-    size_t row_bytes,
-    int fd,
-    uint32_t handle)
-  : SkPixelRef(info),
-    pixels_(pixels),
-    color_table_(color_table),
-    size_(size),
-    row_bytes_(row_bytes),
-    fd_(fd),
-    handle_(handle) {
-}
-
-DriSkPixelRef::~DriSkPixelRef() {
-  munmap(pixels_, size_);
-  DestroyDumbBuffer(fd_, handle_);
-}
-
-bool DriSkPixelRef::onNewLockPixels(LockRec* rec) {
-  rec->fPixels = pixels_;
-  rec->fRowBytes = row_bytes_;
-  rec->fColorTable = color_table_;
   return true;
 }
 
-void DriSkPixelRef::onUnlockPixels() {
+void ReleasePixels(void* addr, void* context) {
+  DriSkBitmap *bitmap = reinterpret_cast<DriSkBitmap*>(context);
+  if (!bitmap && !bitmap->getPixels())
+    return;
+
+  munmap(bitmap->getPixels(), bitmap->getSize());
+  DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
 }
 
 }  // namespace
-
-// Allocates pixel memory for a SkBitmap using DRM dumb buffers.
-class DriAllocator : public SkBitmap::Allocator {
- public:
-  DriAllocator();
-
-  virtual bool allocPixelRef(SkBitmap* bitmap,
-                             SkColorTable* color_table) OVERRIDE;
-
- private:
-  bool AllocatePixels(DriSkBitmap* bitmap, SkColorTable* color_table);
-
-  DISALLOW_COPY_AND_ASSIGN(DriAllocator);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// DriAllocator implementation
-
-DriAllocator::DriAllocator() {
-}
-
-bool DriAllocator::allocPixelRef(SkBitmap* bitmap,
-                                 SkColorTable* color_table) {
-  return AllocatePixels(static_cast<DriSkBitmap*>(bitmap), color_table);
-}
-
-bool DriAllocator::AllocatePixels(DriSkBitmap* bitmap,
-                                  SkColorTable* color_table) {
-  void *pixels = CreateDumbBuffer(bitmap, bitmap->width(), bitmap->height());
-  if (!pixels)
-    return false;
-
-  SkImageInfo info;
-  if (!bitmap->asImageInfo(&info)) {
-    DLOG(ERROR) << "Cannot get skia image info";
-    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-    return false;
-  }
-
-  bitmap->setPixelRef(new DriSkPixelRef(
-      info,
-      pixels,
-      color_table,
-      bitmap->getSize(),
-      bitmap->rowBytes(),
-      bitmap->get_fd(),
-      bitmap->get_handle()))->unref();
-  bitmap->lockPixels();
-
-  return true;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DriSkBitmap implementation
@@ -209,9 +91,19 @@ DriSkBitmap::DriSkBitmap(int fd)
 DriSkBitmap::~DriSkBitmap() {
 }
 
-bool DriSkBitmap::Initialize() {
-  DriAllocator drm_allocator;
-  return allocPixels(&drm_allocator, NULL);
+bool DriSkBitmap::Initialize(const SkImageInfo& info) {
+  size_t stride = 0;
+  void* pixels = NULL;
+  if (!CreateDumbBuffer(this, info, &stride, &pixels)) {
+    DLOG(ERROR) << "Cannot allocate drm dumb buffer";
+    return false;
+  }
+  if (!installPixels(info, pixels, stride, ReleasePixels, this)) {
+    DLOG(ERROR) << "Cannot install Skia pixels for drm buffer";
+    return false;
+  }
+
+  return true;
 }
 
 uint8_t DriSkBitmap::GetColorDepth() const {
