@@ -379,7 +379,7 @@ bool IsPrintThrottlingDisabled() {
 
 }  // namespace
 
-FrameReference::FrameReference(const blink::WebFrame* frame) {
+FrameReference::FrameReference(blink::WebFrame* frame) {
   Reset(frame);
 }
 
@@ -390,18 +390,25 @@ FrameReference::FrameReference() {
 FrameReference::~FrameReference() {
 }
 
-void FrameReference::Reset(const blink::WebFrame* frame) {
+void FrameReference::Reset(blink::WebFrame* frame) {
   if (frame) {
     view_ = frame->view();
-    frame_name_ = frame->uniqueName();
+    frame_ = frame;
   } else {
     view_ = NULL;
-    frame_name_.reset();
+    frame_ = NULL;
   }
 }
 
 blink::WebFrame* FrameReference::GetFrame() {
-  return view_ ? view_->findFrameByName(frame_name_) : NULL;
+  if (view_ == NULL || frame_ == NULL)
+    return NULL;
+  for (blink::WebFrame* frame = view_->mainFrame(); frame != NULL;
+           frame = frame->traverseNext(false)) {
+    if (frame == frame_)
+      return frame;
+  }
+  return NULL;
 }
 
 blink::WebView* FrameReference::view() {

@@ -42,20 +42,21 @@ class PrepareFrameAndViewForPrint;
 
 // Stores reference to frame using WebVew and unique name.
 // Workaround to modal dialog issue on Linux. crbug.com/236147.
+// If WebFrame someday supports WeakPtr, we should use it here.
 class FrameReference {
  public:
-  explicit FrameReference(const blink::WebFrame* frame);
+  explicit FrameReference(blink::WebFrame* frame);
   FrameReference();
   ~FrameReference();
 
-  void Reset(const blink::WebFrame* frame);
+  void Reset(blink::WebFrame* frame);
 
   blink::WebFrame* GetFrame();
   blink::WebView* view();
 
  private:
   blink::WebView* view_;
-  blink::WebString frame_name_;
+  blink::WebFrame* frame_;
 };
 
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
