@@ -965,7 +965,8 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   // Handle splices between the existing buffers and the new buffers.  If a
   // splice is generated the timestamp and duration of the first buffer in
   // |new_buffers| will be modified.
-  GenerateSpliceFrame(new_buffers);
+  // TODO(dalecurtis): Disabled until issues 356073, 356545 are fixed.
+  // GenerateSpliceFrame(new_buffers);
 
   base::TimeDelta prev_timestamp = last_appended_buffer_timestamp_;
   bool prev_is_keyframe = last_appended_buffer_is_keyframe_;
