@@ -155,6 +155,8 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_scrollCount = 0;
     m_unacceleratedScrollingDeltaX = e.deltaX;
     m_unacceleratedScrollingDeltaY = e.deltaY;
+    m_canRubberbandLeft = e.canRubberbandLeft;
+    m_canRubberbandRight = e.canRubberbandRight;
 #endif
 }
 

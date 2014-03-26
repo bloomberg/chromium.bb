@@ -73,6 +73,8 @@ public:
         , m_scrollCount(0)
         , m_unacceleratedScrollingDeltaX(0)
         , m_unacceleratedScrollingDeltaY(0)
+        , m_canRubberbandLeft(true)
+        , m_canRubberbandRight(true)
 #endif
     {
     }
@@ -94,6 +96,8 @@ public:
         , m_scrollCount(0)
         , m_unacceleratedScrollingDeltaX(0)
         , m_unacceleratedScrollingDeltaY(0)
+        , m_canRubberbandLeft(true)
+        , m_canRubberbandRight(true)
 #endif
     {
     }
@@ -132,6 +136,8 @@ public:
     float unacceleratedScrollingDeltaX() const { return m_unacceleratedScrollingDeltaX; }
     float unacceleratedScrollingDeltaY() const { return m_unacceleratedScrollingDeltaY; }
     bool useLatchedEventNode() const { return m_momentumPhase == PlatformWheelEventPhaseBegan || m_momentumPhase == PlatformWheelEventPhaseChanged; }
+    bool canRubberbandLeft() const { return m_canRubberbandLeft; }
+    bool canRubberbandRight() const { return m_canRubberbandRight; }
 #else
     bool useLatchedEventNode() const { return false; }
 #endif
@@ -152,6 +158,8 @@ protected:
     unsigned m_scrollCount;
     float m_unacceleratedScrollingDeltaX;
     float m_unacceleratedScrollingDeltaY;
+    bool m_canRubberbandLeft;
+    bool m_canRubberbandRight;
 #endif
 };
 
