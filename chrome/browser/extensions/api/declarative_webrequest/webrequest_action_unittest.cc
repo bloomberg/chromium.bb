@@ -279,6 +279,7 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToRedirect) {
       " \"redirectUrl\": \"http://www.foobar.com\""
       "}]";
   CheckActionNeedsAllUrls(kAction, ON_BEFORE_REQUEST);
+  CheckActionNeedsAllUrls(kAction, ON_HEADERS_RECEIVED);
 }
 
 TEST_F(WebRequestActionWithThreadsTest, PermissionsToRedirectByRegEx) {
@@ -442,6 +443,10 @@ TEST_F(WebRequestActionWithThreadsTest,
                                    extension_->id(),
                                    action_set.get(),
                                    ON_BEFORE_REQUEST));
+  EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
+                                   extension_->id(),
+                                   action_set.get(),
+                                   ON_HEADERS_RECEIVED));
 }
 
 TEST_F(WebRequestActionWithThreadsTest, PermissionsToRedirectToEmptyDocument) {
@@ -456,6 +461,10 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToRedirectToEmptyDocument) {
                                    extension_->id(),
                                    action_set.get(),
                                    ON_BEFORE_REQUEST));
+  EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
+                                   extension_->id(),
+                                   action_set.get(),
+                                   ON_HEADERS_RECEIVED));
 }
 
 TEST_F(WebRequestActionWithThreadsTest, PermissionsToIgnore) {

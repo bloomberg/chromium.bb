@@ -205,9 +205,9 @@ class ExtensionWebRequestEventRouter
   // requests only, and allows modification of incoming response headers.
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request,
   // OK otherwise. |original_response_headers| is reference counted. |callback|
-  // and |override_response_headers| are owned by a URLRequestJob. They are
-  // guaranteed to be valid until |callback| is called or OnURLRequestDestroyed
-  // is called (whatever comes first).
+  // |override_response_headers| and |allowed_unsafe_redirect_url| are owned by
+  // a URLRequestJob. They are guaranteed to be valid until |callback| is called
+  // or OnURLRequestDestroyed is called (whatever comes first).
   // Do not modify |original_response_headers| directly but write new ones
   // into |override_response_headers|.
   int OnHeadersReceived(
@@ -216,7 +216,8 @@ class ExtensionWebRequestEventRouter
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
-      scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url);
 
   // Dispatches the OnAuthRequired event to any extensions whose filters match
   // the given request. If the listener is not registered as "blocking", then

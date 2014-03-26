@@ -368,7 +368,8 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers) OVERRIDE;
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE;
 
   virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
@@ -391,7 +392,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   int retval_;  // To be returned in non-auth stages.
   AuthRequiredResponse auth_retval_;
 
-  GURL redirect_url_;  // Used if non-empty.
+  GURL redirect_url_;  // Used if non-empty during OnBeforeURLRequest.
   int block_on_;  // Bit mask: in which stages to block.
 
   // |auth_credentials_| will be copied to |*target_auth_credential_| on
@@ -483,10 +484,13 @@ int BlockingNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
     const CompletionCallback& callback,
     const HttpResponseHeaders* original_response_headers,
-    scoped_refptr<HttpResponseHeaders>* override_response_headers) {
-  TestNetworkDelegate::OnHeadersReceived(
-      request, callback, original_response_headers,
-      override_response_headers);
+    scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  TestNetworkDelegate::OnHeadersReceived(request,
+                                         callback,
+                                         original_response_headers,
+                                         override_response_headers,
+                                         allowed_unsafe_redirect_url);
 
   return MaybeBlockStage(ON_HEADERS_RECEIVED, callback);
 }
@@ -2417,8 +2421,8 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
-      scoped_refptr<net::HttpResponseHeaders>* override_response_headers)
-      OVERRIDE;
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE;
 
  private:
   std::string fixed_date_;
@@ -2430,7 +2434,8 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
   net::HttpResponseHeaders* new_response_headers =
       new net::HttpResponseHeaders(original_response_headers->raw_headers());
 
@@ -2441,7 +2446,8 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
   return TestNetworkDelegate::OnHeadersReceived(request,
                                                 callback,
                                                 original_response_headers,
-                                                override_response_headers);
+                                                override_response_headers,
+                                                allowed_unsafe_redirect_url);
 }
 
 // Test that cookie expiration times are adjusted for server/client clock
@@ -3004,6 +3010,39 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     EXPECT_EQ(0, network_delegate.destroyed_requests());
     EXPECT_EQ("POST", r.method());
     EXPECT_EQ(kData, d.data_received());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+}
+
+// Tests that the network delegate can block and redirect a request to a new
+// URL during OnHeadersReceived.
+TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::AUTO_CALLBACK);
+  network_delegate.set_block_on(BlockingNetworkDelegate::ON_HEADERS_RECEIVED);
+  GURL redirect_url(test_server_.GetURL("simple.html"));
+  network_delegate.set_redirect_on_headers_received_url(redirect_url);
+
+  TestURLRequestContextWithProxy context(
+      test_server_.host_port_pair().ToString(), &network_delegate);
+
+  {
+    GURL original_url(test_server_.GetURL("empty.html"));
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &context);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(redirect_url, r.url());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(2, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 }
@@ -3920,10 +3959,13 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers) OVERRIDE {
-    TestNetworkDelegate::OnHeadersReceived(request, callback,
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE {
+    TestNetworkDelegate::OnHeadersReceived(request,
+                                           callback,
                                            original_response_headers,
-                                           override_response_headers);
+                                           override_response_headers,
+                                           allowed_unsafe_redirect_url);
     return RunCallbackAsynchronously(request, callback);
   }
 
@@ -5232,6 +5274,142 @@ TEST_F(URLRequestTestHTTP, NoCacheOnNetworkDelegateRedirect) {
     EXPECT_FALSE(req.was_cached());
     EXPECT_EQ(0, d.received_redirect_count());
     EXPECT_EQ(initial_url, req.url());
+  }
+}
+
+// Tests that redirection to an unsafe URL is allowed when it has been marked as
+// safe.
+TEST_F(URLRequestTestHTTP, UnsafeRedirectToWhitelistedUnsafeURL) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL unsafe_url("data:text/html,this-is-considered-an-unsafe-url");
+  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(test_server_.GetURL("whatever"),
+                 DEFAULT_PRIORITY,
+                 &d,
+                 &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(unsafe_url, r.url());
+    EXPECT_EQ("this-is-considered-an-unsafe-url", d.data_received());
+  }
+}
+
+// Tests that a redirect to a different unsafe URL is blocked, even after adding
+// some other URL to the whitelist.
+TEST_F(URLRequestTestHTTP, UnsafeRedirectToDifferentUnsafeURL) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL unsafe_url("data:text/html,something");
+  GURL different_unsafe_url("data:text/html,something-else");
+  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(
+      different_unsafe_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(test_server_.GetURL("whatever"),
+                 DEFAULT_PRIORITY,
+                 &d,
+                 &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    EXPECT_EQ(ERR_UNSAFE_REDIRECT, r.status().error());
+  }
+}
+
+// Redirects from an URL with fragment to an unsafe URL without fragment should
+// be allowed.
+TEST_F(URLRequestTestHTTP, UnsafeRedirectWithReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("original#fragment"));
+  GURL unsafe_url("data:,url-marked-safe-and-used-in-redirect");
+  GURL expected_url("data:,url-marked-safe-and-used-in-redirect#fragment");
+
+  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(expected_url, r.url());
+  }
+}
+
+// Redirects from an URL with fragment to an unsafe URL with fragment should
+// be allowed, and the reference fragment of the target URL should be preserved.
+TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("original#fragment1"));
+  GURL unsafe_url("data:,url-marked-safe-and-used-in-redirect#fragment2");
+  GURL expected_url("data:,url-marked-safe-and-used-in-redirect#fragment2");
+
+  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(expected_url, r.url());
+  }
+}
+
+// When a delegate has specified a safe redirect URL, but it does not match the
+// redirect target, then do not prevent the reference fragment from being added.
+TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("original#expected-fragment"));
+  GURL unsafe_url("data:text/html,this-url-does-not-match-redirect-url");
+  GURL redirect_url(test_server_.GetURL("target"));
+  GURL expected_redirect_url(test_server_.GetURL("target#expected-fragment"));
+
+  default_network_delegate_.set_redirect_on_headers_received_url(redirect_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(expected_redirect_url, r.url());
   }
 }
 

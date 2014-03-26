@@ -582,7 +582,7 @@ LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
 //
 
 WebRequestRedirectAction::WebRequestRedirectAction(const GURL& redirect_url)
-    : WebRequestAction(ON_BEFORE_REQUEST,
+    : WebRequestAction(ON_BEFORE_REQUEST | ON_HEADERS_RECEIVED,
                        ACTION_REDIRECT_REQUEST,
                        std::numeric_limits<int>::min(),
                        STRATEGY_DEFAULT),
@@ -619,7 +619,7 @@ LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
 
 WebRequestRedirectToTransparentImageAction::
     WebRequestRedirectToTransparentImageAction()
-    : WebRequestAction(ON_BEFORE_REQUEST,
+    : WebRequestAction(ON_BEFORE_REQUEST | ON_HEADERS_RECEIVED,
                        ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
                        std::numeric_limits<int>::min(),
                        STRATEGY_NONE) {}
@@ -649,7 +649,7 @@ WebRequestRedirectToTransparentImageAction::CreateDelta(
 
 WebRequestRedirectToEmptyDocumentAction::
     WebRequestRedirectToEmptyDocumentAction()
-    : WebRequestAction(ON_BEFORE_REQUEST,
+    : WebRequestAction(ON_BEFORE_REQUEST | ON_HEADERS_RECEIVED,
                        ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
                        std::numeric_limits<int>::min(),
                        STRATEGY_NONE) {}
@@ -680,7 +680,7 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
 WebRequestRedirectByRegExAction::WebRequestRedirectByRegExAction(
     scoped_ptr<RE2> from_pattern,
     const std::string& to_pattern)
-    : WebRequestAction(ON_BEFORE_REQUEST,
+    : WebRequestAction(ON_BEFORE_REQUEST | ON_HEADERS_RECEIVED,
                        ACTION_REDIRECT_BY_REGEX_DOCUMENT,
                        std::numeric_limits<int>::min(),
                        STRATEGY_DEFAULT),

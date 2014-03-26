@@ -58,7 +58,8 @@ event definitions:<br/>
   <dd>Fires each time that an HTTP(S) response header is received. Due
   to redirects and authentication requests this can happen multiple times per
   request. This event is intended to allow extensions to add, modify, and delete
-  response headers, such as incoming Set-Cookie headers.</dd>
+  response headers, such as incoming Set-Cookie headers. It also allows you to
+  redirect the request.</dd>
   <dt><code>onAuthRequired</code> (optionally synchronous)</dt>
   <dd>Fires when a request requires authentication of the user. This event can
   be handled synchronously to provide authentication credentials. Note that

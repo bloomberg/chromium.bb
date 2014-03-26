@@ -126,8 +126,8 @@ class BasicNetworkDelegate : public NetworkDelegate {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers)
-      OVERRIDE {
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE {
     return OK;
   }
 

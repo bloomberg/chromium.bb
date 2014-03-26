@@ -405,6 +405,62 @@ runTests([
     );
   },
 
+  // Tests that a request is redirected during the onHeadersReceived stage
+  // when the conditions include a RequestMatcher with a contentType.
+  function testRedirectRequestByContentType() {
+    ignoreUnexpected = true;
+    expect(
+      [
+        { label: "onBeforeRequest-a",
+          event: "onBeforeRequest",
+          details: {
+            type: "main_frame",
+            url: getURLHttpWithHeaders(),
+            frameUrl: getURLHttpWithHeaders()
+          },
+        },
+        { label: "onBeforeRedirect",
+          event: "onBeforeRedirect",
+          details: {
+            url: getURLHttpWithHeaders(),
+            redirectUrl: getURLHttpSimple(),
+            statusLine: "HTTP/1.1 302 Found",
+            statusCode: 302,
+            fromCache: false,
+            ip: "127.0.0.1",
+          }
+        },
+        { label: "onBeforeRequest-b",
+          event: "onBeforeRequest",
+          details: {
+            type: "main_frame",
+            url: getURLHttpSimple(),
+            frameUrl: getURLHttpSimple(),
+          },
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            ip: "127.0.0.1",
+            url: getURLHttpSimple(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+      ],
+      [ ["onBeforeRequest-a", "onBeforeRedirect", "onBeforeRequest-b",
+         "onCompleted"] ]);
+
+    onRequest.addRules(
+      [ {'conditions': [new RequestMatcher({'contentType': ["text/plain"]})],
+         'actions': [
+             new RedirectRequest({'redirectUrl': getURLHttpSimple()})]}
+      ],
+      function() {navigateAndWait(getURLHttpWithHeaders());}
+    );
+  },
+
   function testRedirectByRegEx() {
     ignoreUnexpected = true;
     expect(

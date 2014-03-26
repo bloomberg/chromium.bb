@@ -411,7 +411,8 @@ int TestNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
     const CompletionCallback& callback,
     const HttpResponseHeaders* original_response_headers,
-    scoped_refptr<HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
   int req_id = request->identifier();
   event_order_[req_id] += "OnHeadersReceived\n";
   InitRequestStatesIfNew(req_id);
@@ -436,6 +437,9 @@ int TestNetworkDelegate::OnHeadersReceived(
         "Location: " + redirect_on_headers_received_url_.spec());
 
     redirect_on_headers_received_url_ = GURL();
+
+    if (!allowed_unsafe_redirect_url_.is_empty())
+      *allowed_unsafe_redirect_url = allowed_unsafe_redirect_url_;
   }
 
   return OK;

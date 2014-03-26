@@ -39,12 +39,16 @@ int NetworkDelegate::NotifyHeadersReceived(
     URLRequest* request,
     const CompletionCallback& callback,
     const HttpResponseHeaders* original_response_headers,
-    scoped_refptr<HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
   DCHECK(CalledOnValidThread());
   DCHECK(original_response_headers);
   DCHECK(!callback.is_null());
-  return OnHeadersReceived(request, callback, original_response_headers,
-                           override_response_headers);
+  return OnHeadersReceived(request,
+                           callback,
+                           original_response_headers,
+                           override_response_headers,
+                           allowed_unsafe_redirect_url);
 }
 
 void NetworkDelegate::NotifyResponseStarted(URLRequest* request) {
@@ -155,7 +159,8 @@ int NetworkDelegate::OnHeadersReceived(
     URLRequest* request,
     const CompletionCallback& callback,
     const HttpResponseHeaders* original_response_headers,
-    scoped_refptr<HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
   return OK;
 }
 

@@ -256,6 +256,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // layers of the network stack.
   scoped_refptr<HttpResponseHeaders> override_response_headers_;
 
+  // The network delegate can mark a URL as safe for redirection.
+  GURL allowed_unsafe_redirect_url_;
+
   // Flag used to verify that |this| is not deleted while we are awaiting
   // a callback from the NetworkDelegate. Used as a fail-fast mechanism.
   // True if we are waiting a callback and

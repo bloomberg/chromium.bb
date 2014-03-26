@@ -324,11 +324,13 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
+    const GURL& new_url,
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
+  result->new_url = new_url;
 
   if (!new_response_headers)
     return result;
@@ -403,14 +405,14 @@ void MergeCancelOfResponses(
   }
 }
 
-// Helper function for MergeOnBeforeRequestResponses() that allows ignoring
+// Helper function for MergeRedirectUrlOfResponses() that allows ignoring
 // all redirects but those to data:// urls and about:blank. This is important
 // to treat these URLs as "cancel urls", i.e. URLs that extensions redirect
 // to if they want to express that they want to cancel a request. This reduces
 // the number of conflicts that we need to flag, as canceling is considered
 // a higher precedence operation that redirects.
 // Returns whether a redirect occurred.
-static bool MergeOnBeforeRequestResponsesHelper(
+static bool MergeRedirectUrlOfResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::ExtensionWarningSet* conflicting_extensions,
@@ -452,7 +454,7 @@ static bool MergeOnBeforeRequestResponsesHelper(
   return redirected;
 }
 
-void MergeOnBeforeRequestResponses(
+void MergeRedirectUrlOfResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::ExtensionWarningSet* conflicting_extensions,
@@ -460,7 +462,7 @@ void MergeOnBeforeRequestResponses(
 
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
-  if (MergeOnBeforeRequestResponsesHelper(
+  if (MergeRedirectUrlOfResponsesHelper(
           deltas, new_url, conflicting_extensions, net_log, true)) {
     // If any extension cancelled a request by redirecting to a data:// URL or
     // about:blank, we don't consider the other redirects.
@@ -468,8 +470,16 @@ void MergeOnBeforeRequestResponses(
   }
 
   // Handle all other redirects.
-  MergeOnBeforeRequestResponsesHelper(
+  MergeRedirectUrlOfResponsesHelper(
       deltas, new_url, conflicting_extensions, net_log, false);
+}
+
+void MergeOnBeforeRequestResponses(
+    const EventResponseDeltas& deltas,
+    GURL* new_url,
+    extensions::ExtensionWarningSet* conflicting_extensions,
+    const net::BoundNetLog* net_log) {
+  MergeRedirectUrlOfResponses(deltas, new_url, conflicting_extensions, net_log);
 }
 
 // Assumes that |header_value| is the cookie header value of a HTTP Request
@@ -1100,6 +1110,7 @@ void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url,
     extensions::ExtensionWarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   EventResponseDeltas::const_iterator delta;
@@ -1181,6 +1192,23 @@ void MergeOnHeadersReceivedResponses(
 
   MergeCookiesInOnHeadersReceivedResponses(deltas, original_response_headers,
       override_response_headers, conflicting_extensions, net_log);
+
+  GURL new_url;
+  MergeRedirectUrlOfResponses(
+      deltas, &new_url, conflicting_extensions, net_log);
+  if (new_url.is_valid()) {
+    // Only create a copy if we really want to modify the response headers.
+    if (override_response_headers->get() == NULL) {
+      *override_response_headers = new net::HttpResponseHeaders(
+          original_response_headers->raw_headers());
+    }
+    (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
+    (*override_response_headers)->RemoveHeader("location");
+    (*override_response_headers)->AddHeader("Location: " + new_url.spec());
+    // Explicitly mark the URL as safe for redirection, to prevent the request
+    // from being blocked because of net::ERR_UNSAFE_REDIRECT.
+    *allowed_unsafe_redirect_url = new_url;
+  }
 }
 
 bool MergeOnAuthRequiredResponses(

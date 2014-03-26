@@ -498,7 +498,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   net::CompletionCallback callback;
 
   // If non-empty, this contains the new URL that the request will redirect to.
-  // Only valid for OnBeforeRequest.
+  // Only valid for OnBeforeRequest and OnHeadersReceived.
   GURL* new_url;
 
   // The request headers that will be issued along with this request. Only valid
@@ -831,7 +831,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
   // We hide events from the system context as well as sensitive requests.
   if (!profile ||
       WebRequestPermissions::HideRequest(extension_info_map, request))
@@ -881,6 +882,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
       override_response_headers;
   blocked_requests_[request->identifier()].original_response_headers =
       original_response_headers;
+  blocked_requests_[request->identifier()].new_url =
+      allowed_unsafe_redirect_url;
 
   if (blocked_requests_[request->identifier()].num_handlers_blocking == 0) {
     // If there are no blocking handlers, only the declarative rules tried
@@ -1557,8 +1560,12 @@ helpers::EventResponseDelta* CalculateDelta(
       helpers::ResponseHeaders* new_headers =
           response->response_headers.get();
       return helpers::CalculateOnHeadersReceivedDelta(
-          response->extension_id, response->extension_install_time,
-          response->cancel, old_headers, new_headers);
+          response->extension_id,
+          response->extension_install_time,
+          response->cancel,
+          response->new_url,
+          old_headers,
+          new_headers);
     }
     case ExtensionWebRequestEventRouter::kOnAuthRequired:
       return helpers::CalculateOnAuthRequiredDelta(
@@ -1848,6 +1855,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         blocked_request.response_deltas,
         blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers,
+        blocked_request.new_url,
         &warnings,
         blocked_request.net_log);
   } else if (blocked_request.event == kOnAuthRequired) {

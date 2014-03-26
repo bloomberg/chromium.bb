@@ -667,26 +667,28 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
 
 TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
   // The contentType condition can only be evaluated during ON_HEADERS_RECEIVED
-  // but the redirect action can only be executed during ON_BEFORE_REQUEST.
+  // but the SetRequestHeader action can only be executed during
+  // ON_BEFORE_SEND_HEADERS.
   // Therefore, this is an inconsistent rule that needs to be flagged.
   const char kRule[] =
-      "{                                                                 \n"
-      "  \"id\": \"rule1\",                                              \n"
-      "  \"conditions\": [                                               \n"
-      "    {                                                             \n"
-      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-      "      \"url\": {\"hostSuffix\": \"foo.com\"},                     \n"
-      "      \"contentType\": [\"image/jpeg\"]                           \n"
-      "    }                                                             \n"
-      "  ],                                                              \n"
-      "  \"actions\": [                                                  \n"
-      "    {                                                             \n"
-      "      \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
-      "      \"redirectUrl\": \"http://bar.com\"                         \n"
-      "    }                                                             \n"
-      "  ],                                                              \n"
-      "  \"priority\": 200                                               \n"
-      "}                                                                 ";
+      "{                                                                  \n"
+      "  \"id\": \"rule1\",                                               \n"
+      "  \"conditions\": [                                                \n"
+      "    {                                                              \n"
+      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\",  \n"
+      "      \"url\": {\"hostSuffix\": \"foo.com\"},                      \n"
+      "      \"contentType\": [\"image/jpeg\"]                            \n"
+      "    }                                                              \n"
+      "  ],                                                               \n"
+      "  \"actions\": [                                                   \n"
+      "    {                                                              \n"
+      "      \"instanceType\": \"declarativeWebRequest.SetRequestHeader\",\n"
+      "      \"name\": \"Content-Type\",                                  \n"
+      "      \"value\": \"text/plain\"                                    \n"
+      "    }                                                              \n"
+      "  ],                                                               \n"
+      "  \"priority\": 200                                                \n"
+      "}                                                                  ";
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(kRule));
   ASSERT_TRUE(value);

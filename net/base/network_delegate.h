@@ -69,7 +69,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers);
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url);
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request);
@@ -140,7 +141,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers);
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url);
 
   // Called right after a redirect response code was received.
   // |new_location| is only valid until OnURLRequestDestroyed is called for this

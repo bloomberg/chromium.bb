@@ -807,11 +807,13 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // |on_headers_received_callback_| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
       OnCallToDelegate();
+      allowed_unsafe_redirect_url_ = GURL();
       int error = network_delegate()->NotifyHeadersReceived(
           request_,
           on_headers_received_callback_,
           headers.get(),
-          &override_response_headers_);
+          &override_response_headers_,
+          &allowed_unsafe_redirect_url_);
       if (error != net::OK) {
         if (error == net::ERR_IO_PENDING) {
           awaiting_callback_ = true;
@@ -1038,6 +1040,15 @@ bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
   if (location.is_valid() &&
       (location.scheme() == "http" || location.scheme() == "https")) {
     return true;
+  }
+  // Delegates may mark an URL as safe for redirection.
+  if (allowed_unsafe_redirect_url_.is_valid()) {
+    GURL::Replacements replacements;
+    replacements.ClearRef();
+    if (allowed_unsafe_redirect_url_.ReplaceComponents(replacements) ==
+        location.ReplaceComponents(replacements)) {
+      return true;
+    }
   }
   // Query URLRequestJobFactory as to whether |location| would be safe to
   // redirect to.

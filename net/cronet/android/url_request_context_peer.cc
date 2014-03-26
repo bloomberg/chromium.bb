@@ -44,7 +44,8 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
-      scoped_refptr<net::HttpResponseHeaders>* _response_headers) OVERRIDE {
+      scoped_refptr<net::HttpResponseHeaders>* _response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE {
     return net::OK;
   }
 

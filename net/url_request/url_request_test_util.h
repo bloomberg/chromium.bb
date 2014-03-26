@@ -241,6 +241,10 @@ class TestNetworkDelegate : public NetworkDelegate {
     redirect_on_headers_received_url_ = redirect_on_headers_received_url;
   }
 
+  void set_allowed_unsafe_redirect_url(GURL allowed_unsafe_redirect_url) {
+    allowed_unsafe_redirect_url_ = allowed_unsafe_redirect_url;
+  }
+
   void set_cookie_options(int o) {cookie_options_bit_mask_ = o; }
 
   int last_error() const { return last_error_; }
@@ -273,7 +277,8 @@ class TestNetworkDelegate : public NetworkDelegate {
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers) OVERRIDE;
+      scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) OVERRIDE;
   virtual void OnBeforeRedirect(URLRequest* request,
                                 const GURL& new_location) OVERRIDE;
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
@@ -304,6 +309,8 @@ class TestNetworkDelegate : public NetworkDelegate {
   void InitRequestStatesIfNew(int request_id);
 
   GURL redirect_on_headers_received_url_;
+  // URL marked as safe for redirection at the onHeadersReceived stage.
+  GURL allowed_unsafe_redirect_url_;
 
   int last_error_;
   int error_count_;

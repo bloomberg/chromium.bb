@@ -214,6 +214,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
+    const GURL& new_url,
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers);
 // Destructively moves the auth credentials from |auth_credentials| to the
@@ -234,6 +235,14 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
 void MergeCancelOfResponses(
     const EventResponseDeltas& deltas,
     bool* canceled,
+    const net::BoundNetLog* net_log);
+// Stores in |*new_url| the redirect request of the extension with highest
+// precedence. Extensions that did not command to redirect the request are
+// ignored in this logic.
+void MergeRedirectUrlOfResponses(
+    const EventResponseDeltas& deltas,
+    GURL* new_url,
+    extensions::ExtensionWarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
@@ -271,10 +280,14 @@ void MergeCookiesInOnHeadersReceivedResponses(
 // Stores a copy of |original_response_header| into |override_response_headers|
 // that is modified according to |deltas|. If |deltas| does not instruct to
 // modify the response headers, |override_response_headers| remains empty.
+// Extension-initiated redirects are written to |override_response_headers|
+// (to request redirection) and |*allowed_unsafe_redirect_url| (to make sure
+// that the request is not cancelled with net::ERR_UNSAFE_REDIRECT).
 void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url,
     extensions::ExtensionWarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log);
 // Merge the responses of blocked onAuthRequired handlers. The first

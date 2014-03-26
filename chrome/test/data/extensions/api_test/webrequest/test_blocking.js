@@ -600,6 +600,91 @@ runTests([
     });
   },
 
+  // Navigates to a page with a blocking handler that redirects to a different
+  // non-http page during onHeadersReceived. The requested page should not be
+  // loaded, and the redirect should succeed.
+  function simpleLoadRedirectOnReceiveHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest-1",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "main_frame",
+            url: getURLHttpSimpleLoad(),
+            frameUrl: getURLHttpSimpleLoad()
+          },
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad()
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            statusLine: "HTTP/1.1 200 OK",
+          },
+          retval: {redirectUrl: getURL("simpleLoad/a.html")}
+        },
+        { label: "onBeforeRedirect",
+          event: "onBeforeRedirect",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            redirectUrl: getURL("simpleLoad/a.html"),
+            statusLine: "HTTP/1.1 302 Found",
+            statusCode: 302,
+            fromCache: false,
+            ip: "127.0.0.1",
+          }
+        },
+        { label: "onBeforeRequest-2",
+          event: "onBeforeRequest",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html"),
+          },
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest-1", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onBeforeRedirect", "onBeforeRequest-2",
+         "onResponseStarted", "onCompleted"]
+      ],
+      {urls: ["<all_urls>"]},  // filter
+      ["blocking"]);
+    navigateAndWait(getURLHttpSimpleLoad());
+  },
+
   // Checks that synchronous XHR requests from ourself are invisible to blocking
   // handlers.
   function syncXhrsFromOurselfAreInvisible() {

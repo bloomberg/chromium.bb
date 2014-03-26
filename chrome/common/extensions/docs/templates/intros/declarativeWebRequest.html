@@ -180,10 +180,10 @@ request stages that are compatible with conditions and actions.
   <tr><td>EditRequestCookie<td><td>✓<td><td>
   <tr><td>EditResponseCookie<td><td><td>✓<td>
   <tr><td>IgnoreRules<td>✓<td>✓<td>✓<td>✓
-  <tr><td>RedirectByRegEx<td>✓<td><td><td>
-  <tr><td>RedirectRequest<td>✓<td><td><td>
-  <tr><td>RedirectToEmptyDocument<td>✓<td><td><td>
-  <tr><td>RedirectToTransparentImage<td>✓<td><td><td>
+  <tr><td>RedirectByRegEx<td>✓<td><td>✓<td>
+  <tr><td>RedirectRequest<td>✓<td><td>✓<td>
+  <tr><td>RedirectToEmptyDocument<td>✓<td><td>✓<td>
+  <tr><td>RedirectToTransparentImage<td>✓<td><td>✓<td>
   <tr><td>RemoveRequestCookie<td><td>✓<td><td>
   <tr><td>RemoveRequestHeader<td><td>✓<td><td>
   <tr><td>RemoveResponseCookie<td><td><td>✓<td>
@@ -198,14 +198,19 @@ request stages that are compatible with conditions and actions.
 "stages" attribute.
 </p>
 <p>
+<strong>Note:</strong> Redirects initiated by a redirect action use the original
+request method for the redirect, with one exception: If the redirect is
+initiated at the onHeadersReceived stage, then the redirect will be issued using
+the GET method.
+</p>
+<p>
 <strong>Example:</strong> It is possible to combine a
 <code>new chrome.declarativeWebRequest.RequestMatcher({contentType: ["image/jpeg"]})</code>
 condition with a <code>new chrome.declarativeWebRequest.CancelRequest()</code>
 action because both of them can be evaluated in the onHeadersReceived stage.
 It is, however, impossible to combine the request matcher with a
-<code>new chrome.declarativeWebRequest.RedirectToTransparentImage()</code>
-because redirects cannot be executed any more by the time the content
-type has been determined.
+<code>new chrome.declarativeWebRequest.SetRequestHeader()</code>
+because request headers cannot be set any more by the time the content type has been terminated.
 </p>
 
 <h2 id="precedences">Using priorities to override rules</h2>
