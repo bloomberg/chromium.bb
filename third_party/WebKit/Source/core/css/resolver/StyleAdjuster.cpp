@@ -34,7 +34,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -316,13 +315,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         // SVG text layout code expects us to be a block-level style element.
         if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style->isDisplayInlineType())
             style->setDisplay(BLOCK);
-    }
-
-    if (e && e->renderStyle() && e->renderStyle()->textAutosizingMultiplier() != 1) {
-        // Preserve the text autosizing multiplier on style recalc.
-        // (The autosizer will update it during layout if it needs to be changed.)
-        style->setTextAutosizingMultiplier(e->renderStyle()->textAutosizingMultiplier());
-        style->setUnique();
     }
 }
 

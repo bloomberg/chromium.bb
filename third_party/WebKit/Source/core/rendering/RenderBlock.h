@@ -531,8 +531,6 @@ public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const OVERRIDE FINAL;
     RenderRegion* regionAtBlockOffset(LayoutUnit) const;
 
-    void invalidateLineHeight() { m_lineHeight = -1; }
-
 public:
 
     // Allocated only when some of these fields have non-default values
