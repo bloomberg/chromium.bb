@@ -38,8 +38,8 @@ import java.util.Arrays;
  * also requests and renews authentication tokens using the system account manager.
  */
 public class Chromoting extends Activity implements JniInterface.ConnectionListener,
-        AccountManagerCallback<Bundle>, ActionBar.OnNavigationListener,
-        HostListLoader.Callback {
+        AccountManagerCallback<Bundle>, ActionBar.OnNavigationListener, HostListLoader.Callback,
+        View.OnClickListener {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -50,6 +50,10 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
             "http://support.google.com/chrome/?p=mobile_crd_hostslist";
+
+    /** Web page to be displayed when user triggers the hyperlink for setting up hosts. */
+    private static final String HOST_SETUP_URL =
+            "https://support.google.com/chrome/answer/1649523";
 
     /** User's account details. */
     private Account mAccount;
@@ -123,6 +127,11 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     private void setHostListProgressVisible(boolean visible) {
         mHostListView.setVisibility(visible ? View.GONE : View.VISIBLE);
         mProgressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+
+        // Hiding the host-list does not automatically hide the empty view, so do that here.
+        if (visible) {
+            mHostListView.getEmptyView().setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -141,6 +150,8 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         mHostListView = (ListView)findViewById(R.id.hostList_chooser);
         mHostListView.setEmptyView(findViewById(R.id.hostList_empty));
         mProgressView = findViewById(R.id.hostList_progress);
+
+        findViewById(R.id.host_setup_link_android).setOnClickListener(this);
 
         // Bring native components online.
         JniInterface.loadLibrary(this);
@@ -228,6 +239,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /** Called when the user touches hyperlinked text. */
+    @Override
+    public void onClick(View view) {
+        HelpActivity.launch(this, HOST_SETUP_URL);
     }
 
     /** Called when the user taps on a host entry. */

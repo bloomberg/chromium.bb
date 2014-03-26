@@ -396,6 +396,9 @@
         <message desc="Message displayed to the user if there are no hosts registered to their account" name="IDS_HOST_LIST_EMPTY_ANDROID" formatter_data="android_java">
           You have no computers registered.
         </message>
+        <message desc="Message displayed to the user if there are no hosts registered to their account. This is styled to look like a hyperlink. When a user activates the link, they are taken to a web page that explains how to set up a Chromoting host." name="IDS_HOST_SETUP_LINK_ANDROID" formatter_data="android_java">
+          Learn how to set up a computer for remote access.
+        </message>
         <message desc="Title of the authentication dialog" name="IDS_TITLE_AUTHENTICATE" formatter_data="android_java">
           Authenticate to host
         </message>
