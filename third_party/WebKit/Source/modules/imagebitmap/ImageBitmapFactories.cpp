@@ -70,8 +70,7 @@ static ScriptPromise fulfillImageBitmap(ExecutionContext* context, PassRefPtrWil
     if (imageBitmap) {
         resolver->resolve(imageBitmap);
     } else {
-        v8::Isolate* isolate = ScriptState::current()->isolate();
-        resolver->reject(ScriptValue(v8::Null(isolate), isolate));
+        resolver->reject(ScriptValue::createNull());
     }
     return promise;
 }
@@ -316,9 +315,8 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    v8::Isolate* isolate = m_scriptState->isolate();
     ScriptScope scope(m_scriptState);
-    m_resolver->reject(ScriptValue(v8::Null(isolate), isolate));
+    m_resolver->reject(ScriptValue::createNull());
     m_factory->didFinishLoading(this);
 }
 
