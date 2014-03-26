@@ -43,10 +43,10 @@ public:
 
     ~StyleRuleKeyframes();
 
-    const Vector<RefPtr<StyleKeyframe> >& keyframes() const { return m_keyframes; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >& keyframes() const { return m_keyframes; }
 
-    void parserAppendKeyframe(PassRefPtr<StyleKeyframe>);
-    void wrapperAppendKeyframe(PassRefPtr<StyleKeyframe>);
+    void parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe>);
+    void wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe>);
     void wrapperRemoveKeyframe(unsigned);
 
     String name() const { return m_name; }
@@ -59,13 +59,13 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleKeyframes> copy() const { return adoptRefWillBeNoop(new StyleRuleKeyframes(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     StyleRuleKeyframes();
     explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
-    Vector<RefPtr<StyleKeyframe> > m_keyframes;
+    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > m_keyframes;
     AtomicString m_name;
     bool m_isPrefixed;
 };

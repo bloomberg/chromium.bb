@@ -179,7 +179,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> BisonCSSParser::parseRule(StyleSheetConten
     return m_rule.release();
 }
 
-PassRefPtr<StyleKeyframe> BisonCSSParser::parseKeyframeRule(StyleSheetContents* sheet, const String& string)
+PassRefPtrWillBeRawPtr<StyleKeyframe> BisonCSSParser::parseKeyframeRule(StyleSheetContents* sheet, const String& string)
 {
     setStyleSheet(sheet);
     setupParser("@-internal-keyframe-rule ", string, "");
@@ -1629,13 +1629,13 @@ PassOwnPtrWillBeRawPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQ
     return m_floatingMediaQuery.release();
 }
 
-Vector<RefPtr<StyleKeyframe> >* BisonCSSParser::createFloatingKeyframeVector()
+WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* BisonCSSParser::createFloatingKeyframeVector()
 {
-    m_floatingKeyframeVector = adoptPtr(new Vector<RefPtr<StyleKeyframe> >());
+    m_floatingKeyframeVector = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >());
     return m_floatingKeyframeVector.get();
 }
 
-PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > BisonCSSParser::sinkFloatingKeyframeVector(Vector<RefPtr<StyleKeyframe> >* keyframeVector)
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > BisonCSSParser::sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* keyframeVector)
 {
     ASSERT_UNUSED(keyframeVector, m_floatingKeyframeVector == keyframeVector);
     return m_floatingKeyframeVector.release();
@@ -1823,9 +1823,9 @@ void BisonCSSParser::logError(const String& message, const CSSParserLocation& lo
     console.addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 
-StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes, bool isPrefixed)
+StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > popKeyframes, bool isPrefixed)
 {
-    OwnPtr<Vector<RefPtr<StyleKeyframe> > > keyframes = popKeyframes;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > keyframes = popKeyframes;
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
     for (size_t i = 0; i < keyframes->size(); ++i)
@@ -2095,7 +2095,7 @@ StyleKeyframe* BisonCSSParser::createKeyframe(CSSParserValueList* keys)
     if (keyVector->isEmpty())
         return 0;
 
-    RefPtr<StyleKeyframe> keyframe = StyleKeyframe::create();
+    RefPtrWillBeRawPtr<StyleKeyframe> keyframe = StyleKeyframe::create();
     keyframe->setKeys(keyVector.release());
     keyframe->setProperties(createStylePropertySet());
 

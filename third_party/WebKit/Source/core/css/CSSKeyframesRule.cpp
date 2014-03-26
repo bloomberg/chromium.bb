@@ -52,14 +52,14 @@ StyleRuleKeyframes::~StyleRuleKeyframes()
 {
 }
 
-void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtr<StyleKeyframe> keyframe)
+void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe> keyframe)
 {
     if (!keyframe)
         return;
     m_keyframes.append(keyframe);
 }
 
-void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtr<StyleKeyframe> keyframe)
+void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe> keyframe)
 {
     m_keyframes.append(keyframe);
 }
@@ -84,6 +84,12 @@ int StyleRuleKeyframes::findKeyframeIndex(const String& key) const
             return i;
     }
     return -1;
+}
+
+void StyleRuleKeyframes::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_keyframes);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 CSSKeyframesRule::CSSKeyframesRule(StyleRuleKeyframes* keyframesRule, CSSStyleSheet* parent)
@@ -119,7 +125,7 @@ void CSSKeyframesRule::insertRule(const String& ruleText)
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
     BisonCSSParser parser(context);
-    RefPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);
+    RefPtrWillBeRawPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);
     if (!keyframe)
         return;
 

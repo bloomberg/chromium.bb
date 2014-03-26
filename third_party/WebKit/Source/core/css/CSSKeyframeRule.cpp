@@ -163,4 +163,10 @@ void CSSKeyframeRule::reattach(StyleRuleBase*)
     ASSERT_NOT_REACHED();
 }
 
+void CSSKeyframeRule::trace(Visitor* visitor)
+{
+    visitor->trace(m_keyframe);
+    CSSRule::trace(visitor);
+}
+
 } // namespace WebCore

@@ -89,7 +89,7 @@ public:
 
     void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), CSSParserObserver* = 0, bool = false);
     PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
-    PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
+    PassRefPtrWillBeRawPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
@@ -124,7 +124,7 @@ public:
     MediaQuerySet* createMediaQuerySet();
     StyleRuleBase* createImportRule(const CSSParserString&, MediaQuerySet*);
     StyleKeyframe* createKeyframe(CSSParserValueList*);
-    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > >, bool isPrefixed);
+    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > >, bool isPrefixed);
 
     typedef WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > RuleList;
     StyleRuleBase* createMediaRule(MediaQuerySet*, RuleList*);
@@ -152,8 +152,8 @@ public:
     MediaQuery* createFloatingNotAllQuery();
     PassOwnPtrWillBeRawPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
 
-    Vector<RefPtr<StyleKeyframe> >* createFloatingKeyframeVector();
-    PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > sinkFloatingKeyframeVector(Vector<RefPtr<StyleKeyframe> >*);
+    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* createFloatingKeyframeVector();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >*);
 
     void addNamespace(const AtomicString& prefix, const AtomicString& uri);
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
@@ -179,7 +179,7 @@ public:
     CSSPropertyID m_id;
     StyleSheetContents* m_styleSheet;
     RefPtrWillBePersistent<StyleRuleBase> m_rule;
-    RefPtr<StyleKeyframe> m_keyframe;
+    RefPtrWillBePersistent<StyleKeyframe> m_keyframe;
     RefPtrWillBePersistent<MediaQuerySet> m_mediaList;
     OwnPtr<CSSParserValueList> m_valueList;
     bool m_supportsCondition;
@@ -289,7 +289,7 @@ private:
     CSSParserLocation m_locationLabel;
 
     WillBePersistentHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_parsedRules;
-    Vector<RefPtr<StyleKeyframe> > m_parsedKeyframes;
+    WillBePersistentHeapVector<RefPtrWillBeMember<StyleKeyframe> > m_parsedKeyframes;
     WillBePersistentHeapVector<RefPtrWillBeMember<MediaQuerySet> > m_parsedMediaQuerySets;
     WillBePersistentHeapVector<OwnPtrWillBeMember<RuleList> > m_parsedRuleLists;
     Vector<CSSParserSelector*> m_floatingSelectors;
@@ -301,7 +301,7 @@ private:
     OwnPtrWillBePersistent<MediaQueryExp> m_floatingMediaQueryExp;
     OwnPtrWillBePersistent<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > m_floatingMediaQueryExpList;
 
-    OwnPtr<Vector<RefPtr<StyleKeyframe> > > m_floatingKeyframeVector;
+    OwnPtrWillBePersistent<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > m_floatingKeyframeVector;
 
     Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
 

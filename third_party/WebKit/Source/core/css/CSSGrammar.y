@@ -73,10 +73,12 @@ using namespace HTMLNames;
     CSSParserString string;
 
     StyleRuleBase* rule;
-    // The content of the two below HeapVectors are guaranteed to be kept alive by
-    // the corresponding m_parsedRules and m_floatingMediaQueryExpList lists in BisonCSSParser.h.
+    // The content of the three below HeapVectors are guaranteed to be kept alive by
+    // the corresponding m_parsedRules, m_floatingMediaQueryExpList, and m_parsedKeyFrames
+    // lists in BisonCSSParser.h.
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >* ruleList;
     WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* mediaQueryExpList;
+    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* keyframeRuleList;
     CSSParserSelector* selector;
     Vector<OwnPtr<CSSParserSelector> >* selectorList;
     CSSSelector::MarginBoxType marginBox;
@@ -88,7 +90,6 @@ using namespace HTMLNames;
     CSSParserValue value;
     CSSParserValueList* valueList;
     StyleKeyframe* keyframe;
-    Vector<RefPtr<StyleKeyframe> >* keyframeRuleList;
     float val;
     CSSPropertyID id;
     CSSParserLocation location;

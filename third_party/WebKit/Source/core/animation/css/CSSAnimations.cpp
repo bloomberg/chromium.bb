@@ -81,7 +81,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
     if (!keyframesRule)
         return;
 
-    const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
     if (styleKeyframes.isEmpty())
         return;
 
