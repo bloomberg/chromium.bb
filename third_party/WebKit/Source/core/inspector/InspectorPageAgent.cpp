@@ -112,6 +112,11 @@ KURL urlWithoutFragment(const KURL& url)
     return result;
 }
 
+bool anyDeviceMetricsOverrideEnabled(int width, int height, double deviceScaleFactor)
+{
+    return width || height || deviceScaleFactor;
+}
+
 }
 
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
@@ -423,14 +428,14 @@ void InspectorPageAgent::disable(ErrorString*)
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
 
-    if (!deviceMetricsChanged(0, 0, 1, false, false, 1, false))
+    if (!deviceMetricsChanged(0, 0, 0, false, false, 1, false))
         return;
 
     // When disabling the agent, reset the override values if necessary.
-    updateViewMetrics(0, 0, 1, false, false, m_embedderFontScaleFactor, m_embedderTextAutosizingEnabled);
+    updateViewMetrics(0, 0, 0, false, false, m_embedderFontScaleFactor, m_embedderTextAutosizingEnabled);
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, 0);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, 0);
-    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
+    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 0);
     m_state->setBoolean(PageAgentState::pageAgentEmulateViewport, false);
     m_state->setBoolean(PageAgentState::pageAgentFitWindow, false);
     m_state->setDouble(PageAgentState::fontScaleFactor, 1);
@@ -694,8 +699,8 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
         return;
     }
 
-    if (deviceScaleFactor <= 0) {
-        *errorString = "deviceScaleFactor must be positive";
+    if (deviceScaleFactor < 0) {
+        *errorString = "deviceScaleFactor must be non-negative";
         return;
     }
 
@@ -705,7 +710,7 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     }
 
     Settings& settings = m_page->settings();
-    if (width && height && !settings.acceleratedCompositingEnabled()) {
+    if (anyDeviceMetricsOverrideEnabled(width, height, deviceScaleFactor) && !settings.acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
         return;
@@ -1127,10 +1132,11 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
 
 void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizingEnabled)
 {
-    if (width && height && !m_page->settings().acceleratedCompositingEnabled())
+    bool enabled = anyDeviceMetricsOverrideEnabled(width, height, deviceScaleFactor);
+    if (enabled && !m_page->settings().acceleratedCompositingEnabled())
         return;
 
-    m_deviceMetricsOverridden = width && height;
+    m_deviceMetricsOverridden = enabled;
     m_emulateViewportEnabled = emulateViewport;
     m_client->overrideDeviceMetrics(width, height, static_cast<float>(deviceScaleFactor), emulateViewport, fitWindow);
 

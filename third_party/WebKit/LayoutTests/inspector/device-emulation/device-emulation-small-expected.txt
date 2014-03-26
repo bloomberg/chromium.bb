@@ -4,6 +4,8 @@ Page reloaded.
 Emulating device: 380x420x1 viewport='none'
 Emulation warning: You might need to reload the page for proper user agent spoofing and viewport rendering.
 Device:
+window.screenX = 0px
+window.screenY = 0px
 Viewport: = ?none
 @media orientation = portrait
 window.orientation

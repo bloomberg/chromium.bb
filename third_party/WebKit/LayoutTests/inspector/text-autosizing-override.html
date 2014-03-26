@@ -73,7 +73,7 @@
       },
 
       function checkNotAutosizedWithoutDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(0, 0, 2, false, false, true, function() {
+        PageAgent.setDeviceMetricsOverride(0, 0, 0, false, false, true, function() {
           assertAutosizingResult(false, next);
         });
       },

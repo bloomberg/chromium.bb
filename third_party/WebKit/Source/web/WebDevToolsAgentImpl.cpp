@@ -324,7 +324,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
 
 void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow)
 {
-    if (!width && !height) {
+    if (!width && !height && !deviceScaleFactor) {
         if (m_deviceMetricsEnabled) {
             m_deviceMetricsEnabled = false;
             m_webViewImpl->setBackgroundColorOverride(Color::transparent);

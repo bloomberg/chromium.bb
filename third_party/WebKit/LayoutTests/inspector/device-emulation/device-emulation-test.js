@@ -50,6 +50,8 @@ function dumpMetrics()
 {
     results = [];
     writeResult("Device:", "");
+    testJS("window.screenX");
+    testJS("window.screenY");
 
     writeResult("Viewport:", location.search);
 
