@@ -90,6 +90,7 @@ public:
 
     // Document notification
     virtual void stop() OVERRIDE FINAL;
+    virtual bool hasPendingActivity() const OVERRIDE;
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
     size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
@@ -251,6 +252,7 @@ private:
     // We'd like to schedule only one stop action for them.
     bool m_isStopScheduled;
     static void stopDispatch(void* userData);
+    bool m_isCleared;
     void clear();
 
     void scheduleNodeDeletion();
