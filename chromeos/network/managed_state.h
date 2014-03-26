@@ -77,6 +77,8 @@ class CHROMEOS_EXPORT ManagedState {
 
   bool Matches(const NetworkTypePattern& pattern) const;
 
+  static std::string TypeToString(ManagedType type);
+
  protected:
   ManagedState(ManagedType type, const std::string& path);
 

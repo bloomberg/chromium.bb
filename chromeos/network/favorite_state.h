@@ -20,7 +20,7 @@ namespace chromeos {
 // Note: NetworkStateHandler will store an entry for each member of
 // Manager.ServiceCompleteList, even for visible entries that are not
 // favorites. This is necessary to avoid unnecessarily re-requesting entries,
-// and to limit the code complexity. The is_favorite() accessor is used to skip
+// and to limit the code complexity. The IsFavorite() accessor is used to skip
 // entries that are not actually favorites.
 class CHROMEOS_EXPORT FavoriteState : public ManagedState {
  public:
@@ -33,11 +33,13 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
 
   // Accessors
   const std::string& profile_path() const { return profile_path_; }
-  bool is_favorite() const { return !profile_path_.empty(); }
   const NetworkUIData& ui_data() const { return ui_data_; }
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
   const std::string& guid() const { return guid_; }
   const base::DictionaryValue& properties() const { return properties_; }
+
+  // Returns true if this is a favorite stored in a profile (see note above).
+  bool IsFavorite() const;
 
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
