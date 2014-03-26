@@ -80,7 +80,7 @@ public:
     };
     void addInspectedObject(PassOwnPtr<InspectableObject>);
     void clearInspectedObjects();
-    InspectableObject* inspectedObject(unsigned int num);
+    InspectableObject* inspectedObject(unsigned num);
 
     void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
     void getEventListenersImpl(EventTarget*, Vector<EventListenerInfo>& listenersArray);

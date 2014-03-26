@@ -42,8 +42,8 @@ public:
     }
 
     float flex;
-    unsigned int flex_group;
-    unsigned int ordinal_group;
+    unsigned flexGroup;
+    unsigned ordinalGroup;
 
     unsigned align : 3; // EBoxAlignment
     unsigned pack: 2; // EBoxPack

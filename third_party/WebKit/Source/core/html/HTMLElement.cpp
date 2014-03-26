@@ -325,9 +325,9 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
 PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& exceptionState)
 {
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
-    unsigned int i, length = text.length();
+    unsigned i, length = text.length();
     UChar c = 0;
-    for (unsigned int start = 0; start < length; ) {
+    for (unsigned start = 0; start < length; ) {
 
         // Find next line break.
         for (i = start; i < length; i++) {
@@ -808,25 +808,25 @@ void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style, CSSProper
     // strip attribute garbage..
     StringImpl* v = value.impl();
     if (v) {
-        unsigned int l = 0;
+        unsigned length = 0;
 
-        while (l < v->length() && (*v)[l] <= ' ')
-            l++;
+        while (length < v->length() && (*v)[length] <= ' ')
+            length++;
 
-        for (; l < v->length(); l++) {
-            UChar cc = (*v)[l];
+        for (; length < v->length(); length++) {
+            UChar cc = (*v)[length];
             if (cc > '9')
                 break;
             if (cc < '0') {
                 if (cc == '%' || cc == '*')
-                    l++;
+                    length++;
                 if (cc != '.')
                     break;
             }
         }
 
-        if (l != v->length()) {
-            addPropertyToPresentationAttributeStyle(style, propertyID, v->substring(0, l));
+        if (length != v->length()) {
+            addPropertyToPresentationAttributeStyle(style, propertyID, v->substring(0, length));
             return;
         }
     }

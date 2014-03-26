@@ -48,7 +48,7 @@ WebScreenInfo WebScreenInfoFactory::screenInfo(Display* display, int screenNumbe
     Window root = RootWindow(display, screenNumber);
     Window rootRet;
     int x, y;
-    unsigned int width, height, border, depth;
+    unsigned width, height, border, depth;
     XGetGeometry(
         display, root, &rootRet, &x, &y, &width, &height, &border, &depth);
 

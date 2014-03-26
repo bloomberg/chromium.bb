@@ -79,7 +79,7 @@ static void handleError(j_common_ptr common)
     longjmp(*jumpBufferPtr, -1);
 }
 
-static void preMultipliedBGRAtoRGB(const unsigned char* pixels, unsigned int pixelCount, unsigned char* output)
+static void preMultipliedBGRAtoRGB(const unsigned char* pixels, unsigned pixelCount, unsigned char* output)
 {
     const SkPMColor* input = reinterpret_cast_ptr<const SkPMColor*>(pixels);
     for (; pixelCount-- > 0; ++input) {
@@ -89,7 +89,7 @@ static void preMultipliedBGRAtoRGB(const unsigned char* pixels, unsigned int pix
     }
 }
 
-static void RGBAtoRGB(const unsigned char* pixels, unsigned int pixelCount, unsigned char* output)
+static void RGBAtoRGB(const unsigned char* pixels, unsigned pixelCount, unsigned char* output)
 {
     for (; pixelCount-- > 0; pixels += 4) {
         // Do source-over composition on black.
@@ -172,7 +172,7 @@ static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool pre
     cinfo.in_color_space = JCS_RGB;
     cinfo.input_components = 3;
 
-    void (*extractRowRGB)(const unsigned char*, unsigned int, unsigned char* output);
+    void (*extractRowRGB)(const unsigned char*, unsigned, unsigned char* output);
     extractRowRGB = &RGBAtoRGB;
     if (premultiplied)
         extractRowRGB = &preMultipliedBGRAtoRGB;

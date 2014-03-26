@@ -33,7 +33,7 @@ COMPILE_ASSERT(IsInteger<unsigned char>::value, WTF_IsInteger_unsigned_char_true
 COMPILE_ASSERT(IsInteger<short>::value, WTF_IsInteger_short_true);
 COMPILE_ASSERT(IsInteger<unsigned short>::value, WTF_IsInteger_unsigned_short_true);
 COMPILE_ASSERT(IsInteger<int>::value, WTF_IsInteger_int_true);
-COMPILE_ASSERT(IsInteger<unsigned int>::value, WTF_IsInteger_unsigned_int_true);
+COMPILE_ASSERT(IsInteger<unsigned>::value, WTF_IsInteger_unsigned_int_true);
 COMPILE_ASSERT(IsInteger<long>::value, WTF_IsInteger_long_true);
 COMPILE_ASSERT(IsInteger<unsigned long>::value, WTF_IsInteger_unsigned_long_true);
 COMPILE_ASSERT(IsInteger<long long>::value, WTF_IsInteger_long_long_true);
@@ -59,7 +59,7 @@ COMPILE_ASSERT(IsPod<unsigned char>::value, WTF_IsPod_unsigned_char_true);
 COMPILE_ASSERT(IsPod<short>::value, WTF_IsPod_short_true);
 COMPILE_ASSERT(IsPod<unsigned short>::value, WTF_IsPod_unsigned_short_true);
 COMPILE_ASSERT(IsPod<int>::value, WTF_IsPod_int_true);
-COMPILE_ASSERT(IsPod<unsigned int>::value, WTF_IsPod_unsigned_int_true);
+COMPILE_ASSERT(IsPod<unsigned>::value, WTF_IsPod_unsigned_int_true);
 COMPILE_ASSERT(IsPod<long>::value, WTF_IsPod_long_true);
 COMPILE_ASSERT(IsPod<unsigned long>::value, WTF_IsPod_unsigned_long_true);
 COMPILE_ASSERT(IsPod<long long>::value, WTF_IsPod_long_long_true);
@@ -84,7 +84,7 @@ COMPILE_ASSERT(IsConvertibleToInteger<unsigned char>::value, WTF_IsConvertibleTo
 COMPILE_ASSERT(IsConvertibleToInteger<short>::value, WTF_IsConvertibleToInteger_short_true);
 COMPILE_ASSERT(IsConvertibleToInteger<unsigned short>::value, WTF_IsConvertibleToInteger_unsigned_short_true);
 COMPILE_ASSERT(IsConvertibleToInteger<int>::value, WTF_IsConvertibleToInteger_int_true);
-COMPILE_ASSERT(IsConvertibleToInteger<unsigned int>::value, WTF_IsConvertibleToInteger_unsigned_int_true);
+COMPILE_ASSERT(IsConvertibleToInteger<unsigned>::value, WTF_IsConvertibleToInteger_unsigned_int_true);
 COMPILE_ASSERT(IsConvertibleToInteger<long>::value, WTF_IsConvertibleToInteger_long_true);
 COMPILE_ASSERT(IsConvertibleToInteger<unsigned long>::value, WTF_IsConvertibleToInteger_unsigned_long_true);
 COMPILE_ASSERT(IsConvertibleToInteger<long long>::value, WTF_IsConvertibleToInteger_long_long_true);

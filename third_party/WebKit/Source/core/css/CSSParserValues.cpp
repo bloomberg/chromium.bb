@@ -77,7 +77,7 @@ void CSSParserValueList::deleteValueAt(unsigned i)
 
 void CSSParserValueList::stealValues(CSSParserValueList& valueList)
 {
-    for (unsigned int i = 0; i < valueList.size(); ++i)
+    for (unsigned i = 0; i < valueList.size(); ++i)
         m_values.append(*(valueList.valueAt(i)));
     valueList.clear();
 }

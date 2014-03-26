@@ -327,8 +327,8 @@ void EventSource::abortConnectionAttempt()
 
 void EventSource::parseEventStream()
 {
-    unsigned int bufPos = 0;
-    unsigned int bufSize = m_receiveBuf.size();
+    unsigned bufPos = 0;
+    unsigned bufSize = m_receiveBuf.size();
     while (bufPos < bufSize) {
         if (m_discardTrailingNewline) {
             if (m_receiveBuf[bufPos] == '\n')
@@ -338,7 +338,7 @@ void EventSource::parseEventStream()
 
         int lineLength = -1;
         int fieldLength = -1;
-        for (unsigned int i = bufPos; lineLength < 0 && i < bufSize; i++) {
+        for (unsigned i = bufPos; lineLength < 0 && i < bufSize; i++) {
             switch (m_receiveBuf[i]) {
             case ':':
                 if (fieldLength < 0)

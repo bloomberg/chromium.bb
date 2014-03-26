@@ -42,16 +42,16 @@ namespace blink {
 // WGC3D types match the corresponding GL types as defined in OpenGL ES 2.0
 // header file gl2.h from khronos.org.
 typedef char WGC3Dchar;
-typedef unsigned int WGC3Denum;
+typedef unsigned WGC3Denum;
 typedef unsigned char WGC3Dboolean;
-typedef unsigned int WGC3Dbitfield;
+typedef unsigned WGC3Dbitfield;
 typedef signed char WGC3Dbyte;
 typedef unsigned char WGC3Dubyte;
 typedef short WGC3Dshort;
 typedef unsigned short WGC3Dushort;
 typedef int WGC3Dint;
 typedef int WGC3Dsizei;
-typedef unsigned int WGC3Duint;
+typedef unsigned WGC3Duint;
 typedef float WGC3Dfloat;
 typedef float WGC3Dclampf;
 typedef signed long int WGC3Dintptr;

@@ -500,7 +500,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             bool expanding = remainingSpace > 0;
             unsigned int start = expanding ? lowestFlexGroup : highestFlexGroup;
             unsigned int end = expanding? highestFlexGroup : lowestFlexGroup;
-            for (unsigned int i = start; i <= end && remainingSpace; i++) {
+            for (unsigned i = start; i <= end && remainingSpace; i++) {
                 // Always start off by assuming the group can get all the remaining space.
                 LayoutUnit groupRemainingSpace = remainingSpace;
                 do {
@@ -754,7 +754,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             bool expanding = remainingSpace > 0;
             unsigned int start = expanding ? lowestFlexGroup : highestFlexGroup;
             unsigned int end = expanding? highestFlexGroup : lowestFlexGroup;
-            for (unsigned int i = start; i <= end && remainingSpace; i++) {
+            for (unsigned i = start; i <= end && remainingSpace; i++) {
                 // Always start off by assuming the group can get all the remaining space.
                 LayoutUnit groupRemainingSpace = remainingSpace;
                 do {

@@ -104,15 +104,15 @@ typedef struct {
 
 #if COLLECT_STATS
     struct {
-        unsigned int calls;
-        unsigned int lines;
-        unsigned int returns;
-        unsigned int exceptions;
-        unsigned int others;
-        unsigned int new_files;
-        unsigned int missed_returns;
-        unsigned int stack_reallocs;
-        unsigned int errors;
+        unsigned calls;
+        unsigned lines;
+        unsigned returns;
+        unsigned exceptions;
+        unsigned others;
+        unsigned new_files;
+        unsigned missed_returns;
+        unsigned stack_reallocs;
+        unsigned errors;
     } stats;
 #endif /* COLLECT_STATS */
 } CTracer;

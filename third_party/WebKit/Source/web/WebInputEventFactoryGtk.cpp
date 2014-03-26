@@ -122,7 +122,7 @@ static int gdkStateToWebEventModifiers(guint state)
 
 static int gdkEventToWindowsKeyCode(const GdkEventKey* event)
 {
-    static const unsigned int hardwareCodeToGDKKeyval[] = {
+    static const unsigned hardwareCodeToGDKKeyval[] = {
         0,                 // 0x00:
         0,                 // 0x01:
         0,                 // 0x02:

@@ -28,8 +28,8 @@ namespace WebCore {
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
     : flex(RenderStyle::initialBoxFlex())
-    , flex_group(RenderStyle::initialBoxFlexGroup())
-    , ordinal_group(RenderStyle::initialBoxOrdinalGroup())
+    , flexGroup(RenderStyle::initialBoxFlexGroup())
+    , ordinalGroup(RenderStyle::initialBoxOrdinalGroup())
     , align(RenderStyle::initialBoxAlign())
     , pack(RenderStyle::initialBoxPack())
     , orient(RenderStyle::initialBoxOrient())
@@ -40,8 +40,8 @@ StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(const StyleDeprecatedFlexibleBoxData& o)
     : RefCounted<StyleDeprecatedFlexibleBoxData>()
     , flex(o.flex)
-    , flex_group(o.flex_group)
-    , ordinal_group(o.ordinal_group)
+    , flexGroup(o.flexGroup)
+    , ordinalGroup(o.ordinalGroup)
     , align(o.align)
     , pack(o.pack)
     , orient(o.orient)
@@ -51,9 +51,7 @@ StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(const StyleDeprec
 
 bool StyleDeprecatedFlexibleBoxData::operator==(const StyleDeprecatedFlexibleBoxData& o) const
 {
-    return flex == o.flex && flex_group == o.flex_group &&
-           ordinal_group == o.ordinal_group && align == o.align &&
-           pack == o.pack && orient == o.orient && lines == o.lines;
+    return flex == o.flex && flexGroup == o.flexGroup && ordinalGroup == o.ordinalGroup && align == o.align && pack == o.pack && orient == o.orient && lines == o.lines;
 }
 
 } // namespace WebCore

@@ -751,9 +751,9 @@ public:
     EBoxAlignment boxAlign() const { return static_cast<EBoxAlignment>(rareNonInheritedData->m_deprecatedFlexibleBox->align); }
     EBoxDirection boxDirection() const { return static_cast<EBoxDirection>(inherited_flags._box_direction); }
     float boxFlex() const { return rareNonInheritedData->m_deprecatedFlexibleBox->flex; }
-    unsigned int boxFlexGroup() const { return rareNonInheritedData->m_deprecatedFlexibleBox->flex_group; }
+    unsigned boxFlexGroup() const { return rareNonInheritedData->m_deprecatedFlexibleBox->flexGroup; }
     EBoxLines boxLines() const { return static_cast<EBoxLines>(rareNonInheritedData->m_deprecatedFlexibleBox->lines); }
-    unsigned int boxOrdinalGroup() const { return rareNonInheritedData->m_deprecatedFlexibleBox->ordinal_group; }
+    unsigned boxOrdinalGroup() const { return rareNonInheritedData->m_deprecatedFlexibleBox->ordinalGroup; }
     EBoxOrient boxOrient() const { return static_cast<EBoxOrient>(rareNonInheritedData->m_deprecatedFlexibleBox->orient); }
     EBoxPack boxPack() const { return static_cast<EBoxPack>(rareNonInheritedData->m_deprecatedFlexibleBox->pack); }
 
@@ -1240,9 +1240,9 @@ public:
     void setBoxDecorationBreak(EBoxDecorationBreak b) { SET_VAR(m_box, m_boxDecorationBreak, b); }
     void setBoxDirection(EBoxDirection d) { inherited_flags._box_direction = d; }
     void setBoxFlex(float f) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, flex, f); }
-    void setBoxFlexGroup(unsigned int fg) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, flex_group, fg); }
+    void setBoxFlexGroup(unsigned fg) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, flexGroup, fg); }
     void setBoxLines(EBoxLines l) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, lines, l); }
-    void setBoxOrdinalGroup(unsigned int og) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, ordinal_group, og); }
+    void setBoxOrdinalGroup(unsigned og) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, ordinalGroup, og); }
     void setBoxOrient(EBoxOrient o) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, orient, o); }
     void setBoxPack(EBoxPack p) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, pack, p); }
     void setBoxShadow(PassRefPtr<ShadowList>);
@@ -1603,8 +1603,8 @@ public:
     static EBoxOrient initialBoxOrient() { return HORIZONTAL; }
     static EBoxPack initialBoxPack() { return Start; }
     static float initialBoxFlex() { return 0.0f; }
-    static unsigned int initialBoxFlexGroup() { return 1; }
-    static unsigned int initialBoxOrdinalGroup() { return 1; }
+    static unsigned initialBoxFlexGroup() { return 1; }
+    static unsigned initialBoxOrdinalGroup() { return 1; }
     static EBoxSizing initialBoxSizing() { return CONTENT_BOX; }
     static StyleReflection* initialBoxReflect() { return 0; }
     static float initialFlexGrow() { return 0; }

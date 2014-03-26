@@ -219,7 +219,7 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
 {
 #if USE(ICCJPEG)
     JOCTET* profile;
-    unsigned int profileLength;
+    unsigned profileLength;
 
     if (!read_icc_profile(info, &profile, &profileLength))
         return;

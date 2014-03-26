@@ -843,7 +843,7 @@ public:
         return offset;
     }
 
-    virtual unsigned int length() const { return 1; }
+    virtual unsigned length() const { return 1; }
 
     bool isFloatingOrOutOfFlowPositioned() const { return (isFloating() || isOutOfFlowPositioned()); }
 

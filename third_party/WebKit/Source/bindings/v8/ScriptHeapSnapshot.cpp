@@ -51,7 +51,7 @@ String ScriptHeapSnapshot::title() const
     return toCoreString(m_snapshot->GetTitle());
 }
 
-unsigned int ScriptHeapSnapshot::uid() const
+unsigned ScriptHeapSnapshot::uid() const
 {
     return m_snapshot->GetUid();
 }

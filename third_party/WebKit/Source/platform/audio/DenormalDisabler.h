@@ -53,7 +53,7 @@ public:
         //
         // http://stackoverflow.com/questions/637175/possible-bug-in-controlfp-s-may-not-restore-control-word-correctly
         _controlfp_s(&m_savedCSR, 0, 0);
-        unsigned int unused;
+        unsigned unused;
         _controlfp_s(&unused, _DN_FLUSH, _MCW_DN);
 #else
         m_savedCSR = getCSR();
@@ -64,7 +64,7 @@ public:
     ~DenormalDisabler()
     {
 #if OS(WIN) && COMPILER(MSVC)
-        unsigned int unused;
+        unsigned unused;
         _controlfp_s(&unused, m_savedCSR, _MCW_DN);
 #else
         setCSR(m_savedCSR);
@@ -100,7 +100,7 @@ private:
 
 #endif
 
-    unsigned int m_savedCSR;
+    unsigned m_savedCSR;
 };
 
 #else

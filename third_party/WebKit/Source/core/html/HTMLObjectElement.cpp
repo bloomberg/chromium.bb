@@ -121,7 +121,7 @@ static void mapDataParamToSrc(Vector<String>* paramNames, Vector<String>* paramV
     // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e. Real and WMP
     // require "src" attribute).
     int srcIndex = -1, dataIndex = -1;
-    for (unsigned int i = 0; i < paramNames->size(); ++i) {
+    for (unsigned i = 0; i < paramNames->size(); ++i) {
         if (equalIgnoringCase((*paramNames)[i], "src"))
             srcIndex = i;
         else if (equalIgnoringCase((*paramNames)[i], "data"))

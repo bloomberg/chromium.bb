@@ -1788,7 +1788,7 @@ static bool findDropZone(Node* target, Clipboard* clipboard)
             continue;
 
         DragOperation dragOperation = DragOperationNone;
-        for (unsigned int i = 0; i < keywords.size(); i++) {
+        for (unsigned i = 0; i < keywords.size(); i++) {
             DragOperation op = convertDropZoneOperationToDragOperation(keywords[i]);
             if (op != DragOperationNone) {
                 if (dragOperation == DragOperationNone)

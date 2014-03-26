@@ -63,7 +63,7 @@ private:
     AudioFIFO m_fifo;
 
     // Number of frames of data that the provider will produce per call.
-    unsigned int m_providerSize;
+    unsigned m_providerSize;
 
     // Temporary workspace to hold the data from the provider.
     RefPtr<AudioBus> m_tempBus;

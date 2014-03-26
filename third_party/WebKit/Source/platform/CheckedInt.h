@@ -131,7 +131,7 @@ struct IsSupportedPass2<int>
 { static const bool value = true; };
 
 template<>
-struct IsSupportedPass2<unsigned int>
+struct IsSupportedPass2<unsigned>
 { static const bool value = true; };
 
 template<>

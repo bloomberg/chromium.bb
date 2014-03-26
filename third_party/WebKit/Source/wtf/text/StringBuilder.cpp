@@ -321,7 +321,7 @@ void StringBuilder::appendNumber(int number)
     numberToStringSigned<StringBuilder>(number, this);
 }
 
-void StringBuilder::appendNumber(unsigned int number)
+void StringBuilder::appendNumber(unsigned number)
 {
     numberToStringUnsigned<StringBuilder>(number, this);
 }

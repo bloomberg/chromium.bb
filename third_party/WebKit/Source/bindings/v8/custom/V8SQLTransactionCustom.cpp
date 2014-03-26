@@ -74,7 +74,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         else
             sqlArgsLength = length->Uint32Value();
 
-        for (unsigned int i = 0; i < sqlArgsLength; ++i) {
+        for (unsigned i = 0; i < sqlArgsLength; ++i) {
             v8::Handle<v8::Integer> key = v8::Integer::New(info.GetIsolate(), i);
             V8TRYCATCH_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
 

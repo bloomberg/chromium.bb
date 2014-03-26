@@ -63,7 +63,7 @@ double parseToDoubleForNumberType(const String&, double fallbackValue = std::num
 bool parseHTMLInteger(const String&, int&);
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
-bool parseHTMLNonNegativeInteger(const String&, unsigned int&);
+bool parseHTMLNonNegativeInteger(const String&, unsigned&);
 
 typedef Vector<pair<String, String> > HTMLAttributeList;
 // The returned encoding might not be valid.

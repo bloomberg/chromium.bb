@@ -113,7 +113,7 @@ static bool isSetCookieHeader(const AtomicString& name)
 
 static void replaceCharsetInMediaType(String& mediaType, const String& charsetValue)
 {
-    unsigned int pos = 0, len = 0;
+    unsigned pos = 0, len = 0;
 
     findCharsetInMediaType(mediaType, pos, len);
 
@@ -125,7 +125,7 @@ static void replaceCharsetInMediaType(String& mediaType, const String& charsetVa
     // Found at least one existing charset, replace all occurrences with new charset.
     while (len) {
         mediaType.replace(pos, len, charsetValue);
-        unsigned int start = pos + charsetValue.length();
+        unsigned start = pos + charsetValue.length();
         findCharsetInMediaType(mediaType, pos, len, start);
     }
 }

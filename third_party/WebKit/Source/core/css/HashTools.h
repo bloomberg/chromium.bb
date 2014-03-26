@@ -32,8 +32,8 @@ struct Value {
     int id;
 };
 
-const Property* findProperty(register const char* str, register unsigned int len);
-const Value* findValue(register const char* str, register unsigned int len);
+const Property* findProperty(register const char* str, register unsigned len);
+const Value* findValue(register const char* str, register unsigned len);
 
 } // namespace WebCore
 

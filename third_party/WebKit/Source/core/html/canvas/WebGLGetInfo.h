@@ -78,7 +78,7 @@ public:
     // Represents the null value and type.
     WebGLGetInfo();
     explicit WebGLGetInfo(const String& value);
-    explicit WebGLGetInfo(unsigned int value);
+    explicit WebGLGetInfo(unsigned value);
     explicit WebGLGetInfo(PassRefPtr<WebGLBuffer> value);
     explicit WebGLGetInfo(PassRefPtr<Float32Array> value);
     explicit WebGLGetInfo(PassRefPtr<WebGLFramebuffer> value);
@@ -99,7 +99,7 @@ public:
     float getFloat() const;
     int getInt() const;
     const String& getString() const;
-    unsigned int getUnsignedInt() const;
+    unsigned getUnsignedInt() const;
     PassRefPtr<WebGLBuffer> getWebGLBuffer() const;
     PassRefPtr<Float32Array> getWebGLFloatArray() const;
     PassRefPtr<WebGLFramebuffer> getWebGLFramebuffer() const;
@@ -120,7 +120,7 @@ private:
     float m_float;
     int m_int;
     String m_string;
-    unsigned int m_unsignedInt;
+    unsigned m_unsignedInt;
     RefPtr<WebGLBuffer> m_webglBuffer;
     RefPtr<Float32Array> m_webglFloatArray;
     RefPtr<WebGLFramebuffer> m_webglFramebuffer;

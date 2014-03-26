@@ -237,7 +237,7 @@ void unpack(const SourceType*, DstType*, unsigned)
 
 template<> void unpack<WebGLImageConversion::DataFormatRGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[1];
         destination[2] = source[2];
@@ -249,7 +249,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGB8, uint8_t, uint8_t>(c
 
 template<> void unpack<WebGLImageConversion::DataFormatBGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[2];
         destination[1] = source[1];
         destination[2] = source[0];
@@ -261,7 +261,7 @@ template<> void unpack<WebGLImageConversion::DataFormatBGR8, uint8_t, uint8_t>(c
 
 template<> void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[1];
         destination[1] = source[2];
         destination[2] = source[3];
@@ -273,7 +273,7 @@ template<> void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, uint8_t>(
 
 template<> void unpack<WebGLImageConversion::DataFormatABGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
         destination[1] = source[2];
         destination[2] = source[1];
@@ -287,7 +287,7 @@ template<> void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, uint8_t>(
 {
     const uint32_t* source32 = reinterpret_cast_ptr<const uint32_t*>(source);
     uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint32_t bgra = source32[i];
 #if CPU(BIG_ENDIAN)
         uint32_t brMask = 0xff00ff00;
@@ -306,7 +306,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA5551, uint16_t, uint8
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA5551ToRGBA8(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint16_t packedValue = source[0];
         uint8_t r = packedValue >> 11;
         uint8_t g = (packedValue >> 6) & 0x1F;
@@ -325,7 +325,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA4444, uint16_t, uint8
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA4444ToRGBA8(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint16_t packedValue = source[0];
         uint8_t r = packedValue >> 12;
         uint8_t g = (packedValue >> 8) & 0x0F;
@@ -345,7 +345,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGB565, uint16_t, uint8_t
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGB565ToRGBA8(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint16_t packedValue = source[0];
         uint8_t r = packedValue >> 11;
         uint8_t g = (packedValue >> 5) & 0x3F;
@@ -361,7 +361,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGB565, uint16_t, uint8_t
 
 template<> void unpack<WebGLImageConversion::DataFormatR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[0];
         destination[2] = source[0];
@@ -373,7 +373,7 @@ template<> void unpack<WebGLImageConversion::DataFormatR8, uint8_t, uint8_t>(con
 
 template<> void unpack<WebGLImageConversion::DataFormatRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[0];
         destination[2] = source[0];
@@ -385,7 +385,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRA8, uint8_t, uint8_t>(co
 
 template<> void unpack<WebGLImageConversion::DataFormatAR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[1];
         destination[1] = source[1];
         destination[2] = source[1];
@@ -397,7 +397,7 @@ template<> void unpack<WebGLImageConversion::DataFormatAR8, uint8_t, uint8_t>(co
 
 template<> void unpack<WebGLImageConversion::DataFormatA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = 0x0;
         destination[1] = 0x0;
         destination[2] = 0x0;
@@ -410,7 +410,7 @@ template<> void unpack<WebGLImageConversion::DataFormatA8, uint8_t, uint8_t>(con
 template<> void unpack<WebGLImageConversion::DataFormatRGBA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
         destination[2] = source[2] * scaleFactor;
@@ -423,7 +423,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA8, uint8_t, float>(co
 template<> void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[2] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
         destination[2] = source[0] * scaleFactor;
@@ -487,7 +487,7 @@ template<> void unpack<WebGLImageConversion::DataFormatBGR8, uint8_t, float>(con
 
 template<> void unpack<WebGLImageConversion::DataFormatRGB32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[1];
         destination[2] = source[2];
@@ -499,7 +499,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRGB32F, float, float>(con
 
 template<> void unpack<WebGLImageConversion::DataFormatR32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[0];
         destination[2] = source[0];
@@ -511,7 +511,7 @@ template<> void unpack<WebGLImageConversion::DataFormatR32F, float, float>(const
 
 template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[0];
         destination[2] = source[0];
@@ -523,7 +523,7 @@ template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(cons
 
 template<> void unpack<WebGLImageConversion::DataFormatA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = 0;
         destination[1] = 0;
         destination[2] = 0;
@@ -545,7 +545,7 @@ void pack(const SourceType*, DstType*, unsigned)
 
 template<> void pack<WebGLImageConversion::DataFormatA8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
         source += 4;
         destination += 1;
@@ -554,7 +554,7 @@ template<> void pack<WebGLImageConversion::DataFormatA8, WebGLImageConversion::A
 
 template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         source += 4;
         destination += 1;
@@ -563,7 +563,7 @@ template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::A
 
 template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         destination[0] = sourceR;
@@ -575,7 +575,7 @@ template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::A
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         destination[0] = sourceR;
@@ -586,7 +586,7 @@ template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::A
 
 template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[3];
         source += 4;
@@ -596,7 +596,7 @@ template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::
 
 template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         destination[0] = sourceR;
@@ -609,7 +609,7 @@ template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         destination[0] = sourceR;
@@ -621,7 +621,7 @@ template<> void pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::
 
 template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[1];
         destination[2] = source[2];
@@ -632,7 +632,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -648,7 +648,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion:
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -669,7 +669,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -686,7 +686,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -705,7 +705,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConvers
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort4444(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         *destination = (((source[0] & 0xF0) << 8)
                         | ((source[1] & 0xF0) << 4)
                         | (source[2] & 0xF0)
@@ -717,7 +717,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConvers
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -734,7 +734,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConvers
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -753,7 +753,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConvers
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort5551(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         *destination = (((source[0] & 0xF8) << 8)
                         | ((source[1] & 0xF8) << 3)
                         | ((source[2] & 0xF8) >> 2)
@@ -765,7 +765,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConvers
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -782,7 +782,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConvers
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -801,7 +801,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversio
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort565(source, destination, pixelsPerRow);
 #endif
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         *destination = (((source[0] & 0xF8) << 8)
                         | ((source[1] & 0xFC) << 3)
                         | ((source[2] & 0xF8) >> 3));
@@ -812,7 +812,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversio
 
 template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -828,7 +828,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversio
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
         uint8_t sourceG = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
@@ -843,7 +843,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversio
 
 template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[1];
         destination[2] = source[2];
@@ -854,7 +854,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversio
 
 template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
@@ -866,7 +866,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversio
 
 template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
@@ -884,7 +884,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversi
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
@@ -897,7 +897,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversi
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[1] * scaleFactor;
@@ -910,7 +910,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversi
 
 template<> void pack<WebGLImageConversion::DataFormatA32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
         source += 4;
         destination += 1;
@@ -919,7 +919,7 @@ template<> void pack<WebGLImageConversion::DataFormatA32F, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         source += 4;
         destination += 1;
@@ -928,7 +928,7 @@ template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
         destination[0] = source[0] * scaleFactor;
         source += 4;
@@ -938,7 +938,7 @@ template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
         destination[0] = source[0] * scaleFactor;
         source += 4;
@@ -948,7 +948,7 @@ template<> void pack<WebGLImageConversion::DataFormatR32F, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatRA32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
         destination[1] = source[3];
         source += 4;
@@ -958,7 +958,7 @@ template<> void pack<WebGLImageConversion::DataFormatRA32F, WebGLImageConversion
 
 template<> void pack<WebGLImageConversion::DataFormatRA32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[3];
@@ -969,7 +969,7 @@ template<> void pack<WebGLImageConversion::DataFormatRA32F, WebGLImageConversion
 
 template<> void pack<WebGLImageConversion::DataFormatRA32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    for (unsigned int i = 0; i < pixelsPerRow; ++i) {
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
         destination[0] = source[0] * scaleFactor;
         destination[1] = source[3];

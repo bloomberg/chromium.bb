@@ -489,7 +489,7 @@ GLenum WebGLFramebuffer::colorBufferFormat() const
 
 GLenum WebGLFramebuffer::checkStatus(const char** reason) const
 {
-    unsigned int count = 0;
+    unsigned count = 0;
     GLsizei width = 0, height = 0;
     bool haveDepth = false;
     bool haveStencil = false;

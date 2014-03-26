@@ -53,9 +53,7 @@ void WebCache::setCapacities(
 {
     MemoryCache* cache = WebCore::memoryCache();
     if (cache)
-        cache->setCapacities(static_cast<unsigned int>(minDeadCapacity),
-                             static_cast<unsigned int>(maxDeadCapacity),
-                             static_cast<unsigned int>(capacity));
+        cache->setCapacities(static_cast<unsigned>(minDeadCapacity), static_cast<unsigned>(maxDeadCapacity), static_cast<unsigned>(capacity));
 }
 
 void WebCache::clear()

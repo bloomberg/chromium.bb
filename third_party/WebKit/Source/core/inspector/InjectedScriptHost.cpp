@@ -106,7 +106,7 @@ void InjectedScriptHost::clearInspectedObjects()
     m_inspectedObjects.clear();
 }
 
-InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsigned int num)
+InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsigned num)
 {
     if (num >= m_inspectedObjects.size())
         return m_defaultInspectableObject.get();

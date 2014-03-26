@@ -90,7 +90,7 @@ WebGLGetInfo::WebGLGetInfo(const String& value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(unsigned int value)
+WebGLGetInfo::WebGLGetInfo(unsigned value)
     : m_type(kTypeUnsignedInt)
     , m_bool(false)
     , m_float(0)
@@ -234,7 +234,7 @@ const String& WebGLGetInfo::getString() const
     return m_string;
 }
 
-unsigned int WebGLGetInfo::getUnsignedInt() const
+unsigned WebGLGetInfo::getUnsignedInt() const
 {
     ASSERT(getType() == kTypeUnsignedInt);
     return m_unsignedInt;

@@ -121,7 +121,7 @@ TEST(WTF, IntegerToStringConversionSignedIntegerRegularNumbers)
 TEST(WTF, IntegerToStringConversionUnsignedIntegerBoundaries)
 {
     testBoundaries<unsigned short>();
-    testBoundaries<unsigned int>();
+    testBoundaries<unsigned>();
     testBoundaries<unsigned long>();
     testBoundaries<unsigned long long>();
 }
@@ -129,7 +129,7 @@ TEST(WTF, IntegerToStringConversionUnsignedIntegerBoundaries)
 TEST(WTF, IntegerToStringConversionUnsignedIntegerRegularNumbers)
 {
     testNumbers<unsigned short>();
-    testNumbers<unsigned int>();
+    testNumbers<unsigned>();
     testNumbers<unsigned long>();
     testNumbers<unsigned long long>();
 }

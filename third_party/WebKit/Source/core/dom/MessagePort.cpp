@@ -73,7 +73,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
     OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
     if (ports) {
-        for (unsigned int i = 0; i < ports->size(); ++i) {
+        for (unsigned i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this) {
                 exceptionState.throwDOMException(DataCloneError, "Port at index " + String::number(i) + " contains the source port.");
@@ -248,7 +248,7 @@ PassOwnPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& contex
         return nullptr;
 
     OwnPtr<MessagePortArray> portArray = adoptPtr(new MessagePortArray(channels->size()));
-    for (unsigned int i = 0; i < channels->size(); ++i) {
+    for (unsigned i = 0; i < channels->size(); ++i) {
         RefPtr<MessagePort> port = MessagePort::create(context);
         port->entangle((*channels)[i].release());
         (*portArray)[i] = port.release();

@@ -135,7 +135,7 @@ double TimeRanges::end(unsigned index, ExceptionState& exceptionState) const
 void TimeRanges::add(double start, double end)
 {
     ASSERT(start <= end);
-    unsigned int overlappingArcIndex;
+    unsigned overlappingArcIndex;
     Range addedRange(start, end);
 
     // For each present range check if we need to:

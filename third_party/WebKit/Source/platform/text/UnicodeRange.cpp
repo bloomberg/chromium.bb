@@ -427,12 +427,12 @@ static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] =
 // there is such a need.
 // For Indic, Southeast Asian scripts and some other scripts between
 // U+0700 and U+16FF, it's extended to the third level.
-unsigned int findCharUnicodeRange(UChar32 ch)
+unsigned findCharUnicodeRange(UChar32 ch)
 {
     if (ch >= 0xFFFF)
         return 0;
 
-    unsigned int range;
+    unsigned range;
 
     //search the first table
     range = gUnicodeSubrangeTable[0][ch >> 12];

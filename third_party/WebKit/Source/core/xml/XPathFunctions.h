@@ -40,7 +40,7 @@ namespace WebCore {
         protected:
             Expression* arg(int pos) { return subExpr(pos); }
             const Expression* arg(int pos) const { return subExpr(pos); }
-            unsigned int argCount() const { return subExprCount(); }
+            unsigned argCount() const { return subExprCount(); }
             String name() const { return m_name; }
 
         private:

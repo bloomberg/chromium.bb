@@ -85,7 +85,7 @@ void ScriptCallArgumentHandler::appendArgument(long long argument)
     m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
 }
 
-void ScriptCallArgumentHandler::appendArgument(unsigned int argument)
+void ScriptCallArgumentHandler::appendArgument(unsigned argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptScope scope(m_scriptState);

@@ -96,7 +96,7 @@ public:
     const UChar* characters16() const { return m_string.characters16(); }
     unsigned length() const { return m_string.length(); }
 
-    UChar operator[](unsigned int i) const { return m_string[i]; }
+    UChar operator[](unsigned i) const { return m_string[i]; }
 
     bool contains(UChar c) const { return m_string.contains(c); }
     bool contains(const LChar* s, bool caseSensitive = true) const

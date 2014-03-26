@@ -53,7 +53,7 @@ template<> struct ConversionTrait<AtomicString> {
 template<typename T> struct UnsignedIntegerTrait;
 
 template<> struct UnsignedIntegerTrait<int> {
-    typedef unsigned int Type;
+    typedef unsigned Type;
 };
 template<> struct UnsignedIntegerTrait<long> {
     typedef unsigned long Type;

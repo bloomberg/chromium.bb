@@ -78,7 +78,7 @@ public:
     PerformanceEntryVector getEntriesByName(const String& name, const String& entryType);
 
     void webkitClearResourceTimings();
-    void webkitSetResourceTimingBufferSize(unsigned int);
+    void webkitSetResourceTimingBufferSize(unsigned);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
