@@ -21,3 +21,6 @@ fun:*GetRESIds*
 # False positives in SSE intrinsics. To be fixed in Clang.
 # http://://code.google.com/p/memory-sanitizer/issues/detail?id=48
 fun:*S32A_Opaque_BlitRow32_SSE2*
+
+# Uninit in zlib. http://crbug.com/116277
+fun:*MOZ_Z_deflate*
