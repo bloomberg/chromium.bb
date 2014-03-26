@@ -1,0 +1,14 @@
+{
+  "description": "Chrome proxy synthetic test pages.",
+  "archive_data_file": "../data/chrome_proxy_synthetic.json",
+  "pages": [
+    {
+      "url": "http://aws1.mdw.la/fw",
+      "why": ""
+    },
+    {
+      "url": "http://aws1.mdw.la/static",
+      "why": ""
+    }
+  ]
+}

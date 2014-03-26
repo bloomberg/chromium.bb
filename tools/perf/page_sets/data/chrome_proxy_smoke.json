@@ -1,0 +1,13 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "chrome_proxy_smoke_000.wpr": [
+            "header validation", 
+            "compression: image", 
+            "bypass", 
+            "compression: javascript", 
+            "compression: css", 
+            "safebrowsing"
+        ]
+    }
+}

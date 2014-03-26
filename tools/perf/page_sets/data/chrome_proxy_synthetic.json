@@ -1,0 +1,9 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "chrome_proxy_synthetic_000.wpr": [
+            "http://aws1.mdw.la/fw", 
+            "http://aws1.mdw.la/static"
+        ]
+    }
+}
