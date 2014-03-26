@@ -23,12 +23,12 @@ void CloneChildren(ui::Layer* to_clone, ui::Layer* parent) {
   Layers children(to_clone->children());
   for (Layers::const_iterator i = children.begin(); i != children.end(); ++i) {
     ui::LayerOwner* owner = (*i)->owner();
-    ui::Layer* clone = owner ? owner->RecreateLayer().release() : NULL;
-    if (clone) {
-      parent->Add(clone);
+    ui::Layer* old_layer = owner ? owner->RecreateLayer().release() : NULL;
+    if (old_layer) {
+      parent->Add(old_layer);
       // RecreateLayer() moves the existing children to the new layer. Create a
       // copy of those.
-      CloneChildren(owner->layer(), clone);
+      CloneChildren(owner->layer(), old_layer);
     }
   }
 }
@@ -82,11 +82,11 @@ aura::Window* GetToplevelWindow(aura::Window* window) {
 }
 
 scoped_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
-  scoped_ptr<ui::LayerTreeOwner> owner(
+  scoped_ptr<ui::LayerTreeOwner> old_layer(
       new ui::LayerTreeOwner(root->RecreateLayer().release()));
-  if (owner->root())
-    CloneChildren(root->layer(), owner->root());
-  return owner.Pass();
+  if (old_layer->root())
+    CloneChildren(root->layer(), old_layer->root());
+  return old_layer.Pass();
 }
 
 aura::Window* GetTransientParent(aura::Window* window) {
