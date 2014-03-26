@@ -86,6 +86,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/forms/FormController.h"
@@ -2052,6 +2053,11 @@ void Internals::webkitDidExitFullScreenForElement(Document* document, Element* e
     if (!document)
         return;
     FullscreenElementStack::from(*document).webkitDidExitFullScreenForElement(element);
+}
+
+void Internals::mediaPlayerRequestFullscreen(HTMLMediaElement* mediaElement)
+{
+    mediaElement->mediaPlayerRequestFullscreen();
 }
 
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)

@@ -2837,6 +2837,11 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
 void HTMLMediaElement::mediaPlayerRequestFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerRequestFullscreen");
+
+    // The player is responsible for only invoking this callback in response to
+    // user interaction or when it is technically required to play the video.
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+
     enterFullscreen();
 }
 

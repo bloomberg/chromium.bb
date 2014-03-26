@@ -51,19 +51,20 @@ class Document;
 class DocumentMarker;
 class Element;
 class ExceptionState;
-class LocalFrame;
+class ExecutionContext;
 class GCObservation;
+class HTMLMediaElement;
 class InspectorFrontendChannelDummy;
 class InternalProfilers;
 class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
+class LocalFrame;
 class MallocStatistics;
 class Node;
 class Page;
 class PagePopupController;
 class Range;
-class ExecutionContext;
 class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
@@ -267,6 +268,8 @@ public:
     void webkitDidEnterFullScreenForElement(Document*, Element*);
     void webkitWillExitFullScreenForElement(Document*, Element*);
     void webkitDidExitFullScreenForElement(Document*, Element*);
+
+    void mediaPlayerRequestFullscreen(HTMLMediaElement*);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);

@@ -520,6 +520,7 @@ private:
     friend class MediaController;
     RefPtr<MediaController> m_mediaController;
 
+    friend class Internals;
     friend class TrackDisplayUpdateScope;
 
     static URLRegistry* s_mediaStreamRegistry;

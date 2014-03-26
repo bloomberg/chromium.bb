@@ -228,6 +228,8 @@
     void webkitWillExitFullScreenForElement(Document document, Element element);
     void webkitDidExitFullScreenForElement(Document document, Element element);
 
+    void mediaPlayerRequestFullscreen(HTMLMediaElement mediaElement);
+
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(DOMString scheme);
 
