@@ -78,7 +78,7 @@ class NetErrorHelper
       std::string* html) const OVERRIDE;
   virtual void LoadErrorPageInMainFrame(const std::string& html,
                                         const GURL& failed_url) OVERRIDE;
-  virtual void EnableErrorJSBindings(const GURL& page_url) OVERRIDE;
+  virtual void EnableStaleLoadBindings(const GURL& page_url) OVERRIDE;
   virtual void UpdateErrorPage(const blink::WebURLError& error,
                                bool is_failed_post) OVERRIDE;
   virtual void FetchNavigationCorrections(

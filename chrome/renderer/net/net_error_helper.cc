@@ -179,7 +179,7 @@ void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
   frame->loadHTMLString(html, GURL(kUnreachableWebDataURL), failed_url, true);
 }
 
-void NetErrorHelper::EnableErrorJSBindings(const GURL& page_url) {
+void NetErrorHelper::EnableStaleLoadBindings(const GURL& page_url) {
   ErrorCacheLoad::Install(render_frame(), page_url);
 }
 

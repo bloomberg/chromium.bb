@@ -55,7 +55,7 @@ class NetErrorHelperCore {
                                           const GURL& failed_url) = 0;
 
     // Create extra Javascript bindings in the error page.
-    virtual void EnableErrorJSBindings(const GURL& page_url) = 0;
+    virtual void EnableStaleLoadBindings(const GURL& page_url) = 0;
 
     // Updates the currently displayed error page with a new error code.  The
     // currently displayed error page must have finished loading, and must have

@@ -118,7 +118,8 @@ class NetErrorHelperCoreTest : public testing::Test,
                              core_(this),
                              update_count_(0),
                              error_html_update_count_(0),
-                             reload_count_(0) {
+                             reload_count_(0),
+                             enable_stale_load_bindings_count_(0) {
     core_.set_auto_reload_enabled(false);
     core_.set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
   }
@@ -135,6 +136,10 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   int reload_count() const {
     return reload_count_;
+  }
+
+  int enable_stale_load_bindings_count() const {
+    return enable_stale_load_bindings_count_;
   }
 
   const std::string& last_update_string() const { return last_update_string_; }
@@ -231,7 +236,9 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = html;
   }
 
-  virtual void EnableErrorJSBindings(const GURL& page_url) OVERRIDE { }
+  virtual void EnableStaleLoadBindings(const GURL& page_url) OVERRIDE {
+    enable_stale_load_bindings_count_++;
+  }
 
   virtual void UpdateErrorPage(const WebURLError& error,
                                bool is_failed_post) OVERRIDE {
@@ -282,6 +289,8 @@ class NetErrorHelperCoreTest : public testing::Test,
   mutable scoped_ptr<LocalizedError::ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
+
+  int enable_stale_load_bindings_count_;
 };
 
 //------------------------------------------------------------------------------
@@ -325,12 +334,14 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
   EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET), html);
 
   // Error page loads.
+  EXPECT_EQ(0, enable_stale_load_bindings_count());
   core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
   core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
+  EXPECT_EQ(1, enable_stale_load_bindings_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorWithCorrections) {
@@ -728,11 +739,13 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
             html);
 
   // Error page loads.
+  EXPECT_EQ(0, enable_stale_load_bindings_count());
   core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
   core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
+  EXPECT_EQ(0, enable_stale_load_bindings_count());
 
   core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());

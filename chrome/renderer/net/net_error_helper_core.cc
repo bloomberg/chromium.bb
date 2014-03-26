@@ -384,8 +384,11 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   committed_error_page_info_->is_finished_loading = true;
 
-  delegate_->EnableErrorJSBindings(
-      committed_error_page_info_->error.unreachableURL);
+  // Only enable stale cache JS bindings if this wasn't a post.
+  if (!committed_error_page_info_->was_failed_post) {
+    delegate_->EnableStaleLoadBindings(
+        committed_error_page_info_->error.unreachableURL);
+  }
 
   if (committed_error_page_info_->navigation_correction_url.is_valid()) {
     // If there is another pending error page load, |fix_url| should have been
