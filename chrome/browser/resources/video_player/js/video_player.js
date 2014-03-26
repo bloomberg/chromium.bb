@@ -89,8 +89,6 @@ function FullWindowVideoControls(
   });
 
   this.inactivityWatcher_.check();
-
-  Object.seal(this);
 }
 
 FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };

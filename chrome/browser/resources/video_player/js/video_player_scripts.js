@@ -12,7 +12,7 @@
 //<include src="../../../../../ui/webui/resources/js/load_time_data.js"/>
 
 (function() {
-'strict mode';
+'use strict';
 
 //<include src="../../file_manager/common/js/util.js"/>
 //<include src="../../file_manager/foreground/js/media/media_controls.js"/>
