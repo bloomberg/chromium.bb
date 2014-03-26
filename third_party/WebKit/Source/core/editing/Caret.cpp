@@ -126,7 +126,7 @@ RenderObject* CaretBase::caretRenderer(Node* node)
 
 bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
 {
-    document->updateStyleIfNeeded();
+    document->updateRenderTreeIfNeeded();
     m_caretLocalRect = LayoutRect();
 
     m_caretRectNeedsUpdate = false;

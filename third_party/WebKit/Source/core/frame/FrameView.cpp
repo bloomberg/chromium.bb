@@ -783,7 +783,7 @@ void FrameView::performPreLayoutTasks()
     // Always ensure our style info is up-to-date. This can happen in situations where
     // the layout beats any sort of style recalc update that needs to occur.
     TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
-    document->updateStyleIfNeeded();
+    document->updateRenderTreeIfNeeded();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
@@ -1595,7 +1595,7 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
 
     // We need to update the layout before scrolling, otherwise we could
     // really mess things up if an anchor scroll comes at a bad moment.
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
     // Only do a layout if changes have occurred that make it necessary.
     RenderView* renderView = this->renderView();
     if (renderView && renderView->needsLayout())
@@ -2811,7 +2811,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // region but then become included later by the second frame adding rects to the dirty region
     // when it lays out.
 
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     if (needsLayout())
         layout();

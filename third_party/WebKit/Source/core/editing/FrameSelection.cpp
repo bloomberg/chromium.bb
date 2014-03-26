@@ -1454,7 +1454,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     bool activeAndFocused = isFocusedAndActive();
 
     RefPtr<Document> document = m_frame->document();
-    document->updateStyleIfNeeded();
+    document->updateRenderTreeIfNeeded();
 
     // Because RenderObject::selectionBackgroundColor() and
     // RenderObject::selectionForegroundColor() check if the frame is active,
@@ -1637,7 +1637,7 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 
 void FrameSelection::notifyRendererOfSelectionChange(EUserTriggered userTriggered)
 {
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(start()))
         textControl->selectionChanged(userTriggered == UserTriggered);
@@ -1708,7 +1708,7 @@ String FrameSelection::selectedTextForClipboard() const
 
 FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
 {
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     FrameView* view = m_frame->view();
     RenderView* renderView = m_frame->contentRenderer();

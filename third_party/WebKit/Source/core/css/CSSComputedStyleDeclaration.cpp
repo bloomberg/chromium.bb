@@ -1563,7 +1563,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         // have been updated via the api.
         DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
 
-        document.updateStyleForNodeIfNeeded(styledNode);
+        document.updateRenderTreeForNodeIfNeeded(styledNode);
 
         // The style recalc could have caused the styled node to be discarded or replaced
         // if it was a PseudoElement so we need to update it.

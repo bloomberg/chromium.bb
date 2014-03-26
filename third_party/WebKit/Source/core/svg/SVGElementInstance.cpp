@@ -194,7 +194,7 @@ void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
         }
     }
 
-    element->document().updateStyleIfNeeded();
+    element->document().updateRenderTreeIfNeeded();
 }
 
 const AtomicString& SVGElementInstance::interfaceName() const

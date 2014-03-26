@@ -1993,7 +1993,7 @@ PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text
         return metrics.release();
 
     FontCachePurgePreventer fontCachePurgePreventer;
-    canvas()->document().updateStyleIfNeeded();
+    canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
     const TextRun textRun(text);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
@@ -2044,7 +2044,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the GraphicsContext, so update style before grabbing
     // the GraphicsContext.
-    canvas()->document().updateStyleIfNeeded();
+    canvas()->document().updateRenderTreeIfNeeded();
 
     GraphicsContext* c = drawingContext();
     if (!c)

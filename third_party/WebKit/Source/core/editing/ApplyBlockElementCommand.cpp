@@ -180,7 +180,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
     start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
     end = endOfCurrentParagraph.deepEquivalent();
 
-    document().updateStyleIfNeeded();
+    document().updateRenderTreeIfNeeded();
 
     bool isStartAndEndOnSameNode = false;
     if (RenderStyle* startStyle = renderStyleOfEnclosingTextNode(start)) {
@@ -208,7 +208,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         }
     }
 
-    document().updateStyleIfNeeded();
+    document().updateRenderTreeIfNeeded();
 
     if (RenderStyle* endStyle = renderStyleOfEnclosingTextNode(end)) {
         bool isEndAndEndOfLastParagraphOnSameNode = renderStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();

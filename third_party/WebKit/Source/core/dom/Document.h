@@ -474,8 +474,8 @@ public:
 
     void setupFontBuilder(RenderStyle* documentStyle);
 
-    void updateStyleIfNeeded();
-    void updateStyleForNodeIfNeeded(Node*);
+    void updateRenderTreeIfNeeded() { updateRenderTree(NoChange); }
+    void updateRenderTreeForNodeIfNeeded(Node*);
     void updateLayout();
     enum RunPostLayoutTasks {
         RunPostLayoutTasksAsyhnchronously,
@@ -605,7 +605,7 @@ public:
     void setHistoryItemDocumentStateDirty(bool dirty) { m_historyItemDocumentStateDirty = dirty; }
     bool historyItemDocumentStateDirty() const { return m_historyItemDocumentStateDirty; }
 
-    bool shouldScheduleLayout();
+    bool shouldScheduleLayout() const;
     bool shouldParserYieldAgressivelyBeforeScriptExecution();
     int elapsedTime() const;
 
@@ -646,7 +646,7 @@ public:
     void setCSSTarget(Element*);
     Element* cssTarget() const { return m_cssTarget; }
 
-    void scheduleStyleRecalc();
+    void scheduleRenderTreeUpdate();
     bool hasPendingForcedStyleRecalc() const;
 
     void registerNodeList(LiveNodeListBase*);
@@ -1084,7 +1084,9 @@ private:
     bool dirtyElementsForLayerUpdate();
     void updateDistributionIfNeeded();
     void updateUseShadowTreesIfNeeded();
+    void evaluateMediaQueryListIfNeeded();
 
+    void updateRenderTree(StyleRecalcChange);
     void updateStyle(StyleRecalcChange);
 
     void detachParser();
@@ -1149,9 +1151,8 @@ private:
 
     void didRemoveTouchEventHandler(Node*, bool clearAll);
 
-    // Returns true if Document::recalcStyle() needs to be run.
-    bool shouldCallRecalcStyleForDocument();
-    bool shouldScheduleStyleRecalc();
+    bool needsRenderTreeUpdate() const;
+    bool shouldScheduleRenderTreeUpdate() const;
 
     DocumentLifecycle m_lifecycle;
 

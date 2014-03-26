@@ -295,7 +295,7 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
     }
 
     unsigned beforeCount = document->styleEngine()->resolverAccessCount();
-    document->updateStyleIfNeeded();
+    document->updateRenderTreeIfNeeded();
     return document->styleEngine()->resolverAccessCount() - beforeCount;
 }
 

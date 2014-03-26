@@ -345,7 +345,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
-            document().updateStyleIfNeeded();
+            document().updateRenderTreeIfNeeded();
         return;
     }
     textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);

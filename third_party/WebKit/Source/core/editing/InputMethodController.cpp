@@ -231,7 +231,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     // Updates styles before setting selection for composition to prevent
     // inserting the previous composition text into text nodes oddly.
     // See https://bugs.webkit.org/show_bug.cgi?id=46868
-    m_frame.document()->updateStyleIfNeeded();
+    m_frame.document()->updateRenderTreeIfNeeded();
 
     selectComposition();
 

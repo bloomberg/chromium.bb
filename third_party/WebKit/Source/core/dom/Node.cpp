@@ -499,13 +499,13 @@ const AtomicString& Node::namespaceURI() const
 
 bool Node::isContentEditable(UserSelectAllTreatment treatment)
 {
-    document().updateStyleIfNeeded();
+    document().updateRenderTreeIfNeeded();
     return rendererIsEditable(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable()
 {
-    document().updateStyleIfNeeded();
+    document().updateRenderTreeIfNeeded();
     return rendererIsEditable(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 
@@ -650,7 +650,7 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
     for (Node* node = parentOrShadowHostNode(); node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
         node->setChildNeedsStyleInvalidation();
     if (document().childNeedsStyleInvalidation())
-        document().scheduleStyleRecalc();
+        document().scheduleRenderTreeUpdate();
 }
 
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
@@ -658,7 +658,7 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
         node->setChildNeedsDistributionRecalc();
     if (document().childNeedsDistributionRecalc())
-        document().scheduleStyleRecalc();
+        document().scheduleRenderTreeUpdate();
 }
 
 namespace {
@@ -745,7 +745,7 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
         p->setChildNeedsStyleRecalc();
 
     if (document().needsStyleRecalc() || document().childNeedsStyleRecalc())
-        document().scheduleStyleRecalc();
+        document().scheduleRenderTreeUpdate();
 }
 
 void Node::setNeedsStyleRecalc(StyleChangeType changeType)

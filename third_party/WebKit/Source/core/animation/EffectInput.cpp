@@ -44,7 +44,7 @@ static bool checkDocumentAndRenderer(Element* element)
 {
     if (!element->inActiveDocument())
         return false;
-    element->document().updateStyleIfNeeded();
+    element->document().updateRenderTreeIfNeeded();
     return element->renderer();
 }
 

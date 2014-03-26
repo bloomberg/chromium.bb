@@ -998,7 +998,7 @@ void DOMWindow::alert(const String& message)
     if (!m_frame)
         return;
 
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     FrameHost* host = m_frame->host();
     if (!host)
@@ -1012,7 +1012,7 @@ bool DOMWindow::confirm(const String& message)
     if (!m_frame)
         return false;
 
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     FrameHost* host = m_frame->host();
     if (!host)
@@ -1026,7 +1026,7 @@ String DOMWindow::prompt(const String& message, const String& defaultValue)
     if (!m_frame)
         return String();
 
-    m_frame->document()->updateStyleIfNeeded();
+    m_frame->document()->updateRenderTreeIfNeeded();
 
     FrameHost* host = m_frame->host();
     if (!host)

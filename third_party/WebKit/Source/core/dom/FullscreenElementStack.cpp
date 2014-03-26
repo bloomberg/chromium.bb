@@ -395,7 +395,7 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
 
     // FIXME: This should not call updateStyleIfNeeded.
     document()->setNeedsStyleRecalc(SubtreeStyleChange);
-    document()->updateStyleIfNeeded();
+    document()->updateRenderTreeIfNeeded();
 }
 
 void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)

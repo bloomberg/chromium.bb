@@ -585,7 +585,7 @@ int Element::offsetTop()
 
 int Element::offsetWidth()
 {
-    document().updateStyleForNodeIfNeeded(this);
+    document().updateRenderTreeForNodeIfNeeded(this);
 
     if (RenderBox* renderer = renderBox()) {
         if (renderer->canDetermineWidthWithoutLayout())
