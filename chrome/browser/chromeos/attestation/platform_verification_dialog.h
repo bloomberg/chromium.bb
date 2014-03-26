@@ -42,6 +42,7 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   // Overridden from views::DialogDelegate:
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Close() OVERRIDE;
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
 

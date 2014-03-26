@@ -95,6 +95,13 @@ bool PlatformVerificationDialog::Accept() {
   return true;
 }
 
+bool PlatformVerificationDialog::Close() {
+  // This method is called when the tab is closed and in that case the decision
+  // hasn't been made yet.
+  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_NONE);
+  return true;
+}
+
 base::string16 PlatformVerificationDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
