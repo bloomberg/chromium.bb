@@ -670,12 +670,6 @@ void NaClDescMarkSafeForMmap(struct NaClDesc *self);
 
 void NaClDescMarkUnsafeForMmap(struct NaClDesc *self);
 
-struct NaClValidationCache;
-
-int NaClDescValidationCacheResolve(
-    struct NaClDesc **desc_in_out,
-    struct NaClValidationCache *validation_cache);
-
 
 EXTERN_C_END
 
