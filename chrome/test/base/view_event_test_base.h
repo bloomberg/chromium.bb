@@ -24,18 +24,13 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
-namespace aura {
-namespace test {
-class AuraTestHelper;
-}
-}
-
 namespace gfx {
 class Size;
 }
 
 namespace wm {
 class WMState;
+class WMTestHelper;
 }
 
 // Base class for Views based tests that dispatch events.
@@ -155,7 +150,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 #endif
 
 #if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
   scoped_ptr<wm::WMState> wm_state_;
 #endif
 

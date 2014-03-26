@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -23,6 +22,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/wm/test/wm_test_helper.h"
 
 namespace ui {
 namespace {
@@ -90,8 +90,7 @@ class SnapshotAuraTest : public testing::Test {
     bool enable_pixel_output = true;
     ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-    helper_.reset(
-        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
+    helper_.reset(new wm::WMTestHelper);
     helper_->SetUp();
   }
 
@@ -172,7 +171,7 @@ class SnapshotAuraTest : public testing::Test {
     bool completed_;
   };
 
-  scoped_ptr<aura::test::AuraTestHelper> helper_;
+  scoped_ptr<wm::WMTestHelper> helper_;
   scoped_ptr<aura::Window> test_window_;
   scoped_ptr<TestPaintingWindowDelegate> delegate_;
   std::vector<unsigned char> png_representation_;

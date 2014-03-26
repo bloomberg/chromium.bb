@@ -5,14 +5,14 @@
 #ifndef UI_WM_CORE_TRANSIENT_WINDOW_CONTROLLER_H_
 #define UI_WM_CORE_TRANSIENT_WINDOW_CONTROLLER_H_
 
-#include "ui/wm/core/wm_core_export.h"
 #include "ui/wm/public/transient_window_client.h"
+#include "ui/wm/wm_export.h"
 
 namespace wm {
 
 // TransientWindowClient implementation. Uses TransientWindowManager to handle
 // tracking transient per window.
-class WM_CORE_EXPORT TransientWindowController
+class WM_EXPORT TransientWindowController
     : public aura::client::TransientWindowClient {
  public:
   TransientWindowController();

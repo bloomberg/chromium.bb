@@ -29,11 +29,11 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/wm_state.h"
+#include "ui/wm/test/wm_test_helper.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -141,12 +141,11 @@ void ViewEventTestBase::SetUp() {
 #endif  // !OS_WIN
   aura::Env::CreateInstance();
 #elif defined(USE_AURA)
-  // Instead of using the ash shell, use an AuraTestHelper to create and manage
+  // Instead of using the ash shell, use an WMTestHelper to create and manage
   // the test screen.
-  aura_test_helper_.reset(
-      new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
-  context = aura_test_helper_->root_window();
+  wm_test_helper_.reset(new wm::WMTestHelper);
+  wm_test_helper_->SetUp();
+  context = wm_test_helper_->root_window();
 #endif  // !USE_ASH && USE_AURA
 
   window_ = views::Widget::CreateWindowWithContext(this, context);
@@ -175,7 +174,7 @@ void ViewEventTestBase::TearDown() {
 #endif  // !OS_WIN
   aura::Env::DeleteInstance();
 #elif defined(USE_AURA)
-  aura_test_helper_->TearDown();
+  wm_test_helper_->TearDown();
 #endif  // !USE_ASH && USE_AURA
 
 #if defined(USE_AURA)

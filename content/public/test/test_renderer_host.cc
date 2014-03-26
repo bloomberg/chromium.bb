@@ -23,8 +23,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/wm/test/wm_test_helper.h"
 #endif
 
 namespace content {
@@ -131,7 +131,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   DCHECK(ole_initializer_ != NULL);
 #endif
 #if defined(USE_AURA)
-  DCHECK(aura_test_helper_ != NULL);
+  DCHECK(wm_test_helper_ != NULL);
 #endif
 
   // This will be deleted when the WebContentsImpl goes away.
@@ -171,9 +171,8 @@ void RenderViewHostTestHarness::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-  aura_test_helper_.reset(
-      new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
+  wm_test_helper_.reset(new wm::WMTestHelper);
+  wm_test_helper_->SetUp();
 #endif
 
   DCHECK(!browser_context_);
@@ -185,7 +184,7 @@ void RenderViewHostTestHarness::SetUp() {
 void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
 #if defined(USE_AURA)
-  aura_test_helper_->TearDown();
+  wm_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
 #endif
   // Make sure that we flush any messages related to WebContentsImpl destruction

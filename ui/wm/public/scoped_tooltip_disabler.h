@@ -6,12 +6,13 @@
 #define UI_WM_PUBLIC_SCOPED_TOOLTIP_DISABLER_H_
 
 #include "ui/aura/window_observer.h"
+#include "ui/wm/wm_export.h"
 
 namespace aura {
 namespace client {
 
 // Use to temporarily disable tooltips.
-class AURA_EXPORT ScopedTooltipDisabler : aura::WindowObserver {
+class WM_EXPORT ScopedTooltipDisabler : aura::WindowObserver {
  public:
   // Disables tooltips on |window| (does nothing if |window| is NULL). Tooltips
   // are reenabled from the destructor when there are no most outstanding

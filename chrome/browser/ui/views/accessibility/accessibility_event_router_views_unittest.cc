@@ -32,9 +32,9 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/wm/test/wm_test_helper.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -111,8 +111,8 @@ class AccessibilityEventRouterViewsTest
     bool enable_pixel_output = false;
     ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    wm_test_helper_.reset(new wm::WMTestHelper);
+    wm_test_helper_->SetUp();
 #endif  // USE_AURA
     EnableAccessibilityAndListenToFocusNotifications();
   }
@@ -120,7 +120,7 @@ class AccessibilityEventRouterViewsTest
   virtual void TearDown() {
     ClearCallback();
 #if defined(USE_AURA)
-    aura_test_helper_->TearDown();
+    wm_test_helper_->TearDown();
     ui::TerminateContextFactoryForTests();
 #endif
     delete views::ViewsDelegate::views_delegate;
@@ -139,7 +139,7 @@ class AccessibilityEventRouterViewsTest
   views::Widget* CreateWindowWithContents(views::View* contents) {
     gfx::NativeView context = NULL;
 #if defined(USE_AURA)
-    context = aura_test_helper_->root_window();
+    context = wm_test_helper_->root_window();
 #endif
     views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
         new AccessibilityWindowDelegate(contents),
@@ -188,7 +188,7 @@ class AccessibilityEventRouterViewsTest
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 #if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 #endif
 };
 

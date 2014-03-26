@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/default_activation_client.h"
+#include "ui/wm/core/default_activation_client.h"
 
 #include "ui/aura/window.h"
 #include "ui/wm/public/activation_change_observer.h"

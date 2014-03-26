@@ -6,7 +6,7 @@
 #define UI_WM_PUBLIC_TRANSIENT_WINDOW_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "ui/aura/aura_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace aura {
 
@@ -24,7 +24,7 @@ namespace client {
 // Transient windows are typically used for popups and menus.
 // TODO(sky): nuke this class and replace with calls to TransientWindowManager.
 // This is temporary until we start moving to ui/wm.
-class AURA_EXPORT TransientWindowClient {
+class WM_EXPORT TransientWindowClient {
  public:
   virtual void AddTransientChild(Window* parent, Window* child) = 0;
   virtual void RemoveTransientChild(Window* parent, Window* child) = 0;
@@ -38,8 +38,8 @@ class AURA_EXPORT TransientWindowClient {
 // Sets/gets the TransientWindowClient. This does *not* take ownership of
 // |client|. It is assumed the caller will invoke SetTransientWindowClient(NULL)
 // before deleting |client|.
-AURA_EXPORT void SetTransientWindowClient(TransientWindowClient* client);
-AURA_EXPORT TransientWindowClient* GetTransientWindowClient();
+WM_EXPORT void SetTransientWindowClient(TransientWindowClient* client);
+WM_EXPORT TransientWindowClient* GetTransientWindowClient();
 
 }  // namespace client
 }  // namespace aura

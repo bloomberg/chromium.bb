@@ -36,10 +36,8 @@ class AshTestHelper;
 #endif
 
 #if defined(USE_AURA)
-namespace aura {
-namespace test {
-class AuraTestHelper;
-}
+namespace wm {
+class WMTestHelper;
 }
 #endif
 
@@ -189,7 +187,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   scoped_ptr<ash::test::AshTestHelper> ash_test_helper_;
 #endif
 #if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 #endif
 
 #if defined(TOOLKIT_VIEWS)

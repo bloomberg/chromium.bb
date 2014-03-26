@@ -7,7 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(WM_EXPORT, aura::Window*)
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationClient*)
 
 namespace aura {

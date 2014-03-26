@@ -7,14 +7,14 @@
 
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace wm {
 
 // The non-public interface that CursorManager exposes to its users. This
 // gives accessors to all the current state, and mutators to all the current
 // state.
-class WM_CORE_EXPORT NativeCursorManagerDelegate {
+class WM_EXPORT NativeCursorManagerDelegate {
  public:
   virtual ~NativeCursorManagerDelegate() {}
 

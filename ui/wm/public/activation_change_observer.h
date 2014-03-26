@@ -5,14 +5,14 @@
 #ifndef UI_WM_PUBLIC_ACTIVATION_CHANGE_OBSERVER_H_
 #define UI_WM_PUBLIC_ACTIVATION_CHANGE_OBSERVER_H_
 
-#include "ui/aura/aura_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace aura {
 class Window;
 
 namespace client {
 
-class AURA_EXPORT ActivationChangeObserver {
+class WM_EXPORT ActivationChangeObserver {
  public:
   // Called when |active| gains focus, or there is no active window
   // (|active| is NULL in this case.) |old_active| refers to the
@@ -33,11 +33,10 @@ class AURA_EXPORT ActivationChangeObserver {
 
 // Gets/Sets the ActivationChangeObserver for a specific window. This observer
 // is notified after the ActivationClient notifies all registered observers.
-AURA_EXPORT void SetActivationChangeObserver(
+WM_EXPORT void SetActivationChangeObserver(
     Window* window,
     ActivationChangeObserver* observer);
-AURA_EXPORT ActivationChangeObserver* GetActivationChangeObserver(
-    Window* window);
+WM_EXPORT ActivationChangeObserver* GetActivationChangeObserver(Window* window);
 
 }  // namespace client
 }  // namespace aura

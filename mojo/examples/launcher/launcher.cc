@@ -24,7 +24,6 @@
 #include "mojo/public/system/macros.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
@@ -46,6 +45,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "url/gurl.h"
 
 #if defined(WIN32)

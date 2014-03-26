@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_
-#define UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_
+#ifndef UI_WM_CORE_DEFAULT_ACTIVATION_CLIENT_H_
+#define UI_WM_CORE_DEFAULT_ACTIVATION_CLIENT_H_
 
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
-#include "ui/aura/aura_export.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/wm_export.h"
 
 namespace aura {
 namespace client {
@@ -24,8 +24,8 @@ namespace client {
 // Simple ActivationClient implementation for use by tests and other targets
 // that just need basic behavior (e.g. activate windows whenever requested,
 // restack windows at the top when they're activated, etc.).
-class AURA_EXPORT DefaultActivationClient : public client::ActivationClient,
-                                            public WindowObserver {
+class WM_EXPORT DefaultActivationClient : public client::ActivationClient,
+                                          public WindowObserver {
  public:
   explicit DefaultActivationClient(Window* root_window);
   virtual ~DefaultActivationClient();
@@ -66,4 +66,4 @@ class AURA_EXPORT DefaultActivationClient : public client::ActivationClient,
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_
+#endif  // UI_WM_CORE_DEFAULT_ACTIVATION_CLIENT_H_

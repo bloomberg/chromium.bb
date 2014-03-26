@@ -16,9 +16,6 @@
 
 namespace aura {
 class WindowTreeHost;
-namespace test {
-class AuraTestHelper;
-}
 }
 
 namespace ui {
@@ -27,8 +24,8 @@ class EventProcessor;
 
 namespace wm {
 class WMState;
+class WMTestHelper;
 }
-
 
 namespace views {
 
@@ -68,7 +65,7 @@ class ViewsTestBase : public testing::Test {
  private:
   base::MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
   scoped_ptr<wm::WMState> wm_state_;
   bool setup_called_;
   bool teardown_called_;
