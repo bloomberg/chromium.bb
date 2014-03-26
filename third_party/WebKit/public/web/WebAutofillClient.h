@@ -50,9 +50,6 @@ public:
 
     // These methods are called when the users edits a text-field.
     virtual void textFieldDidEndEditing(const WebInputElement&) { }
-    // FIXME: This function is to be removed once both chromium and blink changes
-    // for BUG332557 are in.
-    virtual void textFieldDidChange(const WebInputElement&) { }
     virtual void textFieldDidChange(const WebFormControlElement&) { }
     virtual void textFieldDidReceiveKeyDown(const WebInputElement&, const WebKeyboardEvent&) { }
     // This is called when a datalist indicator is clicked.
