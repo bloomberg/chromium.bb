@@ -55,7 +55,6 @@
         '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../wm/wm.gyp:wm_test_support',
         'snapshot'
       ],
       'sources': [
