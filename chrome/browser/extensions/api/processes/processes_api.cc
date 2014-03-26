@@ -640,6 +640,7 @@ bool TerminateFunction::RunImpl() {
 
 
 void TerminateFunction::TerminateProcess() {
+#if defined(ENABLE_TASK_MANAGER)
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
   int count = model->ResourceCount();
@@ -669,6 +670,10 @@ void TerminateFunction::TerminateProcess() {
 
   // Balance the AddRef in the RunImpl.
   Release();
+#else
+  error_ = errors::kExtensionNotSupported;
+  SendResponse(false);
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 GetProcessInfoFunction::GetProcessInfoFunction()
