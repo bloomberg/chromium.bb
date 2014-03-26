@@ -17,7 +17,6 @@
 .show-with-error-state-offline,
 .show-with-error-state-proxy,
 .show-with-error-state-auth-ext-timeout,
-.show-with-error-state-kiosk-online,
 .guest-signin,
 .offline-login,
 .connecting-indicator {
@@ -34,7 +33,6 @@
 .error-state-offline .show-with-error-state-offline,
 .error-state-proxy .show-with-error-state-proxy,
 .error-state-auth-ext-timeout .show-with-error-state-auth-ext-timeout,
-.error-state-kiosk-online .show-with-error-state-kiosk-online,
 .allow-guest-signin .guest-signin,
 .allow-offline-login .offline-login,
 .show-connecting-indicator .connecting-indicator {

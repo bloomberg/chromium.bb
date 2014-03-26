@@ -40,8 +40,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     PORTAL: 'error-state-portal',
     OFFLINE: 'error-state-offline',
     PROXY: 'error-state-proxy',
-    AUTH_EXT_TIMEOUT: 'error-state-auth-ext-timeout',
-    KIOSK_ONLINE: 'error-state-kiosk-online'
+    AUTH_EXT_TIMEOUT: 'error-state-auth-ext-timeout'
   };
 
   // Possible error states of the screen. Must be in the same order as
@@ -51,8 +50,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     ERROR_STATE.PORTAL,
     ERROR_STATE.OFFLINE,
     ERROR_STATE.PROXY,
-    ERROR_STATE.AUTH_EXT_TIMEOUT,
-    ERROR_STATE.KIOSK_ONLINE
+    ERROR_STATE.AUTH_EXT_TIMEOUT
   ];
 
   return {
@@ -227,16 +225,6 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         e.stopPropagation();
       });
       buttons.push(certsButton);
-
-      var continueButton = this.ownerDocument.createElement('button');
-      continueButton.id = 'continue-network-config-btn';
-      continueButton.textContent = loadTimeData.getString('continueButton');
-      continueButton.classList.add('show-with-error-state-kiosk-online');
-      continueButton.addEventListener('click', function(e) {
-        chrome.send('continueAppLaunch');
-        e.stopPropagation();
-      });
-      buttons.push(continueButton);
 
       var spacer = this.ownerDocument.createElement('div');
       spacer.classList.add('button-spacer');

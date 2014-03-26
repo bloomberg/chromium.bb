@@ -588,37 +588,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   RunAppLaunchNetworkDownTest();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
-  ScopedCanConfigureNetwork can_configure_network(true, false);
-
-  // Start app launch and wait for network connectivity timeout.
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
-  splash_waiter.Wait();
-
-  // A network error screen should be shown after authenticating.
-  OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
-  // Simulate Ctrl+Alt+N accelerator.
-  GetLoginUI()->CallJavascriptFunction(
-      "cr.ui.Oobe.handleAccelerator",
-      base::StringValue("app_launch_network_config"));
-  error_screen_waiter.Wait();
-  ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
-
-  // Continue button should be visible since we are online.
-  JsExpect("$('continue-network-config-btn').hidden == false");
-
-  // Click on [Continue] button.
-  ASSERT_TRUE(content::ExecuteScript(
-      GetLoginUI()->GetWebContents(),
-      "(function() {"
-      "var e = new Event('click');"
-      "$('continue-network-config-btn').dispatchEvent(e);"
-      "})();"));
-
-  WaitForAppLaunchSuccess();
-}
-
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   // Mock network could not be configured.
   ScopedCanConfigureNetwork can_configure_network(false, true);

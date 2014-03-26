@@ -222,8 +222,6 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("loginErrorTitle", IDS_LOGIN_ERROR_TITLE);
   builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
   builder->Add("kioskOfflineMessageBody", IDS_KIOSK_OFFLINE_MESSAGE);
-  builder->Add("kioskOnlineTitle", IDS_LOGIN_NETWORK_RESTORED_TITLE);
-  builder->Add("kioskOnlineMessageBody", IDS_KIOSK_ONLINE_MESSAGE);
   builder->Add("autoEnrollmentOfflineMessageBody",
                IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_MESSAGE);
   builder->Add("captivePortalTitle", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE);
@@ -245,7 +243,6 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
   builder->Add("diagnoseButton", IDS_DIAGNOSE_BUTTON);
   builder->Add("configureCertsButton", IDS_MANAGE_CERTIFICATES);
-  builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
 }
 
 void ErrorScreenHandler::Initialize() {

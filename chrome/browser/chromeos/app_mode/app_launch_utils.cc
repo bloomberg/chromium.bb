@@ -55,7 +55,6 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
     chrome::AttemptUserExit();
     Cleanup();
   }
-  virtual bool IsShowingNetworkConfigScreen() OVERRIDE { return false; }
 
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
 
