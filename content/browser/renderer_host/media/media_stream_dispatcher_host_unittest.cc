@@ -672,6 +672,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   media::FakeVideoCaptureDevice::GetDeviceNames(&physical_video_devices_);
   StreamOptions options(true, true);
 
+  SetupFakeUI(false);
   GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, options,
                                   MEDIA_DEVICE_NO_HARDWARE);
 

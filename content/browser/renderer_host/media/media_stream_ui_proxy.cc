@@ -192,6 +192,7 @@ void FakeMediaStreamUIProxy::RequestAccess(
   MediaStreamDevices devices_to_use;
   bool accepted_audio = false;
   bool accepted_video = false;
+
   // Use the first capture device of the same media type in the list for the
   // fake UI.
   for (MediaStreamDevices::const_iterator it = devices_.begin();
@@ -211,6 +212,12 @@ void FakeMediaStreamUIProxy::RequestAccess(
       devices_to_use.push_back(*it);
       accepted_video = true;
     }
+  }
+
+  // Fail the request if a device exist for the requested type.
+  if ((request.audio_type != MEDIA_NO_SERVICE && !accepted_audio) ||
+      (request.video_type != MEDIA_NO_SERVICE && !accepted_video)) {
+    devices_to_use.clear();
   }
 
   BrowserThread::PostTask(

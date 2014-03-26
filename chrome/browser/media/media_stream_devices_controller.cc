@@ -37,13 +37,17 @@ using content::BrowserThread;
 
 namespace {
 
-bool HasAnyAvailableDevice() {
-  const content::MediaStreamDevices& audio_devices =
-      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices();
-  const content::MediaStreamDevices& video_devices =
-      MediaCaptureDevicesDispatcher::GetInstance()->GetVideoCaptureDevices();
+bool HasAvailableDevicesForRequest(const content::MediaStreamRequest& request) {
+  bool has_audio_device =
+      request.audio_type == content::MEDIA_NO_SERVICE ||
+      !MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices()
+          .empty();
+  bool has_video_device =
+      request.video_type == content::MEDIA_NO_SERVICE ||
+      !MediaCaptureDevicesDispatcher::GetInstance()->GetVideoCaptureDevices()
+          .empty();
 
-  return !audio_devices.empty() || !video_devices.empty();
+  return has_audio_device && has_video_device;
 }
 
 bool IsInKioskMode() {
@@ -169,8 +173,10 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
     return true;
   }
 
-  // Deny the request if there is no device attached to the OS.
-  if (!HasAnyAvailableDevice()) {
+  // Deny the request if there is no device attached to the OS of the
+  // requested type. If both audio and video is requested, both types must be
+  // available.
+  if (!HasAvailableDevicesForRequest(request_)) {
     Deny(false, content::MEDIA_DEVICE_NO_HARDWARE);
     return true;
   }
