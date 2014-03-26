@@ -341,6 +341,10 @@ ExecutionContext* IDBTransaction::executionContext() const
 bool IDBTransaction::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
+    if (m_contextStopped || !executionContext()) {
+        m_state = Finished;
+        return false;
+    }
     ASSERT(m_state != Finished);
     ASSERT(m_hasPendingActivity);
     ASSERT(executionContext());

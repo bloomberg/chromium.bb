@@ -379,6 +379,8 @@ void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
 bool IDBDatabase::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
+    if (m_contextStopped || !executionContext())
+        return false;
     ASSERT(event->type() == EventTypeNames::versionchange || event->type() == EventTypeNames::close);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         if (m_enqueuedEvents[i].get() == event.get())
