@@ -112,11 +112,11 @@ PassRefPtrWillBeRawPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(Pa
     if (!m_isTransactionQueueEnabled)
         return nullptr;
 
-    RefPtr<SQLTransactionWrapper> wrapper;
+    RefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper = nullptr;
     if (data)
         wrapper = ChangeVersionWrapper::create(data->oldVersion(), data->newVersion());
 
-    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper, readOnly);
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper.release(), readOnly);
     m_transactionQueue.append(transactionBackend);
     if (!m_transactionInProgress)
         scheduleTransaction();

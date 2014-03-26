@@ -341,13 +341,17 @@
 namespace WebCore {
 
 PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
-    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
+    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend,
+    PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
+    bool readOnly)
 {
     return adoptRefWillBeNoop(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
 }
 
 SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
-    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
+    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend,
+    PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
+    bool readOnly)
     : m_frontend(frontend)
     , m_database(db)
     , m_wrapper(wrapper)
@@ -375,6 +379,7 @@ void SQLTransactionBackend::trace(Visitor* visitor)
     visitor->trace(m_frontend);
     visitor->trace(m_currentStatementBackend);
     visitor->trace(m_database);
+    visitor->trace(m_wrapper);
     visitor->trace(m_statementQueue);
 }
 
