@@ -354,8 +354,10 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     GraphicsLayer* scrollLayer = scrollableArea->layerForScrolling();
 
     if (scrollLayer) {
-        bool isMainFrame = isForMainFrame(scrollableArea);
-        scrollLayer->setScrollableArea(scrollableArea, isMainFrame);
+        // With pinch virtual viewport we no longer need to special case the main frame.
+        bool pinchVirtualViewportEnabled = m_page->mainFrame()->document()->settings()->pinchVirtualViewportEnabled();
+        bool layerScrollShouldFireGraphicsLayerDidScroll = isForMainFrame(scrollableArea) && !pinchVirtualViewportEnabled;
+        scrollLayer->setScrollableArea(scrollableArea, layerScrollShouldFireGraphicsLayerDidScroll);
     }
 
     WebLayer* webLayer = toWebLayer(scrollableArea->layerForScrolling());

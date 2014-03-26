@@ -1182,6 +1182,8 @@ void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isMai
 
     // Main frame scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via GraphicsLayer::didScroll.
+    // TODO(bokan): With pinch virtual viewport the special case will no
+    // longer be needed, remove once old-style pinch is gone.
     if (isMainFrame)
         m_layer->layer()->setScrollClient(0);
     else

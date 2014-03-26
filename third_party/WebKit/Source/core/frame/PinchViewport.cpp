@@ -63,14 +63,17 @@ using WebCore::GraphicsLayerFactory;
 namespace WebCore {
 
 PinchViewport::PinchViewport(FrameHost& owner)
-    : m_owner(owner)
+    : m_frameHost(owner)
 {
 }
 
 PinchViewport::~PinchViewport() { }
 
-void PinchViewport::setViewportSize(const WebCore::IntSize& newSize)
+void PinchViewport::setSize(const IntSize& newSize)
 {
+    // TODO: This is currently called from WebViewImpl with the main frame size which
+    // is (or will be) incorrect, address in future patches.
+
     if (!m_innerViewportContainerLayer || !m_innerViewportScrollLayer)
         return;
 
@@ -83,6 +86,25 @@ void PinchViewport::setViewportSize(const WebCore::IntSize& newSize)
     // Need to re-compute sizes for the overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
     setupScrollbar(WebScrollbar::Vertical);
+}
+
+void PinchViewport::setLocation(const IntPoint& newLocation)
+{
+    // TODO: The update from the LayerTree will occur here before the scale delta is applied.
+    // this means that the clamping below may be incorrect. Once scaling is done in PinchViewport
+    // change it so they happen at the same time.
+
+    // Clamp the location within our extents.
+    IntPoint location(newLocation);
+    location.shrunkTo(maximumScrollPosition());
+    location.expandedTo(minimumScrollPosition());
+
+    m_visibleRect.setLocation(newLocation);
+
+    ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+    ASSERT(coordinator);
+
+    coordinator->scrollableAreaScrollLayerDidChange(this);
 }
 
 // Modifies the top of the graphics layer tree to add layers needed to support
@@ -125,7 +147,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
         m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
 
-        WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
+        WebCore::ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
         coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 
@@ -143,6 +165,9 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
 
+        // Ensure this class is set as the scroll layer's ScrollableArea
+        coordinator->scrollableAreaScrollLayerDidChange(this);
+
         // Setup the inner viewport overlay scrollbars.
         setupScrollbar(WebScrollbar::Horizontal);
         setupScrollbar(WebScrollbar::Vertical);
@@ -157,9 +182,9 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
     // away, we would re-enable the drawing of these scrollbars.
     // FIXME: This doesn't seem to work (at least on Android). Commenting out for now until
     // I figure out how to access RenderLayerCompositor from here.
-    // if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForHorizontalScrollbar())
+    // if (GraphicsLayer* scrollbar = m_frameHost->compositor()->layerForHorizontalScrollbar())
     //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
-    // if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForVerticalScrollbar())
+    // if (GraphicsLayer* scrollbar = m_frameHost->compositor()->layerForVerticalScrollbar())
     //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
 }
 
@@ -171,12 +196,12 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    const int overlayScrollbarThickness = m_owner.settings().pinchOverlayScrollbarThickness();
+    const int overlayScrollbarThickness = m_frameHost.settings().pinchOverlayScrollbarThickness();
 
     if (!webScrollbarLayer) {
-        WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
+        ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
-        WebCore::ScrollbarOrientation webcoreOrientation = isHorizontal ? WebCore::HorizontalScrollbar : WebCore::VerticalScrollbar;
+        ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
         webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, false);
 
         webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
@@ -190,18 +215,18 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     int height = isHorizontal ? overlayScrollbarThickness : m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness;
 
     // Use the GraphicsLayer to position the scrollbars.
-    scrollbarGraphicsLayer->setPosition(WebCore::IntPoint(xPosition, yPosition));
-    scrollbarGraphicsLayer->setSize(WebCore::IntSize(width, height));
-    scrollbarGraphicsLayer->setContentsRect(WebCore::IntRect(0, 0, width, height));
+    scrollbarGraphicsLayer->setPosition(IntPoint(xPosition, yPosition));
+    scrollbarGraphicsLayer->setSize(IntSize(width, height));
+    scrollbarGraphicsLayer->setContentsRect(IntRect(0, 0, width, height));
 }
 
-void PinchViewport::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
+void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
-    ASSERT(m_owner.page().mainFrame());
-    ASSERT(m_owner.page().mainFrame()->contentRenderer());
+    ASSERT(m_frameHost.page().mainFrame());
+    ASSERT(m_frameHost.page().mainFrame()->contentRenderer());
 
-    WebCore::RenderLayerCompositor* compositor = m_owner.page().mainFrame()->contentRenderer()->compositor();
+    RenderLayerCompositor* compositor = m_frameHost.page().mainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
 
@@ -215,18 +240,93 @@ void PinchViewport::registerViewportLayersWithTreeView(WebLayerTreeView* layerTr
         scrollLayer);
 }
 
-void PinchViewport::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeView) const
+void PinchViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
 
     layerTreeView->clearViewportLayers();
 }
 
+int PinchViewport::scrollSize(ScrollbarOrientation orientation) const
+{
+    IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
+    return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
+}
+
+IntPoint PinchViewport::minimumScrollPosition() const
+{
+    return IntPoint();
+}
+
+IntPoint PinchViewport::maximumScrollPosition() const
+{
+    // TODO: Doesn't take scale into account yet.
+    IntPoint maxScrollPosition(contentsSize() - visibleRect().size());
+    maxScrollPosition.clampNegativeToZero();
+    return maxScrollPosition;
+}
+
+IntRect PinchViewport::scrollableAreaBoundingBox() const
+{
+    // This method should return the bounding box in the parent view's coordinate
+    // space; however, PinchViewport technically isn't a child of any Frames.
+    // Nonetheless, the PinchViewport always occupies the entire main frame so just
+    // return that.
+    LocalFrame* frame = m_frameHost.page().mainFrame();
+
+    if (!frame || !frame->view())
+        return IntRect();
+
+    return frame->view()->frameRect();
+}
+
+IntSize PinchViewport::contentsSize() const
+{
+    LocalFrame* frame = m_frameHost.page().mainFrame();
+
+    if (!frame || !frame->view())
+        return IntSize();
+
+    // TODO: This will be visibleContentSize once page scale is removed from FrameView
+    return frame->view()->unscaledVisibleContentSize(IncludeScrollbars);
+}
+
+void PinchViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
+{
+    // Do nothing. Pinch scrollbars live on the compositor thread and will
+    // be updated when the viewport is synced to the CC.
+}
+
+void PinchViewport::setScrollOffset(const IntPoint& offset)
+{
+    setLocation(offset);
+}
+
+GraphicsLayer* PinchViewport::layerForContainer() const
+{
+    return m_innerViewportContainerLayer.get();
+}
+
+GraphicsLayer* PinchViewport::layerForScrolling() const
+{
+    return m_innerViewportScrollLayer.get();
+}
+
+GraphicsLayer* PinchViewport::layerForHorizontalScrollbar() const
+{
+    return m_overlayScrollbarHorizontal.get();
+}
+
+GraphicsLayer* PinchViewport::layerForVerticalScrollbar() const
+{
+    return m_overlayScrollbarVertical.get();
+}
+
 void PinchViewport::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
 {
 }
 
-void PinchViewport::paintContents(const GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip)
+void PinchViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip)
 {
 }
 

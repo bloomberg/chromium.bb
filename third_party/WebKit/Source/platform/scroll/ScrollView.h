@@ -321,8 +321,6 @@ private:
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();
-
-    virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
 }; // class ScrollView
 
 DEFINE_TYPE_CASTS(ScrollView, Widget, widget, widget->isScrollView(), widget.isScrollView());

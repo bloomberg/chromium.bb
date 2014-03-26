@@ -1562,7 +1562,7 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (webFrame->frameView()) {
         webFrame->frameView()->resize(m_size);
         if (page()->settings().pinchVirtualViewportEnabled())
-            page()->frameHost().pinchViewport().setViewportSize(m_size);
+            page()->frameHost().pinchViewport().setSize(m_size);
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -3631,7 +3631,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     if (pinchVirtualViewportEnabled) {
         PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
         pinchViewport.attachToLayerTree(layer, graphicsLayerFactory());
-        pinchViewport.setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());
+        pinchViewport.setSize(mainFrameImpl()->frame()->view()->frameRect().size());
         if (layer) {
             m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
             m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
@@ -3657,7 +3657,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             // We register viewport layers here since there may not be a layer
             // tree view prior to this point.
             if (pinchVirtualViewportEnabled) {
-                page()->frameHost().pinchViewport().registerViewportLayersWithTreeView(m_layerTreeView);
+                page()->frameHost().pinchViewport().registerLayersWithTreeView(m_layerTreeView);
             } else {
                 GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
                 ASSERT(rootScrollLayer);
@@ -3667,7 +3667,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         } else {
             m_layerTreeView->clearRootLayer();
             if (pinchVirtualViewportEnabled)
-                page()->frameHost().pinchViewport().clearViewportLayersForTreeView(m_layerTreeView);
+                page()->frameHost().pinchViewport().clearLayersForTreeView(m_layerTreeView);
             else
                 m_layerTreeView->clearViewportLayers();
         }
@@ -3823,6 +3823,17 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
 
+    // With virtual viewport we need only set the scale (see TODO below).
+    if (page()->settings().pinchVirtualViewportEnabled()) {
+        WebSize scrollOffset = mainFrame()->scrollOffset();
+        WebPoint scrollPoint(scrollOffset.width, scrollOffset.height);
+        setPageScaleFactor(pageScaleFactor() * pageScaleDelta, scrollPoint);
+        m_doubleTapZoomPending = false;
+        return;
+    }
+
+    // TODO(bokan): Old pinch path only - virtual viewport pinch scrolls are automatically updated via GraphicsLayer::DidScroll.
+    // this should be removed once old pinch is removed.
     if (pageScaleDelta == 1) {
         TRACE_EVENT_INSTANT2("webkit", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
         WebSize webScrollOffset = mainFrame()->scrollOffset();

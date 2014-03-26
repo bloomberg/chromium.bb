@@ -33,6 +33,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebSize.h"
 #include "wtf/OwnPtr.h"
@@ -52,38 +53,65 @@ class GraphicsLayerFactory;
 class IntRect;
 class IntSize;
 
-class PinchViewport FINAL : WebCore::GraphicsLayerClient {
+class PinchViewport FINAL : public GraphicsLayerClient, public ScrollableArea {
 public:
     PinchViewport(FrameHost&);
     virtual ~PinchViewport();
 
-    void attachToLayerTree(WebCore::GraphicsLayer*, GraphicsLayerFactory*);
-    WebCore::GraphicsLayer* rootGraphicsLayer()
+    void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
+    GraphicsLayer* rootGraphicsLayer()
     {
         return m_innerViewportContainerLayer.get();
     }
-    void setViewportSize(const WebCore::IntSize&);
 
-    void registerViewportLayersWithTreeView(blink::WebLayerTreeView*) const;
-    void clearViewportLayersForTreeView(blink::WebLayerTreeView*) const;
+    void setLocation(const IntPoint&);
+    void setSize(const IntSize&);
 
+    void registerLayersWithTreeView(blink::WebLayerTreeView*) const;
+    void clearLayersForTreeView(blink::WebLayerTreeView*) const;
+
+    IntRect visibleRect() const { return m_visibleRect; }
 private:
+    // ScrollableArea implementation
+    virtual bool isActive() const OVERRIDE { return false; }
+    virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
+    virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
+    virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
+    virtual IntPoint scrollPosition() const OVERRIDE { return visibleRect().location(); }
+    virtual IntPoint minimumScrollPosition() const OVERRIDE;
+    virtual IntPoint maximumScrollPosition() const OVERRIDE;
+    virtual int visibleHeight() const OVERRIDE { return visibleRect().height(); };
+    virtual int visibleWidth() const OVERRIDE { return visibleRect().width(); };
+    virtual IntSize contentsSize() const OVERRIDE;
+    virtual bool scrollbarsCanBeActive() const OVERRIDE { return false; }
+    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE { return false; }
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
+    virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
+    virtual void setScrollOffset(const IntPoint&) OVERRIDE;
+    virtual GraphicsLayer* layerForContainer() const OVERRIDE;
+    virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
+    virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
+    virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;
 
     // GraphicsLayerClient implementation.
-    virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double monotonicTime) OVERRIDE;
-    virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) OVERRIDE;
-    virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE;
+    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE;
+    virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
 
-    WebCore::FrameHost& m_owner;
-    OwnPtr<WebCore::GraphicsLayer> m_innerViewportContainerLayer;
-    OwnPtr<WebCore::GraphicsLayer> m_pageScaleLayer;
-    OwnPtr<WebCore::GraphicsLayer> m_innerViewportScrollLayer;
-    OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarHorizontal;
-    OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarVertical;
+    FrameHost& m_frameHost;
+    OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
+    OwnPtr<GraphicsLayer> m_pageScaleLayer;
+    OwnPtr<GraphicsLayer> m_innerViewportScrollLayer;
+    OwnPtr<GraphicsLayer> m_overlayScrollbarHorizontal;
+    OwnPtr<GraphicsLayer> m_overlayScrollbarVertical;
     OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
     OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarVertical;
+
+    IntRect m_visibleRect;
 };
 
 } // namespace WebCore

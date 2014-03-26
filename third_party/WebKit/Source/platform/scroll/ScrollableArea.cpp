@@ -422,6 +422,15 @@ int ScrollableArea::lineStep(ScrollbarOrientation) const
     return pixelsPerLineStep();
 }
 
+int ScrollableArea::pageStep(ScrollbarOrientation orientation) const
+{
+    int length = (orientation == HorizontalScrollbar) ? visibleWidth() : visibleHeight();
+    int minPageStep = static_cast<float>(length) * minFractionToStepWhenPaging();
+    int pageStep = std::max(minPageStep, length - maxOverlapBetweenPages());
+
+    return std::max(pageStep, 1);
+}
+
 int ScrollableArea::documentStep(ScrollbarOrientation orientation) const
 {
     return scrollSize(orientation);
