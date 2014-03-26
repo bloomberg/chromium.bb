@@ -40,10 +40,10 @@ function verifyAudioIsPlaying(samples) {
   // to see a number of peaks with relative silence between them. The following
   // seems to work fine on a nexus 7.
   if (average < 3000 || average > 8000)
-    throw 'Unexpected avg audio level: got ' + average + ', expected it ' +
-          'to be 4000 < avg < 8000.'
+    failTest('Unexpected avg audio level: got ' + average + ', expected it ' +
+             'to be 4000 < avg < 8000.');
   if (largest < 25000)
-    throw 'Too low max audio level: got ' + largest + ', expected > 30000.';
+    failTest('Too low max audio level: got ' + largest + ', expected > 30000.');
 }
 
 // If silent (like when muted), we should get very near zero audio level.
@@ -54,7 +54,7 @@ function verifyIsSilent(samples) {
 
   console.log('Average audio level: ' + average);
   if (average > 500)
-    throw 'Expected silence, but avg audio level was ' + average;
+    failTest('Expected silence, but avg audio level was ' + average);
 }
 
 /**

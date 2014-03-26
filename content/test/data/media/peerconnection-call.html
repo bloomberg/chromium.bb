@@ -304,7 +304,7 @@
     detectVideoPlaying('remote-view-2', onCallEstablished);
   }
 
-  function callAndEnsureAudioMutingWorks() {
+  function callAndEnsureAudioTrackMutingWorks() {
     callAndEnsureAudioIsPlaying();
     setAllEventsOccuredHandler(function() {
       // Call is up, now mute the track and check everything goes silent (give
@@ -320,7 +320,26 @@
     });
   }
 
-  function callAndEnsureVideoMutingWorks() {
+  function callAndEnsureAudioTrackUnmutingWorks() {
+    callAndEnsureAudioIsPlaying();
+    setAllEventsOccuredHandler(function() {
+      // Mute, wait a while, unmute, verify audio gets back up.
+      enableRemoteAudio(gSecondConnection, false);
+
+      setTimeout(function() {
+        enableRemoteAudio(gSecondConnection, true);
+      }, 500);
+
+      setTimeout(function() {
+        gatherAudioLevelSamples(gSecondConnection, 200, 100, function(samples) {
+          verifyAudioIsPlaying(samples);
+          reportTestSuccess();
+        });
+      }, 1000);
+    });
+  }
+
+  function callAndEnsureVideoTrackMutingWorks() {
     createConnections(null);
     navigator.webkitGetUserMedia({audio: true, video: true},
       addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);

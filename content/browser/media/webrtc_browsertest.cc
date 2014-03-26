@@ -302,11 +302,27 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
           << "Must run with fake devices since the test will explicitly look "
           << "for the fake device signal.";
 
-  MakeTypicalPeerConnectionCall("callAndEnsureAudioMutingWorks();");
+  MakeTypicalPeerConnectionCall("callAndEnsureAudioTrackMutingWorks();");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
+                       EstablishAudioVideoCallAndVerifyUnmutingWorks) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    // See comment on EstablishAudioVideoCallAndVerifyMutingWorks.
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
+  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream))
+          << "Must run with fake devices since the test will explicitly look "
+          << "for the fake device signal.";
+
+  MakeTypicalPeerConnectionCall("callAndEnsureAudioTrackUnmutingWorks();");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallAndVerifyVideoMutingWorks) {
-  MakeTypicalPeerConnectionCall("callAndEnsureVideoMutingWorks();");
+  MakeTypicalPeerConnectionCall("callAndEnsureVideoTrackMutingWorks();");
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
