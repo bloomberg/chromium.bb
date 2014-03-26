@@ -135,35 +135,15 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   NaClMetadataDtor(&metadata);
 }
 
-void NaClChromeMainStartApp(struct NaClApp *nap,
-                            struct NaClChromeMainArgs *args) {
-  char *av[1];
-  int ac = 1;
-  const char **envp;
-  NaClErrorCode errcode = LOAD_INTERNAL;
-  int ret_code = 1;
-  struct NaClEnvCleanser env_cleanser;
+int NaClChromeMainLoad(struct NaClApp *nap,
+                       struct NaClChromeMainArgs *args) {
+  NaClErrorCode errcode = LOAD_OK;
   int skip_qualification;
-
-#if NACL_OSX
-  /* Mac dynamic libraries cannot access the environ variable directly. */
-  envp = (const char **) *_NSGetEnviron();
-#else
-  /* Overzealous code style check is overzealous. */
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-  extern char **environ;
-  envp = (const char **) environ;
-#endif
 
   CHECK(g_initialized);
 
   NaClBootstrapChannelErrorReporterInit();
   NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
-
-  /* to be passed to NaClMain, eventually... */
-  av[0] = "NaClMain";
-
-  errcode = LOAD_OK;
 
   /* Allow or disallow dyncode API based on args. */
   nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;
@@ -246,7 +226,7 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
     /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
-      NaClLog(LOG_FATAL, "NaClChromeMainStartApp: "
+      NaClLog(LOG_FATAL, "NaClChromeMainLoad: "
               "Failed to set up Mach exception handler\n");
     }
 #elif NACL_WINDOWS
@@ -318,13 +298,6 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
     nap->irt_loaded = 1;
   }
 
-  NACL_FI_FATAL("BeforeEnvCleanserCtor");
-
-  NaClEnvCleanserCtor(&env_cleanser, 1);
-  if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
-    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
-  }
-
   if (NACL_FI_ERROR_COND("LaunchServiceThreads",
                          !NaClAppLaunchServiceThreads(nap))) {
     NaClLog(LOG_FATAL, "Launch service threads failed\n");
@@ -342,7 +315,56 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
   }
 
   free(args);
-  args = NULL;
+  return LOAD_OK;
+
+done:
+  fflush(stdout);
+
+  /*
+   * If there is a secure command channel, we sent an RPC reply with
+   * the reason that the nexe was rejected.  If we exit now, that
+   * reply may still be in-flight and the various channel closure (esp
+   * reverse channel) may be detected first.  This would result in a
+   * crash being reported, rather than the error in the RPC reply.
+   * Instead, we wait for the hard-shutdown on the command channel.
+   */
+  if (LOAD_OK != errcode) {
+    NaClBlockIfCommandChannelExists(nap);
+  } else {
+    /*
+     * Don't return LOAD_OK if we had some failure loading.
+     */
+    errcode = LOAD_INTERNAL;
+  }
+  return errcode;
+}
+
+void NaClChromeMainStart(struct NaClApp *nap) {
+  int ac = 1;
+  char *av[1];
+  int ret_code;
+  const char **envp;
+  struct NaClEnvCleanser env_cleanser;
+
+#if NACL_OSX
+  /* Mac dynamic libraries cannot access the environ variable directly. */
+  envp = (const char **) *_NSGetEnviron();
+#else
+  /* Overzealous code style check is overzealous. */
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+  extern char **environ;
+  envp = (const char **) environ;
+#endif
+
+  NACL_FI_FATAL("BeforeEnvCleanserCtor");
+
+  NaClEnvCleanserCtor(&env_cleanser, 1);
+  if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+
+  /* to be passed to NaClMain, eventually... */
+  av[0] = "NaClMain";
 
   if (NACL_FI_ERROR_COND(
           "CreateMainThread",
@@ -376,23 +398,11 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
    * before we clean up the address space.
    */
   NaClExit(ret_code);
+}
 
- done:
-  fflush(stdout);
-
-  /*
-   * If there is a secure command channel, we sent an RPC reply with
-   * the reason that the nexe was rejected.  If we exit now, that
-   * reply may still be in-flight and the various channel closure (esp
-   * reverse channel) may be detected first.  This would result in a
-   * crash being reported, rather than the error in the RPC reply.
-   * Instead, we wait for the hard-shutdown on the command channel.
-   */
-  if (LOAD_OK != errcode) {
-    NaClBlockIfCommandChannelExists(nap);
-  }
-
-  NaClAllModulesFini();
-
-  NaClExit(ret_code);
+void NaClChromeMainStartApp(struct NaClApp *nap,
+                            struct NaClChromeMainArgs *args) {
+  if (NaClChromeMainLoad(nap, args) != 0)
+    NaClExit(1);
+  NaClChromeMainStart(nap);
 }
