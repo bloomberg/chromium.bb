@@ -218,7 +218,9 @@ bool InputMethodEngine::SendKeyEvents(
   if (!active_) {
     return false;
   }
-  if (context_id != context_id_ || context_id_ == -1) {
+  // context_id  ==  0, means sending key events to non-input field.
+  // context_id_ == -1, means the focus is not in an input field.
+  if ((context_id != 0 && context_id != context_id_) || context_id_ == -1) {
     return false;
   }
 
