@@ -66,6 +66,8 @@ class RasterTaskGraphRunner : public internal::TaskGraphRunner,
   virtual void Run() OVERRIDE {
     // Use picture clone index 0..num_threads.
     int picture_clone_index = picture_clone_index_sequence_.GetNext();
+    DCHECK_LE(0, picture_clone_index);
+    DCHECK_GT(RasterWorkerPool::GetNumRasterThreads(), picture_clone_index);
     current_tls_.Set(new ThreadLocalState(picture_clone_index));
 
     internal::TaskGraphRunner::Run();
