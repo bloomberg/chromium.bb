@@ -135,7 +135,7 @@ class RecordCache {
     return Lookup(const_cast<clang::CXXRecordDecl*>(record));
   }
 
-  RecordInfo* Lookup(clang::Decl* decl) {
+  RecordInfo* Lookup(clang::DeclContext* decl) {
     return Lookup(clang::dyn_cast<clang::CXXRecordDecl>(decl));
   }
 
