@@ -14,7 +14,7 @@ static_library("device_usb") {
   deps = [ ":device_usb_ids" ]
 }
 
-custom("device_usb_ids") {
+action("device_usb_ids") {
   script = "//tools/usb_ids/usb_ids.py"
   source_prereqs = [ source_ids ]
   outputs = [ generated_ids ]

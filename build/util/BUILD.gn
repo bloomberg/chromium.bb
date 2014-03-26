@@ -10,9 +10,9 @@
 # The version is a string rather than an integer for extra flexibility (for
 # example, we may require git hashes in the future).
 #
-# All you nede to do is depend on this target, and then from your source code:
+# All you need to do is depend on this target, and then from your source code:
 #  #include "build/util/last_change.h"
-custom("last_change") {
+action("last_change") {
   script = "//build/util/lastchange.py"
 
   # This script must be run before targets depending on us.

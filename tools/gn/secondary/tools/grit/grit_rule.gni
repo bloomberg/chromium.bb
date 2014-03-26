@@ -56,7 +56,7 @@ template("grit") {
   }
 
   grit_custom_target = target_name + "_grit"
-  custom(grit_custom_target) {
+  action(grit_custom_target) {
     script = "//tools/grit/grit.py"
     source_prereqs = grit_inputs
     outputs = grit_outputs
