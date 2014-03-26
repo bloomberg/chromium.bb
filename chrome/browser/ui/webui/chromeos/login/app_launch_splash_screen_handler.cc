@@ -43,7 +43,10 @@ AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
       show_on_init_(false),
       state_(APP_LAUNCH_STATE_LOADING_AUTH_FILE),
       network_state_informer_(network_state_informer),
-      error_screen_actor_(error_screen_actor) {
+      error_screen_actor_(error_screen_actor),
+      online_state_(false),
+      network_config_done_(false),
+      network_config_requested_(false) {
   network_state_informer_->AddObserver(this);
 }
 
@@ -101,6 +104,10 @@ void AppLaunchSplashScreenHandler::RegisterMessages() {
               &AppLaunchSplashScreenHandler::HandleConfigureNetwork);
   AddCallback("cancelAppLaunch",
               &AppLaunchSplashScreenHandler::HandleCancelAppLaunch);
+  AddCallback("continueAppLaunch",
+              &AppLaunchSplashScreenHandler::HandleContinueAppLaunch);
+  AddCallback("networkConfigRequest",
+              &AppLaunchSplashScreenHandler::HandleNetworkConfigRequested);
 }
 
 void AppLaunchSplashScreenHandler::PrepareToShow() {
@@ -133,8 +140,11 @@ void AppLaunchSplashScreenHandler::SetDelegate(
 void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
   NetworkStateInformer::State state = network_state_informer_->state();
   if (state == NetworkStateInformer::ONLINE) {
-    delegate_->OnNetworkStateChanged(true);
-    return;
+    online_state_ = true;
+    if (!network_config_requested_) {
+      delegate_->OnNetworkStateChanged(true);
+      return;
+    }
   }
 
   const std::string network_path = network_state_informer_->network_path();
@@ -160,6 +170,11 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
     case NetworkStateInformer::OFFLINE: {
       error_screen_actor_->SetErrorState(
           ErrorScreen::ERROR_STATE_OFFLINE, network_name);
+      break;
+    }
+    case NetworkStateInformer::ONLINE: {
+      error_screen_actor_->SetErrorState(
+          ErrorScreen::ERROR_STATE_KIOSK_ONLINE, network_name);
       break;
     }
     default:
@@ -195,8 +210,11 @@ void AppLaunchSplashScreenHandler::UpdateState(
     return;
   }
 
-  NetworkStateInformer::State state = network_state_informer_->state();
-  delegate_->OnNetworkStateChanged(state == NetworkStateInformer::ONLINE);
+  bool new_online_state =
+      network_state_informer_->state() == NetworkStateInformer::ONLINE;
+  delegate_->OnNetworkStateChanged(new_online_state);
+
+  online_state_ = new_online_state;
 }
 
 void AppLaunchSplashScreenHandler::PopulateAppInfo(
@@ -251,6 +269,24 @@ void AppLaunchSplashScreenHandler::HandleCancelAppLaunch() {
     delegate_->OnCancelAppLaunch();
   else
     LOG(WARNING) << "No delegate set to handle cancel app launch";
+}
+
+void AppLaunchSplashScreenHandler::HandleNetworkConfigRequested() {
+  if (!delegate_ || network_config_done_)
+    return;
+
+  network_config_requested_ = true;
+  delegate_->OnNetworkConfigRequested(true);
+}
+
+void AppLaunchSplashScreenHandler::HandleContinueAppLaunch() {
+  DCHECK(online_state_);
+  if (delegate_ && online_state_) {
+    network_config_requested_ = false;
+    network_config_done_ = true;
+    delegate_->OnNetworkConfigRequested(false);
+    Show(app_id_);
+  }
 }
 
 }  // namespace chromeos

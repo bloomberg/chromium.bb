@@ -119,6 +119,7 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       waiting_for_network_(false),
       network_wait_timedout_(false),
       showing_network_dialog_(false),
+      network_config_requested_(false),
       launch_splash_start_time_(0) {
 }
 
@@ -216,11 +217,19 @@ void AppLaunchController::OnCancelAppLaunch() {
   OnLaunchFailed(KioskAppLaunchError::USER_CANCEL);
 }
 
+void AppLaunchController::OnNetworkConfigRequested(bool requested) {
+  network_config_requested_ = requested;
+  if (requested)
+    MaybeShowNetworkConfigureUI();
+  else
+    startup_app_launcher_->RestartLauncher();
+}
+
 void AppLaunchController::OnNetworkStateChanged(bool online) {
   if (!waiting_for_network_)
     return;
 
-  if (online)
+  if (online && !network_config_requested_)
     startup_app_launcher_->ContinueWithNetworkReady();
   else if (network_wait_timedout_)
     MaybeShowNetworkConfigureUI();
@@ -300,7 +309,10 @@ bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {
 void AppLaunchController::MaybeShowNetworkConfigureUI() {
   if (CanConfigureNetwork()) {
     if (NeedOwnerAuthToConfigureNetwork()) {
-      app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+      if (network_config_requested_)
+        OnConfigureNetwork();
+      else
+        app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
     } else {
       showing_network_dialog_ = true;
       app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
@@ -312,7 +324,7 @@ void AppLaunchController::MaybeShowNetworkConfigureUI() {
 }
 
 void AppLaunchController::InitializeNetwork() {
-  // Show the network configration dialog if network is not initialized
+  // Show the network configuration dialog if network is not initialized
   // after a brief wait time.
   waiting_for_network_ = true;
   network_wait_timer_.Start(
@@ -357,6 +369,10 @@ void AppLaunchController::OnInstallingApp() {
 
 void AppLaunchController::OnReadyToLaunch() {
   launcher_ready_ = true;
+
+  if (network_config_requested_)
+    return;
+
   if (!webui_visible_)
     return;
 
@@ -400,6 +416,10 @@ void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   KioskAppLaunchError::Save(error);
   chrome::AttemptUserExit();
   CleanUp();
+}
+
+bool AppLaunchController::IsShowingNetworkConfigScreen() {
+  return network_config_requested_;
 }
 
 }   // namespace chromeos

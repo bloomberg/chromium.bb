@@ -61,6 +61,7 @@ const char kAccelFocusNext[] = "focus_next";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
+const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -141,6 +142,10 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_S,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameAppLaunchBailout;
+
+  accel_map_[ui::Accelerator(ui::VKEY_N,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAccelNameAppLaunchNetworkConfig;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

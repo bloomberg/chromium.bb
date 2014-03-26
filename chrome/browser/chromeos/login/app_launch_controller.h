@@ -87,6 +87,7 @@ class AppLaunchController
   // AppLaunchSplashScreenActor::Delegate overrides:
   virtual void OnConfigureNetwork() OVERRIDE;
   virtual void OnCancelAppLaunch() OVERRIDE;
+  virtual void OnNetworkConfigRequested(bool requested) OVERRIDE;
   virtual void OnNetworkStateChanged(bool online) OVERRIDE;
 
   // StartupAppLauncher::Delegate overrides:
@@ -98,6 +99,7 @@ class AppLaunchController
   virtual void OnReadyToLaunch() OVERRIDE;
   virtual void OnLaunchSucceeded() OVERRIDE;
   virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE;
+  virtual bool IsShowingNetworkConfigScreen() OVERRIDE;
 
   // AppLaunchSigninScreen::Delegate overrides:
   virtual void OnOwnerSigninSuccess() OVERRIDE;
@@ -129,6 +131,7 @@ class AppLaunchController
   bool waiting_for_network_;
   bool network_wait_timedout_;
   bool showing_network_dialog_;
+  bool network_config_requested_;
   int64 launch_splash_start_time_;
 
   static bool skip_splash_wait_;

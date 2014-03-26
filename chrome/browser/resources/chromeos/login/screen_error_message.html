@@ -12,8 +12,17 @@
                  show-with-error-state-auth-ext-timeout
                  show-with-ui-state-local-state-error">
       </div>
+      <div id="kiosk-online-title" i18n-content="kioskOnlineTitle"
+          class="error-title
+                 show-with-error-state-kiosk-online"></div>
     </div>
     <div class="error-body">
+      <div id="kiosk-online-message-body"
+          class="error-message-paragraph
+                 show-with-error-state-kiosk-online">
+        <span i18n-content="kioskOnlineMessageBody"
+            class="show-with-error-state-kiosk-online"></span>
+      </div>
       <div id="offline-message-body"
           class="error-message-paragraph
                  show-with-error-state-offline
@@ -75,7 +84,8 @@
               class="offline-network-list-label
                      show-with-error-state-offline
                      show-with-error-state-proxy
-                     show-with-error-state-auth-timeout"></label>
+                     show-with-error-state-auth-timeout
+                     show-with-error-state-kiosk-online"></label>
           <label for="offline-networks-list-dropdown"
               i18n-content="selectAnotherNetwork"
               class="offline-network-list-label

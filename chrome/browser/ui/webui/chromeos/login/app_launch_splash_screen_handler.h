@@ -55,6 +55,8 @@ class AppLaunchSplashScreenHandler
   int GetProgressMessageFromState(AppLaunchState state);
   void HandleConfigureNetwork();
   void HandleCancelAppLaunch();
+  void HandleContinueAppLaunch();
+  void HandleNetworkConfigRequested();
 
   AppLaunchSplashScreenHandler::Delegate* delegate_;
   bool show_on_init_;
@@ -63,6 +65,12 @@ class AppLaunchSplashScreenHandler
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
   ErrorScreenActor* error_screen_actor_;
+  // True if we are online.
+  bool online_state_;
+  // True if we have network config screen was already shown before.
+  bool network_config_done_;
+  // True if we have manually requested network config screen.
+  bool network_config_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSplashScreenHandler);
 };

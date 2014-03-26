@@ -29,6 +29,9 @@ class AppLaunchSplashScreenActor {
     // Invoked when the app launch bailout shortcut key is pressed.
     virtual void OnCancelAppLaunch() = 0;
 
+    // Invoked when the network config shortcut key is pressed.
+    virtual void OnNetworkConfigRequested(bool requested) = 0;
+
     // Invoked when network state is changed. |online| is true if the device
     // is connected to the Internet.
     virtual void OnNetworkStateChanged(bool online) = 0;
