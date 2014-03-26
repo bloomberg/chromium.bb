@@ -150,7 +150,6 @@ class LocationBarViewMac : public LocationBar,
   virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual void ShowURL() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -174,10 +173,6 @@ class LocationBarViewMac : public LocationBar,
 
   // Activates the page action for the extension that has the given id.
   void ActivatePageAction(const std::string& extension_id);
-
- protected:
-  // OmniboxEditController:
-  virtual void HideURL() OVERRIDE;
 
  private:
   friend ZoomDecorationTest;

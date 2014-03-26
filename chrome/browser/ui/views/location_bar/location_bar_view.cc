@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -40,7 +39,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/origin_chip_info.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -80,7 +78,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -222,8 +219,7 @@ LocationBarView::LocationBarView(Browser* browser,
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
-      dropdown_animation_offset_(0),
-      animated_host_label_(NULL),
+      animation_offset_(0),
       weak_ptr_factory_(this) {
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -321,11 +317,8 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  animated_host_label_ = new views::Label(base::string16(), font_list);
-  animated_host_label_->SetVisible(false);
-  AddChildView(animated_host_label_);
-
   origin_chip_view_ = new OriginChipView(this, profile(), font_list);
+  origin_chip_view_->Init();
   origin_chip_view_->SetFocusable(false);
   origin_chip_view_->set_drag_controller(this);
   AddChildView(origin_chip_view_);
@@ -429,14 +422,6 @@ void LocationBarView::Init() {
   search_button_->set_min_size(gfx::Size(kSearchButtonWidth, 0));
   search_button_->SetVisible(false);
   AddChildView(search_button_);
-
-  show_url_animation_.reset(new gfx::SlideAnimation(this));
-  show_url_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  show_url_animation_->SetSlideDuration(200);
-
-  hide_url_animation_.reset(new gfx::SlideAnimation(this));
-  hide_url_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  hide_url_animation_->SetSlideDuration(200);
 
   content::Source<Profile> profile_source = content::Source<Profile>(profile());
   registrar_.Add(this,
@@ -547,7 +532,7 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 }
 
 void LocationBarView::SetAnimationOffset(int offset) {
-  dropdown_animation_offset_ = offset;
+  animation_offset_ = offset;
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {
@@ -723,7 +708,6 @@ void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
 
-  animated_host_label_->SetVisible(false);
   origin_chip_view_->SetVisible(origin_chip_view_->ShouldShow());
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
@@ -738,46 +722,6 @@ void LocationBarView::Layout() {
       LocationBarLayout::LEFT_EDGE, item_padding - kEditLeadingInternalSpace);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
                                          item_padding);
-
-  // Show and position the animated host label used in the show and hide URL
-  // animations.
-  if (show_url_animation_->is_animating() ||
-      hide_url_animation_->is_animating()) {
-    const GURL url = GetWebContents()->GetURL();
-    const base::string16 host =
-        OriginChip::LabelFromURLForProfile(url, profile());
-    animated_host_label_->SetText(host);
-
-    const base::string16 formatted_url = GetToolbarModel()->GetFormattedURL();
-
-    // Split the formatted URL on the host name in order to determine the size
-    // of the text leading up to it.
-    std::vector<base::string16> substrings;
-    base::SplitStringUsingSubstr(formatted_url, host, &substrings);
-    const base::string16 text_leading_host = substrings[0];
-    const int leading_text_width =
-        gfx::Canvas::GetStringWidth(text_leading_host,
-                                    origin_chip_view_->GetFontList());
-
-    const int position_of_host_name_in_chip = origin_chip_view_->host_label_x();
-    const int position_of_host_name_in_url =
-        position_of_host_name_in_chip + leading_text_width;
-
-    int host_label_x = position_of_host_name_in_chip;
-    if (show_url_animation_->is_animating()) {
-      host_label_x = show_url_animation_->
-          CurrentValueBetween(position_of_host_name_in_chip,
-                              position_of_host_name_in_url);
-    } else if (hide_url_animation_->is_animating()) {
-      host_label_x = hide_url_animation_->
-          CurrentValueBetween(position_of_host_name_in_url,
-                              position_of_host_name_in_chip);
-    }
-    animated_host_label_->SetBounds(
-        host_label_x, 0,
-        animated_host_label_->GetPreferredSize().width(), height());
-    animated_host_label_->SetVisible(true);
-  }
 
   const int origin_chip_width = origin_chip_view_->visible() ?
       origin_chip_view_->GetPreferredSize().width() : 0;
@@ -1155,49 +1099,6 @@ void LocationBarView::OnChanged() {
 
 void LocationBarView::OnSetFocus() {
   GetFocusManager()->SetFocusedView(this);
-}
-
-void LocationBarView::ShowURL() {
-  omnibox_view_->SetVisible(false);
-  omnibox_view_->ShowURL();
-  show_url_animation_->Show();
-}
-
-void LocationBarView::OnShowURLAnimationEnded() {
-  animated_host_label_->SetVisible(false);
-  omnibox_view_->SetVisible(true);
-  omnibox_view_->FadeIn();
-  omnibox_view_->SetFocus();
-}
-
-void LocationBarView::HideURL() {
-  omnibox_view_->SetVisible(false);
-  hide_url_animation_->Show();
-}
-
-void LocationBarView::OnHideURLAnimationEnded() {
-  animated_host_label_->SetVisible(false);
-  omnibox_view_->HideURL();
-  omnibox_view_->SetVisible(true);
-  origin_chip_view_->FadeIn();
-}
-
-void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == show_url_animation_.get() ||
-      animation == hide_url_animation_.get()) {
-    Layout();
-    SchedulePaint();
-  }
-}
-
-void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == show_url_animation_.get()) {
-    show_url_animation_->Reset();
-    OnShowURLAnimationEnded();
-  } else if (animation == hide_url_animation_.get()) {
-    hide_url_animation_->Reset();
-    OnHideURLAnimationEnded();
-  }
 }
 
 InstantController* LocationBarView::GetInstant() {

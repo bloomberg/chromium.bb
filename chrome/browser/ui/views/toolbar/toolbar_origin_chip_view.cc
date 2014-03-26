@@ -341,7 +341,7 @@ void ToolbarOriginChipView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_COUNTS("OriginChip.Pressed", 1);
   content::RecordAction(base::UserMetricsAction("OriginChipPress"));
 
-  toolbar_view_->location_bar()->ShowURL();
+  toolbar_view_->location_bar()->GetOmniboxView()->ShowURL();
 }
 
 void ToolbarOriginChipView::WriteDragDataForView(View* sender,

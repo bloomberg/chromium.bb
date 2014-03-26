@@ -22,7 +22,6 @@ class WebContents;
 namespace gfx {
 class Canvas;
 class FontList;
-class SlideAnimation;
 }
 
 namespace views {
@@ -38,6 +37,8 @@ class OriginChipView : public views::LabelButton,
                  Profile* profile,
                  const gfx::FontList& font_list);
   virtual ~OriginChipView();
+
+  void Init();
 
   // Returns true if the origin chip should be visible.  This will always be
   // true if the original origin chip experiment is enabled.  If the V2
@@ -64,18 +65,9 @@ class OriginChipView : public views::LabelButton,
   // width, since the hostname will not be elided past the TLD+1.
   int ElideDomainTarget(int target_max_width);
 
-  // Starts an animation that fades in the border.
-  void FadeIn();
-
-  // Returns the current X position of the host label.
-  int host_label_x() const { return host_label_->x(); }
-
   // views::LabelButton:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -100,7 +92,6 @@ class OriginChipView : public views::LabelButton,
   GURL url_displayed_;
   ToolbarModel::SecurityLevel security_level_;
   bool url_malware_;
-  scoped_ptr<gfx::SlideAnimation> fade_in_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginChipView);
 };

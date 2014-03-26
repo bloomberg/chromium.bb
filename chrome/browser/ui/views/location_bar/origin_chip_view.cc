@@ -25,6 +25,8 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -35,8 +37,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -143,7 +143,16 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
     sb_service->ui_manager()->AddObserver(this);
 
   SetFontList(font_list);
+}
 
+OriginChipView::~OriginChipView() {
+  scoped_refptr<SafeBrowsingService> sb_service =
+      g_browser_process->safe_browsing_service();
+  if (sb_service.get() && sb_service->ui_manager())
+    sb_service->ui_manager()->RemoveObserver(this);
+}
+
+void OriginChipView::Init() {
   image()->EnableCanvasFlippingForRTLUI(false);
 
   // TODO(gbillock): Would be nice to just use stock LabelButton stuff here.
@@ -155,17 +164,6 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
 
   host_label_ = new views::Label(base::string16(), GetFontList());
   AddChildView(host_label_);
-
-  fade_in_animation_.reset(new gfx::SlideAnimation(this));
-  fade_in_animation_->SetTweenType(gfx::Tween::LINEAR);
-  fade_in_animation_->SetSlideDuration(300);
-}
-
-OriginChipView::~OriginChipView() {
-  scoped_refptr<SafeBrowsingService> sb_service =
-      g_browser_process->safe_browsing_service();
-  if (sb_service.get() && sb_service->ui_manager())
-    sb_service->ui_manager()->RemoveObserver(this);
 }
 
 bool OriginChipView::ShouldShow() {
@@ -282,24 +280,6 @@ void OriginChipView::OnChanged() {
   // arrows are pointing to the right spot. Only needed for some edge cases.
 }
 
-void OriginChipView::FadeIn() {
-  fade_in_animation_->Show();
-}
-
-void OriginChipView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == fade_in_animation_.get())
-    SchedulePaint();
-  else
-    views::LabelButton::AnimationProgressed(animation);
-}
-
-void OriginChipView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == fade_in_animation_.get())
-    fade_in_animation_->Reset();
-  else
-    views::LabelButton::AnimationEnded(animation);
-}
-
 gfx::Size OriginChipView::GetPreferredSize() {
   gfx::Size label_size = host_label_->GetPreferredSize();
   gfx::Size icon_size = location_icon_view_->GetPreferredSize();
@@ -330,17 +310,6 @@ void OriginChipView::Layout() {
                          LocationBarView::kNormalEdgeThickness,
                          host_label_width,
                          height() - 2 * LocationBarView::kNormalEdgeThickness);
-}
-
-void OriginChipView::OnPaintBorder(gfx::Canvas* canvas) {
-  if (fade_in_animation_->is_animating()) {
-    canvas->SaveLayerAlpha(static_cast<uint8>(
-        fade_in_animation_->CurrentValueBetween(0, 255)));
-    views::LabelButton::OnPaintBorder(canvas);
-    canvas->Restore();
-  } else {
-    views::LabelButton::OnPaintBorder(canvas);
-  }
 }
 
 int OriginChipView::ElideDomainTarget(int target_max_width) {
@@ -381,7 +350,7 @@ void OriginChipView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_COUNTS("OriginChip.Pressed", 1);
   content::RecordAction(base::UserMetricsAction("OriginChipPress"));
 
-  location_bar_view_->ShowURL();
+  location_bar_view_->GetOmniboxView()->ShowURL();
 }
 
 // Note: When OnSafeBrowsingHit would be called, OnSafeBrowsingMatch will

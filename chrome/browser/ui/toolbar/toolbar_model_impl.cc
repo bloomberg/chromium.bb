@@ -103,10 +103,6 @@ base::string16 ToolbarModelImpl::GetText() const {
   if (WouldOmitURLDueToOriginChip())
     return base::string16();
 
-  return GetFormattedURL();
-}
-
-base::string16 ToolbarModelImpl::GetFormattedURL() const {
   std::string languages;  // Empty if we don't have a |navigation_controller|.
   Profile* profile = GetProfile();
   if (profile)

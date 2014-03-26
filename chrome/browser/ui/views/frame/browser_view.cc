@@ -1057,7 +1057,7 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
     // origin chip is enabled, show it now to support the same functionality.
     if (select_all &&
         location_bar->GetToolbarModel()->WouldOmitURLDueToOriginChip())
-      location_bar->ShowURL();
+      location_bar->omnibox_view()->ShowURL();
     else
       location_bar->FocusLocation(select_all);
   } else {

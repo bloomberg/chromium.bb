@@ -93,14 +93,23 @@ void OmniboxView::HandleOriginChipMouseRelease() {
   if ((chrome::GetOriginChipV2HideTrigger() ==
        chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) &&
       controller()->GetToolbarModel()->GetText().empty()) {
-    controller()->HideOriginChip();
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+    controller()->OnChanged();
   }
 }
 
 void OmniboxView::OnDidKillFocus() {
+  // If user input is not in progress, re-enable the origin chip and URL
+  // replacement.  This addresses the case where the URL was shown by a call
+  // to ShowURL().  If the Omnibox achieved focus by other means, the calls to
+  // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
+  // required (a call to OnChanged would be sufficient) but do no harm.
   if (chrome::ShouldDisplayOriginChipV2() &&
       !model()->user_input_in_progress()) {
-    controller()->ShowOriginChip();
+    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
+    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
+    model()->UpdatePermanentText();
+    RevertAll();
   }
 }
 
@@ -167,13 +176,6 @@ void OmniboxView::ShowURL() {
   model_->UpdatePermanentText();
   RevertWithoutResettingSearchTermReplacement();
   SelectAll(true);
-}
-
-void OmniboxView::HideURL() {
-  controller_->GetToolbarModel()->set_origin_chip_enabled(true);
-  controller_->GetToolbarModel()->set_url_replacement_enabled(true);
-  model_->UpdatePermanentText();
-  RevertWithoutResettingSearchTermReplacement();
 }
 
 void OmniboxView::RevertAll() {
