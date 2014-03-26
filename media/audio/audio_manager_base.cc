@@ -334,22 +334,10 @@ void AudioManagerBase::Shutdown() {
 
 void AudioManagerBase::ShutdownOnAudioThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  AudioOutputDispatchers::iterator it = output_dispatchers_.begin();
-  for (; it != output_dispatchers_.end(); ++it) {
-    scoped_refptr<AudioOutputDispatcher>& dispatcher = (*it)->dispatcher;
-    dispatcher->Shutdown();
-
-    // All AudioOutputProxies must have been freed before Shutdown is called.
-    // If they still exist, things will go bad.  They have direct pointers to
-    // both physical audio stream objects that belong to the dispatcher as
-    // well as the message loop of the audio thread that will soon go away.
-    // So, better crash now than later.
-    DCHECK(dispatcher->HasOneRef()) << "AudioOutputProxies are still alive";
-    dispatcher = NULL;
+  while (!output_dispatchers_.empty()) {
+    output_dispatchers_.back()->dispatcher->Shutdown();
+    output_dispatchers_.pop_back();
   }
-
-  output_dispatchers_.clear();
 }
 
 void AudioManagerBase::AddOutputDeviceChangeListener(

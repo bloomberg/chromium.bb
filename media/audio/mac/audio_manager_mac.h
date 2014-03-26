@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_MAC_AUDIO_MANAGER_MAC_H_
 
 #include <CoreAudio/AudioHardware.h>
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -45,6 +46,10 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual std::string GetDefaultOutputDeviceID() OVERRIDE;
+
+  // Used to track destruction of input and output streams.
+  virtual void ReleaseOutputStream(AudioOutputStream* stream) OVERRIDE;
+  virtual void ReleaseInputStream(AudioInputStream* stream) OVERRIDE;
 
   static bool GetDefaultInputDevice(AudioDeviceID* device);
   static bool GetDefaultOutputDevice(AudioDeviceID* device);
@@ -99,6 +104,11 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // http://crbug.com/160920 for more details.
   class AudioPowerObserver;
   scoped_ptr<AudioPowerObserver> power_observer_;
+
+  // Tracks all constructed input and output streams so they can be stopped at
+  // shutdown.  See ShutdownOnAudioThread() for more details.
+  std::list<AudioInputStream*> input_streams_;
+  std::list<AudioOutputStream*> output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };

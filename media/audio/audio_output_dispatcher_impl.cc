@@ -124,6 +124,10 @@ void AudioOutputDispatcherImpl::Shutdown() {
   // Close all idle streams immediately.  The |close_timer_| will handle
   // invalidating any outstanding tasks upon its destruction.
   CloseAllIdleStreams();
+
+  // No AudioOutputProxy objects should hold a reference to us when we get
+  // to this stage.
+  DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
 }
 
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
