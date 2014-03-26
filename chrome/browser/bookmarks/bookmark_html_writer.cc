@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
@@ -25,8 +26,6 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -145,8 +144,8 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     Write(kFolderChildrenEnd);
     Write(kNewline);
-    // File stream close is forced so that unit test could read it.
-    file_stream_.reset();
+    // File close is forced so that unit test could read it.
+    file_.reset();
 
     NotifyOnFinish();
   }
@@ -169,9 +168,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
   // Opens the file, returning true on success.
   bool OpenFile() {
-    file_stream_.reset(new net::FileStream(NULL));
-    int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-    return (file_stream_->OpenSync(path_, flags) == net::OK);
+    int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
+    file_.reset(new base::File(path_, flags));
+    return file_->IsValid();
   }
 
   // Increments the indent.
@@ -195,10 +194,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Writes raw text out returning true on success. This does not escape
   // the text in anyway.
   bool Write(const std::string& text) {
-    // net::FileStream does not allow 0-byte writes.
     if (!text.length())
       return true;
-    size_t wrote = file_stream_->WriteSync(text.c_str(), text.length());
+    size_t wrote = file_->WriteAtCurrentPos(text.c_str(), text.length());
     bool result = (wrote == text.length());
     DCHECK(result);
     return result;
@@ -373,7 +371,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   BookmarksExportObserver* observer_;
 
   // File we're writing to.
-  scoped_ptr<net::FileStream> file_stream_;
+  scoped_ptr<base::File> file_;
 
   // How much we indent when writing a bookmark/folder. This is modified
   // via IncrementIndent and DecrementIndent.
