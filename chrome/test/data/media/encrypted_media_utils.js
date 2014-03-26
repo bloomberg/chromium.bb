@@ -339,8 +339,12 @@ function requestLicenseTry(message) {
     if (this.status == 200) {
       var response = new Uint8Array(this.response);
       console.log('Adding license response', response);
-      message.target.webkitAddKey(keySystem, response, new Uint8Array(1),
-                                  message.sessionId);
+      if (usePrefixedEME) {
+        message.target.webkitAddKey(keySystem, response, new Uint8Array(1),
+                                    message.sessionId);
+      } else {
+        message.target.update(response);
+      }
       // Reset license request count so that renewal requests can be sent later.
       message.target.licenseRequestAttempts = 0;
     } else {
