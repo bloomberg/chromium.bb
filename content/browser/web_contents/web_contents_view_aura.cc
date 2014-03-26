@@ -1434,10 +1434,6 @@ bool WebContentsViewAura::HasHitTestMask() const {
 void WebContentsViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void WebContentsViewAura::DidRecreateLayer(ui::Layer *old_layer,
-                                           ui::Layer *new_layer) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, ui::EventHandler implementation:
 

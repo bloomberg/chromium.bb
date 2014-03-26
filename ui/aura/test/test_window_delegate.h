@@ -60,8 +60,6 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
-  virtual void DidRecreateLayer(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE;
 
  private:
   int window_component_;

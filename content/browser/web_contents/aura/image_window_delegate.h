@@ -43,8 +43,6 @@ class CONTENT_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
-  virtual void DidRecreateLayer(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE;
 
  protected:
   gfx::Image image_;

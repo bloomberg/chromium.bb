@@ -58,8 +58,6 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
   virtual bool HasHitTestMask() const OVERRIDE { return false; }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
-  virtual void DidRecreateLayer(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE {}
 
   // Sets cursor compositing mode on/off.
   void SetCursorCompositingEnabled(bool enabled) {

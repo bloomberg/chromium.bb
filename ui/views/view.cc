@@ -20,7 +20,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ui_base_switches_util.h"
-#include "ui/compositor/clone_layer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -504,10 +503,6 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   } else if (!paint_to_layer_ && layer()) {
     DestroyLayer();
   }
-}
-
-scoped_ptr<ui::Layer> View::RecreateLayer() {
-  return ui::CloneLayer(this);
 }
 
 // RTL positioning -------------------------------------------------------------

@@ -11,6 +11,7 @@
 #include "ui/compositor/layer.h"
 
 namespace ui {
+class LayerOwnerDelegate;
 
 class COMPOSITOR_EXPORT LayerOwner {
  public:
@@ -32,10 +33,14 @@ class COMPOSITOR_EXPORT LayerOwner {
   //
   // This does not recurse. Existing children of the layer are moved to the new
   // layer.
-  virtual scoped_ptr<Layer> RecreateLayer();
+  scoped_ptr<Layer> RecreateLayer();
 
   ui::Layer* layer() { return layer_; }
   const ui::Layer* layer() const { return layer_; }
+
+  void set_layer_owner_delegate(LayerOwnerDelegate* delegate) {
+    layer_owner_delegate_ = delegate;
+  }
 
  protected:
   void DestroyLayer();
@@ -50,6 +55,8 @@ class COMPOSITOR_EXPORT LayerOwner {
   // e.g. fading it out when it is destroyed.
   scoped_ptr<Layer> layer_owner_;
   Layer* layer_;
+
+  LayerOwnerDelegate* layer_owner_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerOwner);
 };

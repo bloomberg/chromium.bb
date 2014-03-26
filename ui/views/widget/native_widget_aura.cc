@@ -811,10 +811,6 @@ void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
   delegate_->GetHitTestMask(mask);
 }
 
-void NativeWidgetAura::DidRecreateLayer(ui::Layer *old_layer,
-                                        ui::Layer *new_layer) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, ui::EventHandler implementation:
 

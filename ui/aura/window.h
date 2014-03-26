@@ -320,9 +320,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
-  // Overriden from ui::LayerOwner.
-  virtual scoped_ptr<ui::Layer> RecreateLayer() OVERRIDE;
-
 #if !defined(NDEBUG)
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;

@@ -323,9 +323,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Compositor.
   void SetPaintToLayer(bool paint_to_layer);
 
-  // Overriden from ui:LayerOwner:
-  virtual scoped_ptr<ui::Layer> RecreateLayer() OVERRIDE;
-
   // RTL positioning -----------------------------------------------------------
 
   // Methods for accessing the bounds and position of the view, relative to its

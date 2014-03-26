@@ -108,8 +108,6 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
         keyboard::DefaultKeyboardBoundsFromWindowBounds(bounds_);
     mask->addRect(RectToSkRect(keyboard_bounds));
   }
-  virtual void DidRecreateLayer(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE {}
 
   gfx::Rect bounds_;
   keyboard::KeyboardControllerProxy* proxy_;

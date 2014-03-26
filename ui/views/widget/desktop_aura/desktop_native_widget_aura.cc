@@ -983,9 +983,6 @@ void DesktopNativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
   native_widget_delegate_->GetHitTestMask(mask);
 }
 
-void DesktopNativeWidgetAura::DidRecreateLayer(ui::Layer* old_layer,
-                                               ui::Layer* new_layer) {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 

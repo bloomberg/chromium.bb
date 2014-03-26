@@ -24,8 +24,6 @@
         'COMPOSITOR_IMPLEMENTATION',
       ],
       'sources': [
-        'clone_layer.cc',
-        'clone_layer.h',
         'compositor.cc',
         'compositor.h',
         'compositor_export.h',

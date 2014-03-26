@@ -253,8 +253,6 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
     return false;
   }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
-  virtual void DidRecreateLayer(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);

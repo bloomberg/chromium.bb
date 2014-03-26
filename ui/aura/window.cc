@@ -27,7 +27,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/compositor/clone_layer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_target_iterator.h"
@@ -773,17 +772,6 @@ void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
     host_->OnDeviceScaleFactorChanged(device_scale_factor);
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
-}
-
-scoped_ptr<ui::Layer> Window::RecreateLayer() {
-  scoped_ptr<ui::Layer> old_layer(ui::CloneLayer(this));
-  if (!old_layer)
-    return old_layer.Pass();
-
-  if (delegate_)
-    delegate_->DidRecreateLayer(old_layer.get(), layer());
-
-  return old_layer.Pass();
 }
 
 #if !defined(NDEBUG)

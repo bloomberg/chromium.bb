@@ -96,10 +96,6 @@ bool TestWindowDelegate::HasHitTestMask() const {
 void TestWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void TestWindowDelegate::DidRecreateLayer(ui::Layer *old_layer,
-                                          ui::Layer *new_layer) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ColorTestWindowDelegate
 

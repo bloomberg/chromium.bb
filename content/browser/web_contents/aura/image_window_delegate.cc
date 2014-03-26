@@ -94,8 +94,4 @@ bool ImageWindowDelegate::HasHitTestMask() const {
 void ImageWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void ImageWindowDelegate::DidRecreateLayer(ui::Layer *old_layer,
-                                           ui::Layer *new_layer) {
-}
-
 }  // namespace content
