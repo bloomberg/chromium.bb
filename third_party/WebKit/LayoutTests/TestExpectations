@@ -715,8 +715,6 @@ crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
 crbug.com/320099 webaudio/oscillator-sawtooth.html [ NeedsManualRebaseline ]
 crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
 
-crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
-
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
