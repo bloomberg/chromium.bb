@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/privacy_mode.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_client.h"
 
@@ -73,7 +74,8 @@ int main(int argc, char *argv[]) {
   // TODO(rjshade): Set version on command line.
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),
-      net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure),
+      net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure,
+                          net::kPrivacyModeDisabled),
       net::QuicSupportedVersions(), true);
 
   client.Initialize();

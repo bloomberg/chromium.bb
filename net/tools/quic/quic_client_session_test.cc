@@ -35,7 +35,7 @@ class ToolsQuicClientSessionTest
                                                SupportedVersions(GetParam()))) {
     crypto_config_.SetDefaults();
     session_.reset(new QuicClientSession(
-        QuicSessionKey(kServerHostname, kPort, false),
+        QuicSessionKey(kServerHostname, kPort, false, kPrivacyModeDisabled),
         DefaultQuicConfig(), connection_, &crypto_config_));
     session_->config()->SetDefaults();
   }

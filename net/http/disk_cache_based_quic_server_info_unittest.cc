@@ -14,6 +14,7 @@
 #include "net/quic/quic_session_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
 namespace {
 
 // This is an empty transaction, needed to register the URL and the test mode.
@@ -22,7 +23,7 @@ const MockTransaction kHostInfoTransaction1 = {
   "",
   base::Time(),
   "",
-  net::LOAD_NORMAL,
+  LOAD_NORMAL,
   "",
   "",
   base::Time(),
@@ -37,7 +38,7 @@ const MockTransaction kHostInfoTransaction2 = {
   "",
   base::Time(),
   "",
-  net::LOAD_NORMAL,
+  LOAD_NORMAL,
   "",
   "",
   base::Time(),
@@ -47,6 +48,8 @@ const MockTransaction kHostInfoTransaction2 = {
   0
 };
 
+}  // namespace
+
 // Tests that we can delete a DiskCacheBasedQuicServerInfo object in a
 // completion callback for DiskCacheBasedQuicServerInfo::WaitForDataReady.
 TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
@@ -54,32 +57,33 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   MockHttpCache cache(factory);
-  net::QuicSessionKey server_key("www.verisign.com", 443, true);
-  scoped_ptr<net::QuicServerInfo> quic_server_info(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  QuicSessionKey server_key("www.verisign.com", 443, true,
+                            kPrivacyModeDisabled);
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
-  net::TestCompletionCallback callback;
+  TestCompletionCallback callback;
   int rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::ERR_IO_PENDING, rv);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
   // Now complete the backend creation and let the callback run.
   factory->FinishCreation();
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
 }
 
 // Tests the basic logic of storing, retrieving and updating data.
 TEST(DiskCacheBasedQuicServerInfo, Update) {
   MockHttpCache cache;
   AddMockTransaction(&kHostInfoTransaction1);
-  net::TestCompletionCallback callback;
+  TestCompletionCallback callback;
 
-  net::QuicSessionKey server_key("www.google.com", 443, true);
-  scoped_ptr<net::QuicServerInfo> quic_server_info(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
   int rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
-  net::QuicServerInfo::State* state = quic_server_info->mutable_state();
+  QuicServerInfo::State* state = quic_server_info->mutable_state();
   EXPECT_TRUE(state->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
@@ -98,10 +102,10 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
 
   // Open the stored QuicServerInfo.
   quic_server_info.reset(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
   // And now update the data.
   state = quic_server_info->mutable_state();
@@ -114,13 +118,13 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
 
   // Verify that the state was updated.
   quic_server_info.reset(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
-  const net::QuicServerInfo::State& state1 = quic_server_info->state();
+  const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
@@ -136,17 +140,17 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   MockHttpCache cache;
   AddMockTransaction(&kHostInfoTransaction1);
   AddMockTransaction(&kHostInfoTransaction2);
-  net::TestCompletionCallback callback;
+  TestCompletionCallback callback;
 
   // Persist data for port 443.
-  net::QuicSessionKey server_key1("www.google.com", 443, true);
-  scoped_ptr<net::QuicServerInfo> quic_server_info1(
-      new net::DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
+  QuicSessionKey server_key1("www.google.com", 443, true, kPrivacyModeDisabled);
+  scoped_ptr<QuicServerInfo> quic_server_info1(
+      new DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
   quic_server_info1->Start();
   int rv = quic_server_info1->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
-  net::QuicServerInfo::State* state1 = quic_server_info1->mutable_state();
+  QuicServerInfo::State* state1 = quic_server_info1->mutable_state();
   EXPECT_TRUE(state1->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
@@ -163,14 +167,14 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Persist data for port 80.
-  net::QuicSessionKey server_key2("www.google.com", 80, false);
-  scoped_ptr<net::QuicServerInfo> quic_server_info2(
-      new net::DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
+  QuicSessionKey server_key2("www.google.com", 80, false, kPrivacyModeDisabled);
+  scoped_ptr<QuicServerInfo> quic_server_info2(
+      new DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
   quic_server_info2->Start();
   rv = quic_server_info2->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
-  net::QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
+  QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
   EXPECT_TRUE(state2->certs.empty());
   const string server_config_b = "server_config_b";
   const string source_address_token_b = "source_address_token_b";
@@ -187,14 +191,14 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Verify the stored QuicServerInfo for port 443.
-  scoped_ptr<net::QuicServerInfo> quic_server_info(
-      new net::DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
-  const net::QuicServerInfo::State& state_a = quic_server_info->state();
+  const QuicServerInfo::State& state_a = quic_server_info->state();
   EXPECT_EQ(server_config_a, state_a.server_config);
   EXPECT_EQ(source_address_token_a, state_a.source_address_token);
   EXPECT_EQ(server_config_sig_a, state_a.server_config_sig);
@@ -203,13 +207,13 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 
   // Verify the stored QuicServerInfo for port 80.
   quic_server_info.reset(
-      new net::DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
-  const net::QuicServerInfo::State& state_b = quic_server_info->state();
+  const QuicServerInfo::State& state_b = quic_server_info->state();
   EXPECT_EQ(server_config_b, state_b.server_config);
   EXPECT_EQ(source_address_token_b, state_b.source_address_token);
   EXPECT_EQ(server_config_sig_b, state_b.server_config_sig);
@@ -224,18 +228,18 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   MockHttpCache cache;
   AddMockTransaction(&kHostInfoTransaction1);
-  net::TestCompletionCallback callback;
+  TestCompletionCallback callback;
 
-  net::QuicSessionKey server_key("www.google.com", 443, true);
-  scoped_ptr<net::QuicServerInfo> quic_server_info(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
   int rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
-  net::QuicServerInfo::State* state = quic_server_info->mutable_state();
+  QuicServerInfo::State* state = quic_server_info->mutable_state();
   EXPECT_TRUE(state->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
@@ -260,13 +264,13 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
 
   // Verify that the state was updated.
   quic_server_info.reset(
-      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_EQ(OK, callback.GetResult(rv));
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
-  const net::QuicServerInfo::State& state1 = quic_server_info->state();
+  const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
@@ -276,4 +280,4 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   RemoveMockTransaction(&kHostInfoTransaction1);
 }
 
-}  // namespace
+}  // namespace net

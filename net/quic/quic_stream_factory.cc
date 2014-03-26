@@ -88,6 +88,7 @@ class QuicStreamFactory::Job {
       HostResolver* host_resolver,
       const HostPortPair& host_port_pair,
       bool is_https,
+      PrivacyMode privacy_mode,
       base::StringPiece method,
       QuicServerInfo* server_info,
       const BoundNetLog& net_log);
@@ -128,7 +129,6 @@ class QuicStreamFactory::Job {
 
   QuicStreamFactory* factory_;
   SingleRequestHostResolver host_resolver_;
-  bool is_https_;
   QuicSessionKey session_key_;
   bool is_post_;
   scoped_ptr<QuicServerInfo> server_info_;
@@ -145,13 +145,13 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
                             const HostPortPair& host_port_pair,
                             bool is_https,
+                            PrivacyMode privacy_mode,
                             base::StringPiece method,
                             QuicServerInfo* server_info,
                             const BoundNetLog& net_log)
     : factory_(factory),
       host_resolver_(host_resolver),
-      is_https_(is_https),
-      session_key_(host_port_pair, is_https),
+      session_key_(host_port_pair, is_https, privacy_mode),
       is_post_(method == "POST"),
       server_info_(server_info),
       net_log_(net_log),
@@ -273,9 +273,8 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  int rv = factory_->CreateSession(session_key_.host_port_pair(), is_https_,
-                                   server_info_.Pass(), address_list_,
-                                   net_log_, &session_);
+  int rv = factory_->CreateSession(session_key_, server_info_.Pass(),
+                                   address_list_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -287,7 +286,7 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_QUIC_PROTOCOL_ERROR;
   }
   rv = session_->CryptoConnect(
-      factory_->require_confirmation() || is_https_ || is_post_,
+      factory_->require_confirmation() || session_key_.is_https() || is_post_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
   return rv;
@@ -322,13 +321,15 @@ QuicStreamRequest::~QuicStreamRequest() {
 
 int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                                bool is_https,
+                               PrivacyMode privacy_mode,
                                base::StringPiece method,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) {
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
-  int rv = factory_->Create(host_port_pair, is_https, method, net_log, this);
+  int rv = factory_->Create(host_port_pair, is_https, privacy_mode, method,
+                            net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
     is_https_ = is_https;
@@ -404,10 +405,11 @@ QuicStreamFactory::~QuicStreamFactory() {
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
                               bool is_https,
+                              PrivacyMode privacy_mode,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
-  QuicSessionKey session_key(host_port_pair, is_https);
+  QuicSessionKey session_key(host_port_pair, is_https, privacy_mode);
   if (HasActiveSession(session_key)) {
     request->set_stream(CreateIfSessionExists(session_key, net_log));
     return OK;
@@ -429,8 +431,8 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
       quic_server_info = quic_server_info_factory_->GetForServer(session_key);
     }
   }
-  scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair,
-                              is_https, method, quic_server_info, net_log));
+  scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair, is_https,
+                              privacy_mode, method, quic_server_info, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
 
@@ -653,14 +655,12 @@ bool QuicStreamFactory::HasActiveSession(
 }
 
 int QuicStreamFactory::CreateSession(
-    const HostPortPair& host_port_pair,
-    bool is_https,
+    const QuicSessionKey& session_key,
     scoped_ptr<QuicServerInfo> server_info,
     const AddressList& address_list,
     const BoundNetLog& net_log,
     QuicClientSession** session) {
   bool enable_port_selection = enable_port_selection_;
-  QuicSessionKey session_key(host_port_pair, is_https);
   if (enable_port_selection &&
       ContainsKey(gone_away_aliases_, session_key)) {
     // Disable port selection when the server is going away.
@@ -673,7 +673,7 @@ int QuicStreamFactory::CreateSession(
   QuicConnectionId connection_id = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
-      new PortSuggester(host_port_pair, port_seed_);
+      new PortSuggester(session_key.host_port_pair(), port_seed_);
   DatagramSocket::BindType bind_type = enable_port_selection ?
       DatagramSocket::RANDOM_BIND :  // Use our callback.
       DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
@@ -733,7 +733,8 @@ int QuicStreamFactory::CreateSession(
   QuicConfig config = config_;
   if (http_server_properties_) {
     const HttpServerProperties::NetworkStats* stats =
-        http_server_properties_->GetServerNetworkStats(host_port_pair);
+        http_server_properties_->GetServerNetworkStats(
+            session_key.host_port_pair());
     if (stats != NULL) {
       config.set_initial_round_trip_time_us(stats->rtt.InMicroseconds(),
                                             stats->rtt.InMicroseconds());

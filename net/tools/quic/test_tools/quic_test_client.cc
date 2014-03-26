@@ -215,7 +215,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
     if (!url.host().empty()) {
       client_->set_server_key(
           QuicSessionKey(url.host(), url.EffectiveIntPort(),
-                         url.SchemeIs("https") ? true : false));
+                         url.SchemeIs("https"), kPrivacyModeDisabled));
     }
   }
 
