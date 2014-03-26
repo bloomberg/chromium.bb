@@ -3597,6 +3597,14 @@
                 ],
               }],
             ],
+            # TODO(glider): enable the default options on other systems.
+            'conditions': [
+              ['OS=="linux"', {
+                'dependencies': [
+                  '<(DEPTH)/base/base.gyp:sanitizer_options',
+                ],
+              }],
+            ],
           }],
           ['asan==1', {
             'target_conditions': [
