@@ -63,6 +63,7 @@ inline bool isCollapsibleWhitespace(UChar c)
 
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 PassRefPtr<Range> findPlainText(const Range*, const String&, FindOptions);
+PassRefPtr<Range> findPlainText(const Position& start, const Position& end, const String&, FindOptions);
 
 class BitStack {
 public:
@@ -308,6 +309,7 @@ private:
 class CharacterIterator {
 public:
     explicit CharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);
 
@@ -324,6 +326,8 @@ public:
     PassRefPtr<Range> range() const;
 
 private:
+    void initialize();
+
     int m_offset;
     int m_runOffset;
     bool m_atBreak;

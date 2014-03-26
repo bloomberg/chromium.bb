@@ -1477,11 +1477,25 @@ PassRefPtr<Range> SimplifiedBackwardsTextIterator::range() const
 
 // --------
 
-CharacterIterator::CharacterIterator(const Range* r, TextIteratorBehaviorFlags behavior)
+CharacterIterator::CharacterIterator(const Range* range, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
-    , m_textIterator(r, behavior)
+    , m_textIterator(range, behavior)
+{
+    initialize();
+}
+
+CharacterIterator::CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+    : m_offset(0)
+    , m_runOffset(0)
+    , m_atBreak(true)
+    , m_textIterator(start, end, behavior)
+{
+    initialize();
+}
+
+void CharacterIterator::initialize()
 {
     while (!atEnd() && !m_textIterator.length())
         m_textIterator.advance();
@@ -2059,7 +2073,7 @@ static PassRefPtr<Range> collapsedToBoundary(const Range* range, bool forward)
     return result.release();
 }
 
-static size_t findPlainText(CharacterIterator& it, const String& target, FindOptions options, size_t& matchStart)
+static size_t findPlainTextInternal(CharacterIterator& it, const String& target, FindOptions options, size_t& matchStart)
 {
     matchStart = 0;
     size_t matchLength = 0;
@@ -2105,6 +2119,8 @@ tryAgain:
     return matchLength;
 }
 
+static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots;
+
 PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
 {
     // CharacterIterator requires renderers to be up-to-date
@@ -2114,14 +2130,38 @@ PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOp
     size_t matchStart;
     size_t matchLength;
     {
-        CharacterIterator findIterator(range, TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots);
-        matchLength = findPlainText(findIterator, target, options, matchStart);
+        CharacterIterator findIterator(range, iteratorFlagsForFindPlainText);
+        matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength)
             return collapsedToBoundary(range, !(options & Backwards));
     }
 
     // Then, find the document position of the start and the end of the text.
-    CharacterIterator computeRangeIterator(range, TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots);
+    CharacterIterator computeRangeIterator(range, iteratorFlagsForFindPlainText);
+    return characterSubrange(computeRangeIterator, matchStart, matchLength);
+}
+
+PassRefPtr<Range> findPlainText(const Position& start, const Position& end, const String& target, FindOptions options)
+{
+    // CharacterIterator requires renderers to be up-to-date.
+    if (!start.inDocument())
+        return nullptr;
+    ASSERT(start.document() == end.document());
+    start.document()->updateLayout();
+
+    // FIXME: Reduce the code duplication with above (but how?).
+    size_t matchStart;
+    size_t matchLength;
+    {
+        CharacterIterator findIterator(start, end, iteratorFlagsForFindPlainText);
+        matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
+        if (!matchLength) {
+            const Position& collapseTo = options & Backwards ? start : end;
+            return Range::create(*start.document(), collapseTo, collapseTo);
+        }
+    }
+
+    CharacterIterator computeRangeIterator(start, end, iteratorFlagsForFindPlainText);
     return characterSubrange(computeRangeIterator, matchStart, matchLength);
 }
 
