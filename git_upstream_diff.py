@@ -8,11 +8,10 @@ import sys
 
 import subprocess2
 
-from git_common import current_branch, get_or_create_merge_base, config_list
-from git_common import GIT_EXE
+import git_common as git
 
 def main(args):
-  default_args = config_list('depot-tools.upstream-diff.default-args')
+  default_args = git.config_list('depot-tools.upstream-diff.default-args')
   args = default_args + args
 
   parser = argparse.ArgumentParser()
@@ -22,10 +21,20 @@ def main(args):
                         'instead of line-wise diff'))
   opts, extra_args = parser.parse_known_args(args)
 
-  cmd = [GIT_EXE, 'diff', '--patience', '-C', '-C']
+  cur = git.current_branch()
+  if not cur or cur == 'HEAD':
+    print 'fatal: Cannot perform git-upstream-diff while not on a branch'
+    return 1
+
+  par = git.upstream(cur)
+  if not par:
+    print 'fatal: No upstream configured for branch \'%s\'' % cur
+    return 1
+
+  cmd = [git.GIT_EXE, 'diff', '--patience', '-C', '-C']
   if opts.wordwise:
     cmd += ['--word-diff=color', r'--word-diff-regex=(\w+|[^[:space:]])']
-  cmd += [get_or_create_merge_base(current_branch())]
+  cmd += [git.get_or_create_merge_base(cur, par)]
 
   cmd += extra_args
 
