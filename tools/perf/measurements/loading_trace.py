@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from measurements import timeline_controller
 from metrics import loading
 from metrics import timeline
 from telemetry.page import page_measurement
@@ -8,14 +9,14 @@ from telemetry.page import page_measurement
 class LoadingTrace(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(LoadingTrace, self).__init__(*args, **kwargs)
-    self._timeline_metric = timeline.LoadTimesTimelineMetric()
+    self._timeline_controller = timeline_controller.TimelineController()
 
   @property
   def results_are_the_same_on_every_page(self):
     return False
 
   def WillNavigateToPage(self, page, tab):
-    self._timeline_metric.Start(page, tab)
+    self._timeline_controller.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,
@@ -24,7 +25,11 @@ class LoadingTrace(page_measurement.PageMeasurement):
 
     # TODO(nduca): when crbug.com/168431 is fixed, modify the page sets to
     # recognize loading as a toplevel action.
-    self._timeline_metric.Stop(page, tab)
+    self._timeline_controller.Stop(tab)
 
     loading.LoadingMetric().AddResults(tab, results)
-    self._timeline_metric.AddResults(tab, results)
+    timeline_metric = timeline.TimelineMetric(
+      self._timeline_controller.model,
+      self._timeline_controller.renderer_process,
+      self._timeline_controller.action_ranges)
+    timeline_metric.AddResults(tab, results)

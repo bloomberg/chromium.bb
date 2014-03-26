@@ -2,91 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import collections
-import itertools
 
 from metrics import Metric
-from telemetry.core.timeline.model import TimelineModel
 from telemetry.core.timeline import bounds
-from telemetry.page import page_measurement
-
-# All tracing categories not disabled-by-default
-DEFAULT_TRACE_CATEGORIES = None
-
-# Categories for absolute minimum overhead tracing. This contains no
-# sub-traces of thread tasks, so it's only useful for capturing the
-# cpu-time spent on threads (as well as needed benchmark traces)
-MINIMAL_TRACE_CATEGORIES = ("toplevel,"
-                            "benchmark,"
-                            "webkit.console,"
-                            "trace_event_overhead")
-
-class MissingFramesError(page_measurement.MeasurementFailure):
-  def __init__(self):
-    super(MissingFramesError, self).__init__(
-        'No frames found in trace. Unable to normalize results.')
 
 
 class TimelineMetric(Metric):
-  def __init__(self):
+  def __init__(self, model=None, renderer_process=None, action_ranges=None):
     """ Initializes a TimelineMetric object.
     """
     super(TimelineMetric, self).__init__()
-    self.trace_categories = DEFAULT_TRACE_CATEGORIES
-    self._model = None
-    self._renderer_process = None
-    self._actions = []
-    self._action_ranges = []
-
-  def Start(self, page, tab):
-    """Starts gathering timeline data.
-
-    """
-    self._model = None
-    if not tab.browser.supports_tracing:
-      raise Exception('Not supported')
-    if self.trace_categories:
-      categories = [self.trace_categories] + \
-          page.GetSyntheticDelayCategories()
-    else:
-      categories = page.GetSyntheticDelayCategories()
-    tab.browser.StartTracing(','.join(categories))
-
-  def Stop(self, page, tab):
-    timeline_data = tab.browser.StopTracing()
-    self._model = TimelineModel(timeline_data)
-    self._renderer_process = self._model.GetRendererProcessFromTab(tab)
-    self._action_ranges = [ action.GetActiveRangeOnTimeline(self._model)
-                            for action in self._actions ]
-    # Make sure no action ranges overlap
-    for combo in itertools.combinations(self._action_ranges, 2):
-      assert not combo[0].Intersects(combo[1])
-
-  def AddActionToIncludeInMetric(self, action):
-    self._actions.append(action)
-
-  @property
-  def model(self):
-    return self._model
-
-  @model.setter
-  def model(self, model):
     self._model = model
-
-  @property
-  def renderer_process(self):
-    return self._renderer_process
-
-  @renderer_process.setter
-  def renderer_process(self, p):
-    self._renderer_process = p
+    self._renderer_process = renderer_process
+    self._action_ranges = action_ranges if action_ranges else []
 
   def AddResults(self, tab, results):
     return
 
 
 class LoadTimesTimelineMetric(TimelineMetric):
-  def __init__(self):
-    super(LoadTimesTimelineMetric, self).__init__()
+  def __init__(self, model=None, renderer_process=None, action_ranges=None):
+    super(LoadTimesTimelineMetric, self).__init__(model, renderer_process,
+                                                  action_ranges)
     self.report_main_thread_only = True
 
   def AddResults(self, _, results):
@@ -98,7 +35,7 @@ class LoadTimesTimelineMetric(TimelineMetric):
 
     events_by_name = collections.defaultdict(list)
 
-    for thread in self.renderer_process.threads.itervalues():
+    for thread in self._renderer_process.threads.itervalues():
 
       if thread_filter and not thread.name in thread_filter:
         continue
@@ -122,7 +59,7 @@ class LoadTimesTimelineMetric(TimelineMetric):
         results.Add(full_name + '_max', 'ms', biggest_jank)
         results.Add(full_name + '_avg', 'ms', total / len(times))
 
-    for counter_name, counter in self.renderer_process.counters.iteritems():
+    for counter_name, counter in self._renderer_process.counters.iteritems():
       total = sum(counter.totals)
 
       # Results objects cannot contain the '.' character, so remove that here.
@@ -275,18 +212,12 @@ class ResultsForThread(object):
 
 
 class ThreadTimesTimelineMetric(TimelineMetric):
-  def __init__(self):
-    super(ThreadTimesTimelineMetric, self).__init__()
+  def __init__(self, model=None, renderer_process=None, action_ranges=None):
+    super(ThreadTimesTimelineMetric, self).__init__(model, renderer_process,
+                                                    action_ranges)
     # Minimal traces, for minimum noise in CPU-time measurements.
-    self.trace_categories = MINIMAL_TRACE_CATEGORIES
     self.results_to_report = AllThreads
     self.details_to_report = NoThreads
-
-  def Start(self, page, tab):
-    # We need the other traces in order to have any details to report.
-    if not self.details_to_report == NoThreads:
-      self.trace_categories = DEFAULT_TRACE_CATEGORIES
-    super(ThreadTimesTimelineMetric, self).Start(page, tab)
 
   def CountSlices(self, slices, substring):
     count = 0
