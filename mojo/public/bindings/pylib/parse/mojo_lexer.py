@@ -63,11 +63,9 @@ class Lexer(object):
     'INT_CONST_DEC', 'INT_CONST_OCT', 'INT_CONST_HEX',
     'FLOAT_CONST', 'HEX_FLOAT_CONST',
     'CHAR_CONST',
-    'WCHAR_CONST',
 
     # String literals
     'STRING_LITERAL',
-    'WSTRING_LITERAL',
 
     # Operators
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
@@ -129,7 +127,6 @@ class Lexer(object):
       r"""(\\("""+simple_escape+'|'+decimal_escape+'|'+hex_escape+'))'
   cconst_char = r"""([^'\\\n]|"""+escape_sequence+')'
   char_const = "'"+cconst_char+"'"
-  wchar_const = 'L'+char_const
   unmatched_quote = "('"+cconst_char+"*\\n)|('"+cconst_char+"*$)"
   bad_char_const = \
       r"""('"""+cconst_char+"""[^'\n]+')|('')|('"""+ \
@@ -138,7 +135,6 @@ class Lexer(object):
   # string literals (K&R2: A.2.6)
   string_char = r"""([^"\\\n]|"""+escape_sequence+')'
   string_literal = '"'+string_char+'*"'
-  wstring_literal = 'L'+string_literal
   bad_string_literal = '"'+string_char+'*'+bad_escape+string_char+'*"'
 
   # floating constants (K&R2: A.2.5.3)
@@ -247,10 +243,6 @@ class Lexer(object):
   def t_CHAR_CONST(self, t):
     return t
 
-  @TOKEN(wchar_const)
-  def t_WCHAR_CONST(self, t):
-    return t
-
   @TOKEN(unmatched_quote)
   def t_UNMATCHED_QUOTE(self, t):
     msg = "Unmatched '"
@@ -260,10 +252,6 @@ class Lexer(object):
   def t_BAD_CHAR_CONST(self, t):
     msg = "Invalid char constant %s" % t.value
     self._error(msg, t)
-
-  @TOKEN(wstring_literal)
-  def t_WSTRING_LITERAL(self, t):
-    return t
 
   # unmatched string literals are caught by the preprocessor
 

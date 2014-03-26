@@ -335,9 +335,7 @@ class Parser(object):
                 | FLOAT_CONST
                 | HEX_FLOAT_CONST
                 | CHAR_CONST
-                | WCHAR_CONST
-                | STRING_LITERAL
-                | WSTRING_LITERAL"""
+                | STRING_LITERAL"""
     p[0] = _ListFromConcat(*p[1:])
 
   def p_error(self, e):
