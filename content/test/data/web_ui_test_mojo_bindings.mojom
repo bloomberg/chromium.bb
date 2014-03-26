@@ -1,0 +1,13 @@
+module mojo {
+
+[Peer=RendererTarget]
+interface BrowserTarget {
+  Test();
+};
+
+[Peer=BrowserTarget]
+interface RendererTarget {
+  Test();
+};
+
+}

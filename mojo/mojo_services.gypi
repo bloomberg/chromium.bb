@@ -8,6 +8,9 @@
         'services/gles2/command_buffer_type_conversions.cc',
         'services/gles2/command_buffer_type_conversions.h',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',
@@ -43,6 +46,9 @@
       'sources': [
         'services/native_viewport/native_viewport.mojom',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',

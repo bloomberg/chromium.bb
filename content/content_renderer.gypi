@@ -593,6 +593,7 @@
       ],
     }, {
       'dependencies': [
+        'content_common_mojo_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
         '../mojo/mojo.gyp:mojo_js_bindings_lib',
       ],

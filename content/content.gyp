@@ -22,6 +22,11 @@
     ],
   },
   'conditions': [
+    ['use_mojo==1', {
+      'includes': [
+        'content_common_mojo_bindings.gypi',
+      ],
+    }],
     ['OS != "ios"', {
       'includes': [
         '../build/win_precompile.gypi',

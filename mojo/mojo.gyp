@@ -378,6 +378,9 @@
         'mojo_system_impl',
         'mojo_native_viewport_service',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'shell/app_child_process.cc',
@@ -451,6 +454,9 @@
         'mojo_system',
         'mojo_utility',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'service_manager/service_manager_unittest.cc',

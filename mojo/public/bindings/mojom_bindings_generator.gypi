@@ -8,8 +8,10 @@
       'rule_name': 'Generate C++ source files from mojom files',
       'extension': 'mojom',
       'variables': {
-        'mojom_base_output_dir':
-            '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
+        # TODO(sky): uncomment this once gyp bug fixed and remove explicit
+        # setting everywhere
+        # 'mojom_base_output_dir':
+        #      '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
         'mojom_bindings_generator':
             '<(DEPTH)/mojo/public/bindings/mojom_bindings_generator.py',
       },

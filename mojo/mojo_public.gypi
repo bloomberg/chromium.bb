@@ -157,6 +157,9 @@
         'public/bindings/tests/test_structs.mojom',
         'public/bindings/tests/type_conversion_unittest.cc',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
     },
     {
@@ -248,6 +251,8 @@
         'public/bindings/callback.h',
         'public/bindings/error_handler.h',
         'public/bindings/interface.h',
+        'public/bindings/js/constants.cc',
+        'public/bindings/js/constants.h',
         'public/bindings/message.h',
         'public/bindings/passable.h',
         'public/bindings/remote_ptr.h',
@@ -289,6 +294,9 @@
         'public/bindings/tests/sample_import.mojom',
         'public/bindings/tests/sample_import2.mojom',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',
@@ -355,6 +363,9 @@
         'public/shell/service.h',
         'public/shell/shell.mojom',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
         'mojo_bindings',

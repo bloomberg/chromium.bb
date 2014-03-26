@@ -231,6 +231,9 @@
           'sources': [
             'examples/launcher/launcher.mojom',
           ],
+          'variables': {
+            'mojom_base_output_dir': 'mojo',
+          },
           'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             'mojo_bindings',
@@ -279,6 +282,9 @@
           'sources': [
             'examples/view_manager/view_manager.mojom',
           ],
+          'variables': {
+            'mojom_base_output_dir': 'mojo',
+          },
           'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             'mojo_bindings',

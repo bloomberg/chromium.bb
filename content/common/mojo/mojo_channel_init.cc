@@ -20,15 +20,6 @@ struct Initializer {
   }
 };
 
-static base::LazyInstance<Initializer>::Leaky initializer =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Initializes mojo. Use a lazy instance to ensure we only do this once.
-// TODO(sky): this likely wants to move to a more central location, such as
-// startup.
-void InitMojo() {
-  initializer.Get();
-}
 
 }  // namespace
 
@@ -44,6 +35,16 @@ MojoChannelInit::~MojoChannelInit() {
         FROM_HERE,
         base::Bind(&mojo::embedder::DestroyChannelOnIOThread, channel_info_));
   }
+}
+
+// static
+void MojoChannelInit::InitMojo() {
+  static base::LazyInstance<Initializer>::Leaky initializer =
+      LAZY_INSTANCE_INITIALIZER;
+  // Initializes mojo. Use a lazy instance to ensure we only do this once.
+  // TODO(sky): this likely wants to move to a more central location, such as
+  // startup.
+  initializer.Get();
 }
 
 void MojoChannelInit::Init(

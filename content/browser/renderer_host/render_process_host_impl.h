@@ -23,6 +23,11 @@
 #include "ipc/ipc_platform_file.h"
 #include "ui/surface/transport_dib.h"
 
+#if defined(USE_MOJO)
+#include "content/common/mojo/render_process.mojom.h"
+#include "mojo/public/bindings/remote_ptr.h"
+#endif
+
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
 namespace base {
@@ -51,7 +56,7 @@ class StoragePartition;
 class StoragePartitionImpl;
 
 #if defined(USE_MOJO)
-class MojoChannelInit;
+class RenderProcessHostMojoImpl;
 #endif
 
 // Implements a concrete RenderProcessHost for the browser process for talking
@@ -237,6 +242,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void IncrementWorkerRefCount();
   void DecrementWorkerRefCount();
 
+#if defined(USE_MOJO)
+  void SetWebUIHandle(int32 view_routing_id,
+                      mojo::ScopedMessagePipeHandle handle);
+#endif
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
@@ -298,11 +308,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Sends |file_for_transit| to the render process.
   void SendAecDumpFileToRenderer(IPC::PlatformFileForTransit file_for_transit);
   void SendDisableAecDumpToRenderer();
-#endif
-
-#if defined(USE_MOJO)
-  // Establishes the mojo channel to the renderer.
-  void CreateMojoChannel();
 #endif
 
   // The registered IPC listener objects. When this list is empty, we should
@@ -432,7 +437,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int worker_ref_count_;
 
 #if defined(USE_MOJO)
-  scoped_ptr<MojoChannelInit> mojo_channel_init_;
+  scoped_ptr<RenderProcessHostMojoImpl> render_process_host_mojo_;
 #endif
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
