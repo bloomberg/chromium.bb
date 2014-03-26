@@ -318,10 +318,14 @@ enum ReservedVariationID {
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE3_ID_MIN = 3312122,
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE3_ID_MAX = 3312321,
 
+  // Instant search clicks field trial.
+  INSTANT_SEARCH_CLICKS_FIELD_TRIAL_ID_MIN = 3312322,
+  INSTANT_SEARCH_CLICKS_FIELD_TRIAL_ID_MAX = 3312371,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312322,
+  NEXT_ID = 3312372,
 
   // USABLE IDs END HERE.
   //
