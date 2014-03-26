@@ -40,6 +40,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -221,12 +222,18 @@ void ReloadExtension(const std::string& extension_id, Profile* profile) {
       !g_browser_process->profile_manager()->IsValidProfile(profile)) {
       return;
   }
+
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
-  if (!extension_system || !extension_system->extension_service())
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!extension_system || !extension_system->extension_service() ||
+      !extension_registry) {
     return;
-  if (!extension_system->extension_service()->
-          GetTerminatedExtension(extension_id)) {
+  }
+
+  if (!extension_registry->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::TERMINATED)) {
     // Either the app/extension was uninstalled by policy or it has since
     // been restarted successfully by someone else (the user).
     return;

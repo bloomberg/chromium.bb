@@ -201,12 +201,6 @@ class ExtensionService
   virtual const extensions::Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
 
-  // Looks up a terminated (crashed) extension by ID.
-  // DEPRECATED: Replace with:
-  // ExtensionRegistry::GetExtensionById(id, ExtensionRegistry::TERMINATED).
-  const extensions::Extension*
-      GetTerminatedExtension(const std::string& id) const;
-
   // Looks up an extension by ID, regardless of whether it's enabled,
   // disabled, blacklisted, or terminated.
   // DEPRECATED: Replace with:

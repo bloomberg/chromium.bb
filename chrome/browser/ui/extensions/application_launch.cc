@@ -468,7 +468,8 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service->IsExtensionEnabled(extension->id()) ||
-      service->GetTerminatedExtension(extension->id())) {
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          extension->id(), extensions::ExtensionRegistry::TERMINATED)) {
     (new EnableViaAppListFlow(
         service, profile, params.desktop_type, extension->id(),
         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))->Run();

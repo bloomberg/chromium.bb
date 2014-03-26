@@ -690,8 +690,9 @@ void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id_prompting_, true);
   if (!extension) {
-    extension = extension_service_->GetTerminatedExtension(
-        extension_id_prompting_);
+    extension =
+        ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->GetExtensionById(
+            extension_id_prompting_, ExtensionRegistry::TERMINATED);
     was_terminated = true;
   }
   if (!extension)
@@ -1024,9 +1025,8 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
   std::string extension_id(base::UTF16ToUTF8(ExtractStringValue(args)));
   CHECK(!extension_id.empty());
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
-  if (!extension)
-    extension = extension_service_->GetTerminatedExtension(extension_id);
+      ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+          ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
   if (!extension)
     return;
 

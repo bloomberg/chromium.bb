@@ -88,6 +88,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "grit/locale_settings.h"
@@ -285,13 +286,12 @@ class WebContentsCloseObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsCloseObserver);
 };
 
-const Extension* GetDisabledOrTerminatedPlatformApp(Profile* profile,
-                                        const std::string& extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const Extension* extension = service->GetExtensionById(extension_id, true);
-  if (!extension)
-    extension = service->GetTerminatedExtension(extension_id);
+// TODO(koz): Consolidate this function and remove the special casing.
+const Extension* GetPlatformApp(Profile* profile,
+                                const std::string& extension_id) {
+  const Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::EVERYTHING);
   return extension && extension->is_platform_app() ? extension : NULL;
 }
 
@@ -349,8 +349,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   AppListService::InitAll(profile);
   if (command_line_.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
-    const Extension* extension =
-        GetDisabledOrTerminatedPlatformApp(profile, app_id);
+    const Extension* extension = GetPlatformApp(profile, app_id);
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
     if (extension) {

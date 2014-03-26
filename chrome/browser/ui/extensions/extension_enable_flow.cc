@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 using extensions::Extension;
@@ -54,7 +55,8 @@ void ExtensionEnableFlow::Run() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
   if (!extension) {
-    extension = service->GetTerminatedExtension(extension_id_);
+    extension = extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+        extension_id_, extensions::ExtensionRegistry::TERMINATED);
     // It's possible (though unlikely) the app could have been uninstalled since
     // the user clicked on it.
     if (!extension)

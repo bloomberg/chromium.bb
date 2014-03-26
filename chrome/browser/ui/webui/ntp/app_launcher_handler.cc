@@ -130,8 +130,11 @@ void AppLauncherHandler::CreateAppInfo(
   base::i18n::UnadjustStringForLocaleDirection(&name);
   NewTabUI::SetFullNameAndDirection(name, value);
 
-  bool enabled = service->IsExtensionEnabled(extension->id()) &&
-      !service->GetTerminatedExtension(extension->id());
+  bool enabled =
+      service->IsExtensionEnabled(extension->id()) &&
+      !extensions::ExtensionRegistry::Get(service->GetBrowserContext())
+           ->GetExtensionById(extension->id(),
+                              extensions::ExtensionRegistry::TERMINATED);
   extensions::GetExtensionBasicInfo(extension, enabled, value);
 
   value->SetBoolean("mayDisable", extensions::ExtensionSystem::Get(

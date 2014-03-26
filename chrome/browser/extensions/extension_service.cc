@@ -2365,11 +2365,6 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   }
 }
 
-const Extension* ExtensionService::GetTerminatedExtension(
-    const std::string& id) const {
-  return registry_->GetExtensionById(id, ExtensionRegistry::TERMINATED);
-}
-
 const Extension* ExtensionService::GetInstalledExtension(
     const std::string& id) const {
   return registry_->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
