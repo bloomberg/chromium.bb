@@ -12,3 +12,7 @@ crbug.com/342574 [ Mac Debug ] fast/css-generated-content/crash-selection-editin
 
 crbug.com/350316 [ Linux Win Debug ] http/tests/eventsource/workers/eventsource-simple.html [ Crash ]
 crbug.com/350316 [ Mac Debug ] http/tests/eventsource/workers/eventsource-simple.html [ Timeout ]
+
+crbug.com/356900 svg/animations/smil-leak-element-instances-noBaseValRef.svg [ Pass Failure ]
+crbug.com/356900 svg/animations/smil-leak-element-instances.svg [ Pass Failure ]
+crbug.com/356900 svg/animations/smil-leak-elements.svg [ Pass Failure ]
