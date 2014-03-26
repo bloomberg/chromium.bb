@@ -551,7 +551,6 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const
         if ((valueID >= CSSValueCheckbox && valueID <= CSSValueTextarea) || valueID == CSSValueNone)
             return true;
         break;
-    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
         if (valueID == CSSValueVisible || valueID == CSSValueHidden)
             return true;
@@ -688,7 +687,6 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const
         if (valueID == CSSValueDisc || valueID == CSSValueCircle || valueID == CSSValueSquare || valueID == CSSValueNone)
             return true;
         break;
-    case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
         if (valueID == CSSValueFlat || valueID == CSSValuePreserve3d)
             return true;
@@ -785,7 +783,6 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
-    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
     case CSSPropertyWebkitBorderAfterStyle:
     case CSSPropertyWebkitBorderBeforeStyle:
@@ -824,7 +821,6 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:

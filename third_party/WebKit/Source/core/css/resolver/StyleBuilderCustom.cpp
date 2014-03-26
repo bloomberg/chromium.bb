@@ -1740,12 +1740,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         return;
     }
 
-    // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyPerspective:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransform:
-    case CSSPropertyTransformOrigin:
-        return;
     // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:
@@ -1886,7 +1880,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitAnimationTimingFunction:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyWebkitAspectRatio:
-    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundComposite:
@@ -1967,7 +1960,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
-    case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitTransitionDelay:
     case CSSPropertyWebkitTransitionDuration:

@@ -234,7 +234,6 @@ word-wrap
 z-index
 -webkit-appearance
 -webkit-aspect-ratio
-backface-visibility
 -webkit-backface-visibility
 -webkit-background-clip
 -webkit-background-composite
@@ -373,9 +372,7 @@ order
 -webkit-padding-before
 -webkit-padding-end
 -webkit-padding-start
-perspective
 -webkit-perspective
-perspective-origin
 -webkit-perspective-origin
 -webkit-perspective-origin-x
 -webkit-perspective-origin-y
@@ -397,14 +394,11 @@ perspective-origin
 -webkit-text-stroke
 -webkit-text-stroke-color
 -webkit-text-stroke-width
-transform
 -webkit-transform
-transform-origin
 -webkit-transform-origin
 -webkit-transform-origin-x
 -webkit-transform-origin-y
 -webkit-transform-origin-z
-transform-style
 -webkit-transform-style
 -webkit-user-drag
 -webkit-user-modify

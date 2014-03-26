@@ -1545,7 +1545,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
-    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
     case CSSPropertyWebkitBorderAfterStyle:
     case CSSPropertyWebkitBorderBeforeStyle:
@@ -1584,7 +1583,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
@@ -1609,12 +1607,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyUserZoom:
         validPrimitive = false;
         break;
-    // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyPerspective:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransform:
-    case CSSPropertyTransformOrigin:
-        return false;
     default:
         return parseSVGValue(propId, important);
     }

@@ -221,7 +221,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitAnimationPlayState,
     CSSPropertyWebkitAnimationTimingFunction,
     CSSPropertyWebkitAppearance,
-    CSSPropertyBackfaceVisibility,
     CSSPropertyWebkitBackfaceVisibility,
     CSSPropertyWebkitBackgroundClip,
     CSSPropertyWebkitBackgroundComposite,
@@ -317,7 +316,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitTextStrokeWidth,
     CSSPropertyWebkitTransform,
     CSSPropertyWebkitTransformOrigin,
-    CSSPropertyTransformStyle,
     CSSPropertyWebkitTransformStyle,
     CSSPropertyWebkitTransitionDelay,
     CSSPropertyWebkitTransitionDuration,
@@ -2466,7 +2464,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             if (!style->hasAspectRatio())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return CSSAspectRatioValue::create(style->aspectRatioNumerator(), style->aspectRatioDenominator());
-        case CSSPropertyBackfaceVisibility:
         case CSSPropertyWebkitBackfaceVisibility:
             return cssValuePool().createIdentifierValue((style->backfaceVisibility() == BackfaceVisibilityHidden) ? CSSValueHidden : CSSValueVisible);
         case CSSPropertyWebkitBorderImage:
@@ -2572,7 +2569,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             }
             return list.release();
         }
-        case CSSPropertyTransformStyle:
         case CSSPropertyWebkitTransformStyle:
             return cssValuePool().createIdentifierValue((style->transformStyle3D() == TransformStyle3DPreserve3D) ? CSSValuePreserve3d : CSSValueFlat);
         case CSSPropertyTransitionDelay:
@@ -2764,13 +2760,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitMaxLogicalWidth:
         case CSSPropertyWebkitMaxLogicalHeight:
             ASSERT_NOT_REACHED();
-            break;
-
-        // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-        case CSSPropertyPerspective:
-        case CSSPropertyPerspectiveOrigin:
-        case CSSPropertyTransform:
-        case CSSPropertyTransformOrigin:
             break;
 
         /* Unimplemented @font-face properties */

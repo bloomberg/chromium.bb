@@ -155,7 +155,6 @@ z-index type_name=int, custom_all
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-aspect-ratio custom_all
-backface-visibility
 -webkit-backface-visibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
@@ -232,7 +231,6 @@ text-underline-position custom_value
 -webkit-transform-origin-x type_name=Length, converter=convertLength
 -webkit-transform-origin-y type_name=Length, converter=convertLength
 -webkit-transform-origin-z type_name=float, converter=convertComputedLength<float>
-transform-style name_for_methods=TransformStyle3D
 -webkit-transform-style name_for_methods=TransformStyle3D
 -webkit-transition-delay custom_all
 -webkit-transition-duration custom_all
