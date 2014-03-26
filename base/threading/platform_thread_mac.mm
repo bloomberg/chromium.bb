@@ -5,12 +5,12 @@
 #include "base/threading/platform_thread.h"
 
 #import <Foundation/Foundation.h>
-#include <algorithm>
-#include <dlfcn.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
 #include <sys/resource.h>
+
+#include <algorithm>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -45,21 +45,13 @@ void PlatformThread::SetName(const char* name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
-  // pthread_setname_np is only available in 10.6 or later, so test
-  // for it at runtime.
-  int (*dynamic_pthread_setname_np)(const char*);
-  *reinterpret_cast<void**>(&dynamic_pthread_setname_np) =
-      dlsym(RTLD_DEFAULT, "pthread_setname_np");
-  if (!dynamic_pthread_setname_np)
-    return;
-
   // Mac OS X does not expose the length limit of the name, so
   // hardcode it.
   const int kMaxNameLength = 63;
   std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
   // pthread_setname() fails (harmlessly) in the sandbox, ignore when it does.
   // See http://crbug.com/47058
-  dynamic_pthread_setname_np(shortened_name.c_str());
+  pthread_setname_np(shortened_name.c_str());
 }
 
 namespace {
