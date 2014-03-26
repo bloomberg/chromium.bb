@@ -2268,8 +2268,14 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         break;
     }
 
-    if (layer_impl == InnerViewportScrollLayer())
+    if (layer_impl == InnerViewportScrollLayer()) {
       unused_root_delta.Subtract(applied_delta);
+      const float kOverscrollEpsilon = 0.01f;
+      if (std::abs(unused_root_delta.x()) < kOverscrollEpsilon)
+        unused_root_delta.set_x(0.0f);
+      if (std::abs(unused_root_delta.y()) < kOverscrollEpsilon)
+        unused_root_delta.set_y(0.0f);
+    }
 
     did_lock_scrolling_layer_ = true;
     if (!should_bubble_scrolls_) {
@@ -2310,7 +2316,7 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
     accumulated_root_overscroll_.set_y(0);
 
   accumulated_root_overscroll_ += unused_root_delta;
-  bool did_overscroll = !gfx::ToRoundedVector2d(unused_root_delta).IsZero();
+  bool did_overscroll = !unused_root_delta.IsZero();
   if (did_overscroll && input_handler_client_) {
     DidOverscrollParams params;
     params.accumulated_overscroll = accumulated_root_overscroll_;
