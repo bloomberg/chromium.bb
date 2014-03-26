@@ -141,16 +141,16 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
     return foundIdent ? AddFeatures : UseLocalStyleChange;
 }
 
-void extractClassIdTagOrAttribute(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName, Vector<AtomicString>& attributes)
+void RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
     if (selector.m_match == CSSSelector::Tag)
-        tagName = selector.tagQName().localName();
+        features.tagName = selector.tagQName().localName();
     else if (selector.m_match == CSSSelector::Id)
-        id = selector.value();
+        features.id = selector.value();
     else if (selector.m_match == CSSSelector::Class)
-        classes.append(selector.value());
+        features.classes.append(selector.value());
     else if (selector.isAttributeSelector())
-        attributes.append(selector.attribute().localName());
+        features.attributes.append(selector.attribute().localName());
 }
 
 RuleFeatureSet::RuleFeatureSet()
@@ -173,31 +173,27 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const
     if (mode != AddFeatures)
         return mode;
 
-    Vector<AtomicString> classes;
-    AtomicString id;
-    AtomicString tagName;
-    Vector<AtomicString> attributes;
-
-    const CSSSelector* current = extractInvalidationSetFeatures(selector, classes, id, tagName, attributes);
+    InvalidationSetFeatures features;
+    const CSSSelector* current = extractInvalidationSetFeatures(selector, features);
     if (current)
         current = current->tagHistory();
 
     if (current)
-        addFeaturesToInvalidationSets(*current, classes, id, tagName, attributes);
+        addFeaturesToInvalidationSets(*current, features);
     return AddFeatures;
 }
 
-const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName, Vector<AtomicString>& attributes)
+const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
     const CSSSelector* lastSelector = &selector;
     for (; lastSelector; lastSelector = lastSelector->tagHistory()) {
-        extractClassIdTagOrAttribute(*lastSelector, classes, id, tagName, attributes);
+        extractInvalidationSetFeature(*lastSelector, features);
         // Initialize the entry in the invalidation set map, if supported.
         invalidationSetForSelector(*lastSelector);
         if (lastSelector->pseudoType() == CSSSelector::PseudoHost) {
             if (const CSSSelectorList* selectorList = lastSelector->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    extractInvalidationSetFeatures(*selector, classes, id, tagName, attributes);
+                    extractInvalidationSetFeatures(*selector, features);
             }
         }
 
@@ -207,22 +203,22 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
     return lastSelector;
 }
 
-void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, const Vector<AtomicString>& classes, AtomicString id, AtomicString tagName, const Vector<AtomicString>& attributes)
+void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, const InvalidationSetFeatures& features)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
-            if (!id.isEmpty())
-                invalidationSet->addId(id);
-            if (!tagName.isEmpty())
-                invalidationSet->addTagName(tagName);
-            for (Vector<AtomicString>::const_iterator it = classes.begin(); it != classes.end(); ++it)
+            if (!features.id.isEmpty())
+                invalidationSet->addId(features.id);
+            if (!features.tagName.isEmpty())
+                invalidationSet->addTagName(features.tagName);
+            for (Vector<AtomicString>::const_iterator it = features.classes.begin(); it != features.classes.end(); ++it)
                 invalidationSet->addClass(*it);
-            for (Vector<AtomicString>::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+            for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
                 invalidationSet->addAttribute(*it);
         } else if (current->pseudoType() == CSSSelector::PseudoHost) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    addFeaturesToInvalidationSets(*selector, classes, id, tagName, attributes);
+                    addFeaturesToInvalidationSets(*selector, features);
             }
         }
     }
