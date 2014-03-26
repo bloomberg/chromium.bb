@@ -108,10 +108,6 @@ net::URLRequestContextGetter* TestConfigurator::RequestContext() {
 // Don't use the utility process to run code out-of-process.
 bool TestConfigurator::InProcess() { return true; }
 
-ComponentPatcher* TestConfigurator::CreateComponentPatcher() {
-  return new MockComponentPatcher();
-}
-
 bool TestConfigurator::DeltasEnabled() const {
   return true;
 }

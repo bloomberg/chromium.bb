@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/test/component_patcher_mock.h"
 #include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
@@ -91,7 +90,6 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;
-  virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
   virtual bool UseBackgroundDownloader() const OVERRIDE;
 

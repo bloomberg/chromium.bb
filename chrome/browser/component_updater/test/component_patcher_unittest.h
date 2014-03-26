@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,8 +36,11 @@ class ComponentPatcherOperationTest : public testing::Test {
   base::ScopedTempDir input_dir_;
   base::ScopedTempDir installed_dir_;
   base::ScopedTempDir unpack_dir_;
-  scoped_ptr<MockComponentPatcher> patcher_;
   scoped_ptr<ReadOnlyTestInstaller> installer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 }  // namespace component_updater
