@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style>
     .fixed {
       position: fixed;
@@ -23,11 +24,15 @@
         return;
 
       testRunner.dumpAsText();
+      testRunner.waitUntilDone();
 
       document.getElementById("layertree1").innerText = window.internals.layerTreeAsText(document);
       window.scrollTo(0, 10);
 
-      document.getElementById("layertree2").innerText = window.internals.layerTreeAsText(document);
+      runAfterDisplay(function() {
+        document.getElementById("layertree2").innerText = window.internals.layerTreeAsText(document);
+        testRunner.notifyDone();
+      });
     }
 
     if (window.internals)

@@ -40,13 +40,15 @@
       if (window.testRunner)
         testRunner.waitUntilDone();
 
-      runAfterDisplay(function() {
-        // Any scroll should keep the fixed-position element where it is.
-        // If it stutters or disappears incorrectly, then the red background will be revealed.
-        window.scrollTo(0, 150);
-        if (window.testRunner)
+      // Any scroll should keep the fixed-position element where it is.
+      // If it stutters or disappears incorrectly, then the red background will be revealed.
+      window.scrollTo(0, 150);
+ 
+      if (window.testRunner) {
+        runAfterDisplay(function() {
           testRunner.notifyDone();
-      });
+        });
+      }
     }
 
     window.addEventListener('load', doTest, false);

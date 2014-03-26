@@ -476,8 +476,13 @@ void RenderView::computeRectForRepaint(const RenderLayerModelObject* repaintCont
             rect.setX(viewWidth() - rect.maxX());
     }
 
-    if (fixed && m_frameView)
+    if (fixed && m_frameView) {
         rect.move(m_frameView->scrollOffsetForFixedPosition());
+        // If we have a pending scroll, invalidate the previous scroll position.
+        if (!m_frameView->pendingScrollDelta().isZero()) {
+            rect.move(-m_frameView->pendingScrollDelta());
+        }
+    }
 
     // Apply our transform if we have one (because of full page zooming).
     if (!repaintContainer && layer() && layer()->transform())

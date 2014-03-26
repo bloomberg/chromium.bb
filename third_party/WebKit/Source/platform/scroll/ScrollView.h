@@ -144,6 +144,7 @@ public:
     // Functions for querying the current scrolled position (both as a point, a size, or as individual X and Y values).
     virtual IntPoint scrollPosition() const OVERRIDE { return visibleContentRect().location(); }
     IntSize scrollOffset() const { return toIntSize(visibleContentRect().location()); } // Gets the scrolled position as an IntSize. Convenient for adding to other sizes.
+    IntSize pendingScrollDelta() const { return m_pendingScrollDelta; }
     virtual IntPoint maximumScrollPosition() const OVERRIDE; // The maximum position we can be scrolled to.
     virtual IntPoint minimumScrollPosition() const OVERRIDE; // The minimum position we can be scrolled to.
     // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
@@ -268,6 +269,7 @@ protected:
     virtual void updateScrollCorner();
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE;
 
+    virtual void scrollContentsIfNeeded();
     // Scroll the content by blitting the pixels.
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     // Scroll the content by invalidating everything.
@@ -295,6 +297,7 @@ private:
 
     HashSet<RefPtr<Widget> > m_children;
 
+    IntSize m_pendingScrollDelta;
     IntSize m_scrollOffset; // FIXME: Would rather store this as a position, but we will wait to make this change until more code is shared.
     IntPoint m_cachedScrollPosition;
     IntSize m_contentsSize;
@@ -315,10 +318,6 @@ private:
     void destroy();
 
     IntRect rectToCopyOnScroll() const;
-
-    // Called when the scroll position within this view changes.  FrameView overrides this to generate repaint invalidations.
-    virtual void repaintFixedElementsAfterScrolling() { }
-    virtual void updateFixedElementsAfterScrolling() { }
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();

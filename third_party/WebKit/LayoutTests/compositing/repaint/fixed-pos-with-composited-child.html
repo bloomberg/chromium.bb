@@ -42,12 +42,14 @@
 
             window.scrollTo(0, 100);
 
-            if (window.internals)
-                document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            runAfterDisplay(function() {
+              if (window.internals)
+                  document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
-            if (window.testRunner)
-                testRunner.notifyDone();
-        });
+              if (window.testRunner)
+                  testRunner.notifyDone();
+              });
+          });
     }
 </script>
 </head>

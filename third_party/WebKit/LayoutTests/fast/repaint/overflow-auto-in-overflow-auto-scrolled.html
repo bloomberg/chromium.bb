@@ -1,14 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="../../resources/run-after-display.js"></script>
     <script src="resources/text-based-repaint.js" type="text/javascript"></script>
     <script>
-    function repaintTest() {
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+
+    window.onload = function()
+    {
+        if (window.eventSender) {
+            testRunner.dumpAsTextWithPixelResults();
+
+            // Scroll the #outerDiv until we reach the #innerDiv.
+            eventSender.mouseMoveTo(50, 50);
+            eventSender.mouseScrollBy(0, -8);
+        } else {
+            document.write("This test is better run under DumpRenderTree. To manually test it, continuously scroll down on the top-most element. There should be no repaint issue.");
+        }
+
+        runAfterDisplay(function() {
+            runRepaintTest();
+            if (window.testRunner)
+                testRunner.notifyDone();
+        });
+    }
+
+    function repaintTest()
+    {
         // Now scroll once in the #innerDiv to the green area.
         if (window.eventSender)
             eventSender.mouseScrollBy(0, -10);
     }
-    window.addEventListener("load", runRepaintTest, false);
     </script>
 </head>
 <body>
@@ -21,16 +44,5 @@
         <div style="height: 400px; width: 300px; background: green"></div>
     </div>
 </div>
-<script>
-if (window.eventSender) {
-    testRunner.dumpAsTextWithPixelResults();
-
-    // Scroll the #outerDiv until we reach the #innerDiv.
-    eventSender.mouseMoveTo(50, 50);
-    eventSender.mouseScrollBy(0, -8);
-} else {
-    document.write("This test is better run under DumpRenderTree. To manually test it, continuously scroll down on the top-most element. There should be no repaint issue.");
-}
-</script>
 </body>
 </html>

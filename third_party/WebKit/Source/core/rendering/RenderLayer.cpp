@@ -494,7 +494,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     if (geometryMap)
         geometryMap->pushMappingsToAncestor(this, parent());
 
-    if (flags & HasChangedAncestor || flags & HasSeenViewportConstrainedAncestor || flags & IsOverflowScroll)
+    if ((flags & HasChangedAncestor) || (flags & HasSeenViewportConstrainedAncestor) || (flags & IsOverflowScroll))
         m_clipper.clearClipRects();
 
     if (renderer()->style()->hasViewportConstrainedPosition())
@@ -503,15 +503,10 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     if (renderer()->hasOverflowClip())
         flags |= HasSeenAncestorWithOverflowClip;
 
-    if (flags & HasSeenViewportConstrainedAncestor
-        || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip && !m_canSkipRepaintRectsUpdateOnScroll)) {
+    if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !m_canSkipRepaintRectsUpdateOnScroll) {
         // FIXME: This may not be needed. Once repaint-after-layout isn't
         // under-painting for layer's we should see if this can be removed.
         LayoutRectRecorder recorder(*m_renderer);
-
-        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-        // https://code.google.com/p/chromium/issues/detail?id=343756
-        DisableCompositingQueryAsserts disabler;
         // FIXME: We could track the repaint container as we walk down the tree.
         repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
     } else {

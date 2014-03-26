@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <script src="../resources/run-after-display.js"></script>
     <style>
         body {
             margin: 0;
@@ -29,18 +30,24 @@
       if (window.testRunner) {
         testRunner.waitUntilDone();
         testRunner.dumpAsText();
-        if (window.internals)
-            window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+      }
+      if (window.internals) {
+          window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
       }
 
       function doScroll()
       {
         window.setTimeout(function() {
           window.scrollTo(0, 200);
-          if (window.internals) {
-            document.getElementById('results').innerText = internals.layerTreeAsText(document);
-            testRunner.notifyDone();
-          }
+
+          runAfterDisplay(function() {
+            if (window.internals) {
+              document.getElementById('results').innerText = internals.layerTreeAsText(document);
+              if (window.testRunner) {
+                testRunner.notifyDone();
+              }
+            }
+          });
         }, 10);
       }
       

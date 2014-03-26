@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 .composited {
   -webkit-transform: translatez(0);
@@ -47,8 +48,10 @@ body {
 </style>
 
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
         testRunner.dumpAsText();
+    }
 
     if (window.internals) {
         internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
@@ -60,29 +63,76 @@ body {
         if (!window.internals)
             return;
 
-        // Case 1
-        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        (function() {
 
-        // Case 2
-        window.internals.startTrackingRepaints(document);
-        window.scrollTo(0, 80);
-        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
+          return new Promise(function(resolve) {
+              // Case 1
+              document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
-        // Case 3
-        window.internals.startTrackingRepaints(document);
-        window.scrollTo(0, 120);
-        document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
+              resolve();
+          });
 
-        // Case 4
-        window.internals.startTrackingRepaints(document);
-        window.scrollTo(0, 170);
-        document.getElementById('Case4').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
+        })().then(function() {
 
-        // Display the test results only after test is done so that it does not affect repaint rect results.
-        document.getElementById('testResults').style.display = "block";
+            return new Promise(function(resolve) {
+
+                // Case 2
+                window.internals.startTrackingRepaints(document);
+                window.scrollTo(0, 80);
+                runAfterDisplay(function() {
+                    document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+                    window.internals.stopTrackingRepaints(document);
+
+                    resolve();
+                });
+
+          });
+
+        }).then(function() {
+
+            return new Promise(function(resolve) {
+
+                // Case 3
+                window.internals.startTrackingRepaints(document);
+                window.scrollTo(0, 120);
+                runAfterDisplay(function() {
+                    document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+                    window.internals.stopTrackingRepaints(document);
+
+                    resolve();
+                });
+
+            });
+
+        }).then(function() {
+
+            return new Promise(function(resolve) {
+
+                // Case 4
+                window.internals.startTrackingRepaints(document);
+                window.scrollTo(0, 170);
+                runAfterDisplay(function() {
+                    document.getElementById('Case4').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+                    window.internals.stopTrackingRepaints(document);
+
+                    resolve();
+                });
+
+            });
+
+        }).then(function() {
+
+          // Display the test results only after test is done so that it does not affect repaint rect results.
+          document.getElementById('testResults').style.display = "block";
+
+          if (window.testRunner)
+              testRunner.notifyDone();
+
+        }).catch(function(e) {
+
+          console.error(e);
+          
+        });
     }
 </script>
 </head>

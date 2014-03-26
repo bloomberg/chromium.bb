@@ -2,6 +2,7 @@
 <html id="htmlTag">
 
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 #fixed {
   -webkit-transform: translatez(0);
@@ -47,8 +48,10 @@ body {
 </style>
 
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     if (window.internals)
         internals.settings.setLayerSquashingEnabled(true);
@@ -65,7 +68,12 @@ body {
 
         // Case 2
         window.scrollTo(0, 80);
-        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        runAfterDisplay(function() {
+          document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+          if (window.testRunner) {
+            testRunner.notifyDone();
+          }
+        });
     }
 </script>
 </head>

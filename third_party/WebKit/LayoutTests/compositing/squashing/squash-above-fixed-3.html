@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 
 #backgroundFixed {
@@ -59,8 +60,10 @@ body {
 </style>
 
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     if (window.internals)
         internals.settings.setLayerSquashingEnabled(true);
@@ -76,17 +79,24 @@ body {
         // Case 2
         window.internals.startTrackingRepaints(document);
         window.scrollTo(0, 10);
-        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
+        runAfterDisplay(function() {
+          document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+          window.internals.stopTrackingRepaints(document);
 
-        // Case 3
-        window.internals.startTrackingRepaints(document);
-        window.scrollTo(0, 110);
-        document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
+          // Case 3
+          window.internals.startTrackingRepaints(document);
+          window.scrollTo(0, 110);
+          runAfterDisplay(function() {
+            document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            window.internals.stopTrackingRepaints(document);
 
-        // Display the test results only after test is done so that it does not affect repaint rect results.
-        document.getElementById('testResults').style.display = "block";
+            // Display the test results only after test is done so that it does not affect repaint rect results.
+            document.getElementById('testResults').style.display = "block";
+
+            if (window.testRunner)
+              testRunner.notifyDone();
+          });
+        });
     }
 </script>
 </head>
