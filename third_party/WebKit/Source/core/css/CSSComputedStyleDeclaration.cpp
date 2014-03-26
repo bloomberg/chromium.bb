@@ -246,10 +246,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitColumnBreakAfter,
     CSSPropertyWebkitColumnBreakBefore,
     CSSPropertyWebkitColumnBreakInside,
-    CSSPropertyWebkitColumnAxis,
     CSSPropertyWebkitColumnCount,
     CSSPropertyWebkitColumnGap,
-    CSSPropertyWebkitColumnProgression,
     CSSPropertyWebkitColumnRuleColor,
     CSSPropertyWebkitColumnRuleStyle,
     CSSPropertyWebkitColumnRuleWidth,
@@ -1817,8 +1815,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return cssValuePool().createColorValue(m_allowVisitedStyle ? style->visitedDependentColor(CSSPropertyColor).rgb() : style->color().rgb());
         case CSSPropertyWebkitPrintColorAdjust:
             return cssValuePool().createValue(style->printColorAdjust());
-        case CSSPropertyWebkitColumnAxis:
-            return cssValuePool().createValue(style->columnAxis());
         case CSSPropertyWebkitColumnCount:
             if (style->hasAutoColumnCount())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -1831,8 +1827,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             if (style->hasNormalColumnGap())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
             return zoomAdjustedPixelValue(style->columnGap(), *style);
-        case CSSPropertyWebkitColumnProgression:
-            return cssValuePool().createValue(style->columnProgression());
         case CSSPropertyWebkitColumnRuleColor:
             return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(*style, style->columnRuleColor());
         case CSSPropertyWebkitColumnRuleStyle:

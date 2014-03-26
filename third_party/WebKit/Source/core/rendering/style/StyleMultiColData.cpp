@@ -39,8 +39,6 @@ StyleMultiColData::StyleMultiColData()
     , m_breakBefore(RenderStyle::initialPageBreak())
     , m_breakAfter(RenderStyle::initialPageBreak())
     , m_breakInside(RenderStyle::initialPageBreak())
-    , m_axis(RenderStyle::initialColumnAxis())
-    , m_progression(RenderStyle::initialColumnProgression())
 {
 }
 
@@ -59,8 +57,6 @@ StyleMultiColData::StyleMultiColData(const StyleMultiColData& o)
     , m_breakBefore(o.m_breakBefore)
     , m_breakAfter(o.m_breakAfter)
     , m_breakInside(o.m_breakInside)
-    , m_axis(o.m_axis)
-    , m_progression(o.m_progression)
 {
 }
 
@@ -70,8 +66,7 @@ bool StyleMultiColData::operator==(const StyleMultiColData& o) const
         && m_rule == o.m_rule && m_visitedLinkColumnRuleColor == o.m_visitedLinkColumnRuleColor && m_breakBefore == o.m_breakBefore
         && m_autoWidth == o.m_autoWidth && m_autoCount == o.m_autoCount && m_normalGap == o.m_normalGap
         && m_fill == o.m_fill && m_columnSpan == o.m_columnSpan
-        && m_breakAfter == o.m_breakAfter && m_breakInside == o.m_breakInside
-        && m_axis == o.m_axis && m_progression == o.m_progression;
+        && m_breakAfter == o.m_breakAfter && m_breakInside == o.m_breakInside;
 }
 
 } // namespace WebCore

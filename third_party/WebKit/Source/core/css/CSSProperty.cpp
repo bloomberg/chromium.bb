@@ -559,14 +559,12 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitBoxShadow:
     case CSSPropertyInternalCallback:
     case CSSPropertyWebkitClipPath:
-    case CSSPropertyWebkitColumnAxis:
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
     case CSSPropertyWebkitColumnCount:
     case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnProgression:
     case CSSPropertyWebkitColumnRule:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitColumnRuleStyle:

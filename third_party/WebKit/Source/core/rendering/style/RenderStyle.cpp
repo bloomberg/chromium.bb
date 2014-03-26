@@ -180,7 +180,7 @@ StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const Render
     if (oldStyle->display() != newStyle->display()
         || oldStyle->hasPseudoStyle(FIRST_LETTER) != newStyle->hasPseudoStyle(FIRST_LETTER)
         || oldStyle->columnSpan() != newStyle->columnSpan()
-        || oldStyle->specifiesAutoColumns() != newStyle->specifiesAutoColumns()
+        || oldStyle->specifiesColumns() != newStyle->specifiesColumns()
         || !oldStyle->contentDataEquivalent(newStyle)
         || oldStyle->hasTextCombine() != newStyle->hasTextCombine())
         return Reattach;

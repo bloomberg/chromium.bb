@@ -264,13 +264,13 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitBoxPack: return 210;
     case CSSPropertyWebkitBoxReflect: return 211;
     case CSSPropertyWebkitBoxShadow: return 212;
-    case CSSPropertyWebkitColumnAxis: return 214;
+    // CSSPropertyWebkitColumnAxis was 214
     case CSSPropertyWebkitColumnBreakAfter: return 215;
     case CSSPropertyWebkitColumnBreakBefore: return 216;
     case CSSPropertyWebkitColumnBreakInside: return 217;
     case CSSPropertyWebkitColumnCount: return 218;
     case CSSPropertyWebkitColumnGap: return 219;
-    case CSSPropertyWebkitColumnProgression: return 220;
+    // CSSPropertyWebkitColumnProgression was 220
     case CSSPropertyWebkitColumnRule: return 221;
     case CSSPropertyWebkitColumnRuleColor: return 222;
     case CSSPropertyWebkitColumnRuleStyle: return 223;

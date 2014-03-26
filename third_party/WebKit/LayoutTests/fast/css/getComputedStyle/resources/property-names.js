@@ -30,7 +30,6 @@ var propertiesToTest = {
     "-webkit-box-reflect": true,
     "-webkit-box-shadow": true,
     "-webkit-color-correction": true,
-    "-webkit-column-axis": true,
     "-webkit-column-break-after": true,
     "-webkit-column-break-before": true,
     "-webkit-column-break-inside": true,

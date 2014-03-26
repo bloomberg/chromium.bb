@@ -498,10 +498,6 @@ enum ImageResolutionSnap { ImageResolutionNoSnap = 0, ImageResolutionSnapPixels 
 
 enum Order { LogicalOrder = 0, VisualOrder };
 
-enum ColumnAxis { HorizontalColumnAxis, VerticalColumnAxis, AutoColumnAxis };
-
-enum ColumnProgression { NormalColumnProgression, ReverseColumnProgression };
-
 enum WrapFlow { WrapFlowAuto, WrapFlowBoth, WrapFlowStart, WrapFlowEnd, WrapFlowMaximum, WrapFlowClear };
 
 enum WrapThrough { WrapThroughWrap, WrapThroughNone };

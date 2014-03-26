@@ -301,7 +301,6 @@ webkitBoxPack
 webkitBoxReflect
 webkitBoxShadow
 webkitClipPath
-webkitColumnAxis
 webkitColumnBreakAfter
 webkitColumnBreakBefore
 webkitColumnBreakInside

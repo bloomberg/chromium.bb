@@ -829,11 +829,6 @@ public:
     const AtomicString& locale() const { return rareInheritedData->locale; }
     EBorderFit borderFit() const { return static_cast<EBorderFit>(rareNonInheritedData->m_borderFit); }
     EResize resize() const { return static_cast<EResize>(rareInheritedData->resize); }
-    ColumnAxis columnAxis() const { return static_cast<ColumnAxis>(rareNonInheritedData->m_multiCol->m_axis); }
-    bool hasInlineColumnAxis() const {
-        ColumnAxis axis = columnAxis();
-        return axis == AutoColumnAxis || isHorizontalWritingMode() == (axis == HorizontalColumnAxis);
-    }
     bool hasInlinePaginationAxis() const
     {
         // If the pagination axis is parallel with the writing mode inline axis, columns may be laid
@@ -843,13 +838,11 @@ public:
             return (overflowY() == OPAGEDX) == isHorizontalWritingMode();
         return false;
     }
-    ColumnProgression columnProgression() const { return static_cast<ColumnProgression>(rareNonInheritedData->m_multiCol->m_progression); }
     float columnWidth() const { return rareNonInheritedData->m_multiCol->m_width; }
     bool hasAutoColumnWidth() const { return rareNonInheritedData->m_multiCol->m_autoWidth; }
     unsigned short columnCount() const { return rareNonInheritedData->m_multiCol->m_count; }
     bool hasAutoColumnCount() const { return rareNonInheritedData->m_multiCol->m_autoCount; }
-    bool specifiesAutoColumns() const { return hasAutoColumnCount() && hasAutoColumnWidth(); }
-    bool specifiesColumns() const { return !hasAutoColumnCount() || !hasAutoColumnWidth() || !hasInlineColumnAxis(); }
+    bool specifiesColumns() const { return !hasAutoColumnCount() || !hasAutoColumnWidth(); }
     ColumnFill columnFill() const { return static_cast<ColumnFill>(rareNonInheritedData->m_multiCol->m_fill); }
     float columnGap() const { return rareNonInheritedData->m_multiCol->m_gap; }
     bool hasNormalColumnGap() const { return rareNonInheritedData->m_multiCol->m_normalGap; }
@@ -1306,8 +1299,6 @@ public:
     void setLocale(const AtomicString& locale) { SET_VAR(rareInheritedData, locale, locale); }
     void setBorderFit(EBorderFit b) { SET_VAR(rareNonInheritedData, m_borderFit, b); }
     void setResize(EResize r) { SET_VAR(rareInheritedData, resize, r); }
-    void setColumnAxis(ColumnAxis axis) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_axis, axis); }
-    void setColumnProgression(ColumnProgression progression) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_progression, progression); }
     void setColumnWidth(float f) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoWidth, false); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_width, f); }
     void setHasAutoColumnWidth() { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoWidth, true); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_width, 0); }
     void setColumnCount(unsigned short c) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoCount, false); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_count, c); }
@@ -1548,8 +1539,6 @@ public:
     static LengthSize initialBorderRadius() { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
     static ECaptionSide initialCaptionSide() { return CAPTOP; }
     static EClear initialClear() { return CNONE; }
-    static ColumnAxis initialColumnAxis() { return AutoColumnAxis; }
-    static ColumnProgression initialColumnProgression() { return NormalColumnProgression; }
     static TextDirection initialDirection() { return LTR; }
     static WritingMode initialWritingMode() { return TopToBottomWritingMode; }
     static TextCombine initialTextCombine() { return TextCombineNone; }

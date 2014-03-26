@@ -67,8 +67,6 @@ public:
     unsigned m_breakBefore : 2; // EPageBreak
     unsigned m_breakAfter : 2; // EPageBreak
     unsigned m_breakInside : 2; // EPageBreak
-    unsigned m_axis : 2; // ColumnAxis
-    unsigned m_progression : 2; // ColumnProgression
 
 private:
     StyleMultiColData();

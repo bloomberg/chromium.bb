@@ -307,13 +307,11 @@ webkitBoxPack
 webkitBoxReflect
 webkitBoxShadow
 webkitClipPath
-webkitColumnAxis
 webkitColumnBreakAfter
 webkitColumnBreakBefore
 webkitColumnBreakInside
 webkitColumnCount
 webkitColumnGap
-webkitColumnProgression
 webkitColumnRule
 webkitColumnRuleColor
 webkitColumnRuleStyle

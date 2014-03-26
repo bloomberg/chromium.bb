@@ -1906,14 +1906,12 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitBoxOrient:
     case CSSPropertyWebkitBoxPack:
     case CSSPropertyWebkitBoxShadow:
-    case CSSPropertyWebkitColumnAxis:
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
     case CSSPropertyWebkitColumnCount:
     case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnProgression:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitColumnRuleStyle:
     case CSSPropertyWebkitColumnRuleWidth:

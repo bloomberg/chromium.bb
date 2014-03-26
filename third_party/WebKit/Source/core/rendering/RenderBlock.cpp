@@ -1881,7 +1881,7 @@ void RenderBlock::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pain
     bool antialias = shouldAntialiasLines(paintInfo.context);
 
     if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-        bool leftToRight = style()->isLeftToRightDirection() ^ colInfo->progressionIsReversed();
+        bool leftToRight = style()->isLeftToRightDirection();
         LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : contentLogicalWidth();
         LayoutUnit ruleAdd = logicalLeftOffsetForContent();
         LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : contentLogicalWidth();
@@ -1913,13 +1913,13 @@ void RenderBlock::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pain
             ruleLogicalLeft = currLogicalLeftOffset;
         }
     } else {
-        bool topToBottom = !style()->isFlippedBlocksWritingMode() ^ colInfo->progressionIsReversed();
+        bool topToBottom = !style()->isFlippedBlocksWritingMode();
         LayoutUnit ruleLeft = isHorizontalWritingMode()
             ? borderLeft() + paddingLeft()
-            : colGap / 2 - colGap - ruleThickness / 2 + (!colInfo->progressionIsReversed() ? borderBefore() + paddingBefore() : borderAfter() + paddingAfter());
+            : colGap / 2 - colGap - ruleThickness / 2 + borderBefore() + paddingBefore();
         LayoutUnit ruleWidth = isHorizontalWritingMode() ? contentWidth() : ruleThickness;
         LayoutUnit ruleTop = isHorizontalWritingMode()
-            ? colGap / 2 - colGap - ruleThickness / 2 + (!colInfo->progressionIsReversed() ? borderBefore() + paddingBefore() : borderAfter() + paddingAfter())
+            ? colGap / 2 - colGap - ruleThickness / 2 + borderBefore() + paddingBefore()
             : borderStart() + paddingStart();
         LayoutUnit ruleHeight = isHorizontalWritingMode() ? ruleThickness : contentHeight();
         LayoutRect ruleRect(ruleLeft, ruleTop, ruleWidth, ruleHeight);
@@ -3287,7 +3287,7 @@ void RenderBlock::calcColumnWidth()
     LayoutUnit desiredColumnWidth = contentLogicalWidth();
 
     // For now, we don't support multi-column layouts when printing, since we have to do a lot of work for proper pagination.
-    if (document().paginated() || (style()->hasAutoColumnCount() && style()->hasAutoColumnWidth()) || !style()->hasInlineColumnAxis()) {
+    if (document().paginated() || !style()->specifiesColumns()) {
         setDesiredColumnCountAndWidth(desiredColumnCount, desiredColumnWidth);
         return;
     }
@@ -3317,7 +3317,7 @@ bool RenderBlock::requiresColumns(int desiredColumnCount) const
     bool isPaginated = style()->isOverflowPaged() && node() != document().viewportDefiningElement();
 
     return firstChild()
-        && (desiredColumnCount != 1 || !style()->hasAutoColumnWidth() || !style()->hasInlineColumnAxis() || isPaginated)
+        && (desiredColumnCount != 1 || !style()->hasAutoColumnWidth() || isPaginated)
         && !firstChild()->isAnonymousColumnsBlock()
         && !firstChild()->isAnonymousColumnSpanBlock();
 }
@@ -3343,11 +3343,11 @@ void RenderBlock::setDesiredColumnCountAndWidth(int count, LayoutUnit width)
         }
         info->setDesiredColumnWidth(width);
         if (style()->isOverflowPaged()) {
+            info->setDesiredColumnCount(1);
             info->setProgressionAxis(style()->hasInlinePaginationAxis() ? ColumnInfo::InlineAxis : ColumnInfo::BlockAxis);
         } else {
             info->setDesiredColumnCount(count);
-            info->setProgressionAxis(style()->hasInlineColumnAxis() ? ColumnInfo::InlineAxis : ColumnInfo::BlockAxis);
-            info->setProgressionIsReversed(style()->columnProgression() == ReverseColumnProgression);
+            info->setProgressionAxis(ColumnInfo::InlineAxis);
         }
     }
 }
@@ -3384,15 +3384,12 @@ LayoutRect RenderBlock::columnRectAt(ColumnInfo* colInfo, unsigned index) const
     LayoutUnit colLogicalLeft = logicalLeftOffsetForContent();
     LayoutUnit colGap = columnGap();
     if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-        if (style()->isLeftToRightDirection() ^ colInfo->progressionIsReversed())
+        if (style()->isLeftToRightDirection())
             colLogicalLeft += index * (colLogicalWidth + colGap);
         else
             colLogicalLeft += contentLogicalWidth() - colLogicalWidth - index * (colLogicalWidth + colGap);
     } else {
-        if (!colInfo->progressionIsReversed())
-            colLogicalTop += index * (colLogicalHeight + colGap);
-        else
-            colLogicalTop += contentLogicalHeight() - colLogicalHeight - index * (colLogicalHeight + colGap);
+        colLogicalTop += index * (colLogicalHeight + colGap);
     }
 
     if (isHorizontalWritingMode())
