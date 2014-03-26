@@ -141,12 +141,6 @@ public:
     virtual WebSpeechSynthesizer* createSpeechSynthesizer(WebSpeechSynthesizerClient*) { return 0; }
 
 
-    // Media --------------------------------------------------------------
-
-    // May return null.
-    virtual WebContentDecryptionModule* createContentDecryptionModule(const WebString& keySystem) { return 0; }
-
-
     // Audio --------------------------------------------------------------
 
     virtual double audioHardwareSampleRate() { return 0; }
