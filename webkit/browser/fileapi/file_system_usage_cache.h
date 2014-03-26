@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -61,7 +61,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemUsageCache {
   static const int kUsageFileHeaderSize;
 
  private:
-  typedef std::map<base::FilePath, base::PlatformFile> CacheFiles;
+  typedef std::map<base::FilePath, base::File*> CacheFiles;
 
   // Read the size, validity and the "dirty" entry described in the .usage file.
   // Returns less than zero if no .usage file is available.
@@ -75,8 +75,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemUsageCache {
              int32 dirty,
              int64 fs_usage);
 
-  bool GetPlatformFile(const base::FilePath& file_path,
-                       base::PlatformFile* file);
+  base::File* GetFile(const base::FilePath& file_path);
 
   bool ReadBytes(const base::FilePath& file_path,
                  char* buffer,
@@ -92,7 +91,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemUsageCache {
   bool CalledOnValidThread();
 
   scoped_ptr<TimedTaskHelper> timer_;
-  std::map<base::FilePath, base::PlatformFile> cache_files_;
+  CacheFiles cache_files_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

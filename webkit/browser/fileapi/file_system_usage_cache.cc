@@ -162,12 +162,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
 void FileSystemUsageCache::CloseCacheFiles() {
   TRACE_EVENT0("FileSystem", "UsageCache::CloseCacheFiles");
   DCHECK(CalledOnValidThread());
-  for (CacheFiles::iterator itr = cache_files_.begin();
-       itr != cache_files_.end(); ++itr) {
-    if (itr->second != base::kInvalidPlatformFileValue)
-      base::ClosePlatformFile(itr->second);
-  }
-  cache_files_.clear();
+  STLDeleteValues(&cache_files_);
   timer_.reset();
 }
 
@@ -228,63 +223,59 @@ bool FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
   return true;
 }
 
-bool FileSystemUsageCache::GetPlatformFile(const base::FilePath& file_path,
-                                           base::PlatformFile* file) {
+base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
   DCHECK(CalledOnValidThread());
   if (cache_files_.size() >= kMaxHandleCacheSize)
     CloseCacheFiles();
   ScheduleCloseTimer();
 
+  base::File* new_file = NULL;
   std::pair<CacheFiles::iterator, bool> inserted =
-      cache_files_.insert(
-          std::make_pair(file_path, base::kInvalidPlatformFileValue));
-  if (!inserted.second) {
-    *file = inserted.first->second;
-    return true;
-  }
+      cache_files_.insert(std::make_pair(file_path, new_file));
+  if (!inserted.second)
+    return inserted.first->second;
 
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile platform_file =
-      base::CreatePlatformFile(file_path,
-                               base::PLATFORM_FILE_OPEN_ALWAYS |
-                               base::PLATFORM_FILE_READ |
-                               base::PLATFORM_FILE_WRITE,
-                               NULL, &error);
-  if (error != base::PLATFORM_FILE_OK) {
+  new_file = new base::File(file_path,
+                            base::File::FLAG_OPEN_ALWAYS |
+                            base::File::FLAG_READ |
+                            base::File::FLAG_WRITE);
+  if (!new_file->IsValid()) {
     cache_files_.erase(inserted.first);
-    return false;
+    delete new_file;
+    return NULL;
   }
 
-  inserted.first->second = platform_file;
-  *file = platform_file;
-  return true;
+  inserted.first->second = new_file;
+  return new_file;
 }
 
 bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
                                      char* buffer,
                                      int64 buffer_size) {
   DCHECK(CalledOnValidThread());
-  base::PlatformFile file;
-  if (!GetPlatformFile(file_path, &file))
+  base::File* file = GetFile(file_path);
+  if (!file)
     return false;
-  return base::ReadPlatformFile(file, 0, buffer, buffer_size) == buffer_size;
+  return file->Read(0, buffer, buffer_size) == buffer_size;
 }
 
 bool FileSystemUsageCache::WriteBytes(const base::FilePath& file_path,
                                       const char* buffer,
                                       int64 buffer_size) {
   DCHECK(CalledOnValidThread());
-  base::PlatformFile file;
-  if (!GetPlatformFile(file_path, &file))
+  base::File* file = GetFile(file_path);
+  if (!file)
     return false;
-  return base::WritePlatformFile(file, 0, buffer, buffer_size) == buffer_size;
+  return file->Write(0, buffer, buffer_size) == buffer_size;
 }
 
 bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::FlushFile");
   DCHECK(CalledOnValidThread());
-  base::PlatformFile file = base::kInvalidPlatformFileValue;
-  return GetPlatformFile(file_path, &file) && base::FlushPlatformFile(file);
+  base::File* file = GetFile(file_path);
+  if (!file)
+    return false;
+  return file->Flush();
 }
 
 void FileSystemUsageCache::ScheduleCloseTimer() {
