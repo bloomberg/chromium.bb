@@ -10,6 +10,9 @@
 
 namespace content {
 
+// Note: When adding a function here, please make sure the logic is not
+// duplicated in the renderer.
+
 // Returns true if the threaded compositor is on (via flags or field trial).
 CONTENT_EXPORT bool IsThreadedCompositingEnabled();
 
