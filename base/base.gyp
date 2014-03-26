@@ -1012,7 +1012,8 @@
     {
       'target_name': 'sanitizer_options',
       'type': 'static_library',
-       'variables': {
+      'toolsets': ['host', 'target'],
+      'variables': {
          # Every target is going to depend on sanitizer_options, so allow
          # this one to depend on itself.
          'prune_self_dependency': 1,
