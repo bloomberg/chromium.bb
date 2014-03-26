@@ -1410,7 +1410,8 @@
    fun:*vfprintf
    ...
    fun:_ZN7testing*PrintByteSegmentInObjectTo*
-   fun:_ZN7testing*PrintBytesInObjectToImplEPKhjPSo
+   ...
+   fun:_ZN7testing*PrintBytesInObjectTo*
    fun:_ZN7testing9internal220PrintBytesInObjectToEPKhjPSo
    fun:_ZN7testing9internal220TypeWithoutFormatter*
    fun:_ZN7testing9internal2lsIcSt11char_traitsIcE*
