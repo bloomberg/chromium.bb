@@ -180,9 +180,9 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 
     # Multi-queries with one valid and one invalid term should raise.
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      ['Iab8e1d', changeid])
+                      ['I1234567890123456789012345678901234567890', changeid])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      [changeid, 'Iab8e1d'])
+                      [changeid, 'I1234567890123456789012345678901234567890'])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       ['12345', gpatch.gerrit_number])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
