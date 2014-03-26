@@ -132,7 +132,7 @@ void AppShortcutManager::Observe(int type,
         create_or_update = base::Bind(&CreateShortcutsInApplicationsMenu);
       }
       if (!create_or_update.is_null()) {
-        web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,
+        web_app::UpdateShortcutInfoAndIconForApp(extension, profile_,
                                                  create_or_update);
       }
       break;
@@ -189,7 +189,7 @@ void AppShortcutManager::OnceOffCreateShortcuts() {
        it != apps->end(); ++it) {
     if (ShouldCreateShortcutFor(it->get()))
       web_app::UpdateShortcutInfoAndIconForApp(
-          *it->get(), profile_, base::Bind(&CreateShortcutsInApplicationsMenu));
+          it->get(), profile_, base::Bind(&CreateShortcutsInApplicationsMenu));
   }
 }
 

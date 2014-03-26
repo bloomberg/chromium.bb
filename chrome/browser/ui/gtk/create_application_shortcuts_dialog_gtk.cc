@@ -331,7 +331,7 @@ CreateChromeApplicationShortcutsDialogGtk::
 
   // Get shortcut information and icon now; they are needed for our UI.
   web_app::UpdateShortcutInfoAndIconForApp(
-      *app, profile,
+      app, profile,
       base::Bind(
           &CreateChromeApplicationShortcutsDialogGtk::OnShortcutInfoLoaded,
           this));

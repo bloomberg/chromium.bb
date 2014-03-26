@@ -440,7 +440,7 @@ void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow /*parent_window*/,
   // Normally we would show a dialog, but since we always create the app
   // shortcut in /Applications there are no options for the user to choose.
   web_app::UpdateShortcutInfoAndIconForApp(
-      *app, profile,
+      app, profile,
       base::Bind(&CreateShortcutsAndRunCallback, close_callback));
 }
 

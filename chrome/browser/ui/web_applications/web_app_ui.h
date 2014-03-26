@@ -47,7 +47,7 @@ void UpdateShortcutInfoForApp(const extensions::Extension& extension,
 // Fetches the icon for |extension| and calls |callback| with shortcut info
 // filled out as by UpdateShortcutInfoForApp.
 void UpdateShortcutInfoAndIconForApp(
-    const extensions::Extension& extension,
+    const extensions::Extension* extension,
     Profile* profile,
     const ShortcutInfoCallback& callback);
 

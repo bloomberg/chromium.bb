@@ -425,18 +425,18 @@ void UpdateShortcutInfoForApp(const extensions::Extension& app,
 }
 
 void UpdateShortcutInfoAndIconForApp(
-    const extensions::Extension& extension,
+    const extensions::Extension* extension,
     Profile* profile,
     const web_app::ShortcutInfoCallback& callback) {
   ShellIntegration::ShortcutInfo shortcut_info =
-      ShortcutInfoForExtensionAndProfile(&extension, profile);
+      ShortcutInfoForExtensionAndProfile(extension, profile);
 
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < kNumDesiredSizes; ++i) {
     int size = kDesiredSizes[i];
     extensions::ExtensionResource resource =
         extensions::IconsInfo::GetIconResource(
-            &extension, size, ExtensionIconSet::MATCH_EXACTLY);
+            extension, size, ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           resource,
@@ -455,10 +455,10 @@ void UpdateShortcutInfoAndIconForApp(
     // so look for a larger icon first:
     extensions::ExtensionResource resource =
         extensions::IconsInfo::GetIconResource(
-            &extension, size, ExtensionIconSet::MATCH_BIGGER);
+            extension, size, ExtensionIconSet::MATCH_BIGGER);
     if (resource.empty()) {
       resource = extensions::IconsInfo::GetIconResource(
-          &extension, size, ExtensionIconSet::MATCH_SMALLER);
+          extension, size, ExtensionIconSet::MATCH_SMALLER);
     }
     info_list.push_back(extensions::ImageLoader::ImageRepresentation(
         resource,
@@ -471,7 +471,7 @@ void UpdateShortcutInfoAndIconForApp(
   // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
   // image and exit immediately.
   extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
-      &extension,
+      extension,
       info_list,
       base::Bind(&OnImageLoaded, shortcut_info, callback));
 }

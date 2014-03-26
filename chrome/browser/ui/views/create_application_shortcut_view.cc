@@ -533,7 +533,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 
   // Get shortcut information and icon now; they are needed for our UI.
   web_app::UpdateShortcutInfoAndIconForApp(
-      *app, profile,
+      app, profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
