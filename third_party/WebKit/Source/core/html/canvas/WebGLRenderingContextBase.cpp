@@ -2098,19 +2098,37 @@ GLenum WebGLRenderingContextBase::getError()
     return m_context->getError();
 }
 
-bool WebGLRenderingContextBase::ExtensionTracker::matchesNameWithPrefixes(const String& name) const
+const char* const* WebGLRenderingContextBase::ExtensionTracker::prefixes() const
 {
     static const char* const unprefixed[] = { "", 0, };
+    return m_prefixes ? m_prefixes : unprefixed;
+}
 
-    const char* const* prefixes = m_prefixes ? m_prefixes : unprefixed;
-    for (; *prefixes; ++prefixes) {
-        String prefixedName = String(*prefixes) + extensionName();
+bool WebGLRenderingContextBase::ExtensionTracker::matchesNameWithPrefixes(const String& name) const
+{
+    const char* const* prefixSet = prefixes();
+    for (; *prefixSet; ++prefixSet) {
+        String prefixedName = String(*prefixSet) + extensionName();
         if (equalIgnoringCase(prefixedName, name)) {
             return true;
         }
     }
     return false;
 }
+
+bool WebGLRenderingContextBase::extensionSupportedAndAllowed(const ExtensionTracker* tracker)
+{
+    if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
+        return false;
+    if (tracker->privileged() && !allowPrivilegedExtensions())
+        return false;
+    if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+        return false;
+    if (!tracker->supported(this))
+        return false;
+    return true;
+}
+
 
 PassRefPtr<WebGLExtension> WebGLRenderingContextBase::getExtension(const String& name)
 {
@@ -2120,13 +2138,7 @@ PassRefPtr<WebGLExtension> WebGLRenderingContextBase::getExtension(const String&
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
         if (tracker->matchesNameWithPrefixes(name)) {
-            if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
-                return nullptr;
-            if (tracker->privileged() && !allowPrivilegedExtensions())
-                return nullptr;
-            if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
-                return nullptr;
-            if (!tracker->supported(this))
+            if (!extensionSupportedAndAllowed(tracker))
                 return nullptr;
 
             RefPtr<WebGLExtension> extension = tracker->getExtension(this);
@@ -2579,14 +2591,13 @@ Vector<String> WebGLRenderingContextBase::getSupportedExtensions()
 
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
-        if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
-            continue;
-        if (tracker->privileged() && !allowPrivilegedExtensions())
-            continue;
-        if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
-            continue;
-        if (tracker->supported(this))
-            result.append(String(tracker->prefixed()  ? "WEBKIT_" : "") + tracker->extensionName());
+        if (extensionSupportedAndAllowed(tracker)) {
+            const char* const* prefixes = tracker->prefixes();
+            for (; *prefixes; ++prefixes) {
+                String prefixedName = String(*prefixes) + tracker->extensionName();
+                result.append(prefixedName);
+            }
+        }
     }
 
     return result;

@@ -532,10 +532,13 @@ protected:
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
 
     enum ExtensionFlags {
-        ApprovedExtension   = 0x00,
-        DraftExtension      = 0x01,
-        PrivilegedExtension = 0x02,
-        PrefixedExtension   = 0x04,
+        ApprovedExtension               = 0x00,
+        // Extension that is behind the draft extensions runtime flag:
+        DraftExtension                  = 0x01,
+        PrivilegedExtension             = 0x02,
+        // Extension that is still in draft state, but has been selectively enabled by default under a prefix. Do not use
+        // this for enabling new draft extensions; use the DraftExtension flag instead, and do not use vendor prefixes:
+        EnabledDraftExtension           = 0x04,
         WebGLDebugRendererInfoExtension = 0x08,
     };
 
@@ -544,7 +547,6 @@ protected:
         ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
             : m_privileged(flags & PrivilegedExtension)
             , m_draft(flags & DraftExtension)
-            , m_prefixed(flags & PrefixedExtension)
             , m_webglDebugRendererInfo(flags & WebGLDebugRendererInfoExtension)
             , m_prefixes(prefixes)
         {
@@ -552,11 +554,6 @@ protected:
 
         virtual ~ExtensionTracker()
         {
-        }
-
-        bool prefixed() const
-        {
-            return m_prefixed;
         }
 
         bool privileged() const
@@ -574,6 +571,7 @@ protected:
             return m_webglDebugRendererInfo;
         }
 
+        const char* const* prefixes() const;
         bool matchesNameWithPrefixes(const String&) const;
 
         virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContextBase*) = 0;
@@ -584,7 +582,6 @@ protected:
     private:
         bool m_privileged;
         bool m_draft;
-        bool m_prefixed;
         bool m_webglDebugRendererInfo;
         const char* const* m_prefixes;
     };
@@ -651,6 +648,8 @@ protected:
     {
         m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, flags, prefixes));
     }
+
+    bool extensionSupportedAndAllowed(const ExtensionTracker*);
 
     inline bool extensionEnabled(WebGLExtensionName name)
     {

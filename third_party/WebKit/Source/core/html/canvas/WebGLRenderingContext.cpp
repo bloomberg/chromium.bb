@@ -128,8 +128,8 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat);
     registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear);
     registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
-    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, PrefixedExtension, webkitPrefix);
-    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, PrefixedExtension, webkitPrefix);
+    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, EnabledDraftExtension, webkitPrefix);
+    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, EnabledDraftExtension, webkitPrefix);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
