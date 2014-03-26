@@ -9,13 +9,14 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/message_center/views/bounded_scroll_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
 // A scrollable list of permissions for the given app.
-class PermissionsScrollView : public message_center::BoundedScrollView {
+class PermissionsScrollView : public views::ScrollView {
  public:
   PermissionsScrollView(int min_height,
                         int max_height,
@@ -27,8 +28,10 @@ class PermissionsScrollView : public message_center::BoundedScrollView {
 
 PermissionsScrollView::PermissionsScrollView(int min_height,
                                              int max_height,
-                                             const extensions::Extension* app)
-    : message_center::BoundedScrollView(min_height, max_height) {
+                                             const extensions::Extension* app) {
+  ClipHeightTo(min_height, max_height);
+  SetVerticalScrollBar(new views::OverlayScrollBar(false));
+
   views::View* inner_scrollable_view = new views::View();
   this->SetContents(inner_scrollable_view);
 

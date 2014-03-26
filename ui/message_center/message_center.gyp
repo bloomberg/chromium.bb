@@ -73,8 +73,6 @@
         'notifier_settings.h',
         'views/bounded_label.cc',
         'views/bounded_label.h',
-        'views/bounded_scroll_view.cc',
-        'views/bounded_scroll_view.h',
         'views/constants.h',
         'views/message_bubble_base.cc',
         'views/message_bubble_base.h',
@@ -221,7 +219,6 @@
           ],
           'sources': [
             'views/bounded_label_unittest.cc',
-            'views/bounded_scroll_view_unittest.cc',
             'views/message_center_view_unittest.cc',
             'views/message_popup_collection_unittest.cc',
             'views/notifier_settings_view_unittest.cc',

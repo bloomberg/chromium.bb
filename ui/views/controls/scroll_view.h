@@ -31,6 +31,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   static const char kViewClassName[];
 
   ScrollView();
+
   virtual ~ScrollView();
 
   // Creates a ScrollView with a theme specific border.
@@ -52,6 +53,13 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
     hide_horizontal_scrollbar_ = visible;
   }
 
+  // Turns this scroll view into a bounded scroll view, with a fixed height.
+  // By default, a ScrollView will stretch to fill its outer container.
+  void ClipHeightTo(int min_height, int max_height);
+
+  // Returns whether or not the ScrollView is bounded (as set by ClipHeightTo).
+  bool is_bounded() { return max_height_ >= 0 && min_height_ >= 0; }
+
   // Retrieves the width/height of scrollbars. These return 0 if the scrollbar
   // has not yet been created.
   int GetScrollBarWidth() const;
@@ -67,6 +75,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
   // View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
@@ -126,6 +136,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Resize corner.
   View* resize_corner_;
+
+  // The min and max height for the bounded scroll view. These are negative
+  // values if the view is not bounded.
+  int min_height_;
+  int max_height_;
 
   // If true, never show the horizontal scrollbar (even if the contents is wider
   // than the viewport).

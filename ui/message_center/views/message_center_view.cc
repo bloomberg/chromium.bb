@@ -25,7 +25,6 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/views/bounded_scroll_view.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
@@ -37,6 +36,8 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -565,8 +566,11 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 
   const int button_height = button_bar_->GetPreferredSize().height();
 
-  scroller_ =
-      new BoundedScrollView(kMinScrollViewHeight, max_height - button_height);
+  scroller_ = new views::ScrollView();
+  scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
+  scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
+  scroller_->set_background(
+      views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 
   scroller_->SetPaintToLayer(true);
   scroller_->SetFillsBoundsOpaquely(false);

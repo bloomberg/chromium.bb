@@ -117,6 +117,8 @@ ScrollView::ScrollView()
       horiz_sb_(new NativeScrollBar(true)),
       vert_sb_(new NativeScrollBar(false)),
       resize_corner_(NULL),
+      min_height_(-1),
+      max_height_(-1),
       hide_horizontal_scrollbar_(false) {
   set_notify_enter_exit_on_child(true);
 
@@ -163,6 +165,11 @@ gfx::Rect ScrollView::GetVisibleRect() const {
                    contents_viewport_->width(), contents_viewport_->height());
 }
 
+void ScrollView::ClipHeightTo(int min_height, int max_height) {
+  min_height_ = min_height;
+  max_height_ = max_height;
+}
+
 int ScrollView::GetScrollBarWidth() const {
   return vert_sb_ ? vert_sb_->GetLayoutSize() : 0;
 }
@@ -187,7 +194,40 @@ void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   vert_sb_ = vert_sb;
 }
 
+gfx::Size ScrollView::GetPreferredSize() {
+  if (!is_bounded())
+    return View::GetPreferredSize();
+
+  gfx::Size size = contents()->GetPreferredSize();
+  size.SetToMax(gfx::Size(size.width(), min_height_));
+  size.SetToMin(gfx::Size(size.width(), max_height_));
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
+}
+
+int ScrollView::GetHeightForWidth(int width) {
+  if (!is_bounded())
+    return View::GetHeightForWidth(width);
+
+  gfx::Insets insets = GetInsets();
+  width = std::max(0, width - insets.width());
+  int height = contents()->GetHeightForWidth(width) + insets.height();
+  return std::min(std::max(height, min_height_), max_height_);
+}
+
 void ScrollView::Layout() {
+  if (is_bounded()) {
+    int content_width = width();
+    int content_height = contents()->GetHeightForWidth(content_width);
+    if (content_height > height()) {
+      content_width = std::max(content_width - GetScrollBarWidth(), 0);
+      content_height = contents()->GetHeightForWidth(content_width);
+    }
+    if (contents()->bounds().size() != gfx::Size(content_width, content_height))
+      contents()->SetBounds(0, 0, content_width, content_height);
+  }
+
   // Most views will want to auto-fit the available space. Most of them want to
   // use all available width (without overflowing) and only overflow in
   // height. Examples are HistoryView, MostVisitedView, DownloadTabView, etc.
