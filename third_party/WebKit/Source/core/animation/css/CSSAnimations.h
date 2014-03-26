@@ -52,7 +52,7 @@ class StyleRuleKeyframes;
 
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
-class CSSAnimationUpdate FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
+class CSSAnimationUpdate FINAL {
 public:
     void startAnimation(AtomicString& animationName, const HashSet<RefPtr<InertAnimation> >& animations)
     {
@@ -109,7 +109,7 @@ public:
         RawPtrWillBeMember<const AnimatableValue> to;
         RefPtr<InertAnimation> animation;
     };
-    typedef WillBeHeapHashMap<CSSPropertyID, NewTransition> NewTransitionMap;
+    typedef WillBePersistentHeapHashMap<CSSPropertyID, NewTransition> NewTransitionMap;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
@@ -130,9 +130,6 @@ public:
             && m_activeInterpolationsForAnimations.isEmpty()
             && m_activeInterpolationsForTransitions.isEmpty();
     }
-
-    void trace(Visitor*);
-
 private:
     // Order is significant since it defines the order in which new animations
     // will be started. Note that there may be multiple animations present
@@ -146,11 +143,11 @@ private:
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForAnimations;
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForAnimations;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
 };
 
-class CSSAnimations FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimations> {
+class CSSAnimations FINAL {
 public:
     // FIXME: This method is only used here and in the legacy animations
     // implementation. It should be made private or file-scope when the legacy
@@ -161,14 +158,12 @@ public:
     static const StylePropertyShorthand& animatableProperties();
     // FIXME: This should take a const ScopedStyleTree instead of a StyleResolver.
     // We should also change the Element* to a const Element*
-    static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
+    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
 
-    void setPendingUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
+    void setPendingUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
     void maybeApplyPendingUpdate(Element*);
     bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && !m_pendingUpdate; }
     void cancel();
-
-    void trace(Visitor*);
 
 private:
     // Note that a single animation name may map to multiple players due to
@@ -189,12 +184,12 @@ private:
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };
-    typedef WillBeHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
+    typedef WillBePersistentHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
     AnimationMap m_animations;
     TransitionMap m_transitions;
-    OwnPtrWillBeMember<CSSAnimationUpdate> m_pendingUpdate;
+    OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_previousActiveInterpolationsForAnimations;
+    WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_previousActiveInterpolationsForAnimations;
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);

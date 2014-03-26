@@ -319,9 +319,9 @@ const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver*
     return 0;
 }
 
-PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
+PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
-    OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
+    OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
     calculateAnimationActiveInterpolations(update.get(), element);
     calculateTransitionUpdate(update.get(), element, style);
@@ -411,7 +411,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         return;
     }
 
-    OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
+    OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
 
     m_previousActiveInterpolationsForAnimations.swap(update->activeInterpolationsForAnimations());
 
@@ -893,20 +893,6 @@ const StylePropertyShorthand& CSSAnimations::animatableProperties()
         propertyShorthand = StylePropertyShorthand(CSSPropertyInvalid, properties.begin(), properties.size());
     }
     return propertyShorthand;
-}
-
-void CSSAnimations::trace(Visitor* visitor)
-{
-    visitor->trace(m_transitions);
-    visitor->trace(m_pendingUpdate);
-    visitor->trace(m_previousActiveInterpolationsForAnimations);
-}
-
-void CSSAnimationUpdate::trace(Visitor* visitor)
-{
-    visitor->trace(m_newTransitions);
-    visitor->trace(m_activeInterpolationsForAnimations);
-    visitor->trace(m_activeInterpolationsForTransitions);
 }
 
 } // namespace WebCore
