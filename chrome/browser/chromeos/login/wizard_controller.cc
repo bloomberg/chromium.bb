@@ -383,10 +383,15 @@ void WizardController::ShowEnrollmentScreen() {
     screen_parameters_->GetString("user", &user);
   }
 
+  EnrollmentScreenActor::EnrollmentMode mode =
+      EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
+  if (is_auto_enrollment)
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
+  else if (ShouldAutoStartEnrollment() && !CanExitEnrollment())
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
+
   EnrollmentScreen* screen = GetEnrollmentScreen();
-  screen->SetParameters(is_auto_enrollment,
-                        !ShouldAutoStartEnrollment() || CanExitEnrollment(),
-                        user);
+  screen->SetParameters(mode, GetForcedEnrollmentDomain(), user);
   SetCurrentScreen(screen);
 }
 
@@ -903,10 +908,18 @@ bool WizardController::ShouldAutoStartEnrollment() {
   return connector->GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
 }
 
-bool WizardController::CanExitEnrollment() const {
+// static
+bool WizardController::CanExitEnrollment() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->GetDeviceCloudPolicyManager()->CanExitEnrollment();
+}
+
+// static
+std::string WizardController::GetForcedEnrollmentDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCloudPolicyManager()->GetForcedEnrollmentDomain();
 }
 
 void WizardController::OnLocalStateInitialized(bool /* succeeded */) {

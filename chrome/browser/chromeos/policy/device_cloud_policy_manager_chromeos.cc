@@ -215,6 +215,16 @@ bool DeviceCloudPolicyManagerChromeOS::CanExitEnrollment() const {
                         true);
 }
 
+std::string
+DeviceCloudPolicyManagerChromeOS::GetForcedEnrollmentDomain() const {
+  const base::DictionaryValue* device_state_dict =
+      local_state_->GetDictionary(prefs::kServerBackedDeviceState);
+  std::string management_domain;
+  device_state_dict->GetString(kDeviceStateManagementDomain,
+                               &management_domain);
+  return management_domain;
+}
+
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   CloudPolicyManager::Shutdown();
   device_status_provider_.reset();

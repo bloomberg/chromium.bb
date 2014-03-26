@@ -9,40 +9,80 @@
   width: 722px;
 }
 
-#oauth-enroll-container {
+#oauth-enroll-step-contents {
+  -webkit-margin-after: 10px;
+  color: #666;
   display: -webkit-box;
 }
 
-#oauth-enroll-signin-frame {
-  height: 456px;
+#oauth-enroll-step-contents > div {
+  display: none;
 }
 
-#oauth-enroll-signin-frame {
-  border: 0 none;
+.oauth-enroll-state-working #oauth-enroll-step-working,
+.oauth-enroll-state-error #oauth-enroll-step-error,
+.oauth-enroll-state-explain #oauth-enroll-step-explain,
+.oauth-enroll-state-success #oauth-enroll-step-success {
+  display: table;
+  height: 480px;
+  margin: 0 auto;
+}
+
+.oauth-enroll-state-signin #oauth-enroll-step-signin {
+  display: -webkit-flex;
   width: 100%;
 }
 
 #oauth-enroll-signin-frame-container {
+  -webkit-flex: 1 1 auto;
   box-sizing: border-box;
   padding-bottom: 20px;
+}
+
+#oauth-enroll-signin-frame {
+  border: 0 none;
+  height: 456px;
   width: 100%;
 }
 
-#oauth-enroll-signin-link-container {
-  -webkit-box-pack: end;
-  display: -webkit-box;
-}
-#oauth-enroll-step-signin {
-  width: 100%;
-}
-
-.oauth-enroll-step-center {
-  height: 480px;
+#oauth-enroll-signin-divider {
+  -webkit-flex: 0 0 auto;
+  background: linear-gradient(to bottom, #e3e3e3, #cacaca 50%, #e3e3e3);
+  border: none;
+  width: 1px;
 }
 
-.oauth-enroll-step-center {
-  display: table;
-  margin: 0 auto;
+#oauth-enroll-signin-right {
+  -webkit-flex: 0 0 auto;
+  -webkit-margin-before: 30px;
+  -webkit-margin-end: 20px;
+  -webkit-margin-start: 30px;
+  font-size: 12px;
+  width: 200px;
+}
+
+@media (pointer:coarse) {
+  #oauth-enroll-signin-right {
+    font-size: 14px;
+  }
+}
+
+#oauth-enroll-signin-right > div {
+  -webkit-margin-before: 20px;
+}
+
+#oauth-enroll-learn-more-link,
+.oauth-enroll-explain-link {
+  display: none;
+}
+
+#oauth-enrollment.mode-manual #oauth-enroll-learn-more-link,
+#oauth-enrollment.mode-forced #oauth-enroll-learn-more-link {
+  display: inline;
+}
+
+#oauth-enrollment.mode-auto .oauth-enroll-explain-link {
+  display: inline;
 }
 
 .oauth-enroll-step-content {
@@ -66,6 +106,10 @@
   width: 22px;
 }
 
+#oauth-enrollment.mode-auto #oauth-enroll-error-retry {
+  display: none;
+}
+
 .oauth-enroll-step-message {
   display: inline-block;
   max-width: 400px;
@@ -78,17 +122,29 @@
 }
 
 .oauth-enroll-link {
-  color: -webkit-link;
+  color: rgb(37, 79, 155);
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.oauth-enroll-button {
+  display: none;
+}
+
+.oauth-enroll-state-signin.mode-manual #oauth-enroll-cancel-button,
+.oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
+.oauth-enroll-state-signin.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-working.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
+.oauth-enroll-state-error.mode-auto #oauth-enroll-retry-button,
+.oauth-enroll-state-error.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-explain #oauth-enroll-explain-retry-button,
+.oauth-enroll-state-success #oauth-enroll-done-button {
+  display: inline;
 }
 
 #oobe.oauth-enrollment #header-oauth-enrollment {
   display: block;
-}
-
-#oauth-enrollment .step-contents {
-  -webkit-margin-after: 10px;
 }
 
 #oauth-saml-notice-container {

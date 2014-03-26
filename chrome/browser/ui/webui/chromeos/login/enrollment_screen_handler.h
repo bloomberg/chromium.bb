@@ -39,9 +39,8 @@ class EnrollmentScreenHandler
 
   // Implements EnrollmentScreenActor:
   virtual void SetParameters(Controller* controller,
-                             bool is_auto_enrollment,
-                             bool can_exit_enrollment,
-                             const std::string& user) OVERRIDE;
+                             EnrollmentMode enrollment_mode,
+                             const std::string& management_domain) OVERRIDE;
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -92,17 +91,14 @@ class EnrollmentScreenHandler
 
   bool show_on_init_;
 
-  // Whether this is an auto-enrollment screen.
-  bool is_auto_enrollment_;
+  // The enrollment mode.
+  EnrollmentMode enrollment_mode_;
 
-  // True of we can exit enrollment and return back to the regular login flow.
-  bool can_exit_enrollment_;
+  // The management domain, if applicable.
+  std::string management_domain_;
 
   // Whether an enrollment attempt has failed.
   bool enrollment_failed_once_;
-
-  // Username of the user signing in.
-  std::string user_;
 
   // This intentionally lives here and not in the controller, since it needs to
   // execute requests in the context of the profile that displays the webui.

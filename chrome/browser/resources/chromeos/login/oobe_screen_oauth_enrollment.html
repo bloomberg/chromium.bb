@@ -1,16 +1,21 @@
 <div id="oauth-enrollment" class="step hidden">
-  <div id="oauth-enroll-container" class="step-contents">
+  <div id="oauth-enroll-step-contents">
     <div id="oauth-enroll-step-signin">
       <div id="oauth-enroll-signin-frame-container">
         <iframe id="oauth-enroll-signin-frame" name="oauth-enroll-signin-frame" src="about:blank" marginwidth="0"
             marginheight="0" frameborder="0" scrolling="no"></iframe>
       </div>
-      <div id="oauth-enroll-signin-link-container">
-        <a class="oauth-enroll-explain-link oauth-enroll-link"
-            i18n-content="oauthEnrollExplainLink" hidden></a>
+      <div id="oauth-enroll-signin-divider"></div>
+      <div id="oauth-enroll-signin-right">
+        <div id="oauth-enroll-re-enrollment-text"></div>
+        <div i18n-content="oauthEnrollDescription"></div>
+        <div><a id="oauth-enroll-learn-more-link" class="oauth-enroll-link"
+              i18n-content="oauthEnrollExplainLink"></a></div>
+        <div><a class="oauth-enroll-explain-link oauth-enroll-link"
+              i18n-content="oauthEnrollExplainLink"></a></div>
       </div>
     </div>
-    <div id="oauth-enroll-step-working" class="oauth-enroll-step-center" hidden>
+    <div id="oauth-enroll-step-working">
       <div class="oauth-enroll-step-content">
         <span class="oauth-enroll-step-icon">
           <span class="spinner"></span>
@@ -20,7 +25,7 @@
         </span>
       </div>
     </div>
-    <div id="oauth-enroll-step-error" class="oauth-enroll-step-center" hidden>
+    <div id="oauth-enroll-step-error">
       <div class="oauth-enroll-step-content">
         <span class="oauth-enroll-step-icon">
           <img src="chrome://theme/IDR_ENROLL_FAILURE">
@@ -31,12 +36,12 @@
             <a id="oauth-enroll-error-retry" class="oauth-enroll-link" href="#"
                 i18n-content="oauthEnrollRetry"></a>
             <a class="oauth-enroll-explain-link oauth-enroll-link" href="#"
-                i18n-content="oauthEnrollExplainLink" hidden></a>
+                i18n-content="oauthEnrollExplainLink"></a>
           </p>
         </span>
       </div>
     </div>
-    <div id="oauth-enroll-step-explain" class="oauth-enroll-step-center" hidden>
+    <div id="oauth-enroll-step-explain">
       <div class="oauth-enroll-step-content">
         <span class="oauth-enroll-step-icon">
           <img src="chrome://theme/IDR_INFO">
@@ -47,7 +52,7 @@
         </span>
       </div>
     </div>
-    <div id="oauth-enroll-step-success" class="oauth-enroll-step-center" hidden>
+    <div id="oauth-enroll-step-success">
       <div class="oauth-enroll-step-content">
         <span class="oauth-enroll-step-icon">
           <img src="chrome://theme/IDR_ENROLL_SUCCESS">

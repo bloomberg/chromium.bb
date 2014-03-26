@@ -9,9 +9,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_EXPLAIN = 'explain';
   /** @const */ var STEP_SUCCESS = 'success';
 
+  /** @const */ var HELP_TOPIC_ENROLLMENT = 4631259;
+
   return {
     EXTERNAL_API: [
-      'setIsAutoEnrollment',
       'showStep',
       'showError',
       'showWorking',
@@ -22,21 +23,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * URL to load in the sign in frame.
      */
     signInUrl_: null,
-
-    /**
-     * Whether this is a manual or auto enrollment.
-     */
-    isAutoEnrollment_: false,
-
-    /**
-     * True if enrollment cancellation should be prevented.
-     */
-    preventCancellation_: false,
-
-    /**
-     * Enrollment steps with names and buttons to show.
-     */
-    steps_: null,
 
     /**
      * Dialog to confirm that auto-enrollment should really be cancelled.
@@ -61,11 +47,30 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                               this.onMessage_.bind(this), false);
       $('oauth-enroll-error-retry').addEventListener('click',
                                                      this.doRetry_.bind(this));
+      $('oauth-enroll-learn-more-link').addEventListener(
+          'click',
+          function() {
+            chrome.send('launchHelpApp', [HELP_TOPIC_ENROLLMENT]);
+          });
       var links = document.querySelectorAll('.oauth-enroll-explain-link');
       for (var i = 0; i < links.length; i++) {
         links[i].addEventListener('click',
                                   this.showStep.bind(this, STEP_EXPLAIN));
       }
+
+      this.updateLocalizedContent();
+    },
+
+    /**
+     * Updates localized strings.
+     */
+    updateLocalizedContent: function() {
+      $('oauth-enroll-re-enrollment-text').innerHTML =
+          loadTimeData.getStringF(
+              'oauthEnrollReEnrollmentText',
+              '<b id="oauth-enroll-management-domain"></b>');
+      $('oauth-enroll-management-domain').textContent = this.managementDomain_;
+      $('oauth-enroll-re-enrollment-text').hidden = !this.managementDomain_;
     },
 
     /**
@@ -82,86 +87,55 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     get buttons() {
       var buttons = [];
+      var ownerDocument = this.ownerDocument;
 
-      var cancelButton = this.ownerDocument.createElement('button');
-      cancelButton.id = 'oauth-enroll-cancel-button';
-      cancelButton.textContent = loadTimeData.getString('oauthEnrollCancel');
+      function makeButton(id, classes, label, handler) {
+        var button = ownerDocument.createElement('button');
+        button.id = id;
+        button.classList.add('oauth-enroll-button');
+        button.classList.add.apply(button.classList, classes);
+        button.textContent = label;
+        button.addEventListener('click', handler);
+        buttons.push(button);
+      }
 
-      cancelButton.addEventListener('click', function(e) {
-        chrome.send('oauthEnrollClose', ['cancel']);
-      }.bind(this));
-      buttons.push(cancelButton);
+      makeButton(
+          'oauth-enroll-cancel-button',
+          ['oauth-enroll-focus-on-error'],
+          loadTimeData.getString('oauthEnrollCancel'),
+          function() {
+            chrome.send('oauthEnrollClose', ['cancel']);
+          });
 
-      var tryAgainButton = this.ownerDocument.createElement('button');
-      tryAgainButton.id = 'oauth-enroll-try-again-button';
-      tryAgainButton.hidden = true;
-      tryAgainButton.textContent =
-          loadTimeData.getString('oauthEnrollRetry');
-      tryAgainButton.addEventListener('click', this.doRetry_.bind(this));
-      buttons.push(tryAgainButton);
+      makeButton(
+          'oauth-enroll-back-button',
+          ['oauth-enroll-focus-on-error'],
+          loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack'),
+          function() {
+            chrome.send('oauthEnrollClose', ['cancel']);
+          });
 
-      var explainButton = this.ownerDocument.createElement('button');
-      explainButton.id = 'oauth-enroll-explain-button';
-      explainButton.hidden = true;
-      explainButton.textContent =
-          loadTimeData.getString('oauthEnrollExplainButton');
-      explainButton.addEventListener('click', this.doRetry_.bind(this));
-      buttons.push(explainButton);
+      makeButton(
+          'oauth-enroll-retry-button',
+          ['oauth-enroll-focus-on-error'],
+          loadTimeData.getString('oauthEnrollRetry'),
+          this.doRetry_.bind(this));
 
-      var doneButton = this.ownerDocument.createElement('button');
-      doneButton.id = 'oauth-enroll-done-button';
-      doneButton.hidden = true;
-      doneButton.textContent =
-          loadTimeData.getString('oauthEnrollDone');
-      doneButton.addEventListener('click', function(e) {
-        chrome.send('oauthEnrollClose', ['done']);
-      });
-      buttons.push(doneButton);
+      makeButton(
+          'oauth-enroll-explain-retry-button',
+          ['oauth-enroll-focus-on-explain'],
+          loadTimeData.getString('oauthEnrollExplainButton'),
+          this.doRetry_.bind(this));
+
+      makeButton(
+          'oauth-enroll-done-button',
+          ['oauth-enroll-focus-on-success'],
+          loadTimeData.getString('oauthEnrollDone'),
+          function() {
+            chrome.send('oauthEnrollClose', ['done']);
+          });
 
       return buttons;
-    },
-
-    /**
-     * Sets the |isAutoEnrollment| flag of the OAuthEnrollmentScreen class and
-     * updates the UI.
-     * @param {boolean} is_auto_enrollment the new value of the flag.
-     */
-    setIsAutoEnrollment: function(is_auto_enrollment) {
-      this.isAutoEnrollment_ = is_auto_enrollment;
-      // The cancel button is not available during auto-enrollment.
-      var cancel = this.isAutoEnrollment_ ? null : 'cancel';
-      // During auto-enrollment the user must try again from the error screen.
-      var errorCancel = this.isAutoEnrollment_ ? 'try-again' : 'cancel';
-      this.steps_ = [
-        {
-          name: STEP_SIGNIN,
-          button: cancel
-        },
-        {
-          name: STEP_WORKING,
-          button: cancel
-        },
-        {
-          name: STEP_ERROR,
-          button: errorCancel,
-          focusButton: this.isAutoEnrollment_
-        },
-        {
-          name: STEP_EXPLAIN,
-          button: 'explain',
-          focusButton: true
-        },
-        {
-          name: STEP_SUCCESS,
-          button: 'done',
-          focusButton: true
-        },
-      ];
-
-      var links = document.querySelectorAll('.oauth-enroll-explain-link');
-      for (var i = 0; i < links.length; i++) {
-        links[i].hidden = !this.isAutoEnrollment_;
-      }
     },
 
     /**
@@ -173,15 +147,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       var url = data.signin_url;
       url += '?gaiaUrl=' + encodeURIComponent(data.gaiaUrl);
       this.signInUrl_ = url;
-      this.setIsAutoEnrollment(data.is_auto_enrollment);
-      this.preventCancellation_ = data.prevent_cancellation;
+      var modes = ['manual', 'forced', 'auto'];
+      for (var i = 0; i < modes.length; ++i) {
+        this.classList.toggle('mode-' + modes[i],
+                              data.enrollment_mode == modes[i]);
+      }
+      this.managementDomain_ = data.management_domain;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signInUrl_;
-      if (this.preventCancellation_) {
-        $('oauth-enroll-cancel-button').textContent =
-            loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack');
-      }
-
+      this.updateLocalizedContent();
       this.showStep(STEP_SIGNIN);
     },
 
@@ -189,9 +163,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
-      if (this.isAutoEnrollment_)
-        return;
-
       chrome.send('oauthEnrollClose', ['cancel']);
     },
 
@@ -201,23 +172,17 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * "error", "success".
      */
     showStep: function(step) {
-      this.currentStep_ = step;
-      this.classList.toggle('saml', false);
-      $('oauth-enroll-cancel-button').hidden = true;
-      $('oauth-enroll-try-again-button').hidden = true;
-      $('oauth-enroll-explain-button').hidden = true;
-      $('oauth-enroll-done-button').hidden = true;
-      for (var i = 0; i < this.steps_.length; i++) {
-        var theStep = this.steps_[i];
-        var active = (theStep.name == step);
-        $('oauth-enroll-step-' + theStep.name).hidden = !active;
-        if (active && theStep.button) {
-          var button = $('oauth-enroll-' + theStep.button + '-button');
-          button.hidden = false;
-          if (theStep.focusButton)
-            button.focus();
+      this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
+      this.classList.toggle('oauth-enroll-state-' + step, true);
+      var focusElements =
+          this.querySelectorAll('.oauth-enroll-focus-on-' + step);
+      for (var i = 0; i < focusElements.length; ++i) {
+        if (getComputedStyle(focusElements[i])['display'] != 'none') {
+          focusElements[i].focus();
+          break;
         }
       }
+      this.currentStep_ = step;
     },
 
     /**
@@ -227,12 +192,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     showError: function(message, retry) {
       $('oauth-enroll-error-message').textContent = message;
-      $('oauth-enroll-error-retry').hidden = !retry || this.isAutoEnrollment_;
+      $('oauth-enroll-error-retry').hidden = !retry;
       this.showStep(STEP_ERROR);
     },
 
     /**
-     * Sets a progressing message and switches to the working screen.
+     * Sets a progress message and switches to the working screen.
      * @param {string} message the progress message.
      */
     showWorking: function(message) {
@@ -262,15 +227,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Handler for cancellations of an enforced auto-enrollment.
      */
     cancelAutoEnrollment: function() {
-      // Check if this is forced enrollment flow for a kiosk app.
-      if (this.preventCancellation_)
+      // Only to be activated for the explain step in auto-enrollment.
+      if (this.currentStep_ !== STEP_EXPLAIN)
         return;
 
-      // The dialog to confirm cancellation of auto-enrollment is only shown
-      // if this is an auto-enrollment, and if the user is currently in the
-      // 'explain' step.
-      if (!this.isAutoEnrollment_ || this.currentStep_ !== STEP_EXPLAIN)
-        return;
       if (!this.confirmDialog_) {
         this.confirmDialog_ = new cr.ui.dialogs.ConfirmDialog(document.body);
         this.confirmDialog_.setOkLabel(

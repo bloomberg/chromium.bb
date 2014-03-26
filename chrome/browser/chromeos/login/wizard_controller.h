@@ -259,7 +259,10 @@ class WizardController : public ScreenObserver {
   void AutoLaunchKioskApp();
 
   // Checks whether the user is allowed to exit enrollment.
-  bool CanExitEnrollment() const;
+  static bool CanExitEnrollment();
+
+  // Gets the management domain.
+  static std::string GetForcedEnrollmentDomain();
 
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);

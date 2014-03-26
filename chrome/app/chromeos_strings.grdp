@@ -5238,6 +5238,12 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_DESCRIPTION" desc="Short description of enterprise enrollment.">
+    Sign in with the username given to you by your organization to enroll your device for enterprise management.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_RE_ENROLLMENT_TEXT" desc="Paragraph explaining previous association of the device with a domain.">
+    This device has been marked for enterprise management by <ph name="MANAGEMENT_DOMAIN">$1<ex>example.com</ex></ph>.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_RETRY" desc="Label for the retry button on the error step in the enterprise enrollment dialog.">
     Try again
   </message>

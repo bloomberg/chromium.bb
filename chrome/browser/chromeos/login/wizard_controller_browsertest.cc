@@ -384,8 +384,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   WizardController::default_controller()->SkipUpdateEnrollAfterEula();
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
-                            false,  // is_auto_enrollment
-                            true,   // can_exit_enrollment
+                            EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL,
                             ""))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
@@ -427,8 +426,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
-                            false,  // is_auto_enrollment
-                            true,   // can_exit_enrollment
+                            EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL,
                             ""))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
@@ -560,8 +558,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
-                            false,  // auto_start_enrollmetn
-                            false,  // can_exit_enrollment
+                            EnrollmentScreenActor::ENROLLMENT_MODE_FORCED,
                             "")).Times(1);
   OnExit(ScreenObserver::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
@@ -749,8 +746,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
                        ControlFlowKioskForcedEnrollment) {
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
-                            false,  // is_auto_enrollment
-                            false,  // can_exit_enrollment
+                            EnrollmentScreenActor::ENROLLMENT_MODE_FORCED,
                             ""))
       .Times(1);
 
@@ -793,8 +789,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
-                            false,  // is_auto_enrollment
-                            false,  // can_exit_enrollment
+                            EnrollmentScreenActor::ENROLLMENT_MODE_FORCED,
                             ""))
       .Times(1);
 

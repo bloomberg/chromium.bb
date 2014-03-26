@@ -83,6 +83,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Checks whether the user can cancel enrollment.
   bool CanExitEnrollment() const;
 
+  // Gets the domain this device is supposed to be enrolled to.
+  std::string GetForcedEnrollmentDomain() const;
+
   // CloudPolicyManager:
   virtual void Shutdown() OVERRIDE;
 
