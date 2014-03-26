@@ -166,8 +166,8 @@ class WebMediaPlayerImpl
   void OnPipelineSeek(media::PipelineStatus status);
   void OnPipelineEnded();
   void OnPipelineError(media::PipelineStatus error);
-  void OnPipelineBufferingState(
-      media::Pipeline::BufferingState buffering_state);
+  void OnPipelineMetadata(media::PipelineMetadata metadata);
+  void OnPipelinePrerollCompleted();
   void OnDemuxerOpened();
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
@@ -261,6 +261,9 @@ class WebMediaPlayerImpl
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_;
 
+  // Cache of metadata for answering hasAudio(), hasVideo(), and naturalSize().
+  media::PipelineMetadata pipeline_metadata_;
+
   // Playback state.
   //
   // TODO(scherkus): we have these because Pipeline favours the simplicity of a
@@ -323,7 +326,6 @@ class WebMediaPlayerImpl
   // Video rendering members.
   VideoFrameCompositor compositor_;
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
-  gfx::Size natural_size_;
 
   // The compositor layer for displaying the video content when using composited
   // playback.

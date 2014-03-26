@@ -1669,6 +1669,7 @@
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
             'media',
             'media_test_support',
           ],

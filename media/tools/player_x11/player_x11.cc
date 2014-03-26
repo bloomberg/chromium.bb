@@ -93,7 +93,11 @@ void Paint(base::MessageLoop* message_loop, const PaintCB& paint_cb,
   paint_cb.Run(video_frame.get());
 }
 
-static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
+static void DoNothing() {}
+
+static void OnStatus(media::PipelineStatus status) {}
+
+static void OnMetadata(media::PipelineMetadata metadata) {}
 
 static void NeedKey(const std::string& type,
                     const std::vector<uint8>& init_data) {
@@ -144,9 +148,10 @@ void InitPipeline(
   media::PipelineStatus status;
 
   pipeline->Start(
-      collection.Pass(), base::Closure(), media::PipelineStatusCB(),
+      collection.Pass(), base::Bind(&DoNothing), base::Bind(&OnStatus),
       base::Bind(&SaveStatusAndSignal, &event, &status),
-      base::Bind(&OnBufferingState), base::Closure());
+      base::Bind(&OnMetadata), base::Bind(&DoNothing),
+      base::Bind(&DoNothing));
 
   // Wait until the pipeline is fully initialized.
   event.Wait();
@@ -162,8 +167,7 @@ void TerminateHandler(int signal) {
 
 void PeriodicalUpdate(
     media::Pipeline* pipeline,
-    base::MessageLoop* message_loop,
-    bool audio_only) {
+    base::MessageLoop* message_loop) {
   if (!g_running) {
     // interrupt signal was received during last time period.
     // Quit message_loop only when pipeline is fully stopped.
@@ -191,7 +195,7 @@ void PeriodicalUpdate(
                        &border_width,
                        &depth);
           base::TimeDelta time = pipeline->GetMediaDuration();
-          pipeline->Seek(time*e.xbutton.x/width, media::PipelineStatusCB());
+          pipeline->Seek(time*e.xbutton.x/width, base::Bind(&OnStatus));
         }
         break;
       case KeyPress:
@@ -219,8 +223,7 @@ void PeriodicalUpdate(
       FROM_HERE,
       base::Bind(&PeriodicalUpdate,
                  base::Unretained(pipeline),
-                 message_loop,
-                 audio_only),
+                 message_loop),
       base::TimeDelta::FromMilliseconds(10));
 }
 
@@ -291,8 +294,7 @@ int main(int argc, char** argv) {
   g_running = true;
 
   message_loop.PostTask(FROM_HERE, base::Bind(
-      &PeriodicalUpdate, base::Unretained(&pipeline), &message_loop,
-      !pipeline.HasVideo()));
+      &PeriodicalUpdate, base::Unretained(&pipeline), &message_loop));
   message_loop.Run();
 
   // Cleanup tasks.

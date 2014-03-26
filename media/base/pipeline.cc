@@ -45,8 +45,6 @@ Pipeline::Pipeline(
       clock_(new Clock(&default_tick_clock_)),
       waiting_for_clock_update_(false),
       status_(PIPELINE_OK),
-      has_audio_(false),
-      has_video_(false),
       state_(kCreated),
       audio_ended_(false),
       video_ended_(false),
@@ -74,16 +72,29 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
-                     const BufferingStateCB& buffering_state_cb,
+                     const PipelineMetadataCB& metadata_cb,
+                     const base::Closure& preroll_completed_cb,
                      const base::Closure& duration_change_cb) {
+  DCHECK(!ended_cb.is_null());
+  DCHECK(!error_cb.is_null());
+  DCHECK(!seek_cb.is_null());
+  DCHECK(!metadata_cb.is_null());
+  DCHECK(!preroll_completed_cb.is_null());
+
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
-  DCHECK(!buffering_state_cb.is_null());
-
   running_ = true;
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::StartTask, base::Unretained(this), base::Passed(&collection),
-      ended_cb, error_cb, seek_cb, buffering_state_cb, duration_change_cb));
+
+  filter_collection_ = collection.Pass();
+  ended_cb_ = ended_cb;
+  error_cb_ = error_cb;
+  seek_cb_ = seek_cb;
+  metadata_cb_ = metadata_cb;
+  preroll_completed_cb_ = preroll_completed_cb;
+  duration_change_cb_ = duration_change_cb;
+
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::StartTask, base::Unretained(this)));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
@@ -106,16 +117,6 @@ void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
 bool Pipeline::IsRunning() const {
   base::AutoLock auto_lock(lock_);
   return running_;
-}
-
-bool Pipeline::HasAudio() const {
-  base::AutoLock auto_lock(lock_);
-  return has_audio_;
-}
-
-bool Pipeline::HasVideo() const {
-  base::AutoLock auto_lock(lock_);
-  return has_video_;
 }
 
 float Pipeline::GetPlaybackRate() const {
@@ -186,11 +187,6 @@ TimeDelta Pipeline::GetMediaDuration() const {
 int64 Pipeline::GetTotalBytes() const {
   base::AutoLock auto_lock(lock_);
   return total_bytes_;
-}
-
-gfx::Size Pipeline::GetInitialNaturalSize() const {
-  base::AutoLock auto_lock(lock_);
-  return initial_natural_size_;
 }
 
 bool Pipeline::DidLoadingProgress() const {
@@ -333,8 +329,9 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
-  if (!has_audio_)
+  if (audio_disabled_)
     return;
+
   if (waiting_for_clock_update_ && time < clock_->Elapsed())
     return;
 
@@ -351,7 +348,7 @@ void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
-  if (has_audio_)
+  if (audio_renderer_ && !audio_disabled_)
     return;
 
   // TODO(scherkus): |state_| should only be accessed on pipeline thread, see
@@ -462,20 +459,21 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         // We do not want to start the clock running. We only want to set the
         // base media time so our timestamp calculations will be correct.
         clock_->SetTime(demuxer_->GetStartTime(), demuxer_->GetStartTime());
-
-        // TODO(scherkus): |has_audio_| should be true no matter what --
-        // otherwise people with muted/disabled sound cards will make our
-        // default controls look as if every video doesn't contain an audio
-        // track.
-        has_audio_ = audio_renderer_ != NULL && !audio_disabled_;
-        has_video_ = video_renderer_ != NULL;
       }
       if (!audio_renderer_ && !video_renderer_) {
         done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
         return;
       }
 
-      buffering_state_cb_.Run(kHaveMetadata);
+      {
+        PipelineMetadata metadata;
+        metadata.has_audio = audio_renderer_;
+        metadata.has_video = video_renderer_;
+        DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+        if (stream)
+          metadata.natural_size = stream->video_decoder_config().natural_size();
+        metadata_cb_.Run(metadata);
+      }
 
       return DoInitialPreroll(done_cb);
 
@@ -488,7 +486,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         // We use audio stream to update the clock. So if there is such a
         // stream, we pause the clock until we receive a valid timestamp.
         waiting_for_clock_update_ = true;
-        if (!has_audio_) {
+        if (!audio_renderer_ || audio_disabled_) {
           clock_->SetMaxTime(clock_->Duration());
           StartClockIfWaitingForTimeUpdate_Locked();
         }
@@ -500,7 +498,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       // Fire canplaythrough immediately after playback begins because of
       // crbug.com/106480.
       // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
-      buffering_state_cb_.Run(kPrerollCompleted);
+      preroll_completed_cb_.Run();
       return base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 
     case kStopping:
@@ -731,22 +729,10 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
   statistics_.video_frames_dropped += stats.video_frames_dropped;
 }
 
-void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
-                         const base::Closure& ended_cb,
-                         const PipelineStatusCB& error_cb,
-                         const PipelineStatusCB& seek_cb,
-                         const BufferingStateCB& buffering_state_cb,
-                         const base::Closure& duration_change_cb) {
+void Pipeline::StartTask() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK_EQ(kCreated, state_)
       << "Media pipeline cannot be started more than once";
-
-  filter_collection_ = filter_collection.Pass();
-  ended_cb_ = ended_cb;
-  error_cb_ = error_cb;
-  seek_cb_ = seek_cb;
-  buffering_state_cb_ = buffering_state_cb;
-  duration_change_cb_ = duration_change_cb;
 
   text_renderer_ = filter_collection_->GetTextRenderer();
 
@@ -925,7 +911,6 @@ void Pipeline::AudioDisabledTask() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
-  has_audio_ = false;
   audio_disabled_ = true;
 
   // Notify our demuxer that we're no longer rendering audio.
@@ -974,23 +959,9 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Get an initial natural size so we have something when we signal
-  // the kHaveMetadata buffering state.
-  //
-  // TODO(acolwell): We have to query demuxer outside of the lock to prevent a
-  // deadlock between ChunkDemuxer and Pipeline. See http://crbug.com/334325 for
-  // ideas on removing locking from ChunkDemuxer.
-  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-  gfx::Size initial_natural_size =
-      stream->video_decoder_config().natural_size();
-  {
-    base::AutoLock l(lock_);
-    initial_natural_size_ = initial_natural_size;
-  }
-
   video_renderer_ = filter_collection_->GetVideoRenderer();
   video_renderer_->Initialize(
-      stream,
+      demuxer_->GetStream(DemuxerStream::VIDEO),
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoTimeUpdate, base::Unretained(this)),
