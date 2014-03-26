@@ -99,7 +99,6 @@ ScrollTopLeftInterop status=experimental
 
 ServiceWorker status=experimental
 SessionStorage status=stable
-ShadowDOM status=stable
 SharedWorker status=stable
 SpeechInput status=stable
 SpeechSynthesis status=stable
