@@ -22,6 +22,7 @@ class ScopedAnimationDurationScaleMode;
 namespace aura {
 class TestScreen;
 namespace client {
+class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 }
@@ -34,14 +35,14 @@ class TestWindowTreeClient;
 class AuraTestHelper {
  public:
   explicit AuraTestHelper(base::MessageLoopForUI* message_loop);
-  virtual ~AuraTestHelper();
+  ~AuraTestHelper();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  virtual void SetUp();
+  void SetUp();
 
   // Clean up objects that are created for tests. This also deletes the Env
   // object.
-  virtual void TearDown();
+  void TearDown();
 
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
@@ -52,9 +53,6 @@ class AuraTestHelper {
 
   TestScreen* test_screen() { return test_screen_.get(); }
 
- protected:
-  gfx::Size default_window_size_;
-
  private:
   base::MessageLoopForUI* message_loop_;
   bool setup_called_;
@@ -62,6 +60,7 @@ class AuraTestHelper {
   bool owns_host_;
   scoped_ptr<WindowTreeHost> host_;
   scoped_ptr<TestWindowTreeClient> stacking_client_;
+  scoped_ptr<client::DefaultActivationClient> activation_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<client::FocusClient> focus_client_;

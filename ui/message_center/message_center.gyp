@@ -115,10 +115,9 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../compositor/compositor.gyp:compositor',
             '../events/events.gyp:events',
             '../views/views.gyp:views',
-            '../wm/wm.gyp:wm',
+            '../compositor/compositor.gyp:compositor',
           ],
         }, {
           'sources/': [

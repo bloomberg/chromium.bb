@@ -18,8 +18,8 @@
 #include "content/public/test/test_renderer_host.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/wm/test/wm_test_helper.h"
 #endif
 
 #if defined(USE_ASH)
@@ -57,7 +57,7 @@ void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Windows Ash support. This will require refactoring
-  // AshTestHelper and WMTestHelper so they can be used at the same time,
+  // AshTestHelper and AuraTestHelper so they can be used at the same time,
   // perhaps by AshTestHelper owning an AuraTestHelper.
   ash_test_helper_.reset(new ash::test::AshTestHelper(
       base::MessageLoopForUI::current()));
@@ -67,8 +67,9 @@ void BrowserWithTestWindowTest::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-  wm_test_helper_.reset(new wm::WMTestHelper);
-  wm_test_helper_->SetUp();
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(
+      base::MessageLoopForUI::current()));
+  aura_test_helper_->SetUp();
 #endif  // USE_AURA
 #if defined(TOOLKIT_VIEWS)
   views_delegate_.reset(CreateViewsDelegate());
@@ -98,7 +99,7 @@ void BrowserWithTestWindowTest::TearDown() {
 #if defined(OS_CHROMEOS)
   ash_test_helper_->TearDown();
 #elif defined(USE_AURA)
-  wm_test_helper_->TearDown();
+  aura_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
 #endif
   testing::Test::TearDown();

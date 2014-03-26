@@ -14,8 +14,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
-#include "ui/wm/test/wm_test_helper.h"
+#include "ui/aura/test/aura_test_helper.h"
 #endif
+
+namespace aura {
+namespace test {
+class AuraTestHelper;
+}
+}
 
 namespace ui {
 class ScopedOleInitializer;
@@ -171,7 +177,7 @@ class RenderViewHostTestHarness : public testing::Test {
   TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
 
 #if defined(USE_AURA)
-  aura::Window* root_window() { return wm_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->root_window(); }
 #endif
 
   // Replaces the RPH being used.
@@ -188,7 +194,7 @@ class RenderViewHostTestHarness : public testing::Test {
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 #if defined(USE_AURA)
-  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
 

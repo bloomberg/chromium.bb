@@ -11,10 +11,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/wm/test/wm_test_helper.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -63,7 +63,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
     ui::InitializeContextFactoryForTests(enable_pixel_output);
-    helper_.reset(new wm::WMTestHelper);
+    helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     helper_->SetUp();
 
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
@@ -93,7 +93,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
  private:
   base::MessageLoopForUI message_loop_;
   BrowserThreadImpl browser_thread_for_ui_;
-  scoped_ptr<wm::WMTestHelper> helper_;
+  scoped_ptr<aura::test::AuraTestHelper> helper_;
   scoped_ptr<aura::Window> desktop_window_;
   scoped_ptr<aura::test::TestWindowDelegate> window_delegate_;
 

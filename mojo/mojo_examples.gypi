@@ -253,7 +253,6 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/views/views.gyp:views',
-            '../ui/wm/wm.gyp:wm',
             '../url/url.gyp:url_lib',
             'mojo_aura_demo_support',
             'mojo_common_lib',

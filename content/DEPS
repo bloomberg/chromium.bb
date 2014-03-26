@@ -90,7 +90,6 @@ include_rules = [
   "+ui/snapshot",
   "+ui/surface",
   "+ui/wm/public",
-  "+ui/wm/test",
   # Content knows about grd files, but the specifics of how to get a resource
   # given its id is left to the embedder.
   "-ui/base/l10n",

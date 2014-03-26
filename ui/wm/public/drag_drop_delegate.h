@@ -5,7 +5,7 @@
 #ifndef UI_WM_PUBLIC_DRAG_DROP_DELEGATE_H_
 #define UI_WM_PUBLIC_DRAG_DROP_DELEGATE_H_
 
-#include "ui/wm/wm_export.h"
+#include "ui/aura/aura_export.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -16,7 +16,7 @@ class Window;
 namespace client {
 
 // Delegate interface for drag and drop actions on aura::Window.
-class WM_EXPORT DragDropDelegate {
+class AURA_EXPORT DragDropDelegate {
  public:
   // OnDragEntered is invoked when the mouse enters this window during a drag &
   // drop session. This is immediately followed by an invocation of
@@ -41,8 +41,9 @@ class WM_EXPORT DragDropDelegate {
   virtual ~DragDropDelegate() {}
 };
 
-WM_EXPORT void SetDragDropDelegate(Window* window, DragDropDelegate* delegate);
-WM_EXPORT DragDropDelegate* GetDragDropDelegate(Window* window);
+AURA_EXPORT void SetDragDropDelegate(Window* window,
+                                     DragDropDelegate* delegate);
+AURA_EXPORT DragDropDelegate* GetDragDropDelegate(Window* window);
 
 }  // namespace client
 }  // namespace aura

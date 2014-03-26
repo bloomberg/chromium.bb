@@ -8,7 +8,19 @@
   },
   'targets': [
     {
-      'target_name': 'wm',
+      'target_name': 'wm_public',
+      'type': 'static_library',
+      'dependencies': [
+        '../../skia/skia.gyp:skia',
+        '../aura/aura.gyp:aura',
+        '../gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        'public/window_types.h',
+      ],
+    },
+    {
+      'target_name': 'wm_core',
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -23,7 +35,7 @@
         '../base/ui_base.gyp:ui_base',
       ],
       'defines': [
-        'WM_IMPLEMENTATION',
+        'WM_CORE_IMPLEMENTATION',
       ],
       'sources': [
         'core/base_focus_rules.cc',
@@ -34,8 +46,6 @@
         'core/compound_event_filter.h',
         'core/cursor_manager.cc',
         'core/cursor_manager.h',
-        'core/default_activation_client.cc',
-        'core/default_activation_client.h',
         'core/easy_resize_window_targeter.cc',
         'core/easy_resize_window_targeter.h',
         'core/focus_controller.cc',
@@ -70,34 +80,11 @@
         'core/window_modality_controller.h',
         'core/window_util.cc',
         'core/window_util.h',
+        'core/wm_core_export.h',
         'core/wm_core_switches.cc',
         'core/wm_core_switches.h',
         'core/wm_state.cc',
         'core/wm_state.h',
-        'public/activation_change_observer.h',
-        'public/activation_change_observer.cc',
-        'public/activation_client.cc',
-        'public/activation_client.h',
-        'public/activation_delegate.cc',
-        'public/activation_delegate.h',
-        'public/animation_host.cc',
-        'public/animation_host.h',
-        'public/dispatcher_client.cc',
-        'public/dispatcher_client.h',
-        'public/drag_drop_client.cc',
-        'public/drag_drop_client.h',
-        'public/drag_drop_delegate.cc',
-        'public/drag_drop_delegate.h',
-        'public/scoped_tooltip_disabler.cc',
-        'public/scoped_tooltip_disabler.h',
-        'public/tooltip_client.cc',
-        'public/tooltip_client.h',
-        'public/transient_window_client.cc',
-        'public/transient_window_client.h',
-        'public/window_move_client.cc',
-        'public/window_move_client.h',
-        'public/window_types.h',
-        'wm_export.h',
       ],
     },
     {
@@ -106,7 +93,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
-        'wm',
       ],
       'sources': [
         'test/wm_test_helper.cc',
@@ -129,7 +115,7 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../base/ui_base.gyp:ui_base',
-        'wm',
+        'wm_core',
         'wm_test_support',
       ],
       'sources': [

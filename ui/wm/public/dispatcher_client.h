@@ -6,23 +6,23 @@
 #define UI_WM_PUBLIC_DISPATCHER_CLIENT_H_
 
 #include "base/message_loop/message_pump_dispatcher.h"
-#include "ui/wm/wm_export.h"
+#include "ui/aura/aura_export.h"
 
 namespace aura {
 class Window;
 namespace client {
 
 // An interface implemented by an object which handles nested dispatchers.
-class WM_EXPORT DispatcherClient {
+class AURA_EXPORT DispatcherClient {
  public:
   virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher) = 0;
 
   virtual void QuitNestedMessageLoop() = 0;
 };
 
-WM_EXPORT void SetDispatcherClient(Window* root_window,
-                                   DispatcherClient* client);
-WM_EXPORT DispatcherClient* GetDispatcherClient(Window* root_window);
+AURA_EXPORT void SetDispatcherClient(Window* root_window,
+                                     DispatcherClient* client);
+AURA_EXPORT DispatcherClient* GetDispatcherClient(Window* root_window);
 
 }  // namespace client
 }  // namespace aura

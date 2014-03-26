@@ -277,7 +277,6 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura_test_support',
             '../ui/resources/ui_resources.gyp:ui_test_pak',
-            '../ui/wm/wm.gyp:wm_test_support',
           ],
         }],
         ['use_aura==1 or OS=="mac"', {

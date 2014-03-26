@@ -5,8 +5,8 @@
 #ifndef UI_WM_PUBLIC_WINDOW_MOVE_CLIENT_H_
 #define UI_WM_PUBLIC_WINDOW_MOVE_CLIENT_H_
 
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/vector2d.h"
-#include "ui/wm/wm_export.h"
 
 namespace gfx {
 class Point;
@@ -28,7 +28,7 @@ enum WindowMoveSource {
 
 // An interface implemented by an object that manages programatically keyed
 // window moving.
-class WM_EXPORT WindowMoveClient {
+class AURA_EXPORT WindowMoveClient {
  public:
   // Starts a nested message loop for moving the window. |drag_offset| is the
   // offset from the window origin to the cursor when the drag was started.
@@ -46,8 +46,9 @@ class WM_EXPORT WindowMoveClient {
 };
 
 // Sets/Gets the activation client for the specified window.
-WM_EXPORT void SetWindowMoveClient(Window* window, WindowMoveClient* client);
-WM_EXPORT WindowMoveClient* GetWindowMoveClient(Window* window);
+AURA_EXPORT void SetWindowMoveClient(Window* window,
+                                     WindowMoveClient* client);
+AURA_EXPORT WindowMoveClient* GetWindowMoveClient(Window* window);
 
 }  // namespace client
 }  // namespace aura

@@ -5,8 +5,8 @@
 #ifndef UI_WM_PUBLIC_TOOLTIP_CLIENT_H_
 #define UI_WM_PUBLIC_TOOLTIP_CLIENT_H_
 
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/font.h"
-#include "ui/wm/wm_export.h"
 
 namespace aura {
 class Window;
@@ -14,7 +14,7 @@ namespace client {
 
 class ScopedTooltipDisabler;
 
-class WM_EXPORT TooltipClient {
+class AURA_EXPORT TooltipClient {
  public:
   // Informs the shell tooltip manager of change in tooltip for window |target|.
   virtual void UpdateTooltip(Window* target) = 0;
@@ -32,11 +32,12 @@ class WM_EXPORT TooltipClient {
   friend class ScopedTooltipDisabler;
 };
 
-WM_EXPORT void SetTooltipClient(Window* root_window, TooltipClient* client);
-WM_EXPORT TooltipClient* GetTooltipClient(Window* root_window);
+AURA_EXPORT void SetTooltipClient(Window* root_window,
+                                  TooltipClient* client);
+AURA_EXPORT TooltipClient* GetTooltipClient(Window* root_window);
 
-WM_EXPORT void SetTooltipText(Window* window, base::string16* tooltip_text);
-WM_EXPORT const base::string16 GetTooltipText(Window* window);
+AURA_EXPORT void SetTooltipText(Window* window, base::string16* tooltip_text);
+AURA_EXPORT const base::string16 GetTooltipText(Window* window);
 
 }  // namespace client
 }  // namespace aura

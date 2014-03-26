@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/events/event_processor.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
-class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
+class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  public:
   ShapedAppWindowTargeterTest()
       : web_view_(NULL) {
@@ -27,12 +26,12 @@ class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    views::ViewsTestBase::SetUp();
+    aura::test::AuraTestBase::SetUp();
     widget_.reset(new views::Widget);
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.remove_standard_frame = true;
     params.bounds = gfx::Rect(30, 30, 100, 100);
-    params.context = host()->window();
+    params.context = root_window();
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(params);
 
@@ -44,7 +43,7 @@ class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
 
   virtual void TearDown() OVERRIDE {
     widget_.reset();
-    views::ViewsTestBase::TearDown();
+    aura::test::AuraTestBase::TearDown();
   }
 
  private:
@@ -82,7 +81,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     ui::EventDispatchDetails details =
         event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(host()->window(), move.target());
+    EXPECT_EQ(root_window(), move.target());
 
     // But events within the shape will still reach the window.
     ui::MouseEvent move2(ui::ET_MOUSE_MOVED,
@@ -99,8 +98,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
   // receive events outside of its bounds. Verify that this window-targeter is
   // active unless the window has a custom shape.
   gfx::Insets inset(-30, -30, -30, -30);
-  host()->window()->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-      new wm::EasyResizeWindowTargeter(host()->window(), inset, inset)));
+  root_window()->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+      new wm::EasyResizeWindowTargeter(root_window(), inset, inset)));
 
   aura::Window* window = widget()->GetNativeWindow();
   {
@@ -140,7 +139,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     ui::EventDispatchDetails details =
         event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(host()->window(), move.target());
+    EXPECT_EQ(root_window(), move.target());
   }
 
   // Remove the custom shape. This should restore the behaviour of targeting the
@@ -202,13 +201,13 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
   {
     // With an EasyResizeTargeter on the container, an event
     // inside the window and within 5px of an edge should have
-    // host()->window() as its target.
+    // root_window() as its target.
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(32, 37), gfx::Point(32, 37),
                         ui::EF_NONE, ui::EF_NONE);
     ui::EventDispatchDetails details =
         event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(host()->window(), move.target());
+    EXPECT_EQ(root_window(), move.target());
   }
 }

@@ -12,7 +12,7 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace gfx {
 class Image;
@@ -56,10 +56,10 @@ namespace wm {
 //   | xXX|
 //   ...
 //
-class WM_EXPORT ImageGrid {
+class WM_CORE_EXPORT ImageGrid {
  public:
   // Helper class for use by tests.
-  class WM_EXPORT TestAPI {
+  class WM_CORE_EXPORT TestAPI {
    public:
     TestAPI(ImageGrid* grid) : grid_(grid) {}
 

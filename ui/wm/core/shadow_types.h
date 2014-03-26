@@ -6,7 +6,7 @@
 #define UI_WM_CORE_SHADOW_TYPES_H_
 
 #include "ui/aura/window.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
 class Window;
@@ -22,8 +22,8 @@ enum ShadowType {
   SHADOW_TYPE_RECTANGULAR,
 };
 
-WM_EXPORT void SetShadowType(aura::Window* window, ShadowType shadow_type);
-WM_EXPORT ShadowType GetShadowType(aura::Window* window);
+WM_CORE_EXPORT void SetShadowType(aura::Window* window, ShadowType shadow_type);
+WM_CORE_EXPORT ShadowType GetShadowType(aura::Window* window);
 
 // A property key describing the drop shadow that should be displayed under the
 // window.  If unset, no shadow is displayed.

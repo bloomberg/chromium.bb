@@ -5,7 +5,7 @@
 #ifndef UI_WM_PUBLIC_ACTIVATION_CLIENT_H_
 #define UI_WM_PUBLIC_ACTIVATION_CLIENT_H_
 
-#include "ui/wm/wm_export.h"
+#include "ui/aura/aura_export.h"
 
 namespace ui {
 class Event;
@@ -18,7 +18,7 @@ namespace client {
 class ActivationChangeObserver;
 
 // An interface implemented by an object that manages window activation.
-class WM_EXPORT ActivationClient {
+class AURA_EXPORT ActivationClient {
  public:
   // Adds/Removes ActivationChangeObservers.
   virtual void AddObserver(ActivationChangeObserver* observer) = 0;
@@ -57,9 +57,9 @@ class WM_EXPORT ActivationClient {
 };
 
 // Sets/Gets the activation client on the root Window.
-WM_EXPORT void SetActivationClient(Window* root_window,
-                                   ActivationClient* client);
-WM_EXPORT ActivationClient* GetActivationClient(Window* root_window);
+AURA_EXPORT void SetActivationClient(Window* root_window,
+                                     ActivationClient* client);
+AURA_EXPORT ActivationClient* GetActivationClient(Window* root_window);
 
 // Some types of transient window are only visible when active.
 // The transient parents of these windows may have visual appearance properties
@@ -68,8 +68,8 @@ WM_EXPORT ActivationClient* GetActivationClient(Window* root_window);
 // TODO(beng): currently the UI framework (views) implements the actual
 //             close-on-deactivate component of this feature but it should be
 //             possible to implement in the aura client.
-WM_EXPORT void SetHideOnDeactivate(Window* window, bool hide_on_deactivate);
-WM_EXPORT bool GetHideOnDeactivate(Window* window);
+AURA_EXPORT void SetHideOnDeactivate(Window* window, bool hide_on_deactivate);
+AURA_EXPORT bool GetHideOnDeactivate(Window* window);
 
 }  // namespace clients
 }  // namespace aura

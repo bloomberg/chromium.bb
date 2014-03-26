@@ -33,6 +33,7 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
@@ -46,7 +47,6 @@
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/wm/test/wm_test_helper.h"
 
 using testing::_;
 
@@ -205,8 +205,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
-    wm_test_helper_.reset(new wm::WMTestHelper);
-    wm_test_helper_->SetUp();
+    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_->SetUp();
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());
@@ -219,7 +219,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         RenderWidgetHostView::CreateViewForWidget(parent_host_));
     parent_view_->InitAsChild(NULL);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
-                                          wm_test_helper_->root_window(),
+                                          aura_test_helper_->root_window(),
                                           gfx::Rect());
 
     widget_host_ = new RenderWidgetHostImpl(
@@ -241,7 +241,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     delete parent_host_;
 
     browser_context_.reset();
-    wm_test_helper_->TearDown();
+    aura_test_helper_->TearDown();
 
     message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
     message_loop_.RunUntilIdle();
@@ -255,7 +255,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   BrowserThreadImpl browser_thread_for_ui_;
-  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
   MockRenderProcessHost* process_host_;
@@ -681,7 +681,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
-  wm_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
   // Extra ScreenInfoChanged message for |parent_view_|.
   EXPECT_EQ(1u, sink_->message_count());
@@ -699,7 +699,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
-  wm_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
@@ -894,7 +894,7 @@ scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
 
 // Resizing in fullscreen mode should send the up-to-date screen info.
 TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
-  aura::Window* root_window = wm_test_helper_->root_window();
+  aura::Window* root_window = aura_test_helper_->root_window();
   root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
   view_->InitAsFullscreen(parent_view_);
   view_->WasShown();
@@ -933,7 +933,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
 
   // Make sure the corrent screen size is set along in the resize
   // request when the screen size has changed.
-  wm_test_helper_->test_screen()->SetUIScale(0.5);
+  aura_test_helper_->test_screen()->SetUIScale(0.5);
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);

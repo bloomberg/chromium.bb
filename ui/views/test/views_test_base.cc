@@ -13,7 +13,6 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
-#include "ui/wm/test/wm_test_helper.h"
 
 namespace views {
 
@@ -38,8 +37,8 @@ void ViewsTestBase::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-  wm_test_helper_.reset(new wm::WMTestHelper);
-  wm_test_helper_->SetUp();
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+  aura_test_helper_->SetUp();
   wm_state_.reset(new ::wm::WMState);
   ui::InitializeInputMethodForTesting();
 }
@@ -54,7 +53,7 @@ void ViewsTestBase::TearDown() {
   views_delegate_.reset();
   testing::Test::TearDown();
   ui::ShutdownInputMethodForTesting();
-  wm_test_helper_->TearDown();
+  aura_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
   wm_state_.reset();
   CHECK(!wm::ScopedCaptureClient::IsActive());
@@ -68,20 +67,20 @@ void ViewsTestBase::RunPendingMessages() {
 Widget::InitParams ViewsTestBase::CreateParams(
     Widget::InitParams::Type type) {
   Widget::InitParams params(type);
-  params.context = host()->window();
+  params.context = aura_test_helper_->root_window();
   return params;
 }
 
 ui::EventProcessor* ViewsTestBase::event_processor() {
-  return wm_test_helper_->host()->event_processor();
+  return aura_test_helper_->event_processor();
 }
 
 aura::WindowTreeHost* ViewsTestBase::host() {
-  return wm_test_helper_->host();
+  return aura_test_helper_->host();
 }
 
 gfx::NativeView ViewsTestBase::GetContext() {
-  return wm_test_helper_->host()->window();
+  return aura_test_helper_->root_window();
 }
 
 }  // namespace views

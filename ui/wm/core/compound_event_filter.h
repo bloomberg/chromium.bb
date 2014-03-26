@@ -10,7 +10,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
 class CursorManager;
@@ -37,7 +37,7 @@ namespace wm {
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and CompoundEventFilter will not see the consumed
 // event.
-class WM_EXPORT CompoundEventFilter : public ui::EventHandler {
+class WM_CORE_EXPORT CompoundEventFilter : public ui::EventHandler {
  public:
   CompoundEventFilter();
   virtual ~CompoundEventFilter();

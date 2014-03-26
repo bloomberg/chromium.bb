@@ -19,7 +19,6 @@ include_rules = [
   # The content_shell for aura must work with the views and aura
   "+ui/aura",
   "+ui/views",
-  "+ui/wm",
 
   "+components/breakpad",
 ]

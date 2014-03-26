@@ -11,7 +11,7 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace ui {
 class EventProcessor;
@@ -22,7 +22,7 @@ namespace wm {
 
 // An event filter that forwards a KeyEvent to a system IME, and dispatches a
 // TranslatedKeyEvent to the root window as needed.
-class WM_EXPORT InputMethodEventFilter
+class WM_CORE_EXPORT InputMethodEventFilter
     : public ui::EventHandler,
       public ui::internal::InputMethodDelegate {
  public:
