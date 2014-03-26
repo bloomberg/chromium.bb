@@ -8,10 +8,6 @@
 
 description("Test if various kinds of MIDI messages can be validated.");
 
-// FIXME: remove following workaround once testRunner in Chromium has a new interface.
-if (!testRunner.setMIDISysexPermission)
-    testRunner.setMIDISysexPermission = testRunner.setMIDISysExPermission;
-
 shouldBeDefined("testRunner.setMIDISysexPermission");
 shouldBeDefined("navigator.requestMIDIAccess");
 

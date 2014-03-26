@@ -46,18 +46,16 @@ MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
 
 void MIDIClientProxy::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
 {
-    // FIXME: call new function once Chromium implements it.
     if (m_client)
-        m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
+        m_client->requestSysexPermission(WebMIDIPermissionRequest(access));
     else
         access->setSysexEnabled(false);
 }
 
 void MIDIClientProxy::cancelSysexPermissionRequest(MIDIAccess* access)
 {
-    // FIXME: call new function once Chromium implements it.
     if (m_client)
-        m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
+        m_client->cancelSysexPermissionRequest(WebMIDIPermissionRequest(access));
 }
 
 } // namespace blink

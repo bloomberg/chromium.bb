@@ -49,17 +49,9 @@ public:
     BLINK_EXPORT void setSysexPermission(bool);
     BLINK_EXPORT void resetMock();
 
-    // FIXME: Remove following function once Chromium stop using it.
-    void setSysExPermission(bool permission) { setSysexPermission(permission); }
-
     // WebMIDIClient
     virtual void requestSysexPermission(const WebMIDIPermissionRequest&) OVERRIDE;
     virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) OVERRIDE;
-
-    // FIXME: Remove following old functions once Chromium uses new functions.
-    virtual void requestSysExPermission(const WebMIDIPermissionRequest& request) { requestSysexPermission(request); }
-    virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest& request) { cancelSysexPermissionRequest(request); }
-
 
 private:
     BLINK_EXPORT void reset();
