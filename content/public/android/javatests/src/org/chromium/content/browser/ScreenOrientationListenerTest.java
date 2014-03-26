@@ -117,6 +117,10 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         return true;
     }
 
+    // At least one of these tests flakes 50% on all runs of
+    // contentshell_instrumentation_tests.
+    // crbug.com/356483
+    /*
     @SmallTest
     @Feature({"ScreenOrientation"})
     public void testConfigurationListenerDefault() throws Exception {
@@ -250,5 +254,5 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
         assertEquals(-90, mObserver.mOrientation);
     }
-
+    */
 }
