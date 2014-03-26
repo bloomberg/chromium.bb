@@ -200,7 +200,7 @@ const char* DatabaseBackendBase::databaseInfoTableName()
     return infoTableName;
 }
 
-DatabaseBackendBase::DatabaseBackendBase(PassRefPtr<DatabaseContext> databaseContext, const String& name,
+DatabaseBackendBase::DatabaseBackendBase(DatabaseContext* databaseContext, const String& name,
     const String& expectedVersion, const String& displayName, unsigned long estimatedSize, DatabaseType databaseType)
     : m_databaseContext(databaseContext)
     , m_name(name.isolatedCopy())

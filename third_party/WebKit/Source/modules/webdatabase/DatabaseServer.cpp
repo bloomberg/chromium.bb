@@ -50,17 +50,17 @@ void DatabaseServer::interruptAllDatabasesForContext(const DatabaseContext* cont
     DatabaseTracker::tracker().interruptAllDatabasesForContext(context);
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseContext>& backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(DatabaseContext* backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
     RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
-    if (DatabaseTracker::tracker().canEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error))
+    if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error))
         database = createDatabase(backendContext, type, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseContext>& backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(DatabaseContext* backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {

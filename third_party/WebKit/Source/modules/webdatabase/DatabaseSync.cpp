@@ -53,9 +53,9 @@ PassRefPtrWillBeRawPtr<DatabaseSync> DatabaseSync::create(ExecutionContext*, Pas
     return static_cast<DatabaseSync*>(backend.get());
 }
 
-DatabaseSync::DatabaseSync(PassRefPtr<DatabaseContext> databaseContext,
+DatabaseSync::DatabaseSync(DatabaseContext* databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
-    : DatabaseBackendSync(databaseContext.get(), name, expectedVersion, displayName, estimatedSize)
+    : DatabaseBackendSync(databaseContext, name, expectedVersion, displayName, estimatedSize)
     , DatabaseBase(databaseContext->executionContext())
 {
     ScriptWrappable::init(this);

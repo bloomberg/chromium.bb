@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-DatabaseBackend::DatabaseBackend(PassRefPtr<DatabaseContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackendBase(databaseContext, name, expectedVersion, displayName, estimatedSize, DatabaseType::Async)
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)

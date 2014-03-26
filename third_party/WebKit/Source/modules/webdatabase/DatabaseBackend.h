@@ -48,7 +48,7 @@ class SQLTransactionCoordinator;
 
 class DatabaseBackend : public DatabaseBackendBase {
 public:
-    DatabaseBackend(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
+    DatabaseBackend(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     virtual void trace(Visitor*) OVERRIDE;
 
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;

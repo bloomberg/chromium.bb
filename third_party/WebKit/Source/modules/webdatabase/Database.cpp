@@ -66,9 +66,9 @@ PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrW
     return static_cast<Database*>(backend.get());
 }
 
-Database::Database(PassRefPtr<DatabaseContext> databaseContext,
+Database::Database(DatabaseContext* databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
-    : DatabaseBackend(databaseContext.get(), name, expectedVersion, displayName, estimatedSize)
+    : DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize)
     , DatabaseBase(databaseContext->executionContext())
     , m_databaseContext(DatabaseBackend::databaseContext())
 {

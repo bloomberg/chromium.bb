@@ -96,7 +96,7 @@ protected:
     friend class SQLTransactionBackend;
     friend class SQLTransactionBackendSync;
 
-    DatabaseBackendBase(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion,
+    DatabaseBackendBase(DatabaseContext*, const String& name, const String& expectedVersion,
         const String& displayName, unsigned long estimatedSize, DatabaseType);
 
     void closeDatabase();

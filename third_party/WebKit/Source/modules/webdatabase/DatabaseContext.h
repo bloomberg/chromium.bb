@@ -56,7 +56,7 @@ public:
     virtual void willStop() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    PassRefPtr<DatabaseContext> backend();
+    DatabaseContext* backend();
     DatabaseThread* databaseThread();
 
     void setHasOpenDatabases() { m_hasOpenDatabases = true; }

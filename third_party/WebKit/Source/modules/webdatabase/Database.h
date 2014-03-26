@@ -72,7 +72,7 @@ public:
     void scheduleTransactionCallback(SQLTransaction*);
 
 private:
-    Database(PassRefPtr<DatabaseContext>, const String& name,
+    Database(DatabaseContext*, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     PassRefPtrWillBeRawPtr<DatabaseBackend> backend();
     static PassRefPtrWillBeRawPtr<Database> create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase>);

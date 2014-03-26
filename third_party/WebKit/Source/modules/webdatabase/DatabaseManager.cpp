@@ -91,7 +91,7 @@ private:
     OwnPtr<DatabaseCallback> m_creationCallback;
 };
 
-PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
+DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
 {
     MutexLocker locker(m_contextMapLock);
 
@@ -99,27 +99,17 @@ PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(Executio
     ASSERT(m_databaseContextInstanceCount >= 0);
     ASSERT(m_databaseContextRegisteredCount <= m_databaseContextInstanceCount);
 
-    RefPtr<DatabaseContext> databaseContext = adoptRef(m_contextMap.get(context));
-    if (databaseContext) {
-        // If we're instantiating a new DatabaseContext, the new instance would
-        // carry a new refCount of 1. The client expects this and will simply
-        // adoptRef the databaseContext without ref'ing it.
-        //     However, instead of instantiating a new instance, we're reusing
-        // an existing one that corresponds to the specified ExecutionContext.
-        // Hence, that new refCount need to be attributed to the reused instance
-        // to ensure that the refCount is accurate when the client adopts the ref.
-        // We do this by ref'ing the reused databaseContext before returning it.
-        databaseContext->ref();
-    }
-    return databaseContext.release();
+    return m_contextMap.get(context);
 }
 
-PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ExecutionContext* context)
+DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
 {
-    RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
-    if (!databaseContext)
-        databaseContext = DatabaseContext::create(context);
-    return databaseContext.release();
+    if (DatabaseContext* databaseContext = existingDatabaseContextFor(context))
+        return databaseContext;
+    // We don't need to hold a reference returned by DatabaseContext::create
+    // because a DatabaseContext refers to itself internally. See
+    // DataabseContext::create.
+    return DatabaseContext::create(context).get();
 }
 
 void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
@@ -186,11 +176,8 @@ PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend
 {
     ASSERT(error == DatabaseError::None);
 
-    RefPtr<DatabaseContext> databaseContext = databaseContextFor(context);
-    RefPtr<DatabaseContext> backendContext = databaseContext->backend();
-
     RefPtrWillBeRawPtr<DatabaseBackendBase> backend = m_server->openDatabase(
-        backendContext, type, name, expectedVersion,
+        databaseContextFor(context)->backend(), type, name, expectedVersion,
         displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
 
     if (!backend) {
@@ -228,8 +215,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
 
     RefPtrWillBeRawPtr<Database> database = Database::create(context, backend);
 
-    RefPtr<DatabaseContext> databaseContext = databaseContextFor(context);
-    databaseContext->setHasOpenDatabases();
+    databaseContextFor(context)->setHasOpenDatabases();
     DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);
 
     if (backend->isNew() && creationCallback.get()) {
@@ -278,7 +264,7 @@ void DatabaseManager::closeDatabasesImmediately(const String& originIdentifier, 
 
 void DatabaseManager::interruptAllDatabasesForContext(DatabaseContext* databaseContext)
 {
-    m_server->interruptAllDatabasesForContext(databaseContext->backend().get());
+    m_server->interruptAllDatabasesForContext(databaseContext->backend());
 }
 
 void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)

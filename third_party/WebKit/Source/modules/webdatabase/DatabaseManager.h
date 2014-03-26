@@ -55,10 +55,6 @@ class DatabaseManager {
 public:
     static DatabaseManager& manager();
 
-    // This gets a DatabaseContext for the specified ExecutionContext.
-    // If one doesn't already exist, it will create a new one.
-    PassRefPtr<DatabaseContext> databaseContextFor(ExecutionContext*);
-
     // These 2 methods are for DatabaseContext (un)registration, and should only
     // be called by the DatabaseContext constructor and destructor.
     void registerDatabaseContext(DatabaseContext*);
@@ -87,9 +83,12 @@ private:
     DatabaseManager();
     ~DatabaseManager() { }
 
+    // This gets a DatabaseContext for the specified ExecutionContext.
+    // If one doesn't already exist, it will create a new one.
+    DatabaseContext* databaseContextFor(ExecutionContext*);
     // This gets a DatabaseContext for the specified ExecutionContext if
     // it already exist previously. Otherwise, it returns 0.
-    PassRefPtr<DatabaseContext> existingDatabaseContextFor(ExecutionContext*);
+    DatabaseContext* existingDatabaseContextFor(ExecutionContext*);
 
     PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabaseBackend(ExecutionContext*,
         DatabaseType, const String& name, const String& expectedVersion, const String& displayName,

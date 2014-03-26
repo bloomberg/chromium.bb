@@ -144,10 +144,9 @@ void DatabaseContext::stop()
     stopDatabases();
 }
 
-PassRefPtr<DatabaseContext> DatabaseContext::backend()
+DatabaseContext* DatabaseContext::backend()
 {
-    DatabaseContext* backend = static_cast<DatabaseContext*>(this);
-    return backend;
+    return this;
 }
 
 DatabaseThread* DatabaseContext::databaseThread()

@@ -47,7 +47,7 @@ public:
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
 
 protected:
-    DatabaseBackendSync(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
+    DatabaseBackendSync(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
 
     friend class DatabaseServer;
 };
