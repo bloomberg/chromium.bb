@@ -525,13 +525,14 @@ RenderLayer* RenderObject::findNextLayer(RenderLayer* parentLayer, RenderObject*
 
 RenderLayer* RenderObject::enclosingLayer() const
 {
-    const RenderObject* curr = this;
-    while (curr) {
-        RenderLayer* layer = curr->hasLayer() ? toRenderLayerModelObject(curr)->layer() : 0;
-        if (layer)
-            return layer;
-        curr = curr->parent();
+    for (const RenderObject* current = this; current; current = current->parent()) {
+        if (current->hasLayer())
+            return toRenderLayerModelObject(current)->layer();
     }
+    // This line of code should be unreachable. However, if |this| is zero, we
+    // can reach this line. Of course, it's undefined behavior to call a member
+    // function on a zero pointer, but that doesn't stop
+    // FrameView::paintContents. :)
     return 0;
 }
 

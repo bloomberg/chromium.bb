@@ -63,7 +63,6 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
     // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
 
     layer.stackingNode()->updateLayerListsIfNeeded();
-    layer.update3dRenderingContext();
 
     const bool hasCompositedLayerMapping = layer.hasCompositedLayerMapping();
     CompositedLayerMappingPtr currentCompositedLayerMapping = layer.compositedLayerMapping();

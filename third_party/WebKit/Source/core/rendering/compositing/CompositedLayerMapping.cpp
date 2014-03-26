@@ -1273,7 +1273,7 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
 {
     // All CLM-managed layers that could affect a descendant layer should update their
     // should-flatten-transform value (the other layers' transforms don't matter here).
-    UpdateShouldFlattenTransformFunctor functor = { m_owningLayer.shouldFlattenTransform() };
+    UpdateShouldFlattenTransformFunctor functor = { !m_owningLayer.shouldPreserve3D() };
     ApplyToGraphicsLayersMode mode = ApplyToCoreLayers;
     ApplyToGraphicsLayers(this, functor, mode);
 }
