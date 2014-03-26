@@ -124,7 +124,7 @@ class CC_EXPORT TaskGraphRunner {
   void CollectCompletedTasks(NamespaceToken token,
                              Task::Vector* completed_tasks);
 
-  // Run tasks on until Shutdown() is called.
+  // Run tasks until Shutdown() is called.
   void Run();
 
   // Process all pending tasks, but don't wait/sleep. Return as soon as all
