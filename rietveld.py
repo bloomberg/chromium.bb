@@ -517,6 +517,10 @@ class ReadOnlyRietveld(object):
   def email(self):
     return self._rietveld.email
 
+  @property
+  def password(self):
+    return self._rietveld.password
+
   def get_pending_issues(self):
     pending_issues = self._rietveld.get_pending_issues()
 
