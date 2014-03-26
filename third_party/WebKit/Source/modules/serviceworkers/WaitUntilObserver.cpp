@@ -10,6 +10,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/NotImplemented.h"
+#include "public/platform/WebServiceWorkerEventResult.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -84,6 +85,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, int eventID)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
     , m_pendingActivity(0)
+    , m_hasError(false)
 {
 }
 
@@ -91,6 +93,8 @@ void WaitUntilObserver::reportError(const ScriptValue& value)
 {
     // FIXME: Propagate error message to the client for onerror handling.
     notImplemented();
+
+    m_hasError = true;
 }
 
 void WaitUntilObserver::incrementPendingActivity()
@@ -104,7 +108,8 @@ void WaitUntilObserver::decrementPendingActivity()
     if (--m_pendingActivity || !executionContext())
         return;
 
-    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleInstallEvent(m_eventID);
+    blink::WebServiceWorkerEventResult result = m_hasError ? blink::WebServiceWorkerEventResultRejected : blink::WebServiceWorkerEventResultCompleted;
+    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleInstallEvent(m_eventID, result);
     observeContext(0);
 }
 

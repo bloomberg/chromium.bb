@@ -48,10 +48,10 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 {
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID)
+void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)
 {
     if (m_client)
-        m_client->didHandleInstallEvent(installEventID);
+        m_client->didHandleInstallEvent(installEventID, result);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response> response)

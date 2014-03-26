@@ -43,7 +43,7 @@ public:
     static PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
-    virtual void didHandleInstallEvent(int installEventID) OVERRIDE;
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response>) OVERRIDE;
 
 private:

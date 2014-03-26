@@ -44,6 +44,7 @@ private:
 
     int m_eventID;
     int m_pendingActivity;
+    bool m_hasError;
 };
 
 } // namespace WebCore
