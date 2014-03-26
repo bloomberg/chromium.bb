@@ -50,6 +50,13 @@
             4334,  # Disable 32-bit shift warning in src/opus_encoder.c .
           ],
         }],
+        [ 'os_posix==1 and OS!="android"', {
+          'cflags': [
+            # Suppress a warning given by opus_decoder.c that tells us
+            # optimizations are turned off.
+            '-Wno-#pragma-messages',
+          ],
+        }],
         ['use_opus_fixed_point==0', {
           'include_dirs': [
             'src/silk/float',
