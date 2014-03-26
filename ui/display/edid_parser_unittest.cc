@@ -97,79 +97,79 @@ const unsigned char kLP2565B[] =
 
 TEST(EDIDParserTest, ParseOverscanFlag) {
   bool flag = false;
-  EXPECT_FALSE(
-      ParseOutputOverscanFlag(kNormalDisplay, charsize(kNormalDisplay), &flag));
+  std::vector<uint8> edid(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
+  EXPECT_FALSE(ParseOutputOverscanFlag(edid, &flag));
 
   flag = false;
-  EXPECT_FALSE(ParseOutputOverscanFlag(
-      kInternalDisplay, charsize(kInternalDisplay), &flag));
+  edid.assign(kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  EXPECT_FALSE(ParseOutputOverscanFlag(edid, &flag));
 
   flag = false;
-  EXPECT_TRUE(ParseOutputOverscanFlag(
-      kOverscanDisplay, charsize(kOverscanDisplay), &flag));
+  edid.assign(kOverscanDisplay, kOverscanDisplay + charsize(kOverscanDisplay));
+  EXPECT_TRUE(ParseOutputOverscanFlag(edid, &flag));
   EXPECT_TRUE(flag);
 
   flag = false;
-  EXPECT_FALSE(ParseOutputOverscanFlag(
-      kMisdetectedDisplay, charsize(kMisdetectedDisplay), &flag));
+  edid.assign(
+      kMisdetectedDisplay, kMisdetectedDisplay + charsize(kMisdetectedDisplay));
+  EXPECT_FALSE(ParseOutputOverscanFlag(edid, &flag));
 
   flag = false;
   // Copy |kOverscanDisplay| and set flags to false in it. The overscan flags
   // are embedded at byte 150 in this specific example. Fix here too when the
   // contents of kOverscanDisplay is altered.
-  std::string display_data(reinterpret_cast<const char*>(kOverscanDisplay),
-                           charsize(kOverscanDisplay));
-  display_data[150] = '\0';
-  EXPECT_TRUE(ParseOutputOverscanFlag(
-      reinterpret_cast<const unsigned char*>(display_data.data()),
-      display_data.size(),
-      &flag));
+  edid.assign(kOverscanDisplay, kOverscanDisplay + charsize(kOverscanDisplay));
+  edid[150] = '\0';
+  EXPECT_TRUE(ParseOutputOverscanFlag(edid, &flag));
   EXPECT_FALSE(flag);
 }
 
 TEST(EDIDParserTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
-  scoped_ptr<unsigned char[]> data(new unsigned char[126]);
+  std::vector<uint8> data;
   bool flag = false;
-  EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 0, &flag));
-  EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 126, &flag));
+  EXPECT_FALSE(ParseOutputOverscanFlag(data, &flag));
+  data.assign(126, '\0');
+  EXPECT_FALSE(ParseOutputOverscanFlag(data, &flag));
 
   // extending data because ParseOutputOverscanFlag() will access the data.
-  data.reset(new unsigned char[150]);
+  data.assign(128, '\0');
   // The number of CEA extensions is stored at byte 126.
   data[126] = '\x01';
-  EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 128, &flag));
-  EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 150, &flag));
+  EXPECT_FALSE(ParseOutputOverscanFlag(data, &flag));
+
+  data.assign(150, '\0');
+  data[126] = '\x01';
+  EXPECT_FALSE(ParseOutputOverscanFlag(data, &flag));
 }
 
 TEST(EDIDParserTest, ParseEDID) {
   uint16 manufacturer_id = 0;
   std::string human_readable_name;
+  std::vector<uint8> edid(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
   EXPECT_TRUE(ParseOutputDeviceData(
-      kNormalDisplay, charsize(kNormalDisplay),
-      &manufacturer_id, &human_readable_name));
+      edid, &manufacturer_id, &human_readable_name));
   EXPECT_EQ(0x22f0u, manufacturer_id);
   EXPECT_EQ("HP ZR30w", human_readable_name);
 
   manufacturer_id = 0;
   human_readable_name.clear();
-  EXPECT_TRUE(ParseOutputDeviceData(
-      kInternalDisplay, charsize(kInternalDisplay),
-      &manufacturer_id, NULL));
+  edid.assign(kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, NULL));
   EXPECT_EQ(0x4ca3u, manufacturer_id);
   EXPECT_EQ("", human_readable_name);
 
   // Internal display doesn't have name.
-  EXPECT_TRUE(ParseOutputDeviceData(
-      kInternalDisplay, charsize(kInternalDisplay),
-      NULL, &human_readable_name));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, NULL, &human_readable_name));
   EXPECT_TRUE(human_readable_name.empty());
 
   manufacturer_id = 0;
   human_readable_name.clear();
+  edid.assign(kOverscanDisplay, kOverscanDisplay + charsize(kOverscanDisplay));
   EXPECT_TRUE(ParseOutputDeviceData(
-      kOverscanDisplay, charsize(kOverscanDisplay),
-      &manufacturer_id, &human_readable_name));
+      edid, &manufacturer_id, &human_readable_name));
   EXPECT_EQ(0x4c2du, manufacturer_id);
   EXPECT_EQ("SAMSUNG", human_readable_name);
 }
@@ -177,31 +177,25 @@ TEST(EDIDParserTest, ParseEDID) {
 TEST(EDIDParserTest, ParseBrokenEDID) {
   uint16 manufacturer_id = 0;
   std::string human_readable_name;
+  std::vector<uint8> edid;
 
   // length == 0
   EXPECT_FALSE(ParseOutputDeviceData(
-      kNormalDisplay, 0,
-      &manufacturer_id, &human_readable_name));
+      edid, &manufacturer_id, &human_readable_name));
 
   // name is broken. Copying kNormalDisplay and substitute its name data by
   // some control code.
-  std::string display_data(
-      reinterpret_cast<const char*>(kNormalDisplay), charsize(kNormalDisplay));
+  edid.assign(kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
 
   // display's name data is embedded in byte 95-107 in this specific example.
   // Fix here too when the contents of kNormalDisplay is altered.
-  display_data[97] = '\x1b';
+  edid[97] = '\x1b';
   EXPECT_FALSE(ParseOutputDeviceData(
-      reinterpret_cast<const unsigned char*>(display_data.data()),
-      display_data.size(),
-      &manufacturer_id, &human_readable_name));
+      edid, &manufacturer_id, &human_readable_name));
 
   // If |human_readable_name| isn't specified, it skips parsing the name.
   manufacturer_id = 0;
-  EXPECT_TRUE(ParseOutputDeviceData(
-      reinterpret_cast<const unsigned char*>(display_data.data()),
-      display_data.size(),
-      &manufacturer_id, NULL));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, NULL));
   EXPECT_EQ(0x22f0u, manufacturer_id);
 }
 
@@ -209,22 +203,26 @@ TEST(EDIDParserTest, GetDisplayId) {
   // EDID of kLP2565A and B are slightly different but actually the same device.
   int64 id1 = -1;
   int64 id2 = -1;
-  EXPECT_TRUE(GetDisplayIdFromEDID(kLP2565A, charsize(kLP2565A), 0, &id1));
-  EXPECT_TRUE(GetDisplayIdFromEDID(kLP2565B, charsize(kLP2565B), 0, &id2));
+  std::vector<uint8> edid(kLP2565A, kLP2565A + charsize(kLP2565A));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id1));
+  edid.assign(kLP2565B, kLP2565B + charsize(kLP2565B));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id2));
   EXPECT_EQ(id1, id2);
   EXPECT_NE(-1, id1);
 }
 
 TEST(EDIDParserTest, GetDisplayIdFromInternal) {
   int64 id = -1;
-  EXPECT_TRUE(GetDisplayIdFromEDID(
-      kInternalDisplay, charsize(kInternalDisplay), 0, &id));
+  std::vector<uint8> edid(
+      kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id));
   EXPECT_NE(-1, id);
 }
 
 TEST(EDIDParserTest, GetDisplayIdFailure) {
   int64 id = -1;
-  EXPECT_FALSE(GetDisplayIdFromEDID(NULL, 0, 0, &id));
+  std::vector<uint8> edid;
+  EXPECT_FALSE(GetDisplayIdFromEDID(edid, 0, &id));
   EXPECT_EQ(-1, id);
 }
 

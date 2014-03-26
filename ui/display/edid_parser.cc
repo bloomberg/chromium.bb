@@ -30,15 +30,14 @@ int64 GetID(uint16 manufacturer_id,
 
 }  // namespace
 
-bool GetDisplayIdFromEDID(const unsigned char* prop,
-                          unsigned long nitems,
+bool GetDisplayIdFromEDID(const std::vector<uint8>& edid,
                           uint8 output_index,
                           int64* display_id_out) {
   uint16 manufacturer_id = 0;
   std::string product_name;
 
   // ParseOutputDeviceData fails if it doesn't have product_name.
-  ParseOutputDeviceData(prop, nitems, &manufacturer_id, &product_name);
+  ParseOutputDeviceData(edid, &manufacturer_id, &product_name);
 
   // Generates product specific value from product_name instead of product code.
   // See crbug.com/240341
@@ -54,8 +53,7 @@ bool GetDisplayIdFromEDID(const unsigned char* prop,
   return false;
 }
 
-bool ParseOutputDeviceData(const unsigned char* prop,
-                           unsigned long nitems,
+bool ParseOutputDeviceData(const std::vector<uint8>& edid,
                            uint16* manufacturer_id,
                            std::string* human_readable_name) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
@@ -72,13 +70,13 @@ bool ParseOutputDeviceData(const unsigned char* prop,
   const unsigned char kMonitorNameDescriptor = 0xfc;
 
   if (manufacturer_id) {
-    if (nitems < kManufacturerOffset + kManufacturerLength) {
+    if (edid.size() < kManufacturerOffset + kManufacturerLength) {
       LOG(ERROR) << "too short EDID data: manifacturer id";
       return false;
     }
 
     *manufacturer_id =
-        *reinterpret_cast<const uint16*>(prop + kManufacturerOffset);
+        *reinterpret_cast<const uint16*>(&edid[kManufacturerOffset]);
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     *manufacturer_id = base::ByteSwap(*manufacturer_id);
 #endif
@@ -89,11 +87,10 @@ bool ParseOutputDeviceData(const unsigned char* prop,
 
   human_readable_name->clear();
   for (unsigned int i = 0; i < kNumDescriptors; ++i) {
-    if (nitems < kDescriptorOffset + (i + 1) * kDescriptorLength)
+    if (edid.size() < kDescriptorOffset + (i + 1) * kDescriptorLength)
       break;
 
-    const unsigned char* desc_buf =
-        prop + kDescriptorOffset + i * kDescriptorLength;
+    size_t offset = kDescriptorOffset + i * kDescriptorLength;
     // If the descriptor contains the display name, it has the following
     // structure:
     //   bytes 0-2, 4: \0
@@ -101,15 +98,13 @@ bool ParseOutputDeviceData(const unsigned char* prop,
     //   bytes 5-17: text data, ending with \r, padding with spaces
     // we should check bytes 0-2 and 4, since it may have other values in
     // case that the descriptor contains other type of data.
-    if (desc_buf[0] == 0 && desc_buf[1] == 0 && desc_buf[2] == 0 &&
-        desc_buf[4] == 0) {
-      if (desc_buf[3] == kMonitorNameDescriptor) {
-        std::string found_name(
-            reinterpret_cast<const char*>(desc_buf + 5), kDescriptorLength - 5);
-        base::TrimWhitespaceASCII(
-            found_name, base::TRIM_TRAILING, human_readable_name);
-        break;
-      }
+    if (edid[offset] == 0 && edid[offset + 1] == 0 && edid[offset + 2] == 0 &&
+        edid[offset + 3] == kMonitorNameDescriptor && edid[offset + 4] == 0) {
+      std::string found_name(reinterpret_cast<const char*>(&edid[offset + 5]),
+                             kDescriptorLength - 5);
+      base::TrimWhitespaceASCII(
+          found_name, base::TRIM_TRAILING, human_readable_name);
+      break;
     }
   }
 
@@ -126,8 +121,7 @@ bool ParseOutputDeviceData(const unsigned char* prop,
   return true;
 }
 
-bool ParseOutputOverscanFlag(const unsigned char* prop,
-                             unsigned long nitems,
+bool ParseOutputOverscanFlag(const std::vector<uint8>& edid,
                              bool* flag) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the extension format of EDID.  Also see EIA/CEA-861 spec for
@@ -147,53 +141,48 @@ bool ParseOutputOverscanFlag(const unsigned char* prop,
   const unsigned int kITOverscan = 2;
   const unsigned int kCEOverscan = 0;
 
-  if (nitems <= kNumExtensionsOffset)
+  if (edid.size() <= kNumExtensionsOffset)
     return false;
 
-  unsigned char num_extensions = prop[kNumExtensionsOffset];
+  unsigned char num_extensions = edid[kNumExtensionsOffset];
 
   for (size_t i = 0; i < num_extensions; ++i) {
     // Skip parsing the whole extension if size is not enough.
-    if (nitems < kExtensionBase + (i + 1) * kExtensionSize)
+    if (edid.size() < kExtensionBase + (i + 1) * kExtensionSize)
       break;
 
-    const unsigned char* extension = prop + kExtensionBase + i * kExtensionSize;
-    unsigned char tag = extension[0];
-    unsigned char revision = extension[1];
+    size_t extension_offset = kExtensionBase + i * kExtensionSize;
+    unsigned char tag = edid[extension_offset];
+    unsigned char revision = edid[extension_offset + 1];
     if (tag != kCEAExtensionTag || revision != kExpectedExtensionRevision)
       continue;
 
-    unsigned char timing_descriptors_start =
-        std::min(extension[2], static_cast<unsigned char>(kExtensionSize));
-    const unsigned char* data_block = extension + kDataBlockOffset;
-    while (data_block < extension + timing_descriptors_start) {
+    unsigned char timing_descriptors_start = std::min(
+        edid[extension_offset + 2], static_cast<unsigned char>(kExtensionSize));
+
+    for (size_t data_offset = extension_offset + kDataBlockOffset;
+         data_offset < extension_offset + timing_descriptors_start;) {
       // A data block is encoded as:
       // - byte 1 high 3 bits: tag. '07' for extended tags.
       // - byte 1 remaining bits: the length of data block.
       // - byte 2: the extended tag.  '0' for video capability.
       // - byte 3: the capability.
-      unsigned char tag = data_block[0] >> 5;
-      unsigned char payload_length = data_block[0] & 0x1f;
-      if (static_cast<unsigned long>(data_block + payload_length - prop) >
-          nitems)
+      unsigned char tag = edid[data_offset] >> 5;
+      unsigned char payload_length = edid[data_offset] & 0x1f;
+      if (data_offset + payload_length > edid.size())
         break;
 
-      if (tag != kExtendedTag || payload_length < 2) {
-        data_block += payload_length + 1;
-        continue;
-      }
-
-      unsigned char extended_tag_code = data_block[1];
-      if (extended_tag_code != kExtendedVideoCapabilityTag) {
-        data_block += payload_length + 1;
+      if (tag != kExtendedTag || payload_length < 2 ||
+          edid[data_offset + 1] != kExtendedVideoCapabilityTag) {
+        data_offset += payload_length + 1;
         continue;
       }
 
       // The difference between preferred, IT, and CE video formats
       // doesn't matter. Sets |flag| to true if any of these flags are true.
-      if ((data_block[2] & (1 << kPTOverscan)) ||
-          (data_block[2] & (1 << kITOverscan)) ||
-          (data_block[2] & (1 << kCEOverscan))) {
+      if ((edid[data_offset + 2] & (1 << kPTOverscan)) ||
+          (edid[data_offset + 2] & (1 << kITOverscan)) ||
+          (edid[data_offset + 2] & (1 << kCEOverscan))) {
         *flag = true;
       } else {
         *flag = false;

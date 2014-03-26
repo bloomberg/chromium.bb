@@ -18,15 +18,6 @@ typedef XID RROutput;
 
 namespace ui {
 
-// Get the EDID data from the |output| and stores to |prop|. |nitem| will store
-// the number of characters |prop| will have. It doesn't take the ownership of
-// |prop|, so caller must release it by XFree().
-// Returns true if EDID property is successfully obtained. Otherwise returns
-// false and does not touch |prop| and |nitems|.
-DISPLAY_EXPORT bool GetEDIDProperty(XID output,
-                                    unsigned long* nitems,
-                                    unsigned char** prop);
-
 // Gets the EDID data from |output| and generates the display id through
 // |GetDisplayIdFromEDID|.
 DISPLAY_EXPORT bool GetDisplayId(XID output,

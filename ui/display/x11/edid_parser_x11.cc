@@ -16,24 +16,6 @@ namespace ui {
 
 namespace {
 
-// Gets some useful data from the specified output device, such like
-// manufacturer's ID, product code, and human readable name. Returns false if it
-// fails to get those data and doesn't touch manufacturer ID/product code/name.
-// NULL can be passed for unwanted output parameters.
-bool GetOutputDeviceData(XID output,
-                         uint16* manufacturer_id,
-                         std::string* human_readable_name) {
-  unsigned long nitems = 0;
-  unsigned char* prop = NULL;
-  if (!GetEDIDProperty(output, &nitems, &prop))
-    return false;
-
-  bool result = ParseOutputDeviceData(
-      prop, nitems, manufacturer_id, human_readable_name);
-  XFree(prop);
-  return result;
-}
-
 bool IsRandRAvailable() {
   int randr_version_major = 0;
   int randr_version_minor = 0;
@@ -43,9 +25,10 @@ bool IsRandRAvailable() {
   return is_randr_available;
 }
 
-}  // namespace
-
-bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
+// Get the EDID data from the |output| and stores to |edid|.
+// Returns true if EDID property is successfully obtained. Otherwise returns
+// false and does not touch |edid|.
+bool GetEDIDProperty(XID output, std::vector<uint8>* edid) {
   if (!IsRandRAvailable())
     return false;
 
@@ -71,6 +54,8 @@ bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
   Atom actual_type;
   int actual_format;
   unsigned long bytes_after;
+  unsigned long nitems = 0;
+  unsigned char* prop = NULL;
   XRRGetOutputProperty(display,
                        output,
                        edid_property,
@@ -81,23 +66,40 @@ bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
                        AnyPropertyType,  // req_type
                        &actual_type,
                        &actual_format,
-                       nitems,
+                       &nitems,
                        &bytes_after,
-                       prop);
+                       &prop);
   DCHECK_EQ(XA_INTEGER, actual_type);
   DCHECK_EQ(8, actual_format);
+  edid->assign(prop, prop + nitems);
+  XFree(prop);
   return true;
 }
 
-bool GetDisplayId(XID output_id, uint8 output_index, int64* display_id_out) {
-  unsigned long nitems = 0;
-  unsigned char* prop = NULL;
-  if (!GetEDIDProperty(output_id, &nitems, &prop))
+// Gets some useful data from the specified output device, such like
+// manufacturer's ID, product code, and human readable name. Returns false if it
+// fails to get those data and doesn't touch manufacturer ID/product code/name.
+// NULL can be passed for unwanted output parameters.
+bool GetOutputDeviceData(XID output,
+                         uint16* manufacturer_id,
+                         std::string* human_readable_name) {
+  std::vector<uint8> edid;
+  if (!GetEDIDProperty(output, &edid))
     return false;
 
-  bool result =
-      GetDisplayIdFromEDID(prop, nitems, output_index, display_id_out);
-  XFree(prop);
+  bool result = ParseOutputDeviceData(
+      edid, manufacturer_id, human_readable_name);
+  return result;
+}
+
+}  // namespace
+
+bool GetDisplayId(XID output_id, uint8 output_index, int64* display_id_out) {
+  std::vector<uint8> edid;
+  if (!GetEDIDProperty(output_id, &edid))
+    return false;
+
+  bool result = GetDisplayIdFromEDID(edid, output_index, display_id_out);
   return result;
 }
 
@@ -108,13 +110,11 @@ std::string GetDisplayName(RROutput output) {
 }
 
 bool GetOutputOverscanFlag(RROutput output, bool* flag) {
-  unsigned long nitems = 0;
-  unsigned char* prop = NULL;
-  if (!GetEDIDProperty(output, &nitems, &prop))
+  std::vector<uint8> edid;
+  if (!GetEDIDProperty(output, &edid))
     return false;
 
-  bool found = ParseOutputOverscanFlag(prop, nitems, flag);
-  XFree(prop);
+  bool found = ParseOutputOverscanFlag(edid, flag);
   return found;
 }
 
