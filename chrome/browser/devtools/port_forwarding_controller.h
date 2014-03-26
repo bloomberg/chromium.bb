@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -50,8 +51,13 @@ class PortForwardingController : public KeyedService {
   class Connection;
   typedef std::map<std::string, Connection* > Registry;
 
+  void OnPrefsChange();
+  bool ShouldCreateConnections();
+  void ShutdownConnections();
+
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   PrefService* pref_service_;
+  PrefChangeRegistrar pref_change_registrar_;
   Registry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PortForwardingController);
