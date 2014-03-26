@@ -306,6 +306,13 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool HasWipeoutBeenAcknowledged(const std::string& extension_id);
   void SetWipeoutAcknowledged(const std::string& extension_id, bool value);
 
+  // Whether the user has been notified about extension with |extension_id|
+  // taking over some aspect of the user's settings (homepage, startup pages,
+  // or search engine).
+  bool HasSettingsApiBubbleBeenAcknowledged(const std::string& extension_id);
+  void SetSettingsApiBubbleBeenAcknowledged(const std::string& extension_id,
+                                            bool value);
+
   // Returns true if the extension notification code has already run for the
   // first time for this profile. Currently we use this flag to mean that any
   // extensions that would trigger notifications should get silently

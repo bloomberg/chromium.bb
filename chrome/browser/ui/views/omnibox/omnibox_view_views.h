@@ -110,6 +110,9 @@ class OmniboxViewViews
   virtual bool IsImeComposing() const OVERRIDE;
   virtual bool IsImeShowingPopup() const OVERRIDE;
   virtual void ShowImeIfNeeded() OVERRIDE;
+  virtual void OnMatchOpened(const AutocompleteMatch& match,
+                             Profile* profile,
+                             content::WebContents* web_contents) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;

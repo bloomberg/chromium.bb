@@ -9,12 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -23,19 +24,17 @@
 #include "grit/locale_settings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace extensions {
-
 namespace {
+
+base::LazyInstance<std::set<Profile*> > g_profiles_evaluated =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Layout constants.
 const int kExtensionListPadding = 10;
@@ -52,75 +51,15 @@ const size_t kMaxExtensionsToShow = 7;
 // How long to wait until showing the bubble (in seconds).
 const int kBubbleAppearanceWaitTime = 5;
 
-// This is a class that implements the UI for the bubble showing which
-// extensions look suspicious and have therefore been automatically disabled.
-class ExtensionMessageBubbleView : public ExtensionMessageBubble,
-                                   public views::BubbleDelegateView,
-                                   public views::ButtonListener,
-                                   public views::LinkListener {
- public:
-  ExtensionMessageBubbleView(
-      views::View* anchor_view,
-      scoped_ptr<ExtensionMessageBubbleController> controller);
+}  // namespace
 
-  // ExtensionMessageBubble methods.
-  virtual void OnActionButtonClicked(const base::Closure& callback) OVERRIDE;
-  virtual void OnDismissButtonClicked(const base::Closure& callback) OVERRIDE;
-  virtual void OnLinkClicked(const base::Closure& callback) OVERRIDE;
-  virtual void Show() OVERRIDE;
-
-  // WidgetObserver methods.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-
- private:
-  virtual ~ExtensionMessageBubbleView();
-
-  // Shows the bubble and updates the counter for how often it has been shown.
-  void ShowBubble();
-
-  // views::BubbleDelegateView overrides:
-  virtual void Init() OVERRIDE;
-
-  // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
-  // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // views::View implementation.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      OVERRIDE;
-
-  base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
-
-  // The controller for this bubble.
-  scoped_ptr<ExtensionMessageBubbleController> controller_;
-
-  // The headline, labels and buttons on the bubble.
-  views::Label* headline_;
-  views::Link* learn_more_;
-  views::LabelButton* action_button_;
-  views::LabelButton* dismiss_button_;
-
-  // All actions (link, button, esc) close the bubble, but we need to
-  // make sure we don't send dismiss if the link was clicked.
-  bool link_clicked_;
-  bool action_taken_;
-
-  // Callbacks into the controller.
-  base::Closure action_callback_;
-  base::Closure dismiss_callback_;
-  base::Closure link_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleView);
-};
+namespace extensions {
 
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
-    scoped_ptr<ExtensionMessageBubbleController> controller)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    views::BubbleBorder::Arrow arrow_location,
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
+    : BubbleDelegateView(anchor_view, arrow_location),
       weak_factory_(this),
       controller_(controller.Pass()),
       headline_(NULL),
@@ -129,7 +68,7 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
       link_clicked_(false),
       action_taken_(false) {
   DCHECK(anchor_view->GetWidget());
-  set_close_on_deactivate(false);
+  set_close_on_deactivate(controller_->CloseOnDeactivate());
   set_move_with_anchor(true);
   set_close_on_esc(true);
 
@@ -324,8 +263,6 @@ void ExtensionMessageBubbleView::ViewHierarchyChanged(
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleFactory
 
@@ -335,6 +272,7 @@ ExtensionMessageBubbleFactory::ExtensionMessageBubbleFactory(
     : profile_(profile),
       toolbar_view_(toolbar_view),
       shown_suspicious_extensions_bubble_(false),
+      shown_startup_override_extensions_bubble_(false),
       shown_dev_mode_extensions_bubble_(false),
       is_observing_(false),
       stage_(STAGE_START),
@@ -346,18 +284,28 @@ ExtensionMessageBubbleFactory::~ExtensionMessageBubbleFactory() {
 }
 
 void ExtensionMessageBubbleFactory::MaybeShow(views::View* anchor_view) {
-  // The list of suspicious extensions takes priority over the dev mode bubble,
-  // since that needs to be shown as soon as we disable something. The dev mode
-  // bubble is not as time sensitive so we'll catch the dev mode extensions on
-  // the next startup/next window that opens. That way, we're not too spammy
-  // with the bubbles.
+  // The list of suspicious extensions takes priority over the dev mode bubble
+  // and the settings API bubble, since that needs to be shown as soon as we
+  // disable something. The settings API bubble is shown on first startup after
+  // an extension has changed the startup pages and it is acceptable if that
+  // waits until the next startup because of the suspicious extension bubble.
+  // The dev mode bubble is not time sensitive like the other two so we'll catch
+  // the dev mode extensions on the next startup/next window that opens. That
+  // way, we're not too spammy with the bubbles.
   if (!shown_suspicious_extensions_bubble_) {
     if (MaybeShowSuspiciousExtensionsBubble(anchor_view))
       return;
   }
 
+  if (!shown_startup_override_extensions_bubble_ &&
+      IsInitialProfileCheck(profile_->GetOriginalProfile()) &&
+      MaybeShowStartupOverrideExtensionsBubble(anchor_view))
+    return;
+
   if (!shown_dev_mode_extensions_bubble_)
     MaybeShowDevModeExtensionsBubble(anchor_view);
+
+  RecordProfileCheck(profile_->GetOriginalProfile());
 }
 
 bool ExtensionMessageBubbleFactory::MaybeShowSuspiciousExtensionsBubble(
@@ -374,8 +322,39 @@ bool ExtensionMessageBubbleFactory::MaybeShowSuspiciousExtensionsBubble(
       suspicious_extensions.get();
   ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
       anchor_view,
+      views::BubbleBorder::TOP_RIGHT,
       suspicious_extensions.PassAs<ExtensionMessageBubbleController>());
 
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
+  weak_controller->Show(bubble_delegate);
+
+  return true;
+}
+
+bool ExtensionMessageBubbleFactory::MaybeShowStartupOverrideExtensionsBubble(
+    views::View* anchor_view) {
+#if !defined(OS_WIN)
+  return false;
+#endif
+
+  DCHECK(!shown_startup_override_extensions_bubble_);
+
+  const Extension* extension = OverridesStartupPages(profile_, NULL);
+  if (!extension)
+    return false;
+
+  scoped_ptr<SettingsApiBubbleController> settings_api_bubble(
+      new SettingsApiBubbleController(profile_,
+                                      BUBBLE_TYPE_STARTUP_PAGES));
+  if (!settings_api_bubble->ShouldShow(extension->id()))
+    return false;
+
+  shown_startup_override_extensions_bubble_ = true;
+  SettingsApiBubbleController* weak_controller = settings_api_bubble.get();
+  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+      anchor_view,
+      views::BubbleBorder::TOP_RIGHT,
+      settings_api_bubble.PassAs<ExtensionMessageBubbleController>());
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   weak_controller->Show(bubble_delegate);
 
@@ -429,6 +408,14 @@ void ExtensionMessageBubbleFactory::MaybeStopObserving() {
   }
 }
 
+void ExtensionMessageBubbleFactory::RecordProfileCheck(Profile* profile) {
+  g_profiles_evaluated.Get().insert(profile);
+}
+
+bool ExtensionMessageBubbleFactory::IsInitialProfileCheck(Profile* profile) {
+  return g_profiles_evaluated.Get().count(profile) == 0;
+}
+
 void ExtensionMessageBubbleFactory::OnBrowserActionsContainerAnimationEnded() {
   MaybeStopObserving();
   if (stage_ == STAGE_START) {
@@ -473,6 +460,7 @@ void ExtensionMessageBubbleFactory::ShowDevModeBubble() {
   DevModeBubbleController* weak_controller = controller_.get();
   ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
       anchor_view_,
+      views::BubbleBorder::TOP_RIGHT,
       scoped_ptr<ExtensionMessageBubbleController>(controller_.release()));
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   weak_controller->Show(bubble_delegate);

@@ -70,6 +70,8 @@ const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {
   return *GetOrCreateExtensionList();
 }
 
+bool ExtensionMessageBubbleController::CloseOnDeactivate() { return false; }
+
 void ExtensionMessageBubbleController::Show(ExtensionMessageBubble* bubble) {
   // Wire up all the callbacks, to get notified what actions the user took.
   base::Closure dismiss_button_callback =

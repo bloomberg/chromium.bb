@@ -77,6 +77,7 @@ const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 const char kPrefWipeoutAcknowledged[] = "ack_wiped";
+const char kPrefSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 
 // Indicates whether the external extension was installed during the first
 // run of this profile.
@@ -693,6 +694,20 @@ void ExtensionPrefs::SetWipeoutAcknowledged(
     const std::string& extension_id,
     bool value) {
   UpdateExtensionPref(extension_id, kPrefWipeoutAcknowledged,
+                      value ? base::Value::CreateBooleanValue(value) : NULL);
+}
+
+bool ExtensionPrefs::HasSettingsApiBubbleBeenAcknowledged(
+    const std::string& extension_id) {
+  return ReadPrefAsBooleanAndReturn(extension_id,
+                                    kPrefSettingsBubbleAcknowledged);
+}
+
+void ExtensionPrefs::SetSettingsApiBubbleBeenAcknowledged(
+    const std::string& extension_id,
+    bool value) {
+  UpdateExtensionPref(extension_id,
+                      kPrefSettingsBubbleAcknowledged,
                       value ? base::Value::CreateBooleanValue(value) : NULL);
 }
 

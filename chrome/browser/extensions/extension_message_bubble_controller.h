@@ -69,6 +69,9 @@ class ExtensionMessageBubbleController {
   // Obtains a list of all extensions (by id) the controller knows about.
   const ExtensionIdList& GetExtensionIdList();
 
+  // Whether to close the bubble when it loses focus.
+  virtual bool CloseOnDeactivate();
+
   // Sets up the callbacks and shows the bubble.
   virtual void Show(ExtensionMessageBubble* bubble);
 

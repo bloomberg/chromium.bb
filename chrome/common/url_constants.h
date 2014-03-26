@@ -333,6 +333,9 @@ extern const char kAutoPasswordGenerationLearnMoreURL[];
 
 extern const char kPasswordManagerLearnMoreURL[];
 
+// "Learn more" URL for the Settings API bubble.
+extern const char kSettingsApiLearnMoreURL[];
+
 // General help links for Chrome, opened using various actions.
 extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];

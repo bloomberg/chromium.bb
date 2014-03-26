@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -718,6 +719,13 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 
 void OmniboxViewViews::ShowImeIfNeeded() {
   GetInputMethod()->ShowImeIfNeeded();
+}
+
+void OmniboxViewViews::OnMatchOpened(const AutocompleteMatch& match,
+                                     Profile* profile,
+                                     content::WebContents* web_contents) const {
+  extensions::MaybeShowExtensionControlledSearchNotification(
+      profile, web_contents, match);
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {

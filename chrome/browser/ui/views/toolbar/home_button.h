@@ -16,7 +16,7 @@ class HomeButton : public ToolbarButton {
   HomeButton(views::ButtonListener* listener, Browser* browser);
   virtual ~HomeButton();
 
-  // views::ImageButton:
+  // ToolbarButton:
   virtual bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
@@ -25,6 +25,9 @@ class HomeButton : public ToolbarButton {
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
  private:
+  // ToolbarButton:
+  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
+
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeButton);

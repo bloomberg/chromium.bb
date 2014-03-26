@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/extension_messages.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -20,6 +20,7 @@
 #include "extensions/common/permissions/settings_override_permission.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -214,12 +215,14 @@ SettingsOverrides::SettingsOverrides() {}
 
 SettingsOverrides::~SettingsOverrides() {}
 
+// static
 const SettingsOverrides* SettingsOverrides::Get(
     const Extension* extension) {
   return static_cast<SettingsOverrides*>(
       extension->GetManifestData(manifest_keys::kSettingsOverride));
 }
 
+// static
 bool SettingsOverrides::RemovesBookmarkButton(
     const SettingsOverrides& settings_overrides) {
   return settings_overrides.bookmarks_ui &&
@@ -227,6 +230,7 @@ bool SettingsOverrides::RemovesBookmarkButton(
       *settings_overrides.bookmarks_ui->remove_button;
 }
 
+// static
 bool SettingsOverrides::RemovesBookmarkShortcut(
     const SettingsOverrides& settings_overrides) {
   return settings_overrides.bookmarks_ui &&

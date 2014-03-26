@@ -822,6 +822,8 @@
         'browser/extensions/sandboxed_unpacker.h',
         'browser/extensions/script_executor.cc',
         'browser/extensions/script_executor.h',
+        'browser/extensions/settings_api_bubble_controller.cc',
+        'browser/extensions/settings_api_bubble_controller.h',
         'browser/extensions/standard_management_policy_provider.cc',
         'browser/extensions/standard_management_policy_provider.h',
         'browser/extensions/startup_helper.cc',

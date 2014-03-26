@@ -119,10 +119,11 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
                             const base::string16& pasted_text,
                             size_t selected_line) {
   // Invalid URLs such as chrome://history can end up here.
-  if (match.destination_url.is_valid() && model_) {
-    model_->OpenMatch(match, disposition, alternate_nav_url, pasted_text,
-                      selected_line);
-  }
+  if (!match.destination_url.is_valid() || !model_)
+    return;
+  model_->OpenMatch(
+      match, disposition, alternate_nav_url, pasted_text, selected_line);
+  OnMatchOpened(match, model_->profile(), controller_->GetWebContents());
 }
 
 bool OmniboxView::IsEditingOrEmpty() const {
@@ -210,6 +211,10 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
   // this method and implement as needed.
   return false;
 }
+
+void OmniboxView::OnMatchOpened(const AutocompleteMatch& match,
+                                Profile* profile,
+                                content::WebContents* web_contents) const {}
 
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,

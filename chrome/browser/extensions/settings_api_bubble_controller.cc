@@ -1,0 +1,300 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/extensions/settings_api_bubble_controller.h"
+
+#include "base/metrics/histogram.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+#include "chrome/common/url_constants.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
+using extensions::ExtensionMessageBubbleController;
+using extensions::SettingsApiBubbleController;
+using extensions::SettingsOverrides;
+
+namespace {
+
+////////////////////////////////////////////////////////////////////////////////
+// SettingsApiBubbleDelegate
+
+class SettingsApiBubbleDelegate
+    : public extensions::ExtensionMessageBubbleController::Delegate {
+ public:
+  explicit SettingsApiBubbleDelegate(ExtensionService* service,
+                                     Profile* profile,
+                                     extensions::SettingsApiOverrideType type);
+  virtual ~SettingsApiBubbleDelegate();
+
+  // ExtensionMessageBubbleController::Delegate methods.
+  virtual bool ShouldIncludeExtension(const std::string& extension_id) OVERRIDE;
+  virtual void AcknowledgeExtension(
+      const std::string& extension_id,
+      extensions::ExtensionMessageBubbleController::BubbleAction user_action)
+      OVERRIDE;
+  virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetMessageBody() const OVERRIDE;
+  virtual base::string16 GetOverflowText(
+      const base::string16& overflow_count) const OVERRIDE;
+  virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
+  virtual GURL GetLearnMoreUrl() const OVERRIDE;
+  virtual base::string16 GetActionButtonLabel() const OVERRIDE;
+  virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
+  virtual bool ShouldShowExtensionList() const OVERRIDE;
+  virtual void LogExtensionCount(size_t count) OVERRIDE;
+  virtual void LogAction(
+      extensions::ExtensionMessageBubbleController::BubbleAction action)
+      OVERRIDE;
+
+ private:
+  // Our extension service. Weak, not owned by us.
+  ExtensionService* service_;
+
+  // A weak pointer to the profile we are associated with. Not owned by us.
+  Profile* profile_;
+
+  // The type of settings override this bubble will report on. This can be, for
+  // example, a bubble to notify the user that the search engine has been
+  // changed by an extension (or homepage/startup pages/etc).
+  extensions::SettingsApiOverrideType type_;
+
+  // The ID of the extension we are showing the bubble for.
+  std::string extension_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsApiBubbleDelegate);
+};
+
+SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
+    ExtensionService* service,
+    Profile* profile,
+    extensions::SettingsApiOverrideType type)
+    : service_(service), profile_(profile), type_(type) {}
+
+SettingsApiBubbleDelegate::~SettingsApiBubbleDelegate() {}
+
+bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
+    const std::string& extension_id) {
+  using extensions::ExtensionRegistry;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+  if (!extension)
+    return false;  // The extension provided is no longer enabled.
+
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  if (prefs->HasSettingsApiBubbleBeenAcknowledged(extension_id))
+    return false;
+
+  const SettingsOverrides* settings = SettingsOverrides::Get(extension);
+  if (!settings)
+    return false;
+
+  bool should_include = false;
+  switch (type_) {
+    case extensions::BUBBLE_TYPE_HOME_PAGE:
+      should_include = settings->homepage != NULL;
+      break;
+    case extensions::BUBBLE_TYPE_STARTUP_PAGES:
+      should_include = !settings->startup_pages.empty();
+      break;
+    case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
+      should_include = settings->search_engine != NULL;
+      break;
+  }
+
+  if (should_include && extension_id_ != extension_id) {
+    DCHECK(extension_id_.empty());
+    extension_id_ = extension_id;
+  }
+  return should_include;
+}
+
+void SettingsApiBubbleDelegate::AcknowledgeExtension(
+    const std::string& extension_id,
+    ExtensionMessageBubbleController::BubbleAction user_action) {
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  prefs->SetSettingsApiBubbleBeenAcknowledged(extension_id, true);
+}
+
+void SettingsApiBubbleDelegate::PerformAction(
+    const extensions::ExtensionIdList& list) {
+  for (size_t i = 0; i < list.size(); ++i) {
+    service_->DisableExtension(list[i],
+                               extensions::Extension::DISABLE_USER_ACTION);
+  }
+}
+
+base::string16 SettingsApiBubbleDelegate::GetTitle() const {
+  switch (type_) {
+    case extensions::BUBBLE_TYPE_HOME_PAGE:
+      return l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE);
+    case extensions::BUBBLE_TYPE_STARTUP_PAGES:
+      return l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_TITLE_STARTUP_PAGES_BUBBLE);
+    case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
+      return l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_TITLE_SEARCH_ENGINE_BUBBLE);
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+base::string16 SettingsApiBubbleDelegate::GetMessageBody() const {
+  using extensions::ExtensionRegistry;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
+  const SettingsOverrides* settings =
+      extension ? SettingsOverrides::Get(extension) : NULL;
+  if (!extension || !settings) {
+    NOTREACHED();
+    return base::string16();
+  }
+
+  bool home_change = settings->homepage != NULL;
+  bool startup_change = !settings->startup_pages.empty();
+  bool search_change = settings->search_engine != NULL;
+
+  base::string16 body;
+  switch (type_) {
+    case extensions::BUBBLE_TYPE_HOME_PAGE:
+      body = l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_HOME_PAGE);
+      if (startup_change && search_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_SEARCH);
+      } else if (startup_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES);
+      } else if (search_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE);
+      }
+      break;
+    case extensions::BUBBLE_TYPE_STARTUP_PAGES:
+      body = l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_START_PAGES);
+      if (home_change && search_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_AND_SEARCH);
+      } else if (home_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE);
+      } else if (search_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE);
+      }
+      break;
+    case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
+      body = l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE);
+      if (startup_change && home_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_HOME);
+      } else if (startup_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES);
+      } else if (home_change) {
+        body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE);
+      }
+      break;
+  }
+  if (!body.empty())
+    body += l10n_util::GetStringUTF16(
+            IDS_EXTENSIONS_SETTINGS_API_THIRD_LINE_CONFIRMATION);
+  return body;
+}
+
+base::string16 SettingsApiBubbleDelegate::GetOverflowText(
+    const base::string16& overflow_count) const {
+  // Does not have more than one extension in the list at a time.
+  NOTREACHED();
+  return base::string16();
+}
+
+base::string16 SettingsApiBubbleDelegate::GetLearnMoreLabel() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+GURL SettingsApiBubbleDelegate::GetLearnMoreUrl() const {
+  return GURL(chrome::kSettingsApiLearnMoreURL);
+}
+
+base::string16 SettingsApiBubbleDelegate::GetActionButtonLabel() const {
+  return l10n_util::GetStringUTF16(
+      IDS_EXTENSIONS_SETTINGS_API_RESTORE_SETTINGS);
+}
+
+base::string16 SettingsApiBubbleDelegate::GetDismissButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SETTINGS_API_KEEP_CHANGES);
+}
+
+bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
+  return false;
+}
+
+void SettingsApiBubbleDelegate::LogExtensionCount(size_t count) {
+  UMA_HISTOGRAM_COUNTS_100("SettingsApiBubble.ExtensionCount", count);
+}
+
+void SettingsApiBubbleDelegate::LogAction(
+    ExtensionMessageBubbleController::BubbleAction action) {
+  UMA_HISTOGRAM_ENUMERATION("SettingsApiBubble.UserSelection",
+                            action,
+                            ExtensionMessageBubbleController::ACTION_BOUNDARY);
+}
+
+}  // namespace
+
+namespace extensions {
+
+////////////////////////////////////////////////////////////////////////////////
+// SettingsApiBubbleController
+
+SettingsApiBubbleController::SettingsApiBubbleController(
+    Profile* profile,
+    SettingsApiOverrideType type)
+    : ExtensionMessageBubbleController(
+          new SettingsApiBubbleDelegate(
+              ExtensionSystem::Get(profile)->extension_service(),
+              profile,
+              type),
+          profile),
+      profile_(profile),
+      type_(type) {}
+
+SettingsApiBubbleController::~SettingsApiBubbleController() {}
+
+bool SettingsApiBubbleController::ShouldShow(const std::string& extension_id) {
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  if (prefs->HasSettingsApiBubbleBeenAcknowledged(extension_id))
+    return false;
+
+  if (!delegate()->ShouldIncludeExtension(extension_id))
+    return false;
+
+  // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
+  // the startup pages, so there's no point in showing the bubble now.
+  if (type_ == BUBBLE_TYPE_STARTUP_PAGES)
+    return profile_->GetLastSessionExitType() != Profile::EXIT_CRASHED;
+
+  return true;
+}
+
+bool SettingsApiBubbleController::CloseOnDeactivate() {
+  // Startup bubbles tend to get lost in the focus storm that happens on
+  // startup. Other types should dismiss on focus loss.
+  return type_ != BUBBLE_TYPE_STARTUP_PAGES;
+}
+
+}  // namespace extensions

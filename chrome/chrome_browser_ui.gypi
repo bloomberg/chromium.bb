@@ -2113,6 +2113,8 @@
         'browser/ui/views/select_file_dialog_extension.h',
         'browser/ui/views/select_file_dialog_extension_factory.cc',
         'browser/ui/views/select_file_dialog_extension_factory.h',
+        'browser/ui/views/settings_api_bubble_helper_views.cc',
+        'browser/ui/views/settings_api_bubble_helper_views.h',
         'browser/ui/views/signed_certificate_timestamps_views.cc',
         'browser/ui/views/signed_certificate_timestamps_views.h',
         'browser/ui/views/signed_certificate_timestamp_info_view.cc',
