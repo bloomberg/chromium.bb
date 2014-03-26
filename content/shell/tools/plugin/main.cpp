@@ -792,14 +792,16 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
     int16_t ret = 0;
 #ifdef XP_MACOSX
 #ifndef NP_NO_CARBON
-    if (obj->eventModel == NPEventModelCarbon)
-        ret = handleEventCarbon(instance, obj, static_cast<EventRecord*>(event));
-#endif
     assert(obj->eventModel == NPEventModelCarbon ||
            obj->eventModel == NPEventModelCocoa);
     if (obj->eventModel == NPEventModelCocoa)
-      ret = handleEventCocoa(instance, obj, static_cast<NPCocoaEvent*>(event));
-
+        ret = handleEventCocoa(instance, obj, static_cast<NPCocoaEvent*>(event));
+    else if (obj->eventModel == NPEventModelCarbon)
+        ret = handleEventCarbon(instance, obj, static_cast<EventRecord*>(event));
+#else
+    assert(obj->eventModel == NPEventModelCocoa);
+    ret = handleEventCocoa(instance, obj, static_cast<NPCocoaEvent*>(event));
+#endif
 #elif defined(XP_UNIX)
     ret = handleEventX11(instance, obj, static_cast<XEvent*>(event));
 #elif defined(XP_WIN)
