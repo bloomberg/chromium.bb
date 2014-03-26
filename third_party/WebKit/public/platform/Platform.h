@@ -444,7 +444,6 @@ public:
 
     // Testing -------------------------------------------------------------
 
-#define HAVE_WEBUNITTESTSUPPORT 1
     // Get a pointer to testing support interfaces. Will not be available in production builds.
     virtual WebUnitTestSupport* unitTestSupport() { return 0; }
 
