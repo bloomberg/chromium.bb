@@ -577,6 +577,11 @@ void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
 }
 
 void RenderViewHostImpl::SwapOut() {
+  // If this RenderViewHost is not in the default state, it must have already
+  // gone through this, therefore just return.
+  if (rvh_state_ != STATE_DEFAULT)
+    return;
+
   SetState(STATE_WAITING_FOR_UNLOAD_ACK);
   unload_event_monitor_timeout_->Start(
       base::TimeDelta::FromMilliseconds(kUnloadTimeoutMS));

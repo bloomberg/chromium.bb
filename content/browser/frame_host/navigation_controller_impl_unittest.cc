@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
@@ -1060,6 +1061,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
+  std::vector<GURL> url_chain;
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -1086,14 +1088,18 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
       increment_active_view_count();
 
   // Navigate to a second URL, simulate the beforeunload ack for the cross-site
-  // transition, and set bindings on the pending RenderViewHost to simulate a
-  // privileged url.
+  // transition, run the unload handler, and set bindings on the pending
+  // RenderViewHost to simulate a privileged url.
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   orig_rvh->SendBeforeUnloadACK(true);
-  contents()->GetPendingRenderViewHost()->AllowBindings(1);
-  static_cast<TestRenderViewHost*>(
-      contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
-  orig_rvh->OnSwappedOut(false);
+  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
+  TestRenderViewHost* new_rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
+  new_rvh->AllowBindings(1);
+  new_rvh->SendNavigate(1, url2);
 
   // The second load should be committed, and bindings should be remembered.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1104,6 +1110,11 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
 
   // Going back, the first entry should still appear unprivileged.
   controller.GoBack();
+  new_rvh->SendBeforeUnloadACK(true);
+  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   orig_rvh->SendNavigate(0, url1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(

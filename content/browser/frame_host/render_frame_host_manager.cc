@@ -467,10 +467,14 @@ void RenderFrameHostManager::DidNavigateFrame(
     // The pending cross-site navigation completed, so show the renderer.
     // If it committed without sending network requests (e.g., data URLs),
     // then we still need to swap out the old RFH first and run its unload
-    // handler.  OK for that to happen in the background.
+    // handler, only if it hasn't happened yet.  OK for that to happen in the
+    // background.
     if (pending_render_frame_host_->render_view_host()->
-            HasPendingCrossSiteRequest())
+            HasPendingCrossSiteRequest() &&
+        pending_render_frame_host_->render_view_host()->rvh_state() ==
+            RenderViewHostImpl::STATE_DEFAULT) {
       SwapOutOldPage();
+    }
 
     CommitPending();
     cross_navigation_pending_ = false;
