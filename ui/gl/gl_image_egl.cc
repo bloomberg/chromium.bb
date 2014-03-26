@@ -19,23 +19,17 @@ GLImageEGL::GLImageEGL(gfx::Size size)
       egl_image_for_unbind_(EGL_NO_IMAGE_KHR),
       texture_id_for_unbind_(0) {}
 
-GLImageEGL::~GLImageEGL() {
-  Destroy();
-}
+GLImageEGL::~GLImageEGL() { Destroy(); }
 
 bool GLImageEGL::Initialize(gfx::GpuMemoryBufferHandle buffer) {
   DCHECK(buffer.native_buffer);
-  EGLint attrs[] = {
-    EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
-    EGL_NONE,
-  };
-  egl_image_ = eglCreateImageKHR(
-      GLSurfaceEGL::GetHardwareDisplay(),
-      EGL_NO_CONTEXT,
-      EGL_NATIVE_BUFFER_ANDROID,
-      buffer.native_buffer,
-      attrs);
 
+  EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
+  egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
+                                 EGL_NO_CONTEXT,
+                                 EGL_NATIVE_BUFFER_ANDROID,
+                                 buffer.native_buffer,
+                                 attrs);
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
     EGLint error = eglGetError();
     LOG(ERROR) << "Error creating EGLImage: " << error;
@@ -63,9 +57,7 @@ void GLImageEGL::Destroy() {
   }
 }
 
-gfx::Size GLImageEGL::GetSize() {
-  return size_;
-}
+gfx::Size GLImageEGL::GetSize() { return size_; }
 
 bool GLImageEGL::BindTexImage(unsigned target) {
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
@@ -128,8 +120,8 @@ void GLImageEGL::DidUseTexImage() {
           GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &zero);
     }
 
-    EGLint attrs[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0,  // mip-level.
-                      EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
+    EGLint attrs[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR,
+                      EGL_TRUE, EGL_NONE};
     // Need to pass current EGL rendering context to eglCreateImageKHR for
     // target type EGL_GL_TEXTURE_2D_KHR.
     egl_image_for_unbind_ = eglCreateImageKHR(
@@ -146,14 +138,6 @@ void GLImageEGL::DidUseTexImage() {
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
-void GLImageEGL::WillModifyTexImage() {
-}
-
-void GLImageEGL::DidModifyTexImage() {
-}
-
-void GLImageEGL::SetReleaseAfterUse() {
-  release_after_use_ = true;
-}
+void GLImageEGL::SetReleaseAfterUse() { release_after_use_ = true; }
 
 }  // namespace gfx

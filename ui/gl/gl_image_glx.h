@@ -18,15 +18,15 @@ class GL_EXPORT GLImageGLX : public GLImage {
 
   virtual bool Initialize();
 
-  // Implement GLImage.
+  // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
-  virtual void WillUseTexImage() OVERRIDE;
-  virtual void DidUseTexImage() OVERRIDE;
-  virtual void WillModifyTexImage() OVERRIDE;
-  virtual void DidModifyTexImage() OVERRIDE;
+  virtual void WillUseTexImage() OVERRIDE {}
+  virtual void DidUseTexImage() OVERRIDE {}
+  virtual void WillModifyTexImage() OVERRIDE {}
+  virtual void DidModifyTexImage() OVERRIDE {}
 
  protected:
   virtual ~GLImageGLX();
