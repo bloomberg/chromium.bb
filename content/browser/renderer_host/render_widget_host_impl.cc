@@ -1779,6 +1779,14 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 
 void RenderWidgetHostImpl::OnQueueSyntheticGesture(
     const SyntheticGesturePacket& gesture_packet) {
+  // Only allow untrustworthy gestures if explicitly enabled.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableGpuBenchmarking)) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH7"));
+    GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
   QueueSyntheticGesture(
         SyntheticGesture::Create(*gesture_packet.gesture_params()),
         base::Bind(&RenderWidgetHostImpl::OnSyntheticGestureCompleted,

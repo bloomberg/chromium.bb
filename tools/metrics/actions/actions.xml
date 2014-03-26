@@ -1166,6 +1166,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BadMessageTerminate_RWH7">
+  <owner>jdduke@chromium.org</owner>
+  <owner>dominikg@chromium.org</owner>
+  <description>
+    Emitted when a InputHostMsg_QueueSyntheticGesture message is received while
+    the --enable-gpu-benchmarking flag is not present.
+  </description>
+</action>
+
 <action name="BadMessageTerminate_RWHVA1">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
