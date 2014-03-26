@@ -646,8 +646,8 @@ bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
 
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-  // In Lion fullscreen mode, convert popups into tabs.
-  if (chrome::mac::SupportsSystemFullscreen() && IsFullscreen())
+  // When using Cocoa's System Fullscreen mode, convert popups into tabs.
+  if ([controller_ isInSystemFullscreen])
     return NEW_FOREGROUND_TAB;
   return NEW_POPUP;
 }

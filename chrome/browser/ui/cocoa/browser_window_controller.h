@@ -127,24 +127,21 @@ class Command;
   // nil for those which don't).
   base::scoped_nsobject<NSView> floatingBarBackingView_;
 
-  // The borderless window used in fullscreen mode.  Lion reuses the original
-  // window in fullscreen mode, so this is always nil on Lion.
+  // The borderless window used in fullscreen mode when Cocoa's System
+  // Fullscreen API is not being used (or not available, before OS 10.7).
   base::scoped_nsobject<NSWindow> fullscreenWindow_;
 
   // The Cocoa implementation of the PermissionBubbleView.
   scoped_ptr<PermissionBubbleCocoa> permissionBubbleCocoa_;
 
-  // Tracks whether presentation mode was entered from fullscreen mode or
-  // directly from normal windowed mode.  Used to determine what to do when
-  // exiting presentation mode.
-  BOOL enteredPresentationModeFromFullscreen_;
-
-  // True between -windowWillEnterFullScreen and -windowDidEnterFullScreen.
-  // Only used on Lion and higher.
+  // True between |-windowWillEnterFullScreen:| and |-windowDidEnterFullScreen:|
+  // to indicate that the window is in the process of transitioning into
+  // fullscreen mode.
   BOOL enteringFullscreen_;
 
   // True between |-setPresentationMode:url:bubbleType:| and
-  // -windowDidEnterFullScreen. Only used on Lion and higher.
+  // |-windowDidEnterFullScreen:| to indicate that the window is in the process
+  // of transitioning into fullscreen presentation mode.
   BOOL enteringPresentationMode_;
 
   // The size of the original (non-fullscreen) window.  This is saved just
@@ -438,8 +435,17 @@ class Command;
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
                            bubbleType:(FullscreenExitBubbleType)bubbleType;
 
-// Returns fullscreen state.  This method is safe to call on all OS versions.
+// Returns fullscreen state: YES when the window is in fullscreen or is
+// animating into fullscreen.
 - (BOOL)isFullscreen;
+
+// Returns YES if the browser window is currently in fullscreen via the built-in
+// immersive mechanism.
+- (BOOL)isInImmersiveFullscreen;
+
+// Returns YES if the browser window is currently in fullscreen via the Cocoa
+// System Fullscreen API.
+- (BOOL)isInSystemFullscreen;
 
 // Enters (or exits) presentation mode.  Also enters fullscreen mode if this
 // window is not already fullscreen.  This method is safe to call on all OS

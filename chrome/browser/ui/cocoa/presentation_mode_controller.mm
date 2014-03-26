@@ -335,17 +335,23 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   return [browserController_ floatingBarShownFraction];
 }
 
+- (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode {
+  if (mode == systemFullscreenMode_)
+    return;
+  if (systemFullscreenMode_ == base::mac::kFullScreenModeNormal)
+    base::mac::RequestFullScreen(mode);
+  else if (mode == base::mac::kFullScreenModeNormal)
+    base::mac::ReleaseFullScreen(systemFullscreenMode_);
+  else
+    base::mac::SwitchFullScreenModes(systemFullscreenMode_, mode);
+  systemFullscreenMode_ = mode;
+}
+
 - (void)changeFloatingBarShownFraction:(CGFloat)fraction {
   [browserController_ setFloatingBarShownFraction:fraction];
 
-  base::mac::FullScreenMode desiredMode = [self desiredSystemFullscreenMode];
-  if (desiredMode != systemFullscreenMode_ && [self shouldToggleMenuBar]) {
-    if (systemFullscreenMode_ == base::mac::kFullScreenModeNormal)
-      base::mac::RequestFullScreen(desiredMode);
-    else
-      base::mac::SwitchFullScreenModes(systemFullscreenMode_, desiredMode);
-    systemFullscreenMode_ = desiredMode;
-  }
+  if ([self shouldToggleMenuBar])
+    [self setSystemFullscreenModeTo:[self desiredSystemFullscreenMode]];
 }
 
 // Used to activate the floating bar in presentation mode.
@@ -424,7 +430,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (BOOL)shouldToggleMenuBar {
-  return !chrome::mac::SupportsSystemFullscreen() &&
+  return [browserController_ isInImmersiveFullscreen] &&
          [self isWindowOnPrimaryScreen] &&
          [[browserController_ window] isMainWindow];
 }
@@ -636,20 +642,15 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   if (systemFullscreenMode_ != base::mac::kFullScreenModeNormal)
     return;
 
-  if ([self shouldToggleMenuBar]) {
-    base::mac::FullScreenMode desiredMode = [self desiredSystemFullscreenMode];
-    base::mac::RequestFullScreen(desiredMode);
-    systemFullscreenMode_ = desiredMode;
-  }
+  if ([self shouldToggleMenuBar])
+    [self setSystemFullscreenModeTo:[self desiredSystemFullscreenMode]];
 
   // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)hideActiveWindowUI {
-  if (systemFullscreenMode_ != base::mac::kFullScreenModeNormal) {
-    base::mac::ReleaseFullScreen(systemFullscreenMode_);
-    systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
-  }
+  if ([self shouldToggleMenuBar])
+    [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
 
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }

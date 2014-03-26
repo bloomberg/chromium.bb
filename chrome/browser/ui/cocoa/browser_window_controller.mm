@@ -2106,10 +2106,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 
-// On Lion, this method is called by either the Lion fullscreen button or the
-// "Enter Full Screen" menu item.  On Snow Leopard, this function is never
-// called by the UI directly, but it provides the implementation for
-// |-setPresentationMode:|.
+// Called to transition into or out of fullscreen mode. Only use System
+// Fullscreen mode if the system supports it and we aren't trying to go
+// fullscreen for the renderer-initiated use cases.
+// Discussion: http://crbug.com/179181 and http:/crbug.com/351252
 - (void)setFullscreen:(BOOL)fullscreen {
   if (fullscreen == [self isFullscreen])
     return;
@@ -2117,17 +2117,28 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (!chrome::IsCommandEnabled(browser_.get(), IDC_FULLSCREEN))
     return;
 
-  if (chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_) {
-    enteredPresentationModeFromFullscreen_ = YES;
-    if (FramedBrowserWindow* framedBrowserWindow =
-            base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-      [framedBrowserWindow toggleSystemFullScreen];
+  if (fullscreen) {
+    const BOOL shouldUseSystemFullscreen =
+        chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_ &&
+        !browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
+    if (shouldUseSystemFullscreen) {
+      if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+        [framedBrowserWindow toggleSystemFullScreen];
+      }
+    } else {
+      [self enterImmersiveFullscreen];
     }
   } else {
-    if (fullscreen)
-      [self enterFullscreenForSnowLeopard];
-    else
-      [self exitFullscreenForSnowLeopard];
+    if ([self isInSystemFullscreen]) {
+      if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+        [framedBrowserWindow toggleSystemFullScreen];
+      }
+    } else {
+      DCHECK(fullscreenWindow_.get());
+      [self exitImmersiveFullscreen];
+    }
   }
 }
 
@@ -2148,9 +2159,18 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (BOOL)isFullscreen {
-  return (fullscreenWindow_.get() != nil) ||
-         ([[self window] styleMask] & NSFullScreenWindowMask) ||
+  return [self isInImmersiveFullscreen] ||
+         [self isInSystemFullscreen] ||
          enteringFullscreen_;
+}
+
+- (BOOL)isInImmersiveFullscreen {
+  return fullscreenWindow_.get() != nil;
+}
+
+- (BOOL)isInSystemFullscreen {
+  return ([[self window] styleMask] & NSFullScreenWindowMask) ==
+      NSFullScreenWindowMask;
 }
 
 // On Lion, this function is called by either the presentation mode toggle
@@ -2174,7 +2194,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   if (presentationMode) {
     BOOL fullscreen = [self isFullscreen];
-    enteredPresentationModeFromFullscreen_ = fullscreen;
     enteringPresentationMode_ = YES;
 
     if (fullscreen) {
@@ -2194,13 +2213,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
       [self showFullscreenExitBubbleIfNecessary];
       browser_->WindowFullscreenStateChanged();
     } else {
-      // If not in fullscreen mode, trigger the Lion fullscreen mode machinery.
-      // Presentation mode will automatically be enabled in
-      // |-windowWillEnterFullScreen:|.
-      if (FramedBrowserWindow* window =
-              base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-        [window toggleSystemFullScreen];
-      }
+      // Need to transition into fullscreen mode.  Presentation mode will
+      // automatically be enabled in |-windowWillEnterFullScreen:|.
+      [self setFullscreen:YES];
     }
   } else {
     // Exiting presentation mode does not exit system fullscreen; it merely
@@ -2232,7 +2247,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
 
-  [self enterFullscreenForSnowLeopard];
+  [self enterImmersiveFullscreen];
   [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
 }
 
