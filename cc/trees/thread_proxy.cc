@@ -456,7 +456,7 @@ void ThreadProxy::BeginImplFrame(const BeginFrameArgs& args) {
 
   // Sample the frame time now. This time will be used for updating animations
   // when we draw.
-  impl().layer_tree_host_impl->CurrentFrameTimeTicks();
+  impl().layer_tree_host_impl->UpdateCurrentFrameTime();
 
   impl().scheduler->BeginImplFrame(args);
 }
@@ -771,7 +771,7 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
   scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->monotonic_frame_begin_time =
-      impl().layer_tree_host_impl->CurrentPhysicalTimeTicks();
+      impl().layer_tree_host_impl->CurrentFrameTimeTicks();
   begin_main_frame_state->scroll_info =
       impl().layer_tree_host_impl->ProcessScrollDeltas();
 
@@ -1629,7 +1629,7 @@ void ThreadProxy::RenewTreePriority() {
       impl().layer_tree_host_impl->IsCurrentlyScrolling() ||
       impl().layer_tree_host_impl->page_scale_animation_active();
 
-  base::TimeTicks now = impl().layer_tree_host_impl->CurrentPhysicalTimeTicks();
+  base::TimeTicks now = impl().layer_tree_host_impl->CurrentFrameTimeTicks();
 
   // Update expiration time if smoothness currently takes priority.
   if (smoothness_takes_priority) {

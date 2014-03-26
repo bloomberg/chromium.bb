@@ -255,8 +255,8 @@ void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
 
   if (currently_scrolling_layer_ &&
       currently_scrolling_layer_->scrollbar_animation_controller())
-    currently_scrolling_layer_->scrollbar_animation_controller()->
-        DidScrollGestureEnd(CurrentPhysicalTimeTicks());
+    currently_scrolling_layer_->scrollbar_animation_controller()
+        ->DidScrollGestureEnd(CurrentFrameTimeTicks());
   currently_scrolling_layer_ = layer;
   if (layer && layer->scrollbar_animation_controller())
     layer->scrollbar_animation_controller()->DidScrollGestureBegin();
@@ -680,10 +680,6 @@ bool LayerTreeImpl::PinchGestureActive() const {
 
 base::TimeTicks LayerTreeImpl::CurrentFrameTimeTicks() const {
   return layer_tree_host_impl_->CurrentFrameTimeTicks();
-}
-
-base::TimeTicks LayerTreeImpl::CurrentPhysicalTimeTicks() const {
-  return layer_tree_host_impl_->CurrentPhysicalTimeTicks();
 }
 
 void LayerTreeImpl::SetNeedsCommit() {

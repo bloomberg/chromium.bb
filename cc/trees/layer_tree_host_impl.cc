@@ -2462,8 +2462,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
         scroll_layer_impl ? scroll_layer_impl->scrollbar_animation_controller()
                           : NULL;
     if (animation_controller) {
-      animation_controller->DidMouseMoveOffScrollbar(
-          CurrentPhysicalTimeTicks());
+      animation_controller->DidMouseMoveOffScrollbar(CurrentFrameTimeTicks());
       StartScrollbarAnimation();
     }
     scroll_layer_id_when_mouse_over_scrollbar_ = 0;
@@ -2492,7 +2491,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
                  DeviceSpaceDistanceToLayer(device_viewport_point, *it));
 
   bool should_animate = animation_controller->DidMouseMoveNear(
-      CurrentPhysicalTimeTicks(), distance_to_scrollbar / device_scale_factor_);
+      CurrentFrameTimeTicks(), distance_to_scrollbar / device_scale_factor_);
   if (should_animate)
     StartScrollbarAnimation();
 }
@@ -2506,7 +2505,7 @@ bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
       scroll_layer_id_when_mouse_over_scrollbar_ = scroll_layer_id;
       bool should_animate =
           layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(
-              CurrentPhysicalTimeTicks(), 0);
+              CurrentFrameTimeTicks(), 0);
       if (should_animate)
         StartScrollbarAnimation();
     } else {
@@ -2822,7 +2821,7 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
 
 void LayerTreeHostImpl::StartScrollbarAnimation() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::StartScrollbarAnimation");
-  StartScrollbarAnimationRecursive(RootLayer(), CurrentPhysicalTimeTicks());
+  StartScrollbarAnimationRecursive(RootLayer(), CurrentFrameTimeTicks());
 }
 
 void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
@@ -2854,22 +2853,21 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
   DidModifyTilePriorities();
 }
 
+void LayerTreeHostImpl::UpdateCurrentFrameTime() {
+  DCHECK(current_frame_timeticks_.is_null());
+  current_frame_timeticks_ = gfx::FrameTime::Now();
+}
+
 void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {
   current_frame_timeticks_ = base::TimeTicks();
 }
 
-void LayerTreeHostImpl::UpdateCurrentFrameTime(base::TimeTicks* ticks) const {
-  if (ticks->is_null()) {
-    *ticks = CurrentPhysicalTimeTicks();
-  }
-}
-
 base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
-  UpdateCurrentFrameTime(&current_frame_timeticks_);
-  return current_frame_timeticks_;
-}
-
-base::TimeTicks LayerTreeHostImpl::CurrentPhysicalTimeTicks() const {
+  // Try to use the current frame time to keep animations non-jittery.  But if
+  // we're not in a frame (because this is during an input event or a delayed
+  // task), fall back to physical time.  This should still be monotonic.
+  if (!current_frame_timeticks_.is_null())
+    return current_frame_timeticks_;
   return gfx::FrameTime::Now();
 }
 

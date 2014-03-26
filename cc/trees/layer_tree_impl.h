@@ -80,7 +80,6 @@ class CC_EXPORT LayerTreeImpl {
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
   base::TimeTicks CurrentFrameTimeTicks() const;
-  base::TimeTicks CurrentPhysicalTimeTicks() const;
   void SetNeedsCommit();
   gfx::Size DrawViewportSize() const;
   void StartScrollbarAnimation();

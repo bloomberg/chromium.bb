@@ -1285,7 +1285,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   // viewport).
   if (scrollbar_animation_controller_) {
     bool should_animate = scrollbar_animation_controller_->DidScrollUpdate(
-        layer_tree_impl_->CurrentPhysicalTimeTicks());
+        layer_tree_impl_->CurrentFrameTimeTicks());
     if (should_animate)
       layer_tree_impl_->StartScrollbarAnimation();
   }

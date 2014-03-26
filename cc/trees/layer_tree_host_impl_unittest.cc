@@ -1178,7 +1178,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           manager,
                           0) {}
 
-  virtual base::TimeTicks CurrentPhysicalTimeTicks() const OVERRIDE {
+  virtual base::TimeTicks CurrentFrameTimeTicks() OVERRIDE {
     return fake_current_physical_time_;
   }
 

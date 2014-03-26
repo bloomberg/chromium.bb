@@ -388,10 +388,9 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetTreePriority(TreePriority priority);
 
+  void UpdateCurrentFrameTime();
   void ResetCurrentFrameTimeForNextFrame();
   virtual base::TimeTicks CurrentFrameTimeTicks();
-
-  virtual base::TimeTicks CurrentPhysicalTimeTicks() const;
 
   scoped_ptr<base::Value> AsValue() const { return AsValueWithFrame(NULL); }
   scoped_ptr<base::Value> AsValueWithFrame(FrameData* frame) const;
@@ -504,8 +503,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AnimateScrollbarsRecursive(LayerImpl* layer,
                                   base::TimeTicks time);
-
-  void UpdateCurrentFrameTime(base::TimeTicks* ticks) const;
 
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
