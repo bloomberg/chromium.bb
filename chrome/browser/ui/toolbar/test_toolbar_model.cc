@@ -20,6 +20,10 @@ base::string16 TestToolbarModel::GetText() const {
   return text_;
 }
 
+base::string16 TestToolbarModel::GetFormattedURL() const {
+  return text_;
+}
+
 base::string16 TestToolbarModel::GetCorpusNameForMobile() const {
   return base::string16();
 }

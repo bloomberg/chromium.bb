@@ -42,6 +42,7 @@ class ToolbarModelImpl : public ToolbarModel {
  private:
   // ToolbarModel:
   virtual base::string16 GetText() const OVERRIDE;
+  virtual base::string16 GetFormattedURL() const OVERRIDE;
   virtual base::string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool WouldOmitURLDueToOriginChip() const OVERRIDE;

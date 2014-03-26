@@ -44,6 +44,16 @@ class OmniboxEditController {
   // Called whenever the autocomplete edit gets focused.
   virtual void OnSetFocus() = 0;
 
+  // Hides the origin chip and shows the URL.
+  virtual void ShowURL() = 0;
+
+  // Hides the origin chip while leaving the Omnibox empty.
+  void HideOriginChip();
+
+  // Shows the origin chip.  Hides the URL if it was previously shown by a call
+  // to ShowURL().
+  void ShowOriginChip();
+
   // Returns the InstantController, or NULL if instant is not enabled.
   virtual InstantController* GetInstant() = 0;
 
@@ -56,6 +66,9 @@ class OmniboxEditController {
  protected:
   explicit OmniboxEditController(CommandUpdater* command_updater);
   virtual ~OmniboxEditController();
+
+  // Hides the URL and shows the origin chip.
+  virtual void HideURL() = 0;
 
   CommandUpdater* command_updater() { return command_updater_; }
   GURL destination_url() const { return destination_url_; }

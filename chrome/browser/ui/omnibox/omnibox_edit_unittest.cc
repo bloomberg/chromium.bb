@@ -105,10 +105,13 @@ class TestingOmniboxEditController : public OmniboxEditController {
         toolbar_model_(toolbar_model) {
   }
 
+ protected:
   // OmniboxEditController:
   virtual void Update(const content::WebContents* contents) OVERRIDE {}
   virtual void OnChanged() OVERRIDE {}
   virtual void OnSetFocus() OVERRIDE {}
+  virtual void ShowURL() OVERRIDE {}
+  virtual void HideURL() OVERRIDE {}
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual WebContents* GetWebContents() OVERRIDE { return NULL; }
   virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }

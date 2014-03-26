@@ -570,6 +570,14 @@ void LocationBarViewMac::OnSetFocus() {
   OnChanged();
 }
 
+void LocationBarViewMac::ShowURL() {
+  omnibox_view_->ShowURL();
+}
+
+void LocationBarViewMac::HideURL() {
+  omnibox_view_->HideURL();
+}
+
 InstantController* LocationBarViewMac::GetInstant() {
   return browser_->instant_controller() ?
       browser_->instant_controller()->instant() : NULL;
