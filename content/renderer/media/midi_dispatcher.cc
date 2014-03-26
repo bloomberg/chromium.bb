@@ -32,7 +32,7 @@ bool MidiDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void MidiDispatcher::requestSysExPermission(
+void MidiDispatcher::requestSysexPermission(
       const WebMIDIPermissionRequest& request) {
   int bridge_id = requests_.Add(new WebMIDIPermissionRequest(request));
   WebSecurityOrigin security_origin = request.securityOrigin();
@@ -41,7 +41,7 @@ void MidiDispatcher::requestSysExPermission(
   Send(new MidiHostMsg_RequestSysExPermission(routing_id(), bridge_id, url));
 }
 
-void MidiDispatcher::cancelSysExPermissionRequest(
+void MidiDispatcher::cancelSysexPermissionRequest(
     const WebMIDIPermissionRequest& request) {
   for (IDMap<WebMIDIPermissionRequest>::iterator it(&requests_);
        !it.IsAtEnd();

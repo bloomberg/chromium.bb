@@ -234,7 +234,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetBackingScaleFactor(double value, v8::Handle<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
-  void SetMIDISysExPermission(bool value);
+  void SetMIDISysexPermission(bool value);
   void GrantWebNotificationPermission(gin::Arguments* args);
   bool SimulateWebNotificationClick(const std::string& value);
   void AddMockSpeechInputResult(const std::string& result,
@@ -460,8 +460,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       .SetMethod("setMIDIAccessorResult",
                  &TestRunnerBindings::SetMIDIAccessorResult)
-      .SetMethod("setMIDISysExPermission",
-                 &TestRunnerBindings::SetMIDISysExPermission)
+      .SetMethod("setMIDISysexPermission",
+                 &TestRunnerBindings::SetMIDISysexPermission)
       .SetMethod("grantWebNotificationPermission",
                  &TestRunnerBindings::GrantWebNotificationPermission)
       .SetMethod("simulateWebNotificationClick",
@@ -1169,9 +1169,9 @@ void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
     runner_->SetMIDIAccessorResult(result);
 }
 
-void TestRunnerBindings::SetMIDISysExPermission(bool value) {
+void TestRunnerBindings::SetMIDISysexPermission(bool value) {
   if (runner_)
-    runner_->SetMIDISysExPermission(value);
+    runner_->SetMIDISysexPermission(value);
 }
 
 void TestRunnerBindings::GrantWebNotificationPermission(gin::Arguments* args) {
@@ -2511,11 +2511,11 @@ void TestRunner::SetMIDIAccessorResult(bool result) {
   midi_accessor_result_ = result;
 }
 
-void TestRunner::SetMIDISysExPermission(bool value) {
+void TestRunner::SetMIDISysexPermission(bool value) {
   const std::vector<WebTestProxyBase*>& windowList =
       test_interfaces_->windowList();
   for (unsigned i = 0; i < windowList.size(); ++i)
-    windowList.at(i)->midiClientMock()->setSysExPermission(value);
+    windowList.at(i)->midiClientMock()->setSysexPermission(value);
 }
 
 void TestRunner::GrantWebNotificationPermission(const std::string& origin,
