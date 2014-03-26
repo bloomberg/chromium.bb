@@ -31,7 +31,6 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
     NOTREACHED();
     return false;
   }
-  // TODO(rvargas): convert this code to use base::File::Info.
   base::File::Info file_info;
   if (!base::GetFileInfo(base::FilePath::FromUTF16Unsafe(path),
                          reinterpret_cast<base::File::Info*>(&file_info)))
@@ -52,36 +51,6 @@ WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
 
 blink::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
   return net::FilePathToFileURL(base::FilePath::FromUTF16Unsafe(path));
-}
-
-base::PlatformFile WebFileUtilitiesImpl::openFile(const WebString& path,
-                                                  int mode) {
-  if (sandbox_enabled_) {
-    NOTREACHED();
-    return base::kInvalidPlatformFileValue;
-  }
-  // mode==0 (read-only) is the only supported mode.
-  // TODO(kinuko): Remove this parameter.
-  DCHECK_EQ(0, mode);
-  return base::CreatePlatformFile(
-      base::FilePath::FromUTF16Unsafe(path),
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL, NULL);
-}
-
-void WebFileUtilitiesImpl::closeFile(base::PlatformFile& handle) {
-  if (handle == base::kInvalidPlatformFileValue)
-    return;
-  if (base::ClosePlatformFile(handle))
-    handle = base::kInvalidPlatformFileValue;
-}
-
-int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
-                                       char* data,
-                                       int length) {
-  if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
-    return -1;
-  return base::ReadPlatformFileCurPosNoBestEffort(handle, data, length);
 }
 
 }  // namespace content

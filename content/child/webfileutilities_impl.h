@@ -5,7 +5,6 @@
 #ifndef CONTENT_CHILD_WEBFILEUTILITIES_IMPL_H_
 #define CONTENT_CHILD_WEBFILEUTILITIES_IMPL_H_
 
-#include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebFileUtilities.h"
@@ -24,9 +23,6 @@ class CONTENT_EXPORT WebFileUtilitiesImpl
   virtual blink::WebString directoryName(const blink::WebString& path);
   virtual blink::WebString baseName(const blink::WebString& path);
   virtual blink::WebURL filePathToURL(const blink::WebString& path);
-  virtual base::PlatformFile openFile(const blink::WebString& path, int mode);
-  virtual void closeFile(base::PlatformFile& handle);
-  virtual int readFromFile(base::PlatformFile handle, char* data, int length);
 
   void set_sandbox_enabled(bool sandbox_enabled) {
     sandbox_enabled_ = sandbox_enabled;
