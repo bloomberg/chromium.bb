@@ -186,6 +186,10 @@ class EBuild(object):
     r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
   _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT="(.*)"$')
 
+  # A structure to hold computed values of CROS_WORKON_*.
+  CrosWorkonVars = collections.namedtuple(
+      'CrosWorkonVars', ['localname', 'project', 'subdir'])
+
   @classmethod
   def _Print(cls, message):
     """Verbose print function."""
@@ -333,10 +337,15 @@ class EBuild(object):
         self.is_blacklisted = True
     fileinput.close()
 
-  def GetSourcePath(self, srcroot, manifest):
-    """Get the project and path for this ebuild.
+  @staticmethod
+  def GetCrosWorkonVars(ebuild_path, pkg_name):
+    """Return computed (as sourced ebuild script) values of:
 
-    The path is guaranteed to exist, be a directory, and be absolute.
+        * CROS_WORKON_LOCALNAME
+        * CROS_WORKON_PROJECT
+        * CROS_WORKON_SUBDIR
+
+    The return value is a CrosWorkonVars tuple.
     """
     workon_vars = (
         'CROS_WORKON_LOCALNAME',
@@ -344,16 +353,25 @@ class EBuild(object):
         'CROS_WORKON_SUBDIR',
     )
     env = {
-        'CROS_WORKON_LOCALNAME': self._pkgname,
-        'CROS_WORKON_PROJECT': self._pkgname,
+        'CROS_WORKON_LOCALNAME': pkg_name,
+        'CROS_WORKON_PROJECT': pkg_name,
         'CROS_WORKON_SUBDIR': '',
     }
-    settings = osutils.SourceEnvironment(self._unstable_ebuild_path,
-                                         workon_vars, env=env)
+    settings = osutils.SourceEnvironment(ebuild_path, workon_vars, env=env)
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     projects = settings['CROS_WORKON_PROJECT'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
 
+    return EBuild.CrosWorkonVars(localnames, projects, subdirs)
+
+  def GetSourcePath(self, srcroot, manifest):
+    """Get the project and path for this ebuild.
+
+    The path is guaranteed to exist, be a directory, and be absolute.
+    """
+
+    localnames, projects, subdirs = EBuild.GetCrosWorkonVars(
+        self._unstable_ebuild_path, self._pkgname)
     # Sanity checks and completion.
     # Each project specification has to have the same amount of items.
     if len(projects) != len(localnames):
@@ -757,16 +775,15 @@ def GetWorkonProjectMap(overlay, subdirectories):
     given overlay under the given subdirectories.
   """
   # Search ebuilds for project names, ignoring non-existent directories.
-  cmd = ['grep', '^CROS_WORKON_PROJECT=', '--include', '*-9999.ebuild',
-         '-Hsr'] + list(subdirectories)
-  result = cros_build_lib.RunCommand(
-      cmd, cwd=overlay, error_code_ok=True, print_cmd=False,
-      capture_output=True)
-  for grep_line in result.output.splitlines():
-    filename, _, line = grep_line.partition(':')
-    value = line.partition('=')[2]
-    projects = ParseBashArray(value)
-    yield filename, projects
+  for subdir in subdirectories:
+    for root, _dirs, files in os.walk(os.path.join(overlay, subdir)):
+      for filename in files:
+        if filename.endswith('-9999.ebuild'):
+          full_path = os.path.join(root, filename)
+          pkg_name = os.path.basename(root)
+          _, projects, _ = EBuild.GetCrosWorkonVars(full_path, pkg_name)
+          relpath = os.path.relpath(full_path, start=overlay)
+          yield relpath, projects
 
 
 def SplitEbuildPath(path):
