@@ -18,7 +18,7 @@ function setup()
 {
     var nDivs = numDivsInHost;
 
-    window.shadowRoot = host.webkitCreateShadowRoot();
+    window.shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = '<h2>Selected</h2><div id="selected"><content select=".selected"></content></div><h2>NonSelected</h2><div id="nonselected"><content></content></div>';
 
     for (var i = 0; i < nDivs; ++i) {

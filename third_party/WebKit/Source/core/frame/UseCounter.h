@@ -134,8 +134,6 @@ public:
         FormElement = 84,
         DemotedFormElement = 85,
         CaptureAttributeAsEnum = 86,
-        ShadowDOMPrefixedCreateShadowRoot = 88,
-        ShadowDOMPrefixedShadowRoot = 89,
         SVGAnimationElement = 90,
         KeyboardEventKeyLocation = 91,
         LineClamp = 96,
