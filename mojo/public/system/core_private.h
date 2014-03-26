@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_SYSTEM_CORE_PRIVATE_H_
 #define MOJO_PUBLIC_SYSTEM_CORE_PRIVATE_H_
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 
 namespace mojo {
 

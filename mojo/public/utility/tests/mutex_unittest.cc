@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/utility/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

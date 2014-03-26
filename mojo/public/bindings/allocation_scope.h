@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_BINDINGS_ALLOCATION_SCOPE_H_
 
 #include "mojo/public/bindings/lib/scratch_buffer.h"
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 
 namespace mojo {
 

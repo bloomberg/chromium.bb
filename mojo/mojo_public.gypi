@@ -15,13 +15,13 @@
         ],
       },
       'sources': [
-        'public/system/async_waiter.h',
-        'public/system/core.h',
+        'public/c/system/async_waiter.h',
+        'public/c/system/core.h',
+        'public/c/system/macros.h',
+        'public/c/system/system_export.h',
         'public/system/core_cpp.h',
         'public/system/core_private.cc',
         'public/system/core_private.h',
-        'public/system/macros.h',
-        'public/system/system_export.h',
       ],
       'conditions': [
         ['OS=="mac"', {

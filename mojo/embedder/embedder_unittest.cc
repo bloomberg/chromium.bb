@@ -15,7 +15,7 @@
 #include "mojo/common/test/multiprocess_test_helper.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/test_embedder.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

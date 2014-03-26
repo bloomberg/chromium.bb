@@ -9,7 +9,7 @@
 
 #include "mojo/public/bindings/interface.h"
 #include "mojo/public/bindings/lib/router.h"
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 
 namespace mojo {
 

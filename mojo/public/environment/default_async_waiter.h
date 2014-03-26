@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_ENVIRONMENT_DEFAULT_ASYNC_WAITER_H_
 #define MOJO_PUBLIC_ENVIRONMENT_DEFAULT_ASYNC_WAITER_H_
 
-#include "mojo/public/system/async_waiter.h"
+#include "mojo/public/c/system/async_waiter.h"
 
 namespace mojo {
 

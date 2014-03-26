@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_endpoint.h"

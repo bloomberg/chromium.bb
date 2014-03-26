@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/message_pipe_endpoint.h"

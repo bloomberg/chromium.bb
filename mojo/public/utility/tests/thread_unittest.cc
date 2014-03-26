@@ -4,7 +4,7 @@
 
 #include "mojo/public/utility/thread.h"
 
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

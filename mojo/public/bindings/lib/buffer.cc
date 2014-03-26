@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/environment/buffer_tls.h"
-#include "mojo/public/system/macros.h"
 
 namespace mojo {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_SYSTEM_ASYNC_WAITER_H_
-#define MOJO_PUBLIC_SYSTEM_ASYNC_WAITER_H_
+#ifndef MOJO_PUBLIC_C_SYSTEM_ASYNC_WAITER_H_
+#define MOJO_PUBLIC_C_SYSTEM_ASYNC_WAITER_H_
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,4 +37,4 @@ struct MojoAsyncWaiter {
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_SYSTEM_ASYNC_WAITER_H_
+#endif  // MOJO_PUBLIC_C_SYSTEM_ASYNC_WAITER_H_

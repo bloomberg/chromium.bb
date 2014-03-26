@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 // TODO(vtl): We need this since we can't forward declare
 // |RawSharedBuffer::Mapping|. Maybe fix this.
 #include "mojo/system/raw_shared_buffer.h"

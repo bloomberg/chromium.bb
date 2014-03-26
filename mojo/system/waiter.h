@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {

@@ -4,14 +4,14 @@
 
 // This tests the performance of the C API.
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/tests/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

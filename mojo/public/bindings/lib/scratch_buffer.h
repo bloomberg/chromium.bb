@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "mojo/public/bindings/buffer.h"
-#include "mojo/public/system/macros.h"
+#include "mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace internal {

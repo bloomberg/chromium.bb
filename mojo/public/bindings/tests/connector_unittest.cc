@@ -8,8 +8,8 @@
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/bindings/lib/message_builder.h"
 #include "mojo/public/bindings/lib/message_queue.h"
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/environment/environment.h"
-#include "mojo/public/system/macros.h"
 #include "mojo/public/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

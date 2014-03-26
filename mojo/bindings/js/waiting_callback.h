@@ -8,7 +8,7 @@
 #include "gin/handle.h"
 #include "gin/runner.h"
 #include "gin/wrappable.h"
-#include "mojo/public/system/async_waiter.h"
+#include "mojo/public/c/system/async_waiter.h"
 
 namespace mojo {
 namespace js {

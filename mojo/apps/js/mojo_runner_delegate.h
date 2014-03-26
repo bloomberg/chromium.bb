@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "gin/modules/module_runner_delegate.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 
 namespace mojo {
 namespace apps {

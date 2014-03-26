@@ -4,7 +4,7 @@
 
 // This file tests the C API.
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 
 #include <string.h>
 

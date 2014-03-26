@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/waiter.h"
 

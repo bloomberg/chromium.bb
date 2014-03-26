@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_SYSTEM_CORE_H_
-#define MOJO_PUBLIC_SYSTEM_CORE_H_
+#ifndef MOJO_PUBLIC_C_SYSTEM_CORE_H_
+#define MOJO_PUBLIC_C_SYSTEM_CORE_H_
 
 // Note: This header should be compilable as C.
 
 #include <stdint.h>
 
-#include "mojo/public/system/macros.h"
-#include "mojo/public/system/system_export.h"
+#include "mojo/public/c/system/macros.h"
+#include "mojo/public/c/system/system_export.h"
 
 // Types/constants -------------------------------------------------------------
 
@@ -826,4 +826,4 @@ MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_SYSTEM_CORE_H_
+#endif  // MOJO_PUBLIC_C_SYSTEM_CORE_H_

@@ -10,9 +10,9 @@
 
 #include <limits>
 
-#include "mojo/public/system/core.h"
-#include "mojo/public/system/macros.h"
-#include "mojo/public/system/system_export.h"
+#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/macros.h"
+#include "mojo/public/c/system/system_export.h"
 
 namespace mojo {
 
