@@ -90,14 +90,13 @@ namespace WebCore {
 PassRefPtr<DatabaseContext> DatabaseContext::create(ExecutionContext* context)
 {
     RefPtr<DatabaseContext> self = adoptRef(new DatabaseContext(context));
-    self->ref(); // Is deref()-ed on contextDestroyed().
+    DatabaseManager::manager().registerDatabaseContext(self.get());
     return self.release();
 }
 
 DatabaseContext::DatabaseContext(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_hasOpenDatabases(false)
-    , m_isRegistered(true) // will register on construction below.
     , m_hasRequestedTermination(false)
 {
     // ActiveDOMObject expects this to be called to set internal flags.
@@ -106,8 +105,6 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
     // For debug accounting only. We must do this before we register the
     // instance. The assertions assume this.
     DatabaseManager::manager().didConstructDatabaseContext();
-
-    DatabaseManager::manager().registerDatabaseContext(this);
 }
 
 DatabaseContext::~DatabaseContext()
@@ -126,9 +123,10 @@ DatabaseContext::~DatabaseContext()
 // It is not safe to just delete the context here.
 void DatabaseContext::contextDestroyed()
 {
+    RefPtr<DatabaseContext> protector(this);
     stopDatabases();
+    DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();
-    deref(); // paired with the ref() call on create().
 }
 
 void DatabaseContext::willStop()
@@ -203,10 +201,6 @@ void DatabaseContext::stopSyncDatabases()
 void DatabaseContext::stopDatabases()
 {
     stopSyncDatabases();
-    if (m_isRegistered) {
-        DatabaseManager::manager().unregisterDatabaseContext(this);
-        m_isRegistered = false;
-    }
 
     // Though we initiate termination of the DatabaseThread here in
     // stopDatabases(), we can't clear the m_databaseThread ref till we get to

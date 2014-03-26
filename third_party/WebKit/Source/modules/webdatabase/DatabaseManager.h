@@ -81,7 +81,7 @@ public:
 
 private:
     DatabaseManager();
-    ~DatabaseManager() { }
+    ~DatabaseManager();
 
     // This gets a DatabaseContext for the specified ExecutionContext.
     // If one doesn't already exist, it will create a new one.
@@ -99,7 +99,7 @@ private:
     AbstractDatabaseServer* m_server;
 
     // Access to the following fields require locking m_contextMapLock:
-    typedef HashMap<ExecutionContext*, DatabaseContext*> ContextMap;
+    typedef HashMap<ExecutionContext*, RefPtr<DatabaseContext> > ContextMap;
     ContextMap m_contextMap;
 #if !ASSERT_DISABLED
     int m_databaseContextRegisteredCount;

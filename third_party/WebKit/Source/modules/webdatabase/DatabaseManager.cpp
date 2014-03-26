@@ -68,6 +68,10 @@ DatabaseManager::DatabaseManager()
     ASSERT(m_server); // We should always have a server to work with.
 }
 
+DatabaseManager::~DatabaseManager()
+{
+}
+
 class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
@@ -107,8 +111,8 @@ DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
     if (DatabaseContext* databaseContext = existingDatabaseContextFor(context))
         return databaseContext;
     // We don't need to hold a reference returned by DatabaseContext::create
-    // because a DatabaseContext refers to itself internally. See
-    // DataabseContext::create.
+    // because DatabaseContext::create calls registerDatabaseContext, and the
+    // DatabaseManager holds a reference.
     return DatabaseContext::create(context).get();
 }
 

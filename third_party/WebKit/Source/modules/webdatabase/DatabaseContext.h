@@ -80,7 +80,6 @@ private:
     // DatabaseBackendSync is always closed before destruction.
     HashSet<DatabaseBackendBase*> m_openSyncDatabases;
     bool m_hasOpenDatabases; // This never changes back to false, even after the database thread is closed.
-    bool m_isRegistered;
     bool m_hasRequestedTermination;
 };
 
