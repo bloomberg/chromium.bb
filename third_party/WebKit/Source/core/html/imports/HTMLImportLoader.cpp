@@ -35,16 +35,15 @@
 #include "core/dom/StyleEngine.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImport.h"
-#include "core/html/imports/HTMLImportLoaderClient.h"
+#include "core/html/imports/HTMLImportChild.h"
 #include "core/loader/DocumentWriter.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
 
 namespace WebCore {
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* import)
-    : m_import(import)
-    , m_state(StateLoading)
+HTMLImportLoader::HTMLImportLoader()
+    : m_state(StateLoading)
 {
 }
 
@@ -90,8 +89,10 @@ void HTMLImportLoader::notifyFinished(Resource* resource)
 
 HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
-    DocumentInit init = DocumentInit(response.url(), 0, m_import->master()->contextDocument(), m_import)
-        .withRegistrationContext(m_import->master()->registrationContext());
+    ASSERT(!m_imports.isEmpty());
+    HTMLImport* firstImport = m_imports[0];
+    DocumentInit init = DocumentInit(response.url(), 0, firstImport->master()->contextDocument(), firstImport)
+        .withRegistrationContext(firstImport->master()->registrationContext());
     m_importedDocument = HTMLDocument::create(init);
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
@@ -157,26 +158,26 @@ Document* HTMLImportLoader::importedDocument() const
 
 void HTMLImportLoader::didFinishLoading()
 {
-    for (size_t i = 0; i < m_clients.size(); ++i)
-        m_clients[i]->didFinishLoading();
+    for (size_t i = 0; i < m_imports.size(); ++i)
+        m_imports[i]->didFinishLoading();
 
     clearResource();
 
     ASSERT(!m_importedDocument || !m_importedDocument->parsing());
 }
 
-void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
+void HTMLImportLoader::addImport(HTMLImportChild* client)
 {
-    ASSERT(kNotFound == m_clients.find(client));
-    m_clients.append(client);
+    ASSERT(kNotFound == m_imports.find(client));
+    m_imports.append(client);
     if (isDone())
         client->didFinishLoading();
 }
 
-void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
+void HTMLImportLoader::removeImport(HTMLImportChild* client)
 {
-    ASSERT(kNotFound != m_clients.find(client));
-    m_clients.remove(m_clients.find(client));
+    ASSERT(kNotFound != m_imports.find(client));
+    m_imports.remove(m_imports.find(client));
 }
 
 } // namespace WebCore

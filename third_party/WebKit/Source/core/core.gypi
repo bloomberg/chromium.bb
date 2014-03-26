@@ -2606,7 +2606,6 @@
             'html/imports/HTMLImportChildClient.h',
             'html/imports/HTMLImportLoader.cpp',
             'html/imports/HTMLImportLoader.h',
-            'html/imports/HTMLImportLoaderClient.h',
             'html/imports/HTMLImportState.h',
             'html/imports/HTMLImportStateResolver.cpp',
             'html/imports/HTMLImportStateResolver.h',

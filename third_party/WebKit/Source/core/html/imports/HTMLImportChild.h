@@ -34,7 +34,6 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/html/imports/HTMLImport.h"
-#include "core/html/imports/HTMLImportLoaderClient.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 
@@ -54,7 +53,7 @@ class HTMLLinkElement;
 // HTMLImportChild implements ResourceClient through ResourceOwner
 // so that it can speculatively request linked resources while it is unblocked.
 //
-class HTMLImportChild FINAL : public HTMLImport, public HTMLImportLoaderClient, public ResourceOwner<RawResource> {
+class HTMLImportChild FINAL : public HTMLImport, public ResourceOwner<RawResource> {
 public:
     HTMLImportChild(Document&, const KURL&, bool sync);
     virtual ~HTMLImportChild();
@@ -88,15 +87,14 @@ public:
     void clearClient();
     bool loaderHasError() const;
 
+    void didFinishLoading();
+
 private:
     // RawResourceOwner doing nothing.
     // HTMLImportChild owns the resource so that the contents of prefetched Resource doesn't go away.
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE { }
     virtual void dataReceived(Resource*, const char*, int) OVERRIDE { }
     virtual void notifyFinished(Resource*) OVERRIDE { }
-
-    // HTMLImportLoaderClient
-    virtual void didFinishLoading() OVERRIDE;
 
     void didFinish();
     void createLoader();

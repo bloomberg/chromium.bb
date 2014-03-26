@@ -39,8 +39,7 @@ namespace WebCore {
 
 class Document;
 class DocumentWriter;
-class HTMLImport;
-class HTMLImportLoaderClient;
+class HTMLImportChild;
 
 //
 // Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
@@ -58,17 +57,17 @@ public:
         StateError
     };
 
-    static PassRefPtr<HTMLImportLoader> create(HTMLImport* import)
+    static PassRefPtr<HTMLImportLoader> create()
     {
-        return adoptRef(new HTMLImportLoader(import));
+        return adoptRef(new HTMLImportLoader());
     }
 
     virtual ~HTMLImportLoader();
 
     Document* document() const { return m_importedDocument.get(); }
     Document* importedDocument() const;
-    void addClient(HTMLImportLoaderClient*);
-    void removeClient(HTMLImportLoaderClient*);
+    void addImport(HTMLImportChild*);
+    void removeImport(HTMLImportChild*);
 
     bool isDone() const { return m_state == StateLoaded || m_state == StateError; }
     bool hasError() const { return m_state == StateError; }
@@ -76,10 +75,10 @@ public:
     void startLoading(const ResourcePtr<RawResource>&);
     void didFinishParsing();
     void didRemoveAllPendingStylesheet();
-    bool isOwnedBy(const HTMLImport* import) const { return m_import == import; }
+    bool isOwnedBy(const HTMLImportChild* import) const { return m_imports[0] == import; }
 
 private:
-    HTMLImportLoader(HTMLImport*);
+    HTMLImportLoader();
 
     // RawResourceClient
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
@@ -95,8 +94,7 @@ private:
     void didFinishLoading();
     bool hasPendingResources() const;
 
-    HTMLImport* m_import;
-    Vector<HTMLImportLoaderClient*> m_clients;
+    Vector<HTMLImportChild*> m_imports;
     State m_state;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;

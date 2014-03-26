@@ -80,8 +80,7 @@ class KURL;
 // HTMLImportLoader, and each loader shares HTMLImportLoader with other loader if the URL is same.
 // Check around HTMLImportsController::findLink() for more detail.
 //
-// Note that HTMLImportLoader provides HTMLImportLoaderClient to hook it up.
-// As it can be shared, HTMLImportLoader supports multiple clients.
+// HTMLImportLoader can be shared by multiple imports.
 //
 //    HTMLImportChild (1)-->(*) HTMLImportLoader
 //
