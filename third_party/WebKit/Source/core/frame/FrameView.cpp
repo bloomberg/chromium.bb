@@ -974,8 +974,8 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-    if (AXObjectCache* cache = rootForThisLayout->document().existingAXObjectCache())
-        cache->postNotification(rootForThisLayout, AXObjectCache::AXLayoutComplete, true);
+    if (AXObjectCache* cache = rootForThisLayout->document().axObjectCache())
+        cache->handleLayoutComplete(rootForThisLayout);
     updateAnnotatedRegions();
 
     ASSERT(!rootForThisLayout->needsLayout());
