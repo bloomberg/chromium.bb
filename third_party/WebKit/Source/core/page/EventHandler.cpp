@@ -502,6 +502,8 @@ void EventHandler::selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHit
 
 bool EventHandler::handleMousePressEventDoubleClick(const MouseEventWithHitTestResults& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventDoubleClick");
+
     if (event.event().button() != LeftButton)
         return false;
 
@@ -520,6 +522,8 @@ bool EventHandler::handleMousePressEventDoubleClick(const MouseEventWithHitTestR
 
 bool EventHandler::handleMousePressEventTripleClick(const MouseEventWithHitTestResults& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventTripleClick");
+
     if (event.event().button() != LeftButton)
         return false;
 
@@ -545,6 +549,8 @@ static int textDistance(const Position& start, const Position& end)
 
 bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventSingleClick");
+
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     Node* innerNode = event.targetNode();
     if (!(innerNode && innerNode->renderer() && m_mouseDownMayStartSelect))
@@ -621,6 +627,8 @@ static inline bool canMouseDownStartSelect(Node* node)
 
 bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEvent");
+
     // Reset drag state.
     dragState().m_dragSrc = nullptr;
 
@@ -686,6 +694,8 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
 
 bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMouseDraggedEvent");
+
     if (!m_mousePressed)
         return false;
 
@@ -885,6 +895,8 @@ bool EventHandler::panScrollInProgress() const
 
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
 {
+    TRACE_EVENT0("webkit", "EventHandler::hitTestResultAtPoint");
+
     // We always send hitTestResultAtPoint to the main frame if we have one,
     // otherwise we might hit areas that are obscured by higher frames.
     if (Page* page = m_frame->page()) {
@@ -1285,6 +1297,8 @@ static LayoutPoint documentPointForWindowPoint(LocalFrame* frame, const IntPoint
 
 bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEvent");
+
     RefPtr<FrameView> protector(m_frame->view());
 
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
@@ -1446,6 +1460,8 @@ ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer)
 
 bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMouseMoveEvent");
+
     RefPtr<FrameView> protector(m_frame->view());
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
@@ -1473,6 +1489,8 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 
 void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMouseLeaveEvent");
+
     RefPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event);
 }
@@ -1611,6 +1629,8 @@ static Node* parentForClickEvent(const Node& node)
 
 bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleMouseReleaseEvent");
+
     RefPtr<FrameView> protector(m_frame->view());
 
     m_frame->selection().setCaretBlinkingSuspended(false);
@@ -3577,6 +3597,8 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 
 bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 {
+    TRACE_EVENT0("webkit", "EventHandler::handleTouchEvent");
+
     // First build up the lists to use for the 'touches', 'targetTouches' and 'changedTouches' attributes
     // in the JS event. See http://www.sitepen.com/blog/2008/07/10/touching-and-gesturing-on-the-iphone/
     // for an overview of how these lists fit together.
