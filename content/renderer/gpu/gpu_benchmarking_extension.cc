@@ -300,7 +300,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "    function(position_x, position_y, opt_callback, opt_duration_ms,"
           "             opt_gesture_source_type) {"
           "  callback = opt_callback || function() { };"
-          "  duration_ms = opt_duration_ms || 0;"
+          "  duration_ms = opt_duration_ms || 50;"
           "  gesture_source_type = opt_gesture_source_type ||"
           "      chrome.gpuBenchmarking.DEFAULT_INPUT;"
           "  native function BeginTap();"

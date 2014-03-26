@@ -8,7 +8,9 @@
 
 namespace content {
 
-SyntheticTapGestureParams::SyntheticTapGestureParams() : duration_ms(0) {}
+// Set the default tap duration to 50ms to lie within the bounds of the Aura
+// gesture recognizer for identifying clicks (currently 0.01s-0.80s).
+SyntheticTapGestureParams::SyntheticTapGestureParams() : duration_ms(50) {}
 
 SyntheticTapGestureParams::SyntheticTapGestureParams(
     const SyntheticTapGestureParams& other)
