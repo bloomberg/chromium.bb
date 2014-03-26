@@ -44,16 +44,18 @@ def ListFromConcat(*items):
 
 class ParseError(Exception):
 
-  def __init__(self, filename, lineno, snippet, bad_char):
+  def __init__(self, filename, lineno=None, snippet=None, bad_char=None,
+               eof=False):
     self.filename = filename
     self.lineno = lineno
     self.snippet = snippet
     self.bad_char = bad_char
+    self.eof = eof
 
   def __str__(self):
-    # Report the 1-based index for lineno.
-    return "%s:%d: error: unexpected %r:\n%s" % (
-        self.filename, self.lineno + 1, self.bad_char, self.snippet)
+    return "%s: error: unexpected end of file" % self.filename if self.eof \
+        else "%s:%d: error: unexpected %r:\n%s" % (
+            self.filename, self.lineno + 1, self.bad_char, self.snippet)
 
   def __repr__(self):
     return str(self)
@@ -339,9 +341,15 @@ class Parser(object):
     p[0] = ListFromConcat(*p[1:])
 
   def p_error(self, e):
+    if e is None:
+      # Unexpected EOF.
+      # TODO(vtl): Can we figure out what's missing?
+      raise ParseError(self.filename, eof=True)
+
     lineno = e.lineno + 1
     snippet = self.source.split('\n')[lineno]
-    raise ParseError(self.filename, lineno, snippet, e.value)
+    raise ParseError(self.filename, lineno=lineno, snippet=snippet,
+                     bad_char=e.value)
 
 
 def Parse(filename):
