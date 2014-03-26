@@ -8,6 +8,7 @@
   },
   "mime_types": [
     "application/msword",
+    "application/msexcel",
     "text/plain"
   ],
   "permissions": [

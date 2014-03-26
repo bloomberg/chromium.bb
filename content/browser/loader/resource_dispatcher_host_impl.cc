@@ -610,9 +610,6 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
                                                    ResourceResponse* response) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
   const std::string& mime_type = response->head.mime_type;
-  std::string response_headers;
-  if (response->head.headers)
-    response->head.headers->GetNormalizedHeaders(&response_headers);
 
   GURL origin;
   std::string target_id;
@@ -639,8 +636,10 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
       info->GetChildID(),
       info->GetRouteID(),
       target_id,
-      handler->stream()->CreateHandle(request->url(), mime_type,
-                                      response_headers),
+      handler->stream()->CreateHandle(
+          request->url(),
+          mime_type,
+          response->head.headers),
       request->GetExpectedContentSize());
   return handler.PassAs<ResourceHandler>();
 }

@@ -22,8 +22,11 @@ namespace streamsPrivate {
     // information on the size it will be -1.
     long expectedContentSize;
 
-    // The HTTP response headers of the intercepted request.
-    DOMString responseHeaders;
+    // The HTTP response headers of the intercepted request stored as a
+    // dictionary mapping header name to header value. If a header name appears
+    // multiple times, the header values are merged in the dictionary and
+    // separated by a ", ".
+    object responseHeaders;
   };
 
   interface Events {

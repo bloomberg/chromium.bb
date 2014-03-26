@@ -61,6 +61,17 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     return response.PassAs<HttpResponse>();
   }
 
+  // For relative path "/spreadsheet_path.xls", return success response with
+  // MIME type "application/xls".
+  if (request.relative_url == "/spreadsheet_path.xls") {
+    response->set_code(net::HTTP_OK);
+    response->set_content_type("application/msexcel");
+    // Test that multiple headers with the same name are merged.
+    response->AddCustomHeader("Test-Header", "part1");
+    response->AddCustomHeader("Test-Header", "part2");
+    return response.PassAs<HttpResponse>();
+  }
+
   // For relative path "/text_path_attch.txt", return success response with
   // MIME type "text/plain" and content "txt content". Also, set content
   // disposition to be attachment.
@@ -377,6 +388,36 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
   // fail regardless of the sent event; chrome.test.notifySuccess will not be
   // called by the extension).
   SendDoneEvent();
+  EXPECT_TRUE(catcher.GetNextResult());
+}
+
+// Tests that response headers are correctly passed to the API and that multiple
+// repsonse headers with the same name are merged correctly.
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  ASSERT_TRUE(LoadTestExtension()) << message_;
+
+  ResultCatcher catcher;
+
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server_->GetURL("/spreadsheet_path.xls"));
+
+  // Wait for the response from the test server.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // There should be no downloads started by the navigation.
+  DownloadManager* download_manager = GetDownloadManager();
+  std::vector<DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  // The test extension should receive onExecuteContentHandler event with MIME
+  // type 'application/msexcel' (and call chrome.test.notifySuccess).
   EXPECT_TRUE(catcher.GetNextResult());
 }
 

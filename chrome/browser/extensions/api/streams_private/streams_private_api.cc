@@ -19,6 +19,31 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "net/http/http_response_headers.h"
+
+namespace {
+
+void CreateResponseHeadersDictionary(const net::HttpResponseHeaders* headers,
+                                     base::DictionaryValue* result) {
+  if (!headers)
+    return;
+
+  void* iter = NULL;
+  std::string header_name;
+  std::string header_value;
+  while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
+    base::Value* existing_value = NULL;
+    if (result->Get(header_name, &existing_value)) {
+      base::StringValue* existing_string_value =
+          static_cast<base::StringValue*>(existing_value);
+      existing_string_value->GetString()->append(", ").append(header_value);
+    } else {
+      result->SetString(header_name, header_value);
+    }
+  }
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -55,7 +80,9 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   if (expected_content_size <= INT_MAX)
     size = expected_content_size;
   info.expected_content_size = size;
-  info.response_headers = stream->GetResponseHeaders();
+
+  CreateResponseHeadersDictionary(stream->GetResponseHeaders().get(),
+                                  &info.response_headers.additional_properties);
 
   scoped_ptr<Event> event(
       new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,

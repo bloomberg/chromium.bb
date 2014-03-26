@@ -12,8 +12,24 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
   // the MIME type 'application/msword' means the test has succeeded.
   if (params.mimeType == 'application/msword') {
     var headers = params.responseHeaders;
-    if (headers.indexOf('Content-Type: application/msword') == -1 ||
-        headers.indexOf('HTTP/1.1 200 OK') == -1) {
+    if (headers['Content-Type'] != 'application/msword') {
+      chrome.test.notifyFail(
+          'HTTP request header did not contain expected attributes.');
+      hasFailed = true;
+    } else {
+      chrome.test.notifyPass();
+    }
+    return;
+  }
+
+  // The tests are setup so resources with MIME type 'application/msexcel' are
+  // meant to be handled by the extension. The extension getting an event with
+  // the MIME type 'application/msexcel' means the test has succeeded. This also
+  // tests that repeated headers are correctly merged.
+  if (params.mimeType == 'application/msexcel') {
+    var headers = params.responseHeaders;
+    if (headers['Content-Type'] != 'application/msexcel' ||
+        headers['Test-Header'] != 'part1, part2') {
       chrome.test.notifyFail(
           'HTTP request header did not contain expected attributes.');
       hasFailed = true;

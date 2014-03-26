@@ -8,13 +8,15 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/streams/stream.h"
+#include "net/http/http_response_headers.h"
 
 namespace content {
 
-StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream,
-                                   const GURL& original_url,
-                                   const std::string& mime_type,
-                                   const std::string& response_headers)
+StreamHandleImpl::StreamHandleImpl(
+    const base::WeakPtr<Stream>& stream,
+    const GURL& original_url,
+    const std::string& mime_type,
+    scoped_refptr<net::HttpResponseHeaders> response_headers)
     : stream_(stream),
       url_(stream->url()),
       original_url_(original_url),
@@ -39,7 +41,7 @@ const std::string& StreamHandleImpl::GetMimeType() {
   return mime_type_;
 }
 
-const std::string& StreamHandleImpl::GetResponseHeaders() {
+scoped_refptr<net::HttpResponseHeaders> StreamHandleImpl::GetResponseHeaders() {
   return response_headers_;
 }
 

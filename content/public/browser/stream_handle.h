@@ -6,8 +6,13 @@
 #define CONTENT_PUBLIC_BROWSER_STREAM_HANDLE_H_
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+
+namespace net {
+class HttpResponseHeaders;
+}
 
 namespace content {
 
@@ -25,7 +30,7 @@ class CONTENT_EXPORT StreamHandle {
   virtual const std::string& GetMimeType() = 0;
 
   // Get the HTTP response headers associated with this Stream.
-  virtual const std::string& GetResponseHeaders() = 0;
+  virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() = 0;
 };
 
 }  // namespace content
