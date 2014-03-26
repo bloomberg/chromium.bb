@@ -41,7 +41,7 @@ class AudioContext;
 
 class MediaStreamAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
 public:
-    static PassRefPtr<MediaStreamAudioSourceNode> create(AudioContext*, MediaStream*, MediaStreamTrack*, AudioSourceProvider*);
+    static PassRefPtr<MediaStreamAudioSourceNode> create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 
     virtual ~MediaStreamAudioSourceNode();
 
@@ -53,17 +53,17 @@ public:
     // AudioSourceProviderClient
     virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
 
-    AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider; }
+    AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider.get(); }
 
 private:
-    MediaStreamAudioSourceNode(AudioContext*, MediaStream*, MediaStreamTrack*, AudioSourceProvider*);
+    MediaStreamAudioSourceNode(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const OVERRIDE { return false; }
 
     RefPtr<MediaStream> m_mediaStream;
     RefPtr<MediaStreamTrack> m_audioTrack;
-    AudioSourceProvider* m_audioSourceProvider;
+    OwnPtr<AudioSourceProvider> m_audioSourceProvider;
 
     Mutex m_processLock;
 
