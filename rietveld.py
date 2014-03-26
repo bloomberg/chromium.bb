@@ -20,10 +20,15 @@ import logging
 import re
 import ssl
 import time
+import urllib
 import urllib2
+import urlparse
+
+import patch
 
 from third_party import upload
-import patch
+import third_party.oauth2client.client as oa2client
+from third_party import httplib2
 
 # Hack out upload logging.info()
 upload.logging = logging.getLogger('upload')
@@ -39,8 +44,6 @@ class Rietveld(object):
     # It happens when the presubmit check is ran out of process, the cookie
     # needed to be recreated from the credentials. Instead, it should pass the
     # email and the cookie.
-    self.email = email
-    self.password = password
     if email and password:
       get_creds = lambda: (email, password)
       self.rpc_server = upload.HttpRpcServer(
@@ -436,6 +439,133 @@ class Rietveld(object):
 
   # DEPRECATED.
   Send = get
+
+
+class OAuthRpcServer(object):
+  def __init__(self,
+               host,
+               client_id,
+               client_private_key,
+               private_key_password='notasecret',
+               user_agent=None,
+               timeout=None,
+               extra_headers=None):
+    """Wrapper around httplib2.Http() that handles authentication.
+
+    client_id: client id for service account
+    client_private_key: encrypted private key, as a string
+    private_key_password: password used to decrypt the private key
+    """
+
+    # Enforce https
+    host_parts = urlparse.urlparse(host)
+
+    if host_parts.scheme == 'https':  # fine
+      self.host = host
+    elif host_parts.scheme == 'http':
+      upload.logging.warning('Changing protocol to https')
+      self.host = 'https' + host[4:]
+    else:
+      msg = 'Invalid url provided: %s' % host
+      upload.logging.error(msg)
+      raise ValueError(msg)
+
+    self.host = self.host.rstrip('/')
+
+    self.extra_headers = extra_headers or {}
+
+    if not oa2client.HAS_OPENSSL:
+      logging.error("Support for OpenSSL hasn't been found, "
+                    "OAuth2 support requires it.")
+      logging.error("Installing pyopenssl will probably solve this issue.")
+      raise RuntimeError('No OpenSSL support')
+    creds = oa2client.SignedJwtAssertionCredentials(
+      client_id,
+      client_private_key,
+      'https://www.googleapis.com/auth/userinfo.email',
+      private_key_password=private_key_password,
+      user_agent=user_agent)
+
+    self._http = creds.authorize(httplib2.Http(timeout=timeout))
+
+  def Send(self,
+           request_path,
+           payload=None,
+           content_type='application/octet-stream',
+           timeout=None,
+           extra_headers=None,
+           **kwargs):
+    """Send a POST or GET request to the server.
+
+    Args:
+      request_path: path on the server to hit. This is concatenated with the
+        value of 'host' provided to the constructor.
+      payload: request is a POST if not None, GET otherwise
+      timeout: in seconds
+      extra_headers: (dict)
+    """
+    # This method signature should match upload.py:AbstractRpcServer.Send()
+    method = 'GET'
+
+    headers = self.extra_headers.copy()
+    headers.update(extra_headers or {})
+
+    if payload is not None:
+      method = 'POST'
+      headers['Content-Type'] = content_type
+      raise NotImplementedError('POST requests are not yet supported.')
+
+    prev_timeout = self._http.timeout
+    try:
+      if timeout:
+        self._http.timeout = timeout
+      # TODO(pgervais) implement some kind of retry mechanism (see upload.py).
+      url = self.host + request_path
+      if kwargs:
+        url += "?" + urllib.urlencode(kwargs)
+
+      ret = self._http.request(url,
+                               method=method,
+                               body=payload,
+                               headers=headers)
+      if not ret[0]['content-location'].startswith(self.host):
+        upload.logging.warning('Redirection to host %s detected: '
+                               'login may have failed/expired.'
+                               % urlparse.urlparse(
+                                     ret[0]['content-location']).netloc)
+      return ret[1]
+
+    finally:
+      self._http.timeout = prev_timeout
+
+
+class JwtOAuth2Rietveld(Rietveld):
+  """Access to Rietveld using OAuth authentication.
+
+  This class is supposed to be used only by bots, since this kind of
+  access is restricted to service accounts.
+  """
+  # The parent__init__ is not called on purpose.
+  # pylint: disable=W0231
+  def __init__(self,
+               url,
+               client_id,
+               client_private_key_file,
+               private_key_password=None,
+               extra_headers=None):
+    if private_key_password is None:  # '' means 'empty password'
+      private_key_password = 'notasecret'
+
+    self.url = url.rstrip('/')
+    with open(client_private_key_file, 'rb') as f:
+      client_private_key = f.read()
+    self.rpc_server = OAuthRpcServer(url,
+                                     client_id,
+                                     client_private_key,
+                                     private_key_password=private_key_password,
+                                     extra_headers=extra_headers or {})
+    self._xsrf_token = None
+    self._xsrf_token_time = None
 
 
 class CachingRietveld(Rietveld):

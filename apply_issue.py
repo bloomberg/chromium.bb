@@ -41,6 +41,7 @@ class Unbuffered(object):
 
 
 def main():
+  # TODO(pgervais): This function is way too long. Split.
   sys.stdout = Unbuffered(sys.stdout)
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
@@ -51,8 +52,17 @@ def main():
       help='Email address to access rietveld.  If not specified, anonymous '
            'access will be used.')
   parser.add_option(
-      '-w', '--password', default=None,
-      help='Password for email addressed.  Use - to read password from stdin.')
+      '-E', '--email-file',
+      help='File containing the email address to access rietveld. '
+           'If not specified, anonymous access will be used.')
+  parser.add_option(
+      '-w', '--password',
+      help='Password for email addressed. Use - to read password from stdin. '
+           'if -k is provided, this is the private key file password.')
+  parser.add_option(
+      '-k', '--private-key-file',
+      help='Path to file containing a private key in p12 format for OAuth2 '
+           'authentication. Use -w to provide the decrypting password, if any.')
   parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
@@ -78,6 +88,12 @@ def main():
   parser.add_option('-b', '--base_ref', help='Base git ref to patch on top of, '
                     'used for verification.')
   options, args = parser.parse_args()
+
+  if options.password and options.private_key_file:
+    parser.error('-k and -w options are incompatible')
+  if options.email and options.email_file:
+    parser.error('-e and -E options are incompatible')
+
   if (os.path.isfile(os.path.join(os.getcwd(), 'update.flag'))
       and not options.force):
     print 'update.flag file found: bot_update has run and checkout is already '
@@ -101,44 +117,57 @@ def main():
     print('Reading password')
     options.password = sys.stdin.readline().strip()
 
+  # read email if needed
+  if options.email_file:
+    if not os.path.exists(options.email_file):
+      parser.error('file does not exist: %s' % options.email_file)
+    with open(options.email_file, 'rb') as f:
+      options.email = f.read().strip()
+
   print('Connecting to %s' % options.server)
-  # Always try un-authenticated first.
-  # TODO(maruel): Use OAuth2 properly so we don't hit rate-limiting on login
-  # attempts.
-  # Bad except clauses order (HTTPError is an ancestor class of
-  # ClientLoginError)
-  # pylint: disable=E0701
-  obj = rietveld.Rietveld(options.server, '', None)
-  properties = None
-  try:
+  # Always try un-authenticated first, except for OAuth2
+  if options.private_key_file:
+    # OAuth2 authentication
+    obj = rietveld.JwtOAuth2Rietveld(options.server,
+                                     options.email,
+                                     options.private_key_file,
+                                     private_key_password=options.password)
     properties = obj.get_issue_properties(options.issue, False)
-  except urllib2.HTTPError, e:
-    if e.getcode() != 302:
-      raise
-    elif options.no_auth:
-      exit('FAIL: Login detected -- is issue private?')
-    # TODO(maruel): A few 'Invalid username or password.' are printed first, we
-    # should get rid of those.
-  except rietveld.upload.ClientLoginError, e:
-    # Fine, we'll do proper authentication.
-    pass
-  if properties is None:
-    if options.email is not None:
-      obj = rietveld.Rietveld(options.server, options.email, options.password)
-      try:
-        properties = obj.get_issue_properties(options.issue, False)
-      except rietveld.upload.ClientLoginError, e:
-        if sys.stdout.closed:
+  else:
+    obj = rietveld.Rietveld(options.server, '', None)
+    properties = None
+    # Bad except clauses order (HTTPError is an ancestor class of
+    # ClientLoginError)
+    # pylint: disable=E0701
+    try:
+      properties = obj.get_issue_properties(options.issue, False)
+    except urllib2.HTTPError as e:
+      if e.getcode() != 302:
+        raise
+      if options.no_auth:
+        exit('FAIL: Login detected -- is issue private?')
+      # TODO(maruel): A few 'Invalid username or password.' are printed first,
+      # we should get rid of those.
+    except rietveld.upload.ClientLoginError, e:
+      # Fine, we'll do proper authentication.
+      pass
+    if properties is None:
+      if options.email is not None:
+        obj = rietveld.Rietveld(options.server, options.email, options.password)
+        try:
+          properties = obj.get_issue_properties(options.issue, False)
+        except rietveld.upload.ClientLoginError, e:
+          if sys.stdout.closed:
+            print('Accessing the issue requires proper credentials.')
+            return 1
+      else:
+        print('Accessing the issue requires login.')
+        obj = rietveld.Rietveld(options.server, None, None)
+        try:
+          properties = obj.get_issue_properties(options.issue, False)
+        except rietveld.upload.ClientLoginError, e:
           print('Accessing the issue requires proper credentials.')
           return 1
-    else:
-      print('Accessing the issue requires login.')
-      obj = rietveld.Rietveld(options.server, None, None)
-      try:
-        properties = obj.get_issue_properties(options.issue, False)
-      except rietveld.upload.ClientLoginError, e:
-        print('Accessing the issue requires proper credentials.')
-        return 1
 
   if not options.patchset:
     options.patchset = properties['patchsets'][-1]
