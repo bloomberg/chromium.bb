@@ -13,7 +13,14 @@ namespace base {
 class DictionaryValue;
 } // namespace base
 
-// Provides access to the contents of a preference hash store.
+// Provides access to the contents of a preference hash store. The store
+// contains the following data:
+// Contents: a client-defined dictionary that should map preference names to
+// MACs.
+// Version: a client-defined version number for the format of Contents.
+// Super MAC: a MAC that authenticates the entirety of Contents.
+// Legacy hash stores may have an ID that was incorporated into MAC
+// calculations. The ID, if any, is available via |hash_store_id()|.
 class HashStoreContents {
  public:
   // Used to modify a DictionaryValue stored in the preference hash store. The
