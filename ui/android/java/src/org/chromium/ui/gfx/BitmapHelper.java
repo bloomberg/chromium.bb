@@ -39,14 +39,15 @@ public class BitmapHelper {
                                                  int reqHeight) {
         Resources res = Resources.getSystem();
         int resId = res.getIdentifier(name, null, null);
+        if (resId == 0) return null;
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(res, resId, options);
 
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
         options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         return BitmapFactory.decodeResource(res, resId, options);
     }
 

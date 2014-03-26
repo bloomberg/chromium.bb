@@ -197,6 +197,35 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
+
+    /**
+     * To ensure the device properly responds to bounds-exceeding scrolls, e.g., overscroll
+     * effects are properly initialized.
+     */
+    @SmallTest
+    @Feature({"Main"})
+    public void testOverScroll() throws Throwable {
+        // Overscroll lower-left.
+        scrollTo(-10000, 10000);
+        assertWaitForScroll(true, false);
+
+        // Overscroll lower-right.
+        scrollTo(10000, 10000);
+        assertWaitForScroll(false, false);
+
+        // Overscroll upper-right.
+        scrollTo(10000, -10000);
+        assertWaitForScroll(false, true);
+
+        // Overscroll top-left.
+        scrollTo(-10000, -10000);
+        assertWaitForScroll(true, true);
+
+        // Diagonal overscroll lower-right.
+        scrollTo(10000, 10000);
+        assertWaitForScroll(false, false);
+    }
+
     /**
      * To ensure the AccessibilityEvent notifications (Eg:TYPE_VIEW_SCROLLED) are being sent
      * properly on scrolling a page.

@@ -31,6 +31,7 @@ class GFX_EXPORT JavaBitmap {
   ~JavaBitmap();
 
   inline void* pixels() { return pixels_; }
+  inline const void* pixels() const { return pixels_; }
   inline const gfx::Size& size() const { return size_; }
   // Formats are in android/bitmap.h; e.g. ANDROID_BITMAP_FORMAT_RGBA_8888
   inline int format() const { return format_; }
@@ -49,22 +50,29 @@ class GFX_EXPORT JavaBitmap {
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
 
-// Allocates a Java-backed bitmap (android.graphics.Bitmap) with the given size
-// and configuration.
+// Allocates a Java-backed bitmap (android.graphics.Bitmap) with the given
+// (non-empty!) size and configuration.
 GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
     int width,
     int height,
     SkBitmap::Config bitmap_config);
 
+// Loads a Java-backed bitmap (android.graphics.Bitmap) from the provided
+// drawable resource identifier (e.g., android:drawable/overscroll_glow). If the
+// resource loads successfully, it will be integrally scaled down, preserving
+// aspect ratio, to a size no smaller than |size|. Otherwise, null is returned.
+GFX_EXPORT base::android::ScopedJavaLocalRef<jobject>
+    CreateJavaBitmapFromAndroidResource(const char* name, gfx::Size size);
+
+// Converts |skbitmap| to a Java-backed bitmap (android.graphics.Bitmap).
+// Note: |skbitmap| is assumed to be non-null, non-empty and one of RGBA_8888 or
+// RGB_565 formats.
 GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
-GFX_EXPORT SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap);
-
-// If the resource loads successfully, it will be resized to |size|.
-// Note: If the source resource is smaller than |size|, quality may suffer.
-GFX_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name,
-                                               gfx::Size size);
+// Converts |bitmap| to an SkBitmap of the same size and format.
+// Note: |jbitmap| is assumed to be non-null, non-empty and of format RGBA_8888.
+GFX_EXPORT SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap);
 
 // Returns a Skia config value for the requested input java Bitmap.Config.
 GFX_EXPORT SkBitmap::Config ConvertToSkiaConfig(jobject bitmap_config);
