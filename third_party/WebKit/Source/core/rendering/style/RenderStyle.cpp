@@ -662,9 +662,9 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle* other, unsigned&
         || visual->textDecoration != other->visual->textDecoration
         || rareNonInheritedData->m_textDecorationStyle != other->rareNonInheritedData->m_textDecorationStyle
         || rareNonInheritedData->m_textDecorationColor != other->rareNonInheritedData->m_textDecorationColor
-        || rareInheritedData->textFillColor != other->rareInheritedData->textFillColor
-        || rareInheritedData->textStrokeColor != other->rareInheritedData->textStrokeColor
-        || rareInheritedData->textEmphasisColor != other->rareInheritedData->textEmphasisColor
+        || rareInheritedData->textFillColor() != other->rareInheritedData->textFillColor()
+        || rareInheritedData->textStrokeColor() != other->rareInheritedData->textStrokeColor()
+        || rareInheritedData->textEmphasisColor() != other->rareInheritedData->textEmphasisColor()
         || rareInheritedData->textEmphasisFill != other->rareInheritedData->textEmphasisFill)
         return StyleDifferenceRepaintIfTextOrColorChange;
 

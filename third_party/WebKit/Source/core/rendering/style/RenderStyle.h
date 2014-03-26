@@ -82,6 +82,10 @@ template<typename T, typename U> inline bool compareEqual(const T& t, const U& u
     if (!compareEqual(group->variable, value)) \
         group.access()->variable = value
 
+#define SET_VAR_WITH_SETTER(group, getter, setter, value)    \
+    if (!compareEqual(group->getter(), value)) \
+        group.access()->setter(value)
+
 #define SET_BORDERVALUE_COLOR(group, variable, value) \
     if (!compareEqual(group->variable.color(), value)) \
         group.access()->variable.setColor(value)
@@ -1230,9 +1234,9 @@ public:
     // CSS3 Setters
     void setOutlineOffset(int v) { SET_VAR(m_background, m_outline.m_offset, v); }
     void setTextShadow(PassRefPtr<ShadowList>);
-    void setTextStrokeColor(const StyleColor& c) { SET_VAR(rareInheritedData, textStrokeColor, c); }
+    void setTextStrokeColor(const StyleColor& c) { SET_VAR_WITH_SETTER(rareInheritedData, textStrokeColor, setTextStrokeColor, c); }
     void setTextStrokeWidth(float w) { SET_VAR(rareInheritedData, textStrokeWidth, w); }
-    void setTextFillColor(const StyleColor& c) { SET_VAR(rareInheritedData, textFillColor, c); }
+    void setTextFillColor(const StyleColor& c) { SET_VAR_WITH_SETTER(rareInheritedData, textFillColor, setTextFillColor, c); }
     void setOpacity(float f) { float v = clampTo<float>(f, 0, 1); SET_VAR(rareNonInheritedData, opacity, v); }
     void setAppearance(ControlPart a) { SET_VAR(rareNonInheritedData, m_appearance, a); }
     // For valid values of box-align see http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
@@ -1328,7 +1332,7 @@ public:
     void setSpeak(ESpeak s) { SET_VAR(rareInheritedData, speak, s); }
     void setTextCombine(TextCombine v) { SET_VAR(rareNonInheritedData, m_textCombine, v); }
     void setTextDecorationColor(const StyleColor& c) { SET_VAR(rareNonInheritedData, m_textDecorationColor, c); }
-    void setTextEmphasisColor(const StyleColor& c) { SET_VAR(rareInheritedData, textEmphasisColor, c); }
+    void setTextEmphasisColor(const StyleColor& c) { SET_VAR_WITH_SETTER(rareInheritedData, textEmphasisColor, setTextEmphasisColor, c); }
     void setTextEmphasisFill(TextEmphasisFill fill) { SET_VAR(rareInheritedData, textEmphasisFill, fill); }
     void setTextEmphasisMark(TextEmphasisMark mark) { SET_VAR(rareInheritedData, textEmphasisMark, mark); }
     void setTextEmphasisCustomMark(const AtomicString& mark) { SET_VAR(rareInheritedData, textEmphasisCustomMark, mark); }
@@ -1731,9 +1735,9 @@ private:
     void setVisitedLinkOutlineColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkOutlineColor, v); }
     void setVisitedLinkColumnRuleColor(const StyleColor& v) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_visitedLinkColumnRuleColor, v); }
     void setVisitedLinkTextDecorationColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkTextDecorationColor, v); }
-    void setVisitedLinkTextEmphasisColor(const StyleColor& v) { SET_VAR(rareInheritedData, visitedLinkTextEmphasisColor, v); }
-    void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR(rareInheritedData, visitedLinkTextFillColor, v); }
-    void setVisitedLinkTextStrokeColor(const StyleColor& v) { SET_VAR(rareInheritedData, visitedLinkTextStrokeColor, v); }
+    void setVisitedLinkTextEmphasisColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextEmphasisColor, setVisitedLinkTextEmphasisColor, v); }
+    void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextFillColor, setVisitedLinkTextFillColor, v); }
+    void setVisitedLinkTextStrokeColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextStrokeColor, setVisitedLinkTextStrokeColor, v); }
 
     void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags._unicodeBidi = parent->noninherited_flags._unicodeBidi; }
     void getShadowExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const;
@@ -1769,9 +1773,9 @@ private:
     Color color() const;
     StyleColor columnRuleColor() const { return rareNonInheritedData->m_multiCol->m_rule.color(); }
     StyleColor outlineColor() const { return m_background->outline().color(); }
-    StyleColor textEmphasisColor() const { return rareInheritedData->textEmphasisColor; }
-    StyleColor textFillColor() const { return rareInheritedData->textFillColor; }
-    StyleColor textStrokeColor() const { return rareInheritedData->textStrokeColor; }
+    StyleColor textEmphasisColor() const { return rareInheritedData->textEmphasisColor(); }
+    StyleColor textFillColor() const { return rareInheritedData->textFillColor(); }
+    StyleColor textStrokeColor() const { return rareInheritedData->textStrokeColor(); }
     Color visitedLinkColor() const;
     StyleColor visitedLinkBackgroundColor() const { return rareNonInheritedData->m_visitedLinkBackgroundColor; }
     StyleColor visitedLinkBorderLeftColor() const { return rareNonInheritedData->m_visitedLinkBorderLeftColor; }
@@ -1782,9 +1786,9 @@ private:
     StyleColor visitedLinkColumnRuleColor() const { return rareNonInheritedData->m_multiCol->m_visitedLinkColumnRuleColor; }
     StyleColor textDecorationColor() const { return rareNonInheritedData->m_textDecorationColor; }
     StyleColor visitedLinkTextDecorationColor() const { return rareNonInheritedData->m_visitedLinkTextDecorationColor; }
-    StyleColor visitedLinkTextEmphasisColor() const { return rareInheritedData->visitedLinkTextEmphasisColor; }
-    StyleColor visitedLinkTextFillColor() const { return rareInheritedData->visitedLinkTextFillColor; }
-    StyleColor visitedLinkTextStrokeColor() const { return rareInheritedData->visitedLinkTextStrokeColor; }
+    StyleColor visitedLinkTextEmphasisColor() const { return rareInheritedData->visitedLinkTextEmphasisColor(); }
+    StyleColor visitedLinkTextFillColor() const { return rareInheritedData->visitedLinkTextFillColor(); }
+    StyleColor visitedLinkTextStrokeColor() const { return rareInheritedData->visitedLinkTextStrokeColor(); }
 
     Color colorIncludingFallback(int colorProperty, bool visitedLink) const;
 
