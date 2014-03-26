@@ -68,6 +68,22 @@ const Value* Scope::GetValue(const base::StringPiece& ident,
   return NULL;
 }
 
+Value* Scope::GetMutableValue(const base::StringPiece& ident,
+                              bool counts_as_used) {
+  // Don't do programatic values, which are not mutable.
+  RecordMap::iterator found = values_.find(ident);
+  if (found != values_.end()) {
+    if (counts_as_used)
+      found->second.used = true;
+    return &found->second.value;
+  }
+
+  // Search in the parent mutable scope, but not const one.
+  if (mutable_containing_)
+    return mutable_containing_->GetMutableValue(ident, counts_as_used);
+  return NULL;
+}
+
 Value* Scope::GetValueForcedToCurrentScope(const base::StringPiece& ident,
                                            const ParseNode* set_node) {
   RecordMap::iterator found = values_.find(ident);

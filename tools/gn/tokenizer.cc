@@ -64,6 +64,8 @@ Token::Type GetSpecificOperatorType(base::StringPiece value) {
     return Token::BOOLEAN_OR;
   if (value == "!")
     return Token::BANG;
+  if (value == ".")
+    return Token::DOT;
   return Token::INVALID;
 }
 
@@ -196,6 +198,8 @@ Token::Type Tokenizer::ClassifyCurrent() const {
   if (next_char == '}')
     return Token::RIGHT_BRACE;
 
+  if (next_char == '.')
+    return Token::DOT;
   if (next_char == ',')
     return Token::COMMA;
 
@@ -283,6 +287,7 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
     case Token::RIGHT_BRACE:
     case Token::LEFT_PAREN:
     case Token::RIGHT_PAREN:
+    case Token::DOT:
     case Token::COMMA:
       Advance();  // All are one char.
       break;

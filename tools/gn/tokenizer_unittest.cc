@@ -99,8 +99,10 @@ TEST(Tokenizer, Operator) {
     { Token::BANG, "!" },
     { Token::BOOLEAN_OR, "||" },
     { Token::BOOLEAN_AND, "&&" },
+    { Token::DOT, "." },
+    { Token::COMMA, "," },
   };
-  EXPECT_TRUE(CheckTokenizer("- + = += -= != ==  < > <= >= ! || &&",
+  EXPECT_TRUE(CheckTokenizer("- + = += -= != ==  < > <= >= ! || && . ,",
               operators));
 }
 

@@ -32,6 +32,7 @@ class Token {
     BOOLEAN_AND,
     BOOLEAN_OR,
     BANG,
+    DOT,
 
     LEFT_PAREN,
     RIGHT_PAREN,

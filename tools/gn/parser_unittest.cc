@@ -27,6 +27,8 @@ void DoParserPrintTest(const char* input, const char* expected) {
 
   Err err;
   scoped_ptr<ParseNode> result = Parser::Parse(tokens, &err);
+  if (!result)
+    err.PrintToStdout();
   ASSERT_TRUE(result);
 
   std::ostringstream collector;
@@ -215,15 +217,31 @@ TEST(Parser, Assignment) {
 }
 
 TEST(Parser, Accessor) {
-  DoParserPrintTest("a=b[2]",
+  // Accessor indexing.
+  DoParserPrintTest("a=b[c+2]",
                     "BLOCK\n"
                     " BINARY(=)\n"
                     "  IDENTIFIER(a)\n"
                     "  ACCESSOR\n"
                     "   b\n"  // AccessorNode is a bit weird in that it holds
                               // a Token, not a ParseNode for the base.
-                    "   LITERAL(2)\n");
+                    "   BINARY(+)\n"
+                    "    IDENTIFIER(c)\n"
+                    "    LITERAL(2)\n");
   DoParserErrorTest("a = b[1][0]", 1, 5);
+
+  // Member accessors.
+  DoParserPrintTest("a=b.c+2",
+                    "BLOCK\n"
+                    " BINARY(=)\n"
+                    "  IDENTIFIER(a)\n"
+                    "  BINARY(+)\n"
+                    "   ACCESSOR\n"
+                    "    b\n"
+                    "    IDENTIFIER(c)\n"
+                    "   LITERAL(2)\n");
+  DoParserErrorTest("a = b.c.d", 1, 6);  // Can't nest accessors (currently).
+  DoParserErrorTest("a.b = 5", 1, 1);  // Can't assign to accessors (currently).
 }
 
 TEST(Parser, Condition) {

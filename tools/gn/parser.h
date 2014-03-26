@@ -61,6 +61,7 @@ class Parser {
                                          Token token);
   scoped_ptr<ParseNode> Assignment(scoped_ptr<ParseNode> left, Token token);
   scoped_ptr<ParseNode> Subscript(scoped_ptr<ParseNode> left, Token token);
+  scoped_ptr<ParseNode> DotOperator(scoped_ptr<ParseNode> left, Token token);
 
   // Helper to parse a comma separated list, optionally allowing trailing
   // commas (allowed in [] lists, not in function calls).

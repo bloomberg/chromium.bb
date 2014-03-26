@@ -86,6 +86,30 @@ class Scope {
                         bool counts_as_used);
   const Value* GetValue(const base::StringPiece& ident) const;
 
+  // Returns the requested value as a mutable one if possible. If the value
+  // is not found in a mutable scope, then returns null. Note that the value
+  // could still exist in a const scope, so GetValue() could still return
+  // non-null in this case.
+  //
+  // Say you have a local scope that then refers to the const root scope from
+  // the master build config. You can't change the values from the master
+  // build config (it's read-only so it can be read from multiple threads
+  // without locking). Read-only operations would work on values from the root
+  // scope, but write operations would only work on values in the derived
+  // scope(s).
+  //
+  // Be careful when calling this. It's not normally correct to modify values,
+  // but you should instead do a new Set each time.
+  //
+  // Consider this code:
+  //   a = 5
+  //    {
+  //       a = 6
+  //    }
+  // The 6 should get set on the nested scope rather than modify the value
+  // in the outer one.
+  Value* GetMutableValue(const base::StringPiece& ident, bool counts_as_used);
+
   // Same as GetValue, but if the value exists in a parent scope, we'll copy
   // it to the current scope. If the return value is non-null, the value is
   // guaranteed to be set in the current scope. Generatlly this will be used

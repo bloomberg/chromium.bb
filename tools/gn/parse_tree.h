@@ -63,10 +63,29 @@ class ParseNode {
 
 // AccessorNode ----------------------------------------------------------------
 
-// Access an array element.
+// Access an array or scope element.
 //
-// If we need to add support for member variables like "variable.len" I was
-// thinking this would also handle that case.
+// Currently, such values are only read-only. In that you can do:
+//   a = obj1.a
+//   b = obj2[0]
+// But not
+//   obj1.a = 5
+//   obj2[0] = 6
+//
+// In the current design where the dot operator is used only for templates, we
+// explicitly don't want to allow you to do "invoker.foo = 5", so if we added
+// support for accessors to be lvalues, we would also need to add some concept
+// of a constant scope. Supporting this would also add a lot of complications
+// to the operator= implementation, since some accessors might return values
+// in the const root scope that shouldn't be modified. Without a strong
+// use-case for this, it seems simpler to just disallow it.
+//
+// Additionally, the left-hand-side of the accessor must currently be an
+// identifier. So you can't do things like:
+//   function_call()[1]
+//   a = b.c.d
+// These are easier to implement if we needed them but given the very limited
+// use cases for this, it hasn't seemed worth the bother.
 class AccessorNode : public ParseNode {
  public:
   AccessorNode();
@@ -80,18 +99,30 @@ class AccessorNode : public ParseNode {
       const std::string& help = std::string()) const OVERRIDE;
   virtual void Print(std::ostream& out, int indent) const OVERRIDE;
 
-  // Base is the thing on the left of the [], currently always required to be
-  // an identifier token.
+  // Base is the thing on the left of the [] or dot, currently always required
+  // to be an identifier token.
   const Token& base() const { return base_; }
   void set_base(const Token& b) { base_ = b; }
 
-  // Index is the expression inside the [].
+  // Index is the expression inside the []. Will be null if member is set.
   const ParseNode* index() const { return index_.get(); }
   void set_index(scoped_ptr<ParseNode> i) { index_ = i.Pass(); }
 
+  // The member is the identifier on the right hand side of the dot. Will be
+  // null if the index is set.
+  const IdentifierNode* member() const { return member_.get(); }
+  void set_member(scoped_ptr<IdentifierNode> i) { member_ = i.Pass(); }
+
  private:
+  Value ExecuteArrayAccess(Scope* scope, Err* err) const;
+  Value ExecuteScopeAccess(Scope* scope, Err* err) const;
+
   Token base_;
+
+  // Either index or member will be set according to what type of access this
+  // is.
   scoped_ptr<ParseNode> index_;
+  scoped_ptr<IdentifierNode> member_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessorNode);
 };

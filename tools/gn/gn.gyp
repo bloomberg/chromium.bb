@@ -187,6 +187,7 @@
         'ninja_copy_target_writer_unittest.cc',
         'ninja_helper_unittest.cc',
         'operators_unittest.cc',
+        'parse_tree_unittest.cc',
         'parser_unittest.cc',
         'path_output_unittest.cc',
         'pattern_unittest.cc',

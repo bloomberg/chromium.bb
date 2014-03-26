@@ -53,6 +53,38 @@ const AccessorNode* AccessorNode::AsAccessor() const {
 }
 
 Value AccessorNode::Execute(Scope* scope, Err* err) const {
+  if (index_)
+    return ExecuteArrayAccess(scope, err);
+  else if (member_)
+    return ExecuteScopeAccess(scope, err);
+  NOTREACHED();
+  return Value();
+}
+
+LocationRange AccessorNode::GetRange() const {
+  if (index_)
+    return LocationRange(base_.location(), index_->GetRange().end());
+  else if (member_)
+    return LocationRange(base_.location(), member_->GetRange().end());
+  NOTREACHED();
+  return LocationRange();
+}
+
+Err AccessorNode::MakeErrorDescribing(const std::string& msg,
+                                      const std::string& help) const {
+  return Err(GetRange(), msg, help);
+}
+
+void AccessorNode::Print(std::ostream& out, int indent) const {
+  out << IndentFor(indent) << "ACCESSOR\n";
+  out << IndentFor(indent + 1) << base_.value() << "\n";
+  if (index_)
+    index_->Print(out, indent + 1);
+  else if (member_)
+    member_->Print(out, indent + 1);
+}
+
+Value AccessorNode::ExecuteArrayAccess(Scope* scope, Err* err) const {
   Value index_value = index_->Execute(scope, err);
   if (err->has_error())
     return Value();
@@ -91,19 +123,46 @@ Value AccessorNode::Execute(Scope* scope, Err* err) const {
   return base_value->list_value()[index_sizet];
 }
 
-LocationRange AccessorNode::GetRange() const {
-  return LocationRange(base_.location(), index_->GetRange().end());
-}
+Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
+  // We jump through some hoops here since ideally a.b will count "b" as
+  // accessed in the given scope. The value "a" might be in some normal nested
+  // scope and we can modify it, but it might also be inherited from the
+  // readonly root scope and we can't do used variable tracking on it. (It's
+  // not legal to const cast it away since the root scope will be in readonly
+  // mode and being accessed from multiple threads without locking.) So this
+  // code handles both cases.
+  const Value* result = NULL;
 
-Err AccessorNode::MakeErrorDescribing(const std::string& msg,
-                                      const std::string& help) const {
-  return Err(GetRange(), msg, help);
-}
+  // Look up the value in the scope named by "base_".
+  Value* mutable_base_value = scope->GetMutableValue(base_.value(), true);
+  if (mutable_base_value) {
+    // Common case: base value is mutable so we can track variable accesses
+    // for unused value warnings.
+    if (!mutable_base_value->VerifyTypeIs(Value::SCOPE, err))
+      return Value();
+    result = mutable_base_value->scope_value()->GetValue(
+        member_->value().value(), true);
+  } else {
+    // Fall back to see if the value is on a read-only scope.
+    const Value* const_base_value = scope->GetValue(base_.value(), true);
+    if (const_base_value) {
+      // Read only value, don't try to mark the value access as a "used" one.
+      if (!const_base_value->VerifyTypeIs(Value::SCOPE, err))
+        return Value();
+      result =
+          const_base_value->scope_value()->GetValue(member_->value().value());
+    } else {
+      *err = Err(base_, "Undefined identifier.");
+      return Value();
+    }
+  }
 
-void AccessorNode::Print(std::ostream& out, int indent) const {
-  out << IndentFor(indent) << "ACCESSOR\n";
-  out << IndentFor(indent + 1) << base_.value() << "\n";
-  index_->Print(out, indent + 1);
+  if (!result) {
+    *err = Err(member_.get(), "No value named \"" +
+        member_->value().value() + "\" in scope \"" + base_.value() + "\"");
+    return Value();
+  }
+  return *result;
 }
 
 // BinaryOpNode ---------------------------------------------------------------

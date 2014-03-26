@@ -19,7 +19,7 @@
 // assignment := ident {'=' | '+=' | '-='} expr
 
 enum Precedence {
-  PRECEDENCE_ASSIGNMENT = 1,
+  PRECEDENCE_ASSIGNMENT = 1,  // Lowest precedence.
   PRECEDENCE_OR = 2,
   PRECEDENCE_AND = 3,
   PRECEDENCE_EQUALITY = 4,
@@ -27,15 +27,16 @@ enum Precedence {
   PRECEDENCE_SUM = 6,
   PRECEDENCE_PREFIX = 7,
   PRECEDENCE_CALL = 8,
+  PRECEDENCE_DOT = 9,         // Highest precedence.
 };
 
-// The top-level for blocks/ifs is still recursive descent, the expression
-// parser is a Pratt parser. The basic idea there is to have the precedences
-// (and associativities) encoded relative to each other and only parse up
-// until you hit something of that precedence. There's a dispatch table in
-// expressions_ at the top of parser.cc that describes how each token
-// dispatches if it's seen as either a prefix or infix operator, and if it's
-// infix, what its precedence is.
+// The top-level for blocks/ifs is recursive descent, the expression parser is
+// a Pratt parser. The basic idea there is to have the precedences (and
+// associativities) encoded relative to each other and only parse up until you
+// hit something of that precedence. There's a dispatch table in expressions_
+// at the top of parser.cc that describes how each token dispatches if it's
+// seen as either a prefix or infix operator, and if it's infix, what its
+// precedence is.
 //
 // Refs:
 // - http://javascript.crockford.com/tdop/tdop.html
@@ -62,6 +63,7 @@ ParserHelper Parser::expressions_[] = {
   {NULL, &Parser::BinaryOperator, PRECEDENCE_AND},              // BOOLEAN_AND
   {NULL, &Parser::BinaryOperator, PRECEDENCE_OR},               // BOOLEAN_OR
   {&Parser::Not, NULL, -1},                                     // BANG
+  {NULL, &Parser::DotOperator, PRECEDENCE_DOT},                 // DOT
   {&Parser::Group, NULL, -1},                                   // LEFT_PAREN
   {NULL, NULL, -1},                                             // RIGHT_PAREN
   {&Parser::List, &Parser::Subscript, PRECEDENCE_CALL},         // LEFT_BRACKET
@@ -311,7 +313,10 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
   // TODO: Maybe support more complex expressions like a[0][0]. This would
   // require work on the evaluator too.
   if (left->AsIdentifier() == NULL) {
-    *err_ = Err(left.get(), "May only subscript simple identifiers");
+    *err_ = Err(left.get(), "May only subscript identifiers.",
+        "The thing on the left hand side of the [] must be an identifier\n"
+        "and not an expression. If you need this, you'll have to assign the\n"
+        "value to a temporary before subscripting. Sorry.");
     return scoped_ptr<ParseNode>();
   }
   scoped_ptr<ParseNode> value = ParseExpression();
@@ -319,6 +324,30 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
   scoped_ptr<AccessorNode> accessor(new AccessorNode);
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_index(value.Pass());
+  return accessor.PassAs<ParseNode>();
+}
+
+scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
+                                          Token token) {
+  if (left->AsIdentifier() == NULL) {
+    *err_ = Err(left.get(), "May only use \".\" for identifiers.",
+        "The thing on the left hand side of the dot must be an identifier\n"
+        "and not an expression. If you need this, you'll have to assign the\n"
+        "value to a temporary first. Sorry.");
+    return scoped_ptr<ParseNode>();
+  }
+
+  scoped_ptr<ParseNode> right = ParseExpression(PRECEDENCE_DOT);
+  if (!right || !right->AsIdentifier()) {
+    *err_ = Err(token, "Expected identifier for right-hand-side of \".\"",
+        "Good: a.cookies\nBad: a.42\nLooks good but still bad: a.cookies()");
+    return scoped_ptr<ParseNode>();
+  }
+
+  scoped_ptr<AccessorNode> accessor(new AccessorNode);
+  accessor->set_base(left->AsIdentifier()->value());
+  accessor->set_member(scoped_ptr<IdentifierNode>(
+      static_cast<IdentifierNode*>(right.release())));
   return accessor.PassAs<ParseNode>();
 }
 

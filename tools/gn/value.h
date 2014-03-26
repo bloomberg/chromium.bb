@@ -11,6 +11,7 @@
 #include "tools/gn/err.h"
 
 class ParseNode;
+class Scope;
 
 // Represents a variable value in the interpreter.
 class Value {
@@ -20,7 +21,8 @@ class Value {
     BOOLEAN,
     INTEGER,
     STRING,
-    LIST
+    LIST,
+    SCOPE
   };
 
   Value();
@@ -29,6 +31,8 @@ class Value {
   Value(const ParseNode* origin, int64 int_val);
   Value(const ParseNode* origin, std::string str_val);
   Value(const ParseNode* origin, const char* str_val);
+  Value(const ParseNode* origin, Scope* scope);  // Non-owning ptr.
+                                                 // (must outlive Value.)
   ~Value();
 
   Type type() const { return type_; }
@@ -80,6 +84,15 @@ class Value {
     return list_value_;
   }
 
+  Scope* scope_value() {
+    DCHECK(type_ == SCOPE);
+    return scope_value_;
+  }
+  const Scope* scope_value() const {
+    DCHECK(type_ == SCOPE);
+    return scope_value_;
+  }
+
   // Converts the given value to a string. Returns true if strings should be
   // quoted or the ToString of a string should be the string itself.
   std::string ToString(bool quote_strings) const;
@@ -98,6 +111,8 @@ class Value {
   bool boolean_value_;
   int64 int_value_;
   std::vector<Value> list_value_;
+  Scope* scope_value_;  // Non-owning.
+
   const ParseNode* origin_;
 };
 

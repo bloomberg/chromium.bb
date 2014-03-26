@@ -10,6 +10,7 @@ Value::Value()
     : type_(NONE),
       boolean_value_(false),
       int_value_(0),
+      scope_value_(NULL),
       origin_(NULL) {
 }
 
@@ -17,6 +18,7 @@ Value::Value(const ParseNode* origin, Type t)
     : type_(t),
       boolean_value_(false),
       int_value_(0),
+      scope_value_(NULL),
       origin_(origin) {
 }
 
@@ -24,6 +26,7 @@ Value::Value(const ParseNode* origin, bool bool_val)
     : type_(BOOLEAN),
       boolean_value_(bool_val),
       int_value_(0),
+      scope_value_(NULL),
       origin_(origin) {
 }
 
@@ -31,6 +34,7 @@ Value::Value(const ParseNode* origin, int64 int_val)
     : type_(INTEGER),
       boolean_value_(false),
       int_value_(int_val),
+      scope_value_(NULL),
       origin_(origin) {
 }
 
@@ -39,6 +43,7 @@ Value::Value(const ParseNode* origin, std::string str_val)
       string_value_(),
       boolean_value_(false),
       int_value_(0),
+      scope_value_(NULL),
       origin_(origin) {
   string_value_.swap(str_val);
 }
@@ -48,6 +53,16 @@ Value::Value(const ParseNode* origin, const char* str_val)
       string_value_(str_val),
       boolean_value_(false),
       int_value_(0),
+      scope_value_(NULL),
+      origin_(origin) {
+}
+
+Value::Value(const ParseNode* origin, Scope* scope)
+    : type_(SCOPE),
+      string_value_(),
+      boolean_value_(false),
+      int_value_(0),
+      scope_value_(scope),
       origin_(origin) {
 }
 
@@ -75,6 +90,8 @@ const char* Value::DescribeType(Type t) {
       return "string";
     case LIST:
       return "list";
+    case SCOPE:
+      return "scope";
     default:
       NOTREACHED();
       return "UNKNOWN";
@@ -103,6 +120,8 @@ std::string Value::ToString(bool quote_string) const {
       result.push_back(']');
       return result;
     }
+    case SCOPE:
+      return std::string("<scope>");
   }
   return std::string();
 }
@@ -134,6 +153,10 @@ bool Value::operator==(const Value& other) const {
           return false;
       }
       return true;
+    case Value::SCOPE:
+      // Its not clear what people mean when comparing scope values, so we test
+      // for scope identity and not contents equality.
+      return scope_value() == other.scope_value();
     default:
       return false;
   }
