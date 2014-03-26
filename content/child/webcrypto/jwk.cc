@@ -92,6 +92,9 @@ class JwkAlgorithmRegistry {
     alg_to_info_["HS512"] =
         JwkAlgorithmInfo(&BindAlgorithmId<CreateHmacImportAlgorithm,
                                           blink::WebCryptoAlgorithmIdSha512>);
+    alg_to_info_["RS1"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaImportAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha1>);
     alg_to_info_["RS256"] =
         JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaImportAlgorithm,
                                           blink::WebCryptoAlgorithmIdSha256>);
@@ -295,6 +298,18 @@ void WriteSecretKey(const blink::WebArrayBuffer& raw_key,
   jwk_dict->SetString("k", Base64EncodeUrlSafe(key_str));
 }
 
+// Writes an RSA public key to a JWK dictionary
+void WriteRsaPublicKey(const std::vector<uint8>& modulus,
+                       const std::vector<uint8>& public_exponent,
+                       base::DictionaryValue* jwk_dict) {
+  DCHECK(jwk_dict);
+  DCHECK(modulus.size());
+  DCHECK(public_exponent.size());
+  jwk_dict->SetString("kty", "RSA");
+  jwk_dict->SetString("n", Base64EncodeUrlSafe(modulus));
+  jwk_dict->SetString("e", Base64EncodeUrlSafe(public_exponent));
+}
+
 // Writes a Web Crypto usage mask to a JWK dictionary.
 void WriteKeyOps(blink::WebCryptoKeyUsageMask key_usages,
                  base::DictionaryValue* jwk_dict) {
@@ -308,19 +323,19 @@ void WriteExt(bool extractable, base::DictionaryValue* jwk_dict) {
 
 // Writes a Web Crypto algorithm to a JWK dictionary.
 Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
-                unsigned int raw_key_length_bytes,
                 base::DictionaryValue* jwk_dict) {
   switch (algorithm.paramsType()) {
     case blink::WebCryptoKeyAlgorithmParamsTypeAes: {
+      DCHECK(algorithm.aesParams());
       const char* aes_prefix = "";
-      switch (raw_key_length_bytes) {
-        case 16:
+      switch (algorithm.aesParams()->lengthBits()) {
+        case 128:
           aes_prefix = "A128";
           break;
-        case 24:
+        case 192:
           aes_prefix = "A192";
           break;
-        case 32:
+        case 256:
           aes_prefix = "A256";
           break;
         default:
@@ -370,12 +385,58 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
       break;
     }
     case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
+      switch (algorithm.id()) {
+        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+          jwk_dict->SetString("alg", "RSA1_5");
+          break;
+        default:
+          NOTREACHED();
+          return Status::ErrorUnexpected();
+      }
+      break;
     case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
-      // TODO(padolph): Handle RSA key
-      return Status::ErrorUnsupported();
+      switch (algorithm.rsaHashedParams()->hash().id()) {
+        case blink::WebCryptoAlgorithmIdRsaOaep:
+          jwk_dict->SetString("alg", "RSA-OAEP");
+          break;
+        case blink::WebCryptoAlgorithmIdSha1:
+          jwk_dict->SetString("alg", "RS1");
+          break;
+        case blink::WebCryptoAlgorithmIdSha256:
+          jwk_dict->SetString("alg", "RS256");
+          break;
+        case blink::WebCryptoAlgorithmIdSha384:
+          jwk_dict->SetString("alg", "RS384");
+          break;
+        case blink::WebCryptoAlgorithmIdSha512:
+          jwk_dict->SetString("alg", "RS512");
+          break;
+        default:
+          NOTREACHED();
+          return Status::ErrorUnexpected();
+      }
+      break;
     default:
       return Status::ErrorUnsupported();
   }
+  return Status::Success();
+}
+
+bool IsRsaPublicKey(const blink::WebCryptoKey& key) {
+  if (key.type() != blink::WebCryptoKeyTypePublic)
+    return false;
+  const blink::WebCryptoAlgorithmId algorithm_id = key.algorithm().id();
+  return algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
+         algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep;
+}
+
+// TODO(padolph): This function is duplicated in shared_crypto.cc
+Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
+                           platform::PublicKey** out) {
+  *out = static_cast<platform::Key*>(key.handle())->AsPublicKey();
+  if (!*out)
+    return Status::ErrorUnexpectedKeyType();
   return Status::Success();
 }
 
@@ -478,6 +539,7 @@ Status ImportKeyJwk(const CryptoData& key_data,
   //   | "HS256"      | HMAC using SHA-256 hash algorithm                     |
   //   | "HS384"      | HMAC using SHA-384 hash algorithm                     |
   //   | "HS512"      | HMAC using SHA-512 hash algorithm                     |
+  //   | "RS1"        | RSASSA using SHA-1 hash algorithm
   //   | "RS256"      | RSASSA using SHA-256 hash algorithm                   |
   //   | "RS384"      | RSASSA using SHA-384 hash algorithm                   |
   //   | "RS512"      | RSASSA using SHA-512 hash algorithm                   |
@@ -714,23 +776,44 @@ Status ImportKeyJwk(const CryptoData& key_data,
 
 Status ExportKeyJwk(const blink::WebCryptoKey& key,
                     blink::WebArrayBuffer* buffer) {
+  DCHECK(key.extractable());
   base::DictionaryValue jwk_dict;
   Status status = Status::Error();
-  blink::WebArrayBuffer exported_key;
 
-  if (key.type() == blink::WebCryptoKeyTypeSecret) {
-    status = ExportKey(blink::WebCryptoKeyFormatRaw, key, &exported_key);
-    if (status.IsError())
-      return status;
-    WriteSecretKey(exported_key, &jwk_dict);
-  } else {
-    // TODO(padolph): Handle asymmetric keys, at least the public key.
-    return Status::ErrorUnsupported();
+  switch (key.type()) {
+    case blink::WebCryptoKeyTypeSecret: {
+      blink::WebArrayBuffer exported_key;
+      status = ExportKey(blink::WebCryptoKeyFormatRaw, key, &exported_key);
+      if (status.IsError())
+        return status;
+      WriteSecretKey(exported_key, &jwk_dict);
+      break;
+    }
+    case blink::WebCryptoKeyTypePublic: {
+      // Currently only RSA public key export is supported.
+      if (!IsRsaPublicKey(key))
+        return Status::ErrorUnsupported();
+      platform::PublicKey* public_key;
+      status = ToPlatformPublicKey(key, &public_key);
+      if (status.IsError())
+        return status;
+      std::vector<uint8> modulus;
+      std::vector<uint8> public_exponent;
+      status =
+          platform::ExportRsaPublicKey(public_key, &modulus, &public_exponent);
+      if (status.IsError())
+        return status;
+      WriteRsaPublicKey(modulus, public_exponent, &jwk_dict);
+      break;
+    }
+    case blink::WebCryptoKeyTypePrivate:  // TODO(padolph)
+    default:
+      return Status::ErrorUnsupported();
   }
 
   WriteKeyOps(key.usages(), &jwk_dict);
   WriteExt(key.extractable(), &jwk_dict);
-  status = WriteAlg(key.algorithm(), exported_key.byteLength(), &jwk_dict);
+  status = WriteAlg(key.algorithm(), &jwk_dict);
   if (status.IsError())
     return status;
 

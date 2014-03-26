@@ -46,6 +46,7 @@ CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
 // Returns an unpadded 'base64url' encoding of the input data, the opposite of
 // Base64DecodeUrlSafe() above.
 std::string Base64EncodeUrlSafe(const base::StringPiece& input);
+std::string Base64EncodeUrlSafe(const std::vector<uint8>& input);
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.
 CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(

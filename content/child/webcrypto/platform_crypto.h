@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_PLATFORM_CRYPTO_H_
 #define CONTENT_CHILD_WEBCRYPTO_PLATFORM_CRYPTO_H_
 
+#include <vector>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
@@ -175,6 +176,12 @@ Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer);
 // Preconditions:
 //  * |key| is non-null.
 Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer);
+
+// Preconditions:
+//  * |key| is non-null.
+Status ExportRsaPublicKey(PublicKey* key,
+                          std::vector<uint8>* modulus,
+                          std::vector<uint8>* public_exponent);
 
 // Preconditions:
 //  * |key| is non-null.

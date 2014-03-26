@@ -67,6 +67,12 @@ std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
   return output;
 }
 
+std::string Base64EncodeUrlSafe(const std::vector<uint8>& input) {
+  const base::StringPiece string_piece(
+      reinterpret_cast<const char*>(Uint8VectorStart(input)), input.size());
+  return Base64EncodeUrlSafe(string_piece);
+}
+
 struct JwkToWebCryptoUsage {
   const char* const jwk_key_op;
   const blink::WebCryptoKeyUsage webcrypto_usage;

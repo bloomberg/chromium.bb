@@ -542,6 +542,10 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   return Status::Success();
 }
 
+void CopySECItemToVector(const SECItem& item, std::vector<uint8>* out) {
+  out->assign(item.data, item.data + item.len);
+}
+
 // From PKCS#1 [http://tools.ietf.org/html/rfc3447]:
 //
 //    RSAPrivateKey ::= SEQUENCE {
@@ -792,6 +796,20 @@ Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
 
   *buffer = CreateArrayBuffer(spki_der->data, spki_der->len);
 
+  return Status::Success();
+}
+
+Status ExportRsaPublicKey(PublicKey* key,
+                          std::vector<uint8>* modulus,
+                          std::vector<uint8>* public_exponent) {
+  DCHECK(key);
+  DCHECK(key->key());
+  if (key->key()->keyType != rsaKey)
+    return Status::ErrorUnsupported();
+  CopySECItemToVector(key->key()->u.rsa.modulus, modulus);
+  CopySECItemToVector(key->key()->u.rsa.publicExponent, public_exponent);
+  if (modulus->empty() || public_exponent->empty())
+    return Status::ErrorUnexpected();
   return Status::Success();
 }
 
