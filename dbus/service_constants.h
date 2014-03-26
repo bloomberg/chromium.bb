@@ -1658,6 +1658,8 @@ const char kGetNodes[] = "GetNodes";
 const char kSetActiveOutputNode[] = "SetActiveOutputNode";
 const char kSetActiveInputNode[] = "SetActiveInputNode";
 const char kGetNumberOfActiveStreams[] = "GetNumberOfActiveStreams";
+const char kGetNumberOfActiveInputStreams[] = "GetNumberOfActiveInputStreams";
+const char kGetNumberOfActiveOutputStreams[] = "GetNumberOfActiveOutputStreams";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
