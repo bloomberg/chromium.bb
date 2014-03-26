@@ -260,7 +260,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   // Make it a RTP packet.
-  packet[0] = base::HostToNet16(0x8000);
+  *reinterpret_cast<uint16*>(&*packet.begin()) = base::HostToNet16(0x8000);
   socket_host_->Send(dest_.ip_address, packet, options, 0);
 
   std::string expected_data;
