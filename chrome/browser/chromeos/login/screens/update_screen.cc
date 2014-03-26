@@ -70,12 +70,6 @@ void StartUpdateCallback(UpdateScreen* screen,
   }
 }
 
-// Returns true if blocking AU is enabled in command line.
-bool IsBlockingUpdateEnabledInCommandLine() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableOOBEBlockingUpdate);
-}
-
 }  // anonymous namespace
 
 // static
@@ -145,12 +139,10 @@ void UpdateScreen::UpdateStatusChanged(
       actor_->SetProgress(kBeforeDownloadProgress);
       actor_->ShowEstimatedTimeLeft(false);
       if (!HasCriticalUpdate()) {
-        LOG(INFO) << "Noncritical update available: "
-                  << status.new_version;
+        VLOG(1) << "Noncritical update available: " << status.new_version;
         ExitUpdate(REASON_UPDATE_NON_CRITICAL);
       } else {
-        LOG(INFO) << "Critical update available: "
-                  << status.new_version;
+        VLOG(1) << "Critical update available: " << status.new_version;
         actor_->SetProgressMessage(
             UpdateScreenActor::PROGRESS_MESSAGE_UPDATE_AVAILABLE);
         actor_->ShowProgressMessage(true);
@@ -170,12 +162,10 @@ void UpdateScreen::UpdateStatusChanged(
           is_download_average_speed_computed_ = false;
           download_average_speed_ = 0.0;
           if (!HasCriticalUpdate()) {
-            LOG(INFO) << "Non-critical update available: "
-                      << status.new_version;
+            VLOG(1) << "Non-critical update available: " << status.new_version;
             ExitUpdate(REASON_UPDATE_NON_CRITICAL);
           } else {
-            LOG(INFO) << "Critical update available: "
-                      << status.new_version;
+            VLOG(1) << "Critical update available: " << status.new_version;
             actor_->SetProgressMessage(
                 UpdateScreenActor::PROGRESS_MESSAGE_INSTALLING_UPDATE);
             actor_->ShowProgressMessage(true);
@@ -285,8 +275,7 @@ void UpdateScreen::StartNetworkCheck() {
   // If portal detector is enabled and portal detection before AU is
   // allowed, initiate network state check. Otherwise, directly
   // proceed to update.
-  if (!NetworkPortalDetector::Get()->IsEnabled() ||
-      !IsBlockingUpdateEnabledInCommandLine()) {
+  if (!NetworkPortalDetector::Get()->IsEnabled()) {
     StartUpdateCheck();
     return;
   }

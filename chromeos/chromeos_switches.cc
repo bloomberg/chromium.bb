@@ -58,11 +58,6 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
-// Disables portal detection and network error handling before auto
-// update.
-const char kDisableOOBEBlockingUpdate[] =
-    "disable-oobe-blocking-update";
-
 // Enables overriding the path for the default echo component extension.
 // Useful for testing.
 const char kEchoExtensionPath[]             = "echo-ext-path";
