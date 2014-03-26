@@ -270,6 +270,9 @@ public:
     virtual void didChangeResourcePriority(
         WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&) { }
 
+    virtual void didChangeResourcePriority(
+        WebFrame* webFrame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int) { didChangeResourcePriority(webFrame, identifier, priority); }
+
     // The resource request given by identifier succeeded.
     virtual void didFinishResourceLoad(
         WebLocalFrame*, unsigned identifier) { }

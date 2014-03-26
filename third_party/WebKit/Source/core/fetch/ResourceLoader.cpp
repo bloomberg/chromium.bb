@@ -200,11 +200,11 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64 encodedDat
     m_host->didFinishLoading(m_resource, finishTime, encodedDataLength);
 }
 
-void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
+void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
     if (m_loader) {
-        m_host->didChangeLoadingPriority(m_resource, loadPriority);
-        m_loader->didChangePriority(static_cast<blink::WebURLRequest::Priority>(loadPriority));
+        m_host->didChangeLoadingPriority(m_resource, loadPriority, intraPriorityValue);
+        m_loader->didChangePriority(static_cast<blink::WebURLRequest::Priority>(loadPriority), intraPriorityValue);
     }
 }
 

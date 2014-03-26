@@ -647,7 +647,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         ResourceLoadPriority priority = loadPriority(type, request);
         if (priority != resource->resourceRequest().priority()) {
             resource->resourceRequest().setPriority(priority);
-            resource->didChangePriority(priority);
+            resource->didChangePriority(priority, 0);
         }
     }
 
@@ -1181,10 +1181,10 @@ void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTi
     context().dispatchDidFinishLoading(m_documentLoader, resource->identifier(), finishTime, encodedDataLength);
 }
 
-void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority)
+void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
     TRACE_EVENT_ASYNC_STEP_INTO1("net", "Resource", resource, "ChangePriority", "priority", loadPriority);
-    context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority);
+    context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority, intraPriorityValue);
 }
 
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)

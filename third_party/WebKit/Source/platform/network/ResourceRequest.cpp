@@ -39,7 +39,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setTimeoutInterval(data->m_timeoutInterval);
     request->setFirstPartyForCookies(data->m_firstPartyForCookies);
     request->setHTTPMethod(AtomicString(data->m_httpMethod));
-    request->setPriority(data->m_priority);
+    request->setPriority(data->m_priority, data->m_intraPriorityValue);
 
     request->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
 
@@ -66,6 +66,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_httpMethod = httpMethod().string().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_priority = priority();
+    data->m_intraPriorityValue = m_intraPriorityValue;
 
     if (m_httpBody)
         data->m_httpBody = m_httpBody->deepCopy();
@@ -231,9 +232,10 @@ ResourceLoadPriority ResourceRequest::priority() const
     return m_priority;
 }
 
-void ResourceRequest::setPriority(ResourceLoadPriority priority)
+void ResourceRequest::setPriority(ResourceLoadPriority priority, int intraPriorityValue)
 {
     m_priority = priority;
+    m_intraPriorityValue = intraPriorityValue;
 }
 
 void ResourceRequest::addHTTPHeaderField(const AtomicString& name, const AtomicString& value)
@@ -339,6 +341,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_hasUserGesture = false;
     m_downloadToFile = false;
     m_priority = ResourceLoadPriorityLow;
+    m_intraPriorityValue = 0;
     m_requestorID = 0;
     m_requestorProcessID = 0;
     m_appCacheHostID = 0;

@@ -47,7 +47,7 @@ public:
         NotVisible,
         Visible,
     };
-    void notifyImageResourceVisibility(ImageResource*, VisibilityStatus);
+    void notifyImageResourceVisibility(ImageResource*, VisibilityStatus, const LayoutRect&);
     void updateAllImageResourcePriorities();
     void addRenderObject(RenderObject*);
     void removeRenderObject(RenderObject*);
@@ -61,10 +61,11 @@ private:
     void updateImageResourcesWithLoadPriority();
 
     struct ResourceAndVisibility {
-        ResourceAndVisibility(ImageResource*, VisibilityStatus);
+        ResourceAndVisibility(ImageResource*, VisibilityStatus, uint32_t);
         ~ResourceAndVisibility();
         ResourcePtr<ImageResource> imageResource;
         VisibilityStatus status;
+        int screenArea;
     };
 
     typedef HashMap<unsigned long, OwnPtr<ResourceAndVisibility> > ImageResourceMap;

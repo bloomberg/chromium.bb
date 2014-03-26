@@ -590,7 +590,13 @@ bool RenderImage::updateImageLoadingPriorities()
     ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
         ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
 
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(m_imageResource->cachedImage(), status);
+    LayoutRect screenArea;
+    if (!objectBounds.isEmpty()) {
+        screenArea = viewBounds;
+        screenArea.intersect(objectBounds);
+    }
+
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(m_imageResource->cachedImage(), status, screenArea);
 
     return true;
 }

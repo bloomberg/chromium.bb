@@ -830,10 +830,10 @@ size_t Resource::overheadSize() const
     return sizeof(Resource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().string().length() * 2;
 }
 
-void Resource::didChangePriority(ResourceLoadPriority loadPriority)
+void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
     if (m_loader)
-        m_loader->didChangePriority(loadPriority);
+        m_loader->didChangePriority(loadPriority, intraPriorityValue);
 }
 
 Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()

@@ -42,9 +42,10 @@ ResourceLoadPriorityOptimizer* ResourceLoadPriorityOptimizer::resourceLoadPriori
     return &s_renderLoadOptimizer;
 }
 
-ResourceLoadPriorityOptimizer::ResourceAndVisibility::ResourceAndVisibility(ImageResource* image, VisibilityStatus v)
+ResourceLoadPriorityOptimizer::ResourceAndVisibility::ResourceAndVisibility(ImageResource* image, VisibilityStatus visibilityStatus, uint32_t screenArea)
     : imageResource(image)
-    , status(v)
+    , status(visibilityStatus)
+    , screenArea(screenArea)
 {
 }
 
@@ -99,21 +100,27 @@ void ResourceLoadPriorityOptimizer::updateImageResourcesWithLoadPriority()
             ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
 
         if (priority != it->value->imageResource->resourceRequest().priority()) {
-            it->value->imageResource->resourceRequest().setPriority(priority);
-            it->value->imageResource->didChangePriority(priority);
+            it->value->imageResource->resourceRequest().setPriority(priority, it->value->screenArea);
+            it->value->imageResource->didChangePriority(priority, it->value->screenArea);
         }
     }
     m_imageResources.clear();
 }
 
-void ResourceLoadPriorityOptimizer::notifyImageResourceVisibility(ImageResource* img, VisibilityStatus status)
+void ResourceLoadPriorityOptimizer::notifyImageResourceVisibility(ImageResource* img, VisibilityStatus status, const LayoutRect& screenRect)
 {
     if (!img || img->isLoaded())
         return;
 
-    ImageResourceMap::AddResult result = m_imageResources.add(img->identifier(), adoptPtr(new ResourceAndVisibility(img, status)));
-    if (!result.isNewEntry && status == Visible)
+    int screenArea = 0;
+    if (!screenRect.isEmpty() && status == Visible)
+        screenArea += static_cast<uint32_t>(screenRect.width() * screenRect.height());
+
+    ImageResourceMap::AddResult result = m_imageResources.add(img->identifier(), adoptPtr(new ResourceAndVisibility(img, status, screenArea)));
+    if (!result.isNewEntry && status == Visible) {
         result.storedValue->value->status = status;
+        result.storedValue->value->screenArea = status;
+    }
 }
 
 }

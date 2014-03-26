@@ -64,7 +64,7 @@ public:
 
     void releaseResources();
 
-    void didChangePriority(ResourceLoadPriority);
+    void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
     // WebURLLoaderClient
     virtual void willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse) OVERRIDE;

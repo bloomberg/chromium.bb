@@ -137,7 +137,7 @@ public:
     virtual void didLoadResource(Resource*) OVERRIDE;
     virtual void redirectReceived(Resource*, const ResourceResponse&) OVERRIDE;
     virtual void didFinishLoading(const Resource*, double finishTime, int64_t encodedDataLength) OVERRIDE;
-    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) OVERRIDE;
+    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue) OVERRIDE;
     virtual void didFailLoading(const Resource*, const ResourceError&) OVERRIDE;
     virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&) OVERRIDE;
     virtual void didReceiveResponse(const Resource*, const ResourceResponse&) OVERRIDE;

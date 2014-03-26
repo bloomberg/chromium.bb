@@ -339,11 +339,11 @@ void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
         m_webFrame->client()->didReceiveResponse(m_webFrame, identifier, webresp);
     }
 }
-void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long identifier,
-                                                              ResourceLoadPriority priority)
+
+void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority priority, int intraPriorityValue)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didChangeResourcePriority(m_webFrame, identifier, static_cast<blink::WebURLRequest::Priority>(priority));
+        m_webFrame->client()->didChangeResourcePriority(m_webFrame, identifier, static_cast<blink::WebURLRequest::Priority>(priority), intraPriorityValue);
 }
 
 // Called when a particular resource load completes

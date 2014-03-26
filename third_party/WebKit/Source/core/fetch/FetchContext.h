@@ -66,7 +66,7 @@ public:
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);
     virtual CachePolicy cachePolicy(Document*) const;
 
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority);
+    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
     virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&);
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);

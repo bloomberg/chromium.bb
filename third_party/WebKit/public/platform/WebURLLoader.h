@@ -69,6 +69,7 @@ public:
     // its previous value. For example, a preload request starts with low
     // priority, but may increase when the resource is needed for rendering.
     virtual void didChangePriority(WebURLRequest::Priority newPriority) { }
+    virtual void didChangePriority(WebURLRequest::Priority newPriority, int intraPriorityValue) { didChangePriority(newPriority); }
 };
 
 } // namespace blink

@@ -117,7 +117,7 @@ public:
     const ResourceLoaderOptions& options() const { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
-    void didChangePriority(ResourceLoadPriority);
+    void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
     void addClient(ResourceClient*);
     void removeClient(ResourceClient*);

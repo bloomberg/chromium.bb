@@ -1321,8 +1321,14 @@ bool RenderBlock::updateImageLoadingPriorities()
     ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
         ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
 
+    LayoutRect screenArea;
+    if (!objectBounds.isEmpty()) {
+        screenArea = viewBounds;
+        screenArea.intersect(objectBounds);
+    }
+
     for (Vector<ImageResource*>::iterator it = images.begin(), end = images.end(); it != end; ++it)
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(*it, status);
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(*it, status, screenArea);
 
     return true;
 }

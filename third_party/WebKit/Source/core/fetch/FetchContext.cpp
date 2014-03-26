@@ -40,7 +40,7 @@ FetchContext& FetchContext::nullInstance()
     return instance;
 }
 
-void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority)
+void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority, int)
 {
 }
 

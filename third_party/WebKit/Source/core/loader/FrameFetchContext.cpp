@@ -140,9 +140,9 @@ inline DocumentLoader* FrameFetchContext::ensureLoader(DocumentLoader* loader)
     return loader ? loader : m_frame->loader().documentLoader();
 }
 
-void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority)
+void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    m_frame->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority);
+    m_frame->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority, intraPriorityValue);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)

@@ -78,7 +78,7 @@ public:
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&) OVERRIDE;
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse) OVERRIDE;
     virtual void dispatchDidReceiveResponse(WebCore::DocumentLoader*, unsigned long identifier, const WebCore::ResourceResponse&) OVERRIDE;
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, WebCore::ResourceLoadPriority) OVERRIDE;
+    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, WebCore::ResourceLoadPriority, int intraPriorityValue) OVERRIDE;
     virtual void dispatchDidFinishLoading(WebCore::DocumentLoader*, unsigned long identifier) OVERRIDE;
     virtual void dispatchDidLoadResourceFromMemoryCache(const WebCore::ResourceRequest&, const WebCore::ResourceResponse&) OVERRIDE;
     virtual void dispatchDidHandleOnloadEvents() OVERRIDE;

@@ -218,7 +218,7 @@ namespace WebCore {
         // If an HTML document is being loaded, informs the embedder that the document will have its <body> attached soon.
         virtual void dispatchWillInsertBody() { }
 
-        virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
+        virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) { }
 
         virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 

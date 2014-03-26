@@ -161,7 +161,7 @@ public:
     void setAllowStoredCredentials(bool allowCredentials);
 
     ResourceLoadPriority priority() const;
-    void setPriority(ResourceLoadPriority);
+    void setPriority(ResourceLoadPriority, int intraPriorityValue = 0);
 
     bool isConditional() const;
 
@@ -231,6 +231,7 @@ private:
     bool m_hasUserGesture : 1;
     bool m_downloadToFile : 1;
     ResourceLoadPriority m_priority;
+    int m_intraPriorityValue;
     int m_requestorID;
     int m_requestorProcessID;
     int m_appCacheHostID;
@@ -264,6 +265,7 @@ public:
     bool m_hasUserGesture;
     bool m_downloadToFile;
     ResourceLoadPriority m_priority;
+    int m_intraPriorityValue;
     int m_requestorID;
     int m_requestorProcessID;
     int m_appCacheHostID;

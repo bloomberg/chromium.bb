@@ -56,7 +56,7 @@ public:
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
 
     virtual void didFinishLoading(const Resource*, double finishTime, int64_t encodedDataLength) = 0;
-    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) = 0;
+    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue) = 0;
     virtual void didFailLoading(const Resource*, const ResourceError&) = 0;
 
     virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&) = 0;

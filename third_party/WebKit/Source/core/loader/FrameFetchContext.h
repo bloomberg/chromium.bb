@@ -53,7 +53,7 @@ public:
     virtual void reportLocalLoadFailed(const KURL&) OVERRIDE;
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) OVERRIDE;
     virtual CachePolicy cachePolicy(Document*) const OVERRIDE;
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority) OVERRIDE;
+    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) OVERRIDE;
     virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) OVERRIDE;
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0) OVERRIDE;
