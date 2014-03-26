@@ -113,6 +113,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
@@ -2863,6 +2864,11 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
     }
 
     updateMainFrameLayoutSize();
+
+    if (LocalFrame* frame = page()->mainFrame()) {
+        if (FastTextAutosizer* textAutosizer = frame->document()->fastTextAutosizer())
+            textAutosizer->updatePageInfoInAllFrames();
+    }
 }
 
 void WebViewImpl::updateMainFrameLayoutSize()
@@ -2881,8 +2887,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
 
         bool textAutosizingEnabled = page()->settings().textAutosizingEnabled();
         if (textAutosizingEnabled && layoutSize.width != view->layoutSize().width()) {
-            TextAutosizer* textAutosizer = page()->mainFrame()->document()->textAutosizer();
-            if (textAutosizer)
+            if (TextAutosizer* textAutosizer = page()->mainFrame()->document()->textAutosizer())
                 textAutosizer->recalculateMultipliers();
         }
     }
