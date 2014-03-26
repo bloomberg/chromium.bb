@@ -133,6 +133,15 @@
         'ozone/event_factory_ozone.cc',
         'ozone/event_factory_ozone.h',
         'ozone/events_ozone.cc',
+        'platform/platform_event_dispatcher.h',
+        'platform/platform_event_observer.h',
+        'platform/platform_event_source.cc',
+        'platform/platform_event_source.h',
+        'platform/platform_event_types.h',
+        'platform/scoped_event_dispatcher.cc',
+        'platform/scoped_event_dispatcher.h',
+        'platform/x11/x11_event_source.cc',
+        'platform/x11/x11_event_source.h',
         'win/events_win.cc',
         'x/events_x.cc',
       ],
@@ -147,6 +156,11 @@
         ['use_x11==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:x11',
+          ],
+        }],
+        ['use_glib==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:glib',
           ],
         }],
         ['use_ozone_evdev==1', {
@@ -284,6 +298,7 @@
         'latency_info_unittest.cc',
         'ozone/evdev/key_event_converter_evdev_unittest.cc',
         'ozone/evdev/touch_event_converter_evdev_unittest.cc',
+        'platform/platform_event_source_unittest.cc',
         'x/events_x_unittest.cc',
       ],
       'conditions': [
