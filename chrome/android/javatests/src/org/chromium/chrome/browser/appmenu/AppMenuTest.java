@@ -14,7 +14,6 @@ import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellActivity.AppMenuHandlerFactory;
@@ -100,7 +99,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardMenuBoundaries() throws InterruptedException {
         moveToBoundary(false, true);
         assertEquals(getCount() - 1, getCurrentFocusedRow());
@@ -115,7 +113,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardMenuEnterOnOpen() throws InterruptedException {
         hitEnterAndAssertAppMenuDismissed();
     }
@@ -125,7 +122,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardEnterAfterMovePastTopItem() throws InterruptedException {
         moveToBoundary(true, true);
         assertEquals(0, getCurrentFocusedRow());
@@ -138,7 +134,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardEnterAfterMovePastBottomItem() throws InterruptedException {
         moveToBoundary(false, true);
         assertEquals(getCount() - 1, getCurrentFocusedRow());
@@ -151,7 +146,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardMenuEnterOnTopItemLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         moveToBoundary(true, false);
@@ -164,7 +158,6 @@ public class AppMenuTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest
     public void testKeyboardMenuEnterOnTopItemPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         moveToBoundary(true, false);
@@ -216,8 +209,15 @@ public class AppMenuTest extends ChromeShellTestBase {
         assertTrue(mAppMenu.isShowing());
     }
 
-    private void pressKey(int keycode) {
-        getInstrumentation().sendKeyDownUpSync(keycode);
+    private void pressKey(final int keycode) {
+        final View view = mAppMenu.getPopup().getListView();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
+                view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
+            }
+        });
         getInstrumentation().waitForIdleSync();
     }
 
