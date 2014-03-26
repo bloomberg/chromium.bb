@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -299,7 +300,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
       net::GetValueForKeyInQuery(current_url, "validateEmail",
                                  &validate_email) &&
       validate_email == "1") {
-    if (email_ != default_email) {
+    if (!gaia::AreEmailsSame(email_, default_email)) {
       SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
       return;
     }
