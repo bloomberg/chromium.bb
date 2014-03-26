@@ -12,10 +12,6 @@
 #include "content/public/common/main_function_params.h"
 #include "ui/aura/window_tree_host_observer.h"
 
-namespace aura {
-class TestScreen;
-}
-
 namespace content {
 class ShellBrowserContext;
 class ShellDevToolsDelegate;
@@ -35,14 +31,11 @@ namespace net {
 class NetLog;
 }
 
-namespace wm {
-class WMTestHelper;
-}
-
 namespace apps {
 
 class ShellAppsClient;
 class ShellBrowserContext;
+class ShellDesktopController;
 class ShellExtensionsClient;
 
 // Handles initialization of AppShell.
@@ -74,32 +67,16 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
 
  private:
-  // Creates the window that hosts the apps.
-  void CreateRootWindow();
-
-  // Closes and destroys the root window hosting the app.
-  void DestroyRootWindow();
-
-  // Window placement is controlled by a ViewsDelegate.
-  void CreateViewsDelegate();
-  void DestroyViewsDelegate();
-
   // Creates and initializes the ExtensionSystem.
   void CreateExtensionSystem();
 
+  scoped_ptr<ShellDesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<extensions::ShellExtensionsBrowserClient>
       extensions_browser_client_;
   scoped_ptr<ShellAppsClient> apps_client_;
   scoped_ptr<net::NetLog> net_log_;
-
-  // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
-
-  scoped_ptr<aura::TestScreen> test_screen_;
-
-  scoped_ptr<views::Widget> webview_window_;
 
   scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
 

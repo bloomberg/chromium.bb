@@ -912,6 +912,8 @@ OutputState OutputConfigurator::ChooseOutputState(
         // state so that its native mode will be used.
         return OUTPUT_STATE_SINGLE;
       } else {
+        if (!state_controller_)
+          return OUTPUT_STATE_DUAL_EXTENDED;
         // With either both outputs on or both outputs off, use one of the
         // dual modes.
         std::vector<int64> display_ids;
