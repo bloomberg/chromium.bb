@@ -187,7 +187,7 @@ const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
 const char kSampleEmptyJSONResponse[] = "{}";
 
-const char kSampleCDD[] = "{ \"version\" : \"1.0\" }";
+const char kSampleCJT[] = "{ \"version\" : \"1.0\" }";
 
 // Return the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
@@ -798,6 +798,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString(
       "Sample print data"));
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -806,10 +807,6 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
-
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -827,6 +824,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
+  local_print_operation_->SetCapabilities(
+      kSampleCapabilitiesResponseWithAnyMimetype);
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -835,10 +834,6 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
-
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponseWithAnyMimetype));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -856,6 +851,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(
       RefCountedBytesFromString("path/to/"));
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponsePWGOnly);
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -864,10 +860,6 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
-
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponsePWGOnly));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -883,9 +875,10 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCDD);
+  local_print_operation_->SetTicket(kSampleCJT);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -895,13 +888,9 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
 
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponse));
-
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCDD,
+      kSampleCJT,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
@@ -919,7 +908,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname(
       "123456789:123456789:123456789:123456789:123456789:123456789:123456789:");
-  local_print_operation_->SetTicket(kSampleCDD);
+  local_print_operation_->SetTicket(kSampleCJT);
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
@@ -930,13 +920,9 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
 
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponse));
-
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCDD,
+      kSampleCJT,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
@@ -955,7 +941,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
 TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCDD);
+  local_print_operation_->SetTicket(kSampleCJT);
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(
       RefCountedBytesFromString("sample/path/"));
   local_print_operation_->Start();
@@ -967,13 +954,9 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
 
-  EXPECT_TRUE(
-      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
-                              kSampleCapabilitiesResponse));
-
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCDD,
+      kSampleCJT,
       kSampleCreatejobResponse));
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
@@ -997,7 +980,8 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
 TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCDD);
+  local_print_operation_->SetTicket(kSampleCJT);
+  local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
@@ -1009,13 +993,9 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
                                       kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleCapabilitiesResponse));
-
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCDD,
+      kSampleCJT,
       kSampleCreatejobResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(

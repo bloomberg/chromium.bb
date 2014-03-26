@@ -95,7 +95,6 @@ class PrivetRegisterOperationImpl
   void StartInfoOperation();
   void OnPrivetInfoDone(const base::DictionaryValue* value);
 
-
   void StartResponse(const base::DictionaryValue& value);
   void GetClaimTokenResponse(const base::DictionaryValue& value);
   void CompleteResponse(const base::DictionaryValue& value);
@@ -236,7 +235,6 @@ class PrivetLocalPrintOperationImpl
       ResponseCallback;
 
   void StartInitialRequest();
-  void GetCapabilities();
   void DoCreatejob();
   void DoSubmitdoc();
 
@@ -244,8 +242,6 @@ class PrivetLocalPrintOperationImpl
   void StartPrinting();
 
   void OnPrivetInfoDone(const base::DictionaryValue* value);
-  void OnCapabilitiesResponse(bool has_error,
-                              const base::DictionaryValue* value);
   void OnSubmitdocResponse(bool has_error,
                            const base::DictionaryValue* value);
   void OnCreatejobResponse(bool has_error,
@@ -264,7 +260,6 @@ class PrivetLocalPrintOperationImpl
   base::FilePath pwg_file_path_;
 
   bool use_pdf_;
-  bool has_capabilities_;
   bool has_extended_workflow_;
   bool started_;
   bool offline_;

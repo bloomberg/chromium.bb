@@ -457,7 +457,6 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     : privet_client_(privet_client),
       delegate_(delegate),
       use_pdf_(false),
-      has_capabilities_(false),
       has_extended_workflow_(false),
       started_(false),
       offline_(false),
@@ -485,7 +484,6 @@ void PrivetLocalPrintOperationImpl::Start() {
 void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
     const base::DictionaryValue* value) {
   if (value && !value->HasKey(kPrivetKeyError)) {
-    has_capabilities_ = false;
     has_extended_workflow_ = false;
     bool has_printing = false;
 
@@ -494,9 +492,7 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
       for (size_t i = 0; i < api_list->GetSize(); i++) {
         std::string api;
         api_list->GetString(i, &api);
-        if (api == kPrivetCapabilitiesPath) {
-          has_capabilities_ = true;
-        } else if (api == kPrivetSubmitdocPath) {
+        if (api == kPrivetSubmitdocPath) {
           has_printing = true;
         } else if (api == kPrivetCreatejobPath) {
           has_extended_workflow_ = true;
@@ -516,26 +512,22 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
 }
 
 void PrivetLocalPrintOperationImpl::StartInitialRequest() {
-  if (has_capabilities_) {
-    GetCapabilities();
+  use_pdf_ = false;
+  cloud_devices::printer::ContentTypesCapability content_types;
+  if (content_types.LoadFrom(capabilities_)) {
+    use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
+               content_types.Contains(kPrivetContentTypeAny);
+  }
+
+  if (use_pdf_) {
+    StartPrinting();
   } else {
-    // Since we have no capabilities, the only reasonable format we can
-    // request is PWG Raster.
-    use_pdf_ = false;
+    cloud_devices::printer::DpiCapability dpis;
+    if (dpis.LoadFrom(capabilities_)) {
+      dpi_ = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
+    }
     StartConvertToPWG();
   }
-}
-
-void PrivetLocalPrintOperationImpl::GetCapabilities() {
-  current_response_ = base::Bind(
-      &PrivetLocalPrintOperationImpl::OnCapabilitiesResponse,
-      base::Unretained(this));
-
-  url_fetcher_= privet_client_->CreateURLFetcher(
-      CreatePrivetURL(kPrivetCapabilitiesPath), net::URLFetcher::GET, this);
-  url_fetcher_->DoNotRetryOnTransientError();
-
-  url_fetcher_->Start();
 }
 
 void PrivetLocalPrintOperationImpl::DoCreatejob() {
@@ -626,38 +618,6 @@ void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
       data_, printing::PdfRenderSettings(area, dpi_, true),
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  base::Unretained(this)));
-}
-
-void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
-    bool has_error,
-    const base::DictionaryValue* value) {
-  if (has_error) {
-    delegate_->OnPrivetPrintingError(this, 200);
-    return;
-  }
-
-  cloud_devices::CloudDeviceDescription description;
-  if (!description.InitFromDictionary(make_scoped_ptr(value->DeepCopy()))) {
-    delegate_->OnPrivetPrintingError(this, 200);
-    return;
-  }
-
-  use_pdf_ = false;
-  cloud_devices::printer::ContentTypesCapability content_types;
-  if (content_types.LoadFrom(description)) {
-    use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
-               content_types.Contains(kPrivetContentTypeAny);
-  }
-
-  if (use_pdf_) {
-    StartPrinting();
-  } else {
-    cloud_devices::printer::DpiCapability dpis;
-    if (dpis.LoadFrom(description)) {
-      dpi_ = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
-    }
-    StartConvertToPWG();
-  }
 }
 
 void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
