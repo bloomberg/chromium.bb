@@ -326,10 +326,16 @@ void AwSettings::PopulateWebPreferencesLocked(
   web_prefs->spatial_navigation_enabled =
       Java_AwSettings_getSpatialNavigationLocked(env, obj);
 
-  web_prefs->accelerated_2d_canvas_enabled =
-      !accelerated_2d_canvas_disabled_by_switch_ &&
-      Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(
-          env, obj);
+  web_prefs->accelerated_2d_canvas_enabled = true;
+  if (accelerated_2d_canvas_disabled_by_switch_ ||
+      !Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(
+          env, obj)) {
+    // Any canvas smaller than this will fallback to software. Abusing this
+    // slightly to turn canvas off without changing
+    // accelerated_2d_canvas_enabled, which also affects compositing mode.
+    // Using 100M instead of max int to avoid overflows.
+    web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
+  }
 }
 
 static jlong Init(JNIEnv* env,
