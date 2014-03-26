@@ -368,6 +368,7 @@ Only the LLVM instructions listed here are supported by PNaCl bitcode.
 * ``phi``
 * ``select``
 * ``call``
+* ``unreachable``
 
 .. _bitcode_allocainst:
 
