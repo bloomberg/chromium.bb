@@ -711,8 +711,9 @@ int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
     NOTREACHED();
     if (closesocket(new_socket) < 0)
       PLOG(ERROR) << "closesocket";
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, ERR_FAILED);
-    return ERR_FAILED;
+    int net_error = ERR_ADDRESS_INVALID;
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
+    return net_error;
   }
   scoped_ptr<TCPSocketWin> tcp_socket(new TCPSocketWin(
       net_log_.net_log(), net_log_.source()));
@@ -767,7 +768,7 @@ int TCPSocketWin::DoConnect() {
 
   SockaddrStorage storage;
   if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_INVALID_ARGUMENT;
+    return ERR_ADDRESS_INVALID;
   if (!connect(socket_, storage.addr, storage.addr_len)) {
     // Connected without waiting!
     //

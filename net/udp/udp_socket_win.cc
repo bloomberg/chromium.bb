@@ -553,7 +553,7 @@ int UDPSocketWin::InternalRecvFrom(IOBuffer* buf, int buf_len,
       // Convert address.
       if (address && result >= 0) {
         if (!ReceiveAddressToIPEndpoint(address))
-          result = ERR_FAILED;
+          result = ERR_ADDRESS_INVALID;
       }
       LogRead(result, buf->data());
       return result;
@@ -582,7 +582,7 @@ int UDPSocketWin::InternalSendTo(IOBuffer* buf, int buf_len,
     storage.addr_len = 0;
   } else {
     if (!address->ToSockAddr(addr, &storage.addr_len)) {
-      int result = ERR_FAILED;
+      int result = ERR_ADDRESS_INVALID;
       LogWrite(result, NULL, NULL);
       return result;
     }

@@ -96,7 +96,7 @@ int StreamListenSocket::GetLocalAddress(IPEndPoint* address) {
     return MapSystemError(err);
   }
   if (!address->FromSockAddr(storage.addr, storage.addr_len))
-    return ERR_FAILED;
+    return ERR_ADDRESS_INVALID;
   return OK;
 }
 

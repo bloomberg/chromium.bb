@@ -3264,7 +3264,7 @@ int SSLClientSocketNSS::InitializeSSLPeerName() {
 
   SockaddrStorage storage;
   if (!peer_address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_UNEXPECTED;
+    return ERR_ADDRESS_INVALID;
 
   PRNetAddr peername;
   memset(&peername, 0, sizeof(peername));

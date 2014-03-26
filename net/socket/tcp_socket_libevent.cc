@@ -611,9 +611,9 @@ int TCPSocketLibevent::AcceptInternal(scoped_ptr<TCPSocketLibevent>* socket,
     NOTREACHED();
     if (IGNORE_EINTR(close(new_socket)) < 0)
       PLOG(ERROR) << "close";
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT,
-                                      ERR_ADDRESS_INVALID);
-    return ERR_ADDRESS_INVALID;
+    int net_error = ERR_ADDRESS_INVALID;
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
+    return net_error;
   }
   scoped_ptr<TCPSocketLibevent> tcp_socket(new TCPSocketLibevent(
       net_log_.net_log(), net_log_.source()));
@@ -639,7 +639,7 @@ int TCPSocketLibevent::DoConnect() {
   if (!use_tcp_fastopen_) {
     SockaddrStorage storage;
     if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
-      return ERR_INVALID_ARGUMENT;
+      return ERR_ADDRESS_INVALID;
 
     if (!HANDLE_EINTR(connect(socket_, storage.addr, storage.addr_len))) {
       // Connected without waiting!
@@ -825,7 +825,9 @@ int TCPSocketLibevent::InternalWrite(IOBuffer* buf, int buf_len) {
   if (use_tcp_fastopen_ && !tcp_fastopen_connected_) {
     SockaddrStorage storage;
     if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len)) {
-      errno = EINVAL;
+      // Set errno to EADDRNOTAVAIL so that MapSystemError will map it to
+      // ERR_ADDRESS_INVALID later.
+      errno = EADDRNOTAVAIL;
       return -1;
     }
 

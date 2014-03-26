@@ -128,7 +128,7 @@ int UDPSocketLibevent::GetPeerAddress(IPEndPoint* address) const {
       return MapSystemError(errno);
     scoped_ptr<IPEndPoint> address(new IPEndPoint());
     if (!address->FromSockAddr(storage.addr, storage.addr_len))
-      return ERR_FAILED;
+      return ERR_ADDRESS_INVALID;
     remote_address_.reset(address.release());
   }
 
@@ -148,7 +148,7 @@ int UDPSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
       return MapSystemError(errno);
     scoped_ptr<IPEndPoint> address(new IPEndPoint());
     if (!address->FromSockAddr(storage.addr, storage.addr_len))
-      return ERR_FAILED;
+      return ERR_ADDRESS_INVALID;
     local_address_.reset(address.release());
     net_log_.AddEvent(NetLog::TYPE_UDP_LOCAL_ADDRESS,
                       CreateNetLogUDPConnectCallback(local_address_.get()));
@@ -476,7 +476,7 @@ int UDPSocketLibevent::InternalRecvFrom(IOBuffer* buf, int buf_len,
   if (bytes_transferred >= 0) {
     result = bytes_transferred;
     if (address && !address->FromSockAddr(storage.addr, storage.addr_len))
-      result = ERR_FAILED;
+      result = ERR_ADDRESS_INVALID;
   } else {
     result = MapSystemError(errno);
   }
@@ -494,7 +494,7 @@ int UDPSocketLibevent::InternalSendTo(IOBuffer* buf, int buf_len,
     storage.addr_len = 0;
   } else {
     if (!address->ToSockAddr(storage.addr, &storage.addr_len)) {
-      int result = ERR_FAILED;
+      int result = ERR_ADDRESS_INVALID;
       LogWrite(result, NULL, NULL);
       return result;
     }
