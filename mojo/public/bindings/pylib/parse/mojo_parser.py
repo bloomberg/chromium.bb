@@ -28,8 +28,9 @@ except ImportError:
 from mojo_lexer import Lexer
 
 
-def ListFromConcat(*items):
-  """Generate list by concatenating inputs"""
+def _ListFromConcat(*items):
+  """Generate list by concatenating inputs (note: only concatenates lists, not
+  tuples or other iterables)."""
   itemsout = []
   for item in items:
     if item is None:
@@ -38,7 +39,6 @@ def ListFromConcat(*items):
       itemsout.append(item)
     else:
       itemsout.extend(item)
-
   return itemsout
 
 
@@ -72,7 +72,7 @@ class Parser(object):
     """root : import root
             | module"""
     if len(p) > 2:
-      p[0] = ListFromConcat(p[1], p[2])
+      p[0] = _ListFromConcat(p[1], p[2])
     else:
       p[0] = [p[1]]
 
@@ -89,7 +89,7 @@ class Parser(object):
     """definitions : definition definitions
                    | """
     if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2])
+      p[0] = _ListFromConcat(p[1], p[2])
 
   def p_definition(self, p):
     """definition : struct
@@ -108,9 +108,9 @@ class Parser(object):
                   | attribute COMMA attributes
                   | """
     if len(p) == 2:
-      p[0] = ListFromConcat(p[1])
+      p[0] = _ListFromConcat(p[1])
     elif len(p) > 3:
-      p[0] = ListFromConcat(p[1], p[3])
+      p[0] = _ListFromConcat(p[1], p[3])
 
   def p_attribute(self, p):
     """attribute : NAME EQUALS expression
@@ -126,7 +126,7 @@ class Parser(object):
                    | enum struct_body
                    | """
     if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2])
+      p[0] = _ListFromConcat(p[1], p[2])
 
   def p_field(self, p):
     """field : typename NAME default ordinal SEMI"""
@@ -149,7 +149,7 @@ class Parser(object):
                       | enum interface_body
                       | """
     if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2])
+      p[0] = _ListFromConcat(p[1], p[2])
 
   def p_response(self, p):
     """response : RESPONSE LPAREN parameters RPAREN
@@ -168,9 +168,9 @@ class Parser(object):
     if len(p) == 1:
       p[0] = []
     elif len(p) == 2:
-      p[0] = ListFromConcat(p[1])
+      p[0] = _ListFromConcat(p[1])
     elif len(p) > 3:
-      p[0] = ListFromConcat(p[1], p[3])
+      p[0] = _ListFromConcat(p[1], p[3])
 
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
@@ -216,9 +216,9 @@ class Parser(object):
                    | enum_field COMMA enum_fields
                    | """
     if len(p) == 2:
-      p[0] = ListFromConcat(p[1])
+      p[0] = _ListFromConcat(p[1])
     elif len(p) > 3:
-      p[0] = ListFromConcat(p[1], p[3])
+      p[0] = _ListFromConcat(p[1], p[3])
 
   def p_enum_field(self, p):
     """enum_field : NAME
@@ -243,9 +243,9 @@ class Parser(object):
                                   | expression_object COMMA expression_object_elements
                                   | """
     if len(p) == 2:
-      p[0] = ListFromConcat(p[1])
+      p[0] = _ListFromConcat(p[1])
     elif len(p) > 3:
-      p[0] = ListFromConcat(p[1], p[3])
+      p[0] = _ListFromConcat(p[1], p[3])
 
   def p_expression_array(self, p):
     """expression_array : expression
@@ -260,9 +260,9 @@ class Parser(object):
                                  | expression_object COMMA expression_array_elements
                                  | """
     if len(p) == 2:
-      p[0] = ListFromConcat(p[1])
+      p[0] = _ListFromConcat(p[1])
     elif len(p) > 3:
-      p[0] = ListFromConcat(p[1], p[3])
+      p[0] = _ListFromConcat(p[1], p[3])
 
   def p_expression(self, p):
     """expression : conditional_expression"""
@@ -274,7 +274,7 @@ class Parser(object):
                                     conditional_expression"""
     # Just pass the arguments through. I don't think it's possible to preserve
     # the spaces of the original, so just put a single space between them.
-    p[0] = ListFromConcat(*p[1:])
+    p[0] = _ListFromConcat(*p[1:])
 
   # PLY lets us specify precedence of operators, but since we don't actually
   # evaluate them, we don't need that here.
@@ -282,7 +282,7 @@ class Parser(object):
     """binary_expression : unary_expression
                          | binary_expression binary_operator \
                                binary_expression"""
-    p[0] = ListFromConcat(*p[1:])
+    p[0] = _ListFromConcat(*p[1:])
 
   def p_binary_operator(self, p):
     """binary_operator : TIMES
@@ -308,7 +308,7 @@ class Parser(object):
   def p_unary_expression(self, p):
     """unary_expression : primary_expression
                         | unary_operator expression"""
-    p[0] = ListFromConcat(*p[1:])
+    p[0] = _ListFromConcat(*p[1:])
 
   def p_unary_operator(self, p):
     """unary_operator : PLUS
@@ -321,7 +321,7 @@ class Parser(object):
     """primary_expression : constant
                           | identifier
                           | LPAREN expression RPAREN"""
-    p[0] = ListFromConcat(*p[1:])
+    p[0] = _ListFromConcat(*p[1:])
 
   def p_identifier(self, p):
     """identifier : NAME
@@ -338,7 +338,7 @@ class Parser(object):
                 | WCHAR_CONST
                 | STRING_LITERAL
                 | WSTRING_LITERAL"""
-    p[0] = ListFromConcat(*p[1:])
+    p[0] = _ListFromConcat(*p[1:])
 
   def p_error(self, e):
     if e is None:
@@ -353,7 +353,7 @@ class Parser(object):
 
 
 def Parse(filename):
-  source = open(filename).read().replace('\r', '')
+  source = open(filename).read()
 
   lexer = Lexer()
   parser = Parser(lexer, source, filename)
@@ -365,13 +365,21 @@ def Parse(filename):
   return tree
 
 
-def Main():
-  if len(sys.argv) < 2:
-    print("usage: %s filename" % (sys.argv[0]))
-    sys.exit(1)
-  tree = Parse(filename=sys.argv[1])
-  print(tree)
+def main(argv):
+  if len(argv) < 2:
+    print "usage: %s filename" % argv[0]
+    return 0
+
+  for filename in argv[1:]:
+    print "%s:" % filename
+    try:
+      print Parse(filename)
+    except ParseError, e:
+      print e
+      return 1
+
+  return 0
 
 
 if __name__ == '__main__':
-  Main()
+  sys.exit(main(sys.argv))

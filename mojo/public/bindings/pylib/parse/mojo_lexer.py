@@ -157,7 +157,7 @@ class Lexer(object):
   ##
   ## Rules for the normal state
   ##
-  t_ignore = ' \t'
+  t_ignore = ' \t\r'
 
   # Newlines
   def t_NEWLINE(self, t):
