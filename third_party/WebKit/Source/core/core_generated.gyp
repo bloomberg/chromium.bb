@@ -254,6 +254,22 @@
           ],
         },
         {
+          'action_name': 'MediaQueryTokenizerCodepoints',
+          'inputs': [
+            '../build/scripts/make_mediaquery_tokenizer_codepoints.py',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaQueryTokenizerCodepoints.cpp',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_mediaquery_tokenizer_codepoints.py',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--defines', '<(feature_defines)',
+          ],
+        },
+        {
           'action_name': 'StylePropertyShorthand',
           'inputs': [
             '<@(scripts_for_in_files)',
