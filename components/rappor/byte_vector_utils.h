@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/rappor/rappor_parameters.h"
 #include "crypto/hmac.h"
 

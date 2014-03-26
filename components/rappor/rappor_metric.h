@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RAPPOR_RAPPOR_H_
-#define COMPONENTS_RAPPOR_RAPPOR_H_
+#ifndef COMPONENTS_RAPPOR_RAPPOR_METRIC_H_
+#define COMPONENTS_RAPPOR_RAPPOR_METRIC_H_
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/rappor/bloom_filter.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/rappor_parameters.h"
@@ -16,17 +18,20 @@ namespace rappor {
 // A RapporMetric is an object that collects string samples into a Bloom filter,
 // and generates randomized reports about the collected data.
 //
+// This class should not be used directly by metrics clients.  Record metrics
+// using RapporService::RecordSample instead.
+//
 // For a full description of the rappor metrics, see
 // http://www.chromium.org/developers/design-documents/rappor
 class RapporMetric {
  public:
   // Takes the |metric_name| that this will be reported to the server with,
-  // a |parameters| describing size and probability weights to be used in
-  // recording this metric, and cohort value, which modifies the hash
-  // functions and used in the bloom filter.
-  explicit RapporMetric(const std::string& metric_name,
-                        const RapporParameters& parameters,
-                        int32_t cohort);
+  // a |parameters| describing size and probability weights used in recording
+  // this metric, and a |cohort| value, which determines the hash functions
+  // used in the Bloom filter.
+  RapporMetric(const std::string& metric_name,
+               const RapporParameters& parameters,
+               int32_t cohort);
   ~RapporMetric();
 
   // Records an additional sample in the Bloom filter.
@@ -53,4 +58,4 @@ class RapporMetric {
 
 }  // namespace rappor
 
-#endif  // COMPONENTS_RAPPOR_RAPPOR_H_
+#endif  // COMPONENTS_RAPPOR_RAPPOR_METRIC_H_

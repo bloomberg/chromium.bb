@@ -10,8 +10,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "components/metrics/metrics_hashes.h"
+#include "components/rappor/log_uploader.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
+#include "components/rappor/rappor_metric.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -42,14 +45,13 @@ GURL GetServerUrl() {
 }
 
 const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
-    {  // ETLD_PLUS_ONE_RAPPOR_TYPE
-        16 /* Bloom filter size bytes */,
-        2 /* Bloom filter hash count */,
-        rappor::PROBABILITY_75 /* Fake data probability */,
-        rappor::PROBABILITY_50 /* Fake one probability */,
-        rappor::PROBABILITY_75 /* One coin probability */,
-        rappor::PROBABILITY_50 /* Zero coin probability */
-    },
+    // ETLD_PLUS_ONE_RAPPOR_TYPE
+    {16 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_75 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_50 /* Zero coin probability */},
 };
 
 }  // namespace
@@ -62,7 +64,7 @@ RapporService::~RapporService() {
 
 void RapporService::Start(PrefService* pref_service,
                           net::URLRequestContextGetter* request_context) {
-  GURL server_url = GetServerUrl();
+  const GURL server_url = GetServerUrl();
   if (!server_url.is_valid())
     return;
   DCHECK(!uploader_);
@@ -98,19 +100,21 @@ void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void RapporService::LoadCohort(PrefService* pref_service) {
-  DCHECK_EQ(cohort_, -1);
+  DCHECK(!IsInitialized());
   cohort_ = pref_service->GetInteger(prefs::kRapporCohort);
+  // If the user is already assigned to a valid cohort, we're done.
   if (cohort_ >= 0 && cohort_ < kNumCohorts)
     return;
 
+  // This is the first time the client has started the service (or their
+  // preferences were corrupted).  Randomly assign them to a cohort.
   cohort_ = base::RandGenerator(kNumCohorts);
   pref_service->SetInteger(prefs::kRapporCohort, cohort_);
 }
 
 void RapporService::LoadSecret(PrefService* pref_service) {
   DCHECK(secret_.empty());
-  std::string secret_base64 =
-      pref_service->GetString(prefs::kRapporSecret);
+  std::string secret_base64 = pref_service->GetString(prefs::kRapporSecret);
   if (!secret_base64.empty()) {
     bool decoded = base::Base64Decode(secret_base64, &secret_);
     if (decoded && secret_.size() == HmacByteVectorGenerator::kEntropyInputSize)
@@ -132,8 +136,9 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
   DCHECK_GE(cohort_, 0);
   reports->set_cohort(cohort_);
 
-  for (std::map<std::string, RapporMetric*>::iterator it = metrics_map_.begin();
-       metrics_map_.end() != it;
+  for (std::map<std::string, RapporMetric*>::const_iterator it =
+           metrics_map_.begin();
+       it != metrics_map_.end();
        ++it) {
     const RapporMetric* metric = it->second;
     RapporReports::Report* report = reports->add_report();
@@ -163,7 +168,6 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
                                          const RapporParameters& parameters,
                                          const std::string& sample) {
   DCHECK(IsInitialized());
-
   RapporMetric* metric = LookUpMetric(metric_name, parameters);
   metric->AddSample(sample);
 }
@@ -171,9 +175,9 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
 RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
                                           const RapporParameters& parameters) {
   DCHECK(IsInitialized());
-  std::map<std::string, RapporMetric*>::iterator it =
+  std::map<std::string, RapporMetric*>::const_iterator it =
       metrics_map_.find(metric_name);
-  if (metrics_map_.end() != it) {
+  if (it != metrics_map_.end()) {
     RapporMetric* metric = it->second;
     DCHECK_EQ(parameters.ToString(), metric->parameters().ToString());
     return metric;

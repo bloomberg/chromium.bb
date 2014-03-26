@@ -4,6 +4,9 @@
 
 #include "components/rappor/rappor_service.h"
 
+#include "components/rappor/byte_vector_utils.h"
+#include "components/rappor/proto/rappor_metric.pb.h"
+#include "components/rappor/rappor_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace rappor {
@@ -27,8 +30,7 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
       PROBABILITY_75 /* Fake data probability */,
       PROBABILITY_50 /* Fake one probability */,
       PROBABILITY_75 /* One coin probability */,
-      PROBABILITY_50 /* Zero coin probability */
-  };
+      PROBABILITY_50 /* Zero coin probability */};
 
   TestRapporService rappor_service;
   rappor_service.SetCohortForTesting(0);

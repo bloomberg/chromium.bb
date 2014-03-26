@@ -102,12 +102,12 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(current_fetch_.get(), source);
   scoped_ptr<net::URLFetcher> fetch(current_fetch_.Pass());
 
-  int response_code = source->GetResponseCode();
+  const int response_code = source->GetResponseCode();
 
   // Log a histogram to track response success vs. failure rates.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.UploadResponseCode", response_code);
 
-  bool upload_succeeded = response_code == 200;
+  const bool upload_succeeded = response_code == 200;
 
   // Determine whether this log should be retransmitted.
   DiscardReason reason = NUM_DISCARD_REASONS;
@@ -128,7 +128,7 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
-  bool server_is_healthy = upload_succeeded || response_code == 400;
+  const bool server_is_healthy = upload_succeeded || response_code == 400;
   OnUploadFinished(server_is_healthy, !queued_logs_.empty());
 }
 

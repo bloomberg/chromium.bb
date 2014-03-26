@@ -18,8 +18,7 @@ const RapporParameters kTestRapporParameters = {
     PROBABILITY_75 /* Fake data probability */,
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
-    PROBABILITY_50 /* Zero coin probability */
-};
+    PROBABILITY_50 /* Zero coin probability */};
 
 const RapporParameters kTestStatsRapporParameters = {
     50 /* Bloom filter size bytes */,
@@ -27,8 +26,7 @@ const RapporParameters kTestStatsRapporParameters = {
     PROBABILITY_75 /* Fake data probability */,
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
-    PROBABILITY_50 /* Zero coin probability */
-};
+    PROBABILITY_50 /* Zero coin probability */};
 
 // Check for basic syntax and use.
 TEST(RapporMetricTest, BasicMetric) {
@@ -41,7 +39,7 @@ TEST(RapporMetricTest, BasicMetric) {
 TEST(RapporMetricTest, GetReport) {
   RapporMetric metric("MyRappor", kTestRapporParameters, 0);
 
-  ByteVector report = metric.GetReport(
+  const ByteVector report = metric.GetReport(
       HmacByteVectorGenerator::GenerateEntropyInput());
   EXPECT_EQ(16u, report.size());
 }
@@ -52,25 +50,26 @@ TEST(RapporMetricTest, GetReportStatistics) {
   for (char i = 0; i < 50; i++) {
     metric.AddSample(base::StringPrintf("%d", i));
   }
-  ByteVector real_bits = metric.bytes();
-  int real_bit_count = CountBits(real_bits);
+  const ByteVector real_bits = metric.bytes();
+  const int real_bit_count = CountBits(real_bits);
   EXPECT_EQ(real_bit_count, 152);
 
-  std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
-  ByteVector report = metric.GetReport(secret);
+  const std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
+  const ByteVector report = metric.GetReport(secret);
 
-  // For the bits we actually set in the bloom filter, get a count of how
+  // For the bits we actually set in the Bloom filter, get a count of how
   // many of them reported true.
   ByteVector from_true_reports = report;
   // Real bits AND report bits.
   ByteVectorMerge(real_bits, real_bits, &from_true_reports);
-  int true_from_true_count = CountBits(from_true_reports);
+  const int true_from_true_count = CountBits(from_true_reports);
 
-  // For the bits we didn't set in the bloom filter, get a count of how
+  // For the bits we didn't set in the Bloom filter, get a count of how
   // many of them reported true.
   ByteVector from_false_reports = report;
   ByteVectorOr(real_bits, &from_false_reports);
-  int true_from_false_count = CountBits(from_false_reports) - real_bit_count;
+  const int true_from_false_count =
+      CountBits(from_false_reports) - real_bit_count;
 
   // The probability of a true bit being true after redaction =
   //   [fake_prob]*[fake_true_prob] + (1-[fake_prob]) =

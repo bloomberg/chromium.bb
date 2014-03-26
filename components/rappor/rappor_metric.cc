@@ -30,7 +30,7 @@ ByteVector RapporMetric::GetReport(const std::string& secret) const {
   // client's secret key + real data as a seed.  The inclusion of the secret
   // in the seed avoids correlations between real and fake data.
   // The seed isn't a human-readable string.
-  std::string personalization_string = metric_name_ +
+  const std::string personalization_string = metric_name_ +
       std::string(bytes().begin(), bytes().end());
   HmacByteVectorGenerator hmac_generator(bytes().size(), secret,
                                          personalization_string);

@@ -8,6 +8,8 @@
 #include <queue>
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -21,16 +23,22 @@ class URLFetcher;
 
 namespace rappor {
 
-// Handles uploading logs to an external server.
+// Uploads logs from RapporService.  Logs are passed in via QueueLog(), stored
+// internally, and uploaded one at a time.  A queued log will be uploaded at a
+// fixed interval after the successful upload of the previous logs.  If an
+// upload fails, the uploader will keep retrying the upload with an exponential
+// backoff interval.
 class LogUploader : public net::URLFetcherDelegate {
  public:
-  // Constructor takes the server_url that logs should be uploaded to, the
-  // mime_type of the uploaded data, and request_context to create uploads
+  // Constructor takes the |server_url| that logs should be uploaded to, the
+  // |mime_type| of the uploaded data, and |request_context| to create uploads
   // with.
   LogUploader(const GURL& server_url,
               const std::string& mime_type,
               net::URLRequestContextGetter* request_context);
 
+  // If the object is destroyed (or the program terminates) while logs are
+  // queued, the logs are lost.
   virtual ~LogUploader();
 
   // Adds an entry to the queue of logs to be uploaded to the server.  The
@@ -39,7 +47,7 @@ class LogUploader : public net::URLFetcherDelegate {
   void QueueLog(const std::string& log);
 
  protected:
-  // Check if an upload has been scheduled.
+  // Checks if an upload has been scheduled.
   virtual bool IsUploadScheduled() const;
 
   // Schedules a future call to StartScheduledUpload if one isn't already
@@ -54,8 +62,8 @@ class LogUploader : public net::URLFetcherDelegate {
   static base::TimeDelta BackOffUploadInterval(base::TimeDelta);
 
  private:
-  // Implementation of net::URLFetcherDelegate. Called after transmission
-  // completes (either successfully or with failure).
+  // Implements net::URLFetcherDelegate. Called after transmission completes
+  // (whether successful or not).
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Called when the upload is completed.

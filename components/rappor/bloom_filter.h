@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/rappor/byte_vector_utils.h"
 
 namespace rappor {

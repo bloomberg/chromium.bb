@@ -4,6 +4,7 @@
 
 #include "components/rappor/log_uploader.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
