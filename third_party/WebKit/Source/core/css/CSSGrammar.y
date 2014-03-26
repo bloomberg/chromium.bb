@@ -1469,16 +1469,6 @@ pseudo:
         if (type != CSSSelector::PseudoHost)
             YYERROR;
     }
-    //  used by :host()
-    | ':' HOSTFUNCTION maybe_space closing_parenthesis {
-        $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoClass);
-        parser->tokenToLowerCase($2);
-        $$->setValue($2.atomicSubstring(0, $2.length() - 1));
-        CSSSelector::PseudoType type = $$->pseudoType();
-        if (type != CSSSelector::PseudoHost)
-            YYERROR;
-    }
     | ':' HOSTFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
@@ -1489,15 +1479,6 @@ pseudo:
         $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
         parser->tokenToLowerCase($2);
         $$->setValue($2);
-        CSSSelector::PseudoType type = $$->pseudoType();
-        if (type != CSSSelector::PseudoHostContext)
-            YYERROR;
-    }
-    | ':' HOSTCONTEXTFUNCTION maybe_space closing_parenthesis {
-        $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoClass);
-        parser->tokenToLowerCase($2);
-        $$->setValue($2.atomicSubstring(0, $2.length() - 1));
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type != CSSSelector::PseudoHostContext)
             YYERROR;
