@@ -55,6 +55,7 @@
         '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../wm/wm.gyp:wm_test_support',
         'snapshot'
       ],
       'sources': [
@@ -69,7 +70,6 @@
             '../aura/aura.gyp:aura_test_support',
             '../compositor/compositor.gyp:compositor',
             '../compositor/compositor.gyp:compositor_test_support',
-            '../wm/wm.gyp:wm_test_support',
           ],
         }],
         # See http://crbug.com/162998#c4 for why this is needed.
