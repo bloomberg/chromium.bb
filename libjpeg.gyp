@@ -180,6 +180,11 @@
             }]
           ],
         }],
+        [ 'target_arch=="arm64"', {
+          'sources': [
+            'jsimd_none.c',
+          ],
+        }],
         [ 'target_arch=="mipsel"', {
           'sources': [
             'jsimd_none.c',
