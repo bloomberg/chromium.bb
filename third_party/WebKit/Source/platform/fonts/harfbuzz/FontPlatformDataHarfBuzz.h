@@ -93,6 +93,7 @@ public:
 
     unsigned hash() const;
     float size() const { return m_textSize; }
+    int emSizeInFontUnits() const;
 
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
@@ -132,6 +133,7 @@ private:
     RefPtr<SkTypeface> m_typeface;
     CString m_family;
     float m_textSize;
+    mutable int m_emSizeInFontUnits;
     bool m_syntheticBold;
     bool m_syntheticItalic;
     FontOrientation m_orientation;
