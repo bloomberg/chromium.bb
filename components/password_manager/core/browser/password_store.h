@@ -123,11 +123,11 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void UpdateLogin(const autofill::PasswordForm& form);
 
   // Removes the matching PasswordForm from the secure password store (async).
-  void RemoveLogin(const autofill::PasswordForm& form);
+  virtual void RemoveLogin(const autofill::PasswordForm& form);
 
   // Removes all logins created in the given date range.
-  void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
-                                  const base::Time& delete_end);
+  virtual void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                          const base::Time& delete_end);
 
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
@@ -144,15 +144,15 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
   // The request will be cancelled if the consumer is destroyed.
-  void GetAutofillableLogins(PasswordStoreConsumer* consumer);
+  virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are blacklist entries,
   // and notify |consumer| on completion. The request will be cancelled if the
   // consumer is destroyed.
-  void GetBlacklistLogins(PasswordStoreConsumer* consumer);
+  virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
   // Reports usage metrics for the database.
-  void ReportMetrics();
+  virtual void ReportMetrics();
 
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
