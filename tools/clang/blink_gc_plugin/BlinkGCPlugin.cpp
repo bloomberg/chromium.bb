@@ -60,6 +60,9 @@ const char kOwnPtrToGCManagedClassNote[] =
 const char kStackAllocatedFieldNote[] =
     "[blink-gc] Stack-allocated field %0 declared here:";
 
+const char kMemberInUnmanagedClassNote[] =
+    "[blink-gc] Member field %0 in unmanaged class declared here:";
+
 const char kPartObjectContainsGCRoot[] =
     "[blink-gc] Field %0 with embedded GC root in %1 declared here:";
 
@@ -439,6 +442,10 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
 
   bool ContainsInvalidFields(RecordInfo* info) {
     stack_allocated_host_ = info->IsStackAllocated();
+    managed_host_ = stack_allocated_host_ ||
+                    info->IsGCAllocated() ||
+                    info->IsNonNewable() ||
+                    info->IsOnlyPlacementNewable();
     for (RecordInfo::Fields::iterator it = info->GetFields().begin();
          it != info->GetFields().end();
          ++it) {
@@ -447,6 +454,19 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
       current_->edge()->Accept(this);
     }
     return !invalid_fields_.empty();
+  }
+
+  void VisitMember(Member* edge) override {
+    if (managed_host_)
+      return;
+    // A member is allowed to appear in the context of a root.
+    for (Context::iterator it = context().begin();
+         it != context().end();
+         ++it) {
+      if ((*it)->Kind() == Edge::kRoot)
+        return;
+    }
+    invalid_fields_.push_back(std::make_pair(current_, edge));
   }
 
   void VisitValue(Value* edge) {
@@ -480,6 +500,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
   const BlinkGCPluginOptions& options_;
   FieldPoint* current_;
   bool stack_allocated_host_;
+  bool managed_host_;
   Errors invalid_fields_;
 };
 
@@ -544,6 +565,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
     diag_stack_allocated_field_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kStackAllocatedFieldNote);
+    diag_member_in_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kMemberInUnmanagedClassNote);
     diag_part_object_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kPartObjectContainsGCRoot);
     diag_field_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
@@ -1059,6 +1082,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         NoteField(it->first, diag_ref_ptr_to_gc_managed_class_note_);
       } else if (it->second->IsOwnPtr()) {
         NoteField(it->first, diag_own_ptr_to_gc_managed_class_note_);
+      } else if (it->second->IsMember()) {
+        NoteField(it->first, diag_member_in_unmanaged_class_note_);
       } else if (it->second->IsValue()) {
         NoteField(it->first, diag_stack_allocated_field_note_);
       }
@@ -1257,6 +1282,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
   unsigned diag_stack_allocated_field_note_;
+  unsigned diag_member_in_unmanaged_class_note_;
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;

@@ -88,8 +88,10 @@ class RecordInfo {
   bool IsGCAllocated();
   bool IsGCFinalized();
   bool IsGCMixin();
-
   bool IsStackAllocated();
+  bool IsNonNewable();
+  bool IsOnlyPlacementNewable();
+
   bool RequiresTraceMethod();
   bool NeedsFinalization();
   TracingStatus NeedsTracing(Edge::NeedsTracingOption);
@@ -115,6 +117,8 @@ class RecordInfo {
 
   enum CachedBool { kFalse = 0, kTrue = 1, kNotComputed = 2 };
   CachedBool is_stack_allocated_;
+  CachedBool is_non_newable_;
+  CachedBool is_only_placement_newable_;
 
   bool determined_trace_methods_;
   clang::CXXMethodDecl* trace_method_;
