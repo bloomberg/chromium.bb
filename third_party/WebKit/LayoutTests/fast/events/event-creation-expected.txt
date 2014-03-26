@@ -12,9 +12,6 @@ PASS document.createEvent('Events') instanceof window.Event is true
 PASS document.createEvent('Events').constructor === window.Event is true
 PASS document.createEvent('HTMLEvents') instanceof window.Event is true
 PASS document.createEvent('HTMLEvents').constructor === window.Event is true
-PASS document.createEvent('BeforeLoadEvent') instanceof window.BeforeLoadEvent is true
-PASS document.createEvent('BeforeLoadEvent') instanceof window.Event is true
-PASS document.createEvent('BeforeLoadEvent').constructor === window.BeforeLoadEvent is true
 PASS document.createEvent('CompositionEvent') instanceof window.CompositionEvent is true
 PASS document.createEvent('CompositionEvent') instanceof window.Event is true
 PASS document.createEvent('CompositionEvent').constructor === window.CompositionEvent is true

@@ -356,12 +356,6 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     RefPtr<XMLDocumentParser> protect(this);
 
     doWrite(source.toString());
-
-    if (isStopped())
-        return;
-
-    if (document()->frame() && document()->frame()->script().canExecuteScripts(NotAboutToExecuteScript))
-        ImageLoader::dispatchPendingBeforeLoadEvents();
 }
 
 void XMLDocumentParser::handleError(XMLErrors::ErrorType type, const char* formattedMessage, TextPosition position)

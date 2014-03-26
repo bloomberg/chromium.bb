@@ -111,8 +111,6 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == classidAttr) {
         m_classId = value;
         reloadPluginOnAttributeChange(name);
-    } else if (name == onbeforeloadAttr) {
-        setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
     } else {
         HTMLPlugInElement::parseAttribute(name, value);
     }
@@ -319,12 +317,11 @@ void HTMLObjectElement::updateWidgetInternal()
     bool fallbackContent = hasFallbackContent();
     renderEmbeddedObject()->setHasFallbackContent(fallbackContent);
 
-    RefPtr<HTMLObjectElement> protect(this); // beforeload and plugin loading can make arbitrary DOM mutations.
-    bool beforeLoadAllowedLoad = dispatchBeforeLoadEvent(url);
-    if (!renderer()) // Do not load the plugin if beforeload removed this element or its renderer.
+    // FIXME: Is it possible to get here without a renderer now that we don't have beforeload events?
+    if (!renderer())
         return;
 
-    if (!beforeLoadAllowedLoad || !hasValidClassId() || !requestObject(url, serviceType, paramNames, paramValues)) {
+    if (!hasValidClassId() || !requestObject(url, serviceType, paramNames, paramValues)) {
         if (!url.isEmpty())
             dispatchErrorEvent();
         if (fallbackContent)

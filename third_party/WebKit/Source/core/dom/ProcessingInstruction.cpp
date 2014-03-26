@@ -122,8 +122,6 @@ void ProcessingInstruction::checkStyleSheet()
             clearResource();
 
             String url = document().completeURL(href).string();
-            if (!dispatchBeforeLoadEvent(url))
-                return;
 
             ResourcePtr<StyleSheetResource> resource;
             FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);

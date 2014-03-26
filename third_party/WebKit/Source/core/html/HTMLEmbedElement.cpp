@@ -146,20 +146,11 @@ void HTMLEmbedElement::updateWidgetInternal()
     parametersForPlugin(paramNames, paramValues);
 
     RefPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
-    bool beforeLoadAllowedLoad = dispatchBeforeLoadEvent(m_url);
-    if (!beforeLoadAllowedLoad) {
-        if (document().isPluginDocument()) {
-            // Plugins inside plugin documents load differently than other plugins. By the time
-            // we are here in a plugin document, the load of the plugin (which is the plugin document's
-            // main resource) has already started. We need to explicitly cancel the main resource load here.
-            toPluginDocument(document()).cancelManualPluginLoad();
-        }
-        return;
-    }
-    if (!renderer()) // Do not load the plugin if beforeload removed this element or its renderer.
+
+    // FIXME: Can we not have renderer here now that beforeload events are gone?
+    if (!renderer())
         return;
 
-    // FIXME: beforeLoad could have detached the renderer!  Just like in the <object> case above.
     requestObject(m_url, m_serviceType, paramNames, paramValues);
 }
 

@@ -2436,7 +2436,6 @@ void Document::implicitClose()
     detachParser();
 
     if (frame() && frame()->script().canExecuteScripts(NotAboutToExecuteScript)) {
-        ImageLoader::dispatchPendingBeforeLoadEvents();
         ImageLoader::dispatchPendingLoadEvents();
         ImageLoader::dispatchPendingErrorEvents();
 
@@ -3801,13 +3800,6 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
         addListenerType(ANIMATIONITERATION_LISTENER);
     } else if (eventType == EventTypeNames::webkitTransitionEnd || eventType == EventTypeNames::transitionend) {
         addListenerType(TRANSITIONEND_LISTENER);
-    } else if (eventType == EventTypeNames::beforeload) {
-        if (m_frame && m_frame->script().shouldBypassMainWorldContentSecurityPolicy()) {
-            UseCounter::count(*this, UseCounter::BeforeLoadEventInIsolatedWorld);
-        } else {
-            UseCounter::count(*this, UseCounter::BeforeLoadEvent);
-        }
-        addListenerType(BEFORELOAD_LISTENER);
     } else if (eventType == EventTypeNames::scroll) {
         addListenerType(SCROLL_LISTENER);
     } else if (eventType == EventTypeNames::DOMFocusIn || eventType == EventTypeNames::DOMFocusOut) {

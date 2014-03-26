@@ -71,16 +71,14 @@ public:
     bool imageComplete() const { return m_imageComplete; }
 
     ImageResource* image() const { return m_image.get(); }
-    void setImage(ImageResource*); // Cancels pending beforeload and load events, and doesn't dispatch new ones.
+    void setImage(ImageResource*); // Cancels pending load events, and doesn't dispatch new ones.
 
     void setLoadManually(bool loadManually) { m_loadManually = loadManually; }
 
-    bool hasPendingBeforeLoadEvent() const { return m_hasPendingBeforeLoadEvent; }
     bool hasPendingActivity() const { return m_hasPendingLoadEvent || m_hasPendingErrorEvent; }
 
     void dispatchPendingEvent(ImageEventSender*);
 
-    static void dispatchPendingBeforeLoadEvents();
     static void dispatchPendingLoadEvents();
     static void dispatchPendingErrorEvents();
 
@@ -96,7 +94,6 @@ private:
 
     void updatedHasPendingEvent();
 
-    void dispatchPendingBeforeLoadEvent();
     void dispatchPendingLoadEvent();
     void dispatchPendingErrorEvent();
 
@@ -116,7 +113,6 @@ private:
     ImageLoaderClientSet m_clients;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
-    bool m_hasPendingBeforeLoadEvent : 1;
     bool m_hasPendingLoadEvent : 1;
     bool m_hasPendingErrorEvent : 1;
     bool m_imageComplete : 1;

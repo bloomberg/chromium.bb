@@ -90,7 +90,6 @@ public:
     BLINK_EXPORT bool isPopStateEvent() const;
     BLINK_EXPORT bool isProgressEvent() const;
     BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
-    BLINK_EXPORT bool isBeforeLoadEvent() const;
 
 #if BLINK_IMPLEMENTATION
     WebDOMEvent(const WTF::PassRefPtr<WebCore::Event>&);

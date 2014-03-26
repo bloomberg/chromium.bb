@@ -6,8 +6,7 @@
 <body>
 <p id="description"></p>
 <div id="console"></div>
-<input onbeforeload="1" onabort="1">
-<script src="resources/shouldnotexecute.js" onbeforeload="debug('cancelled onbeforeload async'); return false;" async></script>
+<input onabort="1">
 
 <script>
 description('Test that setting event handlers with attribute works.');

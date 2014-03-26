@@ -25,7 +25,6 @@ autocomplete
 autocompleteerror
 beforecopy
 beforecut
-beforeload
 beforepaste
 beforeunload
 beginEvent

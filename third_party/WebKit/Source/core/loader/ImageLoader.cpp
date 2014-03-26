@@ -38,12 +38,6 @@
 
 namespace WebCore {
 
-static ImageEventSender& beforeLoadEventSender()
-{
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::beforeload));
-    return sender;
-}
-
 static ImageEventSender& loadEventSender()
 {
     DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::load));
@@ -65,7 +59,6 @@ ImageLoader::ImageLoader(Element* element)
     : m_element(element)
     , m_image(0)
     , m_derefElementTimer(this, &ImageLoader::timerFired)
-    , m_hasPendingBeforeLoadEvent(false)
     , m_hasPendingLoadEvent(false)
     , m_hasPendingErrorEvent(false)
     , m_imageComplete(true)
@@ -79,10 +72,6 @@ ImageLoader::~ImageLoader()
 {
     if (m_image)
         m_image->removeClient(this);
-
-    ASSERT(m_hasPendingBeforeLoadEvent || !beforeLoadEventSender().hasPendingEvents(this));
-    if (m_hasPendingBeforeLoadEvent)
-        beforeLoadEventSender().cancelEvent(this);
 
     ASSERT(m_hasPendingLoadEvent || !loadEventSender().hasPendingEvents(this));
     if (m_hasPendingLoadEvent)
@@ -114,10 +103,6 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
     if (newImage != oldImage) {
         sourceImageChanged();
         m_image = newImage;
-        if (m_hasPendingBeforeLoadEvent) {
-            beforeLoadEventSender().cancelEvent(this);
-            m_hasPendingBeforeLoadEvent = false;
-        }
         if (m_hasPendingLoadEvent) {
             loadEventSender().cancelEvent(this);
             m_hasPendingLoadEvent = false;
@@ -191,10 +176,6 @@ void ImageLoader::updateFromElement()
     if (newImage != oldImage) {
         sourceImageChanged();
 
-        if (m_hasPendingBeforeLoadEvent) {
-            beforeLoadEventSender().cancelEvent(this);
-            m_hasPendingBeforeLoadEvent = false;
-        }
         if (m_hasPendingLoadEvent) {
             loadEventSender().cancelEvent(this);
             m_hasPendingLoadEvent = false;
@@ -210,18 +191,11 @@ void ImageLoader::updateFromElement()
         }
 
         m_image = newImage;
-        m_hasPendingBeforeLoadEvent = !m_element->document().isImageDocument() && newImage;
         m_hasPendingLoadEvent = newImage;
         m_imageComplete = !newImage;
 
         if (newImage) {
-            if (!m_element->document().isImageDocument()) {
-                if (!m_element->document().hasListenerType(Document::BEFORELOAD_LISTENER))
-                    dispatchPendingBeforeLoadEvent();
-                else
-                    beforeLoadEventSender().dispatchEventSoon(this);
-            } else
-                updateRenderer();
+            updateRenderer();
 
             // If newImage is cached, addClient() will result in the load event
             // being queued to fire. Ensure this happens after beforeload is
@@ -255,8 +229,7 @@ void ImageLoader::notifyFinished(Resource* resource)
     ASSERT(resource == m_image.get());
 
     m_imageComplete = true;
-    if (!hasPendingBeforeLoadEvent())
-        updateRenderer();
+    updateRenderer();
 
     if (!m_hasPendingLoadEvent)
         return;
@@ -348,43 +321,12 @@ void ImageLoader::timerFired(Timer<ImageLoader>*)
 
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
-    ASSERT(eventSender == &beforeLoadEventSender() || eventSender == &loadEventSender() || eventSender == &errorEventSender());
+    ASSERT(eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
-    if (eventType == EventTypeNames::beforeload)
-        dispatchPendingBeforeLoadEvent();
     if (eventType == EventTypeNames::load)
         dispatchPendingLoadEvent();
     if (eventType == EventTypeNames::error)
         dispatchPendingErrorEvent();
-}
-
-void ImageLoader::dispatchPendingBeforeLoadEvent()
-{
-    if (!m_hasPendingBeforeLoadEvent)
-        return;
-    if (!m_image)
-        return;
-    if (!m_element->document().frame())
-        return;
-    m_hasPendingBeforeLoadEvent = false;
-    if (m_element->dispatchBeforeLoadEvent(m_image->url().string())) {
-        updateRenderer();
-        return;
-    }
-    if (m_image) {
-        m_image->removeClient(this);
-        m_image = 0;
-    }
-
-    loadEventSender().cancelEvent(this);
-    m_hasPendingLoadEvent = false;
-
-    if (isHTMLObjectElement(*m_element))
-        toHTMLObjectElement(*m_element).renderFallbackContent();
-
-    // Only consider updating the protection ref-count of the Element immediately before returning
-    // from this function as doing so might result in the destruction of this ImageLoader.
-    updatedHasPendingEvent();
 }
 
 void ImageLoader::dispatchPendingLoadEvent()
@@ -432,11 +374,6 @@ void ImageLoader::removeClient(ImageLoaderClient* client)
             m_image->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityLow);
     }
     m_clients.remove(client);
-}
-
-void ImageLoader::dispatchPendingBeforeLoadEvents()
-{
-    beforeLoadEventSender().dispatchPendingEvents();
 }
 
 void ImageLoader::dispatchPendingLoadEvents()

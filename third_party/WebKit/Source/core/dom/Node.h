@@ -635,7 +635,6 @@ public:
 
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents);
 
-    virtual bool dispatchBeforeLoadEvent(const String& sourceURL);
     void dispatchInputEvent();
 
     // Perform the default action for an event.

@@ -399,9 +399,9 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
             clearMediaPlayer(LoadMediaResource);
             scheduleDelayedAction(LoadMediaResource);
         }
-    } else if (name == controlsAttr)
+    } else if (name == controlsAttr) {
         configureMediaControls();
-    else if (name == preloadAttr) {
+    } else if (name == preloadAttr) {
         if (equalIgnoringCase(value, "none"))
             m_preload = MediaPlayer::None;
         else if (equalIgnoringCase(value, "metadata"))
@@ -416,12 +416,11 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (!autoplay() && m_player)
             setPlayerPreload();
 
-    } else if (name == mediagroupAttr)
+    } else if (name == mediagroupAttr) {
         setMediaGroup(value);
-    else if (name == onbeforeloadAttr)
-        setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
-    else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLMediaElement::finishParsingChildren()
@@ -704,9 +703,7 @@ void HTMLMediaElement::prepareForLoad()
 
 void HTMLMediaElement::loadInternal()
 {
-    // Some of the code paths below this function dispatch the BeforeLoad event. This ASSERT helps
-    // us catch those bugs more quickly without needing all the branches to align to actually
-    // trigger the event.
+    // FIXME: Now that we don't have beforeload events we should make this ASSERT the opposite.
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
@@ -774,7 +771,7 @@ void HTMLMediaElement::selectMediaResource()
             return;
         }
 
-        if (!isSafeToLoadURL(mediaURL, Complain) || !dispatchBeforeLoadEvent(mediaURL.string())) {
+        if (!isSafeToLoadURL(mediaURL, Complain)) {
             mediaLoadingFailed(MediaPlayer::FormatError);
             return;
         }
@@ -2601,7 +2598,6 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
     String system;
     bool lookingForStartNode = m_nextChildNodeToConsider;
     bool canUseSourceElement = false;
-    bool okToLoadSourceURL;
 
     NodeVector potentialSourceNodes;
     getChildNodes(*this, potentialSourceNodes);
@@ -2642,16 +2638,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         }
 
         // Is it safe to load this url?
-        okToLoadSourceURL = isSafeToLoadURL(mediaURL, actionIfInvalid) && dispatchBeforeLoadEvent(mediaURL.string());
-
-        // A 'beforeload' event handler can mutate the DOM, so check to see if the source element is still a child node.
-        if (node->parentNode() != this) {
-            WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild : 'beforeload' removed current element");
-            source = 0;
-            goto check_again;
-        }
-
-        if (!okToLoadSourceURL)
+        if (!isSafeToLoadURL(mediaURL, actionIfInvalid))
             goto check_again;
 
         // Making it this far means the <source> looks reasonable.

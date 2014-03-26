@@ -136,7 +136,6 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     , m_sizes(DOMSettableTokenList::create())
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
-    , m_beforeLoadRecurseCount(0)
 {
     ScriptWrappable::init(this);
 }
@@ -176,9 +175,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == disabledAttr) {
         if (LinkStyle* link = linkStyle())
             link->setDisabledState(!value.isNull());
-    } else if (name == onbeforeloadAttr)
-        setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
-    else {
+    } else {
         if (name == titleAttr) {
             if (LinkStyle* link = linkStyle())
                 link->setSheetTitle(value);
@@ -190,25 +187,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
 
 bool HTMLLinkElement::shouldLoadLink()
 {
-    bool continueLoad = true;
-    RefPtr<Document> originalDocument(document());
-    int recursionRank = ++m_beforeLoadRecurseCount;
-    if (!dispatchBeforeLoadEvent(getNonEmptyURLAttribute(hrefAttr)))
-        continueLoad = false;
-
-    // A beforeload handler might have removed us from the document or changed the document.
-    if (continueLoad && (!inDocument() || document() != originalDocument))
-        continueLoad = false;
-
-    // If the beforeload handler recurses into the link element by mutating it, we should only
-    // let the latest (innermost) mutation occur.
-    if (recursionRank != m_beforeLoadRecurseCount)
-        continueLoad = false;
-
-    if (recursionRank == 1)
-        m_beforeLoadRecurseCount = 0;
-
-    return continueLoad;
+    return inDocument();
 }
 
 bool HTMLLinkElement::loadLink(const String& type, const KURL& url)

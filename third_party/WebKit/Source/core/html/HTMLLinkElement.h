@@ -210,7 +210,6 @@ private:
 
     bool m_createdByParser;
     bool m_isInShadowTree;
-    int m_beforeLoadRecurseCount;
 };
 
 } //namespace

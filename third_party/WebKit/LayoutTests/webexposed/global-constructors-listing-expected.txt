@@ -24,7 +24,6 @@ AudioProcessingEvent
 AutocompleteErrorEvent
 BarProp
 BatteryManager
-BeforeLoadEvent
 BeforeUnloadEvent
 BiquadFilterNode
 Blob

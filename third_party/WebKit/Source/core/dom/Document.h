@@ -699,9 +699,8 @@ public:
         ANIMATIONSTART_LISTENER              = 1 << 8,
         ANIMATIONITERATION_LISTENER          = 1 << 9,
         TRANSITIONEND_LISTENER               = 1 << 10,
-        BEFORELOAD_LISTENER                  = 1 << 11,
         SCROLL_LISTENER                      = 1 << 12
-        // 3 bits remaining
+        // 4 bits remaining
     };
 
     bool hasListenerType(ListenerType listenerType) const { return (m_listenerTypes & listenerType); }

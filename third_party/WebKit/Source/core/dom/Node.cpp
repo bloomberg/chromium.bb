@@ -60,7 +60,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
-#include "core/events/BeforeLoadEvent.h"
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventDispatcher.h"
@@ -2230,20 +2229,6 @@ bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)
 void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions)
 {
     EventDispatcher::dispatchSimulatedClick(this, underlyingEvent, eventOptions);
-}
-
-bool Node::dispatchBeforeLoadEvent(const String& sourceURL)
-{
-    if (!RuntimeEnabledFeatures::beforeLoadEnabled())
-        return true;
-
-    if (!document().hasListenerType(Document::BEFORELOAD_LISTENER))
-        return true;
-
-    RefPtr<Node> protector(this);
-    RefPtr<BeforeLoadEvent> beforeLoadEvent = BeforeLoadEvent::create(sourceURL);
-    dispatchEvent(beforeLoadEvent.get());
-    return !beforeLoadEvent->defaultPrevented();
 }
 
 bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)

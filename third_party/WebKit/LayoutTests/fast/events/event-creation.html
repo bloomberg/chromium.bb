@@ -22,11 +22,6 @@
     shouldBeTrue("document.createEvent('HTMLEvents') instanceof window.Event");
     shouldBeTrue("document.createEvent('HTMLEvents').constructor === window.Event");
 
-    // BeforeLoadEvent
-    shouldBeTrue("document.createEvent('BeforeLoadEvent') instanceof window.BeforeLoadEvent");
-    shouldBeTrue("document.createEvent('BeforeLoadEvent') instanceof window.Event");
-    shouldBeTrue("document.createEvent('BeforeLoadEvent').constructor === window.BeforeLoadEvent");
-
     // CompositionEvent
     shouldBeTrue("document.createEvent('CompositionEvent') instanceof window.CompositionEvent");
     shouldBeTrue("document.createEvent('CompositionEvent') instanceof window.Event");

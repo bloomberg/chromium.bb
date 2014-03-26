@@ -176,7 +176,6 @@ onautocomplete
 onautocompleteerror
 onbeforecopy
 onbeforecut
-onbeforeload
 onbeforepaste
 onbeforeunload
 onblur

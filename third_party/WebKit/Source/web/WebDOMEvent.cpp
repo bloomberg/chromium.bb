@@ -198,10 +198,4 @@ bool WebDOMEvent::isXMLHttpRequestProgressEvent() const
     return m_private->hasInterface(WebCore::EventNames::XMLHttpRequestProgressEvent);
 }
 
-bool WebDOMEvent::isBeforeLoadEvent() const
-{
-    ASSERT(m_private.get());
-    return m_private->hasInterface(WebCore::EventNames::BeforeLoadEvent);
-}
-
 } // namespace blink

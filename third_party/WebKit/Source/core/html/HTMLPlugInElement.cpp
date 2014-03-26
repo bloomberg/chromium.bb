@@ -59,7 +59,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     , m_isDelayingLoadEvent(false)
     , m_NPObject(0)
     , m_isCapturingMouseEvents(false)
-    , m_inBeforeLoadEventHandler(false)
     // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
     // widget updates until after all children are parsed. For HTMLEmbedElement
     // this delay is unnecessary, but it is simpler to make both classes share
@@ -225,28 +224,8 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
     return m_pluginWrapper.get();
 }
 
-bool HTMLPlugInElement::dispatchBeforeLoadEvent(const String& sourceURL)
-{
-    // FIXME: Our current plug-in loading design can't guarantee the following
-    // assertion is true, since plug-in loading can be initiated during layout,
-    // and synchronous layout can be initiated in a beforeload event handler!
-    // See <http://webkit.org/b/71264>.
-    // ASSERT(!m_inBeforeLoadEventHandler);
-    m_inBeforeLoadEventHandler = true;
-    bool beforeLoadAllowedLoad = HTMLFrameOwnerElement::dispatchBeforeLoadEvent(sourceURL);
-    m_inBeforeLoadEventHandler = false;
-    return beforeLoadAllowedLoad;
-}
-
 Widget* HTMLPlugInElement::pluginWidget() const
 {
-    if (m_inBeforeLoadEventHandler) {
-        // The plug-in hasn't loaded yet, and it makes no sense to try to load
-        // if beforeload handler happened to touch the plug-in element. That
-        // would recursively call beforeload for the same element.
-        return 0;
-    }
-
     if (RenderWidget* renderWidget = renderWidgetForJSBindings())
         return renderWidget->widget();
     return 0;

@@ -730,7 +730,6 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(m_frame->document());
 
-    // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
     RefPtr<LocalFrame> protect(m_frame);
 
     if (m_inStopAllLoaders)
@@ -1282,17 +1281,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
-    // We skip dispatching the beforeload event on the frame owner if we've already committed a real
-    // document load because the event would leak subsequent activity by the frame which the parent
-    // frame isn't supposed to learn. For example, if the child frame navigated to  a new URL, the
-    // parent frame shouldn't learn the URL.
     const ResourceRequest& request = action.resourceRequest();
-    if (!m_stateMachine.committedFirstRealDocumentLoad() && m_frame->ownerElement() && !m_frame->ownerElement()->dispatchBeforeLoadEvent(request.url().string()))
-        return;
-
-    // Dispatching the beforeload event could have blown away the frame.
-    if (!m_client)
-        return;
 
     if (!m_stateMachine.startedFirstRealLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::StartedFirstRealLoad);

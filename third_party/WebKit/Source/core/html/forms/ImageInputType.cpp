@@ -150,9 +150,6 @@ void ImageInputType::startResourceLoading()
     if (!renderer)
         return;
 
-    if (imageLoader->hasPendingBeforeLoadEvent())
-        return;
-
     RenderImageResource* imageResource = renderer->imageResource();
     imageResource->setImageResource(imageLoader->image());
 

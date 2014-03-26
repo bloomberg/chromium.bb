@@ -61,7 +61,6 @@ protected:
 
     // Node functions:
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
-    virtual bool dispatchBeforeLoadEvent(const String& sourceURL) OVERRIDE FINAL;
 
     // Element functions:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
@@ -132,7 +131,6 @@ private:
     mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
-    bool m_inBeforeLoadEventHandler;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
     DisplayState m_displayState;

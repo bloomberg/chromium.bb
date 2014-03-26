@@ -207,7 +207,7 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
         return false;
     }
 
-    return dispatchBeforeLoadEvent(url.string());
+    return true;
 }
 
 void HTMLTrackElement::didCompleteLoad(LoadStatus status)
