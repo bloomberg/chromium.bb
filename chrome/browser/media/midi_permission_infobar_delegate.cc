@@ -55,7 +55,7 @@ void MidiPermissionInfoBarDelegate::InfoBarDismissed() {
 }
 
 int MidiPermissionInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_MIDI_SYSEX;
+  return IDR_INFOBAR_MIDI;
 }
 
 InfoBarDelegate::Type MidiPermissionInfoBarDelegate::GetInfoBarType() const {

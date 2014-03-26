@@ -72,7 +72,7 @@ void ProtectedMediaIdentifierInfoBarDelegate::InfoBarDismissed() {
 }
 
 int ProtectedMediaIdentifierInfoBarDelegate::GetIconID() const {
-  return IDR_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_ICON;
+  return IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
 }
 
 InfoBarDelegate::Type

@@ -125,7 +125,7 @@ void GeolocationInfoBarDelegate::InfoBarDismissed() {
 }
 
 int GeolocationInfoBarDelegate::GetIconID() const {
-  return IDR_GEOLOCATION_INFOBAR_ICON;
+  return IDR_INFOBAR_GEOLOCATION;
 }
 
 InfoBarDelegate::Type GeolocationInfoBarDelegate::GetInfoBarType() const {

@@ -14,16 +14,13 @@
 DEFINE_RESOURCE_ID(0, 0)
 
 // InfoBar resources.
-DEFINE_RESOURCE_ID(IDR_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_ICON,
-                   R.drawable.infobar_protected_media_identifier)
-DEFINE_RESOURCE_ID(IDR_GEOLOCATION_INFOBAR_ICON, R.drawable.infobar_geolocation)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_ALT_NAV_URL, R.drawable.infobar_didyoumean)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOFILL, R.drawable.infobar_autofill)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOLOGIN, R.drawable.infobar_autologin)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_COOKIE, R.drawable.infobar_cookie)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_DESKTOP_NOTIFICATIONS,\
                    R.drawable.infobar_desktop_notifications)
-DEFINE_RESOURCE_ID(IDR_INFOBAR_INCOMPLETE, R.drawable.infobar_incomplete)
+DEFINE_RESOURCE_ID(IDR_INFOBAR_GEOLOCATION, R.drawable.infobar_geolocation)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_CAMERA, R.drawable.infobar_camera)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_MIC, R.drawable.infobar_microphone)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_MULTIPLE_DOWNLOADS,\
@@ -31,6 +28,8 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_MULTIPLE_DOWNLOADS,\
 DEFINE_RESOURCE_ID(IDR_INFOBAR_PLUGIN_CRASHED,\
                    R.drawable.infobar_plugin_crashed)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_PLUGIN_INSTALL, R.drawable.infobar_plugin)
+DEFINE_RESOURCE_ID(IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER,
+                   R.drawable.infobar_protected_media_identifier)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_RESTORE_SESSION, R.drawable.infobar_restore)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_SAVE_PASSWORD, R.drawable.infobar_savepassword)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_WARNING, R.drawable.infobar_warning)

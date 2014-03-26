@@ -79,7 +79,7 @@ GeolocationPermissionRequest::GeolocationPermissionRequest(
 GeolocationPermissionRequest::~GeolocationPermissionRequest() {}
 
 int GeolocationPermissionRequest::GetIconID() const {
-  return IDR_GEOLOCATION_INFOBAR_ICON;
+  return IDR_INFOBAR_GEOLOCATION;
 }
 
 base::string16 GeolocationPermissionRequest::GetMessageText() const {
