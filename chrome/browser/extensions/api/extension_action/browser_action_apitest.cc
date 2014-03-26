@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -503,18 +504,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
       browser()->profile())->extension_service();
 
   // The tooltips for each respective browser action.
-  const char kTooltipA[] = "Make this page red";
-  const char kTooltipB[] = "grow";
-  const char kTooltipC[] = "Test setPopup()";
+  const char kTooltipA[] = "Alpha";
+  const char kTooltipB[] = "Beta";
+  const char kTooltipC[] = "Gamma";
 
   const size_t size_before = service->extensions()->size();
 
-  const Extension* extension_a = LoadExtension(test_data_dir_.AppendASCII(
-      "browser_action/basics"));
-  const Extension* extension_b = LoadExtension(test_data_dir_.AppendASCII(
-      "browser_action/popup"));
-  const Extension* extension_c = LoadExtension(test_data_dir_.AppendASCII(
-      "browser_action/add_popup"));
+  base::FilePath test_dir = test_data_dir_.AppendASCII("browser_action");
+  const Extension* extension_a = InstallExtension(
+      test_dir.AppendASCII("empty_browser_action_alpha.crx"), 1);
+  const Extension* extension_b = InstallExtension(
+      test_dir.AppendASCII("empty_browser_action_beta.crx"), 1);
+  const Extension* extension_c = InstallExtension(
+      test_dir.AppendASCII("empty_browser_action_gamma.crx"), 1);
   ASSERT_TRUE(extension_a);
   ASSERT_TRUE(extension_b);
   ASSERT_TRUE(extension_c);
