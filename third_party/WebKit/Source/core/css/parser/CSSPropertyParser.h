@@ -290,6 +290,7 @@ private:
     };
 
     class ImplicitScope {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(ImplicitScope);
     public:
         ImplicitScope(CSSPropertyParser* parser, PropertyType propertyType)
@@ -307,11 +308,8 @@ private:
         CSSPropertyParser* m_parser;
     };
 
-    // FIXME: MSVC doesn't like ShorthandScope being private
-    // since ~OwnPtr can't access its destructor if non-inlined.
-public:
     class ShorthandScope {
-        WTF_MAKE_FAST_ALLOCATED;
+        STACK_ALLOCATED();
     public:
         ShorthandScope(CSSPropertyParser* parser, CSSPropertyID propId) : m_parser(parser)
         {
@@ -328,7 +326,6 @@ public:
         CSSPropertyParser* m_parser;
     };
 
-private:
     enum ReleaseParsedCalcValueCondition {
         ReleaseParsedCalcValue,
         DoNotReleaseParsedCalcValue

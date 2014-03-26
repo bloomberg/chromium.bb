@@ -57,10 +57,9 @@ public:
     void trace(Visitor*);
 
 private:
-    class Listener : public NoBaseWillBeGarbageCollected<Listener> {
+    class Listener FINAL : public NoBaseWillBeGarbageCollected<Listener> {
     public:
         Listener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);
-        ~Listener();
         void evaluate(ScriptState*, MediaQueryEvaluator*);
 
         MediaQueryListListener* listener() { return m_listener.get(); }

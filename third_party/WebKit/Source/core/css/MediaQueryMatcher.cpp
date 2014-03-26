@@ -37,10 +37,6 @@ MediaQueryMatcher::Listener::Listener(PassRefPtrWillBeRawPtr<MediaQueryListListe
 {
 }
 
-MediaQueryMatcher::Listener::~Listener()
-{
-}
-
 void MediaQueryMatcher::Listener::evaluate(ScriptState* state, MediaQueryEvaluator* evaluator)
 {
     bool notify;

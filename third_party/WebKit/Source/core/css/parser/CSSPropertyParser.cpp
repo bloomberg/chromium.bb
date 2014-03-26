@@ -727,16 +727,19 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         CSSPropertyID propId1, propId2;
         bool result = false;
         if (parseFillProperty(propId, propId1, propId2, val1, val2)) {
-            OwnPtr<ShorthandScope> shorthandScope;
             if (propId == CSSPropertyBackgroundPosition ||
                 propId == CSSPropertyBackgroundRepeat ||
                 propId == CSSPropertyWebkitMaskPosition ||
                 propId == CSSPropertyWebkitMaskRepeat) {
-                shorthandScope = adoptPtr(new ShorthandScope(this, propId));
+                ShorthandScope scope(this, propId);
+                addProperty(propId1, val1.release(), important);
+                if (val2)
+                    addProperty(propId2, val2.release(), important);
+            } else {
+                addProperty(propId1, val1.release(), important);
+                if (val2)
+                    addProperty(propId2, val2.release(), important);
             }
-            addProperty(propId1, val1.release(), important);
-            if (val2)
-                addProperty(propId2, val2.release(), important);
             result = true;
         }
         m_implicitShorthand = false;
