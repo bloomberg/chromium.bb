@@ -141,6 +141,13 @@ public class ContentViewClient {
     }
 
     /**
+     * Notification that the selection has changed.
+     * @param selection The newly established selection.
+     */
+    public void onSelectionChanged(String selection) {
+    }
+
+    /**
      * Called when a new content intent is requested to be started.
      */
     public void onStartContentIntent(Context context, String intentUrl) {

@@ -2456,6 +2456,7 @@ public class ContentViewCore
     @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
+        getContentViewClient().onSelectionChanged(text);
     }
 
     @SuppressWarnings("unused")
