@@ -110,6 +110,9 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
   if (!entry->GetURL().SchemeIsSecure())
     return;
 
+  if (!web_contents->DisplayedInsecureContent())
+    entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
+
   // An HTTPS response may not have a certificate for some reason.  When that
   // happens, use the unauthenticated (HTTP) rather than the authentication
   // broken security style so that we can detect this error condition.
@@ -117,6 +120,9 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
     return;
   }
+
+  if (web_contents->DisplayedInsecureContent())
+    entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
   if (net::IsCertStatusError(entry->GetSSL().cert_status)) {
     // Minor errors don't lower the security style to
@@ -140,11 +146,6 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
     return;
   }
-
-  if (web_contents->DisplayedInsecureContent())
-    entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
-  else
-    entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
 }
 
 void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
