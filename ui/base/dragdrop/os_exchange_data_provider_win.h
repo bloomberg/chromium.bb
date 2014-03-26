@@ -183,7 +183,6 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
       const OSExchangeData::CustomFormat& format) const;
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info);
-  virtual void SetInDragLoop(bool in_drag_loop) OVERRIDE;
 #if defined(USE_AURA)
   virtual void SetDragImage(const gfx::ImageSkia& image,
                             const gfx::Vector2d& cursor_offset) OVERRIDE;

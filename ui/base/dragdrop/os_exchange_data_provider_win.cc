@@ -537,11 +537,6 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
   info->downloader = download.downloader;
   data_->contents_.push_back(info);
 }
-
-void OSExchangeDataProviderWin::SetInDragLoop(bool in_drag_loop) {
-  data_->set_in_drag_loop(in_drag_loop);
-}
-
 #if defined(USE_AURA)
 
 void OSExchangeDataProviderWin::SetDragImage(

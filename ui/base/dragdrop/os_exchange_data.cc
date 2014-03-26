@@ -145,10 +145,6 @@ bool OSExchangeData::GetFileContents(base::FilePath* filename,
 void OSExchangeData::SetDownloadFileInfo(const DownloadFileInfo& download) {
   provider_->SetDownloadFileInfo(download);
 }
-
-void OSExchangeData::SetInDragLoop(bool in_drag_loop) {
-  provider_->SetInDragLoop(in_drag_loop);
-}
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)

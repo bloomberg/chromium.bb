@@ -135,7 +135,6 @@ class UI_BASE_EXPORT OSExchangeData {
                                  std::string* file_contents) const = 0;
     virtual bool HasFileContents() const = 0;
     virtual void SetDownloadFileInfo(const DownloadFileInfo& download) = 0;
-    virtual void SetInDragLoop(bool in_drag_loop) = 0;
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -228,8 +227,6 @@ class UI_BASE_EXPORT OSExchangeData {
 
   // Adds a download file with full path (CF_HDROP).
   void SetDownloadFileInfo(const DownloadFileInfo& download);
-
-  void SetInDragLoop(bool in_drag_loop);
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
