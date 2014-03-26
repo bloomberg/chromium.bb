@@ -245,7 +245,6 @@ public:
         PrefixedInitMessageEvent = 223,
         ElementSetPrefix = 224, // Element.prefix is readonly in DOM4.
         CSSStyleDeclarationGetPropertyCSSValue = 225,
-        SVGElementGetPresentationAttribute = 226,
         PrefixedMediaCancelKeyRequest = 229,
         DOMImplementationHasFeature = 230,
         DOMImplementationHasFeatureReturnFalse = 231,

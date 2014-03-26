@@ -55,7 +55,6 @@ public:
 
     virtual String title() const OVERRIDE;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
-    PassRefPtrWillBeRawPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
     static bool isAnimatableCSSProperty(const QualifiedName&);
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()

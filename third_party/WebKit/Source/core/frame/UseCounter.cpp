@@ -655,9 +655,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSStyleSheetInsertRuleOptionalArg:
         return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";
 
-    case SVGElementGetPresentationAttribute:
-        return "CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.";
-
     case PrefixedMediaSourceOpen:
         return "'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.";
 
