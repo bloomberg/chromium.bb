@@ -64,7 +64,7 @@ void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallback
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor3", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor3"), info.GetIsolate());
         return;
     }
 

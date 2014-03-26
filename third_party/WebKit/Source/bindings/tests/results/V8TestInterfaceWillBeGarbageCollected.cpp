@@ -117,7 +117,7 @@ void V8TestInterfaceWillBeGarbageCollected::constructorCallback(const v8::Functi
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceWillBeGarbageCollected", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceWillBeGarbageCollected"), info.GetIsolate());
         return;
     }
 

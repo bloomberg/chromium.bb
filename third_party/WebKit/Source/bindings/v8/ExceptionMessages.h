@@ -46,9 +46,12 @@ public:
         ExclusiveBound,
     };
 
-    static String failedToConstruct(const String& type, const String& detail = String());
-    static String failedToEnumerate(const String& type, const String& detail = String());
-    static String failedToExecute(const String& method, const String& type, const String& detail = String());
+    static String argumentNullOrIncorrectType(int argumentIndex, const String& expectedType);
+    static String constructorNotCallableAsFunction(const String& type);
+
+    static String failedToConstruct(const String& type, const String& detail);
+    static String failedToEnumerate(const String& type, const String& detail);
+    static String failedToExecute(const String& method, const String& type, const String& detail);
     static String failedToGet(const String& property, const String& type, const String& detail);
     static String failedToSet(const String& property, const String& type, const String& detail);
     static String failedToDelete(const String& property, const String& type, const String& detail);
@@ -56,20 +59,13 @@ public:
     static String failedToSetIndexed(const String& type, const String& detail);
     static String failedToDeleteIndexed(const String& type, const String& detail);
 
+    template <typename NumType>
+    static String formatNumber(NumType number)
+    {
+        return formatFiniteNumber(number);
+    }
+
     static String incorrectPropertyType(const String& property, const String& detail);
-
-    static String argumentNullOrIncorrectType(int argumentIndex, const String& expectedType);
-
-    // If  > 0, the argument index that failed type check (1-indexed.)
-    // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
-    static String notAnArrayTypeArgumentOrValue(int argumentIndex);
-    static String notASequenceTypeProperty(const String& propertyName);
-    static String notAFiniteNumber(double value, const char* name = "value provided");
-    static String notAFiniteNumber(const Decimal& value, const char* name = "value provided");
-
-    static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
-
-    static String readOnly(const char* detail = 0);
 
     template <typename NumberType>
     static String indexExceedsMaximumBound(const char* name, NumberType given, NumberType bound)
@@ -123,16 +119,18 @@ public:
         return result.toString();
     }
 
-    template <typename NumType>
-    static String formatNumber(NumType number)
-    {
-        return formatFiniteNumber(number);
-    }
+    // If  > 0, the argument index that failed type check (1-indexed.)
+    // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
+    static String notAnArrayTypeArgumentOrValue(int argumentIndex);
+    static String notASequenceTypeProperty(const String& propertyName);
+    static String notAFiniteNumber(double value, const char* name = "value provided");
+    static String notAFiniteNumber(const Decimal& value, const char* name = "value provided");
+
+    static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
+
+    static String readOnly(const char* detail = 0);
 
 private:
-    static String ordinalNumber(int number);
-
-
     template <typename NumType>
     static String formatFiniteNumber(NumType number)
     {
@@ -152,6 +150,8 @@ private:
             return String::format("%e", number);
         return String::number(number);
     }
+
+    static String ordinalNumber(int number);
 };
 
 template <> String ExceptionMessages::formatNumber<float>(float number);

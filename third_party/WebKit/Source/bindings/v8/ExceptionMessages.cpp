@@ -81,6 +81,11 @@ String ExceptionMessages::failedToDeleteIndexed(const String& type, const String
     return "Failed to delete an indexed property from '" + type + "': " + detail;
 }
 
+String ExceptionMessages::constructorNotCallableAsFunction(const String& type)
+{
+    return failedToConstruct(type, "Please use the 'new' operator, this DOM object constructor cannot be called as a function.");
+}
+
 String ExceptionMessages::incorrectPropertyType(const String& property, const String& detail)
 {
     return "The '" + property + "' property " + detail;

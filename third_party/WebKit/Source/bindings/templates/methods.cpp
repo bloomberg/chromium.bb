@@ -408,7 +408,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
 static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("{{constructor.name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
         return;
     }
 
