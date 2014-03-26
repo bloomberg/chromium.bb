@@ -50,7 +50,7 @@ const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
 
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
-TEST(SandboxBPF, CallSupports) {
+TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupports)) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
   bool seccomp_bpf_supported =
@@ -65,7 +65,7 @@ TEST(SandboxBPF, CallSupports) {
   std::cout << "Pointer size: " << sizeof(void*) << "\n";
 }
 
-SANDBOX_TEST(SandboxBPF, CallSupportsTwice) {
+SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupportsTwice)) {
   SandboxBPF::SupportsSeccompSandbox(-1);
   SandboxBPF::SupportsSeccompSandbox(-1);
 }
