@@ -64,7 +64,6 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
       views::Background::CreateSolidBackground(kTooltipBackground));
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
-  label_.SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
 
 TooltipAura::~TooltipAura() {
