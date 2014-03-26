@@ -104,6 +104,7 @@
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
+                'chrome_dll_pdb_workaround',
                 'chrome_version_resources',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
                 '../crypto/crypto.gyp:crypto',
@@ -214,11 +215,6 @@
                   'dependencies': [
                     '../printing/printing.gyp:printing',
                   ],
-                }],
-                ['component!="shared_library"', {  # http://crbug.com/339215
-                  'dependencies': [
-                    'chrome_dll_pdb_workaround',
-                   ],
                 }],
                 ['chrome_pgo_phase==1', {
                   'msvs_settings': {
