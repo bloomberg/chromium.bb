@@ -28,6 +28,10 @@ class MultiProfileAppWindowLauncherController
   typedef std::vector<apps::AppWindow*> AppWindowList;
   typedef std::vector<apps::AppWindowRegistry*> AppWindowRegistryList;
 
+  // Returns true if the owner of the given |app_window| has a window teleported
+  // of the |app_window|'s application type to the current desktop.
+  bool UserHasAppOnActiveDesktop(apps::AppWindow* app_window);
+
   // A list of all app windows for all users.
   AppWindowList app_window_list_;
 

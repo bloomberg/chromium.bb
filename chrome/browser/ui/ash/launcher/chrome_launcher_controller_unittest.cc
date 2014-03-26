@@ -44,6 +44,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/base/models/menu_model.h"
 
 #if defined(OS_CHROMEOS)
@@ -58,6 +59,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -722,7 +724,9 @@ class V1App : public TestBrowserWindow {
     native_window_->SetType(ui::wm::WINDOW_TYPE_POPUP);
     native_window_->Init(aura::WINDOW_LAYER_TEXTURED);
     native_window_->Show();
-
+    aura::client::ParentWindowWithContext(native_window_.get(),
+                                          ash::Shell::GetPrimaryRootWindow(),
+                                          gfx::Rect(10, 10, 20, 30));
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
         Browser::TYPE_POPUP,
         kCrxAppPrefix + app_name,
@@ -773,6 +777,8 @@ class V2App {
     window_->GetBaseWindow()->Close();
     destroyed_watcher.Wait();
   }
+
+  apps::AppWindow* window() { return window_; }
 
  private:
   // The app window which represents the application. Note that the window
@@ -860,6 +866,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     EXPECT_TRUE(profile);
     // Remember the profile name so that we can destroy it upon destruction.
     created_profiles_[profile] = profile_name;
+    if (chrome::MultiUserWindowManager::GetInstance())
+      chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
+    if (launcher_controller_)
+      launcher_controller_->AdditionalUserAddedToSession(profile);
     return profile;
   }
 
@@ -867,6 +877,11 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   void SwitchActiveUser(const std::string& name) {
     session_delegate()->SwitchActiveUser(name);
     GetFakeUserManager()->SwitchActiveUser(name);
+    chrome::MultiUserWindowManagerChromeOS* manager =
+        static_cast<chrome::MultiUserWindowManagerChromeOS*>(
+            chrome::MultiUserWindowManager::GetInstance());
+    manager->SetAnimationsForTest(true);
+    manager->ActiveUserChanged(name);
     launcher_controller_->browser_status_monitor_for_test()->
         ActiveUserChanged(name);
     launcher_controller_->app_window_controller_for_test()->
@@ -2444,6 +2459,63 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // anymore.
   SwitchActiveUser(profile()->GetProfileName());
   EXPECT_EQ(2, model_->item_count());
+}
+
+// Check that V2 applications will be made visible on the target desktop if
+// another window of the same type got previously teleported there.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V2AppFollowsTeleportedWindow) {
+  InitLauncherController();
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+
+  // Create and add three users / profiles, and go to #1's desktop.
+  TestingProfile* profile1 = CreateMultiUserProfile("user-1");
+  TestingProfile* profile2 = CreateMultiUserProfile("user-2");
+  TestingProfile* profile3 = CreateMultiUserProfile("user-3");
+  SwitchActiveUser(profile1->GetProfileName());
+
+  // A v2 app for user #1 should be shown first and get hidden when switching to
+  // desktop #2.
+  V2App v2_app_1(profile1, extension1_);
+  EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  SwitchActiveUser(profile2->GetProfileName());
+  EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+
+  // Add a v2 app for user #1 while on desktop #2 should not be shown.
+  V2App v2_app_2(profile1, extension1_);
+  EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
+
+  // Teleport the app from user #1 to the desktop #2 should show it.
+  manager->ShowWindowForUser(v2_app_1.window()->GetNativeWindow(),
+                             profile2->GetProfileName());
+  EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
+
+  // Creating a new application for user #1 on desktop #2 should teleport it
+  // there automatically.
+  V2App v2_app_3(profile1, extension1_);
+  EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(v2_app_3.window()->GetNativeWindow()->IsVisible());
+
+  // Switching back to desktop#1 and creating an app for user #1 should move
+  // the app on desktop #1.
+  SwitchActiveUser(profile1->GetProfileName());
+  V2App v2_app_4(profile1, extension1_);
+  EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(v2_app_2.window()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(v2_app_3.window()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(v2_app_4.window()->GetNativeWindow()->IsVisible());
+
+  // Switching to desktop #3 and create an app for user #1 there should land on
+  // his own desktop (#1).
+  SwitchActiveUser(profile3->GetProfileName());
+  V2App v2_app_5(profile1, extension1_);
+  EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
+  SwitchActiveUser(profile1->GetProfileName());
+  EXPECT_TRUE(v2_app_5.window()->GetNativeWindow()->IsVisible());
 }
 #endif  // defined(OS_CHROMEOS)
 

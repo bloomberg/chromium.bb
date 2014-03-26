@@ -8,7 +8,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -74,8 +76,24 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
     return;
   app_window_list_.push_back(app_window);
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
-  if (multi_user_util::IsProfileFromActiveUser(profile))
+  if (multi_user_util::IsProfileFromActiveUser(profile)) {
     RegisterApp(app_window);
+  } else {
+    // If the window got created for a non active user but the user allowed to
+    // teleport to the current user's desktop, we teleport it now.
+    if (UserHasAppOnActiveDesktop(app_window)) {
+      chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+          app_window->GetNativeWindow(),
+          multi_user_util::GetCurrentUserId());
+      if (app_window->GetNativeWindow()->type() == ui::wm::WINDOW_TYPE_PANEL &&
+          !app_window->GetNativeWindow()->layer()->GetTargetOpacity()) {
+        // The panel layout manager only manages windows which are anchored.
+        // Since this window did never had an anchor, it would stay hidden. We
+        // therefore make it visible now.
+        app_window->GetNativeWindow()->layer()->SetOpacity(1.0f);
+      }
+    }
+  }
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
@@ -92,4 +110,27 @@ void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
       std::find(app_window_list_.begin(), app_window_list_.end(), app_window);
   DCHECK(it != app_window_list_.end());
   app_window_list_.erase(it);
+}
+
+bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
+    apps::AppWindow* app_window) {
+  const std::string& app_id = app_window->extension_id();
+  content::BrowserContext* app_context = app_window->browser_context();
+  DCHECK(!app_context->IsOffTheRecord());
+  const std::string& current_user = multi_user_util::GetCurrentUserId();
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  for (AppWindowList::iterator it = app_window_list_.begin();
+       it != app_window_list_.end();
+       ++it) {
+    apps::AppWindow* other_window = *it;
+    DCHECK(!other_window->browser_context()->IsOffTheRecord());
+    if (manager->IsWindowOnDesktopOfUser(other_window->GetNativeWindow(),
+                                         current_user) &&
+        app_id == other_window->extension_id() &&
+        app_context == other_window->browser_context()) {
+      return true;
+    }
+  }
+  return false;
 }
