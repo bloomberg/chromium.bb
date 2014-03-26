@@ -1108,10 +1108,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     FT_Error	    err;
     FT_ULong	    len = 0, alen;
     FcRange	    *r = NULL;
-#if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
     double	    lower_size = 0.0L, upper_size = DBL_MAX;
-#endif
-
 
     pat = FcPatternCreate ();
     if (!pat)
