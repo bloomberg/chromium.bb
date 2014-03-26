@@ -36,6 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/DragImage.h"
 #include "platform/MIMETypeRegistry.h"
@@ -241,6 +242,9 @@ PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, LocalFrame* fram
 {
     if (m_dragImageElement) {
         loc = m_dragLoc;
+
+        // https://code.google.com/p/chromium/issues/detail?id=354373
+        DisableCompositingQueryAsserts disabler;
         return frame->nodeImage(m_dragImageElement.get());
     }
     if (m_dragImage) {
