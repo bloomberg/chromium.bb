@@ -908,29 +908,36 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 #endif
 
-  // Explicitly disable antialiasing for the compositor. As of the time of
-  // this writing, the only platform that supported antialiasing for the
-  // compositor was Mac OS X, because the on-screen OpenGL context creation
-  // code paths on Windows and Linux didn't yet have multisampling support.
-  // Mac OS X essentially always behaves as though it's rendering offscreen.
-  // Multisampling has a heavy cost especially on devices with relatively low
-  // fill rate like most notebooks, and the Mac implementation would need to
-  // be optimized to resolve directly into the IOSurface shared between the
-  // GPU and browser processes. For these reasons and to avoid platform
-  // disparities we explicitly disable antialiasing.
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-  attributes.depth = false;
-  attributes.stencil = false;
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool use_software = fallback;
+  if (command_line.HasSwitch(switches::kDisableGpuCompositing))
+    use_software = true;
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
-  if (!fallback) {
+  if (!use_software) {
+    // Explicitly disable antialiasing for the compositor. As of the time of
+    // this writing, the only platform that supported antialiasing for the
+    // compositor was Mac OS X, because the on-screen OpenGL context creation
+    // code paths on Windows and Linux didn't yet have multisampling support.
+    // Mac OS X essentially always behaves as though it's rendering offscreen.
+    // Multisampling has a heavy cost especially on devices with relatively low
+    // fill rate like most notebooks, and the Mac implementation would need to
+    // be optimized to resolve directly into the IOSurface shared between the
+    // GPU and browser processes. For these reasons and to avoid platform
+    // disparities we explicitly disable antialiasing.
+    blink::WebGraphicsContext3D::Attributes attributes;
+    attributes.antialias = false;
+    attributes.shareResources = true;
+    attributes.noAutomaticFlushes = true;
+    attributes.depth = false;
+    attributes.stencil = false;
     context_provider = ContextProviderCommandBuffer::Create(
         CreateGraphicsContext3D(attributes),
         "RenderCompositor");
+    if (!context_provider.get()) {
+      // Cause the compositor to wait and try again.
+      return scoped_ptr<cc::OutputSurface>();
+    }
   }
 
   uint32 output_surface_id = next_output_surface_id_++;
