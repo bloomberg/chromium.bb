@@ -1550,6 +1550,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
+    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
     case CSSPropertyWebkitBorderAfterStyle:
     case CSSPropertyWebkitBorderBeforeStyle:
@@ -1614,7 +1615,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = false;
         break;
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyBackfaceVisibility:
     case CSSPropertyPerspective:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:

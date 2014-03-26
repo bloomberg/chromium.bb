@@ -155,6 +155,7 @@ z-index type_name=int, custom_all
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-aspect-ratio custom_all
+backface-visibility
 -webkit-backface-visibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
