@@ -62,7 +62,7 @@
         '-d', '<(DEPTH)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)',
       ],
-      'message': 'Generating C++ from <(RULE_INPUT_PATH)',
+      'message': 'Generating Mojo bindings from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,
     }
   ],
