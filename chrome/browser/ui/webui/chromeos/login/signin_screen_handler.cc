@@ -872,7 +872,12 @@ void SigninScreenHandler::ShowUserPodButton(
 
   // TODO(tengs): Move this code once we move unlocking to native code.
   if (ScreenLocker::default_screen_locker()) {
-    PrefService* profile_prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    UserManager* user_manager = UserManager::Get();
+    const User* user = user_manager->FindUser(username);
+    if (!user)
+      return;
+    PrefService* profile_prefs =
+        user_manager->GetProfileByUser(user)->GetPrefs();
     if (profile_prefs->GetBoolean(prefs::kEasyUnlockShowTutorial)) {
       CallJS("login.AccountPickerScreen.showEasyUnlockBubble");
       profile_prefs->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
