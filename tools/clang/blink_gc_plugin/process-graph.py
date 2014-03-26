@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import argparse, os, sys, json, subprocess
+import argparse, os, sys, json, subprocess, pickle, StringIO
 
 parser = argparse.ArgumentParser(
   description =
@@ -22,6 +22,14 @@ parser.add_argument(
   help='Detect cycles containing GC roots')
 
 parser.add_argument(
+  '-i', '--ignored-cycles', default=None,
+  help='File with cycles to ignore')
+
+parser.add_argument(
+  '-p', '--pickle-graph', default=None,
+  help='File to read/save the graph from/to')
+
+parser.add_argument(
   'files', metavar='FILE', nargs='*', default=[],
   help='JSON graph files or directories containing them')
 
@@ -33,6 +41,9 @@ graph = {}
 
 # Set of root nodes.
 roots = []
+
+# List of cycles to ignore.
+ignored_cycles = []
 
 # Global flag to determine exit code.
 global_reported_error = False
@@ -216,6 +227,8 @@ def detect_cycles():
     reset_graph()
     src = graph[root_edge.src]
     dst = graph.get(root_edge.dst)
+    if root_edge.dst == "WTF::String":
+      continue
     if dst is None:
       print "\nPersistent root to incomplete destination object:"
       print root_edge
@@ -226,9 +239,21 @@ def detect_cycles():
     if src.cost < sys.maxint:
       report_cycle(root_edge)
 
+def is_ignored_cycle(cycle):
+  for block in ignored_cycles:
+    if block_match(cycle, block):
+      return True
+
+def block_match(b1, b2):
+  if len(b1) != len(b2):
+    return False
+  for (l1, l2) in zip(b1, b2):
+    if l1 != l2:
+      return False
+  return True
+
 def report_cycle(root_edge):
   dst = graph[root_edge.dst]
-  print "\nFound a potentially leaking cycle starting from a GC root:"
   path = []
   edge = root_edge
   dst.path = None
@@ -242,9 +267,43 @@ def report_cycle(root_edge):
   for p in path:
     if len(p.loc) > max_loc:
       max_loc = len(p.loc)
+  out = StringIO.StringIO()
   for p in path[:-1]:
-    print (p.loc + ':').ljust(max_loc + 1), p
-  set_reported_error(True)
+    print >>out, (p.loc + ':').ljust(max_loc + 1), p
+  sout = out.getvalue()
+  if not is_ignored_cycle(sout):
+    print "\nFound a potentially leaking cycle starting from a GC root:\n", sout
+    set_reported_error(True)
+
+def load_graph():
+  global graph
+  global roots
+  log("Reading graph from pickled file: " + args.pickle_graph)
+  dump = pickle.load(open(args.pickle_graph, 'rb'))
+  graph = dump[0]
+  roots = dump[1]
+
+def save_graph():
+  log("Saving graph to pickle file: " + args.pickle_graph)
+  dump = (graph, roots)
+  pickle.dump(dump, open(args.pickle_graph, 'wb'))
+
+def read_ignored_cycles():
+  global ignored_cycles
+  if not args.ignored_cycles:
+    return
+  log("Reading ignored cycles from file: " + args.ignored_cycles)
+  block = []
+  for l in open(args.ignored_cycles):
+    line = l.strip()
+    if not line:
+      if len(block) > 0:
+        ignored_cycles.append(block)
+      block = []
+    else:
+      block += l
+  if len(block) > 0:
+    ignored_cycles.append(block)
 
 def main():
   global args
@@ -253,26 +312,32 @@ def main():
     print "Please select an operation to perform (eg, -c to detect cycles)"
     parser.print_help()
     return 1
-  if args.use_stdin:
-    log("Reading files from stdin")
-    for f in sys.stdin:
-      build_graph(f.strip())
+  if args.pickle_graph and os.path.isfile(args.pickle_graph):
+    load_graph()
   else:
-    log("Reading files and directories from command line")
-    if len(args.files) == 0:
-      print "Please provide files or directores for building the graph"
-      parser.print_help()
-      return 1
-    for f in args.files:
-      if os.path.isdir(f):
-        log("Building graph from files in directory: " + f)
-        build_graphs_in_dir(f)
-      else:
-        log("Building graph from file: " + f)
-        build_graph(f)
-  log("Completing graph construction (%d graph nodes)" % len(graph))
-  complete_graph()
+    if args.use_stdin:
+      log("Reading files from stdin")
+      for f in sys.stdin:
+        build_graph(f.strip())
+    else:
+      log("Reading files and directories from command line")
+      if len(args.files) == 0:
+        print "Please provide files or directores for building the graph"
+        parser.print_help()
+        return 1
+      for f in args.files:
+        if os.path.isdir(f):
+          log("Building graph from files in directory: " + f)
+          build_graphs_in_dir(f)
+        else:
+          log("Building graph from file: " + f)
+          build_graph(f)
+    log("Completing graph construction (%d graph nodes)" % len(graph))
+    complete_graph()
+    if args.pickle_graph:
+      save_graph()
   if args.detect_cycles:
+    read_ignored_cycles()
     log("Detecting cycles containg GC roots")
     detect_cycles()
   if reported_error():
