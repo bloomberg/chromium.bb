@@ -1724,8 +1724,7 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 
 RenderLayer* RenderLayer::scrollParent() const
 {
-    if (!renderer()->compositorDrivenAcceleratedScrollingEnabled())
-        return 0;
+    ASSERT(renderer()->compositorDrivenAcceleratedScrollingEnabled());
 
     // Normal flow elements will be parented under the main scrolling layer, so
     // we don't need a scroll parent/child relationship to get them to scroll.

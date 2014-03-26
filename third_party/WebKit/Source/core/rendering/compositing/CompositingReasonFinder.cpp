@@ -59,6 +59,28 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
+CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+{
+    CompositingReasons styleReasons = layer->styleDeterminedCompositingReasons();
+    ASSERT(styleDeterminedReasons(layer->renderer()) == styleReasons);
+    return styleReasons | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
+}
+
+// This information doesn't appear to be incorporated into CompositingReasons.
+bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
+{
+    // Need this done first to determine overflow.
+    ASSERT(!m_renderView.needsLayout());
+    if (isMainFrame())
+        return false;
+
+    if (!(m_compositingTriggers & ScrollableInnerFrameTrigger))
+        return false;
+
+    FrameView* frameView = m_renderView.frameView();
+    return frameView->isScrollable();
+}
+
 CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject* renderer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
@@ -79,62 +101,14 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
     return directReasons;
 }
 
-CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
-{
-    CompositingReasons directReasons = CompositingReasonNone;
-    RenderObject* renderer = layer->renderer();
-
-    if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonActiveAnimation;
-
-    if (requiresCompositingForOutOfFlowClipping(layer))
-        directReasons |= CompositingReasonOutOfFlowClipping;
-
-    if (requiresCompositingForOverflowScrolling(layer))
-        directReasons |= CompositingReasonOverflowScrollingTouch;
-
-    if (requiresCompositingForOverflowScrollingParent(layer))
-        directReasons |= CompositingReasonOverflowScrollingParent;
-
-    if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
-        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
-
-    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
-
-    ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
-    return directReasons;
-}
-
-CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
-{
-    CompositingReasons styleReasons = layer->styleDeterminedCompositingReasons();
-    ASSERT(styleDeterminedReasons(layer->renderer()) == styleReasons);
-    return styleReasons | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
-}
-
-bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
-{
-    // Need this done first to determine overflow.
-    ASSERT(!m_renderView.needsLayout());
-    if (isMainFrame())
-        return false;
-
-    if (!(m_compositingTriggers & ScrollableInnerFrameTrigger))
-        return false;
-
-    FrameView* frameView = m_renderView.frameView();
-    return frameView->isScrollable();
-}
-
 bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* renderer) const
 {
     if (!(m_compositingTriggers & ThreeDTransformTrigger))
         return false;
 
-    RenderStyle* style = renderer->style();
     // Note that we ask the renderer if it has a transform, because the style may have transforms,
     // but the renderer may be an inline that doesn't suppport them.
-    return renderer->hasTransform() && style->transform().has3DOperation();
+    return renderer->hasTransform() && renderer->style()->transform().has3DOperation();
 }
 
 bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const
@@ -145,30 +119,12 @@ bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(Ren
     return renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden;
 }
 
-bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & AnimationTrigger))
-        return false;
-
-    return shouldCompositeForActiveAnimations(*renderer);
-}
-
 bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* renderer) const
 {
     if (!(m_compositingTriggers & FilterTrigger))
         return false;
 
     return renderer->hasFilter();
-}
-
-bool CompositingReasonFinder::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const
-{
-    return !!layer->scrollParent();
-}
-
-bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
-{
-    return m_renderView.compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
 }
 
 bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObject* renderer) const
@@ -180,6 +136,57 @@ bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObjec
         return false;
 
     return renderer->style()->hasWillChangeGpuRasterizationHint();
+}
+
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+{
+    CompositingReasons directReasons = CompositingReasonNone;
+    RenderObject* renderer = layer->renderer();
+
+    if (requiresCompositingForAnimation(renderer))
+        directReasons |= CompositingReasonActiveAnimation;
+
+    if (m_renderView.compositorDrivenAcceleratedScrollingEnabled()) {
+        if (requiresCompositingForOutOfFlowClipping(layer))
+            directReasons |= CompositingReasonOutOfFlowClipping;
+
+        if (requiresCompositingForOverflowScrollingParent(layer))
+            directReasons |= CompositingReasonOverflowScrollingParent;
+    }
+
+    if (requiresCompositingForOverflowScrolling(layer))
+        directReasons |= CompositingReasonOverflowScrollingTouch;
+
+    if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
+        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
+
+    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
+
+    ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
+    return directReasons;
+}
+
+bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
+{
+    if (!(m_compositingTriggers & AnimationTrigger))
+        return false;
+
+    return shouldCompositeForActiveAnimations(*renderer);
+}
+
+bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
+{
+    return layer->isUnclippedDescendant();
+}
+
+bool CompositingReasonFinder::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const
+{
+    return layer->scrollParent();
+}
+
+bool CompositingReasonFinder::requiresCompositingForOverflowScrolling(const RenderLayer* layer) const
+{
+    return layer->needsCompositedScrolling();
 }
 
 bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
@@ -300,11 +307,6 @@ bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* rende
     }
 
     return true;
-}
-
-bool CompositingReasonFinder::requiresCompositingForOverflowScrolling(const RenderLayer* layer) const
-{
-    return layer->needsCompositedScrolling();
 }
 
 }
