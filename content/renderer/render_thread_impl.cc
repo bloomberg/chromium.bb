@@ -411,7 +411,8 @@ void RenderThreadImpl::Init() {
       RegisterExtension(GpuBenchmarkingExtension::Get());
 
   is_impl_side_painting_enabled_ =
-      command_line.HasSwitch(switches::kEnableImplSidePainting);
+      command_line.HasSwitch(switches::kEnableImplSidePainting) &&
+      !command_line.HasSwitch(switches::kDisableImplSidePainting);
   webkit::WebLayerImpl::SetImplSidePaintingEnabled(
       is_impl_side_painting_enabled_);
 

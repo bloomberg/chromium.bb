@@ -153,7 +153,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                                         widget_host->GetRoutingID()) != NULL),
       frame_evictor_(new DelegatedFrameEvictor(this)),
       using_delegated_renderer_(CommandLine::ForCurrentProcess()->HasSwitch(
-                                    switches::kEnableDelegatedRenderer)),
+                                    switches::kEnableDelegatedRenderer) &&
+                                !CommandLine::ForCurrentProcess()->HasSwitch(
+                                    switches::kDisableDelegatedRenderer)),
       locks_on_frame_count_(0),
       root_window_destroyed_(false) {
   if (!using_delegated_renderer_) {
