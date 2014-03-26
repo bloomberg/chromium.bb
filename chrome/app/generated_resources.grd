@@ -7026,7 +7026,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable "Ok Google" to start a voice search
       </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword  search preference">
-        When you say "Ok Google", Chrome will search for what you say next.
+        When you say "Ok Google," Chrome will search for what you say next.
       </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_TITLE" desc="The title text for the bubble to enable the hotword voice search trigger.">
         Ok Google
@@ -7044,7 +7044,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Retry
       </message>
       <message name="IDS_HOTWORD_AUDIO_LOGGING_ENABLE" desc="A checkbox in the hotword confirm dialog that allows for sending audio of 'Ok, Google' plus a few seconds before back to Google to improve voice search.">
-        Improve voice search by sending the sound of "Ok Google", and a few seconds before, to Google.
+        Improve voice search by sending the sound of "Ok Google," and a few seconds before, to Google.
       </message>
 
       <!-- Conflicts page -->
