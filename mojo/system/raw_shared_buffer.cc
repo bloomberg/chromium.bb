@@ -27,8 +27,6 @@ scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::Map(size_t offset,
     return scoped_ptr<Mapping>();
 
   return MapNoCheck(offset, length);
-  base::AutoLock locker(lock_);
-  return MapImplNoLock(offset, length);
 }
 
 bool RawSharedBuffer::IsValidMap(size_t offset, size_t length) {
