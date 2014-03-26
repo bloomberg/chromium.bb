@@ -521,5 +521,40 @@ TEST_F(AddressValidatorTest, SuggestionIncludesCountry) {
   EXPECT_EQ("US", suggestions[0].country_code);
 }
 
+TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "CA";
+  address.locality = "Los Angeles";
+  address.dependent_locality = "Venice";
+  address.postal_code = "90291";
+  address.sorting_code = "123";
+  address.address_lines.push_back("123 Main St");
+  address.organization = "Google";
+  address.recipient = "Jon Smith";
+
+  // Fields that should not have suggestions in US.
+  static const AddressField kNoSugestFields[] = {
+    COUNTRY,
+    LOCALITY,
+    DEPENDENT_LOCALITY,
+    SORTING_CODE,
+    STREET_ADDRESS,
+    ORGANIZATION,
+    RECIPIENT
+  };
+
+  static const size_t kNumNoSuggestFields =
+      sizeof kNoSugestFields / sizeof (AddressField);
+
+  for (size_t i = 0; i < kNumNoSuggestFields; ++i) {
+    std::vector<AddressData> suggestions;
+    EXPECT_EQ(AddressValidator::SUCCESS,
+              validator_->GetSuggestions(
+                  address, kNoSugestFields[i], 999, &suggestions));
+    EXPECT_TRUE(suggestions.empty());
+  }
+}
+
 }  // namespace addressinput
 }  // namespace i18n
