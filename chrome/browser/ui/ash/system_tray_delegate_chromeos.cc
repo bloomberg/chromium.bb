@@ -224,16 +224,11 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
       ProfileManager::GetActiveUserProfile(), sub_page);
 }
 
-void ShowSettingsSubPageForPrimaryUser(const std::string& sub_page) {
-  chrome::ShowSettingsSubPageForProfile(
-      ProfileManager::GetPrimaryUserProfile(), sub_page);
-}
-
 void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowSettingsSubPageForPrimaryUser(page);
+  ShowSettingsSubPageForActiveUser(page);
 }
 
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
@@ -833,7 +828,7 @@ void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
   std::string sub_page =
       std::string(chrome::kSearchSubPage) + "#" +
       l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-  ShowSettingsSubPageForPrimaryUser(sub_page);
+  ShowSettingsSubPageForActiveUser(sub_page);
 }
 
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {
