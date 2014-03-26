@@ -148,7 +148,9 @@ void ClearBrowserDataHandler::RegisterMessages() {
 
 void ClearBrowserDataHandler::HandleClearBrowserData(
     const base::ListValue* value) {
-  DCHECK(!remover_);
+  // TODO(engedy): change this back to a DCHECK once we have updated the UI.
+  if (remover_)
+    return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
