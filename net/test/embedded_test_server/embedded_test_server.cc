@@ -20,7 +20,6 @@
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/tools/fetch/http_listen_socket.h"
 
 namespace net {
 namespace test_server {

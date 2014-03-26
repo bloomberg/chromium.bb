@@ -2748,49 +2748,6 @@
           'msvs_disabled_warnings': [4267, ],
         },
         {
-          'target_name': 'fetch_client',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../testing/gtest.gyp:gtest',
-            '../url/url.gyp:url_lib',
-            'net',
-            'net_with_v8',
-          ],
-          'sources': [
-            'tools/fetch/fetch_client.cc',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [4267, ],
-        },
-        {
-          'target_name': 'fetch_server',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../url/url.gyp:url_lib',
-            'net',
-          ],
-          'sources': [
-            'tools/fetch/fetch_server.cc',
-            'tools/fetch/http_listen_socket.cc',
-            'tools/fetch/http_listen_socket.h',
-            'tools/fetch/http_server.cc',
-            'tools/fetch/http_server.h',
-            'tools/fetch/http_server_request_info.cc',
-            'tools/fetch/http_server_request_info.h',
-            'tools/fetch/http_server_response_info.cc',
-            'tools/fetch/http_server_response_info.h',
-            'tools/fetch/http_session.cc',
-            'tools/fetch/http_session.h',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [4267, ],
-        },
-        {
           'target_name': 'gdig',
           'type': 'executable',
           'dependencies': [
