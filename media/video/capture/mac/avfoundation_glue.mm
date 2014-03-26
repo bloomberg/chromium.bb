@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
+#include "base/metrics/field_trial.h"
 #include "media/base/media_switches.h"
 
 namespace {
@@ -122,8 +123,10 @@ bool AVFoundationGlue::IsAVFoundationSupported() {
   // DeviceMonitorMac will initialize this static bool from the main UI thread
   // once, during Chrome startup so this construction is thread safe.
   static bool is_av_foundation_supported = base::mac::IsOSLionOrLater() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAVFoundation) && [AVFoundationBundle() load];
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAVFoundation) ||
+          base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture")
+              == "Enabled") && [AVFoundationBundle() load];
   return is_av_foundation_supported;
 }
 
