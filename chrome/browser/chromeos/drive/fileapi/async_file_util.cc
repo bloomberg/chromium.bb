@@ -47,8 +47,6 @@ void PostFileSystemCallback(
 
 // Runs CreateOrOpenFile callback based on the given |error| and |file|.
 void RunCreateOrOpenFileCallback(
-    const fileapi_internal::FileSystemGetter& file_system_getter,
-    const base::FilePath& file_path,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::File::Error error,
     base::PlatformFile file,
@@ -144,8 +142,7 @@ void AsyncFileUtil::CreateOrOpen(
       base::Bind(&fileapi_internal::OpenFile,
                  file_path, file_flags,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&RunCreateOrOpenFileCallback,
-                                getter, file_path, callback))),
+                     base::Bind(&RunCreateOrOpenFileCallback, callback))),
       base::Bind(&RunCreateOrOpenFileCallbackOnError,
                  callback, base::File::FILE_ERROR_FAILED));
 }
