@@ -46,6 +46,11 @@ def run_cups_config(mode):
     if flag_mode is None or flag_mode == mode:
       flags_subset.append(flag)
 
+  # Note: cross build is confused by the option, and may trigger linker
+  # warning causing build error.
+  if '-lgnutls' in flags_subset:
+    flags_subset.remove('-lgnutls')
+
   return flags_subset
 
 

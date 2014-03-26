@@ -745,7 +745,10 @@
           },
           'link_settings': {
             'libraries': [
-              '<!@(<(libgcrypt-config) --libs)',
+              # libgcrypt-config does not support --libs-only-l options,
+              # and the result contains -L options, which shouldn't be in
+              # the entries of 'libraries'. So filter them out.
+              '<!@(<(libgcrypt-config) --libs | sed -e \'s/-L[^ ]*//g\')',
             ],
           },
         }],
