@@ -21,7 +21,125 @@ from gyp.common import GypError
 # Populated lazily by XcodeVersion, for efficiency, and to fix an issue when
 # "xcodebuild" is called too quickly (it has been found to return incorrect
 # version number).
-XCODE_VERSION_CACHE = []
+XCODE_VERSION_CACHE = None
+
+# Populated lazily by GetXcodeArchsDefault, to an |XcodeArchsDefault| instance
+# corresponding to the installed version of Xcode.
+XCODE_ARCHS_DEFAULT_CACHE = None
+
+
+def XcodeArchsVariableMapping(archs, archs_including_64_bit=None):
+  """Constructs a dictionary with expansion for $(ARCHS_STANDARD) variable,
+  and optionally for $(ARCHS_STANDARD_INCLUDING_64_BIT)."""
+  mapping = {'$(ARCHS_STANDARD)': archs}
+  if archs_including_64_bit:
+    mapping['$(ARCHS_STANDARD_INCLUDING_64_BIT)'] = archs_including_64_bit
+  return mapping
+
+class XcodeArchsDefault(object):
+  """A class to resolve ARCHS variable from xcode_settings, resolving Xcode
+  macros and implementing filtering by VALID_ARCHS. The expansion of macros
+  depends on the SDKROOT used ("macosx", "iphoneos", "iphonesimulator") and
+  on the version of Xcode.
+  """
+
+  # Match variable like $(ARCHS_STANDARD).
+  variable_pattern = re.compile(r'\$\([a-zA-Z_][a-zA-Z0-9_]*\)$')
+
+  def __init__(self, default, mac, iphonesimulator, iphoneos):
+    self._default = (default,)
+    self._archs = {'mac': mac, 'ios': iphoneos, 'iossim': iphonesimulator}
+
+  def _VariableMapping(self, sdkroot):
+    """Returns the dictionary of variable mapping depending on the SDKROOT."""
+    sdkroot = sdkroot.lower()
+    if 'iphoneos' in sdkroot:
+      return self._archs['ios']
+    elif 'iphonesimulator' in sdkroot:
+      return self._archs['iossim']
+    else:
+      return self._archs['mac']
+
+  def _ExpandArchs(self, archs, sdkroot):
+    """Expands variables references in ARCHS, and remove duplicates."""
+    variable_mapping = self._VariableMapping(sdkroot)
+    expanded_archs = []
+    for arch in archs:
+      if self.variable_pattern.match(arch):
+        variable = arch
+        try:
+          variable_expansion = variable_mapping[variable]
+          for arch in variable_expansion:
+            if arch not in expanded_archs:
+              expanded_archs.append(arch)
+        except KeyError as e:
+          print 'Warning: Ignoring unsupported variable "%s".' % variable
+      elif arch not in expanded_archs:
+        expanded_archs.append(arch)
+    return expanded_archs
+
+  def ActiveArchs(self, archs, valid_archs, sdkroot):
+    """Expands variables references in ARCHS, and filter by VALID_ARCHS if it
+    is defined (if not set, Xcode accept any value in ARCHS, otherwise, only
+    values present in VALID_ARCHS are kept)."""
+    expanded_archs = self._ExpandArchs(archs or self._default, sdkroot or '')
+    if valid_archs:
+      filtered_archs = []
+      for arch in expanded_archs:
+        if arch in valid_archs:
+          filtered_archs.append(arch)
+      expanded_archs = filtered_archs
+    return expanded_archs
+
+
+def GetXcodeArchsDefault():
+  """Returns the |XcodeArchsDefault| object to use to expand ARCHS for the
+  installed version of Xcode. The default values used by Xcode for ARCHS
+  and the expansion of the variables depends on the version of Xcode used.
+
+  For all version anterior to Xcode 5.0 or posterior to Xcode 5.1 included
+  uses $(ARCHS_STANDARD) if ARCHS is unset, while Xcode 5.0 to 5.0.2 uses
+  $(ARCHS_STANDARD_INCLUDING_64_BIT). This variable was added to Xcode 5.0
+  and deprecated with Xcode 5.1.
+
+  For "macosx" SDKROOT, all version starting with Xcode 5.0 includes 64-bit
+  architecture as part of $(ARCHS_STANDARD) and default to only building it.
+
+  For "iphoneos" and "iphonesimulator" SDKROOT, 64-bit architectures are part
+  of $(ARCHS_STANDARD_INCLUDING_64_BIT) from Xcode 5.0. From Xcode 5.1, they
+  are also part of $(ARCHS_STANDARD).
+
+  All thoses rules are coded in the construction of the |XcodeArchsDefault|
+  object to use depending on the version of Xcode detected. The object is
+  for performance reason."""
+  global XCODE_ARCHS_DEFAULT_CACHE
+  if XCODE_ARCHS_DEFAULT_CACHE:
+    return XCODE_ARCHS_DEFAULT_CACHE
+  xcode_version, _ = XcodeVersion()
+  if xcode_version < '0500':
+    XCODE_ARCHS_DEFAULT_CACHE = XcodeArchsDefault(
+        '$(ARCHS_STANDARD)',
+        XcodeArchsVariableMapping(['i386']),
+        XcodeArchsVariableMapping(['i386']),
+        XcodeArchsVariableMapping(['armv7']))
+  elif xcode_version < '0510':
+    XCODE_ARCHS_DEFAULT_CACHE = XcodeArchsDefault(
+        '$(ARCHS_STANDARD_INCLUDING_64_BIT)',
+        XcodeArchsVariableMapping(['x86_64'], ['x86_64']),
+        XcodeArchsVariableMapping(['i386'], ['i386', 'x86_64']),
+        XcodeArchsVariableMapping(
+            ['armv7', 'armv7s'],
+            ['armv7', 'armv7s', 'arm64']))
+  else:
+    XCODE_ARCHS_DEFAULT_CACHE = XcodeArchsDefault(
+        '$(ARCHS_STANDARD)',
+        XcodeArchsVariableMapping(['x86_64'], ['x86_64']),
+        XcodeArchsVariableMapping(['i386', 'x86_64'], ['i386', 'x86_64']),
+        XcodeArchsVariableMapping(
+            ['armv7', 'armv7s', 'arm64'],
+            ['armv7', 'armv7s', 'arm64']))
+  return XCODE_ARCHS_DEFAULT_CACHE
+
 
 class XcodeSettings(object):
   """A class that understands the gyp 'xcode_settings' object."""
@@ -268,9 +386,12 @@ class XcodeSettings(object):
 
   def GetActiveArchs(self, configname):
     """Returns the architectures this target should be built for."""
-    # TODO: Look at VALID_ARCHS, ONLY_ACTIVE_ARCH; possibly set
-    # CURRENT_ARCH / NATIVE_ARCH env vars?
-    return self.xcode_settings[configname].get('ARCHS', [self._DefaultArch()])
+    config_settings = self.xcode_settings[configname]
+    xcode_archs_default = GetXcodeArchsDefault()
+    return xcode_archs_default.ActiveArchs(
+        config_settings.get('ARCHS'),
+        config_settings.get('VALID_ARCHS'),
+        config_settings.get('SDKROOT'))
 
   def _GetSdkVersionInfoItem(self, sdk, infoitem):
     # xcodebuild requires Xcode and can't run on Command Line Tools-only
@@ -940,32 +1061,6 @@ class XcodeSettings(object):
           return sdk_root
     return ''
 
-  def _DefaultArch(self):
-    # For Mac projects, Xcode changed the default value used when ARCHS is not
-    # set from "i386" to "x86_64".
-    #
-    # For iOS projects, the value used when ARCHS is unset depends on the
-    # version of Xcode. The following array summarize the default used:
-    #
-    #  Xcode Version | ARCHS for simulator | ARCHS for device
-    # ---------------+---------------------+--------------------
-    #     < 5.0      | i386                | armv7 armv7s
-    #     < 5.1 (*)  | i386 x86_64         | armv7 armv7s arm64
-    #    >= 5.1 (**) | i386 x86_64         | armv7 armv7s arm64
-    #
-    # (*): the default is $(ARCHS_STANDARD_INCLUDING_64_BIT) instead of the
-    # default of $(ARCHS_STANDARD) used by previous versions of Xcode.
-    #
-    # (**): the default is back to $(ARCHS_STANDARD), but the macro has been
-    # updated to also include 64-bit architectures.
-    #
-    # Since the value returned by this function is only used when ARCHS is not
-    # set, then on iOS we return "i386", as the default xcode project generator
-    # does not set ARCHS if it is not set in the .gyp file.
-    version, build = XcodeVersion()
-    if version >= '0500':
-      return 'x86_64'
-    return 'i386'
 
 class MacPrefixHeader(object):
   """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature.
@@ -1083,9 +1178,9 @@ def XcodeVersion():
   #    Component versions: DevToolsCore-1809.0; DevToolsSupport-1806.0
   #    BuildVersion: 10M2518
   # Convert that to '0463', '4H1503'.
+  global XCODE_VERSION_CACHE
   if XCODE_VERSION_CACHE:
-    assert len(XCODE_VERSION_CACHE) >= 2
-    return tuple(XCODE_VERSION_CACHE[:2])
+    return XCODE_VERSION_CACHE
   try:
     version_list = GetStdout(['xcodebuild', '-version']).splitlines()
     # In some circumstances xcodebuild exits 0 but doesn't return
@@ -1110,8 +1205,8 @@ def XcodeVersion():
   version = (version + '0' * (3 - len(version))).zfill(4)
   if build:
     build = build.split()[-1]
-  XCODE_VERSION_CACHE.extend((version, build))
-  return version, build
+  XCODE_VERSION_CACHE = (version, build)
+  return XCODE_VERSION_CACHE
 
 
 # This function ported from the logic in Homebrew's CLT version check
@@ -1440,74 +1535,6 @@ def _HasIOSTarget(targets):
   return False
 
 
-def _IOSIsDeviceSDKROOT(sdkroot):
-  """Tests if |sdkroot| is a SDK for building for device."""
-  return 'iphoneos' in sdkroot.lower()
-
-
-def _IOSDefaultArchForSDKRoot(sdkroot):
-  """Returns the expansion of standard ARCHS macro depending on the version
-  of Xcode installed and configured, and which |sdkroot| to use (iphoneos or
-  simulator)."""
-  xcode_version, xcode_build = XcodeVersion()
-  if xcode_version < '0500':
-    if _IOSIsDeviceSDKROOT(sdkroot):
-      return {'$(ARCHS_STANDARD)': ['armv7']}
-    else:
-      return {'$(ARCHS_STANDARD)': ['i386']}
-  elif xcode_version < '0510':
-    if _IOSIsDeviceSDKROOT(sdkroot):
-      return {
-          '$(ARCHS_STANDARD)': ['armv7', 'armv7s'],
-          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['armv7', 'armv7s', 'arm64'],
-      }
-    else:
-      return {
-          '$(ARCHS_STANDARD)': ['i386'],
-          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['i386', 'x86_64'],
-      }
-  else:
-    if _IOSIsDeviceSDKROOT(sdkroot):
-      return {
-          '$(ARCHS_STANDARD)': ['armv7', 'armv7s', 'arm64'],
-          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['armv7', 'armv7s', 'arm64'],
-      }
-    else:
-      return {
-          '$(ARCHS_STANDARD)': ['i386', 'x86_64'],
-          '$(ARCHS_STANDARD_INCLUDING_64_BIT)': ['i386', 'x86_64'],
-      }
-
-
-def _FilterIOSArchitectureForSDKROOT(xcode_settings):
-  """Filter the ARCHS value from the |xcode_settings| dictionary to only
-  contains architectures valid for the sdk configured in SDKROOT value."""
-  defaults_archs = _IOSDefaultArchForSDKRoot(xcode_settings.get('SDKROOT', ''))
-  allowed_archs = set()
-  for archs in defaults_archs.itervalues():
-    allowed_archs.update(archs)
-  selected_archs = set()
-  archs = xcode_settings.get('ARCHS')
-  if archs:
-    # Respect any architecture that have been explicitly configured in the
-    # input gyp files (except variables like $(ARCHS_STANDARD)).
-    variable_pattern = re.compile(r'^\$\([a-zA-Z0-9_]*\)$')
-    for arch in archs:
-      if not variable_pattern.search(arch):
-        allowed_archs.add(arch)
-  else:
-    archs = ['$(ARCHS_STANDARD)']
-  for arch in archs:
-    if arch in defaults_archs:
-      selected_archs.update(defaults_archs[arch])
-    elif arch in allowed_archs:
-      selected_archs.add(arch)
-  valid_archs = set(xcode_settings.get('VALID_ARCHS', []))
-  if valid_archs:
-    selected_archs = selected_archs & valid_archs
-  xcode_settings['ARCHS'] = list(selected_archs)
-
-
 def _AddIOSDeviceConfigurations(targets):
   """Clone all targets and append -iphoneos to the name. Configure these targets
   to build for iOS devices and use correct architectures for those builds."""
@@ -1519,8 +1546,6 @@ def _AddIOSDeviceConfigurations(targets):
       configs[config_name + '-iphoneos'] = iphoneos_config_dict
       if toolset == 'target':
         iphoneos_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
-      _FilterIOSArchitectureForSDKROOT(iphoneos_config_dict['xcode_settings'])
-      _FilterIOSArchitectureForSDKROOT(config_dict['xcode_settings'])
   return targets
 
 def CloneConfigurationForDeviceAndEmulator(target_dicts):

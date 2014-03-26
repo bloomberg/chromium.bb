@@ -29,6 +29,12 @@ if sys.platform == 'darwin':
     expected_type = ['i386']
   TestMac.CheckFileType(test, result_file, expected_type)
 
+  test.run_gyp('test-valid-archs.gyp', chdir='archs')
+  test.build('test-valid-archs.gyp', test.ALL, chdir='archs')
+  result_file = test.built_file_path('Test', chdir='archs')
+  test.must_exist(result_file)
+  TestMac.CheckFileType(test, result_file, ['x86_64'])
+
   test.run_gyp('test-archs-x86_64.gyp', chdir='archs')
   test.build('test-archs-x86_64.gyp', test.ALL, chdir='archs')
   result_file = test.built_file_path('Test64', chdir='archs')
