@@ -44,7 +44,6 @@
 #include "wayland-client.h"
 #include "wayland-private.h"
 
-
 /** \cond */
 
 enum wl_proxy_flag {
@@ -1318,8 +1317,12 @@ wl_display_dispatch_queue(struct wl_display *display,
 		return ret;
 	}
 
+	/* We ignore EPIPE here, so that we try to read events before
+	 * returning an error.  When the compositor sends an error it
+	 * will close the socket, and if we bail out here we don't get
+	 * a chance to process the error. */
 	ret = wl_connection_flush(display->connection);
-	if (ret < 0 && errno != EAGAIN) {
+	if (ret < 0 && errno != EAGAIN && errno != EPIPE) {
 		display_fatal_error(display, errno);
 		goto err_unlock;
 	}
