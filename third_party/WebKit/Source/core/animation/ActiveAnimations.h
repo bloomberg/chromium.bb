@@ -49,10 +49,12 @@ bool shouldCompositeForActiveAnimations(const RenderObject&);
 bool hasActiveAnimations(const RenderObject&, CSSPropertyID);
 bool hasActiveAnimationsOnCompositor(const RenderObject&, CSSPropertyID);
 
-class ActiveAnimations {
+class ActiveAnimations : public NoBaseWillBeGarbageCollectedFinalized<ActiveAnimations> {
 public:
     ActiveAnimations()
-        : m_animationStyleChange(false) { }
+        : m_animationStyleChange(false)
+    {
+    }
 
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
@@ -77,6 +79,8 @@ public:
     void cancelAnimationOnCompositor();
 
     void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
+
+    void trace(Visitor*);
 
 private:
     bool isAnimationStyleChange() const { return m_animationStyleChange; }

@@ -385,7 +385,7 @@ ActiveAnimations& Element::ensureActiveAnimations()
 {
     ElementRareData& rareData = ensureElementRareData();
     if (!rareData.activeAnimations())
-        rareData.setActiveAnimations(adoptPtr(new ActiveAnimations()));
+        rareData.setActiveAnimations(adoptPtrWillBeNoop(new ActiveAnimations()));
     return *rareData.activeAnimations();
 }
 

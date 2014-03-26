@@ -67,9 +67,9 @@ public:
 
     const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
 
-    void setAnimationUpdate(PassOwnPtr<CSSAnimationUpdate>);
+    void setAnimationUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate>);
     const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
-    PassOwnPtr<CSSAnimationUpdate> takeAnimationUpdate();
+    PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> takeAnimationUpdate();
 
     void setParentStyle(PassRefPtr<RenderStyle> parentStyle) { m_parentStyle = parentStyle; }
     const RenderStyle* parentStyle() const { return m_parentStyle.get(); }
@@ -153,7 +153,7 @@ private:
     // so we keep it separate from m_elementContext.
     RefPtr<RenderStyle> m_parentStyle;
 
-    OwnPtr<CSSAnimationUpdate> m_animationUpdate;
+    OwnPtrWillBeMember<CSSAnimationUpdate> m_animationUpdate;
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;

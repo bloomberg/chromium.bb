@@ -100,4 +100,9 @@ void ActiveAnimations::cancelAnimationOnCompositor()
         it->key->cancelAnimationOnCompositor();
 }
 
+void ActiveAnimations::trace(Visitor* visitor)
+{
+    visitor->trace(m_cssAnimations);
+}
+
 } // namespace WebCore

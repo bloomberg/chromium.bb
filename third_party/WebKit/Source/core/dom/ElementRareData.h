@@ -103,7 +103,7 @@ public:
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
     ActiveAnimations* activeAnimations() { return m_activeAnimations.get(); }
-    void setActiveAnimations(PassOwnPtr<ActiveAnimations> activeAnimations)
+    void setActiveAnimations(PassOwnPtrWillBeRawPtr<ActiveAnimations> activeAnimations)
     {
         m_activeAnimations = activeAnimations;
     }
@@ -134,7 +134,7 @@ private:
     OwnPtr<ElementShadow> m_shadow;
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
-    OwnPtr<ActiveAnimations> m_activeAnimations;
+    OwnPtrWillBePersistent<ActiveAnimations> m_activeAnimations;
     OwnPtr<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<RenderStyle> m_computedStyle;
