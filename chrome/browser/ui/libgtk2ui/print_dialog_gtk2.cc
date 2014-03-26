@@ -17,12 +17,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/printing_gtk2_util.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
-#include "ui/aura/window.h"
 
 using content::BrowserThread;
 using printing::PageRanges;
@@ -137,12 +135,6 @@ PrintDialogGtk2::PrintDialogGtk2(PrintingContextLinux* context)
 PrintDialogGtk2::~PrintDialogGtk2() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  aura::Window* parent = libgtk2ui::GetAuraTransientParent(dialog_);
-  if (parent) {
-    parent->RemoveObserver(this);
-    libgtk2ui::ClearAuraTransientParent(dialog_);
-  }
-
   if (dialog_) {
     gtk_widget_destroy(dialog_);
     dialog_ = NULL;
@@ -242,8 +234,6 @@ void PrintDialogGtk2::ShowDialog(
 
   // TODO(mukai): take care of parent as select_file_dialog_impl_gtk2.
   dialog_ = gtk_print_unix_dialog_new(NULL, NULL);
-  libgtk2ui::SetGtkTransientForAura(dialog_, parent_view);
-  parent_view->AddObserver(this);
   g_signal_connect(dialog_, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
@@ -441,12 +431,4 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
 void PrintDialogGtk2::InitPrintSettings(PrintSettings* settings) {
   InitPrintSettingsGtk(gtk_settings_, page_setup_, settings);
   context_->InitWithSettings(*settings);
-}
-
-void PrintDialogGtk2::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(libgtk2ui::GetAuraTransientParent(dialog_), window);
-
-  libgtk2ui::ClearAuraTransientParent(dialog_);
-  window->RemoveObserver(this);
-  Release();
 }
