@@ -287,7 +287,7 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_QUIC_PROTOCOL_ERROR;
   }
   rv = session_->CryptoConnect(
-      factory_->require_confirmation() || is_https_,
+      factory_->require_confirmation() || is_https_ || is_post_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
   return rv;
