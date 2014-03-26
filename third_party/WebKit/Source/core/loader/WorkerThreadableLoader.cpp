@@ -82,11 +82,13 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope* worker
 
     RefPtr<WorkerThreadableLoader> loader = WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options);
 
-    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
-    blink::WebWaitableEvent* signalled = blink::Platform::current()->waitMultipleEvents(events);
-    if (signalled == shutdownEvent) {
-        loader->cancel();
-        return;
+    {
+        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        blink::WebWaitableEvent* signalled = blink::Platform::current()->waitMultipleEvents(events);
+        if (signalled == shutdownEvent) {
+            loader->cancel();
+            return;
+        }
     }
 
     clientBridgePtr->run();
