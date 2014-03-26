@@ -20,6 +20,7 @@ struct PPAPI_SHARED_EXPORT PpapiNaClPluginArgs {
   bool off_the_record;
   PpapiPermissions permissions;
   bool supports_dev_channel;
+  unsigned keepalive_throttle_interval_milliseconds;
 
   // Switches from the command-line.
   std::vector<std::string> switch_names;
