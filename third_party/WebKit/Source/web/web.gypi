@@ -259,6 +259,7 @@
       'painting/ContinuousPainter.h',
       'painting/PaintAggregator.cpp',
       'painting/PaintAggregator.h',
+      'win/WebFontRendering.cpp',
     ],
     'web_unittest_files': [
       'tests/AssociatedURLLoaderTest.cpp',

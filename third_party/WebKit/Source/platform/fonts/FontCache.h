@@ -93,8 +93,10 @@ public:
 #endif
 
 #if OS(WIN)
-    bool useSubpixelPositioning() const { return m_useSubpixelPositioning; }
+    bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
     SkFontMgr* fontManager() { return m_fontManager.get(); }
+    static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
+    static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
 #endif
 
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -143,7 +145,8 @@ private:
 
 #if OS(WIN)
     OwnPtr<SkFontMgr> m_fontManager;
-    bool m_useSubpixelPositioning;
+    static bool s_useDirectWrite;
+    static bool s_useSubpixelPositioning;
 #endif
 
 #if OS(MACOSX) || OS(ANDROID)

@@ -64,6 +64,11 @@ typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCa
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
+#if OS(WIN)
+bool FontCache::s_useDirectWrite = false;
+bool FontCache::s_useSubpixelPositioning = false;
+#endif // OS(WIN)
+
 FontCache* FontCache::fontCache()
 {
     DEFINE_STATIC_LOCAL(FontCache, globalFontCache, ());

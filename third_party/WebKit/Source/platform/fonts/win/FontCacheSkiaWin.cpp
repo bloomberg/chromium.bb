@@ -45,21 +45,17 @@ namespace WebCore {
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
-    SkFontMgr* fontManager = 0;
+    SkFontMgr* fontManager;
 
-    // Prefer DirectWrite (if runtime feature is enabled) but fallback
-    // to GDI on platforms where DirectWrite is not supported.
-    if (RuntimeEnabledFeatures::directWriteEnabled())
+    if (s_useDirectWrite) {
         fontManager = SkFontMgr_New_DirectWrite();
-
-    // Subpixel text positioning is not supported by the GDI backend.
-    m_useSubpixelPositioning = fontManager
-        ? RuntimeEnabledFeatures::subpixelFontScalingEnabled()
-        : false;
-
-    if (!fontManager)
+    } else {
         fontManager = SkFontMgr_New_GDI();
+        // Subpixel text positioning is not supported by the GDI backend.
+        s_useSubpixelPositioning = false;
+    }
 
+    ASSERT(fontManager);
     m_fontManager = adoptPtr(fontManager);
 }
 
@@ -212,7 +208,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.weight() >= FontWeightBold && !tf->isBold() || fontDescription.isSyntheticBold(),
         fontDescription.style() == FontStyleItalic && !tf->isItalic() || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
-        m_useSubpixelPositioning);
+        s_useSubpixelPositioning);
     return result;
 }
 
