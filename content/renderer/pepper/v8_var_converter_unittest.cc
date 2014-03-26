@@ -226,7 +226,7 @@ class V8VarConverterTest : public testing::Test {
     if (!RoundTrip(expected.get(), &actual_var))
       return false;
     ScopedPPVar actual(ScopedPPVar::PassRef(), actual_var);
-    return TestEqual(expected.get(), actual.get());
+    return TestEqual(expected.get(), actual.get(), false);
   }
 
   v8::Isolate* isolate_;
@@ -444,7 +444,7 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     ScopedPPVar release_expected(
         ScopedPPVar::PassRef(), expected->GetPPVar());
 
-    ASSERT_TRUE(TestEqual(release_expected.get(), release_actual.get()));
+    ASSERT_TRUE(TestEqual(release_expected.get(), release_actual.get(), true));
   }
 }
 

@@ -25,6 +25,7 @@ namespace {
 // nodes in |actual| and check whether the graphs have equivalent topology.
 bool Equals(const PP_Var& expected,
             const PP_Var& actual,
+            bool test_string_references,
             base::hash_map<int64_t, int64_t>* visited_map) {
   if (expected.type != actual.type) {
     LOG(ERROR) << "expected type: " << expected.type
@@ -43,7 +44,8 @@ bool Equals(const PP_Var& expected,
         return true;
       }
     } else {
-      (*visited_map)[expected.value.as_id] = actual.value.as_id;
+      if (expected.type != PP_VARTYPE_STRING || test_string_references)
+        (*visited_map)[expected.value.as_id] = actual.value.as_id;
     }
   }
   switch (expected.type) {
@@ -119,6 +121,7 @@ bool Equals(const PP_Var& expected,
       for (size_t i = 0; i < expected_var->elements().size(); ++i) {
         if (!Equals(expected_var->elements()[i].get(),
                     actual_var->elements()[i].get(),
+                    test_string_references,
                     visited_map)) {
           return false;
         }
@@ -148,6 +151,7 @@ bool Equals(const PP_Var& expected,
         }
         if (!Equals(expected_iter->second.get(),
                     actual_iter->second.get(),
+                    test_string_references,
                     visited_map)) {
           return false;
         }
@@ -198,9 +202,11 @@ bool Equals(const PP_Var& expected,
 
 }  // namespace
 
-bool TestEqual(const PP_Var& expected, const PP_Var& actual) {
+bool TestEqual(const PP_Var& expected,
+               const PP_Var& actual,
+               bool test_string_references) {
   base::hash_map<int64_t, int64_t> visited_map;
-  return Equals(expected, actual, &visited_map);
+  return Equals(expected, actual, test_string_references, &visited_map);
 }
 
 }  // namespace ppapi

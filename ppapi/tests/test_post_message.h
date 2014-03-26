@@ -69,6 +69,9 @@ class TestPostMessage : public TestCase {
   // in both directions.
   std::string TestSendingData();
 
+  // Test sending string vars in both directions.
+  std::string TestSendingString();
+
   // Test sending ArrayBuffer vars in both directions.
   std::string TestSendingArrayBuffer();
 

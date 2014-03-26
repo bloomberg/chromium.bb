@@ -128,13 +128,14 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
         return false;
       }
       const std::string& value = string->value();
-      // Create a string object rather than a string primitive. This allows us
-      // to have multiple references to the same string in javascript, which
-      // matches the reference behavior of PP_Vars.
+      // Create a string primitive rather than a string object. This is lossy
+      // in the sense that string primitives in JavaScript can't be referenced
+      // in the same way that string vars can in pepper. But that information
+      // isn't very useful and primitive strings are a more expected form in JS.
       *result = v8::String::NewFromUtf8(isolate,
                                         value.c_str(),
                                         v8::String::kNormalString,
-                                        value.size())->ToObject();
+                                        value.size());
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {

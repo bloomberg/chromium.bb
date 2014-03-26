@@ -83,7 +83,13 @@ bool VarsEqual(const pp::Var& expected,
         return true;
       return false;
     }
-    (*visited_ids)[expected.pp_var().value.as_id] = actual.pp_var().value.as_id;
+    // Round-tripping reference graphs with strings will not necessarily
+    // result in isomorphic graphs. This is because string vars are converted
+    // to string primitives in JS which cannot be referenced.
+    if (!expected.is_string()) {
+      (*visited_ids)[expected.pp_var().value.as_id] =
+          actual.pp_var().value.as_id;
+    }
   }
 
   if (expected.is_number()) {
@@ -203,6 +209,7 @@ void TestPostMessage::RunTests(const std::string& filter) {
   // that was sent in Init above.
   RUN_TEST(SendInInit, filter);
   RUN_TEST(SendingData, filter);
+  RUN_TEST(SendingString, filter);
   RUN_TEST(SendingArrayBuffer, filter);
   RUN_TEST(SendingArray, filter);
   RUN_TEST(SendingDictionary, filter);
@@ -319,20 +326,13 @@ std::string TestPostMessage::TestSendingData() {
   // should start with these.
   WaitForMessages();
   ASSERT_TRUE(ClearListeners());
+
   // Set up the JavaScript message event listener to echo the data part of the
   // message event back to us.
   ASSERT_TRUE(AddEchoingListener("message_event.data"));
 
-  // Test sending a message to JavaScript for each supported type.  The JS sends
+  // Test sending a message to JavaScript for each supported type. The JS sends
   // the data back to us, and we check that they match.
-  message_data_.clear();
-  instance_->PostMessage(pp::Var(kTestString));
-  // PostMessage is asynchronous, so we should not receive a response yet.
-  ASSERT_EQ(0, message_data_.size());
-  ASSERT_EQ(1, WaitForMessages());
-  ASSERT_TRUE(message_data_.back().is_string());
-  ASSERT_EQ(message_data_.back().AsString(), kTestString);
-
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestBool));
   ASSERT_EQ(0, message_data_.size());
@@ -366,6 +366,36 @@ std::string TestPostMessage::TestSendingData() {
   ASSERT_EQ(0, message_data_.size());
   ASSERT_EQ(1, WaitForMessages());
   ASSERT_TRUE(message_data_.back().is_null());
+
+  message_data_.clear();
+  ASSERT_TRUE(ClearListeners());
+
+  PASS();
+}
+
+std::string TestPostMessage::TestSendingString() {
+  // Clean up after previous tests. This also swallows the message sent by Init
+  // if we didn't run the 'SendInInit' test. All tests other than 'SendInInit'
+  // should start with these.
+  WaitForMessages();
+  ASSERT_TRUE(ClearListeners());
+
+  // Test that a string var is converted to a primitive JS string.
+  message_data_.clear();
+  std::vector<std::string> properties_to_check;
+  properties_to_check.push_back(
+      "typeof message_event.data === 'string'");
+  ASSERT_SUBTEST_SUCCESS(CheckMessageProperties(kTestString,
+                                                properties_to_check));
+
+  ASSERT_TRUE(AddEchoingListener("message_event.data"));
+  message_data_.clear();
+  instance_->PostMessage(pp::Var(kTestString));
+  // PostMessage is asynchronous, so we should not receive a response yet.
+  ASSERT_EQ(0, message_data_.size());
+  ASSERT_EQ(1, WaitForMessages());
+  ASSERT_TRUE(message_data_.back().is_string());
+  ASSERT_EQ(message_data_.back().AsString(), kTestString);
 
   message_data_.clear();
   ASSERT_TRUE(ClearListeners());
@@ -476,6 +506,9 @@ std::string TestPostMessage::TestSendingArray() {
       "message_event.data.constructor.name === 'Array'");
   properties_to_check.push_back(
       std::string("message_event.data.length === ") + length_as_string);
+  // Check that the string is converted to a primitive JS string.
+  properties_to_check.push_back(
+      std::string("typeof message_event.data[1] === 'string'"));
   ASSERT_SUBTEST_SUCCESS(CheckMessageProperties(array, properties_to_check));
 
   // Set up the JavaScript message event listener to echo the data part of the
@@ -519,6 +552,9 @@ std::string TestPostMessage::TestSendingDictionary() {
   properties_to_check.push_back(
       std::string("Object.keys(message_event.data).length === ") +
       length_as_string);
+  // Check that the string is converted to a primitive JS string.
+  properties_to_check.push_back(
+      std::string("typeof message_event.data['bar'] === 'string'"));
   ASSERT_SUBTEST_SUCCESS(CheckMessageProperties(dictionary,
                                                 properties_to_check));
 

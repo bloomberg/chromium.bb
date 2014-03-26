@@ -405,17 +405,6 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
     return;
   }
 
-  // This is for backward compatibility. It usually makes sense for us to return
-  // a string object rather than a string primitive because it allows multiple
-  // references to the same string (as with PP_Var strings). However, prior to
-  // implementing dictionary and array, vars we would return a string primitive
-  // here. Changing it to an object now will break existing code that uses
-  // strict comparisons for strings returned from PostMessage. e.g. x === "123"
-  // will no longer return true. So if the only value to return is a string
-  // object, just return the string primitive.
-  if (v8_val->IsStringObject())
-    v8_val = v8_val->ToString();
-
   WebSerializedScriptValue serialized_val =
       WebSerializedScriptValue::serialize(v8_val);
 

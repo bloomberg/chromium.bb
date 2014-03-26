@@ -780,6 +780,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingString)
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(DISABLED_PostMessage_SendingArray)
       LIST_TEST(DISABLED_PostMessage_SendingDictionary)
@@ -801,6 +802,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingString)
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
@@ -816,6 +818,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingString)
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
@@ -831,6 +834,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingString)
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
@@ -846,6 +850,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingString)
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)

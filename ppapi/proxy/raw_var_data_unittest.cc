@@ -72,7 +72,7 @@ bool WriteReadAndCompare(const PP_Var& var) {
   if (!success)
     return false;
   ScopedPPVar actual(ScopedPPVar::PassRef(), result);
-  return TestEqual(expected.get(), actual.get());
+  return TestEqual(expected.get(), actual.get(), true);
 }
 
 }  // namespace
