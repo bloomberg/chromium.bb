@@ -197,13 +197,6 @@
   }
 
   function assertInterpolation(params, expectations) {
-    // If the prefixed property is not supported, try to unprefix it.
-    if (/^-[^-]+-/.test(params.property) && !CSS.supports(params.property, 'initial')) {
-      var unprefixed = params.property.replace(/^-[^-]+-/, '');
-      if (CSS.supports(unprefixed, 'initial')) {
-        params.property = unprefixed;
-      }
-    }
     var testId = defineKeyframes(params);
     var nextCaseId = 0;
     var cssTestContainer = createTestContainer(describeCSSTest(params), testId);
