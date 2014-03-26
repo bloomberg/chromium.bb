@@ -398,7 +398,12 @@ class MediaCodecBridge {
 
     @CalledByNative
     private void releaseOutputBuffer(int index, boolean render) {
-        mMediaCodec.releaseOutputBuffer(index, render);
+        try {
+            mMediaCodec.releaseOutputBuffer(index, render);
+        } catch(IllegalStateException e) {
+            // TODO(qinmin): May need to report the error to the caller. crbug.com/356498.
+            Log.e(TAG, "Failed to release output buffer", e);
+        }
     }
 
     @CalledByNative
