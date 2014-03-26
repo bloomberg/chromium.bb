@@ -6,15 +6,10 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
 
 #include <string>
-
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
-#include "content/public/browser/utility_process_host_client.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,56 +18,44 @@ class DictionaryValue;
 namespace component_updater {
 
 class ComponentInstaller;
+class ComponentPatcher;
 
-class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
+class DeltaUpdateOp {
  public:
+
   DeltaUpdateOp();
-
-  // Parses, runs, and verifies the operation. Calls |callback| with the
-  // result of the operation. The callback is called using |task_runner|.
-  void Run(const base::DictionaryValue* command_args,
-           const base::FilePath& input_dir,
-           const base::FilePath& unpack_dir,
-           ComponentInstaller* installer,
-           bool in_process,
-           const ComponentUnpacker::Callback& callback,
-           scoped_refptr<base::SequencedTaskRunner> task_runner);
-
- protected:
   virtual ~DeltaUpdateOp();
 
-  bool InProcess();
+  // Parses, runs, and verifies the operation, returning an error code if an
+  // error is encountered, and DELTA_OK otherwise. In case of errors,
+  // extended error information can be returned in the |error| parameter.
+  ComponentUnpacker::Error Run(base::DictionaryValue* command_args,
+                               const base::FilePath& input_dir,
+                               const base::FilePath& unpack_dir,
+                               ComponentPatcher* patcher,
+                               ComponentInstaller* installer,
+                               int* error);
 
+ protected:
   std::string output_sha256_;
   base::FilePath output_abs_path_;
 
  private:
-  friend class base::RefCountedThreadSafe<DeltaUpdateOp>;
-
-
   ComponentUnpacker::Error CheckHash();
 
   // Subclasses must override DoParseArguments to parse operation-specific
   // arguments. DoParseArguments returns DELTA_OK on success; any other code
   // represents failure.
   virtual ComponentUnpacker::Error DoParseArguments(
-      const base::DictionaryValue* command_args,
+      base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) = 0;
 
   // Subclasses must override DoRun to actually perform the patching operation.
-  // They must call the provided callback when they have completed their
-  // operations. In practice, the provided callback is always for "DoneRunning".
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) = 0;
-
-  // Callback given to subclasses for when they complete their operation.
-  // Validates the output, and posts a task to the patching operation's
-  // callback.
-  void DoneRunning(ComponentUnpacker::Error error, int extended_error);
-
-  bool in_process_;
-  ComponentUnpacker::Callback callback_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // DoRun returns DELTA_OK on success; any other code represents failure.
+  // Additional error information can be returned in the |error| parameter.
+  virtual ComponentUnpacker::Error DoRun(ComponentPatcher* patcher,
+                                         int* error) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOp);
 };
@@ -85,15 +68,14 @@ class DeltaUpdateOpCopy : public DeltaUpdateOp {
   DeltaUpdateOpCopy();
 
  private:
-  virtual ~DeltaUpdateOpCopy();
-
   // Overrides of DeltaUpdateOp.
   virtual ComponentUnpacker::Error DoParseArguments(
-      const base::DictionaryValue* command_args,
+      base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) OVERRIDE;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual ComponentUnpacker::Error DoRun(ComponentPatcher* patcher,
+                                         int* error) OVERRIDE;
 
   base::FilePath input_abs_path_;
 
@@ -109,101 +91,68 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   DeltaUpdateOpCreate();
 
  private:
-  virtual ~DeltaUpdateOpCreate();
-
   // Overrides of DeltaUpdateOp.
   virtual ComponentUnpacker::Error DoParseArguments(
-      const base::DictionaryValue* command_args,
+      base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) OVERRIDE;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual ComponentUnpacker::Error DoRun(ComponentPatcher* patcher,
+                                         int* error) OVERRIDE;
 
   base::FilePath patch_abs_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpCreate);
 };
 
-class DeltaUpdateOpPatchStrategy {
+// A 'bsdiff' operation takes an existing file on disk, and a bsdiff-
+// format patch file provided in the delta update package, and runs bsdiff
+// to construct an output file in the unpacking directory.
+class DeltaUpdateOpPatchBsdiff : public DeltaUpdateOp {
  public:
-  virtual ~DeltaUpdateOpPatchStrategy();
-
-  // Returns an integer to add to error codes to disambiguate their source.
-  virtual int GetErrorOffset() const = 0;
-
-  // Returns the "error code" that is expected in the successful install case.
-  virtual int GetSuccessCode() const = 0;
-
-  // Returns an IPC message that will start patching if it is sent to a
-  // UtilityProcessClient.
-  virtual scoped_ptr<IPC::Message> GetPatchMessage(
-      base::FilePath input_abs_path,
-      base::FilePath patch_abs_path,
-      base::FilePath output_abs_path) = 0;
-
-  // Does the actual patching operation, and returns an error code.
-  virtual int Patch(base::FilePath input_abs_path,
-                    base::FilePath patch_abs_path,
-                    base::FilePath output_abs_path) = 0;
-};
-
-class DeltaUpdateOpPatch;
-
-class DeltaUpdateOpPatchHost : public content::UtilityProcessHostClient {
- public:
-  explicit DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch> patcher);
-
-  void StartProcess(scoped_ptr<IPC::Message> message);
+  DeltaUpdateOpPatchBsdiff();
 
  private:
-  virtual ~DeltaUpdateOpPatchHost();
-
-  void OnPatchSucceeded();
-
-  void OnPatchFailed(int error_code);
-
-  // Overrides of content::UtilityProcessHostClient.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-
-  scoped_refptr<DeltaUpdateOpPatch> patcher_;
-};
-
-// Both 'bsdiff' and 'courgette' operations take an existing file on disk,
-// and a bsdiff- or Courgette-format patch file provided in the delta update
-// package, and run bsdiff or Courgette to construct an output file in the
-// unpacking directory.
-class DeltaUpdateOpPatch : public DeltaUpdateOp {
- public:
-  explicit DeltaUpdateOpPatch(scoped_ptr<DeltaUpdateOpPatchStrategy> strategy);
-
-  void DonePatching(ComponentUnpacker::Error error, int error_code);
-
- private:
-  virtual ~DeltaUpdateOpPatch();
-
   // Overrides of DeltaUpdateOp.
   virtual ComponentUnpacker::Error DoParseArguments(
-      const base::DictionaryValue* command_args,
+      base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) OVERRIDE;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual ComponentUnpacker::Error DoRun(ComponentPatcher* patcher,
+                                         int* error) OVERRIDE;
 
-  ComponentUnpacker::Callback callback_;
   base::FilePath patch_abs_path_;
   base::FilePath input_abs_path_;
-  scoped_ptr<DeltaUpdateOpPatchStrategy> strategy_;
-  scoped_refptr<DeltaUpdateOpPatchHost> host_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpPatch);
+  DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpPatchBsdiff);
 };
 
-// Factory functions to create DeltaUpdateOp instances.
-DeltaUpdateOp* CreateDeltaUpdateOp(const base::DictionaryValue& command);
+// A 'courgette' operation takes an existing file on disk, and a Courgette-
+// format patch file provided in the delta update package, and runs Courgette
+// to construct an output file in the unpacking directory.
+class DeltaUpdateOpPatchCourgette : public DeltaUpdateOp {
+ public:
+  DeltaUpdateOpPatchCourgette();
 
-DeltaUpdateOp* CreateDeltaUpdateOp(const std::string& operation);
+ private:
+  // Overrides of DeltaUpdateOp.
+  virtual ComponentUnpacker::Error DoParseArguments(
+      base::DictionaryValue* command_args,
+      const base::FilePath& input_dir,
+      ComponentInstaller* installer) OVERRIDE;
+
+  virtual ComponentUnpacker::Error DoRun(ComponentPatcher* patcher,
+                                         int* error) OVERRIDE;
+
+  base::FilePath patch_abs_path_;
+  base::FilePath input_abs_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpPatchCourgette);
+};
+
+// Factory function to create DeltaUpdateOp instances.
+DeltaUpdateOp* CreateDeltaUpdateOp(base::DictionaryValue* command);
 
 }  // namespace component_updater
 

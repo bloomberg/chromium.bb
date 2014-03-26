@@ -30,6 +30,7 @@ class ResourceThrottle;
 namespace component_updater {
 
 class OnDemandTester;
+class ComponentPatcher;
 
 // Component specific installers must derive from this class and implement
 // OnUpdateError() and Install(). A valid instance of this class must be
@@ -177,6 +178,9 @@ class ComponentUpdateService {
     virtual net::URLRequestContextGetter* RequestContext() = 0;
     // True means that all ops are performed in this process.
     virtual bool InProcess() = 0;
+    // Creates a new ComponentPatcher in a platform-specific way. This is useful
+    // for dependency injection.
+    virtual ComponentPatcher* CreateComponentPatcher() = 0;
     // True means that this client can handle delta updates.
     virtual bool DeltasEnabled() const = 0;
     // True means that the background downloader can be used for downloading

@@ -17,6 +17,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/component_updater/component_patcher_win.h"
+#endif
+
 namespace component_updater {
 
 namespace {
@@ -49,10 +53,9 @@ const char kDefaultUrlSource[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 // The url to send the pings to.
 const char kPingUrl[] = "http:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
+#if defined(OS_WIN)
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
-
-#if defined(OS_WIN)
 // Disables background downloads.
 const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
 #endif  // defined(OS_WIN)
@@ -106,6 +109,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;
+  virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
   virtual bool UseBackgroundDownloader() const OVERRIDE;
 
@@ -132,12 +136,12 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
       ",", &switch_values);
   fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
-  deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
-
 #if defined(OS_WIN)
+  deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
   background_downloads_enabled_ =
       !HasSwitchValue(switch_values, kSwitchDisableBackgroundDownloads);
 #else
+  deltas_enabled_ = false;
   background_downloads_enabled_ = false;
 #endif
 
@@ -196,6 +200,14 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() {
 
 bool ChromeConfigurator::InProcess() {
   return false;
+}
+
+ComponentPatcher* ChromeConfigurator::CreateComponentPatcher() {
+#if defined(OS_WIN)
+  return new ComponentPatcherWin();
+#else
+  return new ComponentPatcherCrossPlatform();
+#endif
 }
 
 bool ChromeConfigurator::DeltasEnabled() const {

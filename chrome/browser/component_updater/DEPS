@@ -1,5 +1,4 @@
 include_rules = [
-  "+courgette",
   "+media/cdm/ppapi/supported_cdm_versions.h",
   "+ppapi/shared_impl/ppapi_permissions.h",
   "+ppapi/thunk",

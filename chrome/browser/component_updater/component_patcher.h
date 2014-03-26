@@ -28,9 +28,9 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 
+#include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 
 namespace base {
@@ -40,60 +40,52 @@ class FilePath;
 namespace component_updater {
 
 class ComponentInstaller;
-class DeltaUpdateOp;
 
-// The type of a patch file.
-enum PatchType {
-  kPatchTypeUnknown,
-  kPatchTypeCourgette,
-  kPatchTypeBsdiff,
-};
-
-// Encapsulates a task for applying a differential update to a component.
-class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
+// Applies a delta patch to a single file. Specifically, creates a file at
+// |output_file| using |input_file| patched according to the algorithm
+// specified by |patch_type| using |patch_file|. Sets the value of error to
+// the error code of the failing patch operation, if there is such a failure.
+class ComponentPatcher {
  public:
-  // Takes an unpacked differential CRX (|input_dir|) and a component installer,
-  // and sets up the class to create a new (non-differential) unpacked CRX.
-  // If |in_process| is true, patching will be done completely within the
-  // existing process. Otherwise, some steps of patching may be done
-  // out-of-process.
-  ComponentPatcher(const base::FilePath& input_dir,
-                   const base::FilePath& unpack_dir,
-                   ComponentInstaller* installer,
-                   bool in_process,
-                   scoped_refptr<base::SequencedTaskRunner> task_runner);
+  // The type of a patch file.
+  enum PatchType {
+    kPatchTypeUnknown,
+    kPatchTypeCourgette,
+    kPatchTypeBsdiff,
+  };
 
-  // Starts patching files. This member function returns immediately, after
-  // posting a task to do the patching. When patching has been completed,
-  // |callback| will be called with the error codes if any error codes were
-  // encountered.
-  void Start(const ComponentUnpacker::Callback& callback);
-
- private:
-  friend class base::RefCountedThreadSafe<ComponentPatcher>;
-
-  virtual ~ComponentPatcher();
-
-  void StartPatching();
-
-  void PatchNextFile();
-
-  void DonePatchingFile(ComponentUnpacker::Error error, int extended_error);
-
-  void DonePatching(ComponentUnpacker::Error error, int extended_error);
-
-  const base::FilePath input_dir_;
-  const base::FilePath unpack_dir_;
-  ComponentInstaller* const installer_;
-  const bool in_process_;
-  ComponentUnpacker::Callback callback_;
-  scoped_ptr<base::ListValue> commands_;
-  base::ValueVector::const_iterator next_command_;
-  scoped_refptr<DeltaUpdateOp> current_operation_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentPatcher);
+  virtual ComponentUnpacker::Error Patch(PatchType patch_type,
+                                         const base::FilePath& input_file,
+                                         const base::FilePath& patch_file,
+                                         const base::FilePath& output_file,
+                                         int* error) = 0;
+  virtual ~ComponentPatcher() {}
 };
+
+class ComponentPatcherCrossPlatform : public ComponentPatcher {
+ public:
+  ComponentPatcherCrossPlatform();
+  virtual ComponentUnpacker::Error Patch(PatchType patch_type,
+                                         const base::FilePath& input_file,
+                                         const base::FilePath& patch_file,
+                                         const base::FilePath& output_file,
+                                         int* error) OVERRIDE;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ComponentPatcherCrossPlatform);
+};
+
+// This function takes an unpacked differential CRX (|input_dir|) and a
+// component installer, and creates a new (non-differential) unpacked CRX, which
+// is then installed normally.
+// The non-differential files are written into the |unpack_dir| directory.
+// When finished, calls the callback, passing error codes if any errors were
+// encountered.
+void DifferentialUpdatePatch(
+    const base::FilePath& input_dir,
+    const base::FilePath& unpack_dir,
+    ComponentPatcher* component_patcher,
+    ComponentInstaller* installer,
+    base::Callback<void(ComponentUnpacker::Error, int)> callback);
 
 }  // namespace component_updater
 

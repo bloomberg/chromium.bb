@@ -40,7 +40,6 @@ include_rules = [
   "+components/webdata/common",
   "+content/public/browser",
   "+content/test/net",
-  "+courgette",
   "+device/bluetooth",
   "+device/media_transfer_protocol",
   "+extensions/browser",

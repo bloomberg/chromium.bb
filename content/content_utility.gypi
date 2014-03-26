@@ -5,7 +5,6 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
-    '../courgette/courgette.gyp:courgette_lib',
   ],
   'sources': [
     'public/utility/content_utility_client.cc',
