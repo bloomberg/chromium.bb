@@ -140,4 +140,22 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeaders) {
   EXPECT_EQ(0, pe_headers.debug_data_size());
 }
 
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersWithDebugData) {
+  // Test extracting headers from something that is a PE image with debug data.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  binary_feature_extractor_->ExtractImageHeaders(
+      testdata_path_.DirName().AppendASCII("module_with_exports_x86.dll"),
+      &image_headers);
+  EXPECT_TRUE(image_headers.has_pe_headers());
+  const ClientDownloadRequest_PEImageHeaders& pe_headers =
+      image_headers.pe_headers();
+  EXPECT_TRUE(pe_headers.has_dos_header());
+  EXPECT_TRUE(pe_headers.has_file_header());
+  EXPECT_TRUE(pe_headers.has_optional_headers32());
+  EXPECT_FALSE(pe_headers.has_optional_headers64());
+  EXPECT_NE(0, pe_headers.section_header_size());
+  EXPECT_TRUE(pe_headers.has_export_section_data());
+  EXPECT_EQ(1U, pe_headers.debug_data_size());
+}
+
 }  // namespace safe_browsing

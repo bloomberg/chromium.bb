@@ -135,7 +135,7 @@ void BinaryFeatureExtractor::ExtractImageHeaders(
         pe_image.GetDebugEntry(i, &raw_data, &raw_data_size);
     if (directory_entry) {
       ClientDownloadRequest_PEImageHeaders_DebugData* debug_data =
-          pe_headers->mutable_debug_data(i);
+          pe_headers->add_debug_data();
       debug_data->set_directory_entry(directory_entry,
                                       sizeof(*directory_entry));
       if (raw_data)
