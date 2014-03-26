@@ -135,6 +135,7 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/PopupMenuClient.h"
 #include "platform/TraceEvent.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/Color.h"
@@ -3163,6 +3164,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
         screenPoint,
         static_cast<DragOperation>(m_operationsAllowed));
 
+    UserGestureIndicator gesture(DefinitelyProcessingNewUserGesture);
     m_page->dragController().performDrag(&dragData);
 
     m_dragOperation = WebDragOperationNone;
