@@ -436,7 +436,7 @@ const PrepopulatedEngine* engines_TN[] =
 
 // Turkey
 const PrepopulatedEngine* engines_TR[] =
-    { &google, &bing_tr_TR, &yahoo_tr, };
+    { &google, &bing_tr_TR, &yahoo_tr, &yandex_tr, };
 
 // Trinidad and Tobago
 const PrepopulatedEngine* engines_TT[] =
@@ -504,7 +504,7 @@ const PrepopulatedEngine* kAllEngines[] = {
   &yahoo_my,     &yahoo_nl,     &yahoo_nz,     &yahoo_pe,     &yahoo_ph,
   &yahoo_qc,     &yahoo_ro,     &yahoo_ru,     &yahoo_se,     &yahoo_sg,
   &yahoo_th,     &yahoo_tr,     &yahoo_tw,     &yahoo_uk,     &yahoo_ve,
-  &yahoo_vn,     &yahoo_za,     &yandex_ru,    &yandex_ua,
+  &yahoo_vn,     &yahoo_za,     &yandex_ru,    &yandex_tr,    &yandex_ua,
 
   // UMA-only engines:
   &atlas_cz,     &atlas_sk,     &avg,          &babylon,      &conduit,
@@ -513,7 +513,7 @@ const PrepopulatedEngine* kAllEngines[] = {
   &neti,         &nigma,        &ok,           &rambler,      &sapo,
   &search_results, &searchnu,   &snapdo,       &softonic,     &sweetim,
   &terra_ar,     &terra_es,     &tut,          &walla,        &wp,
-  &yandex_tr,    &zoznam,
+  &zoznam,
 };
 
 const struct LogoURLs {
