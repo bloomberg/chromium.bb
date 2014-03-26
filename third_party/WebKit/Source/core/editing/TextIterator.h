@@ -87,6 +87,8 @@ private:
 class TextIterator {
 public:
     explicit TextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
+    TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     ~TextIterator();
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
@@ -127,6 +129,8 @@ private:
         HandledNode,
         HandledChildren
     };
+
+    void initialize(const Position& start, const Position& end);
 
     int startOffset() const { return m_positionStartOffset; }
     const String& string() const { return m_text; }

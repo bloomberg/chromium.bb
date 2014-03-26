@@ -247,9 +247,15 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_endOffset(0)
     , m_positionNode(0)
     , m_textLength(0)
+    , m_needsAnotherNewline(false)
+    , m_textBox(0)
     , m_remainingTextBox(0)
     , m_firstLetterText(0)
+    , m_lastTextNode(0)
+    , m_lastTextNodeEndedWithCollapsedSpace(false)
+    , m_lastCharacter(0)
     , m_sortedTextBoxesPosition(0)
+    , m_hasEmitted(false)
     , m_emitsCharactersBetweenAllVisiblePositions(behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions)
     , m_entersTextControls(behavior & TextIteratorEntersTextControls)
     , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
@@ -260,49 +266,81 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
     , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
 {
-    if (!range)
-        return;
+    if (range)
+        initialize(range->startPosition(), range->endPosition());
+}
 
-    // get and validate the range endpoints
-    Node* startContainer = range->startContainer();
+TextIterator::TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+    : m_shadowDepth(0)
+    , m_startContainer(0)
+    , m_startOffset(0)
+    , m_endContainer(0)
+    , m_endOffset(0)
+    , m_positionNode(0)
+    , m_textLength(0)
+    , m_needsAnotherNewline(false)
+    , m_textBox(0)
+    , m_remainingTextBox(0)
+    , m_firstLetterText(0)
+    , m_lastTextNode(0)
+    , m_lastTextNodeEndedWithCollapsedSpace(false)
+    , m_lastCharacter(0)
+    , m_sortedTextBoxesPosition(0)
+    , m_hasEmitted(false)
+    , m_emitsCharactersBetweenAllVisiblePositions(behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions)
+    , m_entersTextControls(behavior & TextIteratorEntersTextControls)
+    , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
+    , m_handledFirstLetter(false)
+    , m_ignoresStyleVisibility(behavior & TextIteratorIgnoresStyleVisibility)
+    , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
+    , m_shouldStop(false)
+    , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
+    , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
+{
+    initialize(start, end);
+}
+
+void TextIterator::initialize(const Position& start, const Position& end)
+{
+    ASSERT(comparePositions(start, end) <= 0);
+
+    // Get and validate |start| and |end|.
+    Node* startContainer = start.containerNode();
     if (!startContainer)
         return;
-    int startOffset = range->startOffset();
-    Node* endContainer = range->endContainer();
-    int endOffset = range->endOffset();
+    int startOffset = start.computeOffsetInContainerNode();
+    Node* endContainer = end.containerNode();
+    if (!endContainer)
+        return;
+    int endOffset = end.computeOffsetInContainerNode();
 
-    // Callers should be handing us well-formed ranges. If we discover that this isn't
-    // the case, we could consider changing this assertion to an early return.
-    ASSERT(range->boundaryPointsValid());
-
-    // remember range - this does not change
+    // Remember the range - this does not change.
     m_startContainer = startContainer;
     m_startOffset = startOffset;
     m_endContainer = endContainer;
     m_endOffset = endOffset;
 
-    // set up the current node for processing
-    m_node = range->firstNode();
+    // Set up the current node for processing.
+    if (startContainer->offsetInCharacters())
+        m_node = startContainer;
+    else if (Node* child = startContainer->traverseToChildAt(startOffset))
+        m_node = child;
+    else if (!startOffset)
+        m_node = startContainer;
+    else
+        m_node = NodeTraversal::nextSkippingChildren(*startContainer);
+
     if (!m_node)
         return;
+
     setUpFullyClippedStack(m_fullyClippedStack, m_node);
     m_offset = m_node == m_startContainer ? m_startOffset : 0;
     m_iterationProgress = HandledNone;
 
-    // calculate first out of bounds node
+    // Calculate first out of bounds node.
     m_pastEndNode = nextInPreOrderCrossingShadowBoundaries(endContainer, endOffset);
 
-    // initialize node processing state
-    m_needsAnotherNewline = false;
-    m_textBox = 0;
-
-    // initialize record of previous node processing
-    m_hasEmitted = false;
-    m_lastTextNode = 0;
-    m_lastTextNodeEndedWithCollapsedSpace = false;
-    m_lastCharacter = 0;
-
-    // identify the first run
+    // Identify the first run.
     advance();
 }
 
