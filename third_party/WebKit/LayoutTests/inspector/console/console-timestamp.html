@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function test()
+{
+    var tzOffset = new Date(Date.now()).getTimezoneOffset() * 60 * 1000;
+    var baseTimestamp = 1400000000000 + tzOffset;
+
+    function addMessageWithFixedTimestamp(messageText, timestamp)
+    {
+        var message = new WebInspector.ConsoleMessage(
+            WebInspector.ConsoleMessage.MessageSource.Other, // source
+            WebInspector.ConsoleMessage.MessageLevel.Log, // level
+            messageText,
+            undefined, // type
+            undefined, // url
+            undefined, // line
+            undefined, // column
+            undefined, // requestId
+            undefined, // parameters
+            undefined, // stackTrace
+            timestamp || baseTimestamp + 123, // timestamp: 2014-05-13T16:53:20.123Z
+            false); // isOutdated
+        WebInspector.console.addMessage(message, true); // allowGrouping
+    }
+
+    InspectorTest.addResult("Console messages with timestamps disabled:");
+    addMessageWithFixedTimestamp("<Before>");
+    addMessageWithFixedTimestamp("<Before>");
+    addMessageWithFixedTimestamp("<Before>", baseTimestamp + 456);
+
+    InspectorTest.dumpConsoleMessages();
+
+    InspectorTest.addResult("Console messages with timestamps enabled:");
+    WebInspector.settings.consoleTimestampsEnabled.set(true);
+
+    addMessageWithFixedTimestamp("<After>");
+    addMessageWithFixedTimestamp("<After>");
+    addMessageWithFixedTimestamp("<After>", baseTimestamp + 456);
+
+    InspectorTest.dumpConsoleMessages();
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests the console timestamp setting.
+</p>
+</body>
+</html>
