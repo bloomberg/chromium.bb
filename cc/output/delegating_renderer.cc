@@ -171,8 +171,8 @@ void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
                                                 size_t bytes_allocated) {
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider) {
-    // TODO(piman): software path.
-    NOTIMPLEMENTED();
+    // In the software path each child process manages its memory separately,
+    // so memory stats don't have to be sent anywhere.
     return;
   }
   gpu::ManagedMemoryStats stats;
