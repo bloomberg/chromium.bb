@@ -130,12 +130,6 @@ class GCM_EXPORT MCSClient {
   // Returns text representation of the state enum.
   std::string GetStateString() const;
 
- protected:
-  // Sets a |gcm_store| for testing. Does not take ownership.
-  // TODO(fgorski): Remove this method. Create GCMEngineFactory that will create
-  // components of the engine.
-  void SetGCMStoreForTesting(GCMStore* gcm_store);
-
  private:
   typedef uint32 StreamId;
   typedef std::string PersistentId;

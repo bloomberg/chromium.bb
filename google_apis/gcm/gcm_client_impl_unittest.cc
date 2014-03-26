@@ -65,11 +65,11 @@ MCSMessage BuildDownstreamMessage(
 class FakeMCSClient : public MCSClient {
  public:
   FakeMCSClient(base::Clock* clock,
-                ConnectionFactory* connection_factory);
+                ConnectionFactory* connection_factory,
+                GCMStore* gcm_store);
   virtual ~FakeMCSClient();
   virtual void Login(uint64 android_id, uint64 security_token) OVERRIDE;
   virtual void SendMessage(const MCSMessage& message) OVERRIDE;
-  void set_gcm_store(GCMStore* gcm_store);
 
   uint64 last_android_id() const { return last_android_id_; }
   uint64 last_security_token() const { return last_security_token_; }
@@ -86,18 +86,15 @@ class FakeMCSClient : public MCSClient {
 };
 
 FakeMCSClient::FakeMCSClient(base::Clock* clock,
-                             ConnectionFactory* connection_factory)
-    : MCSClient("", clock, connection_factory, NULL),
+                             ConnectionFactory* connection_factory,
+                             GCMStore* gcm_store)
+    : MCSClient("", clock, connection_factory, gcm_store),
       last_android_id_(0u),
       last_security_token_(0u),
       last_message_tag_(kNumProtoTypes) {
 }
 
 FakeMCSClient::~FakeMCSClient() {
-}
-
-void FakeMCSClient::set_gcm_store(GCMStore* gcm_store) {
-  SetGCMStoreForTesting(gcm_store);
 }
 
 void FakeMCSClient::Login(uint64 android_id, uint64 security_token) {
@@ -112,6 +109,50 @@ void FakeMCSClient::SendMessage(const MCSMessage& message) {
         reinterpret_cast<const mcs_proto::DataMessageStanza&>(
             message.GetProtobuf()));
   }
+}
+
+class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
+ public:
+  FakeGCMInternalsBuilder();
+  virtual ~FakeGCMInternalsBuilder();
+
+  virtual scoped_ptr<base::Clock> BuildClock() OVERRIDE;
+  virtual scoped_ptr<MCSClient> BuildMCSClient(
+      const std::string& version,
+      base::Clock* clock,
+      ConnectionFactory* connection_factory,
+      GCMStore* gcm_store) OVERRIDE;
+  virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
+      const std::vector<GURL>& endpoints,
+      const net::BackoffEntry::Policy& backoff_policy,
+      scoped_refptr<net::HttpNetworkSession> network_session,
+      net::NetLog* net_log) OVERRIDE;
+};
+
+FakeGCMInternalsBuilder::FakeGCMInternalsBuilder() {}
+
+FakeGCMInternalsBuilder::~FakeGCMInternalsBuilder() {}
+
+scoped_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
+  return make_scoped_ptr<base::Clock>(new base::SimpleTestClock());
+}
+
+scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
+    const std::string& version,
+    base::Clock* clock,
+    ConnectionFactory* connection_factory,
+    GCMStore* gcm_store) {
+  return make_scoped_ptr<MCSClient>(new FakeMCSClient(clock,
+                                                      connection_factory,
+                                                      gcm_store));
+}
+
+scoped_ptr<ConnectionFactory> FakeGCMInternalsBuilder::BuildConnectionFactory(
+    const std::vector<GURL>& endpoints,
+    const net::BackoffEntry::Policy& backoff_policy,
+    scoped_refptr<net::HttpNetworkSession> network_session,
+    net::NetLog* net_log) {
+  return make_scoped_ptr<ConnectionFactory>(new FakeConnectionFactory());
 }
 
 }  // namespace
@@ -158,6 +199,9 @@ class GCMClientImplTest : public testing::Test,
   FakeMCSClient* mcs_client() const {
     return reinterpret_cast<FakeMCSClient*>(gcm_client_->mcs_client_.get());
   }
+  ConnectionFactory* connection_factory() const {
+    return gcm_client_->connection_factory_.get();
+  }
 
   void reset_last_event() {
     last_event_ = NONE;
@@ -203,7 +247,6 @@ class GCMClientImplTest : public testing::Test,
   GCMClient::SendErrorDetails last_error_details_;
 
   scoped_ptr<GCMClientImpl> gcm_client_;
-  scoped_ptr<FakeConnectionFactory> connection_factory_;
 
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> run_loop_;
@@ -247,7 +290,8 @@ void GCMClientImplTest::QuitLoop() {
 }
 
 void GCMClientImplTest::BuildGCMClient() {
-  gcm_client_.reset(new GCMClientImpl());
+  gcm_client_.reset(new GCMClientImpl(
+      make_scoped_ptr<GCMInternalsBuilder>(new FakeGCMInternalsBuilder())));
 }
 
 void GCMClientImplTest::CompleteCheckin(uint64 android_id,
@@ -307,13 +351,8 @@ void GCMClientImplTest::AddRegistration(
 }
 
 void GCMClientImplTest::InitializeGCMClient() {
-  // Creating and advancing the clock.
-  gcm_client_->clock_.reset(new base::SimpleTestClock);
   clock()->Advance(base::TimeDelta::FromMilliseconds(1));
-  // Creating and injecting the mcs_client.
-  connection_factory_.reset(new FakeConnectionFactory());
-  gcm_client_->SetMCSClientForTesting(scoped_ptr<MCSClient>(
-      new FakeMCSClient(clock(), connection_factory_.get())).Pass());
+
   // Actual initialization.
   checkin_proto::ChromeBuildProto chrome_build_proto;
   gcm_client_->Initialize(chrome_build_proto,
@@ -328,11 +367,9 @@ void GCMClientImplTest::InitializeGCMClient() {
   OSCrypt::UseMockKeychain(true);  // Must be after Initialize.
 #endif
 
-  // Starting loading and check-in.
+  // Start loading and check-in.
   gcm_client_->Load();
 
-  // Ensuring that mcs_client is using the same gcm_store as gcm_client.
-  mcs_client()->set_gcm_store(gcm_client_->gcm_store_.get());
   PumpLoopUntilIdle();
 }
 
@@ -395,8 +432,10 @@ TEST_F(GCMClientImplTest, LoadingCompleted) {
 
 TEST_F(GCMClientImplTest, CheckOut) {
   EXPECT_TRUE(mcs_client());
+  EXPECT_TRUE(connection_factory());
   gcm_client()->CheckOut();
   EXPECT_FALSE(mcs_client());
+  EXPECT_FALSE(connection_factory());
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {

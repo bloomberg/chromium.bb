@@ -117,9 +117,41 @@ MessageType DecodeMessageType(const std::string& value) {
 
 }  // namespace
 
-GCMClientImpl::GCMClientImpl()
-    : state_(UNINITIALIZED),
-      clock_(new base::DefaultClock()),
+GCMInternalsBuilder::GCMInternalsBuilder() {}
+GCMInternalsBuilder::~GCMInternalsBuilder() {}
+
+scoped_ptr<base::Clock> GCMInternalsBuilder::BuildClock() {
+  return make_scoped_ptr<base::Clock>(new base::DefaultClock());
+}
+
+scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
+    const std::string& version,
+    base::Clock* clock,
+    ConnectionFactory* connection_factory,
+    GCMStore* gcm_store) {
+  return make_scoped_ptr<MCSClient>(
+      new MCSClient(version,
+                    clock,
+                    connection_factory,
+                    gcm_store));
+}
+
+scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
+      const std::vector<GURL>& endpoints,
+      const net::BackoffEntry::Policy& backoff_policy,
+      scoped_refptr<net::HttpNetworkSession> network_session,
+      net::NetLog* net_log) {
+  return make_scoped_ptr<ConnectionFactory>(
+      new ConnectionFactoryImpl(endpoints,
+                                backoff_policy,
+                                network_session,
+                                net_log));
+}
+
+GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
+    : internals_builder_(internals_builder.Pass()),
+      state_(UNINITIALIZED),
+      clock_(internals_builder_->BuildClock()),
       url_request_context_getter_(NULL),
       pending_registration_requests_deleter_(&pending_registration_requests_),
       pending_unregistration_requests_deleter_(
@@ -142,8 +174,14 @@ void GCMClientImpl::Initialize(
   DCHECK(url_request_context_getter);
   DCHECK(delegate);
 
-  chrome_build_proto_.CopyFrom(chrome_build_proto);
   url_request_context_getter_ = url_request_context_getter;
+  const net::HttpNetworkSession::Params* network_session_params =
+      url_request_context_getter_->GetURLRequestContext()->
+          GetNetworkSessionParams();
+  DCHECK(network_session_params);
+  network_session_ = new net::HttpNetworkSession(*network_session_params);
+
+  chrome_build_proto_.CopyFrom(chrome_build_proto);
   account_ids_ = account_ids;
 
   gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
@@ -187,27 +225,19 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 
 void GCMClientImpl::InitializeMCSClient(
     scoped_ptr<GCMStore::LoadResult> result) {
-  // |mcs_client_| might already be set for testing at this point. No need to
-  // create a |connection_factory_|.
-  if (!mcs_client_.get()) {
-    const net::HttpNetworkSession::Params* network_session_params =
-        url_request_context_getter_->GetURLRequestContext()->
-            GetNetworkSessionParams();
-    DCHECK(network_session_params);
-    network_session_ = new net::HttpNetworkSession(*network_session_params);
-    std::vector<GURL> endpoints;
-    endpoints.push_back(GURL(kMCSEndpointMain));
-    endpoints.push_back(GURL(kMCSEndpointFallback));
-    connection_factory_.reset(new ConnectionFactoryImpl(
-        endpoints,
-        kDefaultBackoffPolicy,
-        network_session_,
-        net_log_.net_log()));
-    mcs_client_.reset(new MCSClient(chrome_build_proto_.chrome_version(),
-                                    clock_.get(),
-                                    connection_factory_.get(),
-                                    gcm_store_.get()));
-  }
+  std::vector<GURL> endpoints;
+  endpoints.push_back(GURL(kMCSEndpointMain));
+  endpoints.push_back(GURL(kMCSEndpointFallback));
+  connection_factory_ = internals_builder_->BuildConnectionFactory(
+      endpoints,
+      kDefaultBackoffPolicy,
+      network_session_,
+      net_log_.net_log());
+  mcs_client_ = internals_builder_->BuildMCSClient(
+      chrome_build_proto_.chrome_version(),
+      clock_.get(),
+      connection_factory_.get(),
+      gcm_store_.get()).Pass();
 
   mcs_client_->Initialize(
       base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
@@ -303,6 +333,7 @@ void GCMClientImpl::UpdateRegistrationCallback(bool success) {
 
 void GCMClientImpl::Stop() {
   device_checkin_info_.Reset();
+  connection_factory_.reset();
   mcs_client_.reset();
   checkin_request_.reset();
   pending_registration_requests_.clear();
@@ -631,10 +662,6 @@ void GCMClientImpl::HandleIncomingSendError(
 
   delegate_->OnMessageSendError(data_message_stanza.category(),
                                 send_error_details);
-}
-
-void GCMClientImpl::SetMCSClientForTesting(scoped_ptr<MCSClient> mcs_client) {
-  mcs_client_ = mcs_client.Pass();
 }
 
 }  // namespace gcm

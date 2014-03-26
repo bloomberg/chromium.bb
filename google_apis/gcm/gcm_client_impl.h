@@ -23,6 +23,8 @@
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class GURL;
+
 namespace base {
 class Clock;
 }  // namespace base
@@ -37,13 +39,33 @@ class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
 
+// Helper class for building GCM internals. Allows tests to inject fake versions
+// as necessary.
+class GCM_EXPORT GCMInternalsBuilder {
+ public:
+  GCMInternalsBuilder();
+  virtual ~GCMInternalsBuilder();
+
+  virtual scoped_ptr<base::Clock> BuildClock();
+  virtual scoped_ptr<MCSClient> BuildMCSClient(
+      const std::string& version,
+      base::Clock* clock,
+      ConnectionFactory* connection_factory,
+      GCMStore* gcm_store);
+  virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
+      const std::vector<GURL>& endpoints,
+      const net::BackoffEntry::Policy& backoff_policy,
+      scoped_refptr<net::HttpNetworkSession> network_session,
+      net::NetLog* net_log);
+};
+
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
 // with MCS) and other pieces of GCM infrastructure like Registration and
 // Checkins. It also allows for registering user delegates that host
 // applications that send and receive messages.
 class GCM_EXPORT GCMClientImpl : public GCMClient {
  public:
-  GCMClientImpl();
+  explicit GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder);
   virtual ~GCMClientImpl();
 
   // Overridden from GCMClient:
@@ -181,11 +203,8 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 
-  // For testing purpose only.
-  // Sets an |mcs_client_| for testing. Takes the ownership of |mcs_client|.
-  // TODO(fgorski): Remove this method. Create GCMEngineFactory that will create
-  // components of the engine.
-  void SetMCSClientForTesting(scoped_ptr<MCSClient> mcs_client);
+  // Builder for the GCM internals (mcs client, etc.).
+  scoped_ptr<GCMInternalsBuilder> internals_builder_;
 
   // State of the GCM Client Implementation.
   State state_;

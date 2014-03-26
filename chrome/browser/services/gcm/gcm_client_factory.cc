@@ -9,7 +9,8 @@
 namespace gcm {
 
 scoped_ptr<GCMClient> GCMClientFactory::BuildInstance() {
-  return scoped_ptr<GCMClient>(new GCMClientImpl());
+  return scoped_ptr<GCMClient>(new GCMClientImpl(
+      make_scoped_ptr<GCMInternalsBuilder>(new GCMInternalsBuilder())));
 }
 
 GCMClientFactory::GCMClientFactory() {

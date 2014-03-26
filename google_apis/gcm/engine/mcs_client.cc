@@ -869,10 +869,6 @@ void MCSClient::NotifyMessageSendStatus(
       status);
 }
 
-void MCSClient::SetGCMStoreForTesting(GCMStore* gcm_store) {
-  gcm_store_ = gcm_store;
-}
-
 MCSClient::MCSPacketInternal MCSClient::PopMessageForSend() {
   MCSPacketInternal packet = to_send_.front();
   to_send_.pop_front();
