@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, bool sync)
+HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, SyncMode sync)
     : HTMLImport(sync)
     , m_master(master)
     , m_url(url)

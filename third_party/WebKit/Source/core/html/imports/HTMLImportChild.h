@@ -55,7 +55,7 @@ class HTMLLinkElement;
 //
 class HTMLImportChild FINAL : public HTMLImport, public ResourceOwner<RawResource> {
 public:
-    HTMLImportChild(Document&, const KURL&, bool sync);
+    HTMLImportChild(Document&, const KURL&, SyncMode);
     virtual ~HTMLImportChild();
 
     HTMLLinkElement* link() const;
