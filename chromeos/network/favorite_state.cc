@@ -83,13 +83,6 @@ bool FavoriteState::PropertyChanged(const std::string& key,
   return false;
 }
 
-bool FavoriteState::IsFavorite() const {
-  // kTypeEthernetEap is always a favorite. We need this check because it does
-  // not show up in the visible list, but its properties may not be available
-  // when it first shows up in ServiceCompleteList. See crbug.com/355117.
-  return !profile_path_.empty() || type() == shill::kTypeEthernetEap;
-}
-
 bool FavoriteState::IsPrivate() const {
   return !profile_path_.empty() &&
       profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
