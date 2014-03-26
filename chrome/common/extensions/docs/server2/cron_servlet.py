@@ -211,7 +211,11 @@ class CronServlet(Servlet):
 
       # Samples are too expensive to run on the dev server, where there is no
       # parallel fetch.
-      if not IsDevServer():
+      #
+      # XXX(kalman): Currently samples are *always* too expensive to fetch, so
+      # disabling them for now. It won't break anything so long as we're still
+      # not enforcing that everything gets cached for normal instances.
+      if False:  # should be "not IsDevServer()":
         # Fetch each individual sample file.
         results.append(request_files_in_dir(EXAMPLES,
                                             prefix='extensions/examples'))
