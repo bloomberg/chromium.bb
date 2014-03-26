@@ -24,10 +24,10 @@ PASS fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span").length 
 PASS fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[0].id is "not-top"
 PASS fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[1].id is "top"
 PASS fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[2].id is "inner-host"
-PASS fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span").length is 3
-PASS fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[0].id is "not-top"
-PASS fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[1].id is "top"
-PASS fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[2].id is "inner-host"
+PASS fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span").length is 3
+PASS fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[0].id is "not-top"
+PASS fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[1].id is "top"
+PASS fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[2].id is "inner-host"
 PASS barHost.querySelectorAll("#bar-host /shadow/ span").length is 1
 PASS barHost.querySelectorAll("#bar-host /shadow/ span")[0].id is "nested"
 PASS barHost.querySelectorAll(":host :scope span").length is 1
@@ -40,10 +40,10 @@ PASS barShadowRoot.querySelectorAll(":host(div#bar-host) /shadow/ span").length 
 PASS barShadowRoot.querySelectorAll(":host(div#bar-host) /shadow/ span")[0].id is "nested"
 PASS barShadowRoot.querySelectorAll(":host(div#bar-host) /deep/ span").length is 1
 PASS barShadowRoot.querySelectorAll(":host(div#bar-host) /deep/ span")[0].id is "nested"
-PASS barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /shadow/ span").length is 1
-PASS barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /shadow/ span")[0].id is "nested"
-PASS barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /deep/ span").length is 1
-PASS barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /deep/ span")[0].id is "nested"
+PASS barShadowRoot.querySelectorAll(":host-context(div#foo-host) /shadow/ span").length is 1
+PASS barShadowRoot.querySelectorAll(":host-context(div#foo-host) /shadow/ span")[0].id is "nested"
+PASS barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span").length is 1
+PASS barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span")[0].id is "nested"
 PASS successfullyParsed is true
 
 TEST COMPLETE

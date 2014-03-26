@@ -872,7 +872,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             break;
 
         case CSSSelector::PseudoHost:
-        case CSSSelector::PseudoAncestor:
+        case CSSSelector::PseudoHostContext:
             {
                 // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
                 if (!context.scope)

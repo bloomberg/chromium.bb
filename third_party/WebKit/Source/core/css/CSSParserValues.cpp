@@ -261,7 +261,7 @@ bool CSSParserSelector::hasHostPseudoSelector() const
 {
     CSSParserSelector* selector = const_cast<CSSParserSelector*>(this);
     do {
-        if (selector->pseudoType() == CSSSelector::PseudoHost || selector->pseudoType() == CSSSelector::PseudoAncestor)
+        if (selector->pseudoType() == CSSSelector::PseudoHost || selector->pseudoType() == CSSSelector::PseudoHostContext)
             return true;
     } while ((selector = selector->tagHistory()));
     return false;

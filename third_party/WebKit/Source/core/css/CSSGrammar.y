@@ -116,7 +116,7 @@ static inline bool isCSSTokenAString(int yytype)
     case FUNCTION:
     case ANYFUNCTION:
     case HOSTFUNCTION:
-    case ANCESTORFUNCTION:
+    case HOSTCONTEXTFUNCTION:
     case NOTFUNCTION:
     case CALCFUNCTION:
     case MINFUNCTION:
@@ -267,7 +267,7 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token <string> MINFUNCTION
 %token <string> MAXFUNCTION
 %token <string> HOSTFUNCTION
-%token <string> ANCESTORFUNCTION
+%token <string> HOSTCONTEXTFUNCTION
 
 %token <string> UNICODERANGE
 
@@ -1481,27 +1481,27 @@ pseudo:
     | ':' HOSTFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
-    | ':' ANCESTORFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
+    //  used by :host-context()
+    | ':' HOSTCONTEXTFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
         parser->tokenToLowerCase($2);
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
-        if (type != CSSSelector::PseudoAncestor)
+        if (type != CSSSelector::PseudoHostContext)
             YYERROR;
     }
-    //  used by :ancestor()
-    | ':' ANCESTORFUNCTION maybe_space closing_parenthesis {
+    | ':' HOSTCONTEXTFUNCTION maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         parser->tokenToLowerCase($2);
         $$->setValue($2.atomicSubstring(0, $2.length() - 1));
         CSSSelector::PseudoType type = $$->pseudoType();
-        if (type != CSSSelector::PseudoAncestor)
+        if (type != CSSSelector::PseudoHostContext)
             YYERROR;
     }
-    | ':' ANCESTORFUNCTION selector_recovery closing_parenthesis {
+    | ':' HOSTCONTEXTFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
   ;

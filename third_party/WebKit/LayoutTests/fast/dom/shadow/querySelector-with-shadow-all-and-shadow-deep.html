@@ -55,11 +55,11 @@ shouldBe('fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[0]
 shouldBe('fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[1].id', '"top"');
 shouldBe('fooShadowRoot.querySelectorAll(":host(div#foo-host) /shadow/ span")[2].id', '"inner-host"');
 
-// :ancestor in foo's shadow tree can match div#foo-host.
-shouldBe('fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span").length', '3');
-shouldBe('fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[0].id', '"not-top"');
-shouldBe('fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[1].id', '"top"');
-shouldBe('fooShadowRoot.querySelectorAll(":ancestor(body) /shadow/ span")[2].id', '"inner-host"');
+// :host-context in foo's shadow tree can match div#foo-host.
+shouldBe('fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span").length', '3');
+shouldBe('fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[0].id', '"not-top"');
+shouldBe('fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[1].id', '"top"');
+shouldBe('fooShadowRoot.querySelectorAll(":host-context(body) /shadow/ span")[2].id', '"inner-host"');
 
 var barHost = fooShadowRoot.getElementById('bar-host');
 shouldBe('barHost.querySelectorAll("#bar-host /shadow/ span").length', '1');
@@ -78,10 +78,10 @@ shouldBe('barShadowRoot.querySelectorAll(":host(div#bar-host) /shadow/ span")[0]
 shouldBe('barShadowRoot.querySelectorAll(":host(div#bar-host) /deep/ span").length', '1');
 shouldBe('barShadowRoot.querySelectorAll(":host(div#bar-host) /deep/ span")[0].id', '"nested"');
 
-shouldBe('barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /shadow/ span").length', '1');
-shouldBe('barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /shadow/ span")[0].id', '"nested"');
-shouldBe('barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /deep/ span").length', '1');
-shouldBe('barShadowRoot.querySelectorAll(":ancestor(div#foo-host) /deep/ span")[0].id', '"nested"');
+shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /shadow/ span").length', '1');
+shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /shadow/ span")[0].id', '"nested"');
+shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span").length', '1');
+shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span")[0].id', '"nested"');
 </script>
 </html>
 

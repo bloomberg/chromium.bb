@@ -218,7 +218,7 @@ namespace WebCore {
             PseudoUnresolved,
             PseudoContent,
             PseudoHost,
-            PseudoAncestor
+            PseudoHostContext
         };
 
         enum OptionalPseudoTypeRequirements {
@@ -387,7 +387,7 @@ inline bool CSSSelector::isCustomPseudoElement() const
 
 inline bool CSSSelector::isHostPseudoClass() const
 {
-    return m_match == PseudoClass && (m_pseudoType == PseudoHost || m_pseudoType == PseudoAncestor);
+    return m_match == PseudoClass && (m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext);
 }
 
 inline bool CSSSelector::isSiblingSelector() const

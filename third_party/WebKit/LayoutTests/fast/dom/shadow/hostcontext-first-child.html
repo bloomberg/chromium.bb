@@ -7,7 +7,7 @@
 </div>
 
 <script>
-description("Test that :ancestor(:first-child) is re-evaluated when :first-child changes.");
+description("Test that :host-context(:first-child) is re-evaluated when :first-child changes.");
 
 var test = document.getElementById("test");
 var first = document.getElementById("first");
@@ -16,7 +16,7 @@ first.appendChild(
     createDOM("div", {"id": "host"},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(":ancestor(#first:first-child) { background-color: red; }")),
+                document.createTextNode(":host-context(#first:first-child) { background-color: red; }")),
             createDOM('div', {},
                 document.createTextNode("You should see no red.")))));
 

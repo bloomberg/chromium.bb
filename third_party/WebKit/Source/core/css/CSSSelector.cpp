@@ -100,7 +100,7 @@ inline unsigned CSSSelector::specificityForOneSelector() const
     case Id:
         return 0x10000;
     case PseudoClass:
-        if (pseudoType() == PseudoHost || pseudoType() == PseudoAncestor)
+        if (pseudoType() == PseudoHost || pseudoType() == PseudoHostContext)
             return 0;
         // fall through.
     case Exact:
@@ -254,7 +254,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoUnresolved:
     case PseudoContent:
     case PseudoHost:
-    case PseudoAncestor:
+    case PseudoHostContext:
     case PseudoFullScreen:
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
@@ -354,8 +354,8 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"unresolved",                    CSSSelector::PseudoUnresolved},
 {"host",                          CSSSelector::PseudoHost},
 {"host(",                         CSSSelector::PseudoHost},
-{"ancestor",                      CSSSelector::PseudoAncestor},
-{"ancestor(",                     CSSSelector::PseudoAncestor},
+{"host-context",                  CSSSelector::PseudoHostContext},
+{"host-context(",                 CSSSelector::PseudoHostContext},
 {"content",                       CSSSelector::PseudoContent},
 };
 
@@ -520,7 +520,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoFutureCue:
     case PseudoPastCue:
     case PseudoHost:
-    case PseudoAncestor:
+    case PseudoHostContext:
     case PseudoUnresolved:
         break;
     case PseudoFirstPage:
@@ -621,7 +621,7 @@ String CSSSelector::selectorText(const String& rightSide) const
                 break;
             }
             case PseudoHost:
-            case PseudoAncestor: {
+            case PseudoHostContext: {
                 if (cs->selectorList()) {
                     const CSSSelector* firstSubSelector = cs->selectorList()->first();
                     for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
@@ -773,7 +773,7 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::PseudoLastOfType:
     case CSSSelector::PseudoOnlyOfType:
     case CSSSelector::PseudoHost:
-    case CSSSelector::PseudoAncestor:
+    case CSSSelector::PseudoHostContext:
         return true;
     default:
         return false;

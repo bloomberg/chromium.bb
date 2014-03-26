@@ -17,7 +17,7 @@ PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 :host in a shadow tree should match its shadow host.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
-:host with :ancestor in a shadow tree should match its shadow host.
+:host with :host-context in a shadow tree should match its shadow host.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host takes simple selectors and matches when one of the simple selectors matches.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"

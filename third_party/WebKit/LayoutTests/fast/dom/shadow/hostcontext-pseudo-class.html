@@ -4,7 +4,7 @@
 <script src="../../../resources/js-test.js"></script>
 <script src="resources/shadow-dom.js"></script>
 <style>
-:ancestor {
+:host-context {
    background-color: red;
 }
 </style>
@@ -15,7 +15,7 @@
   </div>
   <pre id='console'></pre>
 <script>
-description('Test whether :ancestor matches a shadow host correctly.');
+description('Test whether :host-context matches a shadow host correctly.');
 
 var sandbox = document.getElementById('sandbox');
 
@@ -31,7 +31,7 @@ function cleanUp() {
     sandbox.innerHTML = '';
 }
 
-debug(':ancestor out of shadow tree should not match any shadow hosts.');
+debug(':host-context out of shadow tree should not match any shadow hosts.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -43,27 +43,13 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug(':ancestor with * should not match any shadow hosts.');
-
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode('*:ancestor { background-color: green; }')),
-            createDOM('div', {},
-                document.createTextNode('Hello')))));
-
-backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
-
-cleanUp();
-
-debug(':ancestor with tag selector should not match any shadow hosts.');
+debug(':host-context with * should not match any shadow hosts.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div:ancestor { background-color: green; }')),
+                document.createTextNode('*:host-context { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -71,13 +57,27 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug(':ancestor with class selector should not match any shadow hosts.');
+debug(':host-context with tag selector should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div:host-context { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
+debug(':host-context with class selector should not match any shadow hosts.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host', 'class': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('.host:ancestor { background-color: green; }')),
+                document.createTextNode('.host:host-context { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -85,13 +85,13 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug(':ancestor with id selector should not match any shadow hosts.');
+debug(':host-context with id selector should not match any shadow hosts.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('#host:ancestor { background-color: green; }')),
+                document.createTextNode('#host:host-context { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -99,13 +99,13 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug(':ancestor with attribute selector should not match any shadow hosts.');
+debug(':host-context with attribute selector should not match any shadow hosts.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host', 'foo': 'bar'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('[foo=bar]:ancestor { background-color: green; }')),
+                document.createTextNode('[foo=bar]:host-context { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -113,13 +113,13 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug(':ancestor in a shadow tree should match its shadow host.');
+debug(':host-context in a shadow tree should match its shadow host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(body.mytheme) { background-color: green; }')),
+                document.createTextNode(':host-context(body.mytheme) { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -127,13 +127,13 @@ backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':ancestor with :host in a shadow tree should match its shadow host.');
+debug(':host-context with :host in a shadow tree should match its shadow host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:host) { background-color: green; }')),
+                document.createTextNode(':host-context(div:host) { background-color: green; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
@@ -141,14 +141,14 @@ backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':ancestor takes simple selectors and matches when one of the simple selectors matches.');
+debug(':host-context takes simple selectors and matches when one of the simple selectors matches.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost'},
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(body:not(.mytheme), span, div#parentOfHost) { background-color: green; }')),
+                    document.createTextNode(':host-context(body:not(.mytheme), span, div#parentOfHost) { background-color: green; }')),
                 createDOM('div', {},
                     document.createTextNode('Hello'))))));
 
@@ -156,7 +156,7 @@ backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':ancestor matches a shadow host in just a nested shadow tree, not all enclosing shadow trees.');
+debug(':host-context matches a shadow host in just a nested shadow tree, not all enclosing shadow trees.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host1'},
@@ -164,14 +164,14 @@ sandbox.appendChild(
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('style', {},
-                        document.createTextNode(':ancestor { background-color: green; }')),
+                        document.createTextNode(':host-context { background-color: green; }')),
                     createDOM('div', {},
                         document.createTextNode('Hello')))))));
 
 backgroundColorShouldBe('host1', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host1/host2', 'rgb(0, 128, 0)');
 
-debug(':ancestor matches based on a composed tree.');
+debug(':host-context matches based on a composed tree.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost'},
@@ -181,7 +181,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(span#spanA) > div { background-color: green; }')),
+                    document.createTextNode(':host-context(span#spanA) > div { background-color: green; }')),
                 createDOM('div', {'id': 'target'},
                     document.createTextNode('Hello'))))));
 
@@ -189,7 +189,7 @@ backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':ancestor matches based on a composed tree when having multiple shadow roots.');
+debug(':host-context matches based on a composed tree when having multiple shadow roots.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost'},
@@ -206,11 +206,11 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(span#spanA) > #targetA { background-color: red; }')),
+                    document.createTextNode(':host-context(span#spanA) > #targetA { background-color: red; }')),
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(span#spanB) > #targetB { background-color: green; }')),
+                    document.createTextNode(':host-context(span#spanB) > #targetB { background-color: green; }')),
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(span#spanC) > #targetC { background-color: green; }')),
+                    document.createTextNode(':host-context(span#spanC) > #targetC { background-color: green; }')),
                 createDOM('div', {'id': 'targetA'},
                     document.createTextNode('Hello')),
                 createDOM('div', {'id': 'targetB'},
@@ -224,14 +224,14 @@ backgroundColorShouldBe('host/targetC', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':ancestor is updated when its matched ancestor changes className or id.');
+debug(':host-context is updated when its matched ancestor changes className or id.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost', 'class': 'sometheme' },
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(div#parentOfHost.sometheme) { background-color: green; }')),
+                    document.createTextNode(':host-context(div#parentOfHost.sometheme) { background-color: green; }')),
                 createDOM('div', {},
                     document.createTextNode('Hello'))))));
 
@@ -246,7 +246,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode(':ancestor(div#parentOfHost.sometheme) { background-color: green; }')),
+                    document.createTextNode(':host-context(div#parentOfHost.sometheme) { background-color: green; }')),
                 createDOM('div', {},
                     document.createTextNode('Hello'))))));
 
@@ -257,19 +257,19 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
-debug('Compare :ancestor with :ancestor.');
+debug('Compare :host-context with :host-context.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:ancestor, div#sandbox) { background-color: green; }')),
+                document.createTextNode(':host-context(div:host-context, div#sandbox) { background-color: green; }')),
             createDOM('style', {},
-                document.createTextNode(':ancestor(body.mytheme) { background-color: red; }')),
+                document.createTextNode(':host-context(body.mytheme) { background-color: red; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
-// :ancestor(div:ancestor, div#sandbox) wins, because div#sandbox > body.mytheme.
+// :host-context(div:host-context, div#sandbox) wins, because div#sandbox > body.mytheme.
 backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
@@ -278,25 +278,25 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:ancestor, div#nomatch) { background-color: green; }')),
+                document.createTextNode(':host-context(div:host-context, div#nomatch) { background-color: green; }')),
             createDOM('style', {},
-                document.createTextNode(':ancestor(body.mytheme) { background-color: red; }')),
+                document.createTextNode(':host-context(body.mytheme) { background-color: red; }')),
             createDOM('div', {},
                 document.createTextNode('Hello')))));
 
-// :ancestor(body.mytheme) wins, because div:ancestor < body.mytheme.
+// :host-context(body.mytheme) wins, because div:host-context < body.mytheme.
 backgroundColorShouldBe('host', 'rgb(255, 0, 0)');
 
 cleanUp();
 
-// Test for specificiy of ":ancestor(...) > ...".
+// Test for specificiy of ":host-context(...) > ...".
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:ancestor, div#host:ancestor) > div { background-color: green; }')),
+                document.createTextNode(':host-context(div:host-context, div#host:host-context) > div { background-color: green; }')),
             createDOM('style', {},
-                document.createTextNode(':ancestor(body.mytheme) > div { background-color: red; }')),
+                document.createTextNode(':host-context(body.mytheme) > div { background-color: red; }')),
             createDOM('div', {'id': 'target'},
                 document.createTextNode('Hello')))));
 
@@ -308,9 +308,9 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host', 'class': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:ancestor, div#host.host:ancestor) > div { background-color: green; }')),
+                document.createTextNode(':host-context(div:host-context, div#host.host:host-context) > div { background-color: green; }')),
             createDOM('style', {},
-                document.createTextNode(':ancestor(body) > div#target { background-color: red; }')),
+                document.createTextNode(':host-context(body) > div#target { background-color: red; }')),
             createDOM('div', {'id': 'target'},
                 document.createTextNode('Hello')))));
 
@@ -322,9 +322,9 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host', 'class': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':ancestor(div:ancestor(div:ancestor(div:ancestor(div:ancestor)))) > div { background-color: green; }')),
+                document.createTextNode(':host-context(div:host-context(div:host-context(div:host-context(div:host-context)))) > div { background-color: green; }')),
             createDOM('style', {},
-                document.createTextNode(':ancestor(div) > div { background-color: red; }')),
+                document.createTextNode(':host-context(div) > div { background-color: red; }')),
             createDOM('div', {'id': 'target'},
                 document.createTextNode('Hello')))));
 
