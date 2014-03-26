@@ -799,14 +799,6 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
 
 //------------------------------------------------------------------------------
 
-blink::WebContentDecryptionModule*
-RendererWebKitPlatformSupportImpl::createContentDecryptionModule(
-    const blink::WebString& key_system) {
-  return WebContentDecryptionModuleImpl::Create(key_system);
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebMIDIAccessor*
 RendererWebKitPlatformSupportImpl::createMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {

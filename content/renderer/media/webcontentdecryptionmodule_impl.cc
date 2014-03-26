@@ -28,18 +28,12 @@ class WebFrame;
 namespace content {
 
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
-    const base::string16& key_system) {
-  blink::WebSecurityOrigin no_origin;
-  return WebContentDecryptionModuleImpl::Create(NULL, no_origin, key_system);
-}
-
-WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
     blink::WebFrame* frame,
     const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system) {
   // TODO(jrummell): Use |security_origin| rather than using the document URL.
-  // TODO(jrummell): Once the other Create() method is removed, validate |frame|
-  // and |security_origin|.
+  DCHECK(frame);
+  DCHECK(!security_origin.isNull());
   DCHECK(!key_system.empty());
 
   // TODO(ddorwin): Guard against this in supported types check and remove this.

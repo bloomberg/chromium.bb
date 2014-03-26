@@ -30,10 +30,6 @@ class WebContentDecryptionModuleSessionImpl;
 class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
-  // TODO(jrummell): Remove this method once all callers have updated to pass
-  // |frame| and |securityOrigin|.
-  static WebContentDecryptionModuleImpl* Create(
-      const base::string16& key_system);
   static WebContentDecryptionModuleImpl* Create(
       blink::WebFrame* frame,
       const blink::WebSecurityOrigin& security_origin,

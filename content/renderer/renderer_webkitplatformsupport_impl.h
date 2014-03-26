@@ -120,8 +120,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       blink::WebAudioBus* destination_bus, const char* audio_file_data,
       size_t data_size);
 
-  virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
-      const blink::WebString& key_system);
   virtual blink::WebMIDIAccessor*
       createMIDIAccessor(blink::WebMIDIAccessorClient* client);
 
