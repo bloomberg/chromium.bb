@@ -354,7 +354,6 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"unresolved",                    CSSSelector::PseudoUnresolved},
 {"host",                          CSSSelector::PseudoHost},
 {"host(",                         CSSSelector::PseudoHost},
-{"host-context",                  CSSSelector::PseudoHostContext},
 {"host-context(",                 CSSSelector::PseudoHostContext},
 {"content",                       CSSSelector::PseudoContent},
 };
