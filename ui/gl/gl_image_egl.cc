@@ -6,6 +6,7 @@
 
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/scoped_binders.h"
 
 namespace gfx {
 
@@ -14,8 +15,9 @@ GLImageEGL::GLImageEGL(gfx::Size size)
       size_(size),
       release_after_use_(false),
       in_use_(false),
-      target_(0) {
-}
+      target_(0),
+      egl_image_for_unbind_(EGL_NO_IMAGE_KHR),
+      texture_id_for_unbind_(0) {}
 
 GLImageEGL::~GLImageEGL() {
   Destroy();
@@ -44,18 +46,21 @@ bool GLImageEGL::Initialize(gfx::GpuMemoryBufferHandle buffer) {
 }
 
 void GLImageEGL::Destroy() {
-  if (egl_image_ == EGL_NO_IMAGE_KHR)
-    return;
-
-  EGLBoolean success = eglDestroyImageKHR(
-      GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
-
-  if (success == EGL_FALSE) {
-    EGLint error = eglGetError();
-    LOG(ERROR) << "Error destroying EGLImage: " << error;
+  if (egl_image_ != EGL_NO_IMAGE_KHR) {
+    eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+    egl_image_ = EGL_NO_IMAGE_KHR;
   }
 
-  egl_image_ = EGL_NO_IMAGE_KHR;
+  if (egl_image_for_unbind_ != EGL_NO_IMAGE_KHR) {
+    eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
+                       egl_image_for_unbind_);
+    egl_image_for_unbind_ = EGL_NO_IMAGE_KHR;
+  }
+
+  if (texture_id_for_unbind_) {
+    glDeleteTextures(1, &texture_id_for_unbind_);
+    texture_id_for_unbind_ = 0;
+  }
 }
 
 gfx::Size GLImageEGL::GetSize() {
@@ -108,16 +113,37 @@ void GLImageEGL::DidUseTexImage() {
   if (!release_after_use_)
     return;
 
-  char zero[4] = { 0, };
-  glTexImage2D(target_,
-               0,
-               GL_RGBA,
-               1,
-               1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               &zero);
+  if (egl_image_for_unbind_ == EGL_NO_IMAGE_KHR) {
+    DCHECK_EQ(0u, texture_id_for_unbind_);
+    glGenTextures(1, &texture_id_for_unbind_);
+
+    {
+      ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_for_unbind_);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      char zero[4] = {0, };
+      glTexImage2D(
+          GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &zero);
+    }
+
+    EGLint attrs[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0,  // mip-level.
+                      EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
+    // Need to pass current EGL rendering context to eglCreateImageKHR for
+    // target type EGL_GL_TEXTURE_2D_KHR.
+    egl_image_for_unbind_ = eglCreateImageKHR(
+        GLSurfaceEGL::GetHardwareDisplay(),
+        eglGetCurrentContext(),
+        EGL_GL_TEXTURE_2D_KHR,
+        reinterpret_cast<EGLClientBuffer>(texture_id_for_unbind_),
+        attrs);
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_for_unbind_)
+        << "Error creating EGLImage: " << eglGetError();
+  }
+
+  glEGLImageTargetTexture2DOES(target_, egl_image_for_unbind_);
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
 void GLImageEGL::WillModifyTexImage() {

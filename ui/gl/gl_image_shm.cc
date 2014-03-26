@@ -6,7 +6,12 @@
 
 #include "base/debug/trace_event.h"
 #include "base/process/process_handle.h"
-#include "ui/gl/gl_bindings.h"
+#include "ui/gl/scoped_binders.h"
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+#include "ui/gl/gl_surface_egl.h"
+#endif
 
 namespace gfx {
 
@@ -64,7 +69,13 @@ GLenum BytesPerPixel(unsigned internalformat) {
 
 GLImageShm::GLImageShm(gfx::Size size, unsigned internalformat)
     : size_(size),
-      internalformat_(internalformat) {
+      internalformat_(internalformat)
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+      , egl_texture_id_(0u)
+      , egl_image_(EGL_NO_IMAGE_KHR)
+#endif
+{
 }
 
 GLImageShm::~GLImageShm() {
@@ -96,6 +107,17 @@ bool GLImageShm::Initialize(gfx::GpuMemoryBufferHandle buffer) {
 }
 
 void GLImageShm::Destroy() {
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  if (egl_image_ != EGL_NO_IMAGE_KHR) {
+    eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+    egl_image_ = EGL_NO_IMAGE_KHR;
+  }
+  if (egl_texture_id_) {
+    glDeleteTextures(1, &egl_texture_id_);
+    egl_texture_id_ = 0u;
+  }
+#endif
 }
 
 gfx::Size GLImageShm::GetSize() {
@@ -115,6 +137,55 @@ bool GLImageShm::BindTexImage(unsigned target) {
   }
 
   DCHECK(shared_memory_->memory());
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  if (target == GL_TEXTURE_EXTERNAL_OES) {
+    if (egl_image_ != EGL_NO_IMAGE_KHR)
+      eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+
+    if (!egl_texture_id_)
+      glGenTextures(1, &egl_texture_id_);
+
+    {
+      ScopedTextureBinder texture_binder(GL_TEXTURE_2D, egl_texture_id_);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,  // mip level
+                   TextureFormat(internalformat_),
+                   size_.width(),
+                   size_.height(),
+                   0,  // border
+                   DataFormat(internalformat_),
+                   DataType(internalformat_),
+                   shared_memory_->memory());
+    }
+
+    EGLint attrs[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0,  // mip-level.
+                      EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
+    // Need to pass current EGL rendering context to eglCreateImageKHR for
+    // target type EGL_GL_TEXTURE_2D_KHR.
+    egl_image_ =
+        eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
+                          eglGetCurrentContext(),
+                          EGL_GL_TEXTURE_2D_KHR,
+                          reinterpret_cast<EGLClientBuffer>(egl_texture_id_),
+                          attrs);
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_)
+        << "Error creating EGLImage: " << eglGetError();
+
+    glEGLImageTargetTexture2DOES(target, egl_image_);
+    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+    shared_memory_->Unmap();
+    return true;
+  }
+#endif
+
+  DCHECK_NE(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), target);
   glTexImage2D(target,
                0,  // mip level
                TextureFormat(internalformat_),

@@ -6,6 +6,7 @@
 #define UI_GL_GL_IMAGE_SHM_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
 namespace gfx {
@@ -33,6 +34,11 @@ class GL_EXPORT GLImageShm : public GLImage {
   scoped_ptr<base::SharedMemory> shared_memory_;
   gfx::Size size_;
   unsigned internalformat_;
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  GLuint egl_texture_id_;
+  EGLImageKHR egl_image_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GLImageShm);
 };

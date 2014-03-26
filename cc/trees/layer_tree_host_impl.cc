@@ -109,14 +109,10 @@ unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
   if (!context_provider)
     return GL_TEXTURE_2D;
 
-  // TODO(reveman): Determine if GL_TEXTURE_EXTERNAL_OES works well on
-  // Android before we enable this. crbug.com/322780
-#if !defined(OS_ANDROID)
   if (context_provider->ContextCapabilities().gpu.egl_image_external)
     return GL_TEXTURE_EXTERNAL_OES;
   if (context_provider->ContextCapabilities().gpu.texture_rectangle)
     return GL_TEXTURE_RECTANGLE_ARB;
-#endif
 
   return GL_TEXTURE_2D;
 }

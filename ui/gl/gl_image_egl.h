@@ -36,6 +36,8 @@ class GL_EXPORT GLImageEGL : public GLImage {
   bool release_after_use_;
   bool in_use_;
   unsigned target_;
+  EGLImageKHR egl_image_for_unbind_;
+  GLuint texture_id_for_unbind_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);
 };
