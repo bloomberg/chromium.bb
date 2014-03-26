@@ -1148,14 +1148,21 @@ chrome_pfq.add_config('falco-chrome-pfq',
   important=True,
 )
 
-chromium_info = chromium_pfq.derive(
+chrome_try = _config(
+  build_type=constants.CHROME_PFQ_TYPE,
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
   important=False,
   manifest_version=False,
-  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   disk_vm_layout='usb',
 )
+
+chromium_info = chromium_pfq.derive(
+  chrome_try,
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+)
+
+telemetry_info = telemetry.derive(chrome_try)
 
 chrome_info = chromium_info.derive(
   internal, official,
@@ -1212,6 +1219,14 @@ chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
 chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['x32-generic'],
+)
+
+telemetry_info.add_config('x86-generic-telem-chrome-pfq-informational',
+  boards=['x86-generic'],
+)
+
+telemetry_info.add_config('amd64-generic-telem-chrome-pfq-informational',
+  boards=['amd64-generic'],
 )
 
 chrome_info.add_config('alex-tot-chrome-pfq-informational',
