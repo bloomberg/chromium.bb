@@ -241,22 +241,48 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Login for autotests.
+   * Login for telemetry.
    * @param {string} username Login username.
    * @param {string} password Login password.
    */
   Oobe.loginForTesting = function(username, password) {
+    Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting', [username]);
     chrome.send('completeLogin', [username, password, false]);
   };
 
   /**
-   * Authenticate for autotests.
+   * Guest login for telemetry.
+   */
+  Oobe.guestLoginForTesting = function() {
+    Oobe.disableSigninUI();
+    chrome.send('skipToLoginForTesting');
+    chrome.send('launchIncognito');
+  };
+
+  /**
+   * Authenticate for telemetry - used for screenlocker.
    * @param {string} username Login username.
    * @param {string} password Login password.
    */
   Oobe.authenticateForTesting = function(username, password) {
+    Oobe.disableSigninUI();
     chrome.send('authenticateUser', [username, password]);
+  };
+
+  /**
+   * Gaia login screen for telemetry.
+   */
+  Oobe.addUserForTesting = function() {
+    chrome.send('skipToLoginForTesting');
+    chrome.send('addUser');
+  };
+
+  /**
+   * Chromebox requisition for telemetry.
+   */
+  Oobe.chromeboxRequisitionForTesting = function() {
+    chrome.send('setDeviceRequisition', ['remora']);
   };
 
   // Export
