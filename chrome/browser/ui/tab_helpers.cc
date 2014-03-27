@@ -109,9 +109,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // Create all the tab helpers.
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(web_contents);
@@ -183,6 +180,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (profile->IsManaged()) {
     ManagedModeNavigationObserver::CreateForWebContents(web_contents);
   }

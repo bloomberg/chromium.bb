@@ -4,10 +4,10 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
