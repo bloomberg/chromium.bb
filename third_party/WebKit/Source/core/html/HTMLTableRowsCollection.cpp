@@ -53,15 +53,8 @@ static bool isInFoot(Element* row)
     return row->parentNode() && toElement(row->parentNode())->hasLocalName(tfootTag);
 }
 
-static inline HTMLTableRowElement* findTableRowElementInChildren(Element& current)
-{
-    return Traversal<HTMLTableRowElement>::firstChild(current);
-}
-
 HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, HTMLTableRowElement* previous)
 {
-    Element* child = 0;
-
     // Start by looking for the next row in this section.
     // Continue only if there is none.
     if (previous && previous->parentNode() != table) {
@@ -70,41 +63,42 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, 
     }
 
     // If still looking at head sections, find the first row in the next head section.
+    HTMLElement* child = 0;
     if (!previous)
-        child = ElementTraversal::firstWithin(table);
+        child = Traversal<HTMLElement>::firstChild(table);
     else if (isInHead(previous))
-        child = ElementTraversal::nextSibling(*previous->parentNode());
-    for (; child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(theadTag)) {
-            if (HTMLTableRowElement* row = findTableRowElementInChildren(*child))
+        child = Traversal<HTMLElement>::nextSibling(*previous->parentNode());
+    for (; child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+        if (child->hasLocalName(theadTag)) {
+            if (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*child))
                 return row;
         }
     }
 
     // If still looking at top level and bodies, find the next row in top level or the first in the next body section.
     if (!previous || isInHead(previous))
-        child = ElementTraversal::firstWithin(table);
+        child = Traversal<HTMLElement>::firstChild(table);
     else if (previous->parentNode() == table)
-        child = ElementTraversal::nextSibling(*previous);
+        child = Traversal<HTMLElement>::nextSibling(*previous);
     else if (isInBody(previous))
-        child = ElementTraversal::nextSibling(*previous->parentNode());
-    for (; child; child = ElementTraversal::nextSibling(*child)) {
+        child = Traversal<HTMLElement>::nextSibling(*previous->parentNode());
+    for (; child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
-        if (child->hasTagName(tbodyTag)) {
-            if (HTMLTableRowElement* row = findTableRowElementInChildren(*child))
+        if (child->hasLocalName(tbodyTag)) {
+            if (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*child))
                 return row;
         }
     }
 
     // Find the first row in the next foot section.
     if (!previous || !isInFoot(previous))
-        child = ElementTraversal::firstWithin(table);
+        child = Traversal<HTMLElement>::firstChild(table);
     else
-        child = ElementTraversal::nextSibling(*previous->parentNode());
-    for (; child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(tfootTag)) {
-            if (HTMLTableRowElement* row = findTableRowElementInChildren(*child))
+        child = Traversal<HTMLElement>::nextSibling(*previous->parentNode());
+    for (; child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+        if (child->hasLocalName(tfootTag)) {
+            if (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*child))
                 return row;
         }
     }
@@ -114,24 +108,24 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, 
 
 HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
 {
-    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
-        if (child->hasTagName(tfootTag)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
+        if (child->hasLocalName(tfootTag)) {
             if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*child))
                 return lastRow;
         }
     }
 
-    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
+    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
         if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
-        if (child->hasTagName(tbodyTag)) {
+        if (child->hasLocalName(tbodyTag)) {
             if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*child))
                 return lastRow;
         }
     }
 
-    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
-        if (child->hasTagName(theadTag)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
+        if (child->hasLocalName(theadTag)) {
             if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*child))
                 return lastRow;
         }

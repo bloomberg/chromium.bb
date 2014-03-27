@@ -128,8 +128,9 @@ private:
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, isHTMLElement());
 
+template <> inline bool isElementOfType<const HTMLElement>(const Node& node) { return node.isHTMLElement(); }
 template <typename T> bool isElementOfType(const HTMLElement&);
-template <> inline bool isElementOfType<HTMLElement>(const HTMLElement&) { return true; }
+template <> inline bool isElementOfType<const HTMLElement>(const HTMLElement&) { return true; }
 
 inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
     : Element(tagName, &document, type)
