@@ -4,39 +4,15 @@
 
 import unittest
 
+from metrics import test_page_measurement_results
 from metrics import timeline
 from telemetry.core.timeline import bounds
 from telemetry.core.timeline import model as model_module
-from telemetry.page import page as page_module
-from telemetry.page import page_measurement_results
-from telemetry.value import scalar
 
-class TestPageMeasurementResults(
-    page_measurement_results.PageMeasurementResults):
-  def __init__(self, test):
-    super(TestPageMeasurementResults, self).__init__()
-    self.test = test
-    page = page_module.Page("http://www.google.com", {})
-    self.WillMeasurePage(page)
-
-  def GetPageSpecificValueNamed(self, name):
-    values = [value for value in self.all_page_specific_values
-         if value.name == name]
-    assert len(values) == 1, 'Could not find value named %s' % name
-    return values[0]
-
-  def AssertHasPageSpecificScalarValue(self, name, units, expected_value):
-    value = self.GetPageSpecificValueNamed(name)
-    self.test.assertEquals(units, value.units)
-    self.test.assertTrue(isinstance(value, scalar.ScalarValue))
-    self.test.assertEquals(expected_value, value.value)
-
-  def __str__(self):
-    return '\n'.join([repr(x) for x in self.all_page_specific_values])
 
 class LoadTimesTimelineMetric(unittest.TestCase):
   def GetResults(self, metric):
-    results = TestPageMeasurementResults(self)
+    results = test_page_measurement_results.TestPageMeasurementResults(self)
     tab = None
     metric.AddResults(tab, results)
     return results
@@ -82,7 +58,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
   def GetResults(self, metric):
-    results = TestPageMeasurementResults(self)
+    results = test_page_measurement_results.TestPageMeasurementResults(self)
     tab = None
     metric.AddResults(tab, results)
     return results
