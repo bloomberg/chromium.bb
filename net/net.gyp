@@ -2181,8 +2181,8 @@
         }],
         [ 'OS == "android"', {
           'sources!': [
-            # See bug 344533.
-            'disk_cache/blockfile/index_table_v3unittest.cc',
+            # See bug http://crbug.com/344533.
+            'disk_cache/blockfile/index_table_v3_unittest.cc',
             # No res_ninit() et al on Android, so this doesn't make a lot of
             # sense.
             'dns/dns_config_service_posix_unittest.cc',
@@ -2388,8 +2388,8 @@
               # OS is not "linux" or "freebsd" or "openbsd".
               'socket/unix_domain_socket_posix_unittest.cc',
 
-              # See bug 344533.
-              'disk_cache/v3/index_table_unittest.cc',
+              # See bug http://crbug.com/344533.
+              'disk_cache/blockfile/index_table_v3_unittest.cc',
             ],
         }],
         [ 'OS == "android"', {
