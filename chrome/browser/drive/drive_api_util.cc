@@ -6,10 +6,9 @@
 
 #include <string>
 
-#include "base/files/scoped_platform_file_closer.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/md5.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -538,12 +537,9 @@ ConvertChangeListToResourceList(const google_apis::ChangeList& change_list) {
 std::string GetMd5Digest(const base::FilePath& file_path) {
   const int kBufferSize = 512 * 1024;  // 512kB.
 
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL, NULL);
-  if (file == base::kInvalidPlatformFileValue)
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
     return std::string();
-  base::ScopedPlatformFileCloser file_closer(&file);
 
   base::MD5Context context;
   base::MD5Init(&context);
@@ -551,11 +547,7 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
   int64 offset = 0;
   scoped_ptr<char[]> buffer(new char[kBufferSize]);
   while (true) {
-    // Avoid using ReadPlatformFileCurPosNoBestEffort for now.
-    // http://crbug.com/145873
-    int result = base::ReadPlatformFileNoBestEffort(
-        file, offset, buffer.get(), kBufferSize);
-
+    int result = file.Read(offset, buffer.get(), kBufferSize);
     if (result < 0) {
       // Found an error.
       return std::string();
