@@ -4,26 +4,18 @@
 
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
-#include "base/memory/shared_memory.h"
-#include "gpu/command_buffer/service/safe_shared_memory_pool.h"
-
 namespace gpu {
 
-namespace {
-
-void* GetAddressImpl(base::SharedMemory* shared_memory,
-                     uint32 shm_size,
-                     uint32 shm_data_offset,
-                     uint32 shm_data_size) {
-  // Memory bounds have already been validated, so there
-  // are just DCHECKS here.
-  DCHECK(shared_memory);
-  DCHECK(shared_memory->memory());
-  DCHECK_LE(shm_data_offset + shm_data_size, shm_size);
-  return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
+AsyncMemoryParams::AsyncMemoryParams(scoped_refptr<Buffer> buffer,
+                    uint32 data_offset,
+                    uint32 data_size)
+    : buffer_(buffer), data_offset_(data_offset), data_size_(data_size) {
+  DCHECK(buffer_);
+  DCHECK(buffer_->memory());
 }
 
-}  // namespace
+AsyncMemoryParams::~AsyncMemoryParams() {
+}
 
 AsyncPixelTransferUploadStats::AsyncPixelTransferUploadStats()
     : texture_upload_count_(0) {}
@@ -44,27 +36,8 @@ int AsyncPixelTransferUploadStats::GetStats(
   return texture_upload_count_;
 }
 
-AsyncPixelTransferDelegate::AsyncPixelTransferDelegate(){}
+AsyncPixelTransferDelegate::AsyncPixelTransferDelegate() {}
 
-AsyncPixelTransferDelegate::~AsyncPixelTransferDelegate(){}
-
-// static
-void* AsyncPixelTransferDelegate::GetAddress(
-    const AsyncMemoryParams& mem_params) {
-  return GetAddressImpl(mem_params.shared_memory,
-                        mem_params.shm_size,
-                        mem_params.shm_data_offset,
-                        mem_params.shm_data_size);
-}
-
-// static
-void* AsyncPixelTransferDelegate::GetAddress(
-    ScopedSafeSharedMemory* safe_shared_memory,
-    const AsyncMemoryParams& mem_params) {
-  return GetAddressImpl(safe_shared_memory->shared_memory(),
-                        mem_params.shm_size,
-                        mem_params.shm_data_offset,
-                        mem_params.shm_data_size);
-}
+AsyncPixelTransferDelegate::~AsyncPixelTransferDelegate() {}
 
 }  // namespace gpu

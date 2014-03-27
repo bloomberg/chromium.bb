@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "gpu/command_buffer/common/buffer.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -44,11 +45,24 @@ struct AsyncTexSubImage2DParams {
   GLenum type;
 };
 
-struct AsyncMemoryParams {
-  base::SharedMemory* shared_memory;
-  uint32 shm_size;
-  uint32 shm_data_offset;
-  uint32 shm_data_size;
+class AsyncMemoryParams {
+ public:
+  AsyncMemoryParams(scoped_refptr<Buffer> buffer,
+                    uint32 data_offset,
+                    uint32 data_size);
+  ~AsyncMemoryParams();
+
+  scoped_refptr<Buffer> buffer() const { return buffer_; }
+  uint32 data_size() const { return data_size_; }
+  uint32 data_offset() const { return data_offset_; }
+  void* GetDataAddress() const {
+    return buffer_->GetDataAddress(data_offset_, data_size_);
+  }
+
+ private:
+  scoped_refptr<Buffer> buffer_;
+  uint32 data_offset_;
+  uint32 data_size_;
 };
 
 class AsyncPixelTransferUploadStats
@@ -91,13 +105,6 @@ class GPU_EXPORT AsyncPixelTransferDelegate {
 
   // Block until the specified transfer completes.
   virtual void WaitForTransferCompletion() = 0;
-
-  // Gets the address of the data from shared memory.
-  static void* GetAddress(const AsyncMemoryParams& mem_params);
-
-  // Sometimes the |safe_shared_memory| is duplicate to prevent use after free.
-  static void* GetAddress(ScopedSafeSharedMemory* safe_shared_memory,
-                          const AsyncMemoryParams& mem_params);
 
  protected:
   AsyncPixelTransferDelegate();

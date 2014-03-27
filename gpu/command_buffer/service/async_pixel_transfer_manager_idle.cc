@@ -9,30 +9,19 @@
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace gpu {
 
 namespace {
 
-base::LazyInstance<SafeSharedMemoryPool> g_safe_shared_memory_pool =
-    LAZY_INSTANCE_INITIALIZER;
-
-SafeSharedMemoryPool* safe_shared_memory_pool() {
-  return g_safe_shared_memory_pool.Pointer();
-}
-
 static uint64 g_next_pixel_transfer_state_id = 1;
 
 void PerformNotifyCompletion(
     AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory,
     scoped_refptr<AsyncPixelTransferCompletionObserver> observer) {
   TRACE_EVENT0("gpu", "PerformNotifyCompletion");
-  AsyncMemoryParams safe_mem_params = mem_params;
-  safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
-  observer->DidComplete(safe_mem_params);
+  observer->DidComplete(mem_params);
 }
 
 }  // namespace
@@ -61,15 +50,11 @@ class AsyncPixelTransferDelegateIdle
   virtual void WaitForTransferCompletion() OVERRIDE;
 
  private:
-  void PerformAsyncTexImage2D(
-      AsyncTexImage2DParams tex_params,
-      AsyncMemoryParams mem_params,
-      const base::Closure& bind_callback,
-      ScopedSafeSharedMemory* safe_shared_memory);
-  void PerformAsyncTexSubImage2D(
-      AsyncTexSubImage2DParams tex_params,
-      AsyncMemoryParams mem_params,
-      ScopedSafeSharedMemory* safe_shared_memory);
+  void PerformAsyncTexImage2D(AsyncTexImage2DParams tex_params,
+                              AsyncMemoryParams mem_params,
+                              const base::Closure& bind_callback);
+  void PerformAsyncTexSubImage2D(AsyncTexSubImage2DParams tex_params,
+                                 AsyncMemoryParams mem_params);
 
   uint64 id_;
   GLuint texture_id_;
@@ -101,21 +86,14 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
     const base::Closure& bind_callback) {
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
-  DCHECK(mem_params.shared_memory);
-  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
-            mem_params.shm_size);
 
   shared_state_->tasks.push_back(AsyncPixelTransferManagerIdle::Task(
       id_,
-      base::Bind(
-          &AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
-          AsWeakPtr(),
-          tex_params,
-          mem_params,
-          bind_callback,
-          base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
-                                                 mem_params.shared_memory,
-                                                 mem_params.shm_size)))));
+      base::Bind(&AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
+                 AsWeakPtr(),
+                 tex_params,
+                 mem_params,
+                 bind_callback)));
 
   transfer_in_progress_ = true;
 }
@@ -125,20 +103,13 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
     const AsyncMemoryParams& mem_params) {
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
-  DCHECK(mem_params.shared_memory);
-  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
-            mem_params.shm_size);
 
   shared_state_->tasks.push_back(AsyncPixelTransferManagerIdle::Task(
       id_,
-      base::Bind(
-          &AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
-          AsWeakPtr(),
-          tex_params,
-          mem_params,
-          base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
-                                                 mem_params.shared_memory,
-                                                 mem_params.shm_size)))));
+      base::Bind(&AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
+                 AsWeakPtr(),
+                 tex_params,
+                 mem_params)));
 
   transfer_in_progress_ = true;
 }
@@ -166,13 +137,12 @@ void AsyncPixelTransferDelegateIdle::WaitForTransferCompletion() {
 void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
     AsyncTexImage2DParams tex_params,
     AsyncMemoryParams mem_params,
-    const base::Closure& bind_callback,
-    ScopedSafeSharedMemory* safe_shared_memory) {
+    const base::Closure& bind_callback) {
   TRACE_EVENT2("gpu", "PerformAsyncTexImage2D",
                "width", tex_params.width,
                "height", tex_params.height);
 
-  void* data = GetAddress(safe_shared_memory, mem_params);
+  void* data = mem_params.GetDataAddress();
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
@@ -203,13 +173,12 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
 
 void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
     AsyncTexSubImage2DParams tex_params,
-    AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory) {
+    AsyncMemoryParams mem_params) {
   TRACE_EVENT2("gpu", "PerformAsyncTexSubImage2D",
                "width", tex_params.width,
                "height", tex_params.height);
 
-  void* data = GetAddress(safe_shared_memory, mem_params);
+  void* data = mem_params.GetDataAddress();
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
@@ -301,9 +270,6 @@ void AsyncPixelTransferManagerIdle::AsyncNotifyCompletion(
            base::Bind(
                &PerformNotifyCompletion,
                mem_params,
-               base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
-                                                      mem_params.shared_memory,
-                                                      mem_params.shm_size)),
                make_scoped_refptr(observer))));
 }
 

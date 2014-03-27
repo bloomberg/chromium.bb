@@ -46,7 +46,7 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
     const base::Closure& bind_callback) {
   // Save the define params to return later during deferred
   // binding of the transfer texture.
-  void* data = GetAddress(mem_params);
+  void* data = mem_params.GetDataAddress();
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexImage2D(
       tex_params.target,
@@ -68,7 +68,7 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
 void AsyncPixelTransferDelegateSync::AsyncTexSubImage2D(
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
-  void* data = GetAddress(mem_params);
+  void* data = mem_params.GetDataAddress();
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexSubImage2D(
       tex_params.target,

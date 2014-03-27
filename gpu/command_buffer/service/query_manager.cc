@@ -36,12 +36,9 @@ class AsyncPixelTransferCompletionObserverImpl
   virtual void DidComplete(const AsyncMemoryParams& mem_params) OVERRIDE {
     base::AutoLock locked(lock_);
     if (!cancelled_) {
-      DCHECK(mem_params.shared_memory);
-      DCHECK(mem_params.shared_memory->memory());
-      void* data = static_cast<int8*>(mem_params.shared_memory->memory()) +
-                   mem_params.shm_data_offset;
+      DCHECK(mem_params.buffer());
+      void* data = mem_params.GetDataAddress();
       QuerySync* sync = static_cast<QuerySync*>(data);
-
       base::subtle::Release_Store(&sync->process_count, submit_count_);
     }
   }
@@ -86,20 +83,14 @@ bool AsyncPixelTransfersCompletedQuery::Begin() {
 
 bool AsyncPixelTransfersCompletedQuery::End(
     base::subtle::Atomic32 submit_count) {
-  AsyncMemoryParams mem_params;
   // Get the real shared memory since it might need to be duped to prevent
   // use-after-free of the memory.
   scoped_refptr<Buffer> buffer =
       manager()->decoder()->GetSharedMemoryBuffer(shm_id());
   if (!buffer)
     return false;
-  mem_params.shared_memory = buffer->shared_memory();
-  mem_params.shm_size = buffer->size();
-  mem_params.shm_data_offset = shm_offset();
-  mem_params.shm_data_size = sizeof(QuerySync);
-  base::CheckedNumeric<uint32> end = mem_params.shm_data_offset;
-  end += mem_params.shm_data_size;
-  if (!end.IsValid() || end.ValueOrDie() > mem_params.shm_size)
+  AsyncMemoryParams mem_params(buffer, shm_offset(), sizeof(QuerySync));
+  if (!mem_params.GetDataAddress())
     return false;
 
   observer_ = new AsyncPixelTransferCompletionObserverImpl(submit_count);

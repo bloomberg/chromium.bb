@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+#include "base/numerics/safe_math.h"
+
 namespace gpu {
 
 Buffer::Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size)
@@ -16,5 +18,13 @@ Buffer::Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size)
 }
 
 Buffer::~Buffer() {}
+
+void* Buffer::GetDataAddress(uint32 data_offset, uint32 data_size) const {
+  base::CheckedNumeric<uint32> end = data_offset;
+  end += data_size;
+  if (!end.IsValid() || end.ValueOrDie() > static_cast<uint32>(size_))
+    return NULL;
+  return static_cast<uint8*>(memory_) + data_offset;
+}
 
 } // namespace gpu

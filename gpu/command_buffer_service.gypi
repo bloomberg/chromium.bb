@@ -111,8 +111,6 @@
     'command_buffer/service/renderbuffer_manager.cc',
     'command_buffer/service/program_cache.h',
     'command_buffer/service/program_cache.cc',
-    'command_buffer/service/safe_shared_memory_pool.h',
-    'command_buffer/service/safe_shared_memory_pool.cc',
     'command_buffer/service/shader_manager.h',
     'command_buffer/service/shader_manager.cc',
     'command_buffer/service/shader_translator.h',

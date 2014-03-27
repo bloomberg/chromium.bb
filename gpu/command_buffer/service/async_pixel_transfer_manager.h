@@ -32,7 +32,7 @@ class GLContext;
 
 namespace gpu {
 class AsyncPixelTransferDelegate;
-struct AsyncMemoryParams;
+class AsyncMemoryParams;
 struct AsyncTexImage2DParams;
 
 class AsyncPixelTransferCompletionObserver

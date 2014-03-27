@@ -10392,20 +10392,12 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
-  // We know the memory/size is safe, so get the real shared memory since
-  // it might need to be duped to prevent use-after-free of the memory.
-  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
-  base::SharedMemory* shared_memory = buffer->shared_memory();
-  uint32 shm_size = buffer->size();
-  uint32 shm_data_offset = c.pixels_shm_offset;
-  uint32 shm_data_size = pixels_size;
-
   // Setup the parameters.
   AsyncTexImage2DParams tex_params = {
       target, level, static_cast<GLenum>(internal_format),
       width, height, border, format, type};
-  AsyncMemoryParams mem_params = {
-      shared_memory, shm_size, shm_data_offset, shm_data_size};
+  AsyncMemoryParams mem_params(
+      GetSharedMemoryBuffer(c.pixels_shm_id), c.pixels_shm_offset, pixels_size);
 
   // Set up the async state if needed, and make the texture
   // immutable so the async state stays valid. The level info
@@ -10482,19 +10474,11 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
     }
   }
 
-  // We know the memory/size is safe, so get the real shared memory since
-  // it might need to be duped to prevent use-after-free of the memory.
-  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(c.data_shm_id);
-  base::SharedMemory* shared_memory = buffer->shared_memory();
-  uint32 shm_size = buffer->size();
-  uint32 shm_data_offset = c.data_shm_offset;
-  uint32 shm_data_size = data_size;
-
   // Setup the parameters.
   AsyncTexSubImage2DParams tex_params = {target, level, xoffset, yoffset,
                                               width, height, format, type};
-  AsyncMemoryParams mem_params = {shared_memory, shm_size,
-                                       shm_data_offset, shm_data_size};
+  AsyncMemoryParams mem_params(
+      GetSharedMemoryBuffer(c.data_shm_id), c.data_shm_offset, data_size);
   AsyncPixelTransferDelegate* delegate =
       async_pixel_transfer_manager_->GetPixelTransferDelegate(texture_ref);
   if (!delegate) {

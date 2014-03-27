@@ -22,9 +22,12 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
  public:
   Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size);
 
-  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
-  void* memory() { return memory_; }
-  size_t size() { return size_; }
+  base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
+  void* memory() const { return memory_; }
+  size_t size() const { return size_; }
+
+  // Returns NULL if the address overflows the memory.
+  void* GetDataAddress(uint32 data_offset, uint32 data_size) const;
 
  private:
   friend class base::RefCountedThreadSafe<Buffer>;
