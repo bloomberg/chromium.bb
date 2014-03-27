@@ -65,7 +65,7 @@ base::TimeDelta ReadTimeDeltaFromFile(const base::FilePath& path) {
   std::string contents;
   char buffer[kOneKilobyte];
   ssize_t length;
-  while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
+  while ((length = HANDLE_EINTR(read(fd.get(), buffer, sizeof(buffer)))) > 0)
     contents.append(buffer, length);
 
   double seconds;

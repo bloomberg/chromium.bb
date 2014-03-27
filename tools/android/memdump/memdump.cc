@@ -437,8 +437,8 @@ bool CollectProcessMemoryInformation(int page_count_fd,
                                      int page_flags_fd,
                                      ProcessMemory* process_memory) {
   const pid_t pid = process_memory->pid;
-  base::ScopedFD pagemap_fd(open(
-      base::StringPrintf("/proc/%d/pagemap", pid).c_str(), O_RDONLY));
+  base::ScopedFD pagemap_fd(HANDLE_EINTR(open(
+      base::StringPrintf("/proc/%d/pagemap", pid).c_str(), O_RDONLY)));
   if (!pagemap_fd.is_valid()) {
     PLOG(ERROR) << "open";
     return false;
@@ -489,7 +489,8 @@ int main(int argc, char** argv) {
 
   std::vector<ProcessMemory> processes_memory(pids.size());
   {
-    base::ScopedFD page_count_fd(open("/proc/kpagecount", O_RDONLY));
+    base::ScopedFD page_count_fd(
+        HANDLE_EINTR(open("/proc/kpagecount", O_RDONLY)));
     if (!page_count_fd.is_valid()) {
       PLOG(ERROR) << "open /proc/kpagecount";
       return EXIT_FAILURE;

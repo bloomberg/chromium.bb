@@ -87,7 +87,7 @@ class MacSandboxedFileAccessTestCase : public MacSandboxTestCase {
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedFileAccessTestCase);
 
 bool MacSandboxedFileAccessTestCase::SandboxedTest() {
-  base::ScopedFD fdes(open("/etc/passwd", O_RDONLY));
+  base::ScopedFD fdes(HANDLE_EINTR(open("/etc/passwd", O_RDONLY)));
   return !fdes.is_valid();
 }
 
@@ -105,14 +105,14 @@ class MacSandboxedUrandomTestCase : public MacSandboxTestCase {
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedUrandomTestCase);
 
 bool MacSandboxedUrandomTestCase::SandboxedTest() {
-  base::ScopedFD fdes(open("/dev/urandom", O_RDONLY));
+  base::ScopedFD fdes(HANDLE_EINTR(open("/dev/urandom", O_RDONLY)));
 
   // Opening /dev/urandom succeeds under the sandbox.
   if (!fdes.is_valid())
     return false;
 
   char buf[16];
-  int rc = read(fdes.get(), buf, sizeof(buf));
+  int rc = HANDLE_EINTR(read(fdes.get(), buf, sizeof(buf)));
   return rc == sizeof(buf);
 }
 

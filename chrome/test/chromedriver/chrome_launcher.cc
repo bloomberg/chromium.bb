@@ -255,7 +255,7 @@ Status LaunchDesktopChrome(
   if (!CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
     // users.
-    devnull.reset(open("/dev/null", O_WRONLY));
+    devnull.reset(HANDLE_EINTR(open("/dev/null", O_WRONLY)));
     if (!devnull.is_valid())
       return Status(kUnknownError, "couldn't open /dev/null");
     no_stderr.push_back(std::make_pair(devnull.get(), STDERR_FILENO));

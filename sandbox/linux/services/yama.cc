@@ -79,7 +79,7 @@ int Yama::GetStatus() {
 
   static const char kPtraceScopePath[] = "/proc/sys/kernel/yama/ptrace_scope";
 
-  base::ScopedFD yama_scope(open(kPtraceScopePath, O_RDONLY));
+  base::ScopedFD yama_scope(HANDLE_EINTR(open(kPtraceScopePath, O_RDONLY)));
 
   if (!yama_scope.is_valid()) {
     const int open_errno = errno;
