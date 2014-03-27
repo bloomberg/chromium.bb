@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_process.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
@@ -33,14 +35,26 @@ int NaClPluginPrintLog(const char *format, ...) {
 
 /*
  * Opens file where plugin log should be written. The file name is
- * taken from NACL_PLUGIN_LOG environment variable.
+ * taken from NACL_PLUGIN_LOG environment variable and process pid.
  * If environment variable doesn't exist or file can't be opened,
  * the function returns stdout.
  */
 FILE* NaClPluginLogFileEnv() {
   char* file = getenv("NACL_PLUGIN_LOG");
   if (NULL != file) {
-    FILE* log_file = fopen(file, "w+");
+    int pid = GETPID();
+    /*
+     * 11 characters for pid, 5 for a glue string and 1 for null terminator.
+     */
+    size_t filename_length = strlen(file) + 32;
+    char* filename = new char[filename_length];
+    int ret = SNPRINTF(filename, filename_length, "%s.%d.log", file, pid);
+    if (ret <= 0 || static_cast<size_t>(ret) >= filename_length) {
+      delete[] filename;
+      return stdout;
+    }
+    FILE* log_file = fopen(filename, "w+");
+    delete[] filename;
     if (NULL == log_file) {
         return stdout;
     }
