@@ -128,6 +128,35 @@
                  '--branding=<(branding)'],
     },
     {
+      # Copy libmojo_system.dylib explicitly. The copies section does a
+      # hard link, and since we modify it we would end up with the wrong
+      # load command in things linked afterward.
+      'postbuild_name': 'Copy libmojo_system.dylib',
+      'action': ['cp',
+                 '-p',
+                 '${BUILT_PRODUCTS_DIR}/libmojo_system.dylib',
+                 '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Libraries'],
+    },
+    {
+      # Changes the id of libmojo_system.dylib to come from the Libraries folder
+      # to be consistent with the load command.
+      'postbuild_name': 'Update id of libmojo_system.dylib',
+      'action': ['install_name_tool',
+                 '-id',
+                 '@loader_path/Libraries/libmojo_system.dylib',
+                 '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Libraries/libmojo_system.dylib'],
+    },
+    {
+      # Changes the load command of libmojo_system.dylib to come from
+      # the Libraries folder.
+      'postbuild_name': 'Update load of libmojo_system.dylib',
+      'action': ['install_name_tool',
+                 '-change',
+                 '@loader_path/libmojo_system.dylib',
+                 '@loader_path/Libraries/libmojo_system.dylib',
+                 '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'],
+    },
+    {
       'postbuild_name': 'Symlink Libraries',
       'action': [
         'ln',
@@ -139,7 +168,7 @@
   ],
   'copies': [
     {
-      # Copy FFmpeg binaries for audio/video support.
+      # Copy FFmpeg binaries for audio/video support and mojo.
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
       'files': [
         '<(PRODUCT_DIR)/ffmpegsumo.so',
