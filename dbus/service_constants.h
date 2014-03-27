@@ -1692,4 +1692,12 @@ const char kScanPropertyModeLineart[] = "Lineart";
 const char kScanPropertyResolution[] = "Resolution";
 }  // namespace lorgnette
 
+namespace feedback {
+const char kFeedbackServicePath[] = "/org/chromium/feedback";
+const char kFeedbackServiceName[] = "org.chromium.feedback";
+
+// Methods.
+const char kSendFeedback[] = "SendFeedback";
+}  // namespace feedback
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
