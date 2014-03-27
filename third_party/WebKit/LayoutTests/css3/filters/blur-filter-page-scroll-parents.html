@@ -10,6 +10,7 @@
             if (window.testRunner) {
                 // Force software rendering mode.
                 window.testRunner.overridePreference("WebKitAcceleratedCompositingEnabled", "0");
+                window.testRunner.waitUntilDone();
             }
         </script>
         <!-- Make sure the mock scrollbars are enabled after the call to overridePreference, otherwise the setting will be overwritten. -->
@@ -47,14 +48,18 @@
                 height: 1000px;
             }
         </style>
-        <script src="../../fast/repaint/resources/repaint.js"></script>
+        <script src="../../resources/run-after-display.js"></script>
         <script type="text/javascript">
             function repaintTest() {
-                window.scrollTo(0, 100);
+                runAfterDisplay(function() {
+                  window.scrollTo(0, 100);
+                  if (window.testRunner)
+                    testRunner.notifyDone();
+                });
             }
         </script>
     </head>
-    <body onload="runRepaintTest()">
+    <body onload="repaintTest()">
         <div class="blur">
             <div class="layer">
                 <div id="fixedBox"></div>

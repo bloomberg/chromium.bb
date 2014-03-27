@@ -13,19 +13,19 @@
             margin-bottom: 60px;
             background-color: green;
         }
-        
+
         .software_from_none {
             -webkit-filter: drop-shadow(0px 0px 10px blue);
         }
-        
+
         .software_from_none.before {
             -webkit-filter: none;
         }
-        
+
         .software_from_software {
             -webkit-filter: drop-shadow(0px 0px 10px blue);
         }
-        
+
         .software_from_software.before {
             -webkit-filter: drop-shadow(0px 0px 10px red);
         }
@@ -35,47 +35,53 @@
             -webkit-transform: translate3d(0, 0, 0);
             -webkit-filter: drop-shadow(0px 0px 10px blue);
         }
-        
+
         .composited_from_software.before {
             -webkit-transform: none;
             -webkit-filter: drop-shadow(0px 0px 10px red);
         }
-        
+
         .software_from_composited {
             -webkit-transform: none;
             -webkit-filter: drop-shadow(0px 0px 10px blue);
         }
-        
+
         .software_from_composited.before {
             /* force a composited layer */
             -webkit-transform: translate3d(0, 0, 0);
             -webkit-filter: drop-shadow(0px 0px 10px red);
         }
-        
+
         .none_from_software {
             -webkit-filter: none;
         }
-        
+
         .none_from_software.before {
             -webkit-filter: drop-shadow(0px 0px 10px red);
         }
     </style>
 
-    <script src="../../fast/repaint/resources/repaint.js"></script>
+    <script src="../../resources/run-after-display.js"></script>
     <script>
-        if (window.testRunner)
+        if (window.testRunner) {
             testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
 
         function repaintTest()
         {
-            var items = document.getElementsByClassName('before');
-            while (items.length)
-                items[0].classList.remove("before");
+            runAfterDisplay(function() {
+                var items = document.getElementsByClassName('before');
+                while (items.length)
+                    items[0].classList.remove("before");
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            });
         }
     </script>
 </head>
 
-<body onload="runRepaintTest()">
+<body onload="repaintTest()">
     <div class="box software_from_none before"></div>
     <div class="box software_from_software before"></div>
     <div class="box composited_from_software before"></div>

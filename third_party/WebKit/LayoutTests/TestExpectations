@@ -476,6 +476,14 @@ crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolu
 crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
 
 crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
+crbug.com/345027 css3/filters/filter-change-repaint-composited.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-blur.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-child-layers.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-sepia.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-shadow-clipped.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-shadow-rotated.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint-shadow.html [ ImageOnlyFailure NeedsRebaseline ]
+crbug.com/345027 css3/filters/filter-repaint.html [ ImageOnlyFailure NeedsRebaseline ]
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
