@@ -29,7 +29,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = 'ce114881a6d50785a3277e985662291a4804eebf'
+BIONIC_VERSION = '8a1cc42d191a809bec3776452f459b94b3145d6a'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -410,7 +410,7 @@ def CreateProject(arch, project, clobber=False):
   paths = GetProjectPaths(arch, project)
 
   MAKEFILE_TEMPLATE = """
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -448,7 +448,7 @@ include $(src_path)/Makefile
   text = ReplaceArch(text, arch)
 
   if clobber:
-    print 'Clobering Bionic project directories.'
+    print 'Clobbering Bionic project directory: ' + paths['work']
     Rmdir(paths['work'])
 
   Mkdir(paths['work'])
