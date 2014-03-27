@@ -47,21 +47,14 @@ void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   if (!base::PathExists(log_dir)) {
-    DLOG(WARNING) << "Could not find directory: " << log_dir.value();
+    // This will happen if no logs have been stored or uploaded.
+    DVLOG(3) << "Could not find directory: " << log_dir.value();
     return;
   }
 
   const base::Time now = base::Time::Now();
   const base::TimeDelta time_to_keep_logs =
       base::TimeDelta::FromDays(kDaysToKeepLogs);
-
-  // If we should delete all files, simply delete the whole log folder.
-  if (!delete_begin_time.is_max() &&
-      (now - delete_begin_time) > time_to_keep_logs) {
-    if (!base::DeleteFile(log_dir, true))
-      LOG(WARNING) << "Could not delete all old WebRTC logs.";
-    return;
-  }
 
   base::FilePath log_list_path =
       WebRtcLogList::GetWebRtcLogListFileForDirectory(log_dir);
