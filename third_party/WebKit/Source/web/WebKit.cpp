@@ -109,7 +109,6 @@ void initialize(Platform* platform)
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
     v8::V8::Initialize();
-    v8::V8::SetAutorunMicrotasks(isolate, false);
     WebCore::V8PerIsolateData::ensureInitialized(isolate);
 
     s_isolateInterruptor = new WebCore::V8IsolateInterruptor(v8::Isolate::GetCurrent());

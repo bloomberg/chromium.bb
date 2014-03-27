@@ -33,48 +33,39 @@
 
 #include "bindings/v8/V8PerIsolateData.h"
 #include "wtf/Vector.h"
-#include <v8.h>
 
 namespace WebCore {
 
+typedef Vector<MicrotaskCallback> MicrotaskQueue;
+
+static MicrotaskQueue& microtaskQueue()
+{
+    DEFINE_STATIC_LOCAL(MicrotaskQueue, microtaskQueue, ());
+    return microtaskQueue;
+}
+
 void Microtask::performCheckpoint()
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
+    V8PerIsolateData* isolateData = V8PerIsolateData::current();
     ASSERT(isolateData);
     if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
 
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
-    v8::Context::Scope scope(context);
-    v8::V8::RunMicrotasks(isolate);
+    while (!microtaskQueue().isEmpty()) {
+        Vector<MicrotaskCallback> microtasks;
+        microtasks.swap(microtaskQueue());
+        for (size_t i = 0; i < microtasks.size(); ++i) {
+            microtasks[i]();
+        }
+    }
 
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
 
-COMPILE_ASSERT(sizeof(void*) == sizeof(MicrotaskCallback), VoidPtrAndFunctionPtrAreSameSize);
-
-static void microtaskFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    MicrotaskCallback callback =
-        reinterpret_cast<MicrotaskCallback>(reinterpret_cast<intptr_t>(
-            info.Data().As<v8::External>()->Value()));
-    (*callback)();
-}
-
 void Microtask::enqueueMicrotask(MicrotaskCallback callback)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
-    v8::Context::Scope scope(context);
-    v8::Local<v8::External> handler =
-        v8::External::New(isolate,
-            reinterpret_cast<void*>(reinterpret_cast<intptr_t>(callback)));
-    v8::V8::EnqueueMicrotask(isolate, v8::Function::New(isolate, &microtaskFunctionCallback, handler));
+    microtaskQueue().append(callback);
 }
 
 } // namespace WebCore
