@@ -1673,6 +1673,11 @@
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
           ]
         }],
+        [ 'OS == "android"', {
+          'sources!': [
+            'browser/autofill/risk/fingerprint_browsertest.cc',
+          ]
+        }],
         ['enable_autofill_dialog==0', {
           'sources!': [
             'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
