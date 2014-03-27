@@ -130,7 +130,6 @@ TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
     ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
     {
       FakeAuthStatusProvider error_provider(error_controller_);
-      LOG(ERROR) << "Setting auth error";
       error_provider.SetAuthError(kTestAccountId, GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       ASSERT_TRUE(notification_ui_manager_->FindById(kNotificationId));
