@@ -186,7 +186,8 @@ InspectorTest.HeapNode.Type = {
     "closure": "closure",
     "regexp": "regexp",
     "number": "number",
-    "native": "native"
+    "native": "native",
+    "synthetic": "synthetic"
 };
 
 InspectorTest.HeapNode.prototype = {
@@ -384,7 +385,7 @@ InspectorTest.createHeapSnapshot = function(instanceCount, firstId)
     var builder = new InspectorTest.HeapSnapshotBuilder();
     var rootNode = builder.rootNode;
 
-    var gcRootsNode = new InspectorTest.HeapNode("(GC roots)");
+    var gcRootsNode = new InspectorTest.HeapNode("(GC roots)", 0, InspectorTest.HeapNode.Type.synthetic);
     rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
 
     var windowNode = new InspectorTest.HeapNode("Window", 20);

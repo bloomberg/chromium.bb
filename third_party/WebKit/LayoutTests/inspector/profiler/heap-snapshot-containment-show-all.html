@@ -64,7 +64,7 @@ function test()
                 var builder = new InspectorTest.HeapSnapshotBuilder();
                 var rootNode = builder.rootNode;
 
-                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)");
+                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)", 0, InspectorTest.HeapNode.Type.synthetic);
                 rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
 
                 var globalHandlesNode = new InspectorTest.HeapNode("(Global Handles)");
