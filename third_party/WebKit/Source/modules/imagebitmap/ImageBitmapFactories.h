@@ -54,9 +54,8 @@ class ImageBitmap;
 class ImageData;
 class ExecutionContext;
 
-class ImageBitmapFactories : public Supplement<DOMWindow> {
-
-class ImageBitmapLoader;
+class ImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<DOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
 public:
     static ScriptPromise createImageBitmap(EventTarget&, HTMLImageElement*, ExceptionState&);
@@ -74,9 +73,9 @@ public:
     static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, ExceptionState&);
     static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
-    void didFinishLoading(ImageBitmapLoader*);
-
     virtual ~ImageBitmapFactories() { }
+
+    void trace(Visitor*) { }
 
 protected:
     static const char* supplementName();
@@ -113,24 +112,13 @@ private:
 
     static ImageBitmapFactories& from(EventTarget&);
 
-    static ImageBitmapFactories& fromInternal(DOMWindow&);
+    template<class GlobalObject>
+    static ImageBitmapFactories& fromInternal(GlobalObject&);
 
     void addLoader(PassRefPtr<ImageBitmapLoader>);
+    void didFinishLoading(ImageBitmapLoader*);
 
     HashSet<RefPtr<ImageBitmapLoader> > m_pendingLoaders;
-};
-
-// FIXME: oilpan: remove once DOMWindow and its Supplementable becomes heap allocated.
-class WorkerGlobalScopeImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeImageBitmapFactories>, public ImageBitmapFactories, public WillBeHeapSupplement<WorkerGlobalScope> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeImageBitmapFactories);
-public:
-    virtual ~WorkerGlobalScopeImageBitmapFactories() { }
-
-    virtual void trace(Visitor*);
-
-private:
-    friend class ImageBitmapFactories;
-    static ImageBitmapFactories& fromInternal(WorkerGlobalScope&);
 };
 
 } // namespace WebCore

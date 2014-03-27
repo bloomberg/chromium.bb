@@ -40,18 +40,21 @@ namespace WebCore {
 class Crypto;
 class DOMWindow;
 
-class DOMWindowCrypto FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowCrypto FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowCrypto>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 public:
     virtual ~DOMWindowCrypto();
     static DOMWindowCrypto& from(DOMWindow&);
     static Crypto* crypto(DOMWindow&);
     Crypto* crypto() const;
 
+    void trace(Visitor*);
+
 private:
     explicit DOMWindowCrypto(DOMWindow&);
     static const char* supplementName();
 
-    mutable RefPtrWillBePersistent<Crypto> m_crypto;
+    mutable RefPtrWillBeMember<Crypto> m_crypto;
 };
 
 } // namespace WebCore

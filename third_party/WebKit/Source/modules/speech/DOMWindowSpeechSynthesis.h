@@ -35,12 +35,15 @@ namespace WebCore {
 
 class DOMWindow;
 
-class DOMWindowSpeechSynthesis FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowSpeechSynthesis FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 public:
     virtual ~DOMWindowSpeechSynthesis();
 
     static SpeechSynthesis* speechSynthesis(DOMWindow&);
     static DOMWindowSpeechSynthesis& from(DOMWindow&);
+
+    void trace(Visitor*);
 
 private:
     explicit DOMWindowSpeechSynthesis(DOMWindow&);
@@ -48,7 +51,7 @@ private:
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();
 
-    RefPtrWillBePersistent<SpeechSynthesis> m_speechSynthesis;
+    RefPtrWillBeMember<SpeechSynthesis> m_speechSynthesis;
 };
 
 } // namespace WebCore

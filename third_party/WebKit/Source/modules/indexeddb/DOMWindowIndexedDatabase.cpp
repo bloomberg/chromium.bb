@@ -50,10 +50,10 @@ const char* DOMWindowIndexedDatabase::supplementName()
 
 DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(DOMWindow& window)
 {
-    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(Supplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }

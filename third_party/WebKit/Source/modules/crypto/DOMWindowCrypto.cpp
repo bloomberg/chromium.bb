@@ -52,10 +52,10 @@ const char* DOMWindowCrypto::supplementName()
 
 DOMWindowCrypto& DOMWindowCrypto::from(DOMWindow& window)
 {
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -70,6 +70,11 @@ Crypto* DOMWindowCrypto::crypto() const
     if (!m_crypto && frame())
         m_crypto = Crypto::create();
     return m_crypto.get();
+}
+
+void DOMWindowCrypto::trace(Visitor* visitor)
+{
+    visitor->trace(m_crypto);
 }
 
 } // namespace WebCore

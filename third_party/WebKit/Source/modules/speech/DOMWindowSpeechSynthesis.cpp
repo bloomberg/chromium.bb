@@ -54,10 +54,10 @@ const char* DOMWindowSpeechSynthesis::supplementName()
 // static
 DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(DOMWindow& window)
 {
-    DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(Supplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowSpeechSynthesis(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -73,6 +73,11 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
     if (!m_speechSynthesis && frame())
         m_speechSynthesis = SpeechSynthesis::create(frame()->domWindow()->executionContext());
     return m_speechSynthesis.get();
+}
+
+void DOMWindowSpeechSynthesis::trace(Visitor* visitor)
+{
+    visitor->trace(m_speechSynthesis);
 }
 
 } // namespace WebCore

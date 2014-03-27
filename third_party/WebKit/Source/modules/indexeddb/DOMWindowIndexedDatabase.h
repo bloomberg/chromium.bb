@@ -35,7 +35,8 @@ namespace WebCore {
 class IDBFactory;
 class DOMWindow;
 
-class DOMWindowIndexedDatabase FINAL : public DOMWindowProperty, public Supplement<DOMWindow> {
+class DOMWindowIndexedDatabase FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
 public:
     virtual ~DOMWindowIndexedDatabase();
     static DOMWindowIndexedDatabase& from(DOMWindow&);
@@ -44,6 +45,8 @@ public:
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     explicit DOMWindowIndexedDatabase(DOMWindow&);

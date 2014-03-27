@@ -40,18 +40,21 @@ namespace WebCore {
 class DeprecatedStorageInfo;
 class DOMWindow;
 
-class DOMWindowQuota FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowQuota FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowQuota>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
 public:
     virtual ~DOMWindowQuota();
     static DOMWindowQuota& from(DOMWindow&);
     static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow&);
     DeprecatedStorageInfo* webkitStorageInfo() const;
 
+    void trace(Visitor*);
+
 private:
     explicit DOMWindowQuota(DOMWindow&);
     static const char* supplementName();
 
-    mutable RefPtrWillBePersistent<DeprecatedStorageInfo> m_storageInfo;
+    mutable RefPtrWillBeMember<DeprecatedStorageInfo> m_storageInfo;
 };
 
 } // namespace WebCore

@@ -275,15 +275,16 @@ ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
         return fromInternal(*window);
 
     ASSERT(eventTarget.executionContext()->isWorkerGlobalScope());
-    return WorkerGlobalScopeImageBitmapFactories::fromInternal(*toWorkerGlobalScope(eventTarget.executionContext()));
+    return ImageBitmapFactories::fromInternal(*toWorkerGlobalScope(eventTarget.executionContext()));
 }
 
-ImageBitmapFactories& ImageBitmapFactories::fromInternal(DOMWindow& object)
+template<class GlobalObject>
+ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
 {
-    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<DOMWindow>::from(object, supplementName()));
+    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(WillBeHeapSupplement<GlobalObject>::from(object, supplementName()));
     if (!supplement) {
         supplement = new ImageBitmapFactories();
-        Supplement<DOMWindow>::provideTo(object, supplementName(), adoptPtr(supplement));
+        WillBeHeapSupplement<GlobalObject>::provideTo(object, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -355,20 +356,6 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
 {
     rejectPromise();
-}
-
-ImageBitmapFactories& WorkerGlobalScopeImageBitmapFactories::fromInternal(WorkerGlobalScope& object)
-{
-    WorkerGlobalScopeImageBitmapFactories* supplement = static_cast<WorkerGlobalScopeImageBitmapFactories*>(WillBeHeapSupplement<WorkerGlobalScope>::from(object, ImageBitmapFactories::supplementName()));
-    if (!supplement) {
-        supplement = new WorkerGlobalScopeImageBitmapFactories();
-        WillBeHeapSupplement<WorkerGlobalScope>::provideTo(object, ImageBitmapFactories::supplementName(), adoptPtrWillBeNoop(supplement));
-    }
-    return *supplement;
-}
-
-void WorkerGlobalScopeImageBitmapFactories::trace(Visitor*)
-{
 }
 
 } // namespace WebCore
