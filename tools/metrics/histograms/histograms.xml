@@ -32531,6 +32531,7 @@ other types of suffix sets.
   <int value="5" label="Bad command code in message"/>
   <int value="6" label="Bad result code in message"/>
   <int value="7" label="Bad feature index in message"/>
+  <int value="8" label="Maximum value of 0 in message"/>
 </enum>
 
 <enum name="ExternalDisplaySendResult" type="int">
