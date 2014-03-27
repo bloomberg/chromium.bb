@@ -973,6 +973,7 @@
             ['include', '^browser/extensions/api/preference/preference_api.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api_constants.cc'],
+            ['include', '^browser/extensions/api/runtime/runtime_api.cc'],
             ['include', '^browser/extensions/api/tabs/tabs_constants.cc'],
             ['include', '^browser/extensions/api/web_navigation/frame_navigation_state.cc'],
             ['include', '^browser/extensions/api/web_navigation/web_navigation_api.cc'],
