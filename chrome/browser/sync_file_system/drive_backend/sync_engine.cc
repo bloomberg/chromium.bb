@@ -128,7 +128,9 @@ SyncEngine::~SyncEngine() {
 
 void SyncEngine::Initialize() {
   DCHECK(!task_manager_);
-  task_manager_.reset(new SyncTaskManager(weak_ptr_factory_.GetWeakPtr()));
+  task_manager_.reset(new SyncTaskManager(
+      weak_ptr_factory_.GetWeakPtr(),
+      0 /* maximum_background_task */));
   task_manager_->Initialize(SYNC_STATUS_OK);
 
   PostInitializeTask();

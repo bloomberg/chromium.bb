@@ -56,7 +56,10 @@ class SyncTaskManager
         bool last_operation_used_network) = 0;
   };
 
-  explicit SyncTaskManager(base::WeakPtr<Client> client);
+  // Runs at most |maximum_background_tasks| parallel as background tasks.
+  // If |maximum_background_tasks| is zero, all task runs as foreground task.
+  SyncTaskManager(base::WeakPtr<Client> client,
+                  size_t maximum_background_task);
   virtual ~SyncTaskManager();
 
   // This needs to be called to start task scheduling.
@@ -147,6 +150,8 @@ class SyncTaskManager
   // Owns running backgrounded SyncTask to cancel the task on SyncTaskManager
   // deletion.
   base::ScopedPtrHashMap<int64, SyncTask> running_background_task_;
+
+  size_t maximum_background_task_;
 
   // Holds pending continuation to move task to background.
   base::Closure pending_backgrounding_task_;

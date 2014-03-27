@@ -51,8 +51,10 @@ bool SyncTaskManager::PendingTaskComparator::operator()(
 }
 
 SyncTaskManager::SyncTaskManager(
-    base::WeakPtr<Client> client)
+    base::WeakPtr<Client> client,
+    size_t maximum_background_task)
     : client_(client),
+      maximum_background_task_(maximum_background_task),
       pending_task_seq_(0),
       task_token_seq_(SyncTaskToken::kMinimumBackgroundTaskTokenID) {
 }
@@ -191,7 +193,13 @@ void SyncTaskManager::MoveTaskToBackgroundBody(
     scoped_ptr<SyncTaskToken> token,
     scoped_ptr<BlockingFactor> blocking_factor,
     const Continuation& continuation) {
-  if (!dependency_manager_.Insert(*blocking_factor)) {
+  if (!maximum_background_task_) {
+    continuation.Run(token.Pass());
+    return;
+  }
+
+  if (running_background_task_.size() >= maximum_background_task_ ||
+      !dependency_manager_.Insert(*blocking_factor)) {
     DCHECK(!running_background_task_.empty());
 
     // Wait for NotifyTaskDone to release a |blocking_factor|.

@@ -49,12 +49,13 @@ class TaskManagerClient
     : public SyncTaskManager::Client,
       public base::SupportsWeakPtr<TaskManagerClient> {
  public:
-  TaskManagerClient()
+  explicit TaskManagerClient(int64 maximum_background_task)
       : maybe_schedule_next_task_count_(0),
         task_scheduled_count_(0),
         idle_task_scheduled_count_(0),
         last_operation_status_(SYNC_STATUS_OK) {
-    task_manager_.reset(new SyncTaskManager(AsWeakPtr()));
+    task_manager_.reset(new SyncTaskManager(
+        AsWeakPtr(), maximum_background_task));
     task_manager_->Initialize(SYNC_STATUS_OK);
     maybe_schedule_next_task_count_ = 0;
   }
@@ -230,7 +231,7 @@ const SyncStatusCode kStatus5 = static_cast<SyncStatusCode>(-5);
 
 TEST(SyncTaskManagerTest, ScheduleTask) {
   base::MessageLoop message_loop;
-  TaskManagerClient client;
+  TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
 
@@ -250,7 +251,7 @@ TEST(SyncTaskManagerTest, ScheduleTask) {
 
 TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
   base::MessageLoop message_loop;
-  TaskManagerClient client;
+  TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
 
@@ -273,7 +274,7 @@ TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
 
 TEST(SyncTaskManagerTest, ScheduleIdleTask) {
   base::MessageLoop message_loop;
-  TaskManagerClient client;
+  TaskManagerClient client(0 /* maximum_background_task */);
 
   client.ScheduleTaskIfIdle(kStatus1);
   message_loop.RunUntilIdle();
@@ -287,7 +288,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTask) {
 
 TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
   base::MessageLoop message_loop;
-  TaskManagerClient client;
+  TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
 
@@ -317,7 +318,8 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
   bool task_completed = false;
 
   {
-    SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+    SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                                 0 /* maximum_background_task */);
     task_manager.Initialize(SYNC_STATUS_OK);
     task_manager.ScheduleSyncTask(
         FROM_HERE,
@@ -336,7 +338,8 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
 
 TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
   base::MessageLoop message_loop;
-  SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+  SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                               0 /* maximum_background_task */);
   task_manager.Initialize(SYNC_STATUS_OK);
 
   int callback_count = 0;
@@ -394,7 +397,8 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
 
 TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
   base::MessageLoop message_loop;
-  SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+  SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                               10 /* maximum_background_task */);
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
@@ -433,7 +437,8 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
 
 TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
   base::MessageLoop message_loop;
-  SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+  SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                               10 /* maximum_background_task */);
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
@@ -468,6 +473,46 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
   EXPECT_EQ(0, stats.running_background_task);
   EXPECT_EQ(3, stats.finished_task);
   EXPECT_EQ(3, stats.max_parallel_task);
+}
+
+TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
+  base::MessageLoop message_loop;
+  SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                               2 /* maximum_background_task */);
+  task_manager.Initialize(SYNC_STATUS_OK);
+
+  SyncStatusCode status = SYNC_STATUS_FAILED;
+  BackgroundTask::Stats stats;
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/hoge"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/fuga"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  task_manager.ScheduleSyncTask(
+      FROM_HERE,
+      scoped_ptr<SyncTask>(new BackgroundTask(
+          "app_id", MAKE_PATH("/piyo"),
+          &stats)),
+      SyncTaskManager::PRIORITY_MED,
+      CreateResultReceiver(&status));
+
+  message_loop.RunUntilIdle();
+
+  EXPECT_EQ(SYNC_STATUS_OK, status);
+  EXPECT_EQ(0, stats.running_background_task);
+  EXPECT_EQ(3, stats.finished_task);
+  EXPECT_EQ(2, stats.max_parallel_task);
 }
 
 }  // namespace drive_backend
