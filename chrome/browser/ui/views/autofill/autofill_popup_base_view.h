@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
@@ -55,6 +56,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // views::WidgetObserver implementation.
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
@@ -85,6 +87,8 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // The widget that |this| observes. Weak reference.
   views::Widget* observing_widget_;
+
+  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseView);
 };

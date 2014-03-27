@@ -75,7 +75,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // AutofillPopupController implementation.
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
   virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
-  virtual void AcceptSelectionAtPoint(const gfx::Point& point) OVERRIDE;
+  virtual bool AcceptSelectedLine() OVERRIDE;
   virtual void SelectionCleared() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
@@ -112,9 +112,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Decrease the selected line by 1, properly handling wrapping.
   void SelectPreviousLine();
-
-  // The user has choosen the selected line.
-  bool AcceptSelectedLine();
 
   // The user has removed a suggestion.
   bool RemoveSelectedLine();

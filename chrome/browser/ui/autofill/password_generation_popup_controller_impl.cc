@@ -291,10 +291,12 @@ void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
     PasswordSelected(true);
 }
 
-void PasswordGenerationPopupControllerImpl::AcceptSelectionAtPoint(
-    const gfx::Point& point) {
-  if (password_bounds_.Contains(point))
-    PasswordAccepted();
+bool PasswordGenerationPopupControllerImpl::AcceptSelectedLine() {
+  if (!password_selected_)
+    return false;
+
+  PasswordAccepted();
+  return true;
 }
 
 void PasswordGenerationPopupControllerImpl::SelectionCleared() {

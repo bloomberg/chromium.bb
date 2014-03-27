@@ -33,9 +33,9 @@ class AutofillPopupViewDelegate {
   // must be in popup coordinates.
   virtual void SetSelectionAtPoint(const gfx::Point& point) = 0;
 
-  // The user has accpeted the selection at |point|, e.g. by clicking on it
-  // using the mouse. |point| must be in popup coordinates.
-  virtual void AcceptSelectionAtPoint(const gfx::Point& point) = 0;
+  // The user has accepted the currently selected line. Returns whether there
+  // was a selection to accept.
+  virtual bool AcceptSelectedLine() = 0;
 
   // The user cleared the current selection, e.g. by moving the mouse cursor
   // out of the popup bounds.

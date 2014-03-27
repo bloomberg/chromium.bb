@@ -159,7 +159,8 @@ NSColor* SubtextColor() {
                                fromView:nil];
 
   if (NSPointInRect(location, [self bounds])) {
-    controller_->AcceptSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
+    controller_->SetSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
+    controller_->AcceptSelectedLine();
   }
 }
 

@@ -26,7 +26,7 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(ViewDestroyed, void());
   MOCK_METHOD1(SetSelectionAtPoint, void(const gfx::Point&));
-  MOCK_METHOD1(AcceptSelectionAtPoint, void(const gfx::Point&));
+  MOCK_METHOD0(AcceptSelectedLine, bool());
   MOCK_METHOD0(SelectionCleared, void());
   // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
   bool ShouldRepostEvent(const ui::MouseEvent&) { return false; }
@@ -48,7 +48,7 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
         .WillRepeatedly(Return(window));
     EXPECT_CALL(mock_delegate_, ShouldHideOnOutsideClick())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(mock_delegate_, ViewDestroyed()).Times(1);
+    EXPECT_CALL(mock_delegate_, ViewDestroyed());
 
     view_ = new AutofillPopupBaseView(
         &mock_delegate_,
@@ -88,9 +88,9 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, GestureTest) {
   // Expectations.
   {
     testing::InSequence dummy;
-    EXPECT_CALL(mock_delegate_, SetSelectionAtPoint(point)).Times(1);
-    EXPECT_CALL(mock_delegate_, AcceptSelectionAtPoint(point)).Times(1);
-    EXPECT_CALL(mock_delegate_, SelectionCleared()).Times(1);
+    EXPECT_CALL(mock_delegate_, SetSelectionAtPoint(point)).Times(2);
+    EXPECT_CALL(mock_delegate_, AcceptSelectedLine());
+    EXPECT_CALL(mock_delegate_, SelectionCleared());
   }
 
   // Tap down will select an element.

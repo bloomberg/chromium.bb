@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
@@ -34,7 +37,9 @@ AutofillPopupBaseView::AutofillPopupBaseView(
     AutofillPopupViewDelegate* delegate,
     views::Widget* observing_widget)
     : delegate_(delegate),
-      observing_widget_(observing_widget) {}
+      observing_widget_(observing_widget),
+      weak_ptr_factory_(this) {}
+
 AutofillPopupBaseView::~AutofillPopupBaseView() {
   if (delegate_) {
     delegate_->ViewDestroyed();
@@ -46,6 +51,16 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 void AutofillPopupBaseView::DoShow() {
   if (!GetWidget()) {
     observing_widget_->AddObserver(this);
+
+    views::FocusManager* focus_manager = observing_widget_->GetFocusManager();
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE),
+        ui::AcceleratorManager::kNormalPriority,
+        this);
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
+        ui::AcceleratorManager::kNormalPriority,
+        this);
 
     // The widget is destroyed by the corresponding NativeWidget, so we use
     // a weak pointer to hold the reference and don't have to worry about
@@ -91,6 +106,7 @@ void AutofillPopupBaseView::DoHide() {
 }
 
 void AutofillPopupBaseView::RemoveObserver() {
+  observing_widget_->GetFocusManager()->UnregisterAccelerators(this);
   observing_widget_->RemoveObserver(this);
 }
 
@@ -124,7 +140,13 @@ bool AutofillPopupBaseView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
-  ClearSelection();
+  // Pressing return causes the cursor to hide, which will generate an
+  // OnMouseExited event. Pressing return should activate the current selection
+  // via AcceleratorPressed, so we need to let that run first.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AutofillPopupBaseView::ClearSelection,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {
@@ -200,14 +222,33 @@ void AutofillPopupBaseView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+bool AutofillPopupBaseView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK_EQ(accelerator.modifiers(), ui::EF_NONE);
+
+  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+    HideController();
+    return true;
+  }
+
+  if (accelerator.key_code() == ui::VKEY_RETURN)
+    return delegate_->AcceptSelectedLine();
+
+  NOTREACHED();
+  return false;
+}
+
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {
   if (delegate_)
     delegate_->SetSelectionAtPoint(point);
 }
 
 void AutofillPopupBaseView::AcceptSelection(const gfx::Point& point) {
-  if (delegate_)
-    delegate_->AcceptSelectionAtPoint(point);
+  if (!delegate_)
+    return;
+
+  delegate_->SetSelectionAtPoint(point);
+  delegate_->AcceptSelectedLine();
 }
 
 void AutofillPopupBaseView::ClearSelection() {

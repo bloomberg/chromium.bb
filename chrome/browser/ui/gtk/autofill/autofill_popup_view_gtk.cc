@@ -118,7 +118,8 @@ gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  controller_->AcceptSelectionAtPoint(gfx::Point(event->x, event->y));
+  controller_->SetSelectionAtPoint(gfx::Point(event->x, event->y));
+  controller_->AcceptSelectedLine();
   return TRUE;
 }
 

@@ -302,10 +302,18 @@ void AutofillPopupControllerImpl::SetSelectionAtPoint(const gfx::Point& point) {
   SetSelectedLine(LineFromY(point.y()));
 }
 
-void AutofillPopupControllerImpl::AcceptSelectionAtPoint(
-    const gfx::Point& point) {
-  SetSelectionAtPoint(point);
-  AcceptSelectedLine();
+bool AutofillPopupControllerImpl::AcceptSelectedLine() {
+  if (selected_line_ == kNoSelection)
+    return false;
+
+  DCHECK_GE(selected_line_, 0);
+  DCHECK_LT(selected_line_, static_cast<int>(names_.size()));
+
+  if (!CanAccept(identifiers_[selected_line_]))
+    return false;
+
+  AcceptSuggestion(selected_line_);
+  return true;
 }
 
 void AutofillPopupControllerImpl::SelectionCleared() {
@@ -474,20 +482,6 @@ void AutofillPopupControllerImpl::SelectPreviousLine() {
     new_selected_line = names_.size() - 1;
 
   SetSelectedLine(new_selected_line);
-}
-
-bool AutofillPopupControllerImpl::AcceptSelectedLine() {
-  if (selected_line_ == kNoSelection)
-    return false;
-
-  DCHECK_GE(selected_line_, 0);
-  DCHECK_LT(selected_line_, static_cast<int>(names_.size()));
-
-  if (!CanAccept(identifiers_[selected_line_]))
-    return false;
-
-  AcceptSuggestion(selected_line_);
-  return true;
 }
 
 bool AutofillPopupControllerImpl::RemoveSelectedLine() {
