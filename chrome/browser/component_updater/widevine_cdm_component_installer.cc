@@ -201,11 +201,6 @@ void GetAdditionalParams(const base::DictionaryValue& manifest,
     additional_param_values->push_back(codecs);
   } else {
     DLOG(WARNING) << "Widevine CDM component manifest is missing codecs";
-    // TODO(ddorwin): Remove this once all users have been updated.
-    // The original manifests did not include this string, so add the base set.
-    additional_param_names->push_back(
-        base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
-    additional_param_values->push_back(base::ASCIIToUTF16("vp8,vorbis"));
   }
 }
 
