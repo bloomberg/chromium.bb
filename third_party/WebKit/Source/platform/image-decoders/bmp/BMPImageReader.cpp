@@ -44,7 +44,6 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
     , m_isTopDown(false)
     , m_needToProcessBitmasks(false)
     , m_needToProcessColorTable(false)
-    , m_tableSizeInBytes(0)
     , m_seenNonZeroAlphaPixel(false)
     , m_seenZeroAlphaPixel(false)
     , m_andMaskState(usesAndMask ? NotYetDecoded : None)
@@ -467,14 +466,14 @@ bool BMPImageReader::processBitmasks()
 
 bool BMPImageReader::processColorTable()
 {
-    m_tableSizeInBytes = m_infoHeader.biClrUsed * (m_isOS21x ? 3 : 4);
+    size_t tableSizeInBytes = m_infoHeader.biClrUsed * (m_isOS21x ? 3 : 4);
 
     // Fail if we don't have enough file space for the color table.
-    if (((m_headerOffset + m_infoHeader.biSize + m_tableSizeInBytes) < (m_headerOffset + m_infoHeader.biSize)) || (m_imgDataOffset && (m_imgDataOffset < (m_headerOffset + m_infoHeader.biSize + m_tableSizeInBytes))))
+    if (((m_headerOffset + m_infoHeader.biSize + tableSizeInBytes) < (m_headerOffset + m_infoHeader.biSize)) || (m_imgDataOffset && (m_imgDataOffset < (m_headerOffset + m_infoHeader.biSize + tableSizeInBytes))))
         return m_parent->setFailed();
 
     // Read color table.
-    if ((m_decodedOffset > m_data->size()) || ((m_data->size() - m_decodedOffset) < m_tableSizeInBytes))
+    if ((m_decodedOffset > m_data->size()) || ((m_data->size() - m_decodedOffset) < tableSizeInBytes))
         return false;
     m_colorTable.resize(m_infoHeader.biClrUsed);
     for (size_t i = 0; i < m_infoHeader.biClrUsed; ++i) {
@@ -615,10 +614,13 @@ bool BMPImageReader::processRLEData()
                     colorIndexes[0] = (colorIndexes[0] >> 4) & 0xf;
                     colorIndexes[1] &= 0xf;
                 }
-                if ((colorIndexes[0] >= m_infoHeader.biClrUsed) || (colorIndexes[1] >= m_infoHeader.biClrUsed))
-                    return m_parent->setFailed();
                 for (int which = 0; m_coord.x() < endX; ) {
-                    setI(colorIndexes[which]);
+                    // Some images specify color values past the end of the
+                    // color table; set these pixels to black.
+                    if (colorIndexes[which] < m_infoHeader.biClrUsed)
+                        setI(colorIndexes[which]);
+                    else
+                        setRGBA(0, 0, 0, 255);
                     which = !which;
                 }
 
@@ -679,9 +681,11 @@ BMPImageReader::ProcessingResult BMPImageReader::processNonRLEData(bool inRLE, i
                         } else
                             m_coord.move(1, 0);
                     } else {
-                        if (colorIndex >= m_infoHeader.biClrUsed)
-                            return Failure;
-                        setI(colorIndex);
+                        // See comments near the end of processRLEData().
+                        if (colorIndex < m_infoHeader.biClrUsed)
+                            setI(colorIndex);
+                        else
+                            setRGBA(0, 0, 0, 255);
                     }
                     pixelData <<= m_infoHeader.biBitCount;
                 }

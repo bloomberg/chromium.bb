@@ -332,7 +332,6 @@ private:
     int m_bitShiftsLeft[4];
 
     // The color palette, for paletted formats.
-    size_t m_tableSizeInBytes;
     Vector<RGBTriple> m_colorTable;
 
     // The coordinate to which we've decoded the image.
