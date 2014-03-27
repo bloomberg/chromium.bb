@@ -185,11 +185,12 @@ class FakeSwarmBot(object):
 
         # Fake activity and send pings as requested.
         while True:
-          remaining = max(0, time.time() - start - self._duration)
+          remaining = max(0, (start + self._duration) - time.time())
           if remaining > ping_delay:
-            result = net.url_read(ping_url)
-            assert result == 'OK'
-            remaining = max(0, time.time() - start - self._duration)
+            # Include empty data to ensure the request is a POST request.
+            result = net.url_read(ping_url, data={})
+            assert result == 'Success.', result
+            remaining = max(0, (start + self._duration) - time.time())
           if not remaining:
             break
           time.sleep(remaining)
