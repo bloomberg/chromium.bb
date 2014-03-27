@@ -1,0 +1,22 @@
+Name: binutils
+URL: http://www.gnu.org/software/binutils/
+Version: 2.24
+License: GPL v2
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+This directory contains i386 and amd64 binaries of the binutils tools
+(including gold linker).
+
+They were built from binutils-2.24 using the "build-all.sh" script on a Ubuntu
+Precise.
+
+The script creates chroots for 32bit and 64bit Ubuntu Lucid and then builds
+binutils inside the roots.
+
+Local patches:
+ * ehframe.patch for http://crbug.com/161942
+
+ * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
+   binaries and uploading them to Google storage.
