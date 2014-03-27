@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
@@ -26,7 +27,9 @@ NSString* const kConfigurationKey = @"com.apple.configuration.managed";
 
 class TestHarness : public PolicyProviderTestHarness {
  public:
-  TestHarness();
+  // If |use_encoded_key| is true then AddPolicies() serializes and encodes
+  // the policies, and publishes them under the EncodedChromePolicy key.
+  explicit TestHarness(bool use_encoded_key);
   virtual ~TestHarness();
 
   virtual void SetUp() OVERRIDE;
@@ -50,18 +53,24 @@ class TestHarness : public PolicyProviderTestHarness {
       const base::DictionaryValue* policy_value) OVERRIDE;
 
   static PolicyProviderTestHarness* Create();
+  static PolicyProviderTestHarness* CreateWithEncodedKey();
 
  private:
   // Merges the policies in |policy| into the current policy dictionary
   // in NSUserDefaults, after making sure that the policy dictionary
   // exists.
   void AddPolicies(NSDictionary* policy);
+  void AddChromePolicy(NSDictionary* policy);
+  void AddEncodedChromePolicy(NSDictionary* policy);
+
+  bool use_encoded_key_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
-TestHarness::TestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE) {}
+TestHarness::TestHarness(bool use_encoded_key)
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE),
+      use_encoded_key_(use_encoded_key) {}
 
 TestHarness::~TestHarness() {
   // Cleanup any policies left from the test.
@@ -130,10 +139,22 @@ void TestHarness::InstallDictionaryPolicy(
 
 // static
 PolicyProviderTestHarness* TestHarness::Create() {
-  return new TestHarness();
+  return new TestHarness(false);
+}
+
+// static
+PolicyProviderTestHarness* TestHarness::CreateWithEncodedKey() {
+  return new TestHarness(true);
 }
 
 void TestHarness::AddPolicies(NSDictionary* policy) {
+  if (use_encoded_key_)
+    AddEncodedChromePolicy(policy);
+  else
+    AddChromePolicy(policy);
+}
+
+void TestHarness::AddChromePolicy(NSDictionary* policy) {
   NSString* key = @"ChromePolicy";
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   base::scoped_nsobject<NSMutableDictionary> chromePolicy(
@@ -152,12 +173,95 @@ void TestHarness::AddPolicies(NSDictionary* policy) {
                                             forKey:kConfigurationKey];
 }
 
+void TestHarness::AddEncodedChromePolicy(NSDictionary* policy) {
+  NSString* key = @"EncodedChromePolicy";
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
+  base::scoped_nsobject<NSMutableDictionary> chromePolicy(
+      [[NSMutableDictionary alloc] init]);
+
+  NSString* previous = [defaults stringForKey:key];
+  if (previous) {
+    base::scoped_nsobject<NSData> data(
+        [[NSData alloc] initWithBase64EncodedString:previous options:0]);
+    NSDictionary* properties = [NSPropertyListSerialization
+        propertyListWithData:data.get()
+                     options:NSPropertyListImmutable
+                      format:NULL
+                       error:NULL];
+    [chromePolicy addEntriesFromDictionary:properties];
+  }
+
+  [chromePolicy addEntriesFromDictionary:policy];
+
+  NSData* data = [NSPropertyListSerialization
+      dataWithPropertyList:chromePolicy
+                    format:NSPropertyListXMLFormat_v1_0
+                   options:0
+                     error:NULL];
+  NSString* encoded = [data base64EncodedStringWithOptions:0];
+
+  NSDictionary* wrapper = @{
+      key: encoded
+  };
+  [[NSUserDefaults standardUserDefaults] setObject:wrapper
+                                            forKey:kConfigurationKey];
+}
+
 }  // namespace
 
-// Instantiate abstract test case for basic policy reading tests.
 INSTANTIATE_TEST_CASE_P(
-    PolicyProviderIOSTest,
+    PolicyProviderIOSChromePolicyTest,
     ConfigurationPolicyProviderTest,
     testing::Values(TestHarness::Create));
+
+INSTANTIATE_TEST_CASE_P(
+    PolicyProviderIOSEncodedChromePolicyTest,
+    ConfigurationPolicyProviderTest,
+    testing::Values(TestHarness::CreateWithEncodedKey));
+
+TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
+  // This test verifies that if the "ChromePolicy" key is present then the
+  // "EncodedChromePolicy" key is ignored.
+
+  NSDictionary* policy = @{
+    @"shared": @"wrong",
+    @"key1": @"value1",
+  };
+  NSData* data = [NSPropertyListSerialization
+      dataWithPropertyList:policy
+                    format:NSPropertyListXMLFormat_v1_0
+                   options:0
+                     error:NULL];
+  NSString* encodedChromePolicy = [data base64EncodedStringWithOptions:0];
+
+  NSDictionary* chromePolicy = @{
+    @"shared": @"right",
+    @"key2": @"value2",
+  };
+
+  NSDictionary* wrapper = @{
+    @"ChromePolicy": chromePolicy,
+    @"EncodedChromePolicy": encodedChromePolicy,
+  };
+
+  [[NSUserDefaults standardUserDefaults] setObject:wrapper
+                                            forKey:kConfigurationKey];
+
+  PolicyBundle expected;
+  PolicyMap& expectedMap =
+      expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  expectedMap.Set("shared", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  new base::StringValue("right"), NULL);
+  expectedMap.Set("key2", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  new base::StringValue("value2"), NULL);
+
+  scoped_refptr<base::TestSimpleTaskRunner> taskRunner =
+      new base::TestSimpleTaskRunner();
+  PolicyLoaderIOS loader(taskRunner);
+  scoped_ptr<PolicyBundle> bundle = loader.Load();
+  ASSERT_TRUE(bundle);
+  EXPECT_TRUE(bundle->Equals(expected));
+}
 
 }  // namespace policy

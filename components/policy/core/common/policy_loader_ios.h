@@ -30,6 +30,10 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
  private:
   void UserDefaultsChanged();
 
+  // Loads the Chrome policies in |dictionary| into the given |bundle|.
+  static void LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
+                                             PolicyBundle* bundle);
+
   // Used to manage the registration for NSNotificationCenter notifications.
   base::scoped_nsobject<id> notification_observer_;
 

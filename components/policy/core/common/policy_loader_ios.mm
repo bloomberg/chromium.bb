@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/mac_util.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -31,6 +32,10 @@ NSString* const kConfigurationKey = @"com.apple.configuration.managed";
 
 // Key in the managed app configuration that contains the Chrome policy.
 NSString* const kChromePolicyKey = @"ChromePolicy";
+
+// Key in the managed app configuration that contains the encoded Chrome policy.
+// This is a serialized Property List, encoded in base 64.
+NSString* const kEncodedChromePolicyKey = @"EncodedChromePolicy";
 
 }  // namespace
 
@@ -107,15 +112,37 @@ scoped_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
   NSDictionary* configuration = [[NSUserDefaults standardUserDefaults]
       dictionaryForKey:kConfigurationKey];
   id chromePolicy = configuration[kChromePolicyKey];
+  id encodedChromePolicy = configuration[kEncodedChromePolicyKey];
+
   if (chromePolicy && [chromePolicy isKindOfClass:[NSDictionary class]]) {
-    // NSDictionary is toll-free bridged to CFDictionaryRef, which is a
-    // CFPropertyListRef.
-    scoped_ptr<base::Value> value =
-        PropertyToValue(static_cast<CFPropertyListRef>(chromePolicy));
-    base::DictionaryValue* dict = NULL;
-    if (value && value->GetAsDictionary(&dict)) {
-      PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-      map.LoadFrom(dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+    LoadNSDictionaryToPolicyBundle(chromePolicy, bundle.get());
+
+    if (encodedChromePolicy)
+      NSLog(@"Ignoring EncodedChromePolicy because ChromePolicy is present.");
+  } else if (encodedChromePolicy &&
+             [encodedChromePolicy isKindOfClass:[NSString class]]) {
+    base::scoped_nsobject<NSData> data(
+        [[NSData alloc] initWithBase64EncodedString:encodedChromePolicy
+                                            options:0]);
+    if (!data) {
+      NSLog(@"Invalid Base64 encoding of EncodedChromePolicy");
+    } else {
+      NSError* error = nil;
+      NSDictionary* properties = [NSPropertyListSerialization
+          propertyListWithData:data.get()
+                       options:NSPropertyListImmutable
+                        format:NULL
+                         error:&error];
+      if (error) {
+        NSLog(@"Invalid property list in EncodedChromePolicy: %@", error);
+      } else if (!properties) {
+        NSLog(@"Failed to deserialize a valid Property List");
+      } else if (![properties isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Invalid property list in EncodedChromePolicy: expected an "
+               "NSDictionary but found %@", [properties class]);
+      } else {
+        LoadNSDictionaryToPolicyBundle(properties, bundle.get());
+      }
     }
   }
 
@@ -133,6 +160,20 @@ void PolicyLoaderIOS::UserDefaultsChanged() {
   // Load() call.
   last_notification_time_ = base::Time::Now();
   Reload(false);
+}
+
+// static
+void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
+                                                     PolicyBundle* bundle) {
+  // NSDictionary is toll-free bridged to CFDictionaryRef, which is a
+  // CFPropertyListRef.
+  scoped_ptr<base::Value> value =
+      PropertyToValue(static_cast<CFPropertyListRef>(dictionary));
+  base::DictionaryValue* dict = NULL;
+  if (value && value->GetAsDictionary(&dict)) {
+    PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+    map.LoadFrom(dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  }
 }
 
 }  // namespace policy
