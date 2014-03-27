@@ -62,13 +62,11 @@ FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
         offsetRect.move(-filter->applyHorizontalScale(m_dx), -filter->applyVerticalScale(m_dy));
     result.unite(offsetRect);
 
-    unsigned kernelSizeX = 0;
-    unsigned kernelSizeY = 0;
-    FEGaussianBlur::calculateKernelSize(filter, kernelSizeX, kernelSizeY, m_stdX, m_stdY);
+    IntSize kernelSize = FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
 
     // We take the half kernel size and multiply it with three, because we run box blur three times.
-    result.inflateX(3 * kernelSizeX * 0.5f);
-    result.inflateY(3 * kernelSizeY * 0.5f);
+    result.inflateX(3 * kernelSize.width() * 0.5f);
+    result.inflateY(3 * kernelSize.height() * 0.5f);
     return result;
 }
 

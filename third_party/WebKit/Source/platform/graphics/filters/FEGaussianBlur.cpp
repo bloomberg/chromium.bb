@@ -44,7 +44,7 @@ static inline float gaussianKernelFactor()
     return 3 / 4.f * sqrtf(twoPiFloat);
 }
 
-static const unsigned gMaxKernelSize = 1000;
+static const int gMaxKernelSize = 1000;
 
 namespace WebCore {
 
@@ -228,43 +228,41 @@ inline void FEGaussianBlur::platformApply(Uint8ClampedArray* srcPixelArray, Uint
     platformApplyGeneric(srcPixelArray, tmpPixelArray, kernelSizeX, kernelSizeY, paintSize);
 }
 
-void FEGaussianBlur::calculateUnscaledKernelSize(unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY)
+IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std)
 {
-    ASSERT(stdX >= 0 && stdY >= 0);
+    ASSERT(std.x() >= 0 && std.y() >= 0);
 
-    kernelSizeX = 0;
-    if (stdX)
-        kernelSizeX = max<unsigned>(2, static_cast<unsigned>(floorf(stdX * gaussianKernelFactor() + 0.5f)));
-    kernelSizeY = 0;
-    if (stdY)
-        kernelSizeY = max<unsigned>(2, static_cast<unsigned>(floorf(stdY * gaussianKernelFactor() + 0.5f)));
-
+    IntSize kernelSize;
     // Limit the kernel size to 1000. A bigger radius won't make a big difference for the result image but
     // inflates the absolute paint rect to much. This is compatible with Firefox' behavior.
-    if (kernelSizeX > gMaxKernelSize)
-        kernelSizeX = gMaxKernelSize;
-    if (kernelSizeY > gMaxKernelSize)
-        kernelSizeY = gMaxKernelSize;
+    if (std.x()) {
+        int size = max<unsigned>(2, static_cast<unsigned>(floorf(std.x() * gaussianKernelFactor() + 0.5f)));
+        kernelSize.setWidth(min(size, gMaxKernelSize));
+    }
+
+    if (std.y()) {
+        int size = max<unsigned>(2, static_cast<unsigned>(floorf(std.y() * gaussianKernelFactor() + 0.5f)));
+        kernelSize.setHeight(min(size, gMaxKernelSize));
+    }
+
+    return kernelSize;
 }
 
-void FEGaussianBlur::calculateKernelSize(Filter* filter, unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY)
+IntSize FEGaussianBlur::calculateKernelSize(Filter* filter, const FloatPoint& std)
 {
-    stdX = filter->applyHorizontalScale(stdX);
-    stdY = filter->applyVerticalScale(stdY);
+    FloatPoint stdError(filter->applyHorizontalScale(std.x()), filter->applyVerticalScale(std.y()));
 
-    calculateUnscaledKernelSize(kernelSizeX, kernelSizeY, stdX, stdY);
+    return calculateUnscaledKernelSize(stdError);
 }
 
 FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;
-    unsigned kernelSizeX = 0;
-    unsigned kernelSizeY = 0;
-    calculateKernelSize(filter(), kernelSizeX, kernelSizeY, m_stdX, m_stdY);
+    IntSize kernelSize = calculateKernelSize(filter(), FloatPoint(m_stdX, m_stdY));
 
     // We take the half kernel size and multiply it with three, because we run box blur three times.
-    result.inflateX(3 * kernelSizeX * 0.5f);
-    result.inflateY(3 * kernelSizeY * 0.5f);
+    result.inflateX(3 * kernelSize.width() * 0.5f);
+    result.inflateY(3 * kernelSize.height() * 0.5f);
     return result;
 }
 
@@ -304,15 +302,13 @@ void FEGaussianBlur::applySoftware()
     if (!m_stdX && !m_stdY)
         return;
 
-    unsigned kernelSizeX = 0;
-    unsigned kernelSizeY = 0;
-    calculateKernelSize(filter(), kernelSizeX, kernelSizeY, m_stdX, m_stdY);
+    IntSize kernelSize = calculateKernelSize(filter(), FloatPoint(m_stdX, m_stdY));
 
     IntSize paintSize = absolutePaintRect().size();
     RefPtr<Uint8ClampedArray> tmpImageData = Uint8ClampedArray::createUninitialized(paintSize.width() * paintSize.height() * 4);
     Uint8ClampedArray* tmpPixelArray = tmpImageData.get();
 
-    platformApply(srcPixelArray, tmpPixelArray, kernelSizeX, kernelSizeY, paintSize);
+    platformApply(srcPixelArray, tmpPixelArray, kernelSize.width(), kernelSize.height(), paintSize);
 }
 
 bool FEGaussianBlur::applySkia()

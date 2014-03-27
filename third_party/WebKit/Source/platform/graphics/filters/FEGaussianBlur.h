@@ -40,8 +40,8 @@ public:
 
     virtual FloatRect mapRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
-    static void calculateKernelSize(Filter*, unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
-    static void calculateUnscaledKernelSize(unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
+    static IntSize calculateKernelSize(Filter*, const FloatPoint& std);
+    static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
