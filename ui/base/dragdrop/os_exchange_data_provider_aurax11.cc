@@ -404,6 +404,40 @@ bool OSExchangeDataProviderAuraX11::HasCustomFormat(
   return !requested_types.empty();
 }
 
+void OSExchangeDataProviderAuraX11::SetFileContents(
+    const base::FilePath& filename,
+    const std::string& file_contents) {
+  DCHECK(!filename.empty());
+
+  file_contents_name_ = filename;
+
+  // Direct save handling is a complicated juggling affair between this class,
+  // SelectionFormat, and DesktopDragDropClientAuraX11. The general idea behind
+  // the protocol is this:
+  // - The source window sets its XdndDirectSave0 window property to the
+  //   proposed filename.
+  // - When a target window receives the drop, it updates the XdndDirectSave0
+  //   property on the source window to the filename it would like the contents
+  //   to be saved to and then requests the XdndDirectSave0 type from the
+  //   source.
+  // - The source is supposed to copy the file here and return success (S),
+  //   failure (F), or error (E).
+  // - In this case, failure means the destination should try to populate the
+  //   file itself by copying the data from application/octet-stream. To make
+  //   things simpler for Chrome, we always 'fail' and let the destination do
+  //   the work.
+  std::string failure("F");
+  format_map_.Insert(
+      atom_cache_.GetAtom("XdndDirectSave0"),
+                          scoped_refptr<base::RefCountedMemory>(
+                              base::RefCountedString::TakeString(&failure)));
+  std::string file_contents_copy = file_contents;
+  format_map_.Insert(
+      atom_cache_.GetAtom("application/octet-stream"),
+      scoped_refptr<base::RefCountedMemory>(
+          base::RefCountedString::TakeString(&file_contents_copy)));
+}
+
 void OSExchangeDataProviderAuraX11::SetHtml(const base::string16& html,
                                             const GURL& base_url) {
   std::vector<unsigned char> bytes;

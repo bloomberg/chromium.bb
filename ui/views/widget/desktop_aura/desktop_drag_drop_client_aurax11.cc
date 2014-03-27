@@ -12,6 +12,7 @@
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -36,19 +37,23 @@ const int kWantFurtherPosEvents = 2;
 const char kXdndActionCopy[] = "XdndActionCopy";
 const char kXdndActionMove[] = "XdndActionMove";
 const char kXdndActionLink[] = "XdndActionLink";
+const char kXdndActionDirectSave[] = "XdndActionDirectSave";
 
 const char kChromiumDragReciever[] = "_CHROMIUM_DRAG_RECEIVER";
 const char kXdndSelection[] = "XdndSelection";
+const char kXdndDirectSave0[] = "XdndDirectSave0";
 
 const char* kAtomsToCache[] = {
   kChromiumDragReciever,
   "XdndActionAsk",
   kXdndActionCopy,
+  kXdndActionDirectSave,
   kXdndActionLink,
   "XdndActionList",
   kXdndActionMove,
   "XdndActionPrivate",
   "XdndAware",
+  kXdndDirectSave0,
   "XdndDrop",
   "XdndEnter",
   "XdndFinished",
@@ -58,6 +63,7 @@ const char* kAtomsToCache[] = {
   kXdndSelection,
   "XdndStatus",
   "XdndTypeList",
+  ui::Clipboard::kMimeTypeText,
   NULL
 };
 
@@ -621,6 +627,14 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   source_provider_->TakeOwnershipOfSelection();
 
   std::vector< ::Atom> actions = GetOfferedDragOperations();
+  if (!source_provider_->file_contents_name().empty()) {
+    actions.push_back(atom_cache_.GetAtom(kXdndActionDirectSave));
+    ui::SetStringProperty(
+        xwindow_,
+        atom_cache_.GetAtom(kXdndDirectSave0),
+        atom_cache_.GetAtom(ui::Clipboard::kMimeTypeText),
+        source_provider_->file_contents_name().AsUTF8Unsafe());
+  }
   ui::SetAtomArrayProperty(xwindow_, "XdndActionList", "ATOM", actions);
 
   // It is possible for the DesktopWindowTreeHostX11 to be destroyed during the
@@ -643,6 +657,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     g_current_drag_drop_client = NULL;
     drag_operation_ = 0;
     XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("XdndActionList"));
+    XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom(kXdndDirectSave0));
 
     return resulting_operation_;
   }

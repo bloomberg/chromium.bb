@@ -246,23 +246,26 @@ class WebDragSourceAura : public base::MessageLoopForUI::Observer,
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
 // Fill out the OSExchangeData with a file contents, synthesizing a name if
 // necessary.
 void PrepareDragForFileContents(const DropData& drop_data,
                                 ui::OSExchangeData::Provider* provider) {
-  base::FilePath file_name(drop_data.file_description_filename);
+  base::FilePath file_name =
+      base::FilePath::FromUTF16Unsafe(drop_data.file_description_filename);
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   if (file_name.BaseName().RemoveExtension().empty()) {
-    const base::string16 extension = file_name.Extension();
+    const base::FilePath::StringType extension = file_name.Extension();
     // Retrieve the name from the URL.
-    file_name = base::FilePath(net::GetSuggestedFilename(
-        drop_data.url, "", "", "", "", "")).ReplaceExtension(extension);
+    file_name = net::GenerateFileName(drop_data.url, "", "", "", "", "")
+                    .ReplaceExtension(extension);
   }
   provider->SetFileContents(file_name, drop_data.file_contents);
 }
+#endif
 
+#if defined(OS_WIN)
 void PrepareDragForDownload(
     const DropData& drop_data,
     ui::OSExchangeData::Provider* provider,
@@ -321,7 +324,7 @@ void PrepareDragForDownload(
                                                      download_file.get());
   provider->SetDownloadFileInfo(file_download);
 }
-#endif
+#endif  // defined(OS_WIN)
 
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
@@ -333,6 +336,8 @@ void PrepareDragData(const DropData& drop_data,
   // its thumbnail link.
   if (!drop_data.download_metadata.empty())
     PrepareDragForDownload(drop_data, provider, web_contents);
+#endif
+#if !defined(OS_CHROMEOS)
   // We set the file contents before the URL because the URL also sets file
   // contents (to a .URL shortcut).  We want to prefer file content data over
   // a shortcut so we add it first.

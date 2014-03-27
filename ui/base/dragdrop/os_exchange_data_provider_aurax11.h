@@ -56,6 +56,10 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   // Makes a copy of the format map currently being offered.
   SelectionFormatMap GetFormatMap() const;
 
+  const base::FilePath& file_contents_name() const {
+    return file_contents_name_;
+  }
+
   // Overridden from OSExchangeData::Provider:
   virtual Provider* Clone() const OVERRIDE;
   virtual void MarkOriginatedFromRenderer() OVERRIDE;
@@ -82,6 +86,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   virtual bool HasFile() const OVERRIDE;
   virtual bool HasCustomFormat(const OSExchangeData::CustomFormat& format) const
       OVERRIDE;
+
+  virtual void SetFileContents(const base::FilePath& filename,
+                               const std::string& file_contents) OVERRIDE;
 
   virtual void SetHtml(const base::string16& html,
                        const GURL& base_url) OVERRIDE;
@@ -130,6 +137,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   // process, or built up through a sequence of Set*() calls. It can be passed
   // to |selection_owner_| when we take the selection.
   SelectionFormatMap format_map_;
+
+  // Auxilary data for the X Direct Save protocol.
+  base::FilePath file_contents_name_;
 
   // Takes a snapshot of |format_map_| and offers it to other windows.
   mutable SelectionOwner selection_owner_;

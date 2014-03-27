@@ -128,9 +128,11 @@ class UI_BASE_EXPORT OSExchangeData {
     virtual bool HasFile() const = 0;
     virtual bool HasCustomFormat(const CustomFormat& format) const = 0;
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
     virtual void SetFileContents(const base::FilePath& filename,
                                  const std::string& file_contents) = 0;
+#endif
+#if defined(OS_WIN)
     virtual bool GetFileContents(base::FilePath* filename,
                                  std::string* file_contents) const = 0;
     virtual bool HasFileContents() const = 0;
@@ -219,7 +221,8 @@ class UI_BASE_EXPORT OSExchangeData {
                      const std::set<CustomFormat>& custom_formats) const;
 
 #if defined(OS_WIN)
-  // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
+  // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR on
+  // Windows).
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents);
   bool GetFileContents(base::FilePath* filename,

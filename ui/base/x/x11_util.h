@@ -203,6 +203,10 @@ UI_BASE_EXPORT bool SetAtomArrayProperty(XID window,
                                          const std::string& name,
                                          const std::string& type,
                                          const std::vector<Atom>& value);
+UI_BASE_EXPORT bool SetStringProperty(XID window,
+                                      Atom property,
+                                      Atom type,
+                                      const std::string& value);
 
 // Gets the X atom for default display corresponding to atom_name.
 Atom GetAtom(const char* atom_name);

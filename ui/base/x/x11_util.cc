@@ -965,6 +965,22 @@ bool SetAtomArrayProperty(XID window,
   return !err_tracker.FoundNewError();
 }
 
+bool SetStringProperty(XID window,
+                       Atom property,
+                       Atom type,
+                       const std::string& value) {
+  gfx::X11ErrorTracker err_tracker;
+  XChangeProperty(gfx::GetXDisplay(),
+                  window,
+                  property,
+                  type,
+                  8,
+                  PropModeReplace,
+                  reinterpret_cast<const unsigned char*>(value.c_str()),
+                  value.size());
+  return !err_tracker.FoundNewError();
+}
+
 Atom GetAtom(const char* name) {
 #if defined(TOOLKIT_GTK)
   return gdk_x11_get_xatom_by_name_for_display(
