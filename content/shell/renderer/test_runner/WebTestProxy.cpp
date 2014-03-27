@@ -6,7 +6,7 @@
 
 #include <cctype>
 
-#include "content/shell/renderer/test_runner/EventSender.h"
+#include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/MockColorChooser.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
@@ -875,7 +875,7 @@ void WebTestProxyBase::startDragging(WebFrame*, const WebDragData& data, WebDrag
 {
     // When running a test, we need to fake a drag drop operation otherwise
     // Windows waits for real mouse events to know when the drag is over.
-    m_testInterfaces->eventSender()->doDragDrop(data, mask);
+    m_testInterfaces->eventSender()->DoDragDrop(data, mask);
 }
 
 // The output from these methods in layout test mode should match that
@@ -924,7 +924,7 @@ void WebTestProxyBase::didStopLoading()
 
 void WebTestProxyBase::showContextMenu(WebFrame*, const WebContextMenuData& contextMenuData)
 {
-    m_testInterfaces->eventSender()->setContextMenuData(contextMenuData);
+    m_testInterfaces->eventSender()->SetContextMenuData(contextMenuData);
 }
 
 WebUserMediaClient* WebTestProxyBase::userMediaClient()
