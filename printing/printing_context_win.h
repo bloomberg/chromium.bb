@@ -40,17 +40,13 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   virtual void ReleaseContext() OVERRIDE;
   virtual gfx::NativeDrawingContext context() const OVERRIDE;
 
-#if defined(UNIT_TEST) || defined(PRINTING_IMPLEMENTATION)
-  // Sets a fake PrintDlgEx function pointer in tests.
-  void SetPrintDialog(HRESULT (__stdcall *print_dialog_func)(LPPRINTDLGEX)) {
-    print_dialog_func_ = print_dialog_func;
-  }
-#endif  // defined(UNIT_TEST)
-
   // Allocates the HDC for a specific DEVMODE.
   static bool AllocateContext(const std::wstring& printer_name,
                               const DEVMODE* dev_mode,
                               gfx::NativeDrawingContext* context);
+
+ protected:
+  virtual HRESULT ShowPrintDialog(PRINTDLGEX* options);
 
  private:
   // Class that manages the PrintDlgEx() callbacks. This is meant to be a
@@ -82,10 +78,6 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
 
   // The dialog box for the time it is shown.
   volatile HWND dialog_box_;
-
-  // Function pointer that defaults to PrintDlgEx. It can be changed using
-  // SetPrintDialog() in tests.
-  HRESULT (__stdcall *print_dialog_func_)(LPPRINTDLGEX);
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextWin);
 };

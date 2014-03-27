@@ -165,11 +165,7 @@ PrintingContext* PrintingContext::Create(const std::string& app_locale) {
 }
 
 PrintingContextWin::PrintingContextWin(const std::string& app_locale)
-    : PrintingContext(app_locale),
-      context_(NULL),
-      dialog_box_(NULL),
-      print_dialog_func_(&PrintDlgEx) {
-}
+    : PrintingContext(app_locale), context_(NULL), dialog_box_(NULL) {}
 
 PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
@@ -237,16 +233,7 @@ void PrintingContextWin::AskUserForSettings(
     dialog_options.Flags |= PD_NOPAGENUMS;
   }
 
-  // Note that this cannot use ui::BaseShellDialog as the print dialog is
-  // system modal: opening it from a background thread can cause Windows to
-  // get the wrong Z-order which will make the print dialog appear behind the
-  // browser frame (but still being modal) so neither the browser frame nor
-  // the print dialog will get any input. See http://crbug.com/342697
-  // http://crbug.com/180997 for details.
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
-  HRESULT hr = (*print_dialog_func_)(&dialog_options);
-  if (hr != S_OK) {
+  if (ShowPrintDialog(&dialog_options) != S_OK) {
     ResetSettings();
     callback.Run(FAILED);
   }
@@ -686,6 +673,19 @@ PrintingContext::Result PrintingContextWin::ParseDialogResultEx(
     default:
       return FAILED;
   }
+}
+
+HRESULT PrintingContextWin::ShowPrintDialog(PRINTDLGEX* options) {
+  // Note that this cannot use ui::BaseShellDialog as the print dialog is
+  // system modal: opening it from a background thread can cause Windows to
+  // get the wrong Z-order which will make the print dialog appear behind the
+  // browser frame (but still being modal) so neither the browser frame nor
+  // the print dialog will get any input. See http://crbug.com/342697
+  // http://crbug.com/180997 for details.
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+
+  return PrintDlgEx(options);
 }
 
 PrintingContext::Result PrintingContextWin::ParseDialogResult(
