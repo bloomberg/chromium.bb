@@ -51,15 +51,15 @@ bool FileSystemProviderMountFunction::RunImpl() {
       chromeos::file_system_provider::Service::Get(GetProfile());
   DCHECK(service);
 
-  const std::string file_system_id =
+  int file_system_id =
       service->RegisterFileSystem(extension_id(), params->display_name);
 
-  // If the |file_system_id| is empty, then it means that registering the file
+  // If the |file_system_id| is zero, then it means that registering the file
   // system failed.
   // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-  if (file_system_id.empty()) {
+  if (!file_system_id) {
     base::ListValue* result = new base::ListValue();
-    result->Append(new base::StringValue(""));
+    result->Append(new base::FundamentalValue(0));
     result->Append(
         CreateError(kSecurityErrorName, kRegisteringFailedErrorMessage));
     SetResult(result);
@@ -67,7 +67,7 @@ bool FileSystemProviderMountFunction::RunImpl() {
   }
 
   base::ListValue* result = new base::ListValue();
-  result->Append(new base::StringValue(file_system_id));
+  result->Append(new base::FundamentalValue(file_system_id));
   // Don't append an error on success.
 
   SetResult(result);

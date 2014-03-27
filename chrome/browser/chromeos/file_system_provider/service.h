@@ -28,17 +28,15 @@ class Service : public KeyedService {
   virtual ~Service();
 
   // Registers a file system provided by an extension with the |extension_id|.
-  // For success, it returns a file system id, which is of the following format:
-  // |extension_id|-unique-hash, where unique is an auto-incremented non-zero
-  // number, and hash is the user profile hash.
-  // For failures, it returns an empty string.
-  std::string RegisterFileSystem(const std::string& extension_id,
-                                 const std::string& file_system_name);
+  // For success, it returns a numeric file system id, which is an
+  // auto-incremented non-zero value. For failures, it returns zero.
+  int RegisterFileSystem(const std::string& extension_id,
+                         const std::string& file_system_name);
 
   // Unregisters a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.
   bool UnregisterFileSystem(const std::string& extension_id,
-                            const std::string& file_system_id);
+                            int file_system_id);
 
   // Returns a list of currently registered file systems. All items are copied.
   std::vector<ProvidedFileSystem> GetRegisteredFileSystems();
@@ -51,12 +49,12 @@ class Service : public KeyedService {
   static Service* Get(content::BrowserContext* context);
 
  private:
-  typedef std::map<std::string, ProvidedFileSystem> FileSystemMap;
+  typedef std::map<int, ProvidedFileSystem> FileSystemMap;
 
   Profile* profile_;
   ObserverList<Observer> observers_;
   FileSystemMap file_systems_;
-  int next_handle_;
+  int next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

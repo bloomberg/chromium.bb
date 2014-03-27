@@ -73,15 +73,13 @@ TEST_F(FileSystemProviderServiceTest, RegisterFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  const std::string file_system_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
+  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
 
-  EXPECT_NE("", file_system_id);
+  EXPECT_LT(0, file_system_id);
   ASSERT_EQ(1u, observer.registered.size());
   EXPECT_EQ(kExtensionId, observer.registered[0]->extension_id());
-  EXPECT_EQ("mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
-            observer.registered[0]->file_system_id());
+  EXPECT_EQ(1, observer.registered[0]->file_system_id());
   EXPECT_EQ("/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
             observer.registered[0]->mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kFileSystemName, observer.registered[0]->file_system_name());
@@ -98,15 +96,13 @@ TEST_F(FileSystemProviderServiceTest, RegisterFileSystem_UniqueIds) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  std::string file_system_first_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
-  ASSERT_NE("", file_system_first_id);
+  int file_system_first_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
+  ASSERT_LT(0, file_system_first_id);
 
-  std::string file_system_second_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
-  ASSERT_NE("", file_system_second_id);
+  int file_system_second_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
+  ASSERT_LT(0, file_system_second_id);
 
   ASSERT_NE(file_system_first_id, file_system_second_id);
   ASSERT_EQ(2u, observer.registered.size());
@@ -124,18 +120,16 @@ TEST_F(FileSystemProviderServiceTest, RegisterFileSystem_StressTest) {
 
   const size_t kMaxFileSystems = 16;
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
-    std::string file_system_id =
-        file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                          kFileSystemName);
-    ASSERT_NE("", file_system_id);
+    int file_system_id = file_system_provider_service_->RegisterFileSystem(
+        kExtensionId, kFileSystemName);
+    ASSERT_LT(0, file_system_id);
   }
   ASSERT_EQ(kMaxFileSystems, observer.registered.size());
 
   // The next file system is out of limit, and registering it should fail.
-  std::string file_system_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
-  ASSERT_EQ("", file_system_id);
+  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
+  ASSERT_EQ(0, file_system_id);
   ASSERT_EQ(kMaxFileSystems, observer.registered.size());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
@@ -149,10 +143,9 @@ TEST_F(FileSystemProviderServiceTest, UnregisterFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  const std::string file_system_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
-  ASSERT_NE("", file_system_id);
+  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
+  ASSERT_LT(0, file_system_id);
   ASSERT_EQ(1u, observer.registered.size());
 
   const bool result = file_system_provider_service_->UnregisterFileSystem(
@@ -161,8 +154,7 @@ TEST_F(FileSystemProviderServiceTest, UnregisterFileSystem) {
   ASSERT_EQ(1u, observer.unregistered.size());
 
   EXPECT_EQ(kExtensionId, observer.unregistered[0]->extension_id());
-  EXPECT_EQ("mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
-            observer.unregistered[0]->file_system_id());
+  EXPECT_EQ(1, observer.unregistered[0]->file_system_id());
   EXPECT_EQ("/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
             observer.unregistered[0]->mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kFileSystemName, observer.unregistered[0]->file_system_name());
@@ -180,10 +172,9 @@ TEST_F(FileSystemProviderServiceTest, UnregisterFileSystem_WrongExtensionId) {
 
   const std::string kWrongExtensionId = "helloworldhelloworldhelloworldhe";
 
-  const std::string file_system_id =
-      file_system_provider_service_->RegisterFileSystem(kExtensionId,
-                                                        kFileSystemName);
-  ASSERT_NE("", file_system_id);
+  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+      kExtensionId, kFileSystemName);
+  ASSERT_LT(0, file_system_id);
   ASSERT_EQ(1u, observer.registered.size());
 
   const bool result = file_system_provider_service_->UnregisterFileSystem(

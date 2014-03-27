@@ -29,7 +29,7 @@ const size_t kMaxFileSystems = 16;
 // by |file_system_handle|. The handle is a numeric part of the file system id.
 base::FilePath GetMountPointPath(Profile* profile,
                                  std::string extension_id,
-                                 int file_system_handle) {
+                                 int file_system_id) {
   chromeos::User* const user =
       chromeos::UserManager::IsInitialized()
           ? chromeos::UserManager::Get()->GetUserByProfile(
@@ -37,12 +37,12 @@ base::FilePath GetMountPointPath(Profile* profile,
           : NULL;
   const std::string user_suffix = user ? "-" + user->username_hash() : "";
   return base::FilePath(kProvidedMountPointRoot).AppendASCII(
-      extension_id + "-" + base::IntToString(file_system_handle) + user_suffix);
+      extension_id + "-" + base::IntToString(file_system_id) + user_suffix);
 }
 
 }  // namespace
 
-Service::Service(Profile* profile) : profile_(profile), next_handle_(1) {}
+Service::Service(Profile* profile) : profile_(profile), next_id_(1) {}
 
 Service::~Service() {}
 
@@ -63,16 +63,16 @@ void Service::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::string Service::RegisterFileSystem(const std::string& extension_id,
-                                        const std::string& file_system_name) {
+int Service::RegisterFileSystem(const std::string& extension_id,
+                                const std::string& file_system_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Restrict number of file systems to prevent system abusing.
   if (file_systems_.size() + 1 > kMaxFileSystems)
-    return "";
+    return 0;
 
-  // The file system handle is unique per service, so per profile.
-  int file_system_handle = next_handle_;
+  // The file system id is unique per service, so per profile.
+  int file_system_id = next_id_;
 
   fileapi::ExternalMountPoints* const mount_points =
       fileapi::ExternalMountPoints::GetSystemInstance();
@@ -81,7 +81,7 @@ std::string Service::RegisterFileSystem(const std::string& extension_id,
   // The mount point path and name are unique per system, since they are system
   // wide. This is necessary for copying between profiles.
   const base::FilePath& mount_point_path =
-      GetMountPointPath(profile_, extension_id, file_system_handle);
+      GetMountPointPath(profile_, extension_id, file_system_id);
   const std::string mount_point_name =
       mount_point_path.BaseName().AsUTF8Unsafe();
 
@@ -89,16 +89,15 @@ std::string Service::RegisterFileSystem(const std::string& extension_id,
                                         fileapi::kFileSystemTypeProvided,
                                         fileapi::FileSystemMountOption(),
                                         mount_point_path)) {
-    return "";
+    return 0;
   }
 
   // Store the file system descriptor. Use the mount point name as the file
   // system provider file system id.
   // Examples:
-  //   file_system_handle = 41
+  //   file_system_id = 41
   //   mount_point_name = file_system_id = b33f1337-41-5aa5
   //   mount_point_path = /provided/b33f1337-41-5aa5
-  const std::string file_system_id = mount_point_name;
   ProvidedFileSystem file_system(
       extension_id, file_system_id, file_system_name, mount_point_path);
   file_systems_[file_system_id] = file_system;
@@ -106,12 +105,12 @@ std::string Service::RegisterFileSystem(const std::string& extension_id,
   FOR_EACH_OBSERVER(
       Observer, observers_, OnProvidedFileSystemRegistered(file_system));
 
-  next_handle_++;
+  next_id_++;
   return file_system_id;
 }
 
 bool Service::UnregisterFileSystem(const std::string& extension_id,
-                                   const std::string& file_system_id) {
+                                   int file_system_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   FileSystemMap::iterator file_system_it = file_systems_.find(file_system_id);
@@ -124,7 +123,9 @@ bool Service::UnregisterFileSystem(const std::string& extension_id,
       fileapi::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
 
-  if (!mount_points->RevokeFileSystem(file_system_it->second.file_system_id()))
+  const std::string mount_point_name =
+      file_system_it->second.mount_path().BaseName().value();
+  if (!mount_points->RevokeFileSystem(mount_point_name))
     return false;
 
   FOR_EACH_OBSERVER(Observer,

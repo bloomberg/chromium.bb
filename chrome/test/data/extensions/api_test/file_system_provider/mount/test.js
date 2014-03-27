@@ -7,8 +7,8 @@ chrome.test.runTests([
     chrome.fileSystemProvider.mount(
       'test file system',
       function(fileSystemId) {
-        chrome.test.assertEq('string', typeof(fileSystemId));
-        chrome.test.assertTrue(fileSystemId != '');
+        chrome.test.assertEq('number', typeof(fileSystemId));
+        chrome.test.assertTrue(fileSystemId == 1);
         chrome.test.succeed();
       },
       function(error) {
@@ -34,10 +34,11 @@ chrome.test.runTests([
     chrome.fileSystemProvider.mount(
       'caramel-candy.zip',
       function(fileSystemId) {
-        chrome.test.assertTrue(fileSystemId != '');
+          chrome.test.assertTrue(fileSystemId > 0);
         chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
           var found = volumeList.filter(function(volumeInfo) {
-            return volumeInfo.volumeId == 'provided:' + fileSystemId;
+            return volumeInfo.volumeId ==
+                'provided:' + chrome.runtime.id + '-' + fileSystemId + '-user';
           });
           chrome.test.assertEq(1, found.length);
           chrome.test.succeed();
@@ -61,7 +62,7 @@ chrome.test.runTests([
         chrome.fileSystemProvider.mount(
             index + 'th file system',
             function(fileSystemId) {
-              chrome.test.assertTrue(fileSystemId != '');
+              chrome.test.assertTrue(fileSystemId > 0);
               tryNextOne();
             },
             chrome.test.fail);
