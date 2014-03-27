@@ -79,43 +79,6 @@ base::TimeDelta SoundsManagerImpl::GetDuration(SoundKey key) {
   return wav_audio.params().GetBufferDuration();
 }
 
-// SoundsManagerStub ---------------------------------------------------
-
-class SoundsManagerStub : public SoundsManager {
- public:
-  SoundsManagerStub();
-  virtual ~SoundsManagerStub();
-
-  // SoundsManager implementation:
-  virtual bool Initialize(SoundKey key,
-                          const base::StringPiece& data) OVERRIDE;
-  virtual bool Play(SoundKey key) OVERRIDE;
-  virtual base::TimeDelta GetDuration(SoundKey key) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SoundsManagerStub);
-};
-
-SoundsManagerStub::SoundsManagerStub() {}
-
-SoundsManagerStub::~SoundsManagerStub() { DCHECK(CalledOnValidThread()); }
-
-bool SoundsManagerStub::Initialize(SoundKey /* key */,
-                                   const base::StringPiece& /* data */) {
-  DCHECK(CalledOnValidThread());
-  return false;
-}
-
-bool SoundsManagerStub::Play(SoundKey /* key */) {
-  DCHECK(CalledOnValidThread());
-  return false;
-}
-
-base::TimeDelta SoundsManagerStub::GetDuration(SoundKey /* key */) {
-  DCHECK(CalledOnValidThread());
-  return base::TimeDelta();
-}
-
 }  // namespace
 
 SoundsManager::SoundsManager() {}
@@ -128,13 +91,7 @@ void SoundsManager::Create() {
       << "SoundsManager::Create() is called twice";
   if (g_initialized_for_testing)
     return;
-
-  const bool enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-                            ::switches::kDisableSystemSoundsManager);
-  if (enabled)
-    g_instance = new SoundsManagerImpl();
-  else
-    g_instance = new SoundsManagerStub();
+  g_instance = new SoundsManagerImpl();
 }
 
 // static

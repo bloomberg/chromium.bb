@@ -80,9 +80,6 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
-// Disables system sounds manager.
-const char kDisableSystemSoundsManager[] = "disable-system-sounds-manager";
-
 // Use a raw video file as fake video capture device.
 const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 
