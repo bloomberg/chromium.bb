@@ -229,7 +229,7 @@ public:
 
     virtual String toString() OVERRIDE
     {
-        return mergeId() + ": " + m_oldText + " -> " + m_text;
+        return mergeId() + ": " + m_oldStyleText + " -> " + m_text;
     }
 
     virtual bool perform(ExceptionState& exceptionState) OVERRIDE
@@ -240,14 +240,14 @@ public:
     virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         String placeholder;
-        return m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_overwrite ? m_oldText : "", true, &placeholder, exceptionState);
+        return m_styleSheet->setStyleText(m_cssId, m_oldStyleText);
     }
 
     virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
-        String oldText;
-        bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, &oldText, exceptionState);
-        m_oldText = oldText.stripWhiteSpace();
+        if (!m_styleSheet->getStyleText(m_cssId, &m_oldStyleText))
+            return false;
+        bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, exceptionState);
         return result;
     }
 
@@ -269,7 +269,7 @@ private:
     InspectorCSSId m_cssId;
     unsigned m_propertyIndex;
     String m_text;
-    String m_oldText;
+    String m_oldStyleText;
     bool m_overwrite;
 };
 
@@ -827,7 +827,7 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
 {
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
-        *errorString = "Style sheet with id " + styleSheetId + " not found.";
+        *errorString = "Style sheet with id " + styleSheetId + " not found";
         return;
     }
 
@@ -839,7 +839,10 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
 void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
 {
     InspectorCSSId compoundId(fullStyleId);
-    ASSERT(!compoundId.isEmpty());
+    if (compoundId.isEmpty()) {
+        *errorString = "Failed to parse styleId argument";
+        return;
+    }
 
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, compoundId.styleSheetId());
     if (!inspectorStyleSheet)

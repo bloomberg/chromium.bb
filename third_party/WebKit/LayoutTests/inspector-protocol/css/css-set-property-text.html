@@ -1,0 +1,145 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="css-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
+    InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+    InspectorTest.sendCommandOrDie("CSS.enable", {});
+
+    var setPropertyText;
+    var verifyProtocolError;
+    var dumpStyleSheet;
+
+    function styleSheetAdded(result)
+    {
+        var styleSheetId = result.params.header.styleSheetId;
+        setPropertyText = InspectorTest.setPropertyText.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.setPropertyText.bind(InspectorTest, styleSheetId, true);
+        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
+    }
+
+    function onInitialStyleSheetText(result)
+    {
+        InspectorTest.log("==== Initial style sheet text ====");
+        InspectorTest.log(result.text);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    var testSuite = [
+        function testEditProperty(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 1,
+                overwrite: true,
+                text: "content: 'EDITED PROPERTY';"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testBreakingCommentEditProperty(next)
+        {
+            verifyProtocolError({
+                styleIndex: 1,
+                propertyIndex: 2,
+                overwrite: true,
+                text: "/*<--OPENED COMMENT"
+            }, next);
+        },
+
+        function testInsertFirstProperty(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 0,
+                overwrite: false,
+                text: "content: 'INSERTED PROPERTY';"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testInsertLastProperty(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 4,
+                overwrite: false,
+                text: "content: 'INSERTED PROPERTY';"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testInsertMultipleProperties(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 2,
+                overwrite: false,
+                text: "content: 'INSERTED #1';content: 'INSERTED #2';"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testInsertPropertyInEmptyRule(next)
+        {
+            setPropertyText({
+                styleIndex: 3,
+                propertyIndex: 0,
+                overwrite: false,
+                text: "content: 'INSERTED PROPERTY';"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testInsertBreakingPropertyInLastEmptyRule(next)
+        {
+            verifyProtocolError({
+                styleIndex: 3,
+                propertyIndex: 0,
+                overwrite: false,
+                text: "content: 'INSERTED PROPERTY'/*"
+            }, next);
+        },
+
+        function testDisableProperty(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 1,
+                overwrite: true,
+                text: "/* margin: 0; */"
+            }, InspectorTest.undoAndNext(next));
+        },
+
+        function testRedo(next)
+        {
+            setPropertyText({
+                styleIndex: 1,
+                propertyIndex: 4,
+                overwrite: false,
+                text: "align-items: center;"
+            }, InspectorTest.undoAndNext(redo));
+
+            function redo()
+            {
+                InspectorTest.sendCommandOrDie("DOM.redo", null, dumpStyleSheet.bind(null, InspectorTest.undoAndNext(next)));
+            }
+        },
+
+        function testInvalidParameters(next)
+        {
+            verifyProtocolError({
+                styleIndex: "one",
+                propertyIndex: 4,
+                overwrite: false,
+                text: "no matter what is here"
+            }, next);
+        },
+   ];
+}
+
+</script>
+<link rel="stylesheet" href="resources/set-property-text.css"/>
+</head>
+<body onload="runTest();">
+</body>
+</html>

@@ -66,6 +66,32 @@ InspectorTest.sendCommandOrDie = function(command, properties, callback)
     }
 }
 
+InspectorTest.domUndo = function(callback)
+{
+    InspectorTest.sendCommandOrDie("DOM.undo", {}, callback);
+}
+
+InspectorTest.undoAndNext = function(next)
+{
+    return InspectorTest.domUndo.bind(InspectorTest, next);
+}
+
+InspectorTest.runTestSuite = function(testSuite)
+{
+    function nextTest()
+    {
+        if (!testSuite.length) {
+            InspectorTest.completeTest();
+            return;
+        }
+        var fun = testSuite.shift();
+        InspectorTest.log("\nRunning test: " + fun.name);
+        fun(nextTest);
+    }
+
+    nextTest();
+}
+
 /**
  * @param {function(object)=} callback
  */

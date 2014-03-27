@@ -571,7 +571,7 @@ bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmit
     return true;
 }
 
-bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText, bool overwrite, String* oldText, ExceptionState& exceptionState)
+bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText, bool overwrite, ExceptionState& exceptionState)
 {
     ASSERT(m_parentStyleSheet);
 
@@ -609,12 +609,12 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
             exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than or equal to the maximum bound (" + String::number(allProperties.size()) + ").");
             return false;
         }
-        *oldText = allProperties.at(index).rawText;
         editor.replaceProperty(index, propertyText);
-    } else
+    } else {
         editor.insertProperty(index, propertyText, sourceData->ruleBodyRange.length());
+    }
 
-    return applyStyleText(editor.styleText());
+    return m_parentStyleSheet->setStyleText(m_styleId, editor.styleText());
 }
 
 bool InspectorStyle::styleText(String* result) const
@@ -733,11 +733,6 @@ PassRefPtr<CSSRuleSourceData> InspectorStyle::extractSourceData() const
     return m_parentStyleSheet->ruleSourceDataFor(m_style.get());
 }
 
-bool InspectorStyle::applyStyleText(const String& text)
-{
-    return m_parentStyleSheet->setStyleText(m_style.get(), text);
-}
-
 String InspectorStyle::shorthandValue(const String& shorthandProperty) const
 {
     String value = m_style->getPropertyValue(shorthandProperty);
@@ -839,18 +834,22 @@ InspectorStyleSheetBase::InspectorStyleSheetBase(const String& id, Listener* lis
 {
 }
 
-bool InspectorStyleSheetBase::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, String* oldText, ExceptionState& exceptionState)
+bool InspectorStyleSheetBase::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, ExceptionState& exceptionState)
 {
     RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle) {
         exceptionState.throwDOMException(NotFoundError, "No property could be found for the given ID.");
         return false;
     }
+    return inspectorStyle->setPropertyText(propertyIndex, text, overwrite, exceptionState);
+}
 
-    bool success = inspectorStyle->setPropertyText(propertyIndex, text, overwrite, oldText, exceptionState);
-    if (success)
-        fireStyleSheetChanged();
-    return success;
+bool InspectorStyleSheetBase::getStyleText(const InspectorCSSId& id, String* text)
+{
+    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
+    if (!inspectorStyle)
+        return false;
+    return inspectorStyle->styleText(text);
 }
 
 void InspectorStyleSheetBase::fireStyleSheetChanged()
@@ -1389,8 +1388,12 @@ void InspectorStyleSheet::ensureFlatRules() const
         collectFlatRules(asCSSRuleList(pageStyleSheet()), &m_flatRules);
 }
 
-bool InspectorStyleSheet::setStyleText(CSSStyleDeclaration* style, const String& text)
+bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& text)
 {
+    CSSStyleDeclaration* style = styleForId(id);
+    if (!style)
+        return false;
+
     if (!ensureParsedDataReady())
         return false;
 
@@ -1399,14 +1402,12 @@ bool InspectorStyleSheet::setStyleText(CSSStyleDeclaration* style, const String&
     if (!success)
         return false;
 
-    InspectorCSSId id = styleId(style);
-    if (id.isEmpty())
-        return false;
-
     TrackExceptionState exceptionState;
     style->setCSSText(text, exceptionState);
-    if (!exceptionState.hadException())
+    if (!exceptionState.hadException()) {
         m_parsedStyleSheet->setText(patchedStyleSheetText);
+        fireStyleSheetChanged();
+    }
 
     return !exceptionState.hadException();
 }
@@ -1415,7 +1416,6 @@ bool InspectorStyleSheet::styleSheetTextWithChangedStyle(CSSStyleDeclaration* st
 {
     if (!style)
         return false;
-
     if (!ensureParsedDataReady())
         return false;
 
@@ -1497,7 +1497,7 @@ void InspectorStyleSheetForInlineStyle::didModifyElementAttribute()
 
 bool InspectorStyleSheetForInlineStyle::setText(const String& text, ExceptionState& exceptionState)
 {
-    bool success = setStyleText(inlineStyle(), text);
+    bool success = setStyleText(InspectorCSSId(id(), 0), text);
     if (!success)
         exceptionState.throwDOMException(SyntaxError, "Style sheet text is invalid.");
     else
@@ -1515,8 +1515,11 @@ bool InspectorStyleSheetForInlineStyle::getText(String* result) const
     return true;
 }
 
-bool InspectorStyleSheetForInlineStyle::setStyleText(CSSStyleDeclaration* style, const String& text)
+bool InspectorStyleSheetForInlineStyle::setStyleText(const InspectorCSSId& id, const String& text)
 {
+    CSSStyleDeclaration* style = styleForId(id);
+    if (!style)
+        return false;
     ASSERT_UNUSED(style, style == inlineStyle());
     TrackExceptionState exceptionState;
 
@@ -1524,10 +1527,12 @@ bool InspectorStyleSheetForInlineStyle::setStyleText(CSSStyleDeclaration* style,
         InspectorCSSAgent::InlineStyleOverrideScope overrideScope(m_element->ownerDocument());
         m_element->setAttribute("style", AtomicString(text), exceptionState);
     }
-
-    m_styleText = text;
-    m_isStyleTextValid = true;
-    m_ruleSourceData.clear();
+    if (!exceptionState.hadException()) {
+        m_styleText = text;
+        m_isStyleTextValid = true;
+        m_ruleSourceData.clear();
+        fireStyleSheetChanged();
+    }
     return !exceptionState.hadException();
 }
 

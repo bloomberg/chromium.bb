@@ -1,6 +1,44 @@
 function initialize_cssTest()
 {
 
+InspectorTest.dumpStyleSheetText = function(styleSheetId, callback)
+{
+    InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onStyleSheetText);
+    function onStyleSheetText(result)
+    {
+        InspectorTest.log("==== Style sheet text ====");
+        InspectorTest.log(result.text);
+        callback();
+    }
+}
+
+InspectorTest.setPropertyText = function(styleSheetId, expectError, options, callback)
+{
+    var styleId = { styleSheetId: styleSheetId, ordinal: options.styleIndex };
+    delete options.styleIndex;
+    options.styleId = styleId;
+    if (expectError)
+        InspectorTest.sendCommand("CSS.setPropertyText", options, onResponse);
+    else
+        InspectorTest.sendCommandOrDie("CSS.setPropertyText", options, onSuccess);
+
+    function onSuccess()
+    {
+        InspectorTest.dumpStyleSheetText(styleSheetId, callback);
+    }
+
+    function onResponse(message)
+    {
+        if (!message.error) {
+            InspectorTest.log("ERROR: protocol method call did not return expected error. Instead, the following message was received: " + JSON.stringify(message));
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.log("Expected protocol error: " + message.error.message);
+        callback();
+    }
+}
+
 InspectorTest.requestMainFrameId = function(callback)
 {
     InspectorTest.sendCommandOrDie("Page.enable", {}, pageEnabled);

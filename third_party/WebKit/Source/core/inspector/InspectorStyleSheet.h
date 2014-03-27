@@ -137,7 +137,7 @@ public:
     CSSStyleDeclaration* cssStyle() const { return m_style.get(); }
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
-    bool setPropertyText(unsigned index, const String& text, bool overwrite, String* oldText, ExceptionState&);
+    bool setPropertyText(unsigned index, const String& text, bool overwrite, ExceptionState&);
     bool styleText(String* result) const;
 
 private:
@@ -176,7 +176,10 @@ public:
     virtual Document* ownerDocument() const = 0;
     virtual bool setText(const String&, ExceptionState&) = 0;
     virtual bool getText(String* result) const = 0;
-    bool setPropertyText(const InspectorCSSId&, unsigned propertyIndex, const String& text, bool overwrite, String* oldPropertyText, ExceptionState&);
+    bool setPropertyText(const InspectorCSSId&, unsigned propertyIndex, const String& text, bool overwrite, ExceptionState&);
+
+    virtual bool setStyleText(const InspectorCSSId&, const String&) = 0;
+    bool getStyleText(const InspectorCSSId&, String*);
 
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const = 0;
     virtual InspectorCSSId styleId(CSSStyleDeclaration*) const = 0;
@@ -194,7 +197,6 @@ protected:
 
     // Also accessed by friend class InspectorStyle.
     virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const = 0;
-    virtual bool setStyleText(CSSStyleDeclaration*, const String&) = 0;
     virtual bool ensureParsedDataReady() = 0;
 
 private:
@@ -231,13 +233,13 @@ public:
 
     virtual InspectorCSSId styleId(CSSStyleDeclaration*) const OVERRIDE;
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const OVERRIDE;
+    virtual bool setStyleText(const InspectorCSSId&, const String&) OVERRIDE;
 
 protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
 
     // Also accessed by friend class InspectorStyle.
     virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const OVERRIDE;
-    virtual bool setStyleText(CSSStyleDeclaration*, const String&) OVERRIDE;
     virtual bool ensureParsedDataReady() OVERRIDE;
 
 private:
@@ -279,6 +281,7 @@ public:
 
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId& id) const OVERRIDE { ASSERT_UNUSED(id, !id.ordinal()); return inlineStyle(); }
     virtual InspectorCSSId styleId(CSSStyleDeclaration* style) const OVERRIDE { return InspectorCSSId(id(), 0); }
+    virtual bool setStyleText(const InspectorCSSId&, const String&) OVERRIDE;
 
 protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
@@ -286,7 +289,6 @@ protected:
     // Also accessed by friend class InspectorStyle.
     virtual bool ensureParsedDataReady() OVERRIDE;
     virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const OVERRIDE { ASSERT_UNUSED(style, style == inlineStyle()); return m_ruleSourceData; }
-    virtual bool setStyleText(CSSStyleDeclaration*, const String&) OVERRIDE;
 
 private:
     InspectorStyleSheetForInlineStyle(const String& id, PassRefPtr<Element>, Listener*);
