@@ -25,7 +25,7 @@ function fileInfoReceived(fileInfo) {
 }
 
 function getFileObjectFailed(e) {
-  chrome.test.assertEq(FileError.NOT_FOUND_ERR, e.code);
+  chrome.test.assertEq('NotFoundError', e.name);
   chrome.test.succeed();
 }
 

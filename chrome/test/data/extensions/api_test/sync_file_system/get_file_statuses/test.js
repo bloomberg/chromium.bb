@@ -52,7 +52,7 @@ function createFiles(fileSystem, fileNames, callback) {
     return;
   }
   fileSystem.root.getFile(
-    fileNames.shift(), {create:true},
+    fileNames.shift(), {create: true},
     createFiles.bind(null, fileSystem, fileNames, callback),
     errorHandler);
 }
@@ -66,7 +66,7 @@ function sortByFilePath(a, b) {
 }
 
 function errorHandler(e) {
-  console.log("Failed test with error" + e);
+  console.log("Failed test with error" + e.name);
   chrome.test.fail();
 }
 

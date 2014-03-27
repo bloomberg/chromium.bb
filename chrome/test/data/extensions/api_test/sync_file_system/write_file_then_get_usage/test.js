@@ -5,7 +5,8 @@
 var fileEntry;
 var fileSystem;
 var usageBeforeWrite;
-var testData = "12345";
+var testData = '12345';
+var dataSize;
 
 var testStep = [
   function () {
@@ -14,8 +15,10 @@ var testStep = [
   // Create empty file.
   function(fs) {
     fileSystem = fs;
-    fileSystem.root.getFile('Test.txt', {create: true}, testStep.shift(),
-        errorHandler);
+    fileSystem.root.getFile(
+        'Test.txt', {create: true},
+        testStep.shift(),
+        errorHandler('getFile (create)'));
   },
   function(entry) {
     fileEntry = entry;
@@ -31,25 +34,23 @@ var testStep = [
   },
   // Write a known number of bytes.
   function() {
-    fileEntry.createWriter(testStep.shift(), errorHandler);
+    fileEntry.createWriter(testStep.shift(), errorHandler('createWriter'));
   },
   function (fileWriter) {
     fileWriter.onwriteend = function(e) {
       testStep.shift()();
     };
-    fileWriter.onerror = function(e) {
-      chrome.test.fail('Write failed: ' + e.toString());
-    };
-    fileWriter.seek(fileWriter.length);
+    fileWriter.onerror = errorHandler('write');
     var blob = new Blob([testData], {type: "text/plain"});
+    dataSize = blob.size;
     fileWriter.write(blob);
   },
   // Check the meta data for updated usage.
   function() {
-    fileEntry.getMetadata(testStep.shift(), errorHandler);
+    fileEntry.getMetadata(testStep.shift(), errorHandler('getMetadata'));
   },
   function (metadata) {
-    chrome.test.assertEq(testData.length, metadata.size);
+    chrome.test.assertEq(dataSize, metadata.size);
     testStep.shift()();
   },
   // Check global usage was updated.
@@ -58,16 +59,15 @@ var testStep = [
   },
   function(storageInfo) {
     var usageAfterWrite = storageInfo.usageBytes;
-    chrome.test.assertEq(testData.length, usageAfterWrite - usageBeforeWrite);
+    chrome.test.assertEq(dataSize, usageAfterWrite - usageBeforeWrite);
     chrome.test.succeed();
   }
 ];
 
-function errorHandler() {
-  chrome.test.fail();
+function errorHandler(msg) {
+  return function(error) {
+    chrome.test.fail(msg + ": " + error.name);
+  };
 }
 
-chrome.test.runTests([
-  testStep[0]
-]);
-
+chrome.test.runTests([testStep.shift()]);

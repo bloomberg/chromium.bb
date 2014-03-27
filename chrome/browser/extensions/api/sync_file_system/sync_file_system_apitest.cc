@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatus) {
       << message_;
 }
 
-#if defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && defined(ARCH_CPU_X86))
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
 // SyncFileSystemApiTest.GetFileStatuses fails under AddressSanitizer
 // on Precise. See http://crbug.com/230779.
 // Also fails on WinXP Tests(1). See crbug.com/354425 .

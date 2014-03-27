@@ -19,10 +19,6 @@ var testStep = [
   }
 ];
 
-function errorHandler() {
-  chrome.test.fail();
-}
-
 chrome.test.runTests([
-  testStep[0]
+  testStep.shift()
 ]);

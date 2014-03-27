@@ -22,7 +22,7 @@ var testStep = [
 ];
 
 function errorHandler(e) {
-  console.log("Failed test with error" + e);
+  console.log("Failed test with error" + e.name);
   chrome.test.fail();
 }
 
