@@ -279,11 +279,11 @@ policies and contribution forms [3].
 (function ()
 {
     var debug = false;
-    // default timeout is 5 seconds, test can override if needed
+    // default timeout is 5 minutes, to let LayoutTests timeout first
     var settings = {
       output:true,
-      timeout:5000,
-      test_timeout:2000
+      timeout:300000,
+      test_timeout:300000
     };
 
     var xhtml_ns = "http://www.w3.org/1999/xhtml";
