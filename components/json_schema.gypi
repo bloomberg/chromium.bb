@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/re2/re2.gyp:re2'
       ],
       'include_dirs': [
         '..',

@@ -20,12 +20,7 @@ class Value;
 // JSONSchemaValidatorJSTest that inherits from this.
 class JSONSchemaValidatorTestBase : public testing::Test {
  public:
-  enum ValidatorType {
-    CPP = 1,
-    JS = 2
-  };
-
-  explicit JSONSchemaValidatorTestBase(ValidatorType type);
+  JSONSchemaValidatorTestBase();
 
   void RunTests();
 
@@ -56,8 +51,6 @@ class JSONSchemaValidatorTestBase : public testing::Test {
   void TestNumber();
   void TestTypeClassifier();
   void TestTypes();
-
-  ValidatorType type_;
 };
 
 #endif  // COMPONENTS_JSON_SCHEMA_JSON_SCHEMA_VALIDATOR_UNITTEST_BASE_H_

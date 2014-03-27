@@ -67,9 +67,7 @@ base::DictionaryValue* LoadDictionary(const std::string& filename) {
 }  // namespace
 
 
-JSONSchemaValidatorTestBase::JSONSchemaValidatorTestBase(
-    JSONSchemaValidatorTestBase::ValidatorType type)
-    : type_(type) {
+JSONSchemaValidatorTestBase::JSONSchemaValidatorTestBase() {
 }
 
 void JSONSchemaValidatorTestBase::RunTests() {
@@ -118,10 +116,6 @@ void JSONSchemaValidatorTestBase::TestComplex() {
 }
 
 void JSONSchemaValidatorTestBase::TestStringPattern() {
-  // Regex patterns not supported in CPP validator.
-  if (type_ == CPP)
-    return;
-
   scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kString);
   schema->SetString(schema::kPattern, "foo+");
@@ -224,8 +218,8 @@ void JSONSchemaValidatorTestBase::TestObject() {
   instance->SetBoolean("extra", true);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL,
                  "extra", JSONSchemaValidator::kUnexpectedProperty);
-
   instance->Remove("extra", NULL);
+
   instance->Remove("bar", NULL);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "bar",
                  JSONSchemaValidator::kObjectPropertyIsRequired);
@@ -236,12 +230,47 @@ void JSONSchemaValidatorTestBase::TestObject() {
                      JSONSchemaValidator::kInvalidType,
                      schema::kInteger,
                      schema::kString));
+  instance->SetInteger("bar", 42);
 
+  // Test "patternProperties".
+  instance->SetInteger("extra", 42);
+  ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL,
+                 "extra", JSONSchemaValidator::kUnexpectedProperty);
+  schema->SetString("patternProperties.extra+.type",
+                    schema::kInteger);
+  ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
+  instance->Remove("extra", NULL);
+  instance->SetInteger("extraaa", 42);
+  ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
+  instance->Remove("extraaa", NULL);
+  instance->SetInteger("extr", 42);
+  ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL,
+                 "extr", JSONSchemaValidator::kUnexpectedProperty);
+  instance->Remove("extr", NULL);
+  schema->Remove(schema::kPatternProperties, NULL);
+
+  // Test "patternProperties" and "properties" schemas are both checked if
+  // applicable.
+  schema->SetString("patternProperties.fo+.type", schema::kInteger);
+  ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "foo",
+                 JSONSchemaValidator::FormatErrorMessage(
+                     JSONSchemaValidator::kInvalidType,
+                     schema::kInteger,
+                     schema::kString));
+  instance->SetInteger("foo", 123);
+  ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "foo",
+                 JSONSchemaValidator::FormatErrorMessage(
+                     JSONSchemaValidator::kInvalidType,
+                     schema::kString,
+                     schema::kInteger));
+  instance->SetString("foo", "foo");
+  schema->Remove(schema::kPatternProperties, NULL);
+
+  // Test additional properties.
   base::DictionaryValue* additional_properties = new base::DictionaryValue();
   additional_properties->SetString(schema::kType, schema::kAny);
   schema->Set(schema::kAdditionalProperties, additional_properties);
 
-  instance->SetInteger("bar", 42);
   instance->SetBoolean("extra", true);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
@@ -258,6 +287,7 @@ void JSONSchemaValidatorTestBase::TestObject() {
                      JSONSchemaValidator::kInvalidType,
                      schema::kBoolean,
                      schema::kString));
+  instance->Remove("extra", NULL);
 
   base::DictionaryValue* properties = NULL;
   base::DictionaryValue* bar_property = NULL;
@@ -265,7 +295,6 @@ void JSONSchemaValidatorTestBase::TestObject() {
   ASSERT_TRUE(properties->GetDictionary("bar", &bar_property));
 
   bar_property->SetBoolean(schema::kOptional, true);
-  instance->Remove("extra", NULL);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
   instance->Remove("bar", NULL);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
@@ -281,6 +310,18 @@ void JSONSchemaValidatorTestBase::TestObject() {
                      JSONSchemaValidator::kInvalidType,
                      schema::kInteger,
                      schema::kString));
+
+  // Verify that JSON parser handles dot in "patternProperties" well.
+  schema.reset(LoadDictionary("pattern_properties_dot.json"));
+  ASSERT_TRUE(schema->GetDictionary(schema::kPatternProperties, &properties));
+  ASSERT_TRUE(properties->HasKey("^.$"));
+
+  instance.reset(new base::DictionaryValue());
+  instance->SetString("a", "whatever");
+  ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
+  instance->SetString("foo", "bar");
+  ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL,
+                 "foo", JSONSchemaValidator::kUnexpectedProperty);
 }
 
 void JSONSchemaValidatorTestBase::TestTypeReference() {

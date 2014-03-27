@@ -9,9 +9,7 @@
 
 class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {
  public:
-  JSONSchemaValidatorCPPTest()
-      : JSONSchemaValidatorTestBase(JSONSchemaValidatorTestBase::CPP) {
-  }
+  JSONSchemaValidatorCPPTest() : JSONSchemaValidatorTestBase() {}
 
  protected:
   virtual void ExpectValid(const std::string& test_source,
@@ -129,6 +127,19 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       "  },"
       "  \"additionalProperties\": {"
       "    \"type\": \"any\""
+      "  }"
+      "}", &error)) << error;
+  EXPECT_TRUE(JSONSchemaValidator::IsValidSchema(
+      "{"
+      "  \"type\": \"object\","
+      "  \"patternProperties\": {"
+      "    \".\": { \"type\": \"any\" },"
+      "    \"foo\": { \"type\": \"any\" },"
+      "    \"^foo$\": { \"type\": \"any\" },"
+      "    \"foo+\": { \"type\": \"any\" },"
+      "    \"foo?\": { \"type\": \"any\" },"
+      "    \"fo{2,4}\": { \"type\": \"any\" },"
+      "    \"(left)|(right)\": { \"type\": \"any\" }"
       "  }"
       "}", &error)) << error;
   EXPECT_TRUE(JSONSchemaValidator::IsValidSchema(
