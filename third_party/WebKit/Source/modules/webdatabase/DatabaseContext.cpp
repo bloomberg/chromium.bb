@@ -170,16 +170,29 @@ void DatabaseContext::didOpenDatabase(DatabaseBackendBase& database)
     if (!database.isSyncDatabase())
         return;
     ASSERT(isContextThread());
+#if ENABLE(OILPAN)
+    m_openSyncDatabases.add(&database, adoptPtr(new DatabaseCloser(database)));
+#else
     m_openSyncDatabases.add(&database);
+#endif
 }
 
 void DatabaseContext::didCloseDatabase(DatabaseBackendBase& database)
 {
+#if !ENABLE(OILPAN)
     if (!database.isSyncDatabase())
         return;
     ASSERT(isContextThread());
     m_openSyncDatabases.remove(&database);
+#endif
 }
+
+#if ENABLE(OILPAN)
+DatabaseContext::DatabaseCloser::~DatabaseCloser()
+{
+    m_database.closeImmediately();
+}
+#endif
 
 void DatabaseContext::stopSyncDatabases()
 {
@@ -191,11 +204,20 @@ void DatabaseContext::stopSyncDatabases()
     // thread. This means that the SQLite database need to be closed here in the
     // destructor.
     ASSERT(isContextThread());
+#if ENABLE(OILPAN)
+    // FIXME: We need to clear OwnPtr<> in the HeapHashMap explicitly.
+    // HeapHashMap::clear() doesn't destruct values
+    // immediately. crbug.com/357113.
+    for (PersistentHeapHashMap<WeakMember<DatabaseBackendBase>, OwnPtr<DatabaseCloser> >::iterator i = m_openSyncDatabases.begin(); i != m_openSyncDatabases.end(); ++i)
+        (*i).value.clear();
+    m_openSyncDatabases.clear();
+#else
     Vector<DatabaseBackendBase*> syncDatabases;
     copyToVector(m_openSyncDatabases, syncDatabases);
     m_openSyncDatabases.clear();
     for (size_t i = 0; i < syncDatabases.size(); ++i)
         syncDatabases[i]->closeImmediately();
+#endif
 }
 
 void DatabaseContext::stopDatabases()

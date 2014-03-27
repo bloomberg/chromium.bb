@@ -76,9 +76,21 @@ private:
     void stopSyncDatabases();
 
     RefPtrWillBePersistent<DatabaseThread> m_databaseThread;
+#if ENABLE(OILPAN)
+    class DatabaseCloser {
+    public:
+        explicit DatabaseCloser(DatabaseBackendBase& database) : m_database(database) { }
+        ~DatabaseCloser();
+
+    private:
+        DatabaseBackendBase& m_database;
+    };
+    PersistentHeapHashMap<WeakMember<DatabaseBackendBase>, OwnPtr<DatabaseCloser> > m_openSyncDatabases;
+#else
     // The contents of m_openSyncDatabases are raw pointers. It's safe because
     // DatabaseBackendSync is always closed before destruction.
     HashSet<DatabaseBackendBase*> m_openSyncDatabases;
+#endif
     bool m_hasOpenDatabases; // This never changes back to false, even after the database thread is closed.
     bool m_hasRequestedTermination;
 };

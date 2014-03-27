@@ -38,6 +38,7 @@ DatabaseBackendSync::DatabaseBackendSync(DatabaseContext* databaseContext, const
 
 DatabaseBackendSync::~DatabaseBackendSync()
 {
+#if !ENABLE(OILPAN)
     // SQLite is "multi-thread safe", but each database handle can only be used
     // on a single thread at a time.
     //
@@ -48,6 +49,8 @@ DatabaseBackendSync::~DatabaseBackendSync()
         ASSERT(m_databaseContext->isContextThread());
         closeDatabase();
     }
+#endif
+    ASSERT(!opened());
 }
 
 void DatabaseBackendSync::trace(Visitor* visitor)
