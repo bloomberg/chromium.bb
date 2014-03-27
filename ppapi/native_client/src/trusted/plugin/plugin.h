@@ -161,26 +161,6 @@ class Plugin : public pp::Instance {
     manifest_base_url_ = url;
   }
 
-  // The state of readiness of the plugin.
-  enum ReadyState {
-    // The trusted plugin begins in this ready state.
-    UNSENT = 0,
-    // The manifest file has been requested, but not yet received.
-    OPENED = 1,
-    // This state is unused.
-    HEADERS_RECEIVED = 2,
-    // The manifest file has been received and the nexe successfully requested.
-    LOADING = 3,
-    // The nexe has been loaded and the proxy started, so it is ready for
-    // interaction with the page.
-    DONE = 4
-  };
-
-  bool nexe_error_reported() const { return nexe_error_reported_; }
-  void set_nexe_error_reported(bool val) {
-    nexe_error_reported_ = val;
-  }
-
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Requests a NaCl manifest download from a |url| relative to the page origin.
@@ -369,8 +349,6 @@ class Plugin : public pp::Instance {
   // request so it won't slow down non-installed file downloads.
   bool OpenURLFast(const nacl::string& url, FileDownloader* downloader);
 
-  void set_nacl_ready_state(ReadyState state);
-
   void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
 
   std::map<std::string, std::string> args_;
@@ -382,7 +360,6 @@ class Plugin : public pp::Instance {
   nacl::string manifest_base_url_;
   nacl::string manifest_url_;
   bool uses_nonsfi_mode_;
-  ReadyState nacl_ready_state_;
   bool nexe_error_reported_;  // error or crash reported
 
   nacl::DescWrapperFactory* wrapper_factory_;

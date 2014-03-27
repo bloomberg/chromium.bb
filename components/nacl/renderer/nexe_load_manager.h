@@ -54,10 +54,20 @@ class NexeLoadManager {
   void DispatchEvent(const ProgressEvent &event);
   void set_trusted_plugin_channel(scoped_ptr<TrustedPluginChannel> channel);
 
+  bool nexe_error_reported();
+  void set_nexe_error_reported(bool error_reported);
+
+  PP_NaClReadyState nacl_ready_state();
+  void set_nacl_ready_state(PP_NaClReadyState ready_state);
+
+  void SetReadOnlyProperty(PP_Var key, PP_Var value);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
   PP_Instance pp_instance_;
+  PP_NaClReadyState nacl_ready_state_;
+  bool nexe_error_reported_;
 
   // Non-owning.
   content::PepperPluginInstance* plugin_instance_;

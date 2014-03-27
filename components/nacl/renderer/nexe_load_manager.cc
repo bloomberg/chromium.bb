@@ -87,6 +87,8 @@ namespace nacl {
 NexeLoadManager::NexeLoadManager(
     PP_Instance pp_instance)
     : pp_instance_(pp_instance),
+      nacl_ready_state_(PP_NACL_READY_STATE_UNSENT),
+      nexe_error_reported_(false),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       weak_factory_(this) {
 }
@@ -108,8 +110,10 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
         new NaClHostMsg_MissingArchError(GetRoutingID(pp_instance_)));
   }
   // TODO(dmichael): Move the following actions here:
-  // - Set ready state to DONE.
   // - Print error message to JavaScript console.
+
+  set_nacl_ready_state(PP_NACL_READY_STATE_DONE);
+  nexe_error_reported_ = true;
 
   // We must set all properties before calling DispatchEvent so that when an
   // event handler runs, the properties reflect the current load state.
@@ -180,6 +184,28 @@ void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
 void NexeLoadManager::set_trusted_plugin_channel(
     scoped_ptr<TrustedPluginChannel> channel) {
   trusted_plugin_channel_ = channel.Pass();
+}
+
+bool NexeLoadManager::nexe_error_reported() {
+  return nexe_error_reported_;
+}
+
+void NexeLoadManager::set_nexe_error_reported(bool error_reported) {
+  nexe_error_reported_ = error_reported;
+}
+
+PP_NaClReadyState NexeLoadManager::nacl_ready_state() {
+  return nacl_ready_state_;
+}
+
+void NexeLoadManager::set_nacl_ready_state(PP_NaClReadyState ready_state) {
+  nacl_ready_state_ = ready_state;
+  SetReadOnlyProperty(ppapi::StringVar::StringToPPVar("readyState"),
+                      PP_MakeInt32(ready_state));
+}
+
+void NexeLoadManager::SetReadOnlyProperty(PP_Var key, PP_Var value) {
+  plugin_instance_->SetEmbedProperty(key, value);
 }
 
 }  // namespace nacl

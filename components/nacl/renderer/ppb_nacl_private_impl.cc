@@ -438,11 +438,12 @@ void DispatchEventOnMainThread(PP_Instance instance,
 void SetReadOnlyProperty(PP_Instance instance,
                          struct PP_Var key,
                          struct PP_Var value) {
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  plugin_instance->SetEmbedProperty(key, value);
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->SetReadOnlyProperty(key, value);
 }
 
+void SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state);
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message,
@@ -500,6 +501,36 @@ void LogToConsole(PP_Instance instance, const char* message) {
                                             std::string(message));
 }
 
+PP_Bool GetNexeErrorReported(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return PP_FromBool(load_manager->nexe_error_reported());
+  return PP_FALSE;
+}
+
+void SetNexeErrorReported(PP_Instance instance, PP_Bool error_reported) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    load_manager->set_nexe_error_reported(PP_ToBool(error_reported));
+}
+
+PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return load_manager->nacl_ready_state();
+  return PP_NACL_READY_STATE_UNSENT;
+}
+
+void SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    load_manager->set_nacl_ready_state(ready_state);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -521,7 +552,11 @@ const PPB_NaCl_Private nacl_interface = {
   &NaClDebugStubEnabled,
   &GetSandboxArch,
   &GetUrlScheme,
-  &LogToConsole
+  &LogToConsole,
+  &GetNexeErrorReported,
+  &SetNexeErrorReported,
+  &GetNaClReadyState,
+  &SetNaClReadyState
 };
 
 }  // namespace

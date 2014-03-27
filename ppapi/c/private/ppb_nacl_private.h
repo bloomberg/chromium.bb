@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Mar 21 13:55:07 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Mar 26 10:20:49 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -136,6 +136,18 @@ typedef enum {
   PP_SCHEME_DATA,
   PP_SCHEME_OTHER
 } PP_UrlSchemeType;
+
+typedef enum {
+  /* The trusted plugin begins in this ready state. */
+  PP_NACL_READY_STATE_UNSENT = 0,
+  /* The manifest file has been requested, but not yet received. */
+  PP_NACL_READY_STATE_OPENED = 1,
+  /* The manifest file has been received and the nexe successfully requested. */
+  PP_NACL_READY_STATE_LOADING = 3,
+  /* The nexe has been loaded and the proxy started, so it is ready for
+   */
+  PP_NACL_READY_STATE_DONE = 4
+} PP_NaClReadyState;
 /**
  * @}
  */
@@ -300,6 +312,15 @@ struct PPB_NaCl_Private_1_0 {
   PP_UrlSchemeType (*GetUrlScheme)(struct PP_Var url);
   /* Logs the message to the console. */
   void (*LogToConsole)(PP_Instance instance, const char* message);
+  /* Returns PP_TRUE if an error has been reported loading the nexe. */
+  PP_Bool (*GetNexeErrorReported)(PP_Instance instance);
+  /* Sets the nexe error reported state for this instance. */
+  void (*SetNexeErrorReported)(PP_Instance instance, PP_Bool error_reported);
+  /* Returns the NaCl readiness status for this instance. */
+  PP_NaClReadyState (*GetNaClReadyState)(PP_Instance instance);
+  /* Sets the NaCl readiness status for this instance. */
+  void (*SetNaClReadyState)(PP_Instance instance,
+                            PP_NaClReadyState ready_state);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
