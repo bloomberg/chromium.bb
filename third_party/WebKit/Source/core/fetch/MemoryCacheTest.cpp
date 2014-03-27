@@ -383,4 +383,27 @@ TEST_F(MemoryCacheTest, MultipleReplace)
     EXPECT_FALSE(memoryCache()->contains(resource2.get()));
 }
 
+TEST_F(MemoryCacheTest, RemoveDuringRevalidation)
+{
+    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->add(resource1.get());
+
+    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->remove(resource1.get());
+    memoryCache()->add(resource2.get());
+    EXPECT_TRUE(memoryCache()->contains(resource2.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource1.get()));
+
+    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->remove(resource2.get());
+    memoryCache()->add(resource3.get());
+    EXPECT_TRUE(memoryCache()->contains(resource3.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
+
+    memoryCache()->replace(resource1.get(), resource2.get());
+    EXPECT_TRUE(memoryCache()->contains(resource1.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
+    EXPECT_FALSE(memoryCache()->contains(resource3.get()));
+}
+
 } // namespace

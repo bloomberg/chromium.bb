@@ -136,7 +136,7 @@ public:
 
     void add(Resource*);
     void replace(Resource* newResource, Resource* oldResource);
-    void remove(Resource* resource) { evict(resource); }
+    void remove(Resource*);
     bool contains(const Resource*) const;
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
@@ -201,7 +201,7 @@ private:
     void pruneLiveResources();
     void pruneNow(double currentTime);
 
-    bool evict(Resource*);
+    bool evict(MemoryCacheEntry*);
 
     static void removeURLFromCacheInternal(ExecutionContext*, const KURL&);
 

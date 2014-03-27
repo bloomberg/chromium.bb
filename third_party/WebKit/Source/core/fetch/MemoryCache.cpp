@@ -118,10 +118,20 @@ void MemoryCache::add(Resource* resource)
 
 void MemoryCache::replace(Resource* newResource, Resource* oldResource)
 {
-    evict(oldResource);
+    if (MemoryCacheEntry* oldEntry = m_resources.get(oldResource->url()))
+        evict(oldEntry);
     add(newResource);
     if (newResource->decodedSize() && newResource->hasClients())
         insertInLiveDecodedResourcesList(newResource);
+}
+
+void MemoryCache::remove(Resource* resource)
+{
+    // The resource may have already been removed by someone other than our caller,
+    // who needed a fresh copy for a reload.
+    if (!contains(resource))
+        return;
+    evict(m_resources.get(resource->url()));
 }
 
 bool MemoryCache::contains(const Resource* resource) const
@@ -142,7 +152,7 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL)
     Resource* resource = entry->m_resource.get();
     if (resource && !resource->lock()) {
         ASSERT(!resource->hasClients());
-        bool didEvict = evict(resource);
+        bool didEvict = evict(entry);
         ASSERT_UNUSED(didEvict, didEvict);
         return 0;
     }
@@ -226,7 +236,7 @@ void MemoryCache::pruneDeadResources()
             if (current->m_resource->wasPurged()) {
                 ASSERT(!current->m_resource->hasClients());
                 ASSERT(!current->m_resource->isPreloaded());
-                evict(current->m_resource.get());
+                evict(current);
             }
             current = previous;
         }
@@ -266,7 +276,7 @@ void MemoryCache::pruneDeadResources()
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             ASSERT(!previous || contains(previous->m_resource.get()));
             if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded() && !current->m_resource->isCacheValidator()) {
-                evict(current->m_resource.get());
+                evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
             }
@@ -295,20 +305,17 @@ void MemoryCache::setCapacities(size_t minDeadBytes, size_t maxDeadBytes, size_t
     prune();
 }
 
-bool MemoryCache::evict(Resource* resource)
+bool MemoryCache::evict(MemoryCacheEntry* entry)
 {
     ASSERT(WTF::isMainThread());
+
+    Resource* resource = entry->m_resource.get();
     WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().string().latin1().data());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
-    if (contains(resource)) {
-        update(resource, resource->size(), 0, false);
-        removeFromLiveDecodedResourcesList(resource);
-
-        // Remove from the resource map.
-        m_resources.remove(resource->url());
-    }
-
+    update(resource, resource->size(), 0, false);
+    removeFromLiveDecodedResourcesList(resource);
+    m_resources.remove(resource->url());
     return resource->deleteIfPossible();
 }
 
@@ -560,7 +567,7 @@ void MemoryCache::evictResources()
         ResourceMap::iterator i = m_resources.begin();
         if (i == m_resources.end())
             break;
-        evict(i->value->m_resource.get());
+        evict(i->value.get());
     }
 }
 
@@ -602,7 +609,8 @@ void MemoryCache::prune(Resource* justReleasedResource)
         // objects O(N^2) if we pruned immediately. This immediate eviction is a
         // safeguard against runaway memory consumption by dead resources
         // while a prune is pending.
-        evict(justReleasedResource);
+        if (contains(justReleasedResource))
+            evict(m_resources.get(justReleasedResource->url()));
 
         // As a last resort, prune immediately
         if (m_deadSize > m_maxDeferredPruneDeadCapacity)
