@@ -913,6 +913,7 @@
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [
+            'test/content_test_launcher.cc',
             'public/test/content_browser_test.cc',
             'public/test/content_browser_test.h',
             'public/test/content_browser_test_utils.cc',
@@ -1079,7 +1080,6 @@
             'test/accessibility_browser_test_utils.cc',
             'test/accessibility_browser_test_utils.h',
             'test/content_browser_test_test.cc',
-            'test/content_test_launcher.cc',
             'test/webui_resource_browsertest.cc',
           ],
           'conditions': [

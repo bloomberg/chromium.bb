@@ -549,7 +549,6 @@
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
           'sources': [
-            '../content/test/content_test_launcher.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
 
             # content_extractor is a standalone content extraction tool built as
