@@ -156,6 +156,7 @@ class RunAttributes(object):
   BOARD_ATTRS = frozenset((
       'breakpad_symbols_generated', # Set by DebugSymbolsStage.
       'debug_tarball_generated',    # Set by DebugSymbolsStage.
+      'images_generated',           # Set by BuildImageStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel
@@ -642,6 +643,10 @@ class _BuilderRunBase(object):
         self.config.overlays, self.options.remote_trybot,
         os.environ.get('BUILDBOT_BUILDERNAME', self.config.name),
         self.options.buildnumber, stage=stage)
+
+  def ShouldBuildAutotest(self):
+    """Return True if this run should build autotest and artifacts."""
+    return self.config.build_tests and self.options.tests
 
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""

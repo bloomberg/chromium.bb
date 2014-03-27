@@ -200,6 +200,29 @@ class Builder(object):
     stage_instance = self._GetStageInstance(stage, *args, **kwargs)
     return stage_instance.Run()
 
+  @staticmethod
+  def _RunParallelStages(stage_objs):
+    """Run the specified stages in parallel.
+
+    Args:
+      stage_objs: BuilderStage objects.
+    """
+    steps = [stage.Run for stage in stage_objs]
+    try:
+      parallel.RunParallelSteps(steps)
+
+    except BaseException as ex:
+      # If a stage threw an exception, it might not have correctly reported
+      # results (e.g. because it was killed before it could report the
+      # results.) In this case, attribute the exception to any stages that
+      # didn't report back correctly (if any).
+      for stage in stage_objs:
+        for name in stage.GetStageNames():
+          if not results_lib.Results.StageHasResults(name):
+            results_lib.Results.Record(name, ex, str(ex))
+
+      raise
+
   def _RunSyncStage(self, sync_instance):
     """Run given |sync_instance| stage and be sure attrs.release_tag set."""
     try:
@@ -393,28 +416,34 @@ class SimpleBuilder(Builder):
 
     return sync_stage
 
-  @staticmethod
-  def _RunParallelStages(stage_objs):
-    """Run the specified stages in parallel.
+  def _RunHWTests(self, builder_run, board):
+    """Run hwtest-related stages for the specified board.
 
     Args:
-      stage_objs: BuilderStage objects.
+      builder_run: BuilderRun object for these background stages.
+      board: Board name.
     """
-    steps = [stage.Run for stage in stage_objs]
-    try:
-      parallel.RunParallelSteps(steps)
+    # Upload HWTest artifacts first.
+    self._RunStage(stages.UploadTestArtifactsStage, board,
+                   builder_run=builder_run)
 
-    except BaseException as ex:
-      # If a stage threw an exception, it might not have correctly reported
-      # results (e.g. because it was killed before it could report the
-      # results.) In this case, attribute the exception to any stages that
-      # didn't report back correctly (if any).
-      for stage in stage_objs:
-        for name in stage.GetStageNames():
-          if not results_lib.Results.StageHasResults(name):
-            results_lib.Results.Record(name, ex, str(ex))
+    # We can not run hw tests without archiving the payloads.
+    stage_list = []
+    config = builder_run.config
+    if builder_run.options.archive:
+      for suite_config in config.hw_tests:
+        if suite_config.async:
+          stage_list.append([stages.ASyncHWTestStage, board, suite_config])
+        elif suite_config.suite == constants.HWTEST_AU_SUITE:
+          stage_list.append([stages.AUTestStage, board, suite_config])
+        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
+          stage_list.append([stages.QATestStage, board, suite_config])
+        else:
+          stage_list.append([stages.HWTestStage, board, suite_config])
 
-      raise
+    stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
+                  for x in stage_list]
+    self._RunParallelStages(stage_objs)
 
   def _RunBackgroundStagesForBoard(self, builder_run, board):
     """Run background board-specific stages for the specified board.
@@ -473,21 +502,13 @@ class SimpleBuilder(Builder):
         [stages.CPEExportStage, board],
     ]
 
-    # We can not run hw tests without archiving the payloads.
-    if builder_run.options.archive:
-      for suite_config in config.hw_tests:
-        if suite_config.async:
-          stage_list.append([stages.ASyncHWTestStage, board, suite_config])
-        elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_list.append([stages.AUTestStage, board, suite_config])
-        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
-          stage_list.append([stages.QATestStage, board, suite_config])
-        else:
-          stage_list.append([stages.HWTestStage, board, suite_config])
-
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
                   for x in stage_list]
-    self._RunParallelStages(stage_objs + [archive_stage])
+
+    parallel.RunParallelSteps([
+        lambda: self._RunParallelStages(stage_objs + [archive_stage]),
+        lambda: self._RunHWTests(builder_run, board),
+    ])
 
   def _RunSetupBoard(self):
     """Run the SetupBoard stage for all child configs and boards."""
@@ -575,6 +596,8 @@ class SimpleBuilder(Builder):
           if builder_run.config.pgo_generate:
             # Generate the PGO data before allowing any other tasks to run.
             self._RunStage(stages.BuildImageStage, board, **kwargs)
+            self._RunStage(stages.UploadTestArtifactsStage, board,
+                           builder_run=builder_run, suffix='[pgo_generate]')
             suite = cbuildbot_config.PGORecordTest()
             self._RunStage(stages.HWTestStage, board, suite,
                            builder_run=builder_run)

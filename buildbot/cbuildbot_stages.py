@@ -2442,9 +2442,6 @@ class BuildPackagesStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     if self._run.options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-    self._build_autotest = (self._run.config.build_tests and
-                            self._run.options.tests)
-
   def _GetArchitectures(self):
     """Get the list of architectures built by this builder."""
     return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
@@ -2461,7 +2458,7 @@ class BuildPackagesStage(BoardSpecificBuilderStage, ArchivingStageMixin):
 
     commands.Build(self._build_root,
                    self._current_board,
-                   build_autotest=self._build_autotest,
+                   build_autotest=self._run.ShouldBuildAutotest(),
                    usepkg=self._run.config.usepkg_build_packages,
                    chrome_binhost_only=self._run.config.chrome_binhost_only,
                    packages=self._run.config.packages,
@@ -2611,9 +2608,10 @@ class BuildImageStage(BuildPackagesStage):
 
     os.symlink(latest_image, cbuildbot_image_link)
 
+    self.board_runattrs.SetParallel('images_generated', True)
+
     parallel.RunParallelSteps(
-        [self._BuildVMImage, self.ArchivePayloads,
-         lambda: self._GenerateAuZip(cbuildbot_image_link)])
+        [self._BuildVMImage, lambda: self._GenerateAuZip(cbuildbot_image_link)])
 
   def _BuildVMImage(self):
     if self._run.config.vm_tests and not self._pgo_generate:
@@ -2623,34 +2621,6 @@ class BuildImageStage(BuildPackagesStage):
           disk_layout=self._run.config.disk_vm_layout,
           extra_env=self._env)
 
-  def ArchivePayloads(self):
-    """Archives update payloads when they are ready."""
-    with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
-      with self.ArtifactUploader() as queue:
-        if self._run.config.upload_hw_test_artifacts:
-          if 'test' in self._run.config.images:
-            image_name = 'chromiumos_test_image.bin'
-          elif 'dev' in self._run.config.images:
-            image_name = 'chromiumos_image.bin'
-          else:
-            image_name = 'chromiumos_base_image.bin'
-
-          logging.info('Generating payloads to upload for %s', image_name)
-          image_path = os.path.join(self.GetImageDirSymlink(), image_name)
-          # For non release builds, we are only interested in generating
-          # payloads for the purpose of imaging machines. This means we
-          # shouldn't generate delta payloads for n-1->n testing.
-          # TODO: Add a config flag for generating delta payloads instead.
-          if (self._run.config.build_type == constants.CANARY_TYPE and
-              not self._pgo_generate):
-            commands.GenerateNPlus1Payloads(
-                self._build_root, self.bot_archive_root, image_path, tempdir)
-          else:
-            commands.GenerateFullPayload(self._build_root, image_path, tempdir)
-
-          for payload in os.listdir(tempdir):
-            queue.put([os.path.join(tempdir, payload)])
-
   def _GenerateAuZip(self, image_dir):
     """Create au-generator.zip."""
     if not self._pgo_generate:
@@ -2658,42 +2628,14 @@ class BuildImageStage(BuildPackagesStage):
                              image_dir,
                              extra_env=self._env)
 
-  def _BuildAutotestTarballs(self):
-    with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
-      with self.ArtifactUploader(strict=True) as queue:
-        cwd = os.path.abspath(
-            os.path.join(self._build_root, 'chroot', 'build',
-                         self._current_board, constants.AUTOTEST_BUILD_PATH,
-                         '..'))
-
-        # Find the control files in autotest/
-        control_files = commands.FindFilesWithPattern(
-            'control*', target='autotest', cwd=cwd)
-
-        # Tar the control files and the packages.
-        autotest_tarball = os.path.join(tempdir, 'autotest.tar')
-        input_list = control_files + ['autotest/packages']
-        commands.BuildTarball(self._build_root, input_list, autotest_tarball,
-                              cwd=cwd, compressed=False)
-        queue.put([autotest_tarball])
-
-        # Tar up the test suites.
-        test_suites_tarball = os.path.join(tempdir, 'test_suites.tar.bz2')
-        commands.BuildTarball(self._build_root, ['autotest/test_suites'],
-                              test_suites_tarball, cwd=cwd)
-        queue.put([test_suites_tarball])
+  def _HandleStageException(self, exc_info):
+    """Tell other stages to not wait on us if we die for some reason."""
+    self.board_runattrs.SetParallelDefault('images_generated', False)
+    return super(BuildImageStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
-    # Build images and autotest tarball in parallel.
-    steps = []
-    if (self._run.config.upload_hw_test_artifacts or
-        self._run.config.archive_build_debug) and self._build_autotest:
-      steps.append(self._BuildAutotestTarballs)
-
     if self._run.config.images:
-      steps.append(self._BuildImages)
-
-    parallel.RunParallelSteps(steps)
+      self._BuildImages()
 
 
 class SignerTestStage(ArchivingStage):
@@ -2860,6 +2802,79 @@ class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       raise
     finally:
       self._ArchiveTestResults(test_results_dir, test_basename)
+
+
+class UploadTestArtifactsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
+  """Upload needed hardware test artifacts."""
+
+  def BuildAutotestTarballs(self):
+    """Build the autotest tarballs."""
+    with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
+      with self.ArtifactUploader(strict=True) as queue:
+        cwd = os.path.abspath(
+            os.path.join(self._build_root, 'chroot', 'build',
+                         self._current_board, constants.AUTOTEST_BUILD_PATH,
+                         '..'))
+
+        # Find the control files in autotest/
+        control_files = commands.FindFilesWithPattern(
+            'control*', target='autotest', cwd=cwd)
+
+        # Tar the control files and the packages.
+        autotest_tarball = os.path.join(tempdir, 'autotest.tar')
+        input_list = control_files + ['autotest/packages']
+        commands.BuildTarball(self._build_root, input_list, autotest_tarball,
+                              cwd=cwd, compressed=False)
+        queue.put([autotest_tarball])
+
+        # Tar up the test suites.
+        test_suites_tarball = os.path.join(tempdir, 'test_suites.tar.bz2')
+        commands.BuildTarball(self._build_root, ['autotest/test_suites'],
+                              test_suites_tarball, cwd=cwd)
+        queue.put([test_suites_tarball])
+
+  def BuildUpdatePayloads(self):
+    """Archives update payloads when they are ready."""
+    got_images = self.GetParallel('images_generated', pretty_name='images')
+    if not got_images:
+      return
+
+    with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
+      with self.ArtifactUploader() as queue:
+        if 'test' in self._run.config.images:
+          image_name = 'chromiumos_test_image.bin'
+        elif 'dev' in self._run.config.images:
+          image_name = 'chromiumos_image.bin'
+        else:
+          image_name = 'chromiumos_base_image.bin'
+
+        logging.info('Generating payloads to upload for %s', image_name)
+        image_path = os.path.join(self.GetImageDirSymlink(), image_name)
+        # For non release builds, we are only interested in generating
+        # payloads for the purpose of imaging machines. This means we
+        # shouldn't generate delta payloads for n-1->n testing.
+        # TODO: Add a config flag for generating delta payloads instead.
+        if self._run.config.build_type == constants.CANARY_TYPE:
+          commands.GenerateNPlus1Payloads(
+              self._build_root, self.bot_archive_root, image_path, tempdir)
+        else:
+          commands.GenerateFullPayload(self._build_root, image_path, tempdir)
+
+        for payload in os.listdir(tempdir):
+          queue.put([os.path.join(tempdir, payload)])
+
+  def PerformStage(self):
+    """Upload any needed HWTest artifacts."""
+    steps = []
+    if (self._run.ShouldBuildAutotest() and
+        (self._run.config.upload_hw_test_artifacts or
+         self._run.config.archive_build_debug)):
+      steps.append(self.BuildAutotestTarballs)
+
+    if self._run.config.upload_hw_test_artifacts:
+      steps.append(self.BuildUpdatePayloads)
+
+    parallel.RunParallelSteps(steps)
 
 
 class TestTimeoutException(Exception):

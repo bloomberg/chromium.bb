@@ -1596,14 +1596,7 @@ class BuildImageStageMock(ArchivingMock):
   """Partial mock for BuildImageStage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.BuildImageStage'
-  ATTRS = ArchivingMock.ATTRS + ('_BuildAutotestTarballs', '_BuildImages',
-                                 '_GenerateAuZip')
-
-  def _BuildAutotestTarballs(self, *args, **kwargs):
-    with patches(
-        patch(commands, 'BuildTarball'),
-        patch(commands, 'FindFilesWithPattern', return_value=['foo.txt'])):
-      self.backup['_BuildAutotestTarballs'](*args, **kwargs)
+  ATTRS = ArchivingMock.ATTRS + ('_BuildImages', '_GenerateAuZip')
 
   def _BuildImages(self, *args, **kwargs):
     with patches(
@@ -1635,10 +1628,6 @@ class BuildImageStageTest(BuildPackagesStageTest):
         rc.assertCommandContains(cmd, expected=cfg['images'])
         rc.assertCommandContains(['./image_to_vm.sh'],
                                  expected=cfg['vm_tests'])
-        hw = cfg['upload_hw_test_artifacts']
-        canary = (cfg['build_type'] == constants.CANARY_TYPE)
-        rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
-        rc.assertCommandContains(['--nplus1'], expected=hw and canary)
         cmd = ['./build_library/generate_au_zip.py', '-o', '/chroot/path']
         rc.assertCommandContains(cmd, expected=cfg['images'])
 
@@ -1652,6 +1641,47 @@ class BuildImageStageTest(BuildPackagesStageTest):
     task = self.RunTestsWithReleaseConfig
     steps = [lambda: task(tag) for tag in (None, release_tag)]
     parallel.RunParallelSteps(steps)
+
+
+class UploadTestArtifactsStageMock(ArchivingMock):
+  """Partial mock for BuildImageStage."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.UploadTestArtifactsStage'
+  ATTRS = ArchivingMock.ATTRS + ('BuildAutotestTarballs',)
+
+  def BuildAutotestTarballs(self, *args, **kwargs):
+    with patches(
+        patch(commands, 'BuildTarball'),
+        patch(commands, 'FindFilesWithPattern', return_value=['foo.txt'])):
+      self.backup['BuildAutotestTarballs'](*args, **kwargs)
+
+
+class UploadTestArtifactsStageTest(BuildPackagesStageTest):
+  """Tests UploadTestArtifactsStage."""
+
+  def setUp(self):
+    self.StartPatcher(UploadTestArtifactsStageMock())
+
+  def ConstructStage(self):
+    return stages.UploadTestArtifactsStage(self.run, self._current_board)
+
+  def RunTestsWithBotId(self, bot_id, options_tests=True):
+    """Test with the config for the specified bot_id."""
+    self._Prepare(bot_id)
+    self.run.options.tests = options_tests
+    self.run.attrs.release_tag = '0.0.1'
+
+    # Simulate images being ready.
+    board_runattrs = self.run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('images_generated', True)
+
+    with parallel_unittest.ParallelMock():
+      with self.RunStageWithConfig() as rc:
+        cfg = self.run.config
+        hw = cfg['upload_hw_test_artifacts']
+        canary = (cfg['build_type'] == constants.CANARY_TYPE)
+        rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
+        rc.assertCommandContains(['--nplus1'], expected=hw and canary)
 
 
 class ArchivingStageTest(AbstractStageTest):
