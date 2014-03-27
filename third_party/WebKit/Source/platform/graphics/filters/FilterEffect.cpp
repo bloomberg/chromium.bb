@@ -544,24 +544,26 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder
 
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
 {
-    SkRect rect = filter()->filterRegion();
+    FloatRect rect = filter()->filterRegion();
     uint32_t flags = 0;
     FloatRect boundaries = effectBoundaries();
     boundaries.move(cropOffset);
     if (hasX()) {
-        rect.fLeft = boundaries.x();
+        rect.setX(boundaries.x());
         flags |= SkImageFilter::CropRect::kHasLeft_CropEdge;
+        flags |= SkImageFilter::CropRect::kHasRight_CropEdge;
     }
     if (hasY()) {
-        rect.fTop = boundaries.y();
+        rect.setY(boundaries.y());
         flags |= SkImageFilter::CropRect::kHasTop_CropEdge;
+        flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
     }
     if (hasWidth()) {
-        rect.fRight = rect.fLeft + boundaries.width();
+        rect.setWidth(boundaries.width());
         flags |= SkImageFilter::CropRect::kHasRight_CropEdge;
     }
     if (hasHeight()) {
-        rect.fBottom = rect.fTop + boundaries.height();
+        rect.setHeight(boundaries.height());
         flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
     }
     rect = filter()->mapLocalRectToAbsoluteRect(rect);
