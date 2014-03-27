@@ -17,10 +17,8 @@ static const size_t kRtpCastHeaderLength = 7;
 static const uint8 kCastKeyFrameBitMask = 0x80;
 static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 
-RtpParser::RtpParser(RtpData* incoming_payload_callback,
-                     const RtpParserConfig parser_config)
-    : data_callback_(incoming_payload_callback),
-      parser_config_(parser_config) {}
+RtpParser::RtpParser(const RtpParserConfig parser_config)
+    : parser_config_(parser_config) {}
 
 RtpParser::~RtpParser() {}
 
@@ -112,7 +110,7 @@ bool RtpParser::ParseCast(const uint8* packet,
   if (rtp_header->max_packet_id < rtp_header->packet_id)
     return false;
 
-  data_callback_->OnReceivedPayloadData(data_ptr, data_length, rtp_header);
+  OnReceivedPayloadData(data_ptr, data_length, *rtp_header);
   return true;
 }
 

@@ -28,28 +28,6 @@ static const int64_t kMinProcessIntervalMs = 5;
 namespace media {
 namespace cast {
 
-// Local implementation of RtpData (defined in rtp_rtcp_defines.h).
-// Used to pass payload data into the video receiver.
-class LocalRtpVideoData : public RtpData {
- public:
-  explicit LocalRtpVideoData(VideoReceiver* video_receiver)
-      : video_receiver_(video_receiver) {}
-
-  virtual ~LocalRtpVideoData() {}
-
-  virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     size_t payload_size,
-                                     const RtpCastHeader* rtp_header) OVERRIDE {
-    video_receiver_->IncomingParsedRtpPacket(
-        payload_data, payload_size, *rtp_header);
-  }
-
- private:
-  VideoReceiver* video_receiver_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpVideoData);
-};
-
 // Local implementation of RtpPayloadFeedback (defined in rtp_defines.h)
 // Used to convey cast-specific feedback from receiver to sender.
 // Callback triggered by the Framer (cast message builder).
@@ -68,32 +46,12 @@ class LocalRtpVideoFeedback : public RtpPayloadFeedback {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpVideoFeedback);
 };
 
-// Local implementation of RtpReceiverStatistics (defined by rtcp.h).
-// Used to pass statistics data from the RTP module to the RTCP module.
-class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
- public:
-  explicit LocalRtpReceiverStatistics(RtpReceiver* rtp_receiver)
-      : rtp_receiver_(rtp_receiver) {}
-
-  virtual void GetStatistics(uint8* fraction_lost,
-                             uint32* cumulative_lost,  // 24 bits valid.
-                             uint32* extended_high_sequence_number,
-                             uint32* jitter) OVERRIDE {
-    rtp_receiver_->GetStatistics(
-        fraction_lost, cumulative_lost, extended_high_sequence_number, jitter);
-  }
-
- private:
-  RtpReceiver* rtp_receiver_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpReceiverStatistics);
-};
-
 VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const VideoReceiverConfig& video_config,
                              transport::PacedPacketSender* const packet_sender,
                              const SetTargetDelayCallback& target_delay_cb)
-    : cast_environment_(cast_environment),
+    : RtpReceiver(cast_environment->Clock(), NULL, &video_config),
+      cast_environment_(cast_environment),
       event_subscriber_(kReceiverRtcpEventHistorySize,
                         ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
       codec_(video_config.codec),
@@ -101,14 +59,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       frame_delay_(base::TimeDelta::FromMilliseconds(
           1000 / video_config.max_frame_rate)),
-      incoming_payload_callback_(new LocalRtpVideoData(this)),
       incoming_payload_feedback_(new LocalRtpVideoFeedback(this)),
-      rtp_receiver_(cast_environment_->Clock(),
-                    NULL,
-                    &video_config,
-                    incoming_payload_callback_.get()),
-      rtp_video_receiver_statistics_(
-          new LocalRtpReceiverStatistics(&rtp_receiver_)),
       time_offset_counter_(0),
       decryptor_(),
       time_incoming_packet_updated_(false),
@@ -135,7 +86,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                NULL,
                NULL,
                packet_sender,
-               rtp_video_receiver_statistics_.get(),
+               this, // rtp receiver statistics
                video_config.rtcp_mode,
                base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
                video_config.feedback_ssrc,
@@ -421,13 +372,13 @@ void VideoReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
   if (Rtcp::IsRtcpPacket(&packet->front(), packet->size())) {
     rtcp_->IncomingRtcpPacket(&packet->front(), packet->size());
   } else {
-    rtp_receiver_.ReceivedPacket(&packet->front(), packet->size());
+    ReceivedPacket(&packet->front(), packet->size());
   }
 }
 
-void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
-                                            size_t payload_size,
-                                            const RtpCastHeader& rtp_header) {
+void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
+                                          size_t payload_size,
+                                          const RtpCastHeader& rtp_header) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();

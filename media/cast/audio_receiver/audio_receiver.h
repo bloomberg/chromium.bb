@@ -19,6 +19,7 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp.h"                          // RtcpCastMessage
+#include "media/cast/rtp_receiver/rtp_receiver.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"  // RtpCastHeader
 #include "media/cast/transport/utility/transport_encryption_handler.h"
 
@@ -27,7 +28,6 @@ namespace cast {
 
 class AudioDecoder;
 class Framer;
-class LocalRtpAudioData;
 class LocalRtpAudioFeedback;
 class RtpReceiver;
 class RtpReceiverStatistics;
@@ -43,7 +43,8 @@ struct DecodedAudioCallbackData {
 // This class is not thread safe. Should only be called from the Main cast
 // thread.
 class AudioReceiver : public base::NonThreadSafe,
-                      public base::SupportsWeakPtr<AudioReceiver> {
+                      public base::SupportsWeakPtr<AudioReceiver>,
+                      public RtpReceiver {
  public:
   AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const AudioReceiverConfig& audio_config,
@@ -67,13 +68,11 @@ class AudioReceiver : public base::NonThreadSafe,
   // will also be updated (will be included in all outgoing reports).
   void SetTargetDelay(base::TimeDelta target_delay);
 
- protected:
-  void IncomingParsedRtpPacket(const uint8* payload_data,
-                               size_t payload_size,
-                               const RtpCastHeader& rtp_header);
+  virtual void OnReceivedPayloadData(const uint8* payload_data,
+                                     size_t payload_size,
+                                     const RtpCastHeader& rtp_header) OVERRIDE;
 
  private:
-  friend class LocalRtpAudioData;
   friend class LocalRtpAudioFeedback;
 
   void CastFeedback(const RtcpCastMessage& cast_message);
@@ -128,11 +127,8 @@ class AudioReceiver : public base::NonThreadSafe,
   base::TimeDelta target_delay_delta_;
   scoped_ptr<Framer> audio_buffer_;
   scoped_ptr<AudioDecoder> audio_decoder_;
-  scoped_ptr<LocalRtpAudioData> incoming_payload_callback_;
   scoped_ptr<LocalRtpAudioFeedback> incoming_payload_feedback_;
-  scoped_ptr<RtpReceiver> rtp_receiver_;
   scoped_ptr<Rtcp> rtcp_;
-  scoped_ptr<RtpReceiverStatistics> rtp_audio_receiver_statistics_;
   base::TimeDelta time_offset_;
   base::TimeTicks time_first_incoming_packet_;
   uint32 first_incoming_rtp_timestamp_;

@@ -56,19 +56,6 @@ class TestVideoReceiverCallback
 };
 }  // namespace
 
-class PeerVideoReceiver : public VideoReceiver {
- public:
-  PeerVideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                    const VideoReceiverConfig& video_config,
-                    transport::PacedPacketSender* const packet_sender,
-                    const SetTargetDelayCallback& target_delay_cb)
-      : VideoReceiver(cast_environment,
-                      video_config,
-                      packet_sender,
-                      target_delay_cb) {}
-  using VideoReceiver::IncomingParsedRtpPacket;
-};
-
 class VideoReceiverTest : public ::testing::Test {
  protected:
   VideoReceiverTest() {
@@ -83,7 +70,7 @@ class VideoReceiverTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             GetLoggingConfigWithRawEventsAndStatsEnabled());
-    receiver_.reset(new PeerVideoReceiver(
+    receiver_.reset(new VideoReceiver(
         cast_environment_, config_, &mock_transport_, target_delay_cb_));
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
@@ -105,7 +92,7 @@ class VideoReceiverTest : public ::testing::Test {
 
   transport::MockPacedPacketSender mock_transport_;
   VideoReceiverConfig config_;
-  scoped_ptr<PeerVideoReceiver> receiver_;
+  scoped_ptr<VideoReceiver> receiver_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -121,7 +108,7 @@ class VideoReceiverTest : public ::testing::Test {
 TEST_F(VideoReceiverTest, GetOnePacketEncodedframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
       .WillRepeatedly(testing::Return(true));
-  receiver_->IncomingParsedRtpPacket(
+  receiver_->OnReceivedPayloadData(
       payload_.data(), payload_.size(), rtp_header_);
 
   VideoFrameEncodedCallback frame_to_decode_callback = base::Bind(
@@ -139,14 +126,14 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
       .WillRepeatedly(testing::Return(true));
   rtp_header_.max_packet_id = 2;
-  receiver_->IncomingParsedRtpPacket(
+  receiver_->OnReceivedPayloadData(
       payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
   ++rtp_header_.webrtc.header.sequenceNumber;
-  receiver_->IncomingParsedRtpPacket(
+  receiver_->OnReceivedPayloadData(
       payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  receiver_->IncomingParsedRtpPacket(
+  receiver_->OnReceivedPayloadData(
       payload_.data(), payload_.size(), rtp_header_);
 
   VideoFrameEncodedCallback frame_to_decode_callback = base::Bind(
@@ -171,7 +158,7 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
 TEST_F(VideoReceiverTest, GetOnePacketRawframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
       .WillRepeatedly(testing::Return(true));
-  receiver_->IncomingParsedRtpPacket(
+  receiver_->OnReceivedPayloadData(
       payload_.data(), payload_.size(), rtp_header_);
   // Decode error - requires legal input.
   VideoFrameDecodedCallback frame_decoded_callback = base::Bind(

@@ -10,44 +10,33 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
 
-class RtpData {
- public:
-  virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     size_t payload_size,
-                                     const RtpCastHeader* rtp_header) = 0;
-
- protected:
-  virtual ~RtpData() {}
-};
-
 class ReceiverStats;
-class RtpParser;
 
-class RtpReceiver {
+class RtpReceiver : public RtpParser,
+                    public RtpReceiverStatistics {
  public:
   RtpReceiver(base::TickClock* clock,
               const AudioReceiverConfig* audio_config,
-              const VideoReceiverConfig* video_config,
-              RtpData* incoming_payload_callback);
-  ~RtpReceiver();
+              const VideoReceiverConfig* video_config);
+  virtual ~RtpReceiver();
 
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
   bool ReceivedPacket(const uint8* packet, size_t length);
 
-  void GetStatistics(uint8* fraction_lost,
-                     uint32* cumulative_lost,  // 24 bits valid.
-                     uint32* extended_high_sequence_number,
-                     uint32* jitter);
+  virtual void GetStatistics(uint8* fraction_lost,
+                             uint32* cumulative_lost,  // 24 bits valid.
+                             uint32* extended_high_sequence_number,
+                             uint32* jitter) OVERRIDE;
 
  private:
   scoped_ptr<ReceiverStats> stats_;
-  scoped_ptr<RtpParser> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpReceiver);
 };

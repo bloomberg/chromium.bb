@@ -26,7 +26,6 @@ namespace media {
 namespace cast {
 
 class Framer;
-class LocalRtpVideoData;
 class LocalRtpVideoFeedback;
 class PeerVideoReceiver;
 class Rtcp;
@@ -39,7 +38,8 @@ typedef base::Callback<void(base::TimeDelta)> SetTargetDelayCallback;
 
 // Should only be called from the Main cast thread.
 class VideoReceiver : public base::NonThreadSafe,
-                      public base::SupportsWeakPtr<VideoReceiver> {
+                      public base::SupportsWeakPtr<VideoReceiver>,
+                      public RtpReceiver {
  public:
   VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const VideoReceiverConfig& video_config,
@@ -57,18 +57,17 @@ class VideoReceiver : public base::NonThreadSafe,
   // Insert a RTP packet to the video receiver.
   void IncomingPacket(scoped_ptr<Packet> packet);
 
- protected:
-  void IncomingParsedRtpPacket(const uint8* payload_data,
-                               size_t payload_size,
-                               const RtpCastHeader& rtp_header);
+  virtual void OnReceivedPayloadData(const uint8* payload_data,
+                                     size_t payload_size,
+                                     const RtpCastHeader& rtp_header) OVERRIDE;
 
+ protected:
   void DecodeVideoFrameThread(
       scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
       const base::TimeTicks render_time,
       const VideoFrameDecodedCallback& frame_decoded_callback);
 
  private:
-  friend class LocalRtpVideoData;
   friend class LocalRtpVideoFeedback;
 
   void CastFeedback(const RtcpCastMessage& cast_message);
@@ -118,11 +117,8 @@ class VideoReceiver : public base::NonThreadSafe,
   const transport::VideoCodec codec_;
   base::TimeDelta target_delay_delta_;
   base::TimeDelta frame_delay_;
-  scoped_ptr<LocalRtpVideoData> incoming_payload_callback_;
   scoped_ptr<LocalRtpVideoFeedback> incoming_payload_feedback_;
-  RtpReceiver rtp_receiver_;
   scoped_ptr<Rtcp> rtcp_;
-  scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
   base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
   int time_offset_counter_;
   transport::TransportEncryptionHandler decryptor_;

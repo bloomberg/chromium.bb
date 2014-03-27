@@ -11,8 +11,6 @@
 namespace media {
 namespace cast {
 
-class RtpData;
-
 struct RtpParserConfig {
   RtpParserConfig() {
     ssrc = 0;
@@ -29,15 +27,17 @@ struct RtpParserConfig {
 
 class RtpParser {
  public:
-  RtpParser(RtpData* incoming_payload_callback,
-            const RtpParserConfig parser_config);
+  RtpParser(const RtpParserConfig parser_config);
 
-  ~RtpParser();
+  virtual ~RtpParser();
 
   bool ParsePacket(const uint8* packet,
                    size_t length,
                    RtpCastHeader* rtp_header);
-
+ protected:
+  virtual void OnReceivedPayloadData(const uint8* payload_data,
+                                     size_t payload_size,
+                                     const RtpCastHeader& rtp_header) = 0;
  private:
   bool ParseCommon(const uint8* packet,
                    size_t length,
@@ -45,7 +45,6 @@ class RtpParser {
 
   bool ParseCast(const uint8* packet, size_t length, RtpCastHeader* rtp_header);
 
-  RtpData* data_callback_;
   RtpParserConfig parser_config_;
   transport::FrameIdWrapHelper frame_id_wrap_helper_;
   transport::FrameIdWrapHelper reference_frame_id_wrap_helper_;

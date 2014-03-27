@@ -20,11 +20,13 @@ static const uint32 kTestTimestamp = 111111;
 static const uint16 kTestSeqNum = 4321;
 static const uint8 kRefFrameId = 17;
 
-class RtpDataTest : public RtpData {
+class RtpTestParser : public RtpParser {
  public:
-  RtpDataTest() { expected_header_.reset(new RtpCastHeader()); }
+  RtpTestParser(const RtpParserConfig config) : RtpParser(config) {
+    expected_header_.reset(new RtpCastHeader());
+  }
 
-  virtual ~RtpDataTest() {}
+  virtual ~RtpTestParser() {}
 
   void SetExpectedHeader(const RtpCastHeader& cast_header) {
     memcpy(expected_header_.get(), &cast_header, sizeof(RtpCastHeader));
@@ -32,9 +34,9 @@ class RtpDataTest : public RtpData {
 
   virtual void OnReceivedPayloadData(const uint8* payloadData,
                                      size_t payloadSize,
-                                     const RtpCastHeader* rtpHeader) OVERRIDE {
-    VerifyCommonHeader(*rtpHeader);
-    VerifyCastHeader(*rtpHeader);
+                                     const RtpCastHeader& rtpHeader) OVERRIDE {
+    VerifyCommonHeader(rtpHeader);
+    VerifyCastHeader(rtpHeader);
   }
 
   void VerifyCommonHeader(const RtpCastHeader& parsed_header) {
@@ -56,15 +58,14 @@ class RtpDataTest : public RtpData {
  private:
   scoped_ptr<RtpCastHeader> expected_header_;
 
-  DISALLOW_COPY_AND_ASSIGN(RtpDataTest);
+  DISALLOW_COPY_AND_ASSIGN(RtpTestParser);
 };
 
 class RtpParserTest : public ::testing::Test {
  protected:
   RtpParserTest() {
     PopulateConfig();
-    rtp_data_.reset(new RtpDataTest());
-    rtp_parser_.reset(new RtpParser(rtp_data_.get(), config_));
+    rtp_parser_.reset(new RtpTestParser(config_));
     cast_header_.is_reference = true;
     cast_header_.reference_frame_id = kRefFrameId;
     packet_builder_.SetSsrc(kTestSsrc);
@@ -82,9 +83,8 @@ class RtpParserTest : public ::testing::Test {
     config_.ssrc = kTestSsrc;
   }
 
-  scoped_ptr<RtpDataTest> rtp_data_;
   RtpPacketBuilder packet_builder_;
-  scoped_ptr<RtpParser> rtp_parser_;
+  scoped_ptr<RtpTestParser> rtp_parser_;
   RtpParserConfig config_;
   RtpCastHeader cast_header_;
 };
@@ -95,7 +95,7 @@ TEST_F(RtpParserTest, ParseDefaultCastPacket) {
   packet_builder_.BuildHeader(packet, kPacketLength);
   // Parse packet as is.
   RtpCastHeader rtp_header;
-  rtp_data_->SetExpectedHeader(cast_header_);
+  rtp_parser_->SetExpectedHeader(cast_header_);
   EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
 }
 
@@ -112,7 +112,7 @@ TEST_F(RtpParserTest, ParseNonDefaultCastPacket) {
   cast_header_.frame_id = 10;
   cast_header_.packet_id = 5;
   cast_header_.max_packet_id = 15;
-  rtp_data_->SetExpectedHeader(cast_header_);
+  rtp_parser_->SetExpectedHeader(cast_header_);
   // Parse packet as is.
   RtpCastHeader rtp_header;
   EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
@@ -143,7 +143,7 @@ TEST_F(RtpParserTest, MaxPacketId) {
   cast_header_.frame_id = 10;
   cast_header_.packet_id = 65535;
   cast_header_.max_packet_id = 65535;
-  rtp_data_->SetExpectedHeader(cast_header_);
+  rtp_parser_->SetExpectedHeader(cast_header_);
   // Parse packet as is.
   RtpCastHeader rtp_header;
   EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
@@ -187,7 +187,7 @@ TEST_F(RtpParserTest, ParseCastPacketWithoutReference) {
   packet_builder_.BuildHeader(packet, kPacketLength);
   // Parse packet as is.
   RtpCastHeader rtp_header;
-  rtp_data_->SetExpectedHeader(cast_header_);
+  rtp_parser_->SetExpectedHeader(cast_header_);
   EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
 }
 
