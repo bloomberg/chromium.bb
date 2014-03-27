@@ -24,8 +24,7 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(USE_MOJO)
-#include "content/common/mojo/render_process.mojom.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/system/core_cpp.h"
 #endif
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
