@@ -62,8 +62,10 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
-    if (!frame)
+    if (!frame) {
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Web page was not allowed to create a WebGL context."));
         return nullptr;
+    }
     Settings* settings = frame->settings();
 
     // The FrameLoaderClient might block creation of a new WebGL context despite the page settings; in
