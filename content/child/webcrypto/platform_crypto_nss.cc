@@ -8,7 +8,6 @@
 #include <pk11pub.h>
 #include <secerr.h>
 #include <sechash.h>
-#include <secoid.h>
 
 #include <vector>
 
@@ -26,6 +25,7 @@
 
 #if defined(USE_NSS)
 #include <dlfcn.h>
+#include <secoid.h>
 #endif
 
 // At the time of this writing:
@@ -546,6 +546,10 @@ void CopySECItemToVector(const SECItem& item, std::vector<uint8>* out) {
   out->assign(item.data, item.data + item.len);
 }
 
+// The system NSS library doesn't have the new PK11_ExportDERPrivateKeyInfo
+// function yet (https://bugzilla.mozilla.org/show_bug.cgi?id=519255). So we
+// provide a fallback implementation.
+#if defined(USE_NSS)
 // From PKCS#1 [http://tools.ietf.org/html/rfc3447]:
 //
 //    RSAPrivateKey ::= SEQUENCE {
@@ -655,6 +659,7 @@ struct FreeRsaPrivateKey {
     SECITEM_FreeItem(&out->coefficient, PR_FALSE);
   }
 };
+#endif  // defined(USE_NSS)
 
 }  // namespace
 
@@ -821,6 +826,8 @@ Status ExportKeyPkcs8(PrivateKey* key,
       key_algorithm.id() != blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5)
     return Status::ErrorUnsupported();
 
+#if defined(USE_NSS)
+  // PK11_ExportDERPrivateKeyInfo isn't available. Use our fallback code.
   const SECOidTag algorithm = SEC_OID_PKCS1_RSA_ENCRYPTION;
   const int kPrivateKeyInfoVersion = 0;
 
@@ -856,6 +863,10 @@ Status ExportKeyPkcs8(PrivateKey* key,
                          NULL,
                          &private_key_info,
                          SEC_ASN1_GET(SECKEY_PrivateKeyInfoTemplate)));
+#else  // defined(USE_NSS)
+  crypto::ScopedSECItem encoded_key(
+      PK11_ExportDERPrivateKeyInfo(key->key(), NULL));
+#endif  // defined(USE_NSS)
 
   if (!encoded_key.get())
     return Status::Error();
