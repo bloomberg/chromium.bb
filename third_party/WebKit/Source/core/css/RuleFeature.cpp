@@ -113,7 +113,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
         if (component->m_match == CSSSelector::Class || component->isAttributeSelector()) {
             if (!foundDescendantRelation)
                 foundIdent = true;
-        } else if (component->pseudoType() == CSSSelector::PseudoHost) {
+        } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
                     InvalidationSetMode hostMode = supportsClassDescendantInvalidation(*selector);
@@ -191,7 +191,7 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
         extractInvalidationSetFeature(*lastSelector, features);
         // Initialize the entry in the invalidation set map, if supported.
         invalidationSetForSelector(*lastSelector);
-        if (lastSelector->pseudoType() == CSSSelector::PseudoHost) {
+        if (lastSelector->pseudoType() == CSSSelector::PseudoHost || lastSelector->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = lastSelector->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     extractInvalidationSetFeatures(*selector, features);
@@ -216,7 +216,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                 invalidationSet->addClass(*it);
             for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
                 invalidationSet->addAttribute(*it);
-        } else if (current->pseudoType() == CSSSelector::PseudoHost) {
+        } else if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     addFeaturesToInvalidationSets(*selector, features);
