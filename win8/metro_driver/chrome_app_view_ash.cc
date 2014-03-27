@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/win/metro.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -272,8 +273,8 @@ bool WaitForChromeIPCConnection(const std::string& channel_name) {
   int ms_elapsed = 0;
   while (!IPC::Channel::IsNamedServerInitialized(channel_name) &&
          ms_elapsed < 10000) {
-    ms_elapsed += 500;
-    Sleep(500);
+    ms_elapsed += 100;
+    Sleep(100);
   }
   return IPC::Channel::IsNamedServerInitialized(channel_name);
 }
@@ -573,7 +574,7 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   CheckHR(hr);
 
   mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher;
-  hr = window_->get_Dispatcher(&dispatcher);
+  hr = window_->get_Dispatcher(dispatcher.GetAddressOf());
   CheckHR(hr, "Get Dispatcher failed.");
 
   mswr::ComPtr<winui::Core::ICoreAcceleratorKeys> accelerator_keys;
@@ -602,21 +603,23 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
       &window_activated_token_);
   CheckHR(hr);
 
-  // Register for edge gesture notifications.
-  mswr::ComPtr<winui::Input::IEdgeGestureStatics> edge_gesture_statics;
-  hr = winrt_utils::CreateActivationFactory(
-      RuntimeClass_Windows_UI_Input_EdgeGesture,
-      edge_gesture_statics.GetAddressOf());
-  CheckHR(hr);
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Register for edge gesture notifications only for Windows 8 and above.
+    mswr::ComPtr<winui::Input::IEdgeGestureStatics> edge_gesture_statics;
+    hr = winrt_utils::CreateActivationFactory(
+        RuntimeClass_Windows_UI_Input_EdgeGesture,
+        edge_gesture_statics.GetAddressOf());
+    CheckHR(hr);
 
-  mswr::ComPtr<winui::Input::IEdgeGesture> edge_gesture;
-  hr = edge_gesture_statics->GetForCurrentView(&edge_gesture);
-  CheckHR(hr);
+    mswr::ComPtr<winui::Input::IEdgeGesture> edge_gesture;
+    hr = edge_gesture_statics->GetForCurrentView(&edge_gesture);
+    CheckHR(hr);
 
-  hr = edge_gesture->add_Completed(mswr::Callback<EdgeEventHandler>(
-      this, &ChromeAppViewAsh::OnEdgeGestureCompleted).Get(),
-      &edgeevent_token_);
-  CheckHR(hr);
+    hr = edge_gesture->add_Completed(mswr::Callback<EdgeEventHandler>(
+        this, &ChromeAppViewAsh::OnEdgeGestureCompleted).Get(),
+        &edgeevent_token_);
+    CheckHR(hr);
+  }
 
   // By initializing the direct 3D swap chain with the corewindow
   // we can now directly blit to it from the browser process.
@@ -627,6 +630,7 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
 
 IFACEMETHODIMP
 ChromeAppViewAsh::Load(HSTRING entryPoint) {
+  // On Win7 |entryPoint| is NULL.
   DVLOG(1) << __FUNCTION__;
   return S_OK;
 }
@@ -635,7 +639,7 @@ IFACEMETHODIMP
 ChromeAppViewAsh::Run() {
   DVLOG(1) << __FUNCTION__;
   mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher;
-  HRESULT hr = window_->get_Dispatcher(&dispatcher);
+  HRESULT hr = window_->get_Dispatcher(dispatcher.GetAddressOf());
   CheckHR(hr, "Dispatcher failed.");
 
   hr = window_->Activate();

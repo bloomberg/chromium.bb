@@ -7,7 +7,10 @@
 #include "win8/metro_driver/winrt_utils.h"
 
 #include "base/logging.h"
+#include "base/win/windows_version.h"
 
+#include <corewindow.h>
+#include <windows.applicationmodel.core.h>
 #include <windows.graphics.display.h>
 
 namespace {
@@ -83,9 +86,15 @@ void Direct3DHelper::CreateDeviceResources() {
 }
 
 void Direct3DHelper::CreateWindowSizeDependentResources() {
-  CheckIfFailed(window_->get_Bounds(&window_bounds_));
-  float window_width = ConvertDipsToPixels(window_bounds_.Width);
-  float window_height = ConvertDipsToPixels(window_bounds_.Height);
+  float window_width = 0;
+  float window_height = 0;
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Windows 8 returns in DIPs.
+    CheckIfFailed(window_->get_Bounds(&window_bounds_));
+    window_width = ConvertDipsToPixels(window_width);
+    window_height = ConvertDipsToPixels(window_height);
+  }
 
   // TODO(scottmg): Orientation.
 
@@ -116,12 +125,32 @@ void Direct3DHelper::CreateWindowSizeDependentResources() {
     CheckIfFailed(dxgi_adapter->GetParent(
         __uuidof(IDXGIFactory2), &dxgi_factory));
 
-    CheckIfFailed(dxgi_factory->CreateSwapChainForCoreWindow(
-        d3d_device_.Get(),
-        reinterpret_cast<IUnknown*>(window_),
-        &swap_chain_desc,
-        nullptr,
-        &swap_chain_));
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      // On Win8 we need the CoreWindow interface to create the Swapchain.
+      CheckIfFailed(dxgi_factory->CreateSwapChainForCoreWindow(
+          d3d_device_.Get(),
+          reinterpret_cast<IUnknown*>(window_),
+          &swap_chain_desc,
+          nullptr,
+          &swap_chain_));
+    } else {
+      // On Win7 we need the raw HWND to create the Swapchain.
+      mswr::ComPtr<ICoreWindowInterop> interop;
+      CheckIfFailed(window_->QueryInterface(interop.GetAddressOf()));
+      HWND window = NULL;
+      interop->get_WindowHandle(&window);
+
+      swap_chain_desc.Scaling = DXGI_SCALING_STRETCH;
+      swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+      CheckIfFailed(dxgi_factory->CreateSwapChainForHwnd(
+          d3d_device_.Get(),
+          window,
+          &swap_chain_desc,
+          nullptr,
+          nullptr,
+          &swap_chain_));
+    }
   }
 }
 

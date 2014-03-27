@@ -15,14 +15,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
   HDC hdc;
   switch (message) {
     case WM_PAINT:
-      hdc = BeginPaint(hwnd, &ps);
+      hdc = ::BeginPaint(hwnd, &ps);
       EndPaint(hwnd, &ps);
+      break;
+    case WM_LBUTTONUP:
+      //  TODO(cpu): Remove this test code.
+      ::InvalidateRect(hwnd, NULL, TRUE);
       break;
     case WM_DESTROY:
       PostQuitMessage(0);
       break;
     default:
-      return DefWindowProc(hwnd, message, wparam, lparam);
+      return ::DefWindowProc(hwnd, message, wparam, lparam);
   }
   return 0;
 }
@@ -46,8 +50,8 @@ HWND CreateMetroTopLevelWindow() {
   HWND hwnd = ::CreateWindowExW(0,
                                 MAKEINTATOM(::RegisterClassExW(&wcex)),
                                 L"metro_win7",
-                                WS_POPUP,
-                                0, 0, 0, 0,
+                                WS_POPUP | WS_VISIBLE,
+                                0, 0, 1024, 1024,
                                 NULL, NULL, hInst, NULL);
   return hwnd;
 }
@@ -97,6 +101,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::VisibilityChangedEventArgs*> VisibilityChangedHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreDispatcher*,
+    winui::Core::AcceleratorKeyEventArgs*> AcceleratorKeyEventHandler;
+
 // The following classes are the emulation of the WinRT system as exposed
 // to metro applications. There is one application (ICoreApplication) which
 // contains a series of Views (ICoreApplicationView) each one of them
@@ -114,37 +122,105 @@ typedef winfoundtn::ITypedEventHandler<
 //  ICoreApplication     ICoreApplicationView
 //                                |
 //                                v
-//                          ICoreWindow ----> ICoreWindowInterop
-//                                                  |
-//                                                  |
-//                                                  V
-//                                             real HWND
+//                          ICoreWindow -----> ICoreWindowInterop
+//                                |                  |
+//                                |                  |
+//                                v                  V
+//                         ICoreDispatcher  <==>  real HWND
 //
+class CoreDispacherEmulation :
+    public mswr::RuntimeClass<
+        winui::Core::ICoreDispatcher,
+        winui::Core::ICoreAcceleratorKeys> {
+ public:
+  // ICoreDispatcher implementation:
+  virtual HRESULT STDMETHODCALLTYPE get_HasThreadAccess(boolean* value) {
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE ProcessEvents(
+      winui::Core::CoreProcessEventsOption options) {
+    // We don't support the other message pump modes. So we basically enter a
+    // traditional message loop that we only exit a teardown.
+    if (options != winui::Core::CoreProcessEventsOption_ProcessUntilQuit)
+      return E_FAIL;
+
+    MSG msg = {0};
+    while(::GetMessage(&msg, NULL, 0, 0) != 0) {
+      ::TranslateMessage(&msg);
+      ::DispatchMessage(&msg);
+    }
+    // TODO(cpu): figure what to do with msg.WParam which we would normally
+    // return here.
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE RunAsync(
+      winui::Core::CoreDispatcherPriority priority,
+      winui::Core::IDispatchedHandler *agileCallback,
+      ABI::Windows::Foundation::IAsyncAction** asyncAction) {
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE RunIdleAsync(
+      winui::Core::IIdleDispatchedHandler *agileCallback,
+      winfoundtn::IAsyncAction** asyncAction) {
+    return S_OK;
+  }
+
+  // ICoreAcceleratorKeys implementation:
+  virtual HRESULT STDMETHODCALLTYPE add_AcceleratorKeyActivated(
+      AcceleratorKeyEventHandler* handler,
+      EventRegistrationToken *pCookie) {
+    // TODO(cpu): implement this.
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE remove_AcceleratorKeyActivated(
+      EventRegistrationToken cookie) {
+    return S_OK;
+  }
+
+};
 
 class CoreWindowEmulation
     : public mswr::RuntimeClass<
         mswr::RuntimeClassFlags<mswr::WinRtClassicComMix>,
         winui::Core::ICoreWindow, ICoreWindowInterop> {
  public:
+  CoreWindowEmulation() : core_hwnd_(NULL) {
+    dispatcher_ = mswr::Make<CoreDispacherEmulation>();
+    core_hwnd_ = CreateMetroTopLevelWindow();
+  }
+
+  ~CoreWindowEmulation() {
+    ::DestroyWindow(core_hwnd_);
+  }
+
   // ICoreWindow implementation:
   virtual HRESULT STDMETHODCALLTYPE get_AutomationHostProvider(
-      IInspectable **value) {
+      IInspectable** value) {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_Bounds(
       winfoundtn::Rect* value) {
+    RECT rect;
+    if (!::GetClientRect(core_hwnd_, &rect))
+      return E_FAIL;
+    value->Width = rect.right;
+    value->Height = rect.bottom;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_CustomProperties(
-      winfoundtn::Collections::IPropertySet **value) {
+      winfoundtn::Collections::IPropertySet** value) {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_Dispatcher(
-      winui::Core::ICoreDispatcher **value) {
-    return S_OK;
+      winui::Core::ICoreDispatcher** value) {
+    return dispatcher_.CopyTo(value);
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_FlowDirection(
@@ -168,7 +244,7 @@ class CoreWindowEmulation
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_PointerCursor(
-      winui::Core::ICoreCursor **value) {
+      winui::Core::ICoreCursor** value) {
     return S_OK;
   }
 
@@ -188,6 +264,7 @@ class CoreWindowEmulation
   }
 
   virtual HRESULT STDMETHODCALLTYPE Activate(void) {
+    // After we fire OnActivate on the View, Chrome calls us back here.
     return S_OK;
   }
 
@@ -218,6 +295,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_Activated(
       WindowActivatedHandler* handler,
       EventRegistrationToken* pCookie) {
+    // TODO(cpu) implement this.
     return S_OK;
   }
 
@@ -240,6 +318,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_CharacterReceived(
       CharEventHandler* handler,
       EventRegistrationToken* pCookie) {
+    // TODO(cpu) : implement this.
     return S_OK;
   }
 
@@ -273,6 +352,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_KeyDown(
       KeyEventHandler* handler,
       EventRegistrationToken* pCookie) {
+    // TODO(cpu): implement this.
     return S_OK;
   }
 
@@ -284,6 +364,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_KeyUp(
       KeyEventHandler* handler,
       EventRegistrationToken* pCookie) {
+    // TODO(cpu): implement this.
     return S_OK;
   }
 
@@ -328,6 +409,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_PointerMoved(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    // TODO(cpu) : implement this.
     return S_OK;
   }
 
@@ -339,6 +421,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_PointerPressed(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    // TODO(cpu): implement this.
     return S_OK;
   }
 
@@ -350,6 +433,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_PointerReleased(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    // TODO(cpu): implement this.
     return S_OK;
   }
 
@@ -383,6 +467,7 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_SizeChanged(
       SizeChangedHandler* handler,
       EventRegistrationToken* pCookie) {
+    // TODO(cpu): implement this.
     return S_OK;
   }
 
@@ -403,8 +488,10 @@ class CoreWindowEmulation
   }
 
   // ICoreWindowInterop implementation:
-  virtual HRESULT STDMETHODCALLTYPE get_WindowHandle(
-    HWND *hwnd) {
+  virtual HRESULT STDMETHODCALLTYPE get_WindowHandle(HWND* hwnd) {
+    if (!core_hwnd_)
+      return E_FAIL;
+    *hwnd = core_hwnd_;
     return S_OK;
   }
 
@@ -413,6 +500,37 @@ class CoreWindowEmulation
     return S_OK;
   }
 
+ private:
+   HWND core_hwnd_;
+   mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher_;
+};
+
+class ActivatedEvent
+    : public mswr::RuntimeClass<winapp::Activation::IActivatedEventArgs> {
+ public:
+  ActivatedEvent(winapp::Activation::ActivationKind activation_kind)
+    : activation_kind_(activation_kind) {
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Kind(
+    winapp::Activation::ActivationKind *value) {
+    *value = activation_kind_;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_PreviousExecutionState(
+    winapp::Activation::ApplicationExecutionState *value) {
+    *value = winapp::Activation::ApplicationExecutionState_ClosedByUser;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_SplashScreen(
+    winapp::Activation::ISplashScreen **value) {
+    return E_FAIL;
+  }
+
+ private:
+  winapp::Activation::ActivationKind activation_kind_;
 };
 
 class CoreApplicationViewEmulation
@@ -422,22 +540,37 @@ class CoreApplicationViewEmulation
       core_window_ = mswr::Make<CoreWindowEmulation>();
    }
 
-   virtual HRESULT STDMETHODCALLTYPE get_CoreWindow(
-     winui::Core::ICoreWindow **value) {
-     if (!core_window_)
-       return E_FAIL;
-     *value = core_window_.Get();
-     return S_OK;
-   }
+  HRESULT Activate() {
+    if (activated_handler_) {
+      auto ae = mswr::Make<ActivatedEvent>(
+        winapp::Activation::ActivationKind_File);
+      return activated_handler_->Invoke(this, ae.Get());
+    } else {
+      return S_OK;
+    }
+  }
+
+  // ICoreApplicationView implementation:
+  virtual HRESULT STDMETHODCALLTYPE get_CoreWindow(
+    winui::Core::ICoreWindow** value) {
+    if (!core_window_)
+      return E_FAIL;
+    return core_window_.CopyTo(value);
+  }
 
   virtual HRESULT STDMETHODCALLTYPE add_Activated(
      ActivatedHandler* handler,
     EventRegistrationToken* token) {
+    // The real component supports multiple handles but we don't yet.
+    if (activated_handler_)
+      return E_FAIL;
+    activated_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_Activated(
     EventRegistrationToken token) {
+    // Chrome never unregisters handlers, so we don't care about it.
     return S_OK;
   }
 
@@ -453,6 +586,7 @@ class CoreApplicationViewEmulation
 
  private:
   mswr::ComPtr<winui::Core::ICoreWindow> core_window_;
+  mswr::ComPtr<ActivatedHandler> activated_handler_;
 };
 
 class CoreApplicationWin7Emulation
@@ -512,7 +646,15 @@ class CoreApplicationWin7Emulation
     if (FAILED(hr))
       return hr;
     hr = app_view_->SetWindow(core_window.Get());
-    return hr;
+    if (FAILED(hr))
+      return hr;
+    hr = app_view_->Load(NULL);
+    if (FAILED(hr))
+      return hr;
+    hr = view_emulation_->Activate();
+    if (FAILED(hr))
+      return hr;
+    return app_view_->Run();
   }
 
   virtual HRESULT STDMETHODCALLTYPE RunWithActivationFactories(
@@ -539,7 +681,7 @@ class CoreApplicationWin7Emulation
 
  private:
   mswr::ComPtr<winapp::Core::IFrameworkView> app_view_;
-  mswr::ComPtr<winapp::Core::ICoreApplicationView> view_emulation_;
+  mswr::ComPtr<CoreApplicationViewEmulation> view_emulation_;
 };
 
 
