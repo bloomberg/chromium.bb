@@ -232,9 +232,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     WebString value;
     WebFormControlElement element = GetMainFrame()->document().getElementById(
         ASCIIToUTF16(field_case.name)).to<WebFormControlElement>();
-    if (element.formControlType() == "select-one") {
-      value = element.to<WebSelectElement>().value();
-    } else if (element.formControlType() == "textarea") {
+    if ((element.formControlType() == "select-one") ||
+        (element.formControlType() == "textarea")) {
       value = get_value_function(element);
     } else {
       ASSERT_TRUE(element.formControlType() == "text" ||
@@ -266,12 +265,18 @@ class FormAutofillTest : public ChromeRenderViewTest {
     if (element.formControlType() == "textarea")
       return element.to<WebTextAreaElement>().value();
 
+    if (element.formControlType() == "select-one")
+      return element.to<WebSelectElement>().value();
+
     return element.to<WebInputElement>().value();
   }
 
   static WebString GetSuggestedValueWrapper(WebFormControlElement element) {
     if (element.formControlType() == "textarea")
       return element.to<WebTextAreaElement>().suggestedValue();
+
+    if (element.formControlType() == "select-one")
+      return element.to<WebSelectElement>().suggestedValue();
 
     return element.to<WebInputElement>().suggestedValue();
   }
@@ -1313,10 +1318,11 @@ TEST_F(FormAutofillTest, PreviewForm) {
       {"month", "month", "", "", true, "2017-11", "2017-11"},
       // Non-empty <input type="month"> should not be previewed.
       {"month", "month-nonempty", "2011-12", "", false, "2017-11", ""},
-      // Regular select fields preview is not yet supported
-      {"select-one", "select", "", "", false, "TX", ""},
-      // Select fields preview is not yet supported
-      {"select-one", "select-nonempty", "CA", "", false, "TX", "CA"},
+      // Regular select fields should be previewed.
+      {"select-one", "select", "", "", true, "TX", "TX"},
+      // Select fields should be previewed even if they already have a
+      // non-empty value.
+      {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
       // Normal textarea elements should be previewed.
       {"textarea", "textarea", "", "", true, "suggested multi-\nline value",
        "suggested multi-\nline value"},
