@@ -71,6 +71,7 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeNativeForPlatformApp:
     case kFileSystemTypeNativeLocal:
     case kFileSystemTypeCloudDevice:
+    case kFileSystemTypeProvided:
       return FILE_PERMISSION_USE_FILE_PERMISSION;
 
     case kFileSystemTypeRestrictedNativeLocal:

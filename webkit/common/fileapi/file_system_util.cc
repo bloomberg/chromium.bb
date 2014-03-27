@@ -317,6 +317,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "PluginPrivate";
     case kFileSystemTypeCloudDevice:
       return "CloudDevice";
+    case kFileSystemTypeProvided:
+      return "Provided";
     case kFileSystemInternalTypeEnumStart:
     case kFileSystemInternalTypeEnumEnd:
       NOTREACHED();

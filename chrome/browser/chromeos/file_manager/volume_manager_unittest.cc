@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -146,16 +147,22 @@ class VolumeManagerTest : public testing::Test {
     power_manager_client_.reset(new chromeos::FakePowerManagerClient);
     disk_mount_manager_.reset(new FakeDiskMountManager);
     profile_.reset(new TestingProfile);
-    volume_manager_.reset(new VolumeManager(profile_.get(),
-                                            NULL,  // DriveIntegrationService
-                                            power_manager_client_.get(),
-                                            disk_mount_manager_.get()));
+    file_system_provider_service_.reset(
+        new chromeos::file_system_provider::Service(profile_.get()));
+    volume_manager_.reset(
+        new VolumeManager(profile_.get(),
+                          NULL,  // DriveIntegrationService
+                          power_manager_client_.get(),
+                          disk_mount_manager_.get(),
+                          file_system_provider_service_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
   scoped_ptr<FakeDiskMountManager> disk_mount_manager_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<chromeos::file_system_provider::Service>
+      file_system_provider_service_;
   scoped_ptr<VolumeManager> volume_manager_;
 };
 

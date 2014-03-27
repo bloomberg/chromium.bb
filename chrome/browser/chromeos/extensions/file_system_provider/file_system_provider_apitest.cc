@@ -18,7 +18,8 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {
-  ASSERT_TRUE(RunPlatformAppTest("file_system_provider/mount"))
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/mount",
+                                          kFlagLoadAsComponent))
       << message_;
 }
 

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"
 
+#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 
 namespace extensions {
-
 namespace {
 
 // Error names from
@@ -15,7 +15,9 @@ namespace {
 const char kSecurityErrorName[] = "SecurityError";
 
 // Error messages.
-const char kEmptyNameErrorMessage[] = "Empty display name is not allowed";
+const char kEmptyNameErrorMessage[] = "Empty display name is not allowed.";
+const char kRegisteringFailedErrorMessage[] =
+    "Registering the file system failed.";
 
 // Creates a dictionary, which looks like a DOMError. The returned dictionary
 // will be converted to a real DOMError object in
@@ -37,19 +39,32 @@ bool FileSystemProviderMountFunction::RunImpl() {
 
   // It's an error if the display name is empty.
   if (params->display_name.empty()) {
-    const std::string file_system_id = "";
-
     base::ListValue* result = new base::ListValue();
-    result->Append(new base::StringValue(file_system_id));
+    result->Append(new base::StringValue(""));
     result->Append(CreateError(kSecurityErrorName,
                                kEmptyNameErrorMessage));
     SetResult(result);
-    SendResponse(true);
-    return true;
+    return false;
   }
 
-  // TODO(satorux): Implement the real logic.
-  const std::string file_system_id = params->display_name;
+  chromeos::file_system_provider::Service* service =
+      chromeos::file_system_provider::Service::Get(GetProfile());
+  DCHECK(service);
+
+  const std::string file_system_id =
+      service->RegisterFileSystem(extension_id(), params->display_name);
+
+  // If the |file_system_id| is empty, then it means that registering the file
+  // system failed.
+  // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
+  if (file_system_id.empty()) {
+    base::ListValue* result = new base::ListValue();
+    result->Append(new base::StringValue(""));
+    result->Append(
+        CreateError(kSecurityErrorName, kRegisteringFailedErrorMessage));
+    SetResult(result);
+    return false;
+  }
 
   base::ListValue* result = new base::ListValue();
   result->Append(new base::StringValue(file_system_id));
