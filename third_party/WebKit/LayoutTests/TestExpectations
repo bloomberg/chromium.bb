@@ -791,7 +791,7 @@ crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-ch
 
 crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
 
-crbug.com/356834 [ Linux Win ] fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]
+crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]
 
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
@@ -957,7 +957,7 @@ crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.
 crbug.com/355459 [ Release ] inspector/elements/edit-dom-actions-shadow.html [ Pass Timeout ]
 
 crbug.com/355463 [ Win Debug ] css3/flexbox/repaint.html [ Pass Failure ]
-
+crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
