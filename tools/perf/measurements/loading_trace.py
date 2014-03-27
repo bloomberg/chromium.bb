@@ -28,7 +28,7 @@ class LoadingTrace(page_measurement.PageMeasurement):
     self._timeline_controller.Stop(tab)
 
     loading.LoadingMetric().AddResults(tab, results)
-    timeline_metric = timeline.TimelineMetric(
+    timeline_metric = timeline.LoadTimesTimelineMetric(
       self._timeline_controller.model,
       self._timeline_controller.renderer_process,
       self._timeline_controller.action_ranges)
