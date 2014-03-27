@@ -45,14 +45,15 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
     WEBSOCKET_HOST_DELETED
   };
 
-  explicit WebSocketDispatcherHost(
+  WebSocketDispatcherHost(
+      int process_id,
       const GetRequestContextCallback& get_context_callback);
 
   // For testing. Specify a factory method that creates mock version of
   // WebSocketHost.
-  WebSocketDispatcherHost(
-      const GetRequestContextCallback& get_context_callback,
-      const WebSocketHostFactory& websocket_host_factory);
+  WebSocketDispatcherHost(int process_id,
+                          const GetRequestContextCallback& get_context_callback,
+                          const WebSocketHostFactory& websocket_host_factory);
 
   // BrowserMessageFilter:
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -108,6 +109,9 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
       uint16 code,
       const std::string& reason) WARN_UNUSED_RESULT;
 
+  // Returns whether the associated renderer process can read raw cookies.
+  bool CanReadRawCookies() const;
+
  private:
   typedef base::hash_map<int, WebSocketHost*> WebSocketHostTable;
 
@@ -132,6 +136,9 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // Table of WebSocketHost objects, owned by this object, indexed by
   // routing_id.
   WebSocketHostTable hosts_;
+
+  // The the process ID of the associated renderer process.
+  const int process_id_;
 
   // A callback which returns the appropriate net::URLRequestContext for us to
   // use.

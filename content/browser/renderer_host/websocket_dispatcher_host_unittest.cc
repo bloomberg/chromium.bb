@@ -43,12 +43,12 @@ class MockWebSocketHost : public WebSocketHost {
 class WebSocketDispatcherHostTest : public ::testing::Test {
  public:
   WebSocketDispatcherHostTest() {
-    dispatcher_host_ =
-        new WebSocketDispatcherHost(
-            base::Bind(&WebSocketDispatcherHostTest::OnGetRequestContext,
-                       base::Unretained(this)),
-            base::Bind(&WebSocketDispatcherHostTest::CreateWebSocketHost,
-                       base::Unretained(this)));
+    dispatcher_host_ = new WebSocketDispatcherHost(
+        0,
+        base::Bind(&WebSocketDispatcherHostTest::OnGetRequestContext,
+                   base::Unretained(this)),
+        base::Bind(&WebSocketDispatcherHostTest::CreateWebSocketHost,
+                   base::Unretained(this)));
   }
 
   virtual ~WebSocketDispatcherHostTest() {}

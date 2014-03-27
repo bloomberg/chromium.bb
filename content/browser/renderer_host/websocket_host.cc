@@ -179,9 +179,12 @@ ChannelState WebSocketEventHandler::OnFailChannel(const std::string& message) {
 
 ChannelState WebSocketEventHandler::OnStartOpeningHandshake(
     scoped_ptr<net::WebSocketHandshakeRequestInfo> request) {
-  DVLOG(3) << "WebSocketEventHandler::OnStartOpeningHandshake";
+  bool should_send = dispatcher_->CanReadRawCookies();
+  DVLOG(3) << "WebSocketEventHandler::OnStartOpeningHandshake "
+           << "should_send=" << should_send;
 
-  // TODO(yhirano) Do nothing if the inspector is not attached.
+  if (!should_send)
+    return WebSocketEventInterface::CHANNEL_ALIVE;
 
   WebSocketHandshakeRequest request_to_pass;
   request_to_pass.url.Swap(&request->url);
@@ -200,9 +203,12 @@ ChannelState WebSocketEventHandler::OnStartOpeningHandshake(
 
 ChannelState WebSocketEventHandler::OnFinishOpeningHandshake(
     scoped_ptr<net::WebSocketHandshakeResponseInfo> response) {
-  DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake";
+  bool should_send = dispatcher_->CanReadRawCookies();
+  DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake "
+           << "should_send=" << should_send;
 
-  // TODO(yhirano) Do nothing if the inspector is not attached.
+  if (!should_send)
+    return WebSocketEventInterface::CHANNEL_ALIVE;
 
   WebSocketHandshakeResponse response_to_pass;
   response_to_pass.url.Swap(&response->url);

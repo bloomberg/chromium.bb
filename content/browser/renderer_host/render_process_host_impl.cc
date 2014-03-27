@@ -768,7 +768,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           base::Bind(&GetRequestContext, request_context,
                      media_request_context, ResourceType::SUB_RESOURCE));
 
-  AddFilter(new WebSocketDispatcherHost(websocket_request_context_callback));
+  AddFilter(
+      new WebSocketDispatcherHost(GetID(), websocket_request_context_callback));
 
   message_port_message_filter_ = new MessagePortMessageFilter(
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
