@@ -1050,6 +1050,7 @@ void EventSender::Reset() {
   last_click_pos_ = WebPoint(0, 0);
   last_button_type_ = WebMouseEvent::ButtonNone;
   touch_points_.clear();
+  last_context_menu_data_.reset();
   task_list_.revokeAll();
   current_gesture_location_ = WebPoint(0, 0);
   mouse_event_queue_.clear();
