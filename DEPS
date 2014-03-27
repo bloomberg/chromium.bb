@@ -667,7 +667,7 @@ hooks = [
   # Pull GN binaries. This needs to be before running GYP below.
   {
     "name": "gn_win",
-    "pattern": "src/tools/gn/bin/win/gn.exe.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=win32",
@@ -678,7 +678,7 @@ hooks = [
   },
   {
     "name": "gn_mac",
-    "pattern": "src/tools/gn/bin/mac/gn.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=darwin",
@@ -689,7 +689,7 @@ hooks = [
   },
   {
     "name": "gn_linux",
-    "pattern": "src/tools/gn/bin/linux/gn.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=linux*",
@@ -700,7 +700,7 @@ hooks = [
   },
   {
     "name": "gn_linux32",
-    "pattern": "src/tools/gn/bin/linux/gn32.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=linux*",
@@ -712,7 +712,7 @@ hooks = [
   # Pull clang-format binaries using checked-in hashes.
   {
     "name": "clang_format_win",
-    "pattern": "src/third_party/clang_format/bin/win/clang-format.exe.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=win32",
@@ -723,7 +723,7 @@ hooks = [
   },
   {
     "name": "clang_format_mac",
-    "pattern": "src/third_party/clang_format/bin/mac/clang-format.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=darwin",
@@ -734,7 +734,7 @@ hooks = [
   },
   {
     "name": "clang_format_linux",
-    "pattern": "src/third_party/clang_format/bin/linux/clang-format.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=linux*",
@@ -746,7 +746,7 @@ hooks = [
   # Pull eu-strip binaries using checked-in hashes.
   {
     "name": "eu-strip",
-    "pattern": "src/build/linux/bin/eu-strip.sha1",
+    "pattern": ".",
     "action": [ "download_from_google_storage",
                 "--no_resume",
                 "--platform=linux*",
