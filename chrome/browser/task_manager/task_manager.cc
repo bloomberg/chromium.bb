@@ -900,6 +900,10 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       return ValueCompare(current1, current2);
     }
 
+    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
+      return ValueCompare(GetIdleWakeupsPerSecond(row1),
+                          GetIdleWakeupsPerSecond(row2));
+
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
