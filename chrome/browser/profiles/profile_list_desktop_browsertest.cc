@@ -49,7 +49,13 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
+#if defined (OS_WIN)
+// SignOut is flaky. So far only observed on Windows. crbug.com/357329.
+#define MAYBE_SignOut DISABLED_SignOut
+#else
+#define MAYBE_SignOut SignOut
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
