@@ -26,7 +26,7 @@ TEST_F(BMPImageDecoderTest, DecodingFast) {
 }
 
 #if defined(THREAD_SANITIZER)
-// BMPImageDecoderTest.DecodingSlow als times out under ThreadSanitizer v2.
+// BMPImageDecoderTest.DecodingSlow always times out under ThreadSanitizer v2.
 #define MAYBE_DecodingSlow DISABLED_DecodingSlow
 #else
 #define MAYBE_DecodingSlow DecodingSlow

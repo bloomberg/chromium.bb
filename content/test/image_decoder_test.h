@@ -16,10 +16,9 @@
 
 namespace blink { class WebImageDecoder; }
 
-// If CALCULATE_MD5_SUMS is not defined, then this test decodes a handful of
-// image files and compares their MD5 sums to the stored sums on disk.
-//
-// To recalculate the MD5 sums, uncommment CALCULATE_MD5_SUMS.
+// Decodes a handful of image files and compares their MD5 sums to the stored
+// sums on disk.  To recalculate the MD5 sums, uncomment the CALCULATE_MD5_SUMS
+// #define in the .cc file.
 //
 // The image files and corresponding MD5 sums live in the directory
 // chrome/test/data/*_decoder (where "*" is the format being tested).
@@ -27,8 +26,6 @@ namespace blink { class WebImageDecoder; }
 // Note: The MD5 sums calculated in this test by little- and big-endian systems
 // will differ, since no endianness correction is done.  If we start compiling
 // for big endian machines this should be fixed.
-
-// #define CALCULATE_MD5_SUMS
 
 enum ImageDecoderTestFileSelection {
   TEST_ALL,
@@ -54,9 +51,10 @@ class ImageDecoderTest : public testing::Test {
 
   // Tests if decoder decodes image at image_path with underlying frame at
   // index desired_frame_index. The md5_sum_path is needed if the test is not
-  // asked to generate one i.e. if # #define CALCULATE_MD5_SUMS is set.
+  // asked to generate one, i.e. if #define CALCULATE_MD5_SUMS is not set.
   void TestWebKitImageDecoder(const base::FilePath& image_path,
-    const base::FilePath& md5_sum_path, int desired_frame_index) const;
+                              const base::FilePath& md5_sum_path,
+                              int desired_frame_index) const;
 
   // Verifies each of the test image files is decoded correctly and matches the
   // expected state. |file_selection| and |threshold| can be used to select
@@ -76,10 +74,12 @@ class ImageDecoderTest : public testing::Test {
   std::string format_;
 
  protected:
+  const base::FilePath& data_dir() const { return data_dir_; }
+
+ private:
   // Path to the test files.
   base::FilePath data_dir_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderTest);
 };
 
