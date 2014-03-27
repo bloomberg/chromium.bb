@@ -32,16 +32,8 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     new_root_ids_.push_back(new_root->id());
   }
 
-  void Reset() {
-    deleted_ids_.clear();
-    created_ids_.clear();
-    changed_ids_.clear();
-    new_root_ids_.clear();
-  }
-
   const std::vector<int32>& deleted_ids() { return deleted_ids_; }
   const std::vector<int32>& created_ids() { return created_ids_; }
-  const std::vector<int32>& changed_ids() { return changed_ids_; }
   const std::vector<int32>& new_root_ids() { return new_root_ids_; }
 
  private:

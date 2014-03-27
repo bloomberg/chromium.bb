@@ -196,33 +196,6 @@ void AddCertificatesFromBytes(const char* data, size_t length,
   }
 }
 
-struct CSSMOIDString {
-  const CSSM_OID* oid_;
-  std::string string_;
-};
-
-typedef std::vector<CSSMOIDString> CSSMOIDStringVector;
-
-class ScopedEncodedCertResults {
- public:
-  explicit ScopedEncodedCertResults(CSSM_TP_RESULT_SET* results)
-      : results_(results) { }
-  ~ScopedEncodedCertResults() {
-    if (results_) {
-      CSSM_ENCODED_CERT* encCert =
-          reinterpret_cast<CSSM_ENCODED_CERT*>(results_->Results);
-      for (uint32 i = 0; i < results_->NumberOfResults; i++) {
-        crypto::CSSMFree(encCert[i].CertBlob.Data);
-      }
-      crypto::CSSMFree(results_->Results);
-      crypto::CSSMFree(results_);
-    }
-  }
-
- private:
-  CSSM_TP_RESULT_SET* results_;
-};
-
 }  // namespace
 
 void X509Certificate::Initialize() {

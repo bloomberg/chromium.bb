@@ -80,13 +80,6 @@ class PrefObserverMock : public PrefObserver {
   virtual ~PrefObserverMock() {}
 
   MOCK_METHOD2(OnPreferenceChanged, void(PrefService*, const std::string&));
-
-  void Expect(PrefService* prefs,
-              const std::string& pref_name,
-              const base::Value* value) {
-    EXPECT_CALL(*this, OnPreferenceChanged(prefs, pref_name))
-        .With(PrefValueMatches(prefs, pref_name, value));
-  }
 };
 
 // Test fixture class.

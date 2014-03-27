@@ -330,7 +330,6 @@ class PeerCertificateChain {
   std::vector<base::StringPiece> AsStringPieceVector() const;
 
   bool empty() const { return certs_.empty(); }
-  size_t size() const { return certs_.size(); }
 
   CERTCertificate* operator[](size_t index) const {
     DCHECK_LT(index, certs_.size());

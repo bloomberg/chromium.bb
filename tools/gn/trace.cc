@@ -24,9 +24,7 @@ class TraceLog {
   TraceLog() {
     events_.reserve(16384);
   }
-  ~TraceLog() {
-    // Trace items leanked intentionally.
-  }
+  // Trace items leaked intentionally.
 
   void Add(TraceItem* item) {
     base::AutoLock lock(lock_);

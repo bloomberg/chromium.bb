@@ -101,7 +101,6 @@ class WorkQueue : public PlatformThread::Delegate {
   int GetNumThreadsTakingAssignments() const;
   int GetNumThreadsCompletingTasks() const;
   int GetNumberOfCompletedTasks() const;
-  TimeDelta GetWorkTime() const;
 
   void SetWorkTime(TimeDelta delay);
   void SetTaskCount(int count);
@@ -649,10 +648,6 @@ int WorkQueue::GetNumberOfCompletedTasks() const {
   for (int i = 0; i < thread_count_; ++i)
     total += completion_history_[i];
   return total;
-}
-
-TimeDelta WorkQueue::GetWorkTime() const {
-  return worker_delay_;
 }
 
 void WorkQueue::SetWorkTime(TimeDelta delay) {

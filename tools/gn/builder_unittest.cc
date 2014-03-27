@@ -35,20 +35,8 @@ class MockLoader : public Loader {
     return files_.empty();
   }
 
-  // Returns true if one load has been requested and it matches the given
+  // Returns true if two loads have been requested and they match the given
   // file. This will clear the records so it will be empty for the next call.
-  bool HasLoadedOne(const SourceFile& f) {
-    if (files_.size() != 1u) {
-      files_.clear();
-      return false;
-    }
-
-    bool match = (files_[0] == f);
-    files_.clear();
-    return match;
-  }
-
-  // Like HasLoadedOne above. Accepts any ordering.
   bool HasLoadedTwo(const SourceFile& a, const SourceFile& b) {
     if (files_.size() != 2u) {
       files_.clear();

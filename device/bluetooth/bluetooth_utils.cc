@@ -79,9 +79,6 @@ UUID::UUID(const std::string& uuid) {
   GetCanonicalUuid(uuid, &value_, &canonical_value_, &format_);
 }
 
-UUID::UUID() : format_(kFormatInvalid) {
-}
-
 UUID::~UUID() {
 }
 

@@ -81,12 +81,6 @@ GoogleServiceAuthError::GoogleServiceAuthError(
       error_message_(error_message) {
 }
 
-GoogleServiceAuthError::GoogleServiceAuthError(const std::string& error_message)
-    : state_(INVALID_GAIA_CREDENTIALS),
-      network_error_(0),
-      error_message_(error_message) {
-}
-
 // static
 GoogleServiceAuthError
     GoogleServiceAuthError::FromConnectionError(int error) {
@@ -257,16 +251,5 @@ GoogleServiceAuthError::GoogleServiceAuthError(
     : state_(s),
       captcha_(captcha_token, captcha_audio_url, captcha_image_url,
                captcha_unlock_url, image_width, image_height),
-      network_error_(0) {
-}
-
-GoogleServiceAuthError::GoogleServiceAuthError(
-    State s,
-    const std::string& captcha_token,
-    const std::string& prompt_text,
-    const std::string& alternate_text,
-    int field_length)
-    : state_(s),
-      second_factor_(captcha_token, prompt_text, alternate_text, field_length),
       network_error_(0) {
 }

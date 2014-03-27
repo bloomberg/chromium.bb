@@ -127,10 +127,6 @@ class CopyCounter {
     return *copies_;
   }
 
-  int assigns() const {
-    return *assigns_;
-  }
-
  private:
   int* copies_;
   int* assigns_;

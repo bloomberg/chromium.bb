@@ -74,8 +74,6 @@ class UUID {
   bool operator!=(const UUID& uuid) const;
 
  private:
-  UUID();
-
   // String representation of the UUID that was used during construction. For
   // the supported sizes, this representation can have the following formats:
   //   - 16 bit:  XXXX

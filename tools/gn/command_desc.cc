@@ -186,11 +186,6 @@ template<> struct DescValueWriter<std::string> {
     out << "    " << str << "\n";
   }
 };
-template<> struct DescValueWriter<SourceFile> {
-  void operator()(const SourceFile& file, std::ostream& out) const {
-    out << "    " << file.value() << "\n";
-  }
-};
 template<> struct DescValueWriter<SourceDir> {
   void operator()(const SourceDir& dir, std::ostream& out) const {
     out << "    " << FormatSourceDir(dir) << "\n";

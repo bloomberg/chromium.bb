@@ -37,13 +37,6 @@ enum ColorFormat {
 
 // Represents a comment in the tEXt ancillary chunk of the png.
 struct Comment {
-  Comment(const std::string& k, const std::string& t)
-    : key(k), text(t) {
-  }
-
-  ~Comment() {
-  };
-
   std::string key;
   std::string text;
 };
