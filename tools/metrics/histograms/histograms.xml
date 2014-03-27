@@ -1683,7 +1683,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Blacklist.Blocked" enum="DllHash">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharp@chromium.org</owner>
   <summary>
     Records the name hashes of all the dlls that are blocked from the browser
     process.
@@ -1691,7 +1691,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Blacklist.PatchedInRenderer" enum="BooleanHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharp@chromium.org</owner>
   <summary>
     Counts the number of times a renderer process is started with the browser
     blacklist patch. This should never be hit.
@@ -1699,7 +1699,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Blacklist.Setup" enum="BlacklistSetup">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharp@chromium.org</owner>
   <summary>
     Records the successes and failures when running the browser blacklist setup
     code. Used to determine if the blacklist is working as intended during
