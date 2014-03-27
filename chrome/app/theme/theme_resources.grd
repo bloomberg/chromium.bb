@@ -391,6 +391,7 @@
         <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_LEFT" file="common/infobarbutton_top_left_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_RIGHT" file="common/infobarbutton_top_right_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_3D_BLOCKED" file="common/infobar_3d_blocked.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_ALT_NAV_URL" file="common/infobar_alt_nav_url.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL" file="common/infobar_autofill.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOLOGIN" file="common/infobar_autologin.png" />

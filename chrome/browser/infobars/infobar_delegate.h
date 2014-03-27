@@ -94,7 +94,6 @@ class InfoBarDelegate {
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ScreenCaptureInfoBarDelegate* AsScreenCaptureInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
-  virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }

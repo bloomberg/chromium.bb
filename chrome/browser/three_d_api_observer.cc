@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 
@@ -37,7 +38,7 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
-  virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate() OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -88,12 +89,11 @@ bool ThreeDAPIInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   // WebGL and Pepper 3D and both APIs are blocked, just leave the
   // first infobar up. If the user selects "try again", both APIs will
   // be unblocked and the web page reload will succeed.
-  return (delegate->AsThreeDAPIInfoBarDelegate() != NULL);
+  return delegate->GetIconID() == GetIconID();
 }
 
-ThreeDAPIInfoBarDelegate*
-    ThreeDAPIInfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
-  return this;
+int ThreeDAPIInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_3D_BLOCKED;
 }
 
 base::string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
