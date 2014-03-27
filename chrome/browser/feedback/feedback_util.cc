@@ -131,6 +131,10 @@ void ShowFeedbackPage(Browser* browser,
     return;
   }
 
+  // We do not want to launch on an OTR profile.
+  profile = profile->GetOriginalProfile();
+  DCHECK(profile);
+
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
 
