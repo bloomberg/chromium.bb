@@ -18,18 +18,28 @@ kb-keyboard.alt-active kb-modifier-key[char=Alt] {
   color: lightblue;
 }
 
-/** TODO(rsadam@): Use different assets for caps-lock and highlight **/
-.caps-locked kb-shift-key.dark /shadow-deep/ .key,
-/**
-* Controls whether the shift key should be highlighted or not.
-* Only highlights if we are in the upper keyset, but not capslocked.
-*/
-kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key /shadow-deep/ .key {
+kb-keyboard[keyset="upper"] kb-shift-key.dark /shadow-deep/ .key {
   background-image: url('images/shift-filled.svg');
 }
 
-kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key /shadow-deep/ .key {
+kb-keyboard[keyset="lower"] kb-shift-key /shadow-deep/ .key {
   background-image: url('images/shift.svg');
+}
+
+/**
+* Controls whether the shift key should be highlighted or not.
+*/
+kb-keyboard.caps-locked kb-shift-key.dark /shadow-deep/
+    .shift-light {
+  -webkit-box-shadow: 0 1px 1px rgba(213, 213, 213, 0.5),
+    0 -1px 1px rgba(213, 213, 213, 0.5);
+  background-image: -webkit-linear-gradient(#d5d5d5, #d5d5d5);
+  border: none;
+  height: 0.2em;
+}
+kb-keyboard.caps-locked kb-shift-key.dark /shadow-deep/
+    .shift-light-wrapper {
+  bottom: 2px;
 }
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],

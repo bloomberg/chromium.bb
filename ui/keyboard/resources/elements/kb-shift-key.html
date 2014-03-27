@@ -7,4 +7,66 @@
 <polymer-element name="kb-shift-key" attributes="lowerCaseKeysetId
     upperCaseKeysetId" class="shift dark" char="Shift" on-pointerout="{{out}}"
     extends="kb-key">
+  <template>
+    <style>
+    :host() {
+      border-radius: 2px;
+      border-style: solid;
+      border-width: 1px 0;
+      color: #ffffff;
+      font-family: roboto-bold;
+      font-weight: 300;
+    }
+
+    :host(.active) {
+      -webkit-box-shadow: inset 0 1px #969696, inset 0 -1px #6f6f6f;
+      background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
+      background-size: cover;
+      border-bottom-color: #5b5b5b;
+      border-top-color: #a4a4a4;
+    }
+
+    :host() .key {
+      background-image: none;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      bottom: 0;
+      font-size: 70%;
+      height: 70%;
+      left: 0;
+      margin: auto;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: auto;
+    }
+
+    :host() .shift-light-wrapper {
+      bottom: 3px;
+      height: 10%;
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      width: 100%;
+    }
+
+    :host() .shift-light {
+      -webkit-box-shadow: inset 0 1px #101010, inset 0 -1px #444444;
+      background-image: -webkit-linear-gradient(#101010, #000000);
+      border: solid;
+      border-bottom-color: #1d1d1d;
+      border-top-color: #2d2d2d;
+      border-width: 1px 0;
+      height: 0.3em;
+      margin: 0 auto;
+      position: relative;
+      width: 1.8em;
+    }
+  </style>
+    <div id="key" class="key"> </div>
+    <div class="shift-light-wrapper">
+      <div class="shift-light"> </div>
+    </div>
+  </template>
 </polymer-element>
