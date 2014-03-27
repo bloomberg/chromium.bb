@@ -969,9 +969,6 @@ crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failu
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
-crbug.com/354787 [ Mac Win ] plugins/touch-events-details.html [ Failure ]
-crbug.com/354787 [ Mac Win ] plugins/transformed-events.html [ Failure ]
-
 crbug.com/354791 [ Mac ] transitions/webkit-clip-path-equality.html [ Pass Failure ]
 crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.html [ Pass Failure ]
 
