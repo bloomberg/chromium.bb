@@ -508,7 +508,7 @@ hooks = [
     'src/tools/gn/bin/win/gn.exe.sha1'
 ],
     'pattern':
-         'src/tools/gn/bin/win/gn.exe.sha1',
+         '.',
     'name':
          'gn_win'
 },
@@ -525,7 +525,7 @@ hooks = [
     'src/tools/gn/bin/mac/gn.sha1'
 ],
     'pattern':
-         'src/tools/gn/bin/mac/gn.sha1',
+         '.',
     'name':
          'gn_mac'
 },
@@ -542,7 +542,7 @@ hooks = [
     'src/tools/gn/bin/linux/gn.sha1'
 ],
     'pattern':
-         'src/tools/gn/bin/linux/gn.sha1',
+         '.',
     'name':
          'gn_linux'
 },
@@ -559,7 +559,7 @@ hooks = [
     'src/tools/gn/bin/linux/gn32.sha1'
 ],
     'pattern':
-         'src/tools/gn/bin/linux/gn32.sha1',
+         '.',
     'name':
          'gn_linux32'
 },
@@ -576,7 +576,7 @@ hooks = [
     'src/third_party/clang_format/bin/win/clang-format.exe.sha1'
 ],
     'pattern':
-         'src/third_party/clang_format/bin/win/clang-format.exe.sha1',
+         '.',
     'name':
          'clang_format_win'
 },
@@ -593,7 +593,7 @@ hooks = [
     'src/third_party/clang_format/bin/mac/clang-format.sha1'
 ],
     'pattern':
-         'src/third_party/clang_format/bin/mac/clang-format.sha1',
+         '.',
     'name':
          'clang_format_mac'
 },
@@ -610,7 +610,7 @@ hooks = [
     'src/third_party/clang_format/bin/linux/clang-format.sha1'
 ],
     'pattern':
-         'src/third_party/clang_format/bin/linux/clang-format.sha1',
+         '.',
     'name':
          'clang_format_linux'
 },
@@ -627,7 +627,7 @@ hooks = [
     'src/build/linux/bin/eu-strip.sha1'
 ],
     'pattern':
-         'src/build/linux/bin/eu-strip.sha1',
+         '.',
     'name':
          'eu-strip'
 },
