@@ -26,6 +26,7 @@
 #include "config.h"
 #include "bindings/v8/V8ScriptRunner.h"
 
+#include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8RecursionScope.h"
@@ -36,43 +37,53 @@
 
 namespace WebCore {
 
-PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, ScriptResource* resource)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus)
 {
-    TRACE_EVENT0("v8", "v8.compile");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
+    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), isolate, corsStatus);
+}
+
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, v8::Isolate* isolate, AccessControlStatus corsStatus)
+{
     // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
     // the ScriptResource. If the format changes, this ID should be changed too.
     static const unsigned dataTypeID = 0xECC13BD7;
 
-    // Very small scripts are not worth the effort to preparse.
-    static const int minPreparseLength = 1024;
+    // Very small scripts are not worth the effort to store cached data.
+    static const int minLengthForCachedData = 1024;
 
-    if (!resource || code->Length() < minPreparseLength)
-        return nullptr;
-
-    CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
-    if (cachedMetadata)
-        return adoptPtr(v8::ScriptData::New(cachedMetadata->data(), cachedMetadata->size()));
-
-    OwnPtr<v8::ScriptData> scriptData = adoptPtr(v8::ScriptData::PreCompile(code));
-    if (!scriptData)
-        return nullptr;
-
-    resource->setCachedMetadata(dataTypeID, scriptData->Data(), scriptData->Length());
-
-    return scriptData.release();
-}
-
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate, AccessControlStatus corsStatus)
-{
     TRACE_EVENT0("v8", "v8.compile");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
+
+    // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
+    // 1, whereas v8 starts at 0.
     v8::Handle<v8::String> name = v8String(isolate, fileName);
     v8::Handle<v8::Integer> line = v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt());
     v8::Handle<v8::Integer> column = v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt());
     v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True(isolate) : v8::False(isolate);
     v8::ScriptOrigin origin(name, line, column, isSharedCrossOrigin);
-    return v8::Script::Compile(code, &origin, scriptData);
+
+    v8::ScriptCompiler::CompileOptions options = v8::ScriptCompiler::kNoCompileOptions;
+    OwnPtr<v8::ScriptCompiler::CachedData> cachedData;
+    if (resource) {
+        CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
+        if (cachedMetadata) {
+            // Ownership of the buffer is not transferred to CachedData.
+            cachedData = adoptPtr(new v8::ScriptCompiler::CachedData(reinterpret_cast<const uint8_t*>(cachedMetadata->data()), cachedMetadata->size()));
+        } else if (code->Length() >= minLengthForCachedData) {
+            options = v8::ScriptCompiler::kProduceDataToCache;
+        }
+    }
+    // source takes ownership of cachedData.
+    v8::ScriptCompiler::Source source(code, origin, cachedData.leakPtr());
+    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, options);
+    if (options == v8::ScriptCompiler::kProduceDataToCache) {
+        const v8::ScriptCompiler::CachedData* newCachedData = source.GetCachedData();
+        if (newCachedData) {
+            // Ownership of the buffer is not transferred; source's cachedData continues to own it.
+            resource->setCachedMetadata(dataTypeID, reinterpret_cast<const char*>(newCachedData->data), newCachedData->length);
+        }
+    }
+    return script;
 }
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ExecutionContext* context, v8::Isolate* isolate)
@@ -101,11 +112,11 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData)
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, scriptData, isolate);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, isolate);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
