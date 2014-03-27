@@ -10,6 +10,7 @@
 
 namespace WebCore {
 
+class DeviceOrientationController;
 class Page;
 
 typedef String ErrorString;
@@ -25,8 +26,14 @@ public:
     virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) OVERRIDE;
     virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
 
+    // Inspector Controller API.
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
+    virtual void didCommitLoadForMainFrame() OVERRIDE;
+
 private:
     explicit DeviceOrientationInspectorAgent(Page&);
+    DeviceOrientationController& controller();
     Page& m_page;
 };
 

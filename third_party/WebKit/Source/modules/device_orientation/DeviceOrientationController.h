@@ -44,7 +44,9 @@ public:
     static const char* supplementName();
     static DeviceOrientationController& from(Document&);
 
-    void didChangeDeviceOrientation(WebCore::DeviceOrientationData*);
+    void didChangeDeviceOrientation(DeviceOrientationData*);
+    void setOverride(DeviceOrientationData*);
+    void clearOverride();
 
     // Inherited from DOMWindowLifecycleObserver
     virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
@@ -56,9 +58,12 @@ private:
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
 
+    DeviceOrientationData* lastData();
     virtual bool hasLastData() OVERRIDE;
     virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
+
+    RefPtrWillBeMember<DeviceOrientationData> m_overrideOrientationData;
 };
 
 } // namespace WebCore
