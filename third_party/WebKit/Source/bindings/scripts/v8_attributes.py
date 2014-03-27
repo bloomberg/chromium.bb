@@ -169,17 +169,13 @@ def generate_getter(interface, attribute, contents):
     if (idl_type.is_nullable or
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
+        'ReflectOnly' in extended_attributes or
         contents['is_getter_raises_exception']):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
         # EventHandler has special handling
         if base_idl_type != 'EventHandler' and idl_type.is_interface_type:
             release = True
-
-    if 'ReflectOnly' in extended_attributes:
-        contents['cpp_value_original'] = cpp_value
-        # FIXME: rename to jsValue
-        cpp_value = 'resultValue'
 
     def v8_set_return_value_statement(for_main_world=False):
         if contents['is_keep_alive_for_gc']:

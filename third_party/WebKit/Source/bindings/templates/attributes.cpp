@@ -117,31 +117,30 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
-{# FIXME: rename resultValue to jsValue #}
 {% if reflect_empty %}
-if (resultValue.isNull()) {
+if (jsValue.isNull()) {
 {% if reflect_missing %}
-    resultValue = "{{reflect_missing}}";
+    jsValue = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
-} else if (resultValue.isEmpty()) {
-    resultValue = "{{reflect_empty}}";
+} else if (jsValue.isEmpty()) {
+    jsValue = "{{reflect_empty}}";
 {% else %}
-if (resultValue.isEmpty()) {
+if (jsValue.isEmpty()) {
 {# FIXME: should use [ReflectEmpty] instead; need to change IDL files #}
 {% if reflect_missing %}
-    resultValue = "{{reflect_missing}}";
+    jsValue = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
-} else if (equalIgnoringCase(resultValue, "{{value}}")) {
-    resultValue = "{{value}}";
+} else if (equalIgnoringCase(jsValue, "{{value}}")) {
+    jsValue = "{{value}}";
 {% endfor %}
 } else {
-    resultValue = "{{reflect_invalid}}";
+    jsValue = "{{reflect_invalid}}";
 }
 {% endmacro %}
 

@@ -3208,15 +3208,15 @@ static void reflectedClassAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 static void limitedToOnlyOneAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr);
-    if (resultValue.isEmpty()) {
+    String jsValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr);
+    if (jsValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(resultValue, "unique")) {
-        resultValue = "unique";
+    } else if (equalIgnoringCase(jsValue, "unique")) {
+        jsValue = "unique";
     } else {
-        resultValue = "";
+        jsValue = "";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedToOnlyOneAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3245,19 +3245,19 @@ static void limitedToOnlyOneAttributeAttributeSetterCallback(v8::Local<v8::Strin
 static void limitedToOnlyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyattributeAttr);
-    if (resultValue.isEmpty()) {
+    String jsValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyattributeAttr);
+    if (jsValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(resultValue, "Per")) {
-        resultValue = "Per";
-    } else if (equalIgnoringCase(resultValue, "Paal")) {
-        resultValue = "Paal";
-    } else if (equalIgnoringCase(resultValue, "Espen")) {
-        resultValue = "Espen";
+    } else if (equalIgnoringCase(jsValue, "Per")) {
+        jsValue = "Per";
+    } else if (equalIgnoringCase(jsValue, "Paal")) {
+        jsValue = "Paal";
+    } else if (equalIgnoringCase(jsValue, "Espen")) {
+        jsValue = "Espen";
     } else {
-        resultValue = "";
+        jsValue = "";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedToOnlyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3286,17 +3286,17 @@ static void limitedToOnlyAttributeAttributeSetterCallback(v8::Local<v8::String>,
 static void limitedToOnlyOtherAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::OtherAttr);
-    if (resultValue.isEmpty()) {
+    String jsValue = impl->fastGetAttribute(HTMLNames::OtherAttr);
+    if (jsValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(resultValue, "Value1")) {
-        resultValue = "Value1";
-    } else if (equalIgnoringCase(resultValue, "Value2")) {
-        resultValue = "Value2";
+    } else if (equalIgnoringCase(jsValue, "Value1")) {
+        jsValue = "Value1";
+    } else if (equalIgnoringCase(jsValue, "Value2")) {
+        jsValue = "Value2";
     } else {
-        resultValue = "";
+        jsValue = "";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedToOnlyOtherAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3325,17 +3325,17 @@ static void limitedToOnlyOtherAttributeAttributeSetterCallback(v8::Local<v8::Str
 static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr);
-    if (resultValue.isEmpty()) {
-        resultValue = "rsa";
-    } else if (equalIgnoringCase(resultValue, "rsa")) {
-        resultValue = "rsa";
-    } else if (equalIgnoringCase(resultValue, "dsa")) {
-        resultValue = "dsa";
+    String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr);
+    if (jsValue.isEmpty()) {
+        jsValue = "rsa";
+    } else if (equalIgnoringCase(jsValue, "rsa")) {
+        jsValue = "rsa";
+    } else if (equalIgnoringCase(jsValue, "dsa")) {
+        jsValue = "dsa";
     } else {
-        resultValue = "";
+        jsValue = "";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedWithMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3364,19 +3364,19 @@ static void limitedWithMissingDefaultAttributeAttributeSetterCallback(v8::Local<
 static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr);
-    if (resultValue.isEmpty()) {
-        resultValue = "auto";
-    } else if (equalIgnoringCase(resultValue, "ltr")) {
-        resultValue = "ltr";
-    } else if (equalIgnoringCase(resultValue, "rtl")) {
-        resultValue = "rtl";
-    } else if (equalIgnoringCase(resultValue, "auto")) {
-        resultValue = "auto";
+    String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr);
+    if (jsValue.isEmpty()) {
+        jsValue = "auto";
+    } else if (equalIgnoringCase(jsValue, "ltr")) {
+        jsValue = "ltr";
+    } else if (equalIgnoringCase(jsValue, "rtl")) {
+        jsValue = "rtl";
+    } else if (equalIgnoringCase(jsValue, "auto")) {
+        jsValue = "auto";
     } else {
-        resultValue = "ltr";
+        jsValue = "ltr";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3405,19 +3405,19 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(v8:
 static void corsSettingAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::corssettingattributeAttr);
-    if (resultValue.isNull()) {
+    String jsValue = impl->fastGetAttribute(HTMLNames::corssettingattributeAttr);
+    if (jsValue.isNull()) {
         ;
-    } else if (resultValue.isEmpty()) {
-        resultValue = "anonymous";
-    } else if (equalIgnoringCase(resultValue, "anonymous")) {
-        resultValue = "anonymous";
-    } else if (equalIgnoringCase(resultValue, "use-credentials")) {
-        resultValue = "use-credentials";
+    } else if (jsValue.isEmpty()) {
+        jsValue = "anonymous";
+    } else if (equalIgnoringCase(jsValue, "anonymous")) {
+        jsValue = "anonymous";
+    } else if (equalIgnoringCase(jsValue, "use-credentials")) {
+        jsValue = "use-credentials";
     } else {
-        resultValue = "anonymous";
+        jsValue = "anonymous";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void corsSettingAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3430,23 +3430,23 @@ static void corsSettingAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* impl = V8TestObjectPython::toNative(info.Holder());
-    String resultValue = impl->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr);
-    if (resultValue.isNull()) {
-        resultValue = "missing";
-    } else if (resultValue.isEmpty()) {
-        resultValue = "empty";
-    } else if (equalIgnoringCase(resultValue, "empty")) {
-        resultValue = "empty";
-    } else if (equalIgnoringCase(resultValue, "missing")) {
-        resultValue = "missing";
-    } else if (equalIgnoringCase(resultValue, "invalid")) {
-        resultValue = "invalid";
-    } else if (equalIgnoringCase(resultValue, "a-normal")) {
-        resultValue = "a-normal";
+    String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr);
+    if (jsValue.isNull()) {
+        jsValue = "missing";
+    } else if (jsValue.isEmpty()) {
+        jsValue = "empty";
+    } else if (equalIgnoringCase(jsValue, "empty")) {
+        jsValue = "empty";
+    } else if (equalIgnoringCase(jsValue, "missing")) {
+        jsValue = "missing";
+    } else if (equalIgnoringCase(jsValue, "invalid")) {
+        jsValue = "invalid";
+    } else if (equalIgnoringCase(jsValue, "a-normal")) {
+        jsValue = "a-normal";
     } else {
-        resultValue = "invalid";
+        jsValue = "invalid";
     }
-    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
