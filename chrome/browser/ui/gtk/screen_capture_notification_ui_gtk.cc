@@ -21,7 +21,8 @@ class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
   virtual ~ScreenCaptureNotificationUIGtk();
 
   // ScreenCaptureNotificationUI interface
-  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
+  virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
+      OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(ScreenCaptureNotificationUIGtk, gboolean, OnDelete,
@@ -135,7 +136,7 @@ void ScreenCaptureNotificationUIGtk::CreateWindow() {
   gtk_window_present(GTK_WINDOW(window_));
 }
 
-void ScreenCaptureNotificationUIGtk::OnStarted(
+gfx::NativeViewId ScreenCaptureNotificationUIGtk::OnStarted(
     const base::Closure& stop_callback) {
   DCHECK(stop_callback_.is_null());
   DCHECK(!stop_callback.is_null());
@@ -143,6 +144,8 @@ void ScreenCaptureNotificationUIGtk::OnStarted(
 
   stop_callback_ = stop_callback;
   CreateWindow();
+
+  return 0;
 }
 
 void ScreenCaptureNotificationUIGtk::HideWindow() {
