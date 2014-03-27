@@ -8,9 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -40,27 +39,20 @@ class AudioEncoder::ImplBase
         num_channels_(num_channels),
         samples_per_10ms_(sampling_rate / 100),
         callback_(callback),
+        cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
         buffer_fill_end_(0),
         frame_id_(0),
         rtp_timestamp_(0) {
-    DCHECK_GT(num_channels_, 0);
-    DCHECK_GT(samples_per_10ms_, 0);
-    DCHECK_EQ(sampling_rate % 100, 0);
-    DCHECK_LE(samples_per_10ms_ * num_channels_,
-              transport::EncodedAudioFrame::kMaxNumberOfSamples);
-
     if (num_channels_ <= 0 || samples_per_10ms_ <= 0 ||
         sampling_rate % 100 != 0 ||
         samples_per_10ms_ * num_channels_ >
             transport::EncodedAudioFrame::kMaxNumberOfSamples) {
-      cast_initialization_cb_ = STATUS_INVALID_AUDIO_CONFIGURATION;
-    } else {
-      cast_initialization_cb_ = STATUS_AUDIO_INITIALIZED;
+      cast_initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
     }
   }
 
   CastInitializationStatus InitializationResult() const {
-    return cast_initialization_cb_;
+    return cast_initialization_status_;
   }
 
   void LogAudioFrameEvent(uint32 rtp_timestamp,
@@ -72,6 +64,8 @@ class AudioEncoder::ImplBase
 
   void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) {
+    DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
+
     int src_pos = 0;
     int packet_count = 0;
     while (src_pos < audio_bus->frames()) {
@@ -150,7 +144,9 @@ class AudioEncoder::ImplBase
   const int num_channels_;
   const int samples_per_10ms_;
   const FrameEncodedCallback callback_;
-  CastInitializationStatus cast_initialization_cb_;
+
+  // Subclass' ctor is expected to set this to STATUS_AUDIO_INITIALIZED.
+  CastInitializationStatus cast_initialization_status_;
 
  private:
   // In the case where a call to EncodeAudio() cannot completely fill the
@@ -183,14 +179,18 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
         encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
         buffer_(new float[num_channels * samples_per_10ms_]) {
-    if (ImplBase::cast_initialization_cb_ != STATUS_AUDIO_INITIALIZED) {
+    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
+      return;
+    if (opus_encoder_init(opus_encoder_,
+                          sampling_rate,
+                          num_channels,
+                          OPUS_APPLICATION_AUDIO) != OPUS_OK) {
+      ImplBase::cast_initialization_status_ =
+          STATUS_INVALID_AUDIO_CONFIGURATION;
       return;
     }
+    ImplBase::cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
 
-    CHECK_EQ(
-        opus_encoder_init(
-            opus_encoder_, sampling_rate, num_channels, OPUS_APPLICATION_AUDIO),
-        OPUS_OK);
     if (bitrate <= 0) {
       // Note: As of 2013-10-31, the encoder in "auto bitrate" mode would use a
       // variable bitrate up to 102kbps for 2-channel, 48 kHz audio and a 10 ms
@@ -266,7 +266,11 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
                  num_channels,
                  sampling_rate,
                  callback),
-        buffer_(new int16[num_channels * samples_per_10ms_]) {}
+        buffer_(new int16[num_channels * samples_per_10ms_]) {
+    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
+      return;
+    cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
+  }
 
  private:
   virtual ~Pcm16Impl() {}
