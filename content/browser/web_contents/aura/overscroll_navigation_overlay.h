@@ -83,7 +83,8 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   // Overridden from WindowSlider::Delegate:
   virtual ui::Layer* CreateBackLayer() OVERRIDE;
   virtual ui::Layer* CreateFrontLayer() OVERRIDE;
-  virtual void OnWindowSlideComplete() OVERRIDE;
+  virtual void OnWindowSlideCompleting() OVERRIDE;
+  virtual void OnWindowSlideCompleted() OVERRIDE;
   virtual void OnWindowSlideAborted() OVERRIDE;
   virtual void OnWindowSliderDestroyed() OVERRIDE;
 

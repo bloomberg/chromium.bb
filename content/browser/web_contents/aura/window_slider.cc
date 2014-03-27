@@ -19,12 +19,6 @@ namespace content {
 
 namespace {
 
-void DeleteLayerAndShadow(ui::Layer* layer,
-                          ShadowLayerDelegate* shadow) {
-  delete shadow;
-  delete layer;
-}
-
 // An animation observer that runs a callback at the end of the animation, and
 // destroys itself.
 class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
@@ -56,6 +50,7 @@ WindowSlider::WindowSlider(Delegate* delegate,
     : delegate_(delegate),
       event_window_(event_window),
       owner_(owner),
+      active_animator_(NULL),
       delta_x_(0.f),
       weak_factory_(this),
       active_start_threshold_(0.f),
@@ -93,9 +88,7 @@ void WindowSlider::ChangeOwner(aura::Window* new_owner) {
 
 bool WindowSlider::IsSlideInProgress() const {
   // if active_start_threshold_ is 0, it means that sliding hasn't been started
-  return active_start_threshold_ != 0 &&
-      (fabs(delta_x_) >= active_start_threshold_ || slider_.get() ||
-      weak_factory_.HasWeakPtrs());
+  return active_start_threshold_ != 0 && (slider_.get() || active_animator_);
 }
 
 void WindowSlider::SetupSliderLayer() {
@@ -110,6 +103,16 @@ void WindowSlider::SetupSliderLayer() {
 }
 
 void WindowSlider::UpdateForScroll(float x_offset, float y_offset) {
+  if (active_animator_) {
+    // If there is an active animation, complete it before processing the scroll
+    // so that the callbacks that are invoked on the Delegate are consistent.
+    // Completing the animation may destroy WindowSlider through the animation
+    // callback, so we can't continue processing the scroll event here.
+    delta_x_ += x_offset;
+    CompleteActiveAnimations();
+    return;
+  }
+
   float old_delta = delta_x_;
   delta_x_ += x_offset;
   if (fabs(delta_x_) < active_start_threshold_ && !slider_.get())
@@ -153,100 +156,96 @@ void WindowSlider::UpdateForScroll(float x_offset, float y_offset) {
   translate_layer->SetTransform(transform);
 }
 
-void WindowSlider::UpdateForFling(float x_velocity, float y_velocity) {
+void WindowSlider::CompleteOrResetSlide() {
   if (!slider_.get())
     return;
 
   int width = owner_->bounds().width();
   float ratio = (fabs(delta_x_) - active_start_threshold_) / width;
   if (ratio < complete_threshold_) {
-    ResetScroll();
+    ResetSlide();
     return;
   }
 
   ui::Layer* sliding = delta_x_ < 0 ? slider_.get() : owner_->layer();
-  ui::ScopedLayerAnimationSettings settings(sliding->GetAnimator());
+  active_animator_ = sliding->GetAnimator();
+
+  ui::ScopedLayerAnimationSettings settings(active_animator_);
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   settings.AddObserver(new CallbackAnimationObserver(
-      base::Bind(&WindowSlider::CompleteWindowSlideAfterAnimation,
-                 weak_factory_.GetWeakPtr())));
+      base::Bind(&WindowSlider::SlideAnimationCompleted,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&slider_),
+                 base::Passed(&shadow_))));
 
   gfx::Transform transform;
   transform.Translate(delta_x_ < 0 ? 0 : width, 0);
+  delta_x_ = 0;
+  delegate_->OnWindowSlideCompleting();
   sliding->SetTransform(transform);
 }
 
-void WindowSlider::ResetScroll() {
+void WindowSlider::CompleteActiveAnimations() {
+  if (active_animator_)
+    active_animator_->StopAnimating();
+}
+
+void WindowSlider::ResetSlide() {
   if (!slider_.get())
     return;
 
-  // Do not trigger any callbacks if this animation replaces any in-progress
-  // animation.
-  weak_factory_.InvalidateWeakPtrs();
-
   // Reset the state of the sliding layer.
   if (slider_.get()) {
-    ui::Layer* layer = slider_.release();
-    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTweenType(gfx::Tween::EASE_OUT);
-
-    // Delete the layer and the shadow at the end of the animation.
-    settings.AddObserver(new CallbackAnimationObserver(
-        base::Bind(&DeleteLayerAndShadow,
-                   base::Unretained(layer),
-                   base::Unretained(shadow_.release()))));
-
+    ui::Layer* translate_layer;
     gfx::Transform transform;
-    transform.Translate(delta_x_ < 0 ? layer->bounds().width() : 0, 0);
-    layer->SetTransform(transform);
-  }
+    if (delta_x_ < 0) {
+      translate_layer = slider_.get();
+      transform.Translate(translate_layer->bounds().width(), 0);
+    } else {
+      translate_layer = owner_->layer();
+    }
 
-  // Reset the state of the main layer.
-  {
-    ui::ScopedLayerAnimationSettings settings(owner_->layer()->GetAnimator());
+    active_animator_ = translate_layer->GetAnimator();
+    ui::ScopedLayerAnimationSettings settings(active_animator_);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.AddObserver(new CallbackAnimationObserver(
-        base::Bind(&WindowSlider::AbortWindowSlideAfterAnimation,
-                   weak_factory_.GetWeakPtr())));
-    owner_->layer()->SetTransform(gfx::Transform());
-    owner_->layer()->SetLayerBrightness(0.f);
+        base::Bind(&WindowSlider::ResetSlideAnimationCompleted,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&slider_),
+                   base::Passed(&shadow_))));
+    translate_layer->SetTransform(transform);
   }
 
   delta_x_ = 0.f;
 }
 
-void WindowSlider::CancelScroll() {
-  ResetScroll();
+void WindowSlider::SlideAnimationCompleted(
+    scoped_ptr<ui::Layer> layer, scoped_ptr<ShadowLayerDelegate> shadow) {
+  active_animator_ = NULL;
+  shadow.reset();
+  layer.reset();
+  delegate_->OnWindowSlideCompleted();
 }
 
-void WindowSlider::CompleteWindowSlideAfterAnimation() {
-  weak_factory_.InvalidateWeakPtrs();
-  shadow_.reset();
-  slider_.reset();
-  delta_x_ = 0.f;
-
-  delegate_->OnWindowSlideComplete();
-}
-
-void WindowSlider::AbortWindowSlideAfterAnimation() {
-  weak_factory_.InvalidateWeakPtrs();
-
+void WindowSlider::ResetSlideAnimationCompleted(
+    scoped_ptr<ui::Layer> layer, scoped_ptr<ShadowLayerDelegate> shadow) {
+  active_animator_ = NULL;
+  shadow.reset();
+  layer.reset();
   delegate_->OnWindowSlideAborted();
 }
 
 void WindowSlider::OnKeyEvent(ui::KeyEvent* event) {
-  CancelScroll();
+  ResetSlide();
 }
 
 void WindowSlider::OnMouseEvent(ui::MouseEvent* event) {
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
-    CancelScroll();
+    ResetSlide();
 }
 
 void WindowSlider::OnScrollEvent(ui::ScrollEvent* event) {
@@ -254,9 +253,9 @@ void WindowSlider::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL)
     UpdateForScroll(event->x_offset_ordinal(), event->y_offset_ordinal());
   else if (event->type() == ui::ET_SCROLL_FLING_START)
-    UpdateForFling(event->x_offset_ordinal(), event->y_offset_ordinal());
+    CompleteOrResetSlide();
   else
-    CancelScroll();
+    ResetSlide();
   event->SetHandled();
 }
 
@@ -265,7 +264,7 @@ void WindowSlider::OnGestureEvent(ui::GestureEvent* event) {
   const ui::GestureEventDetails& details = event->details();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      ResetScroll();
+      CompleteActiveAnimations();
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -273,17 +272,17 @@ void WindowSlider::OnGestureEvent(ui::GestureEvent* event) {
       break;
 
     case ui::ET_GESTURE_SCROLL_END:
-      UpdateForFling(0.f, 0.f);
+      CompleteOrResetSlide();
       break;
 
     case ui::ET_SCROLL_FLING_START:
-      UpdateForFling(details.velocity_x(), details.velocity_y());
+      CompleteOrResetSlide();
       break;
 
     case ui::ET_GESTURE_PINCH_BEGIN:
     case ui::ET_GESTURE_PINCH_UPDATE:
     case ui::ET_GESTURE_PINCH_END:
-      CancelScroll();
+      ResetSlide();
       break;
 
     default:

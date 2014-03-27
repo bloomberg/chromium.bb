@@ -53,7 +53,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     delete GetOverlay()->CreateBackLayer();
     // Performs BACK navigation, sets image from layer_delegate_ on
     // image_delegate_.
-    GetOverlay()->OnWindowSlideComplete();
+    GetOverlay()->OnWindowSlideCompleting();
+    GetOverlay()->OnWindowSlideCompleted();
   }
 
  protected:

@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -236,29 +237,18 @@ ui::Layer* OverscrollNavigationOverlay::CreateFrontLayer() {
   return CreateSlideLayer(1);
 }
 
-void OverscrollNavigationOverlay::OnWindowSlideComplete() {
-  if (slide_direction_ == SLIDE_UNKNOWN) {
-    window_slider_.reset();
-    StopObservingIfDone();
+void OverscrollNavigationOverlay::OnWindowSlideCompleting() {
+  if (slide_direction_ == SLIDE_UNKNOWN)
     return;
-  }
-
-  // Change the image used for the overlay window.
-  image_delegate_->SetImage(layer_delegate_->image());
-  window_->layer()->SetTransform(gfx::Transform());
-  window_->SchedulePaintInRect(gfx::Rect(window_->bounds().size()));
-
-  SlideDirection direction = slide_direction_;
-  slide_direction_ = SLIDE_UNKNOWN;
 
   // Reset state and wait for the new navigation page to complete
   // loading/painting.
   StartObserving();
 
   // Perform the navigation.
-  if (direction == SLIDE_BACK)
+  if (slide_direction_ == SLIDE_BACK)
     web_contents_->GetController().GoBack();
-  else if (direction == SLIDE_FRONT)
+  else if (slide_direction_ == SLIDE_FRONT)
     web_contents_->GetController().GoForward();
   else
     NOTREACHED();
@@ -269,6 +259,34 @@ void OverscrollNavigationOverlay::OnWindowSlideComplete() {
   // Under some circumstances navigation can leave a null pending entry -
   // see comments in NavigationControllerImpl::NavigateToPendingEntry().
   pending_entry_id_ = pending_entry ? pending_entry->GetUniqueID() : 0;
+}
+
+void OverscrollNavigationOverlay::OnWindowSlideCompleted() {
+  if (slide_direction_ == SLIDE_UNKNOWN) {
+    window_slider_.reset();
+    StopObservingIfDone();
+    return;
+  }
+
+  // Change the image used for the overlay window.
+  image_delegate_->SetImage(layer_delegate_->image());
+  window_->layer()->SetTransform(gfx::Transform());
+  window_->SchedulePaintInRect(gfx::Rect(window_->bounds().size()));
+  slide_direction_ = SLIDE_UNKNOWN;
+
+  // Make sure the overlay layer is repainted before we dismiss it, otherwise
+  // OverlayDismissAnimator may end up showing the wrong screenshot during the
+  // fadeout animation.
+  if (received_paint_update_ && need_paint_update_) {
+    received_paint_update_ = false;
+    RenderWidgetHost* host =
+        web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
+    RenderViewHostImpl* view_host =
+        static_cast<RenderViewHostImpl*> (RenderViewHost::From(host));
+    view_host->ScheduleComposite();
+  } else if (!need_paint_update_) {
+    StopObservingIfDone();
+  }
 }
 
 void OverscrollNavigationOverlay::OnWindowSlideAborted() {

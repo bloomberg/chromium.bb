@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -28,24 +29,32 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
    public:
     virtual ~Delegate() {}
 
-    // Creates a layer to show in the background, as the window-layer slides
-    // with the scroll gesture.
+    // Creates a layer to show behind the window-layer. Called when the
+    // window-layer starts sliding out to reveal the layer underneath.
     // The WindowSlider takes ownership of the created layer.
     virtual ui::Layer* CreateBackLayer() = 0;
 
-    // Creates a layer to slide on top of the window-layer with the scroll
-    // gesture.
+    // Creates a layer to show on top of the window-layer. Called when the new
+    // layer needs to start sliding in on top of the window-layer.
     // The WindowSlider takes ownership of the created layer.
     virtual ui::Layer* CreateFrontLayer() = 0;
-
-    // Called when the slide is complete. Note that at the end of a completed
-    // slide, the window-layer may have been transformed. The callback here
-    // should reset the transform if necessary.
-    virtual void OnWindowSlideComplete() = 0;
 
     // Called when the slide is aborted. Note that when the slide is aborted,
     // the WindowSlider resets any transform it applied on the window-layer.
     virtual void OnWindowSlideAborted() = 0;
+
+    // Called when the slide is about to be complete. The delegate can take
+    // action with the assumption that slide will complete soon (within the
+    // duration of the final transition animation effect).
+    // This callback is always preceeded by CreateBackLayerAndSetAsTarget() or
+    // by CreateFrontLayerAndSetAsTarget() callback, and is guaranteed to be
+    // followed by the OnWindowSlideCompleted() callback.
+    virtual void OnWindowSlideCompleting() = 0;
+
+    // Called when the window slide completes. Note that at the end the
+    // window-layer may have been transformed. The callback here should reset
+    // the transform if necessary.
+    virtual void OnWindowSlideCompleted() = 0;
 
     // Called when the slider is destroyed.
     virtual void OnWindowSliderDestroyed() = 0;
@@ -74,18 +83,25 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
 
   void UpdateForScroll(float x_offset, float y_offset);
 
-  void UpdateForFling(float x_velocity, float y_velocity);
+  // Completes or resets the slide depending on whether the sliding layer
+  // passed the "complete slide threshold".
+  void CompleteOrResetSlide();
 
-  // Resets any in-progress slide.
-  void ResetScroll();
+  // Stops all slider-owned animations, progressing them to their end-points.
+  // Note that depending on the sate of the Delegate and the WindowSlider, this
+  // may destroy the WindowSlider through animation callbacks.
+  void CompleteActiveAnimations();
 
-  // Cancels any scroll/animation in progress.
-  void CancelScroll();
+  // Resets in-progress slide if any, and starts the animation of the slidden
+  // window to its original position.
+  void ResetSlide();
 
   // The following callbacks are triggered after an animation.
-  void CompleteWindowSlideAfterAnimation();
+  void SlideAnimationCompleted(scoped_ptr<ui::Layer> layer,
+                               scoped_ptr<ShadowLayerDelegate> shadow);
 
-  void AbortWindowSlideAfterAnimation();
+  void ResetSlideAnimationCompleted(scoped_ptr<ui::Layer> layer,
+                                    scoped_ptr<ShadowLayerDelegate> shadow);
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -109,6 +125,10 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
   // can also delete itself when a slide gesture is completed. This does not
   // destroy |owner_|.
   aura::Window* owner_;
+
+  // Set to the Animator of the currently active animation. If no animation is
+  // active, this is set to NULL.
+  ui::LayerAnimator* active_animator_;
 
   // The accumulated amount of horizontal scroll.
   float delta_x_;
