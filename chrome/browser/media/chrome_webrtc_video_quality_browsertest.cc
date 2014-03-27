@@ -61,14 +61,6 @@ static const char kHomeEnvName[] =
 // The working dir should be in the user's home folder.
 static const base::FilePath::CharType kWorkingDirName[] =
     FILE_PATH_LITERAL("webrtc_video_quality");
-static const base::FilePath::CharType kReferenceVideosDirName[] =
-    FILE_PATH_LITERAL("webrtc.DEPS/webrtc_videos");
-static const base::FilePath::CharType kReferenceFileName360p[] =
-    FILE_PATH_LITERAL("reference_video_640x360_30fps");
-static const base::FilePath::CharType kYuvFileExtension[] =
-    FILE_PATH_LITERAL("yuv");
-static const base::FilePath::CharType kY4mFileExtension[] =
-    FILE_PATH_LITERAL("y4m");
 static const base::FilePath::CharType kCapturedYuvFileName[] =
     FILE_PATH_LITERAL("captured_video.yuv");
 static const base::FilePath::CharType kStatsFileName[] =
@@ -83,14 +75,6 @@ static const int k360pHeight = 360;
 // If you change the port number, don't forget to modify video_extraction.js
 // too!
 static const char kPyWebSocketPortNumber[] = "12221";
-
-const char kAdviseOnGclientSolution[] =
-    "You need to add this solution to your .gclient to run this test:\n"
-    "{\n"
-    "  \"name\"        : \"webrtc.DEPS\",\n"
-    "  \"url\"         : \"svn://svn.chromium.org/chrome/trunk/deps/"
-    "third_party/webrtc/webrtc.DEPS\",\n"
-    "}";
 
 // Test the video quality of the WebRTC output.
 //
@@ -122,15 +106,16 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
         environment_(base::Environment::Create()) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Set up the command line option with the expected file name. We will check
     // its existence in HasAllRequiredResources().
-    webrtc_reference_video_y4m_ = GetReferenceVideosDir()
-        .Append(kReferenceFileName360p).AddExtension(kY4mFileExtension);
+    webrtc_reference_video_y4m_ = test::GetReferenceVideosDir()
+        .Append(test::kReferenceFileName360p)
+        .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    webrtc_reference_video_y4m_);
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
@@ -145,27 +130,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
           "files:" << GetWorkingDir().value();
       return false;
     }
-    if (!base::PathExists(GetReferenceVideosDir())) {
-      LOG(ERROR) << "Cannot find the working directory for the reference video "
-          "files, expected at " << GetReferenceVideosDir().value() << ". " <<
-          kAdviseOnGclientSolution;
-      return false;
-    }
-    base::FilePath webrtc_reference_video_yuv = GetReferenceVideosDir()
-        .Append(kReferenceFileName360p).AddExtension(kYuvFileExtension);
-    if (!base::PathExists(webrtc_reference_video_yuv)) {
-      LOG(ERROR) << "Missing YUV reference video to be used for quality"
-          << " comparison, expected at " << webrtc_reference_video_yuv.value()
-          << ". " << kAdviseOnGclientSolution;
-      return false;
-    }
-    if (!base::PathExists(webrtc_reference_video_y4m_)) {
-      LOG(ERROR) << "Missing Y4M reference video to be used for quality"
-          << " comparison, expected at "<< webrtc_reference_video_y4m_.value()
-          << ". " << kAdviseOnGclientSolution;
-      return false;
-    }
-    return true;
+
+    // Ensure we have the required input files.
+    return test::HasReferenceFilesInCheckout();
   }
 
   bool StartPyWebSocketServer() {
@@ -311,23 +278,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     return base::FilePath(native_home_dir).Append(kWorkingDirName);
   }
 
-  base::FilePath GetReferenceVideosDir() {
-    // FilePath does not tolerate relative paths, and we want to hang the
-    // kReferenceVideosDirName at the same level as Chromium codebase, so we
-    // need to subtract the trailing .../src manually from the path.
-    const size_t src_token_length = 3u;
-    const base::FilePath::StringType src_token(FILE_PATH_LITERAL("src"));
-    base::FilePath::StringType path = GetSourceDir().value();
-    DCHECK_GT(path.size(), src_token_length);
-    std::size_t found = path.rfind(src_token);
-    if (found != std::string::npos)
-      path.replace(found,
-                   src_token_length,
-                   base::FilePath::StringType(FILE_PATH_LITERAL("")));
-    return base::FilePath(path).Append(kReferenceVideosDirName);
-  }
-
-  PeerConnectionServerRunner peerconnection_server_;
+  test::PeerConnectionServerRunner peerconnection_server_;
 
  private:
   base::FilePath GetSourceDir() {
@@ -379,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
   // sending frames take quite a bit of time.
   int polling_interval_msec = 1000;
 
-  EXPECT_TRUE(PollingWaitUntil(
+  EXPECT_TRUE(test::PollingWaitUntil(
       "doneFrameCapturing()", "done-capturing", right_tab,
       polling_interval_msec));
 
@@ -387,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
 
-  EXPECT_TRUE(PollingWaitUntil(
+  EXPECT_TRUE(test::PollingWaitUntil(
       "haveMoreFramesToSend()", "no-more-frames", right_tab,
       polling_interval_msec));
 
@@ -406,7 +357,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
       k360pWidth,
       k360pHeight,
       GetWorkingDir().Append(kCapturedYuvFileName),
-      GetReferenceVideosDir().Append(kReferenceFileName360p).AddExtension(
-          kYuvFileExtension),
+      test::GetReferenceVideosDir()
+          .Append(test::kReferenceFileName360p)
+          .AddExtension(test::kYuvFileExtension),
       GetWorkingDir().Append(kStatsFileName)));
 }
