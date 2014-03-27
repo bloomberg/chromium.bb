@@ -261,9 +261,8 @@ int OmniboxResultView::DrawRenderText(
     int max_width) const {
   DCHECK(!render_text->text().empty());
 
-  const int remaining_width =
-      std::min(mirroring_context_->remaining_width(x), max_width);
-  int right_x = x + remaining_width;
+  const int remaining_width = mirroring_context_->remaining_width(x);
+  int right_x = x + max_width;
 
   // Infinite suggestions should appear with the leading ellipses vertically
   // stacked.
@@ -279,7 +278,7 @@ int OmniboxResultView::DrawRenderText(
 
     scoped_ptr<gfx::RenderText> prefix_render_text(
         CreateRenderText(base::UTF8ToUTF16(
-            match.GetAdditionalInfo("match contents prefix"))));
+            match.GetAdditionalInfo(kACMatchPropertyContentsPrefix))));
     const int prefix_width = prefix_render_text->GetContentWidth();
     int prefix_x = x;
 
@@ -306,8 +305,7 @@ int OmniboxResultView::DrawRenderText(
       // the ellipsis such that the widest suggestion reaches the end of the
       // dropdown.
       const int start_offset = std::max(prefix_width,
-          std::min(remaining_width - (prefix_width + max_match_contents_width),
-                   offset));
+          std::min(remaining_width - max_match_contents_width, offset));
       right_x = x + std::min(remaining_width, start_offset + max_width);
       x += start_offset;
       prefix_x = x - prefix_width;
@@ -400,9 +398,9 @@ int OmniboxResultView::GetDisplayOffset(
     return 0;
 
   const base::string16& input_text =
-      base::UTF8ToUTF16(match.GetAdditionalInfo("input text"));
+      base::UTF8ToUTF16(match.GetAdditionalInfo(kACMatchPropertyInputText));
   int contents_start_index = 0;
-  base::StringToInt(match.GetAdditionalInfo("match contents start index"),
+  base::StringToInt(match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
                     &contents_start_index);
 
   scoped_ptr<gfx::RenderText> input_render_text(CreateRenderText(input_text));

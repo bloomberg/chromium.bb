@@ -104,11 +104,26 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   // Load the results into the popup's matrix.
   DCHECK_GT(rows, 0U);
   [matrix_ renewRows:rows columns:1];
+  CGFloat max_match_contents_width = 0.0f;
+  CGFloat contents_offset = -1.0f;
   for (size_t ii = 0; ii < rows; ++ii) {
     OmniboxPopupCell* cell = [matrix_ cellAtRow:ii column:0];
     const AutocompleteMatch& match = GetResult().match_at(ii + start_match);
     [cell setImage:ImageForMatch(match)];
     [cell setMatch:match];
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+      max_match_contents_width = std::max(max_match_contents_width,
+                                           [cell getMatchContentsWidth]);
+      if (contents_offset < 0.0f) {
+        contents_offset = [OmniboxPopupCell computeContentsOffset:match];
+      }
+      [cell setContentsOffset:contents_offset];
+    }
+  }
+
+  for (size_t ii = 0; ii < rows; ++ii) {
+    OmniboxPopupCell* cell = [matrix_ cellAtRow:ii column:0];
+    [cell setMaxMatchContentsWidth:max_match_contents_width];
   }
 
   // Set the cell size to fit a line of text in the cell's font.  All

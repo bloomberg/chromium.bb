@@ -23,6 +23,10 @@ namespace base {
 class Time;
 }  // namespace base
 
+const char kACMatchPropertyInputText[] = "input text";
+const char kACMatchPropertyContentsPrefix[] = "match contents prefix";
+const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
+
 // AutocompleteMatch ----------------------------------------------------------
 
 // A single result line with classified spans.  The autocomplete popup displays

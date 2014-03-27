@@ -449,12 +449,13 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
-    match.RecordAdditionalInfo("input text", base::UTF16ToUTF8(input.text()));
     match.RecordAdditionalInfo(
-        "match contents prefix",
+        kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));
+    match.RecordAdditionalInfo(
+        kACMatchPropertyContentsPrefix,
         base::UTF16ToUTF8(suggestion.match_contents_prefix()));
     match.RecordAdditionalInfo(
-        "match contents start index",
+        kACMatchPropertyContentsStartIndex,
         static_cast<int>(
             suggestion.suggestion().length() - match.contents.length()));
   }
