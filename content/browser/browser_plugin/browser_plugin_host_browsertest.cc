@@ -16,6 +16,7 @@
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -1048,10 +1049,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
                                         expected_value);
     // Delete 'Test' in 'InputTestABC', as the caret is after 'T':
     // delete before 1 character ('T') and after 3 characters ('est').
-    embedder_rvh->Send(
-        new ViewMsg_ExtendSelectionAndDelete(
-            test_embedder()->web_contents()->GetRoutingID(),
-            1, 3));
+    RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+        test_embedder()->web_contents()->GetFocusedFrame());
+    rfh->ExtendSelectionAndDelete(1, 3);
     base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_value, actual_title);
     scoped_ptr<base::Value> value =

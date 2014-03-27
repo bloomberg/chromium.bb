@@ -578,6 +578,10 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnJavaScriptExecuteRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetCompositionFromExistingText,
+                        OnSetCompositionFromExistingText)
+    IPC_MESSAGE_HANDLER(FrameMsg_ExtendSelectionAndDelete,
+                        OnExtendSelectionAndDelete)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
@@ -995,9 +999,25 @@ void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
   if (!GetRenderWidget()->ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(GetRenderWidget());
-  // TODO(jam): move this method to WebFrame since it uses the focused frame.
-  render_view_->webview()->setEditableSelectionOffsets(start, end);
+  frame_->setEditableSelectionOffsets(start, end);
 }
+
+void RenderFrameImpl::OnSetCompositionFromExistingText(
+    int start, int end,
+    const std::vector<blink::WebCompositionUnderline>& underlines) {
+  if (!GetRenderWidget()->ShouldHandleImeEvent())
+    return;
+  ImeEventGuard guard(GetRenderWidget());
+  frame_->setCompositionFromExistingText(start, end, underlines);
+}
+
+void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
+  if (!GetRenderWidget()->ShouldHandleImeEvent())
+    return;
+  ImeEventGuard guard(GetRenderWidget());
+  frame_->extendSelectionAndDelete(before, after);
+}
+
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
     const base::string16& selection_text,
@@ -1898,7 +1918,7 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
 #if defined(OS_ANDROID)
   gfx::Rect start_rect;
   gfx::Rect end_rect;
-  render_view_->GetSelectionBounds(&start_rect, &end_rect);
+  GetRenderWidget()->GetSelectionBounds(&start_rect, &end_rect);
   params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
   params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
 #endif
@@ -2879,12 +2899,14 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 #endif
   {
     size_t location, length;
-    if (!render_view_->webview()->caretOrSelectionRange(&location, &length))
+    if (!GetRenderWidget()->webwidget()->caretOrSelectionRange(
+            &location, &length)) {
       return;
+    }
 
     range = gfx::Range(location, location + length);
 
-    if (render_view_->webview()->textInputInfo().type !=
+    if (GetRenderWidget()->webwidget()->textInputInfo().type !=
             blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
@@ -2903,7 +2925,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
       text = frame_->selectionAsText();
       // http://crbug.com/101435
       // In some case, frame->selectionAsText() returned text's length is not
-      // equal to the length returned from webview()->caretOrSelectionRange().
+      // equal to the length returned from webwidget()->caretOrSelectionRange().
       // So we have to set the range according to text.length().
       range.set_end(range.start() + text.length());
     }

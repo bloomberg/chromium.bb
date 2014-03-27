@@ -231,6 +231,8 @@ class CONTENT_EXPORT RenderWidget
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
 
+  virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
+
   void OnShowHostContextMenu(ContextMenuParams* params);
 
 #if defined(OS_ANDROID) || defined(USE_AURA)
@@ -445,7 +447,6 @@ class CONTENT_EXPORT RenderWidget
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
-  virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
   virtual ui::TextInputType WebKitToUiTextInputType(
       blink::WebTextInputType type);
 

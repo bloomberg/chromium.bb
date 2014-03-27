@@ -684,4 +684,9 @@ void RenderFrameHostImpl::SelectRange(const gfx::Point& start,
   Send(new InputMsg_SelectRange(routing_id_, start, end));
 }
 
+void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
+                                                   size_t after) {
+  Send(new FrameMsg_ExtendSelectionAndDelete(routing_id_, before, after));
+}
+
 }  // namespace content

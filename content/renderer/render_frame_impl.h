@@ -395,6 +395,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                   int id,
                                   bool notify_result);
   void OnSetEditableSelectionOffsets(int start, int end);
+  void OnSetCompositionFromExistingText(
+      int start, int end,
+      const std::vector<blink::WebCompositionUnderline>& underlines);
+  void OnExtendSelectionAndDelete(int before, int after);
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif

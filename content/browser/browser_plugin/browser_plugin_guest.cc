@@ -14,6 +14,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1372,7 +1373,10 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
     int instance_id,
     int before,
     int after) {
-  Send(new ViewMsg_ExtendSelectionAndDelete(routing_id(), before, after));
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      web_contents()->GetFocusedFrame());
+  if (rfh)
+    rfh->ExtendSelectionAndDelete(before, after);
 }
 
 void BrowserPluginGuest::OnReclaimCompositorResources(

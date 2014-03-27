@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
@@ -29,6 +30,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
                           blink::WebPageVisibilityStateLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::LatencyComponentType,
                           ui::LATENCY_COMPONENT_TYPE_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
+  IPC_STRUCT_TRAITS_MEMBER(startOffset)
+  IPC_STRUCT_TRAITS_MEMBER(endOffset)
+  IPC_STRUCT_TRAITS_MEMBER(color)
+  IPC_STRUCT_TRAITS_MEMBER(thick)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::LatencyComponent)
   IPC_STRUCT_TRAITS_MEMBER(sequence_number)

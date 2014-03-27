@@ -41,4 +41,7 @@ specific_include_rules = {
   "render_view_host_impl\.(cc|h)": [
     "+content/browser/frame_host/frame_tree.h",
   ],
+  "render_widget_host_view_aura\.cc": [
+    "+content/browser/frame_host",
+  ],
 }

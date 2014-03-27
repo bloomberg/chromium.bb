@@ -42,7 +42,6 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
@@ -99,13 +98,6 @@ IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(font_point_size)
 IPC_STRUCT_TRAITS_END()
 #endif
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
-  IPC_STRUCT_TRAITS_MEMBER(startOffset)
-  IPC_STRUCT_TRAITS_MEMBER(endOffset)
-  IPC_STRUCT_TRAITS_MEMBER(color)
-  IPC_STRUCT_TRAITS_MEMBER(thick)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(forward)
@@ -821,19 +813,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ImeConfirmComposition,
                     base::string16 /* text */,
                     gfx::Range /* replacement_range */,
                     bool /* keep_selection */)
-
-// Sets the text composition to be between the given start and end offsets
-// in the currently focused editable field.
-IPC_MESSAGE_ROUTED3(ViewMsg_SetCompositionFromExistingText,
-    int /* start */,
-    int /* end */,
-    std::vector<blink::WebCompositionUnderline> /* underlines */)
-
-// Deletes the current selection plus the specified number of characters before
-// and after the selection or caret.
-IPC_MESSAGE_ROUTED2(ViewMsg_ExtendSelectionAndDelete,
-                    int /* before */,
-                    int /* after */)
 
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.

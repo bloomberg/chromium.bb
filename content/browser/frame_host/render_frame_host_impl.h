@@ -157,6 +157,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // Requests the renderer to select the region between two points.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
+  // Deletes the current selection plus the specified number of characters
+  // before and after the selection or caret.
+  void ExtendSelectionAndDelete(size_t before, size_t after);
+
  protected:
   friend class RenderFrameHostFactory;
 

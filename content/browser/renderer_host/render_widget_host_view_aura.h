@@ -78,6 +78,7 @@ namespace content {
 class LegacyRenderWidgetHostHWND;
 #endif
 
+class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class ResizeLock;
@@ -583,6 +584,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
+
+  RenderFrameHostImpl* GetFocusedFrame();
 
   // The model object.
   RenderWidgetHostImpl* host_;
