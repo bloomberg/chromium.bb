@@ -27,20 +27,21 @@
 #define DOMPoint_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DOMPoint : public RefCounted<DOMPoint>, public ScriptWrappable {
+class DOMPoint FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPoint>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMPoint> create()
+    static PassRefPtrWillBeRawPtr<DOMPoint> create()
     {
-        return adoptRef(new DOMPoint());
+        return adoptRefWillBeNoop(new DOMPoint());
     }
-    static PassRefPtr<DOMPoint> create(float x, float y)
+    static PassRefPtrWillBeRawPtr<DOMPoint> create(float x, float y)
     {
-        return adoptRef(new DOMPoint(x, y));
+        return adoptRefWillBeNoop(new DOMPoint(x, y));
     }
 
     float x() const { return m_x; }
@@ -48,6 +49,8 @@ public:
 
     void setX(float x) { m_x = x; }
     void setY(float y) { m_y = y; }
+
+    void trace(Visitor*) { }
 
 private:
     DOMPoint(float x = 0, float y = 0)
