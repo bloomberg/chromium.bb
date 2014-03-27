@@ -9,12 +9,22 @@
 #import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
+
+// Returns whether |screenPoint| is inside the bounds of |view|.
+static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
+  if ([view window] == nil)
+    return NO;
+  NSPoint windowPoint = [[view window] convertScreenToBase:screenPoint];
+  NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
+  return [view mouse:viewPoint inRect:[view bounds]];
+}
 
 @interface TabStripDragController (Private)
 - (void)resetDragControllers;
@@ -187,8 +197,6 @@ const NSTimeInterval kTearDuration = 0.333;
     }
   }
 
-  // Do not start dragging until the user has "torn" the tab off by
-  // moving more than 3 pixels.
   NSPoint thisPoint = [NSEvent mouseLocation];
 
   // Iterate over possible targets checking for the one the mouse is in.
@@ -202,10 +210,7 @@ const NSTimeInterval kTearDuration = 0.333;
     NSRect windowFrame = [[target window] frame];
     if (NSPointInRect(thisPoint, windowFrame)) {
       [[target window] orderFront:self];
-      NSRect tabStripFrame = [[target tabStripView] frame];
-      tabStripFrame.origin = [[target window]
-                              convertBaseToScreen:tabStripFrame.origin];
-      if (NSPointInRect(thisPoint, tabStripFrame)) {
+      if (PointIsInsideView(thisPoint, [target tabStripView])) {
         newTarget = target;
       }
       break;
@@ -225,13 +230,6 @@ const NSTimeInterval kTearDuration = 0.333;
 
   // Create or identify the dragged controller.
   if (!draggedController_) {
-    // We don't want to remove the source window's placeholder here because the
-    // new tab button may briefly flash in and out if we remove and add back the
-    // placeholder.
-    // Instead, we will remove the placeholder later when the target window
-    // actually changes.
-    targetController_ = sourceController_;
-
     // Detach from the current window and put it in a new window. If there are
     // no more tabs remaining after detaching, the source window is about to
     // go away (it's been autoreleased) so we need to ensure we don't reference
@@ -245,7 +243,19 @@ const NSTimeInterval kTearDuration = 0.333;
 
     dragWindow_ = [draggedController_ window];
     [dragWindow_ setAlphaValue:0.0];
-    if (![sourceController_ hasLiveTabs]) {
+    if ([sourceController_ hasLiveTabs]) {
+      if (PointIsInsideView(thisPoint, [sourceController_ tabStripView])) {
+        // We don't want to remove the source window's placeholder here because
+        // the new tab button may briefly flash in and out if we remove and add
+        // back the placeholder.
+        // Instead, we will remove the placeholder later when the target window
+        // actually changes.
+        targetController_ = sourceController_;
+      } else {
+        [sourceController_ removePlaceholder];
+      }
+    } else {
+      [sourceController_ removePlaceholder];
       sourceController_ = draggedController_;
       sourceWindow_ = dragWindow_;
     }
