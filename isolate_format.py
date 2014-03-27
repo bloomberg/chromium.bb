@@ -584,6 +584,8 @@ class Configs(object):
     assert isinstance(config_variables, tuple)
     assert all(isinstance(c, basestring) for c in config_variables), (
         config_variables)
+    config_variables = tuple(config_variables)
+    assert tuple(sorted(config_variables)) == config_variables, config_variables
     self._config_variables = config_variables
     # The keys of _by_config are tuples of values for each of the items in
     # self._config_variables. A None item in the list of the key means the value
@@ -597,8 +599,11 @@ class Configs(object):
   def get_config(self, config):
     """Returns all configs that matches this config as a single ConfigSettings.
     """
+    # TODO(maruel): Fix ordering based on the bounded values. The keys are not
+    # necessarily sorted in the way that makes sense, they are alphabetically
+    # sorted. It is important because the left-most takes predescence.
     out = ConfigSettings({})
-    for k, v in self._by_config.iteritems():
+    for k, v in sorted(self._by_config.iteritems()):
       if all(i == j or j is None for i, j in zip(config, k)):
         out = out.union(v)
     return out
@@ -621,6 +626,7 @@ class Configs(object):
     """Returns a new Configs instance, the union of variables from self and rhs.
 
     Uses self.file_comment if available, otherwise rhs.file_comment.
+    It keeps config_variables sorted in the output.
     """
     # Merge the keys of config_variables for each Configs instances. All the new
     # variables will become unbounded. This requires realigning the keys.

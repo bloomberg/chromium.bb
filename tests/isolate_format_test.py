@@ -706,36 +706,35 @@ class IsolateFormatTest(unittest.TestCase):
 
   def test_make_isolate_4_variables(self):
     # Test multiple combinations of bound and free variables.
-    config = isolate_format.Configs(None, ('CHROMEOS', 'OS', 'BRAND', 'LIB'))
+    config = isolate_format.Configs(None, ('BRAND', 'CHROMEOS', 'LIB', 'OS'))
     config._by_config = {
-        (0, 'linux', None, 's'): isolate_format.ConfigSettings(
+        (None, 0, 's', 'linux'): isolate_format.ConfigSettings(
             {'command': ['bar']}),
-        (None, 'mac', None, 's'): isolate_format.ConfigSettings(
+        (None, None, 's', 'mac'): isolate_format.ConfigSettings(
             {'command': ['foo']}),
-        (None, 'win', None, 's'): isolate_format.ConfigSettings(
+        (None, None, 's', 'win'): isolate_format.ConfigSettings(
             {'command': ['ziz']}),
-        (0, 'win', 'Chrome', 's'): isolate_format.ConfigSettings(
+        ('Chrome', 0, 's', 'win'): isolate_format.ConfigSettings(
             {'command': ['baz']}),
     }
     expected = {
       'conditions': [
-        ['CHROMEOS==0 and OS=="linux" and LIB=="s"', {
-          'variables': {
-            'command': ['bar'],
-          },
-        }],
-        # TODO(maruel): Short by key name.
-        ['CHROMEOS==0 and OS=="win" and BRAND=="Chrome" and LIB=="s"', {
+        ['BRAND=="Chrome" and CHROMEOS==0 and LIB=="s" and OS=="win"', {
           'variables': {
             'command': ['baz'],
           },
         }],
-        ['OS=="mac" and LIB=="s"', {
+        ['CHROMEOS==0 and LIB=="s" and OS=="linux"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+        ['LIB=="s" and OS=="mac"', {
           'variables': {
             'command': ['foo'],
           },
         }],
-        ['OS=="win" and LIB=="s"', {
+        ['LIB=="s" and OS=="win"', {
           'variables': {
             'command': ['ziz'],
           },
