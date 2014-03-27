@@ -31,18 +31,26 @@
 using base::win::RegKey;
 using installer::InstallationState;
 
-namespace {
-
-const wchar_t kGoogleUpdatePoliciesKey[] =
+const wchar_t GoogleUpdateSettings::kPoliciesKey[] =
     L"SOFTWARE\\Policies\\Google\\Update";
-const wchar_t kGoogleUpdateUpdatePolicyValue[] = L"UpdateDefault";
-const wchar_t kGoogleUpdateUpdateOverrideValuePrefix[] = L"Update";
-const GoogleUpdateSettings::UpdatePolicy kGoogleUpdateDefaultUpdatePolicy =
+const wchar_t GoogleUpdateSettings::kUpdatePolicyValue[] = L"UpdateDefault";
+const wchar_t GoogleUpdateSettings::kUpdateOverrideValuePrefix[] = L"Update";
+const wchar_t GoogleUpdateSettings::kCheckPeriodOverrideMinutes[] =
+    L"AutoUpdateCheckPeriodMinutes";
+
+// Don't allow update periods longer than six weeks.
+const int GoogleUpdateSettings::kCheckPeriodOverrideMinutesMax =
+    60 * 24 * 7 * 6;
+
+const GoogleUpdateSettings::UpdatePolicy
+GoogleUpdateSettings::kDefaultUpdatePolicy =
 #if defined(GOOGLE_CHROME_BUILD)
     GoogleUpdateSettings::AUTOMATIC_UPDATES;
 #else
     GoogleUpdateSettings::UPDATES_DISABLED;
 #endif
+
+namespace {
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -537,22 +545,17 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
     const std::wstring& app_guid,
     bool* is_overridden) {
   bool found_override = false;
-  UpdatePolicy update_policy = kGoogleUpdateDefaultUpdatePolicy;
+  UpdatePolicy update_policy = kDefaultUpdatePolicy;
 
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(!app_guid.empty());
   RegKey policy_key;
 
   // Google Update Group Policy settings are always in HKLM.
-  if (policy_key.Open(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    static const size_t kPrefixLen =
-        arraysize(kGoogleUpdateUpdateOverrideValuePrefix) - 1;
-    DWORD value;
-    std::wstring app_update_override;
-    app_update_override.reserve(kPrefixLen + app_guid.size());
-    app_update_override.append(kGoogleUpdateUpdateOverrideValuePrefix,
-                               kPrefixLen);
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey, KEY_QUERY_VALUE) ==
+          ERROR_SUCCESS) {
+    DWORD value = 0;
+    base::string16 app_update_override(kUpdateOverrideValuePrefix);
     app_update_override.append(app_guid);
     // First try to read and comprehend the app-specific override.
     found_override = (policy_key.ReadValueDW(app_update_override.c_str(),
@@ -561,8 +564,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
 
     // Failing that, try to read and comprehend the default override.
     if (!found_override &&
-        policy_key.ReadValueDW(kGoogleUpdateUpdatePolicyValue,
-                               &value) == ERROR_SUCCESS) {
+        policy_key.ReadValueDW(kUpdatePolicyValue, &value) == ERROR_SUCCESS) {
       GetUpdatePolicyFromDword(value, &update_policy);
     }
   }
@@ -572,6 +574,96 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
     *is_overridden = found_override;
 
   return update_policy;
+}
+
+// static
+bool GoogleUpdateSettings::AreAutoupdatesEnabled(
+    const base::string16& app_guid) {
+  // Check the auto-update check period override. If it is 0 or exceeds the
+  // maximum timeout, then for all intents and purposes auto updates are
+  // disabled.
+  RegKey policy_key;
+  DWORD value = 0;
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      policy_key.ReadValueDW(kCheckPeriodOverrideMinutes,
+                             &value) == ERROR_SUCCESS &&
+      (value == 0 || value > kCheckPeriodOverrideMinutesMax)) {
+    return false;
+  }
+
+  UpdatePolicy policy = GetAppUpdatePolicy(app_guid, NULL);
+  return (policy == AUTOMATIC_UPDATES || policy == AUTO_UPDATES_ONLY);
+}
+
+// static
+bool GoogleUpdateSettings::ReenableAutoupdatesForApp(
+    const base::string16& app_guid) {
+#if defined(GOOGLE_CHROME_BUILD)
+  int needs_reset_count = 0;
+  int did_reset_count = 0;
+
+  UpdatePolicy update_policy = kDefaultUpdatePolicy;
+  RegKey policy_key;
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey,
+                      KEY_SET_VALUE | KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    // First check the app-specific override value and reset that if needed.
+    // Note that this intentionally sets the override to AUTOMATIC_UPDATES
+    // even if it was previously AUTO_UPDATES_ONLY. The thinking is that
+    // AUTOMATIC_UPDATES is marginally more likely to let a user update and this
+    // code is only called when a stuck user asks for updates.
+    base::string16 app_update_override(kUpdateOverrideValuePrefix);
+    app_update_override.append(app_guid);
+    DWORD value = 0;
+    bool has_app_update_override =
+        policy_key.ReadValueDW(app_update_override.c_str(),
+                               &value) == ERROR_SUCCESS;
+    if (has_app_update_override &&
+        (!GetUpdatePolicyFromDword(value, &update_policy) ||
+         update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES)) {
+      ++needs_reset_count;
+      if (policy_key.WriteValue(
+              app_update_override.c_str(),
+              static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES)) ==
+                  ERROR_SUCCESS) {
+        ++did_reset_count;
+      }
+    }
+
+    // If there was no app-specific override policy see if there's a global
+    // policy preventing updates and delete it if so.
+    if (!has_app_update_override &&
+        policy_key.ReadValueDW(kUpdatePolicyValue, &value) == ERROR_SUCCESS &&
+        (!GetUpdatePolicyFromDword(value, &update_policy) ||
+         update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES)) {
+      ++needs_reset_count;
+      if (policy_key.DeleteValue(kUpdatePolicyValue) == ERROR_SUCCESS)
+        ++did_reset_count;
+    }
+
+    // Check the auto-update check period override. If it is 0 or exceeds
+    // the maximum timeout, delete the override value.
+    if (policy_key.ReadValueDW(kCheckPeriodOverrideMinutes,
+                               &value) == ERROR_SUCCESS &&
+        (value == 0 || value > kCheckPeriodOverrideMinutesMax)) {
+      ++needs_reset_count;
+      if (policy_key.DeleteValue(kCheckPeriodOverrideMinutes) == ERROR_SUCCESS)
+        ++did_reset_count;
+    }
+
+    // Return whether the number of successful resets is the same as the
+    // number of things that appeared to need resetting.
+    return (needs_reset_count == did_reset_count);
+  } else {
+    // For some reason we couldn't open the policy key with the desired
+    // permissions to make changes (the most likely reason is that there is no
+    // policy set). Simply return whether or not we think updates are enabled.
+    return AreAutoupdatesEnabled(app_guid);
+  }
+
+#endif
+  // Non Google Chrome isn't going to autoupdate.
+  return true;
 }
 
 void GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms() {

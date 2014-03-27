@@ -25,17 +25,6 @@ using installer::ChannelInfo;
 
 namespace {
 
-const wchar_t kGoogleUpdatePoliciesKey[] =
-    L"SOFTWARE\\Policies\\Google\\Update";
-const wchar_t kGoogleUpdateUpdateDefault[] = L"UpdateDefault";
-const wchar_t kGoogleUpdateUpdatePrefix[] = L"Update";
-const GoogleUpdateSettings::UpdatePolicy kDefaultUpdatePolicy =
-#if defined(GOOGLE_CHROME_BUILD)
-    GoogleUpdateSettings::AUTOMATIC_UPDATES;
-#else
-    GoogleUpdateSettings::UPDATES_DISABLED;
-#endif
-
 const wchar_t kTestProductGuid[] = L"{89F1B351-B15D-48D4-8F10-1298721CF13D}";
 const wchar_t kTestExperimentLabel[] = L"test_label_value";
 
@@ -204,6 +193,68 @@ class GoogleUpdateSettingsTest : public testing::Test {
     }
 
     return ap_key_value;
+  }
+
+  bool SetUpdatePolicyForAppGuid(const base::string16& app_guid,
+                                 GoogleUpdateSettings::UpdatePolicy policy) {
+    RegKey policy_key;
+    if (policy_key.Create(HKEY_LOCAL_MACHINE,
+                          GoogleUpdateSettings::kPoliciesKey,
+                          KEY_SET_VALUE) == ERROR_SUCCESS) {
+      base::string16 app_update_override(
+          GoogleUpdateSettings::kUpdateOverrideValuePrefix);
+      app_update_override.append(app_guid);
+      return policy_key.WriteValue(app_update_override.c_str(),
+                                   static_cast<DWORD>(policy)) == ERROR_SUCCESS;
+    }
+    return false;
+  }
+
+  DWORD GetUpdatePolicyForAppGuid(const base::string16& app_guid) {
+    RegKey policy_key;
+    if (policy_key.Create(HKEY_LOCAL_MACHINE,
+                          GoogleUpdateSettings::kPoliciesKey,
+                          KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+      base::string16 app_update_override(
+          GoogleUpdateSettings::kUpdateOverrideValuePrefix);
+      app_update_override.append(app_guid);
+
+      DWORD value = -1;
+      if (policy_key.ReadValueDW(app_update_override.c_str(),
+                                 &value) == ERROR_SUCCESS) {
+        return value;
+      }
+    }
+    return -1;
+  }
+
+  bool SetGlobalUpdatePolicy(GoogleUpdateSettings::UpdatePolicy policy) {
+    RegKey policy_key;
+    return policy_key.Create(HKEY_LOCAL_MACHINE,
+                             GoogleUpdateSettings::kPoliciesKey,
+                             KEY_SET_VALUE) == ERROR_SUCCESS &&
+           policy_key.WriteValue(GoogleUpdateSettings::kUpdatePolicyValue,
+                                 static_cast<DWORD>(policy)) == ERROR_SUCCESS;
+  }
+
+  DWORD GetGlobalUpdatePolicy() {
+    RegKey policy_key;
+    DWORD value = -1;
+    return (policy_key.Create(HKEY_LOCAL_MACHINE,
+                              GoogleUpdateSettings::kPoliciesKey,
+                              KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+            policy_key.ReadValueDW(GoogleUpdateSettings::kUpdatePolicyValue,
+                                   &value) == ERROR_SUCCESS) ? value : -1;
+  }
+
+  bool SetUpdateTimeoutOverride(DWORD time_in_minutes) {
+    RegKey policy_key;
+    return policy_key.Create(HKEY_LOCAL_MACHINE,
+                             GoogleUpdateSettings::kPoliciesKey,
+                             KEY_SET_VALUE) == ERROR_SUCCESS &&
+           policy_key.WriteValue(
+               GoogleUpdateSettings::kCheckPeriodOverrideMinutes,
+               time_in_minutes) == ERROR_SUCCESS;
   }
 
   registry_util::RegistryOverrideManager registry_overrides_;
@@ -488,23 +539,26 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
 TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
   // There are no policies at all.
   EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-            RegKey().Open(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          GoogleUpdateSettings::kPoliciesKey,
                           KEY_QUERY_VALUE));
   bool is_overridden = true;
-  EXPECT_EQ(kDefaultUpdatePolicy,
+  EXPECT_EQ(GoogleUpdateSettings::kDefaultUpdatePolicy,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
 
   // The policy key exists, but there are no values of interest present.
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey().Create(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey().Create(HKEY_LOCAL_MACHINE,
+                            GoogleUpdateSettings::kPoliciesKey,
                             KEY_SET_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey().Open(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          GoogleUpdateSettings::kPoliciesKey,
                           KEY_QUERY_VALUE));
   is_overridden = true;
-  EXPECT_EQ(kDefaultUpdatePolicy,
+  EXPECT_EQ(GoogleUpdateSettings::kDefaultUpdatePolicy,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
@@ -516,9 +570,10 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
 // present.
 TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(0)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(0)));
   bool is_overridden = true;
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
@@ -526,9 +581,10 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
   EXPECT_FALSE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(1)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(1)));
   is_overridden = true;
   EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
@@ -536,9 +592,10 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
   EXPECT_FALSE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(2)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(2)));
   is_overridden = true;
   EXPECT_EQ(GoogleUpdateSettings::MANUAL_UPDATES_ONLY,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
@@ -546,9 +603,10 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
   EXPECT_FALSE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(3)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(3)));
   is_overridden = true;
   EXPECT_EQ(GoogleUpdateSettings::AUTO_UPDATES_ONLY,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
@@ -557,11 +615,12 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
 
   // The default policy should be in force for bogus values.
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(4)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(4)));
   is_overridden = true;
-  EXPECT_EQ(kDefaultUpdatePolicy,
+  EXPECT_EQ(GoogleUpdateSettings::kDefaultUpdatePolicy,
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
@@ -569,15 +628,17 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
 
 // Test that an app-specific override is used if present.
 TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
-  std::wstring app_policy_value(kGoogleUpdateUpdatePrefix);
+  std::wstring app_policy_value(
+      GoogleUpdateSettings::kUpdateOverrideValuePrefix);
   app_policy_value.append(kTestProductGuid);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(1)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(1)));
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
                    KEY_SET_VALUE).WriteValue(app_policy_value.c_str(),
                                              static_cast<DWORD>(0)));
   bool is_overridden = false;
@@ -587,11 +648,12 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
   EXPECT_TRUE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
-                   KEY_SET_VALUE).WriteValue(kGoogleUpdateUpdateDefault,
-                                             static_cast<DWORD>(0)));
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                   KEY_SET_VALUE).WriteValue(
+                       GoogleUpdateSettings::kUpdatePolicyValue,
+                       static_cast<DWORD>(0)));
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
                    KEY_SET_VALUE).WriteValue(app_policy_value.c_str(),
                                              static_cast<DWORD>(1)));
   is_overridden = false;
@@ -601,7 +663,7 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
   EXPECT_TRUE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
                    KEY_SET_VALUE).WriteValue(app_policy_value.c_str(),
                                              static_cast<DWORD>(2)));
   is_overridden = false;
@@ -611,7 +673,7 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
   EXPECT_TRUE(is_overridden);
 
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
                    KEY_SET_VALUE).WriteValue(app_policy_value.c_str(),
                                              static_cast<DWORD>(3)));
   is_overridden = false;
@@ -622,7 +684,7 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
 
   // The default policy should be in force for bogus values.
   EXPECT_EQ(ERROR_SUCCESS,
-            RegKey(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+            RegKey(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
                    KEY_SET_VALUE).WriteValue(app_policy_value.c_str(),
                                              static_cast<DWORD>(4)));
   is_overridden = true;
@@ -630,6 +692,90 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
+}
+
+TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesDisabledByPolicy) {
+  EXPECT_TRUE(
+      SetUpdatePolicyForAppGuid(kTestProductGuid,
+                                GoogleUpdateSettings::UPDATES_DISABLED));
+  bool is_overridden = false;
+  GoogleUpdateSettings::UpdatePolicy update_policy =
+      GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+                                               &is_overridden);
+  EXPECT_TRUE(is_overridden);
+  EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+
+  EXPECT_TRUE(
+      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+                                                           &is_overridden);
+  // Should still have a policy but now that policy should explicitly enable
+  // updates.
+  EXPECT_TRUE(is_overridden);
+  EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES, update_policy);
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+}
+
+TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesEnabledWithGlobalDisabled) {
+  // Disable updates globally but enable them for our specific app (the app-
+  // specific setting should take precedence).
+  EXPECT_TRUE(
+      SetUpdatePolicyForAppGuid(kTestProductGuid,
+                                GoogleUpdateSettings::AUTOMATIC_UPDATES));
+  EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
+
+  // Make sure we read this as still having updates enabled.
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+
+  // Make sure that the reset action returns true and is a no-op.
+  EXPECT_TRUE(
+      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  EXPECT_EQ(static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES),
+            GetUpdatePolicyForAppGuid(kTestProductGuid));
+  EXPECT_EQ(static_cast<DWORD>(GoogleUpdateSettings::UPDATES_DISABLED),
+            GetGlobalUpdatePolicy());
+}
+
+TEST_F(GoogleUpdateSettingsTest, GlobalUpdatesDisabledByPolicy) {
+  EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
+  bool is_overridden = false;
+
+  // The contract for GetAppUpdatePolicy states that |is_overridden| should be
+  // set to false when updates are disabled on a non-app-specific basis.
+  GoogleUpdateSettings::UpdatePolicy update_policy =
+      GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+                                               &is_overridden);
+  EXPECT_FALSE(is_overridden);
+  EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+
+  EXPECT_TRUE(
+      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+                                                           &is_overridden);
+  // Policy should now be to enable updates, |is_overridden| should still be
+  // false.
+  EXPECT_FALSE(is_overridden);
+  EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES, update_policy);
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+}
+
+TEST_F(GoogleUpdateSettingsTest, UpdatesDisabledByTimeout) {
+  // Disable updates altogether.
+  EXPECT_TRUE(SetUpdateTimeoutOverride(0));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_TRUE(
+      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+
+  // Set the update period to something unreasonable.
+  EXPECT_TRUE(SetUpdateTimeoutOverride(
+      GoogleUpdateSettings::kCheckPeriodOverrideMinutesMax + 1));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_TRUE(
+      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
 }
 
 TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperSystem) {
@@ -809,6 +955,7 @@ class StatsState {
         (state_medium_value_ == TRUE_SETTING) :
         (state_value_ == TRUE_SETTING);
   }
+
  private:
   bool system_level_;
   bool multi_install_;

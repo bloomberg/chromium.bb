@@ -33,8 +33,6 @@
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/mac/keystone_glue.h"
-#elif defined(OS_POSIX)
-#include "base/process/launch.h"
 #endif
 
 using content::BrowserThread;
@@ -118,10 +116,8 @@ void DetectUpdatability(const base::Closure& callback_task,
 
   base::string16 app_guid = installer::GetAppGuidForUpdates(IsSystemInstall());
   DCHECK(!app_guid.empty());
-  if (GoogleUpdateSettings::AUTOMATIC_UPDATES ==
-      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, NULL)) {
+  if (GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid))
     CheckForUnstableChannel(callback_task, is_unstable_channel);
-  }
 }
 #endif  // defined(OS_WIN)
 

@@ -34,6 +34,14 @@ class GoogleUpdateSettings {
     UPDATE_POLICIES_COUNT
   };
 
+  static const wchar_t kPoliciesKey[];
+  static const wchar_t kUpdatePolicyValue[];
+  static const wchar_t kUpdateOverrideValuePrefix[];
+  static const wchar_t kCheckPeriodOverrideMinutes[];
+  static const int kCheckPeriodOverrideMinutesDefault;
+  static const int kCheckPeriodOverrideMinutesMax;
+  static const GoogleUpdateSettings::UpdatePolicy kDefaultUpdatePolicy;
+
   // Defines product data that is tracked/used by Google Update.
   struct ProductData {
     // The currently installed version.
@@ -227,6 +235,23 @@ class GoogleUpdateSettings {
   // true if an app-specific policy override is in force, or false otherwise.
   static UpdatePolicy GetAppUpdatePolicy(const std::wstring& app_guid,
                                          bool* is_overridden);
+
+  // Returns true if the app indicated by |app_guid| should be updated
+  // automatically by Google Update based on current autoupdate settings. This
+  // is distinct from GetApUpdatePolicy which checks only a subset of things
+  // that can cause an app not to update.
+  static bool AreAutoupdatesEnabled(const base::string16& app_guid);
+
+  // Attempts to reenable auto-updates for |app_guid| by removing
+  // any group policy settings that would block updates from occurring. This is
+  // a superset of the things checked by GetAppUpdatePolicy() as
+  // GetAppUpdatePolicy() does not check Omaha's AutoUpdateCheckPeriodMinutes
+  // setting which will be reset by this method. Will need to be called from an
+  // elevated process since those settings live in HKLM. Returns true if there
+  // is a reasonable belief that updates are not disabled by policy when this
+  // method returns, false otherwise. Note that for Chromium builds, this
+  // returns true since Chromium is assumed not to autoupdate.
+  static bool ReenableAutoupdatesForApp(const base::string16& app_guid);
 
   // Records UMA stats about Chrome's update policy.
   static void RecordChromeUpdatePolicyHistograms();
