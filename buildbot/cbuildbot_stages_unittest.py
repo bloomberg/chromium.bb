@@ -1044,9 +1044,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     self.run.GetArchive().SetupArchivePath()
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.HWTestStage(self.run, self._current_board, archive_stage,
-                              self.suite_config)
+    return stages.HWTestStage(self.run, self._current_board, self.suite_config)
 
   def _RunHWTestSuite(self, debug=False, returncode=0, fails=False,
                       timeout=False):
@@ -1477,8 +1475,7 @@ class AUTestStageTest(AbstractStageTest,
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
-    return stages.AUTestStage(self.run, self._current_board, self.archive_stage,
-                              self.suite_config)
+    return stages.AUTestStage(self.run, self._current_board, self.suite_config)
 
   def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""
@@ -1540,9 +1537,7 @@ class BuildPackagesStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     self.run.attrs.release_tag = self._release_tag
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.BuildPackagesStage(self.run,
-                                     self._current_board, archive_stage)
+    return stages.BuildPackagesStage(self.run, self._current_board)
 
   @contextlib.contextmanager
   def RunStageWithConfig(self):
@@ -1626,8 +1621,7 @@ class BuildImageStageTest(BuildPackagesStageTest):
     self.StartPatcher(BuildImageStageMock())
 
   def ConstructStage(self):
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.BuildImageStage(self.run, self._current_board, archive_stage)
+    return stages.BuildImageStage(self.run, self._current_board)
 
   def RunTestsWithReleaseConfig(self, release_tag):
     self._release_tag = release_tag
@@ -1813,18 +1807,15 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.archive_stage = None
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(UploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
     self.run.options.prebuilts = True
-    self.archive_stage = stages.ArchiveStage(self.run, self._current_board)
 
   def ConstructStage(self):
     return stages.UploadPrebuiltsStage(self.run,
-                                       self.run.config.boards[-1],
-                                       self.archive_stage)
+                                       self.run.config.boards[-1])
 
   def _VerifyBoardMap(self, bot_id, count, board_map, public_args=None,
                       private_args=None):
@@ -1851,7 +1842,7 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
       count -= 1
     if board_map:
       self.assertCommandContains([self.CMD, '--set-version',
-                                  self.archive_stage.version])
+                                  self.run.GetVersion()])
       count -= 1
     self.assertEqual(count, 0,
         'Number of asserts performed does not match (%d remaining)' % count)
@@ -1977,10 +1968,8 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
     self.run.config['binhost_base_url'] = 'https://dontcare/here'
 
   def ConstructStage(self):
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.DevInstallerPrebuiltsStage(self.run,
-                                             self._current_board,
-                                             archive_stage)
+                                             self._current_board)
 
   def testDevInstallerUpload(self):
     """Basic sanity test testing uploads of dev installer prebuilts."""
@@ -2987,8 +2976,7 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
 
   def ConstructStage(self):
     self.run.GetArchive().SetupArchivePath()
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.ChromeSDKStage(self.run, self._current_board, archive_stage)
+    return stages.ChromeSDKStage(self.run, self._current_board)
 
   def testIt(self):
     """A simple run-through test."""

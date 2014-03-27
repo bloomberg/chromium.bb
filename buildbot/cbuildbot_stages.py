@@ -2404,14 +2404,13 @@ class PatchChromeStage(bs.BuilderStage):
       commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 
-class BuildPackagesStage(ArchivingStage):
+class BuildPackagesStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Build Chromium OS packages."""
 
   option_name = 'build'
-  def __init__(self, builder_run, board, archive_stage,
-               pgo_generate=False, pgo_use=False, **kwargs):
-    super(BuildPackagesStage, self).__init__(builder_run, board,
-                                             archive_stage, **kwargs)
+  def __init__(self, builder_run, board, pgo_generate=False, pgo_use=False,
+               **kwargs):
+    super(BuildPackagesStage, self).__init__(builder_run, board, **kwargs)
     self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
     assert not pgo_generate or not pgo_use
 
@@ -2462,7 +2461,7 @@ class BuildPackagesStage(ArchivingStage):
                    extra_env=self._env)
 
 
-class ChromeSDKStage(ArchivingStage):
+class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Run through the simple chrome workflow."""
 
   def __init__(self, *args, **kwargs):
@@ -2490,7 +2489,7 @@ class ChromeSDKStage(ArchivingStage):
 
   def _ArchiveChromeEbuildEnv(self):
     """Generate and upload Chrome ebuild environment."""
-    chrome_dir = self.archive_stage.SingleMatchGlob(
+    chrome_dir = ArchiveStage.SingleMatchGlob(
         os.path.join(self._pkg_dir, constants.CHROME_CP) + '-*')
     env_bzip = os.path.join(chrome_dir, 'environment.bz2')
     with osutils.TempDir(prefix='chrome-sdk-stage') as tempdir:
@@ -2578,7 +2577,7 @@ class BuildImageStage(BuildPackagesStage):
     images_to_build = set(self._run.config.images).intersection(
         images_can_build)
 
-    version = self.archive_stage.release_tag
+    version = self._run.attrs.release_tag
     disk_layout = self._run.config.disk_layout
     if self._pgo_generate:
       disk_layout = constants.PGO_GENERATE_DISK_LAYOUT
@@ -2863,7 +2862,7 @@ class InvalidTestConditionException(Exception):
   pass
 
 
-class HWTestStage(ArchivingStage):
+class HWTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
@@ -2871,8 +2870,8 @@ class HWTestStage(ArchivingStage):
 
   PERF_RESULTS_EXTENSION = 'results'
 
-  def __init__(self, builder_run, board, archive_stage, suite_config, **kwargs):
-    super(HWTestStage, self).__init__(builder_run, board, archive_stage,
+  def __init__(self, builder_run, board, suite_config, **kwargs):
+    super(HWTestStage, self).__init__(builder_run, board,
                                       suffix=' [%s]' % suite_config.suite,
                                       **kwargs)
     self.suite_config = suite_config
@@ -3409,7 +3408,7 @@ class NothingToArchiveException(Exception):
     super(NothingToArchiveException, self).__init__(message)
 
 
-class ArchiveStage(ArchivingStage):
+class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Archives build and test artifacts for developer consumption.
 
   Attributes:
@@ -3422,7 +3421,7 @@ class ArchiveStage(ArchivingStage):
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, builder_run, board, chrome_version=None, **kwargs):
-    super(ArchiveStage, self).__init__(builder_run, board, self, **kwargs)
+    super(ArchiveStage, self).__init__(builder_run, board, **kwargs)
     self.chrome_version = chrome_version
 
     # TODO(mtennant): Places that use this release_tag attribute should
@@ -3970,10 +3969,8 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
-  def __init__(self, builder_run, board, archive_stage, **kwargs):
+  def __init__(self, builder_run, board, **kwargs):
     super(UploadPrebuiltsStage, self).__init__(builder_run, board, **kwargs)
-    # TODO(mtennant): I think this self._archive_stage is already unused.
-    self._archive_stage = archive_stage
 
   def GenerateCommonArgs(self):
     """Generate common prebuilt arguments."""
@@ -3987,7 +3984,6 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
     # Generate the version if we are a manifest_version build.
     if self._run.config.manifest_version:
-      assert self._archive_stage, 'Archive stage missing for versioned build.'
       version = self._run.GetVersion()
       generated_args.extend(['--set-version', version])
 

@@ -440,8 +440,7 @@ class SimpleBuilder(Builder):
     assert not config.paygen or config.signer_results
 
     if config.build_packages_in_background:
-      self._RunStage(stages.BuildPackagesStage, board, archive_stage,
-                     builder_run=builder_run)
+      self._RunStage(stages.BuildPackagesStage, board, builder_run=builder_run)
 
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       self._RunStage(stages.UnitTestStage, board,
@@ -451,8 +450,8 @@ class SimpleBuilder(Builder):
     # Build the image first before doing anything else.
     # TODO(davidjames): Remove this lock once http://crbug.com/352994 is fixed.
     with self._build_image_lock:
-      self._RunStage(stages.BuildImageStage, board, archive_stage=archive_stage,
-                     builder_run=builder_run, pgo_use=config.pgo_use)
+      self._RunStage(stages.BuildImageStage, board, builder_run=builder_run,
+                     pgo_use=config.pgo_use)
 
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
@@ -461,15 +460,15 @@ class SimpleBuilder(Builder):
     # later stages showing up until it finishes.
     stage_list = []
     if builder_run.options.chrome_sdk and config.chrome_sdk:
-      stage_list.append([stages.ChromeSDKStage, board, archive_stage])
+      stage_list.append([stages.ChromeSDKStage, board])
     stage_list += [
         [stages.RetryStage, 1, stages.VMTestStage, board],
         [stages.SignerTestStage, board, archive_stage],
         [stages.SignerResultsStage, board, archive_stage],
         [stages.PaygenStage, board, archive_stage],
         [stages.UnitTestStage, board],
-        [stages.UploadPrebuiltsStage, board, archive_stage],
-        [stages.DevInstallerPrebuiltsStage, board, archive_stage],
+        [stages.UploadPrebuiltsStage, board],
+        [stages.DevInstallerPrebuiltsStage, board],
         [stages.DebugSymbolsStage, board],
         [stages.CPEExportStage, board],
     ]
@@ -478,17 +477,13 @@ class SimpleBuilder(Builder):
     if builder_run.options.archive:
       for suite_config in config.hw_tests:
         if suite_config.async:
-          stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
-                             suite_config])
+          stage_list.append([stages.ASyncHWTestStage, board, suite_config])
         elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_list.append([stages.AUTestStage, board, archive_stage,
-                             suite_config])
+          stage_list.append([stages.AUTestStage, board, suite_config])
         elif suite_config.suite == constants.HWTEST_QAV_SUITE:
-          stage_list.append([stages.QATestStage, board,
-                             archive_stage, suite_config])
+          stage_list.append([stages.QATestStage, board, suite_config])
         else:
-          stage_list.append([stages.HWTestStage, board, archive_stage,
-                             suite_config])
+          stage_list.append([stages.HWTestStage, board, suite_config])
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
                   for x in stage_list]
@@ -560,17 +555,17 @@ class SimpleBuilder(Builder):
             chrome_version=self._run.attrs.chrome_version)
         board_config = BoardConfig(board, builder_run.config.name)
         self.archive_stages[board_config] = archive_stage
-        tasks.append((builder_run, board, archive_stage))
+        tasks.append((builder_run, board))
 
     # Set up a process pool to run test/archive stages in the background.
     # This process runs task(board) for each board added to the queue.
     task_runner = self._RunBackgroundStagesForBoard
     with parallel.BackgroundTaskRunner(task_runner) as queue:
-      for builder_run, board, archive_stage in tasks:
+      for builder_run, board in tasks:
         if not builder_run.config.build_packages_in_background:
           # Run BuildPackages in the foreground, generating or using PGO data
           # if requested.
-          kwargs = {'archive_stage': archive_stage, 'builder_run': builder_run}
+          kwargs = {'builder_run': builder_run}
           if builder_run.config.pgo_generate:
             kwargs['pgo_generate'] = True
           elif builder_run.config.pgo_use:
@@ -582,7 +577,7 @@ class SimpleBuilder(Builder):
             # Generate the PGO data before allowing any other tasks to run.
             self._RunStage(stages.BuildImageStage, board, **kwargs)
             suite = cbuildbot_config.PGORecordTest()
-            self._RunStage(stages.HWTestStage, board, archive_stage, suite,
+            self._RunStage(stages.HWTestStage, board, suite,
                            builder_run=builder_run)
 
         # Kick off our background stages.
