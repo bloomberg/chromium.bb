@@ -141,17 +141,18 @@ chrome.test.runTests([
       xhr.onload = function() {
         chrome.webRequest.onHeadersReceived.removeListener(
             callbackWithBadHeadersResponse);
-
-        chrome.test.fail();
-      };
-      xhr.onerror = function() {
-        chrome.webRequest.onHeadersReceived.removeListener(
-            callbackWithBadHeadersResponse);
-        // When the returned header is invalid, the request should be canceled.
+        var responseHeaders = xhr.getAllResponseHeaders() || '';
+        chrome.test.assertTrue(
+            responseHeaders.indexOf('X-Header-With-Invalid-Value') === -1);
         // TODO(robwu): If possible, check whether an error with the following
         // message has been logged to the JavaScript console:
         // "Header 'X-Header-With-Invalid-Value' has an invalid value"
         chrome.test.succeed();
+      };
+      xhr.onerror = function() {
+        chrome.webRequest.onHeadersReceived.removeListener(
+            callbackWithBadHeadersResponse);
+        chrome.test.fail();
       };
       xhr.send();
     });

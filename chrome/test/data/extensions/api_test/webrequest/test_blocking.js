@@ -125,8 +125,8 @@ runTests([
   },
 
   // Navigates to a page and provides invalid header information. The request
-  // gets canceled.
-  function simpleLoadCancelledOnReceiveHeadersInvalidHeaders() {
+  // should continue as if the headers were not changed.
+  function simpleLoadIgnoreOnBeforeSendHeadersInvalidHeaders() {
     expect(
       [  // events
         { label: "onBeforeRequest",
@@ -142,32 +142,59 @@ runTests([
           event: "onBeforeSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            // Note: no requestHeaders because we don't ask for them.
+            requestHeadersValid: true
           },
           retval: {requestHeaders: [{name: "User-Agent"}]}
         },
-        // Cancelling is considered an error.
-        { label: "onErrorOccurred",
-          event: "onErrorOccurred",
+        // The headers were invalid, so they should not be modified.
+        // TODO(robwu): Test whether an error is logged to the console.
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            requestHeadersValid: true
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
           details: {
             url: getURLHttpSimpleLoad(),
             fromCache: false,
-            error: "net::ERR_BLOCKED_BY_CLIENT"
-            // Request to chrome-extension:// url has no IP.
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onErrorOccurred"]
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
       {urls: ["<all_urls>"]},  // filter
-      ["blocking"]);
+      ["blocking", "requestHeaders"]);
     navigateAndWait(getURLHttpSimpleLoad());
   },
 
   // Navigates to a page and provides invalid header information. The request
-  // gets canceled.
-  function simpleLoadCancelledOnReceiveHeadersInvalidResponse() {
+  // should continue as if the headers were not changed.
+  function simpleLoadIgnoreOnBeforeSendHeadersInvalidResponse() {
     expect(
       [  // events
         { label: "onBeforeRequest",
@@ -183,26 +210,52 @@ runTests([
           event: "onBeforeSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            // Note: no requestHeaders because we don't ask for them.
+            requestHeadersValid: true
           },
           retval: {foo: "bar"}
         },
-        // Cancelling is considered an error.
-        { label: "onErrorOccurred",
-          event: "onErrorOccurred",
+        // TODO(robwu): Test whether an error is logged to the console.
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            requestHeadersValid: true
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
           details: {
             url: getURLHttpSimpleLoad(),
             fromCache: false,
-            error: "net::ERR_BLOCKED_BY_CLIENT"
-            // Request to chrome-extension:// url has no IP.
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onErrorOccurred"]
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
       {urls: ["<all_urls>"]},  // filter
-      ["blocking"]);
+      ["blocking", "requestHeaders"]);
     navigateAndWait(getURLHttpSimpleLoad());
   },
 
