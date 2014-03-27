@@ -124,11 +124,11 @@ void MemoryCache::replace(Resource* newResource, Resource* oldResource)
         insertInLiveDecodedResourcesList(newResource);
 }
 
-bool MemoryCache::contains(Resource* resource)
+bool MemoryCache::contains(const Resource* resource) const
 {
     if (resource->url().isNull())
         return false;
-    MemoryCacheEntry* entry = m_resources.get(resource->url());
+    const MemoryCacheEntry* entry = m_resources.get(resource->url());
     return entry && entry->m_resource == resource;
 }
 

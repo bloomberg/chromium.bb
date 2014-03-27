@@ -137,7 +137,7 @@ public:
     void add(Resource*);
     void replace(Resource* newResource, Resource* oldResource);
     void remove(Resource* resource) { evict(resource); }
-    bool contains(Resource*);
+    bool contains(const Resource*) const;
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
 
