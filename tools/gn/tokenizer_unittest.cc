@@ -133,17 +133,6 @@ TEST(Tokenizer, FunctionCall) {
   EXPECT_TRUE(CheckTokenizer("fun(\"foo\") {\nfoo = 12}", fn));
 }
 
-TEST(Tokenizer, StringUnescaping) {
-  InputFile input(SourceFile("/test"));
-  input.SetContents("\"asd\\\"f\" \"\"");
-  Err err;
-  std::vector<Token> results = Tokenizer::Tokenize(&input, &err);
-
-  ASSERT_EQ(2u, results.size());
-  EXPECT_EQ("asd\"f", results[0].StringValue());
-  EXPECT_EQ("", results[1].StringValue());
-}
-
 TEST(Tokenizer, Locations) {
   InputFile input(SourceFile("/test"));
   input.SetContents("1 2 \"three\"\n  4");
