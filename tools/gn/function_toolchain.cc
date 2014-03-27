@@ -113,15 +113,6 @@ Value RunToolchain(Scope* scope,
   if (err->has_error())
     return Value();
 
-  // Extract the gyp_header contents, if any.
-  const Value* gyp_header_value =
-      block_scope.GetValue(variables::kGypHeader, true);
-  if (gyp_header_value) {
-    if (!gyp_header_value->VerifyTypeIs(Value::STRING, err))
-      return Value();
-    toolchain->set_gyp_header(gyp_header_value->string_value());
-  }
-
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 

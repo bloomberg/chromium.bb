@@ -1113,7 +1113,6 @@ if (component_mode == "static_library") {
   }
 
   static_library("skia_library") {
-    external = true
     sources = skia_library_sources
 
     deps = [
@@ -1151,7 +1150,6 @@ if (component_mode == "static_library") {
   }
 
   static_library("skia_chrome") {
-    external = true
     sources = skia_chrome_sources
 
     configs -= [ "//build/config/compiler:chromium_code" ]

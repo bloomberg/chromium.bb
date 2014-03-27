@@ -39,7 +39,6 @@ void TargetGenerator::Run() {
   FillDependentConfigs();
   FillData();
   FillDependencies();
-  FillGypFile();
 
   // Do type-specific generation.
   DoRun();
@@ -173,17 +172,6 @@ void TargetGenerator::FillDependencies() {
   FillHardDep();
 }
 
-void TargetGenerator::FillGypFile() {
-  const Value* gyp_file_value = scope_->GetValue(variables::kGypFile, true);
-  if (!gyp_file_value)
-    return;
-  if (!gyp_file_value->VerifyTypeIs(Value::STRING, err_))
-    return;
-
-  target_->set_gyp_file(scope_->GetSourceDir().ResolveRelativeFile(
-      gyp_file_value->string_value()));
-}
-
 void TargetGenerator::FillHardDep() {
   const Value* hard_dep_value = scope_->GetValue(variables::kHardDep, true);
   if (!hard_dep_value)
@@ -191,15 +179,6 @@ void TargetGenerator::FillHardDep() {
   if (!hard_dep_value->VerifyTypeIs(Value::BOOLEAN, err_))
     return;
   target_->set_hard_dep(hard_dep_value->boolean_value());
-}
-
-void TargetGenerator::FillExternal() {
-  const Value* value = scope_->GetValue(variables::kExternal, true);
-  if (!value)
-    return;
-  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
-    return;
-  target_->set_external(value->boolean_value());
 }
 
 void TargetGenerator::FillOutputs() {

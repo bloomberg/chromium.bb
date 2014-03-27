@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 component("ui") {
-  external = true
-
   # TODO(brettw) do this target, this current stuff is only to make Chrome
   # link.
 

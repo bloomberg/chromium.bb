@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 static_library("symbolize") {
-  external = true
   sources = [
     "config.h",
     "demangle.cc",

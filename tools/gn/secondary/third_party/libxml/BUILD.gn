@@ -25,7 +25,6 @@ config("libxml_config") {
 }
 
 static_library("libxml") {
-  external = true
   output_name = "libxml2"
   sources = [
     "chromium/libxml_utils.h",

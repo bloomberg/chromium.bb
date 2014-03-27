@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 static_library("libudis86") {
-  external = true
   sources = [
     "libudis86/decode.c",
     "libudis86/decode.h",
@@ -28,7 +27,6 @@ static_library("libudis86") {
 }
 
 static_library("mach_override") {
-  external = true
   sources = [
     "mach_override.c",
     "mach_override.h",

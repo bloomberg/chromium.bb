@@ -6,7 +6,6 @@ import("//build/config/crypto.gni")
 import("//tools/grit/grit_rule.gni")
 
 component("net") {
-  external = true
   sources = [
     "android/cert_verify_result_android.h",
     "android/cert_verify_result_android_list.h",
@@ -1198,12 +1197,10 @@ component("net") {
 }
 
 #grit("net_resources") {
-#  external = true
 #  source = "base/net_resources.grd"
 #}
 
 static_library("http_server") {
-  external = true
   sources = [
     "server/http_connection.cc",
     "server/http_connection.h",

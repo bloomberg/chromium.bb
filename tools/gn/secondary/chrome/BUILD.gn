@@ -64,8 +64,6 @@ executable("chrome") {
 }
 
 static_library("browser") {
-  external = true
-
   if (is_linux) {
     if (toolkit_uses_gtk) {
       libs = [ "gconf-2" ]
@@ -83,8 +81,6 @@ static_library("browser") {
 }
 
 static_library("common") {
-  external = true
-
   if (use_nss && is_linux) {
     # common/net uses NSS.
     # TODO(brettw) have a better way to express this without having to do
@@ -170,15 +166,12 @@ source_set("debugger") {
 }
 
 source_set("plugin") {
-  external = true
 }
 
 source_set("renderer") {
-  external = true
 }
 
 source_set("utility") {
-  external = true
 }
 
 

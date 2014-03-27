@@ -23,9 +23,6 @@ CopyTargetGenerator::~CopyTargetGenerator() {
 void CopyTargetGenerator::DoRun() {
   target_->set_output_type(Target::COPY_FILES);
 
-  FillExternal();
-  if (err_->has_error())
-    return;
   FillSources();
   if (err_->has_error())
     return;

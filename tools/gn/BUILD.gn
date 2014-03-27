@@ -2,16 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-gyp_file = "gn.gyp"
-external = true
-
-# Not defined when doing a GYP build, this lets the code key off of GN-specific
-# features (the last change target). This can be removed when the last change
-# target is supported by the GN->GYP converter (see is_gyp conditional for that
-# below).
-if (!is_gyp) {
-  defines = [ "GN_BUILD" ]
-}
+defines = [ "GN_BUILD" ]
 
 static_library("gn_lib") {
   sources = [
@@ -32,7 +23,6 @@ static_library("gn_lib") {
     "command_args.cc",
     "command_desc.cc",
     "command_gen.cc",
-    "command_gyp.cc",
     "command_help.cc",
     "command_refs.cc",
     "commands.cc",
@@ -69,14 +59,6 @@ static_library("gn_lib") {
     "function_write_file.cc",
     "group_target_generator.cc",
     "group_target_generator.h",
-    "gyp_binary_target_writer.cc",
-    "gyp_binary_target_writer.h",
-    "gyp_helper.cc",
-    "gyp_helper.h",
-    "gyp_action_target_writer.cc",
-    "gyp_action_target_writer.h",
-    "gyp_target_writer.cc",
-    "gyp_target_writer.h",
     "import_manager.cc",
     "import_manager.h",
     "input_conversion.cc",
@@ -174,11 +156,8 @@ executable("gn") {
 
   deps = [
     ":gn_lib",
+    "//build/util:last_change",
   ]
-  if (!is_gyp) {
-    # Currently this only works in GYP (see GN_BUILD above).
-    deps += [ "//build/util:last_change" ]
-  }
 }
 
 test("gn_unittests") {
@@ -188,8 +167,6 @@ test("gn_unittests") {
     "filesystem_utils_unittest.cc",
     "file_template_unittest.cc",
     "function_rebase_path_unittest.cc",
-    "gyp_action_target_writer_unittest.cc",
-    "gyp_binary_target_writer_unittest.cc",
     "input_conversion_unittest.cc",
     "label_unittest.cc",
     "loader_unittest.cc",

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 component("url") {
-  external = true
   if (is_win) {
     # Don't conflict with Windows' "url.dll".
     output_name = "url_lib"
@@ -57,7 +56,6 @@ component("url") {
 }
 
 test("url_unittests") {
-  external = true
   sources = [
     "gurl_unittest.cc",
     "url_canon_unittest.cc",

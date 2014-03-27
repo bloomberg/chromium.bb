@@ -17,7 +17,7 @@
 #define DEPS_VARS \
     "  Deps: data, datadeps, deps, forward_dependent_configs_from, hard_dep\n"
 #define GENERAL_TARGET_VARS \
-    "  General: configs, external, source_prereqs, sources\n"
+    "  General: configs, source_prereqs, sources\n"
 
 namespace functions {
 
@@ -350,7 +350,6 @@ const char kGroup_Help[] =
     "\n"
     DEPS_VARS
     DEPENDENT_CONFIG_VARS
-    "  Other variables: external\n"
     "\n"
     "Example\n"
     "\n"

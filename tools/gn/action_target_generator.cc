@@ -44,10 +44,6 @@ ActionTargetGenerator::~ActionTargetGenerator() {
 void ActionTargetGenerator::DoRun() {
   target_->set_output_type(output_type_);
 
-  FillExternal();
-  if (err_->has_error())
-    return;
-
   FillSources();
   if (err_->has_error())
     return;

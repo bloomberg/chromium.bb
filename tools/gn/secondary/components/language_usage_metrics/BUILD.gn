@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 static_library("language_usage_metrics") {
-  external = true
-
   sources = [
     "language_usage_metrics.cc",
     "language_usage_metrics.h",

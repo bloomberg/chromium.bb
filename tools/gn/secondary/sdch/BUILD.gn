@@ -7,7 +7,6 @@ config("sdch_config") {
 }
 
 static_library("sdch") {
-  external = true
   sources = [
     "open-vcdiff/src/addrcache.cc",
     "open-vcdiff/src/blockhash.cc",

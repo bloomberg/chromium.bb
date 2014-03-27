@@ -8,8 +8,6 @@ config("gmock_config") {
 }
 
 static_library("gmock") {
-  gyp_file = "gmock.gyp"
-  external = true
   sources = [
     # Sources based on files in r173 of gmock.
     "include/gmock/gmock-actions.h",
@@ -43,8 +41,6 @@ static_library("gmock") {
 }
 
 static_library("gmock_main") {
-  external = true
-  gyp_file = "gmock.gyp"
   sources = [ "src/gmock_main.cc" ]
   deps = [ ":gmock" ]
 }

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 static_library("nspr") {
-  external = true
   sources = [
     "prtime.cc",
     "prtime.h",

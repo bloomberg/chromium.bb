@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 static_library("xdg_mime") {
-  external = true
   sources = [
     "xdgmime.c",
     "xdgmime.h",

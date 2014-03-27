@@ -9,7 +9,6 @@ config("libusb_config") {
 }
 
 static_library("libusb") {
-  external = true
   sources = [
     "src/config.h",
     "src/libusb/core.c",

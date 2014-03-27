@@ -51,7 +51,6 @@ class TargetGenerator {
   void FillSources();
   void FillSourcePrereqs();
   void FillConfigs();
-  void FillExternal();
   void FillOutputs();
 
   Target* target_;
@@ -63,7 +62,6 @@ class TargetGenerator {
   void FillDependentConfigs();  // Includes all types of dependent configs.
   void FillData();
   void FillDependencies();  // Includes data dependencies.
-  void FillGypFile();
   void FillHardDep();
 
   // Reads configs/deps from the given var name, and uses the given setting on

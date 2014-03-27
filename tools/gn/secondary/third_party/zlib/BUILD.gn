@@ -7,8 +7,6 @@ config("zlib_config") {
 }
 
 static_library("zlib") {
-  external = true
-
   if (!is_win) {
     # Don't stomp on "libzlib" on other platforms.
     output_name = "chrome_zlib"
@@ -51,7 +49,6 @@ static_library("zlib") {
 }
 
 static_library("minizip") {
-  external = true
   sources = [
     "contrib/minizip/ioapi.c",
     "contrib/minizip/ioapi.h",
@@ -87,7 +84,6 @@ static_library("minizip") {
 }
 
 static_library("zip") {
-  external = true
   sources = [
     "google/zip.cc",
     "google/zip.h",

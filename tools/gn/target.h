@@ -121,9 +121,6 @@ class Target : public Item {
     return forward_dependent_configs_;
   }
 
-  bool external() const { return external_; }
-  void set_external(bool e) { external_ = e; }
-
   const std::set<const Target*>& inherited_libraries() const {
     return inherited_libraries_;
   }
@@ -137,9 +134,6 @@ class Target : public Item {
 
   const OrderedSet<SourceDir>& all_lib_dirs() const { return all_lib_dirs_; }
   const OrderedSet<std::string>& all_libs() const { return all_libs_; }
-
-  const SourceFile& gyp_file() const { return gyp_file_; }
-  void set_gyp_file(const SourceFile& gf) { gyp_file_ = gf; }
 
  private:
   // Pulls necessary information from dependents to this one when all
@@ -189,8 +183,6 @@ class Target : public Item {
 
   ConfigValues config_values_;  // Used for all binary targets.
   ActionValues action_values_;  // Used for action[_foreach] targets.
-
-  SourceFile gyp_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

@@ -33,10 +33,6 @@ void BinaryTargetGenerator::DoRun() {
   if (err_->has_error())
     return;
 
-  FillExternal();
-  if (err_->has_error())
-    return;
-
   FillSources();
   if (err_->has_error())
     return;

@@ -5,7 +5,6 @@
 import("//build/config/ui.gni")
 
 static_library("test_support_base") {
-  external = true
   sources = [
     "expectations/expectation.cc",
     "expectations/expectation.h",
@@ -125,7 +124,6 @@ config("perf_test_config") {
 }
 
 static_library("test_support_perf") {
-  external = true
   sources = [
     "run_all_perftests.cc",
   ]
@@ -142,7 +140,6 @@ static_library("test_support_perf") {
 }
 
 static_library("run_all_unittests") {
-  external = true
   sources = [
     "run_all_unittests.cc",
   ]

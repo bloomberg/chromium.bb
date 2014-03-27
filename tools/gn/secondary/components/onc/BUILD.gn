@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 component("onc_component") {
-  external = true
-
   sources = [
     "onc_constants.cc",
     "onc_constants.h",

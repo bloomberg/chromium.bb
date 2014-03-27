@@ -84,11 +84,6 @@ class Toolchain : public Item {
   const Tool& GetTool(ToolType type) const;
   void SetTool(ToolType type, const Tool& t);
 
-  // This extra stuff is specified by the build and will be added to the top
-  // of a generated GYP file (right after the opening "{").
-  std::string gyp_header() const { return gyp_header_; }
-  void set_gyp_header(const std::string& gh) { gyp_header_ = gh; }
-
   // Specifies build argument overrides that will be set on the base scope. It
   // will be as if these arguments were passed in on the command line. This
   // allows a toolchain to override the OS type of the default toolchain or
@@ -100,8 +95,6 @@ class Toolchain : public Item {
   Tool tools_[TYPE_NUMTYPES];
 
   Scope::KeyValueMap args_;
-
-  std::string gyp_header_;
 };
 
 #endif  // TOOLS_GN_TOOLCHAIN_H_
