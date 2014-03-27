@@ -13,6 +13,7 @@ animationIterationCount
 animationName
 animationPlayState
 animationTimingFunction
+backfaceVisibility
 background
 backgroundAttachment
 backgroundBlendMode
@@ -184,6 +185,8 @@ pageBreakBefore
 pageBreakInside
 paintOrder
 parentRule
+perspective
+perspectiveOrigin
 pointerEvents
 position
 quotes
@@ -240,6 +243,9 @@ textUnderlineWidth
 top
 touchAction
 touchActionDelay
+transform
+transformOrigin
+transformStyle
 transition
 transitionDelay
 transitionDuration

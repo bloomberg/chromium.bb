@@ -2762,6 +2762,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             ASSERT_NOT_REACHED();
             break;
 
+        // FIXME: crbug.com/154772 Unimplemented css-transforms properties
+        case CSSPropertyBackfaceVisibility:
+        case CSSPropertyPerspective:
+        case CSSPropertyPerspectiveOrigin:
+        case CSSPropertyTransform:
+        case CSSPropertyTransformOrigin:
+        case CSSPropertyTransformStyle:
+            break;
+
         /* Unimplemented @font-face properties */
         case CSSPropertyFontStretch:
         case CSSPropertySrc:

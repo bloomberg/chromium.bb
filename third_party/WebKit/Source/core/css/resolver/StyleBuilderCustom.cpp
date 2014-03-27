@@ -1740,6 +1740,14 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         return;
     }
 
+    // FIXME: crbug.com/154772 Unimplemented css-transforms properties
+    case CSSPropertyBackfaceVisibility:
+    case CSSPropertyPerspective:
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyTransform:
+    case CSSPropertyTransformOrigin:
+    case CSSPropertyTransformStyle:
+        return;
     // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:

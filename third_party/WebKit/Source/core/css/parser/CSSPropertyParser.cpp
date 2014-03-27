@@ -1607,6 +1607,14 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyUserZoom:
         validPrimitive = false;
         break;
+    // FIXME: crbug.com/154772 Unimplemented css-transforms properties
+    case CSSPropertyBackfaceVisibility:
+    case CSSPropertyPerspective:
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyTransform:
+    case CSSPropertyTransformOrigin:
+    case CSSPropertyTransformStyle:
+        return false;
     default:
         return parseSVGValue(propId, important);
     }
