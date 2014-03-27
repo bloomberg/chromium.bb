@@ -6,7 +6,7 @@
 #include "cc/output/context_provider.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/test/content_browser_test.h"
+#include "content/public/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"

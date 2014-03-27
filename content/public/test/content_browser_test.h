@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_CONTENT_BROWSER_TEST_H_
-#define CONTENT_TEST_CONTENT_BROWSER_TEST_H_
+#ifndef CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_H_
+#define CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
-class GURL;
-
 namespace content {
-class ContentRendererClient;
 class Shell;
 class ShellMainDelegate;
 
+// Base class for browser tests which use content_shell.
 class ContentBrowserTest : public BrowserTestBase {
  protected:
   ContentBrowserTest();
@@ -52,4 +50,4 @@ class ContentBrowserTest : public BrowserTestBase {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_H_
+#endif  // CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_H_

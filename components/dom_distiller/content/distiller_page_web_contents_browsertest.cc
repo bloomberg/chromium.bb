@@ -8,8 +8,8 @@
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/content_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::ContentBrowserTest;

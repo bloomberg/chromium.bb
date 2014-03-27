@@ -11,7 +11,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
-#include "content/test/content_browser_test.h"
+#include "content/public/test/content_browser_test.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 

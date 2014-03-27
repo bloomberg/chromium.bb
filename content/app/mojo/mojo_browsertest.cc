@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/content_browser_test.h"
+#include "content/public/test/content_browser_test.h"
 #include "mojo/service_manager/service_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

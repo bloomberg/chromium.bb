@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
-#define CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
+#ifndef CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_
+#define CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
@@ -17,7 +17,8 @@ namespace gfx {
 class Rect;
 }
 
-// A collections of functions designed for use with content_browsertests.
+// A collections of functions designed for use with content_shell based browser
+// tests.
 // Note: if a function here also works with browser_tests, it should be in
 // content\public\test\browser_test_utils.h
 
@@ -77,4 +78,4 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
+#endif  // CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_

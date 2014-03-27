@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "content/test/content_browser_test.h"
+#include "content/public/test/content_browser_test.h"
 
 namespace content {
 

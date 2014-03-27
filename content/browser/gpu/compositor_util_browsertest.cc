@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/gpu/compositor_util.h"
-#include "content/test/content_browser_test.h"
+#include "content/public/test/content_browser_test.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

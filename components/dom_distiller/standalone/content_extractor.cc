@@ -19,8 +19,8 @@
 #include "components/dom_distiller/core/task_tracker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/content_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -4,9 +4,9 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "content/browser/download/save_package.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/content_browser_test.h"
-#include "content/test/content_browser_test_utils.h"
 
 namespace content {
 

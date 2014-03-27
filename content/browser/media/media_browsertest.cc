@@ -9,8 +9,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/content_browser_test_utils.h"
 
 // TODO(wolenetz): Fix Media.YUV* tests on MSVS 2012 x64. crbug.com/180074
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64) && _MSC_VER == 1700
