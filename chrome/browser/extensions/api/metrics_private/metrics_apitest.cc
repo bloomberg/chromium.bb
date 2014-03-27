@@ -38,6 +38,9 @@ struct RecordedHistogram {
       {"test.h.1", base::HISTOGRAM, 1, 100, 50, 1},          // custom
       {"test.h.2", base::LINEAR_HISTOGRAM, 1, 200, 50, 1},   // custom
       {"test.h.3", base::LINEAR_HISTOGRAM, 1, 101, 102, 2},  // percentage
+      {"test.sparse.1", base::SPARSE_HISTOGRAM, 0, 0, 0, 1},
+      {"test.sparse.2", base::SPARSE_HISTOGRAM, 0, 0, 0, 2},
+      {"test.sparse.3", base::SPARSE_HISTOGRAM, 0, 0, 0, 6},
       {"test.time", base::HISTOGRAM, 1, 10000, 50, 1},
       {"test.medium.time", base::HISTOGRAM, 1, 180000, 50, 1},
       {"test.long.time", base::HISTOGRAM, 1, 3600000, 50, 1},
@@ -46,6 +49,22 @@ struct RecordedHistogram {
       {"test.small.count", base::HISTOGRAM, 1, 100, 50, 1},
       {"test.bucketchange.linear", base::LINEAR_HISTOGRAM, 1, 100, 10, 2},
       {"test.bucketchange.log", base::HISTOGRAM, 1, 100, 10, 2}, };
+
+// Represents a bucket in a sparse histogram.
+struct Bucket {
+  int histogram_value;
+  int count;
+};
+
+// We expect the following sparse histograms.
+struct SparseHistogram {
+  const char* name;
+  int bucket_count;
+  Bucket buckets[10];
+} g_sparse_histograms[] = {
+  {"test.sparse.1", 1, {{42, 1}}},
+  {"test.sparse.2", 1, {{24, 2}}},
+  {"test.sparse.3", 3, {{1, 1}, {2, 2}, {3, 3}}}};
 
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
@@ -99,6 +118,20 @@ void UserActionObserver::ValidateUserActions(const RecordedUserAction* recorded,
   }
 }
 
+void ValidateSparseHistogramSamples(
+    const std::string& name,
+    const base::HistogramSamples& samples) {
+  for (unsigned int i = 0; i < arraysize(g_sparse_histograms); ++i) {
+    const SparseHistogram& sparse_histogram = g_sparse_histograms[i];
+    if (std::string(name) == sparse_histogram.name) {
+      for (int j = 0; j < sparse_histogram.bucket_count; ++j) {
+        const Bucket& bucket = sparse_histogram.buckets[j];
+        EXPECT_EQ(bucket.count, samples.GetCount(bucket.histogram_value));
+      }
+    }
+  }
+}
+
 void ValidateHistograms(const RecordedHistogram* recorded,
                         int count) {
   base::StatisticsRecorder::Histograms histograms;
@@ -113,15 +146,19 @@ void ValidateHistograms(const RecordedHistogram* recorded,
     size_t j = 0;
     for (j = 0; j < histograms.size(); ++j) {
       base::HistogramBase* histogram(histograms[j]);
-
       if (r.name == histogram->histogram_name()) {
-        EXPECT_EQ(r.type, histogram->GetHistogramType());
-        EXPECT_TRUE(
-            histogram->HasConstructionArguments(r.min, r.max, r.buckets));
         scoped_ptr<base::HistogramSamples> snapshot =
             histogram->SnapshotSamples();
         base::HistogramBase::Count sample_count = snapshot->TotalCount();
-        EXPECT_EQ(sample_count, r.count);
+        EXPECT_EQ(r.count, sample_count);
+
+        EXPECT_EQ(r.type, histogram->GetHistogramType());
+        if (r.type == base::SPARSE_HISTOGRAM) {
+          ValidateSparseHistogramSamples(r.name, *snapshot);
+        } else {
+          EXPECT_TRUE(
+              histogram->HasConstructionArguments(r.min, r.max, r.buckets));
+        }
         break;
       }
     }

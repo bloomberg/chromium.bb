@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/extensions/api/metrics_private.h"
 #include "components/variations/variations_associated_data.h"
@@ -22,6 +23,7 @@ namespace GetVariationParams = api::metrics_private::GetVariationParams;
 namespace GetFieldTrial = api::metrics_private::GetFieldTrial;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
+namespace RecordSparseValue = api::metrics_private::RecordSparseValue;
 namespace RecordPercentage = api::metrics_private::RecordPercentage;
 namespace RecordCount = api::metrics_private::RecordCount;
 namespace RecordSmallCount = api::metrics_private::RecordSmallCount;
@@ -125,6 +127,16 @@ bool MetricsPrivateRecordValueFunction::RunImpl() {
   return RecordValue(params->metric.metric_name, histogram_type,
                      params->metric.min, params->metric.max,
                      params->metric.buckets, params->value);
+}
+
+bool MetricsPrivateRecordSparseValueFunction::RunImpl() {
+  scoped_ptr<RecordSparseValue::Params> params(
+      RecordSparseValue::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  // This particular UMA_HISTOGRAM_ macro is okay for
+  // non-runtime-constant strings.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(params->metric_name, params->value);
+  return true;
 }
 
 bool MetricsPrivateRecordPercentageFunction::RunImpl() {

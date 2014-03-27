@@ -43,6 +43,20 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
 
+  function recordSparseValue() {
+    chrome.metricsPrivate.recordSparseValue('test.sparse.1', 42);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.2', 24);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.2', 24);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 1);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 2);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 2);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 3);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 3);
+    chrome.metricsPrivate.recordSparseValue('test.sparse.3', 3);
+
+    chrome.test.succeed();
+  },
+
   function recordTimes() {
     chrome.metricsPrivate.recordTime('test.time', 42);
     chrome.metricsPrivate.recordMediumTime('test.medium.time', 42 * 1000);

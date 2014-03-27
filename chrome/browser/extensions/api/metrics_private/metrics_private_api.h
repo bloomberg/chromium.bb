@@ -83,6 +83,19 @@ class MetricsPrivateRecordValueFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class MetricsPrivateRecordSparseValueFunction
+    : public MetricsHistogramHelperFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordSparseValue",
+                             METRICSPRIVATE_RECORDSPARSEVALUE)
+
+ protected:
+  virtual ~MetricsPrivateRecordSparseValueFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class MetricsPrivateRecordPercentageFunction
     : public MetricsHistogramHelperFunction {
  public:

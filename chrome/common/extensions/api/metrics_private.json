@@ -148,6 +148,15 @@
         ]
       },
       {
+        "name": "recordSparseValue",
+        "type": "function",
+        "description": "Increments the count associated with |value| in the sparse histogram defined by the |metricName|.",
+        "parameters": [
+          {"name": "metricName", "type": "string"},
+          {"name": "value", "type": "integer"}
+        ]
+      },
+      {
         "name": "recordValue",
         "type": "function",
         "description": "Adds a value to the given metric.",
