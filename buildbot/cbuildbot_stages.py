@@ -1095,7 +1095,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     # re-record that patches were picked up in the non-skipped run of
     # CommitQueueSync.
     # TODO(akeshet): Remove this code once metadata is being pickled and passed
-    # across re-executions.
+    # across re-executions. See crbug.com/356930
     if self._run.config.master:
       self._RecordPatchesInMetadata(self.pool)
 
@@ -1178,7 +1178,8 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
   # TODO(akeshet): Once builder run attributes such as metadata are being
   # pickled and passed across cbuildbot re-executions, move this functionality
-  # out of cbuildbot_stages and into validation_pool.ValidationPool
+  # out of cbuildbot_stages and into validation_pool.ValidationPool.
+  # See crbug.com/356930
   def _RecordPatchesInMetadata(self, pool):
     # If possible, use the timestamp at which the pool was acquired.
     timestamp = pool.acquired_at_time or int(time.time())
