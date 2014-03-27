@@ -17,17 +17,11 @@ const static size_t kBufferSize = 1024;
 class TransferBufferManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    for (size_t i = 0; i < arraysize(buffers_); ++i) {
-      buffers_[i].CreateAnonymous(kBufferSize);
-      buffers_[i].Map(kBufferSize);
-    }
-
     TransferBufferManager* manager = new TransferBufferManager();
     transfer_buffer_manager_.reset(manager);
     ASSERT_TRUE(manager->Initialize());
   }
 
-  base::SharedMemory buffers_[3];
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 };
 
@@ -44,30 +38,23 @@ TEST_F(TransferBufferManagerTest, OutOfRangeHandleMapsToNull) {
 }
 
 TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
-  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                               &buffers_[0],
-                                                               kBufferSize));
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  shm->CreateAndMapAnonymous(kBufferSize);
+  base::SharedMemory* shm_raw_pointer = shm.get();
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm.Pass(), kBufferSize));
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
 
-  // Distinct memory range and shared memory handle from that originally
-  // registered.
-  scoped_refptr<Buffer> null_buffer;
-  EXPECT_NE(null_buffer, registered);
-  EXPECT_NE(buffers_[0].memory(), registered->memory());
-  EXPECT_EQ(kBufferSize, registered->size());
-  EXPECT_NE(&buffers_[0], registered->shared_memory());
-
-  // But maps to the same physical memory.
-  *static_cast<int*>(registered->memory()) = 7;
-  *static_cast<int*>(buffers_[0].memory()) = 8;
-  EXPECT_EQ(8, *static_cast<int*>(registered->memory()));
+  // Shared-memory ownership is transfered. It should be the same memory.
+  EXPECT_EQ(shm_raw_pointer, registered->shared_memory());
 }
 
 TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
-  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                               &buffers_[0],
-                                                               kBufferSize));
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  shm->CreateAndMapAnonymous(kBufferSize);
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm.Pass(), kBufferSize));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
@@ -77,25 +64,31 @@ TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegregisterTransferBufferId) {
-  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                               &buffers_[0],
-                                                               kBufferSize));
-  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                                &buffers_[0],
-                                                                kBufferSize));
-  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                                &buffers_[1],
-                                                                kBufferSize));
+  scoped_ptr<base::SharedMemory> shm1(new base::SharedMemory());
+  scoped_ptr<base::SharedMemory> shm2(new base::SharedMemory());
+  scoped_ptr<base::SharedMemory> shm3(new base::SharedMemory());
+  shm1->CreateAndMapAnonymous(kBufferSize);
+  shm2->CreateAndMapAnonymous(kBufferSize);
+  shm3->CreateAndMapAnonymous(kBufferSize);
+
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm1.Pass(), kBufferSize));
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm2.Pass(), kBufferSize));
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm3.Pass(), kBufferSize));
 }
 
 TEST_F(TransferBufferManagerTest, CanReuseTransferBufferIdAfterDestroying) {
-  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                               &buffers_[0],
-                                                               kBufferSize));
+  scoped_ptr<base::SharedMemory> shm1(new base::SharedMemory());
+  scoped_ptr<base::SharedMemory> shm2(new base::SharedMemory());
+  shm1->CreateAndMapAnonymous(kBufferSize);
+  shm2->CreateAndMapAnonymous(kBufferSize);
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm1.Pass(), kBufferSize));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
-  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
-                                                               &buffers_[1],
-                                                               kBufferSize));
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, shm2.Pass(), kBufferSize));
 }
 
 TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
@@ -103,15 +96,17 @@ TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNullTransferBuffer) {
-  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(0,
-                                                                &buffers_[0],
-                                                                kBufferSize));
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  shm->CreateAndMapAnonymous(kBufferSize);
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
+      0, shm.Pass(), kBufferSize));
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNegativeTransferBufferId) {
-  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(-1,
-                                                                &buffers_[0],
-                                                                kBufferSize));
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  shm->CreateAndMapAnonymous(kBufferSize);
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
+      -1, shm.Pass(), kBufferSize));
 }
 
 }  // namespace gpu

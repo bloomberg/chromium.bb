@@ -143,9 +143,16 @@ void CommandBufferImpl::MakeProgress(int32_t last_get_offset) {
 void CommandBufferImpl::RegisterTransferBuffer(int32_t id,
                                                const ShmHandle& transfer_buffer,
                                                uint32_t size) {
-  bool read_only = false;
-  base::SharedMemory shared_memory(transfer_buffer, read_only);
-  command_buffer_->RegisterTransferBuffer(id, &shared_memory, size);
+  // Take ownership of the memory and map it into this process.
+  // This validates the size.
+  scoped_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(transfer_buffer, false));
+  if (!shared_memory->Map(size)) {
+    DVLOG(0) << "Failed to map shared memory.";
+    return;
+  }
+
+  command_buffer_->RegisterTransferBuffer(id, shared_memory.Pass(), size);
 }
 
 void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {

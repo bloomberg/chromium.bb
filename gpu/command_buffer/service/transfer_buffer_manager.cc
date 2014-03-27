@@ -40,7 +40,7 @@ bool TransferBufferManager::Initialize() {
 
 bool TransferBufferManager::RegisterTransferBuffer(
     int32 id,
-    base::SharedMemory* shared_memory,
+    scoped_ptr<base::SharedMemory> shared_memory,
     size_t size) {
   if (id <= 0) {
     DVLOG(0) << "Cannot register transfer buffer with non-positive ID.";
@@ -53,25 +53,8 @@ bool TransferBufferManager::RegisterTransferBuffer(
     return false;
   }
 
-  // Duplicate the handle.
-  base::SharedMemoryHandle duped_shared_memory_handle;
-  if (!shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
-                                     &duped_shared_memory_handle)) {
-    DVLOG(0) << "Failed to duplicate shared memory handle.";
-    return false;
-  }
-  scoped_ptr<SharedMemory> duped_shared_memory(
-      new SharedMemory(duped_shared_memory_handle, false));
-
-  // Map the shared memory into this process. This validates the size.
-  if (!duped_shared_memory->Map(size)) {
-    DVLOG(0) << "Failed to map shared memory.";
-    return false;
-  }
-
-  // If it could be mapped register the shared memory with the ID.
-  scoped_refptr<Buffer> buffer =
-      make_scoped_refptr(new gpu::Buffer(duped_shared_memory.Pass(), size));
+  // Register the shared memory with the ID.
+  scoped_refptr<Buffer> buffer = new gpu::Buffer(shared_memory.Pass(), size);
 
   // Check buffer alignment is sane.
   DCHECK(!(reinterpret_cast<uintptr_t>(buffer->memory()) &

@@ -17,7 +17,7 @@ namespace base {
 
 namespace gpu {
 
-// Buffer/ThreadSafeBuffer own a piece of shared-memory of a certain size.
+// Buffer owns a piece of shared-memory of a certain size.
 class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
  public:
   Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size);

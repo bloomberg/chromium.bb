@@ -65,7 +65,7 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
   // to identify it in the command buffer. Callee dups the handle until
   // DestroyTransferBuffer is called.
   bool RegisterTransferBuffer(int32 id,
-                              base::SharedMemory* shared_memory,
+                              scoped_ptr<base::SharedMemory> shared_memory,
                               size_t size);
 
  private:

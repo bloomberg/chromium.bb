@@ -123,14 +123,14 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
                                                                  int32* id) {
   *id = -1;
 
-  SharedMemory buffer;
-  if (!buffer.CreateAnonymous(size))
+  scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+  if (!shared_memory->CreateAndMapAnonymous(size))
     return NULL;
 
   static int32 next_id = 1;
   *id = next_id++;
 
-  if (!RegisterTransferBuffer(*id, &buffer, size)) {
+  if (!RegisterTransferBuffer(*id, shared_memory.Pass(), size)) {
     *id = -1;
     return NULL;
   }
@@ -155,11 +155,10 @@ scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32 id) {
 
 bool CommandBufferService::RegisterTransferBuffer(
     int32 id,
-    base::SharedMemory* shared_memory,
+    scoped_ptr<base::SharedMemory> shared_memory,
     size_t size) {
-  return transfer_buffer_manager_->RegisterTransferBuffer(id,
-                                                          shared_memory,
-                                                          size);
+  return transfer_buffer_manager_->RegisterTransferBuffer(
+      id, shared_memory.Pass(), size);
 }
 
 void CommandBufferService::SetToken(int32 token) {
