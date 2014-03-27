@@ -65,9 +65,9 @@ bool FileSurfaceFactory::LoadEGLGLES2Bindings(
 bool FileSurfaceFactory::AttemptToResizeAcceleratedWidget(
     AcceleratedWidget widget,
     const Rect& bounds) {
-  device_ = skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
-                                              bounds.width(),
-                                              bounds.height()));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(bounds.width(),
+                                                bounds.height());
+  device_ = skia::AdoptRef(SkBitmapDevice::Create(info));
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
   return true;
 }
