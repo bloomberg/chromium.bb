@@ -5,6 +5,10 @@
 
 Import('env')
 
+# The Windows coverage bot does not build sel_ldr.
+if env.UnderWindowsCoverage():
+  Return()
+
 name = 'run_py_test.out'
 irt = 'none'
 if env.Bit('tests_use_irt'):
