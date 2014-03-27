@@ -36,6 +36,7 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
                           const google_apis::AboutResource& about_resource,
                           const std::string& local_id,
                           ResourceEntry* entry,
+                          ResourceEntryVector* child_entries,
                           int64* local_changestamp) {
   // Fill My Drive resource ID.
   ResourceEntry mydrive;
@@ -53,6 +54,11 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
 
   // Get entry.
   error = resource_metadata->GetResourceEntryById(local_id, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // Get child entries.
+  error = resource_metadata->ReadDirectoryById(local_id, child_entries);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -399,6 +405,7 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
   // Check the current status of local metadata, and start loading if needed.
   google_apis::AboutResource* about_resource_ptr = about_resource.get();
   ResourceEntry* entry = new ResourceEntry;
+  ResourceEntryVector* child_entries = new ResourceEntryVector;
   int64* local_changestamp = new int64;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -408,12 +415,14 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
                  *about_resource_ptr,
                  local_id,
                  entry,
+                 child_entries,
                  local_changestamp),
       base::Bind(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&about_resource),
                  local_id,
                  base::Owned(entry),
+                 base::Owned(child_entries),
                  base::Owned(local_changestamp)));
 }
 
@@ -421,6 +430,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
     scoped_ptr<google_apis::AboutResource> about_resource,
     const std::string& local_id,
     const ResourceEntry* entry,
+    const ResourceEntryVector* child_entries,
     const int64* local_changestamp,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -459,6 +469,8 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
   if (directory_changestamp + kMinimumChangestampGap > remote_changestamp) {
     OnDirectoryLoadComplete(local_id, FILE_ERROR_OK);
   } else {
+    // Send locally found entries to callbacks.
+    SendEntries(local_id, *child_entries, true /*has_more*/);
     // Start fetching the directory content, and mark it with the changestamp
     // |remote_changestamp|.
     LoadDirectoryFromServer(directory_fetch_info);

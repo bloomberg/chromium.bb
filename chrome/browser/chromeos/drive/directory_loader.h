@@ -88,6 +88,7 @@ class DirectoryLoader {
       scoped_ptr<google_apis::AboutResource> about_resource,
       const std::string& local_id,
       const ResourceEntry* entry,
+      const ResourceEntryVector* child_entries,
       const int64* local_changestamp,
       FileError error);
 
