@@ -230,6 +230,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   QuicConnectionLogger logger_;
   // Number of packets read in the current read loop.
   size_t num_packets_read_;
+  // True when the session is going away, and streams may no longer be created
+  // on this session. Existing stream will continue to be processed.
+  bool going_away_;
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);

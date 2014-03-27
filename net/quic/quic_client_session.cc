@@ -28,6 +28,34 @@ namespace net {
 
 namespace {
 
+// Histograms for tracking down the crashes from http://crbug.com/354669
+// Note: these values must be kept in sync with the corresponding values in:
+// tools/metrics/histograms/histograms.xml
+enum Location {
+  DESTRUCTOR = 0,
+  ADD_OBSERVER = 1,
+  TRY_CREATE_STREAM = 2,
+  CREATE_OUTGOING_RELIABLE_STREAM = 3,
+  NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER = 4,
+  NOTIFY_FACTORY_OF_SESSION_CLOSED = 5,
+  NUM_LOCATIONS = 6,
+};
+
+void RecordUnexpectedOpenStreams(Location location) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.UnexpectedOpenStreams", location,
+                            NUM_LOCATIONS);
+}
+
+void RecordUnexpectedObservers(Location location) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.UnexpectedObservers", location,
+                            NUM_LOCATIONS);
+}
+
+void RecordUnexpectedNotGoingAway(Location location) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.UnexpectedNotGoingAway", location,
+                            NUM_LOCATIONS);
+}
+
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
 enum HandshakeState {
@@ -107,6 +135,7 @@ QuicClientSession::QuicClientSession(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       logger_(net_log_),
       num_packets_read_(0),
+      going_away_(false),
       weak_factory_(this) {
   crypto_stream_.reset(
       crypto_client_stream_factory ?
@@ -124,6 +153,13 @@ QuicClientSession::QuicClientSession(
 }
 
 QuicClientSession::~QuicClientSession() {
+  if (!streams()->empty())
+    RecordUnexpectedOpenStreams(DESTRUCTOR);
+  if (!observers_.empty())
+    RecordUnexpectedObservers(DESTRUCTOR);
+  if (!going_away_)
+    RecordUnexpectedNotGoingAway(DESTRUCTOR);
+
   // The session must be closed before it is destroyed.
   DCHECK(streams()->empty());
   CloseAllStreams(ERR_UNEXPECTED);
@@ -202,6 +238,9 @@ bool QuicClientSession::OnStreamFrames(
 }
 
 void QuicClientSession::AddObserver(Observer* observer) {
+  if (going_away_)
+    RecordUnexpectedObservers(ADD_OBSERVER);
+
   DCHECK(!ContainsKey(observers_, observer));
   observers_.insert(observer);
 }
@@ -225,6 +264,11 @@ int QuicClientSession::TryCreateStream(StreamRequest* request,
 
   if (!connection()->connected()) {
     DVLOG(1) << "Already closed.";
+    return ERR_CONNECTION_CLOSED;
+  }
+
+  if (going_away_) {
+    RecordUnexpectedOpenStreams(TRY_CREATE_STREAM);
     return ERR_CONNECTION_CLOSED;
   }
 
@@ -262,7 +306,10 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingDataStream() {
                << "Already received goaway.";
     return NULL;
   }
-
+  if (going_away_) {
+    RecordUnexpectedOpenStreams(CREATE_OUTGOING_RELIABLE_STREAM);
+    return NULL;
+  }
   return CreateOutgoingReliableStreamImpl();
 }
 
@@ -378,6 +425,7 @@ void QuicClientSession::OnClosedStream() {
       !stream_requests_.empty() &&
       crypto_stream_->encryption_established() &&
       !goaway_received() &&
+      !going_away_ &&
       connection()->connected()) {
     StreamRequest* request = stream_requests_.front();
     stream_requests_.pop_front();
@@ -618,11 +666,19 @@ void QuicClientSession::OnReadComplete(int result) {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionGoingAway() {
+  going_away_ = true;
   if (stream_factory_)
     stream_factory_->OnSessionGoingAway(this);
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
+  if (!streams()->empty())
+    RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER);
+
+  if (!going_away_)
+    RecordUnexpectedNotGoingAway(NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER);
+
+  going_away_ = true;
   DCHECK_EQ(0u, GetNumOpenStreams());
   DCHECK(!connection()->connected());
   base::MessageLoop::current()->PostTask(
@@ -632,6 +688,13 @@ void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClosed() {
+  if (!streams()->empty())
+    RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED);
+
+  if (!going_away_)
+    RecordUnexpectedNotGoingAway(NOTIFY_FACTORY_OF_SESSION_CLOSED);
+
+  going_away_ = true;
   DCHECK_EQ(0u, GetNumOpenStreams());
   // Will delete |this|.
   if (stream_factory_)

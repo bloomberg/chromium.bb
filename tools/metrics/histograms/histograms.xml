@@ -12386,7 +12386,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicHandshakeNotConfirmedNumPacketsReceived">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of QUIC packets received by a QUIC connection whose handshake was
     not confirmed when that connection is closed.
@@ -12394,7 +12394,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicHandshakeState" enum="QuicHandshakeState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The state of a QUIC connection's crypto hanshake as it progresses from
     starting to confirmation or failure.
@@ -12402,7 +12402,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicNumSentClientHellos">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>The number of client hello messages sent.</summary>
 </histogram>
 
@@ -12410,7 +12410,7 @@ other types of suffix sets.
   <obsolete>
     see Net.QuicSession.Connect*PortForHTTP*
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of client hello messages sent when the crypto handshake was
     confirmed.
@@ -12418,21 +12418,21 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicNumStreamFramesInPacket">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of stream frames bundled within a received packet.
   </summary>
 </histogram>
 
 <histogram name="Net.QuicNumStreamFramesPerStreamInPacket">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of stream frames per stream ID within a received packet.
   </summary>
 </histogram>
 
 <histogram name="Net.QuicServerInfo.DiskCacheReadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>Time spent to load QUIC server information from disk cache.</summary>
 </histogram>
 
@@ -12468,14 +12468,14 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The network error code which resulted in the session being closed.
   </summary>
 </histogram>
 
 <histogram name="Net.QuicSession.Connect" units="RTTs">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     Samples of the number of round-trips needed by a QUIC connection before a
     request could be sent by the client.
@@ -12483,13 +12483,13 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>The number of streams open when a QUIC session timed out.</summary>
 </histogram>
 
 <histogram
     name="Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of total streams created when a QUIC session crypto handshake
     timed out.
@@ -12498,7 +12498,7 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCode"
     enum="QuicErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The QUIC error code which resulted in the connection being closed.
   </summary>
@@ -12506,7 +12506,7 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCodeClient"
     enum="QuicErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The QUIC error code which resulted in the connection being closed by the
     client.
@@ -12515,7 +12515,7 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCodeServer"
     enum="QuicErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The QUIC error code which resulted in the connection being closed by the
     server.
@@ -12531,7 +12531,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.FinalTcpCwnd">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The value of the TCP cubic sender's CWND when the session is closed.
   </summary>
@@ -12541,7 +12541,7 @@ other types of suffix sets.
   <obsolete>
     see Net.QuicSession.Connect*PortForHTTP*
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     Samples of the number of round-trips needed by a QUIC connection before a
     request could be sent by the client.
@@ -12549,14 +12549,14 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.NumOpenStreams">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of QUIC streams opened when a new QUIC stream is created.
   </summary>
 </histogram>
 
 <histogram name="Net.QuicSession.NumTotalStreams">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The total number of streams created by the client when the session is
     closed.
@@ -12564,7 +12564,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.OutOfOrderGapReceived">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of missing packets between the current received packet and the
     previously largest received packet sequence number, when the current
@@ -12574,7 +12574,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.OutOfOrderPacketsReceived">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of times the current received packet had a lower sequence number
     than the previously received packet sequence number.
@@ -12582,7 +12582,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.PacketGapReceived">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of missing packets between the current received packet and the
     previously largest received packet sequence number.
@@ -12590,7 +12590,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.PacketGapSent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The number of missing packets between the current received packet and the
     previously largest received packet sequence number, as reported by the
@@ -12607,7 +12607,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.PacketReceived" units="SequenceNumber">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     Each bucket corresponds to a specific packet sequence number that was sent
     by a server to Chrome at the start of a QUIC connection. This histogram is
@@ -12628,12 +12628,12 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.QuicVersion">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>Version of the QUIC protocol used for this connection.</summary>
 </histogram>
 
 <histogram name="Net.QuicSession.ReadError" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The network error code returned when attempting to read to a QUIC
     connection.
@@ -12642,7 +12642,7 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.RstStreamErrorCodeClient"
     enum="QuicRstStreamErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The QUIC error code which resulted in a stream being reset by the client.
   </summary>
@@ -12650,7 +12650,7 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.RstStreamErrorCodeServer"
     enum="QuicRstStreamErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The QUIC error code which resulted in a stream being reset by the server.
   </summary>
@@ -12665,17 +12665,44 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames received.</summary>
 </histogram>
 
 <histogram name="Net.QuicSession.TruncatedAcksSent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames sent.</summary>
 </histogram>
 
+<histogram name="Net.QuicSession.UnexpectedNotGoingAway"
+    enum="QuicSessionLocations">
+  <owner>rch@chromium.org</owner>
+  <summary>
+        The location in quic_client_session.cc where a session is unexpectedly
+    not going away.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.UnexpectedObservers"
+    enum="QuicSessionLocations">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The location in quic_client_session.cc where there were unexpected
+    observers.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.UnexpectedOpenStreams"
+    enum="QuicSessionLocations">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The location in quic_client_session.cc where there were unexpected open
+    streams.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The network error code returned when attempting to write to a QUIC
     connection.
@@ -38299,6 +38326,15 @@ other types of suffix sets.
   <int value="0" label="CONNECTING_SOCKET"/>
   <int value="1" label="SETTING_RECEIVE_BUFFER"/>
   <int value="2" label="SETTING_SEND_BUFFER"/>
+</enum>
+
+<enum name="QuicSessionLocations" type="int">
+  <int value="0" label="DESTRUCTOR"/>
+  <int value="1" label="ADD_OBSERVER"/>
+  <int value="2" label="TRY_CREATE_STREAM"/>
+  <int value="3" label="CREATE_OUTGOING_RELIABLE_STREAM"/>
+  <int value="4" label="NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER"/>
+  <int value="5" label="NOTIFY_FACTORY_OF_SESSION_CLOSED"/>
 </enum>
 
 <enum name="RapporDiscardReason" type="int">
