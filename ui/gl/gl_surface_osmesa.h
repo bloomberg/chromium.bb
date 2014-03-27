@@ -39,6 +39,23 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesa);
 };
 
+// A thin subclass of |GLSurfaceOSMesa| that can be used in place
+// of a native hardware-provided surface when a native surface
+// provider is not available.
+class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
+ public:
+  explicit GLSurfaceOSMesaHeadless();
+
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+
+ protected:
+  virtual ~GLSurfaceOSMesaHeadless();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesaHeadless);
+};
+
 }  // namespace gfx
 
 #endif  // UI_GL_GL_SURFACE_OSMESA_H_

@@ -340,4 +340,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
   }
 }
 
+EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
+  return base::MessagePumpForUI::GetDefaultXDisplay();
+}
+
 }  // namespace gfx

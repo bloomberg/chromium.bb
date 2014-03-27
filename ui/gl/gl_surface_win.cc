@@ -6,6 +6,7 @@
 
 #include <dwmapi.h>
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,6 +20,12 @@
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_surface_wgl.h"
+
+// From ANGLE's egl/eglext.h.
+#if !defined(EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE)
+#define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE \
+  reinterpret_cast<EGLNativeDisplayType>(-2)
+#endif
 
 namespace gfx {
 
@@ -285,6 +292,13 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       NOTREACHED();
       return NULL;
   }
+}
+
+EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11))
+    return EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
+
+  return EGL_DEFAULT_DISPLAY;
 }
 
 }  // namespace gfx

@@ -13,7 +13,6 @@
 #include "base/android/sys_utils.h"
 #endif
 
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,11 +37,6 @@ extern "C" {
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #endif
 
-// From ANGLE's egl/eglext.h.
-#if !defined(EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE)
-#define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE \
-    reinterpret_cast<EGLNativeDisplayType>(-2)
-#endif
 #if !defined(EGL_FIXED_SIZE_ANGLE)
 #define EGL_FIXED_SIZE_ANGLE 0x3201
 #endif
@@ -127,25 +121,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (initialized)
     return true;
 
-#if defined(USE_X11)
-  g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
-#elif defined(OS_WIN)
-  g_native_display = EGL_DEFAULT_DISPLAY;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11)) {
-    g_native_display = EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
-  }
-#elif defined(USE_OZONE)
-  gfx::SurfaceFactoryOzone* surface_factory =
-      gfx::SurfaceFactoryOzone::GetInstance();
-  if (surface_factory->InitializeHardware() !=
-      gfx::SurfaceFactoryOzone::INITIALIZED) {
-    LOG(ERROR) << "OZONE failed to initialize hardware";
-    return false;
-  }
-  g_native_display = surface_factory->GetNativeDisplay();
-#else
-  g_native_display = EGL_DEFAULT_DISPLAY;
-#endif
+  g_native_display = GetPlatformDefaultEGLNativeDisplay();
   g_display = eglGetDisplay(g_native_display);
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
@@ -191,7 +167,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
 #if defined(USE_OZONE)
   const EGLint* config_attribs =
-      surface_factory->GetEGLSurfaceProperties(choose_attributes);
+      SurfaceFactoryOzone::GetInstance()->GetEGLSurfaceProperties(
+          choose_attributes);
 #else
   const EGLint* config_attribs = choose_attributes;
 #endif
@@ -325,6 +302,10 @@ bool GLSurfaceEGL::HasEGLExtension(const char* name) {
 
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
   return g_egl_create_context_robustness_supported;
+}
+
+bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
+  return g_egl_surfaceless_context_supported;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
@@ -754,115 +735,5 @@ void* SurfacelessEGL::GetShareHandle() {
 
 SurfacelessEGL::~SurfacelessEGL() {
 }
-
-#if defined(ANDROID) || defined(USE_OZONE)
-
-// A thin subclass of |GLSurfaceOSMesa| that can be used in place
-// of a native hardware-provided surface when a native surface
-// provider is not available.
-class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
- public:
-  explicit GLSurfaceOSMesaHeadless();
-
-  virtual bool IsOffscreen() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-
- protected:
-  virtual ~GLSurfaceOSMesaHeadless();
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesaHeadless);
-};
-
-bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
-
-bool GLSurfaceOSMesaHeadless::SwapBuffers() { return true; }
-
-GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
-    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {}
-
-GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
-
-// static
-bool GLSurface::InitializeOneOffInternal() {
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-    default:
-      break;
-  }
-  return true;
-}
-
-// static
-scoped_refptr<GLSurface>
-GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
-
-  if (GetGLImplementation() == kGLImplementationOSMesaGL) {
-    scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless());
-    if (!surface->Initialize())
-      return NULL;
-    return surface;
-  }
-  DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
-  if (window != kNullAcceleratedWidget) {
-    EGLNativeWindowType egl_window;
-    scoped_refptr<NativeViewGLSurfaceEGL> surface;
-    scoped_ptr<VSyncProvider> sync_provider;
-#if defined(USE_OZONE)
-    egl_window =
-        gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
-            window);
-    sync_provider =
-        gfx::SurfaceFactoryOzone::GetInstance()->CreateVSyncProvider(
-            egl_window);
-#else
-    egl_window = window;
-#endif
-    surface = new NativeViewGLSurfaceEGL(egl_window);
-    if(surface->Initialize(sync_provider.Pass()))
-      return surface;
-  } else {
-    scoped_refptr<GLSurface> surface = new GLSurfaceStub();
-    if (surface->Initialize())
-      return surface;
-  }
-  return NULL;
-}
-
-// static
-scoped_refptr<GLSurface>
-GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(1, size));
-      if (!surface->Initialize())
-        return NULL;
-
-      return surface;
-    }
-    case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface;
-      if (g_egl_surfaceless_context_supported &&
-         (size.width() == 0 && size.height() == 0)) {
-        surface = new SurfacelessEGL(size);
-      } else
-        surface = new PbufferGLSurfaceEGL(size);
-
-      if (!surface->Initialize())
-        return NULL;
-      return surface;
-    }
-    default:
-      NOTREACHED();
-      return NULL;
-  }
-}
-
-#endif
 
 }  // namespace gfx

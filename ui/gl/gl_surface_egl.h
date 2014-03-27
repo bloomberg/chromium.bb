@@ -20,6 +20,9 @@
 
 namespace gfx {
 
+// Get default EGL display for GLSurfaceEGL (differs by platform).
+EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay();
+
 // Interface for EGL surface.
 class GL_EXPORT GLSurfaceEGL : public GLSurface {
  public:
@@ -38,6 +41,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static const char* GetEGLExtensions();
   static bool HasEGLExtension(const char* name);
   static bool IsCreateContextRobustnessSupported();
+  static bool IsEGLSurfacelessContextSupported();
 
  protected:
   virtual ~GLSurfaceEGL();

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_osmesa.h"
@@ -81,5 +82,14 @@ unsigned GLSurfaceOSMesa::GetFormat() {
 GLSurfaceOSMesa::~GLSurfaceOSMesa() {
   Destroy();
 }
+
+bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
+
+bool GLSurfaceOSMesaHeadless::SwapBuffers() { return true; }
+
+GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
+    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {}
+
+GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
 
 }  // namespace gfx
