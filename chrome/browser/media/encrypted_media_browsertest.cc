@@ -495,11 +495,15 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine_Prefixed,
                         Combine(Values(kWidevineKeySystem),
                                 Values(MSE),
                                 Values(PREFIXED)));
+
+// Following tests fail if Widevine is loaded as a component, crbug.com/356833.
+#if !defined(WIDEVINE_CDM_IS_COMPONENT)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(MSE),
                                 Values(UNPREFIXED)));
+#endif  // !defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {

@@ -137,6 +137,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       }
     }
     catch(error) {
+      console.log(error.message);
       setResultInTitle(error.name);
     }
   }
