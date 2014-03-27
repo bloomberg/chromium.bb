@@ -10,11 +10,11 @@ scroll-rect: {
 }
 scroll-rect: {
     className : "scroll-rect"
-    height : "331px"
+    height : "332px"
     left : "0px"
     title : "mousewheel event listener"
     top : "0px"
-    width : "441px"
+    width : "442px"
 }
 scroll-rect: {
     className : "scroll-rect"
