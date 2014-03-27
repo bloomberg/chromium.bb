@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests exportKey() given bad inputs.");
+
+jsTestIsAsync = true;
+
+// Not keys
+shouldThrow("crypto.subtle.exportKey('raw', null)");
+shouldThrow("crypto.subtle.exportKey('raw', 3)");
+
+function importAesKey()
+{
+    var keyData = new Uint8Array(16);
+    var usages = ['encrypt'];
+    var extractable = true;
+    var algorithm = {name: 'aes-cbc'};
+
+    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+}
+
+importAesKey().then(function(result) {
+    key = result;
+
+    // Invalid export format
+    return crypto.subtle.exportKey(3, key);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Invalid export format
+    return crypto.subtle.exportKey(null, key);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Invalid export format
+    return crypto.subtle.exportKey('invalid', key);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>
