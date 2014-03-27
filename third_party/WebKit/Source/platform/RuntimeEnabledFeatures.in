@@ -48,7 +48,7 @@ DeviceOrientation status=stable
 DialogElement status=experimental
 DirectWrite
 EncodingAPI status=experimental
-EncryptedMedia status=experimental
+EncryptedMedia status=test
 EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
