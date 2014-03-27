@@ -622,6 +622,10 @@ void Window::MoveCursorTo(const gfx::Point& point_in_window) {
   root_window->GetHost()->MoveCursorTo(point_in_root);
 }
 
+gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
+  return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
+}
+
 void Window::SetEventFilter(ui::EventHandler* event_filter) {
   if (event_filter_)
     RemovePreTargetHandler(event_filter_.get());

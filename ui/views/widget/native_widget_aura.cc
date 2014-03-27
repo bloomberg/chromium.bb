@@ -80,7 +80,6 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       saved_window_state_(ui::SHOW_STATE_DEFAULT) {
   aura::client::SetFocusChangeObserver(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
-  wm::SetCursorDelegate(window_, this);
 }
 
 // static
@@ -726,6 +725,10 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
+gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
+  return cursor_;
+}
+
 int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
   return delegate_->GetNonClientComponent(point);
 }
@@ -938,13 +941,6 @@ int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, wm::CursorDelegate implementation:
-
-gfx::NativeCursor NativeWidgetAura::GetCursorForPoint(const gfx::Point& point) {
-  return cursor_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

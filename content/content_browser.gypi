@@ -1672,7 +1672,6 @@
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/wm/wm.gyp:wm_core',
       ],
       'sources/': [
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],

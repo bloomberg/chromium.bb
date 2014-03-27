@@ -43,6 +43,10 @@ void ImageWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
     size_mismatch_ = window_size_ != image_.AsImageSkia().size();
 }
 
+gfx::NativeCursor ImageWindowDelegate::GetCursor(const gfx::Point& point) {
+  return gfx::kNullCursor;
+}
+
 int ImageWindowDelegate::GetNonClientComponent(const gfx::Point& point) const {
   return HTNOWHERE;
 }

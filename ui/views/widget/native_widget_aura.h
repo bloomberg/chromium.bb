@@ -16,7 +16,6 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
-#include "ui/wm/public/cursor_delegate.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace aura {
@@ -39,8 +38,7 @@ class VIEWS_EXPORT NativeWidgetAura
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
-      public aura::client::DragDropDelegate,
-      public wm::CursorDelegate {
+      public aura::client::DragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
 
@@ -146,6 +144,7 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
@@ -183,9 +182,6 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-
-  // Overridden from wm::CursorDelegate:
-  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point) OVERRIDE;
 
   // Overridden from NativeWidget:
   virtual ui::EventHandler* GetEventHandler() OVERRIDE;

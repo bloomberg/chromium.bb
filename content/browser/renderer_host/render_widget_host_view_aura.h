@@ -42,7 +42,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
-#include "ui/wm/public/cursor_delegate.h"
 
 namespace aura {
 class WindowTracker;
@@ -97,7 +96,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
       public aura::client::CursorClientObserver,
-      public wm::CursorDelegate,
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
       public SoftwareFrameManagerClient,
@@ -290,6 +288,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
@@ -320,9 +319,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Overridden from aura::client::CursorClientObserver:
   virtual void OnCursorVisibilityChanged(bool is_visible) OVERRIDE;
-
-  // Overridden from wm::CursorDelegate:
-  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point) OVERRIDE;
 
   // Overridden from aura::client::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* gained_focus,
