@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_log.h"
 #include "media/base/text_track_config.h"
@@ -38,6 +39,16 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
 
   int64 audio_track_num() const { return audio_track_num_; }
   int64 video_track_num() const { return video_track_num_; }
+
+  // If TrackEntry DefaultDuration field existed for the associated audio or
+  // video track, returns that value converted from ns to base::TimeDelta with
+  // precision not greater than |timecode_scale_in_us|. Defaults to
+  // kNoTimestamp().
+  base::TimeDelta GetAudioDefaultDuration(
+      const double timecode_scale_in_us) const;
+  base::TimeDelta GetVideoDefaultDuration(
+      const double timecode_scale_in_us) const;
+
   const std::set<int64>& ignored_tracks() const { return ignored_tracks_; }
 
   const std::string& audio_encryption_key_id() const {
@@ -80,10 +91,13 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   std::vector<uint8> codec_private_;
   int64 seek_preroll_;
   int64 codec_delay_;
+  int64 default_duration_;
   scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
 
   int64 audio_track_num_;
+  int64 audio_default_duration_;
   int64 video_track_num_;
+  int64 video_default_duration_;
   bool ignore_text_tracks_;
   TextTracks text_tracks_;
   std::set<int64> ignored_tracks_;

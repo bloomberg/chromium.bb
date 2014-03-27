@@ -15,16 +15,37 @@ namespace media {
 
 class TracksBuilder {
  public:
-  TracksBuilder();
+  // If |allow_invalid_values| is false, some AddTrack() parameters will be
+  // basically checked and will assert if out of valid range. |codec_id|,
+  // |name|, |language| and any device-specific constraints are not checked.
+  explicit TracksBuilder(bool allow_invalid_values);
+  TracksBuilder();  // Sets |allow_invalid_values| to false.
   ~TracksBuilder();
 
-  void AddTrack(int track_num, int track_type, int track_uid,
-                const std::string& codec_id, const std::string& name,
-                const std::string& language);
+  // Only a non-negative |default_duration| will result in a serialized
+  // kWebMIdDefaultDuration element. Note, 0 is allowed here for testing only
+  // if |allow_invalid_values_| is true, since it is an illegal value for
+  // DefaultDuration. Similar applies to |audio_channels|,
+  // |audio_sampling_frequency|, |video_pixel_width| and |video_pixel_height|.
+  void AddVideoTrack(int track_num, int track_uid, const std::string& codec_id,
+                     const std::string& name, const std::string& language,
+                     int default_duration, int video_pixel_width,
+                     int video_pixel_height);
+  void AddAudioTrack(int track_num, int track_uid, const std::string& codec_id,
+                     const std::string& name, const std::string& language,
+                     int default_duration, int audio_channels,
+                     double audio_sampling_frequency);
+  void AddTextTrack(int track_num, int track_uid, const std::string& codec_id,
+                    const std::string& name, const std::string& language);
 
   std::vector<uint8> Finish();
 
  private:
+  void AddTrackInternal(int track_num, int track_type, int track_uid,
+                        const std::string& codec_id, const std::string& name,
+                        const std::string& language, int default_duration,
+                        int video_pixel_width, int video_pixel_height,
+                        int audio_channels, double audio_sampling_frequency);
   int GetTracksSize() const;
   int GetTracksPayloadSize() const;
   void WriteTracks(uint8* buffer, int buffer_size) const;
@@ -33,12 +54,17 @@ class TracksBuilder {
    public:
     Track(int track_num, int track_type, int track_uid,
           const std::string& codec_id, const std::string& name,
-          const std::string& language);
+          const std::string& language, int default_duration,
+          int video_pixel_width, int video_pixel_height,
+          int audio_channels, double audio_sampling_frequency,
+          bool allow_invalid_values);
 
     int GetSize() const;
     void Write(uint8** buf, int* buf_size) const;
    private:
     int GetPayloadSize() const;
+    int GetVideoPayloadSize() const;
+    int GetAudioPayloadSize() const;
 
     int track_num_;
     int track_type_;
@@ -46,10 +72,16 @@ class TracksBuilder {
     std::string codec_id_;
     std::string name_;
     std::string language_;
+    int default_duration_;
+    int video_pixel_width_;
+    int video_pixel_height_;
+    int audio_channels_;
+    double audio_sampling_frequency_;
   };
 
   typedef std::list<Track> TrackList;
   TrackList tracks_;
+  bool allow_invalid_values_;
 
   DISALLOW_COPY_AND_ASSIGN(TracksBuilder);
 };
