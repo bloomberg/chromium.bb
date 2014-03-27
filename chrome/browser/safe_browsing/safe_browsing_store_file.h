@@ -21,38 +21,60 @@
 // int32 version;           // format version
 //
 // // Counts for the various data which follows the header.
-// uint32 add_chunk_count;   // Chunks seen, including empties.
-// uint32 sub_chunk_count;   // Ditto.
-// uint32 add_prefix_count;
-// uint32 sub_prefix_count;
-// uint32 add_hash_count;
-// uint32 sub_hash_count;
-//
+// uint32 add_chunk_count;  // Chunks seen, including empties.
+// uint32 sub_chunk_count;  // Ditto.
+// uint32 shard_stride;     // SBPrefix space covered per shard.
+//                          // 0==entire space in one shard.
+// // Sorted by chunk_id.
 // array[add_chunk_count] {
 //   int32 chunk_id;
 // }
+// // Sorted by chunk_id.
 // array[sub_chunk_count] {
 //   int32 chunk_id;
 // }
-// array[add_prefix_count] {
-//   int32 chunk_id;
-//   uint32 prefix;
+// MD5Digest header_checksum;  // Checksum over preceeding data.
+//
+// // Sorted by prefix, then add chunk_id, then hash, both within shards and
+// // overall.
+// array[from 0 to wraparound to 0 by shard_stride] {
+//   uint32 add_prefix_count;
+//   uint32 sub_prefix_count;
+//   uint32 add_hash_count;
+//   uint32 sub_hash_count;
+//   array[add_prefix_count] {
+//     int32 chunk_id;
+//     uint32 prefix;
+//   }
+//   array[sub_prefix_count] {
+//     int32 chunk_id;
+//     int32 add_chunk_id;
+//     uint32 add_prefix;
+//   }
+//   array[add_hash_count] {
+//     int32 chunk_id;
+//     int32 received_time;     // From base::Time::ToTimeT().
+//     char[32] full_hash;
+//   }
+//   array[sub_hash_count] {
+//     int32 chunk_id;
+//     int32 add_chunk_id;
+//     char[32] add_full_hash;
+//   }
 // }
-// array[sub_prefix_count] {
-//   int32 chunk_id;
-//   int32 add_chunk_id;
-//   uint32 add_prefix;
-// }
-// array[add_hash_count] {
-//   int32 chunk_id;
-//   int32 received_time;     // From base::Time::ToTimeT().
-//   char[32] full_hash;
-// array[sub_hash_count] {
-//   int32 chunk_id;
-//   int32 add_chunk_id;
-//   char[32] add_full_hash;
-// }
-// MD5Digest checksum;      // Checksum over preceeding data.
+// MD5Digest checksum;      // Checksum over entire file.
+//
+// The checksums are used to allow writing the file without doing an expensive
+// fsync().  Since the data can be re-fetched, failing the checksum is not
+// catastrophic.  Histograms indicate that file corruption here is pretty
+// uncommon.
+//
+// The |header_checksum| is present to guarantee valid header and chunk data for
+// updates.  Only that part of the file needs to be read to post the update.
+//
+// |shard_stride| breaks the file into approximately-equal portions, allowing
+// updates to stream from one file to another with modest memory usage.  It is
+// dynamic to adjust to different file sizes without adding excessive overhead.
 //
 // During the course of an update, uncommitted data is stored in a
 // temporary file (which is later re-used to commit).  This is an
@@ -91,18 +113,14 @@
 // - Open a temp file for storing new chunk info.
 // - Write new chunks to the temp file.
 // - When the transaction is finished:
-//   - Read the rest of the original file's data into buffers.
-//   - Rewind the temp file and merge the new data into buffers.
-//   - Process buffers for deletions and apply subs.
-//   - Rewind and write the buffers out to temp file.
+//   - Read the update data from the temp file into memory.
+//   - Overwrite the temp file with new header data.
+//   - Until done:
+//     - Read shards of the original file's data into memory.
+//     - Merge from the update data.
+//     - Write shards to the temp file.
 //   - Delete original file.
 //   - Rename temp file to original filename.
-
-// TODO(shess): By using a checksum, this code can avoid doing an
-// fsync(), at the possible cost of more frequently retrieving the
-// full dataset.  Measure how often this occurs, and if it occurs too
-// often, consider retaining the last known-good file for recovery
-// purposes, rather than deleting it.
 
 class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:

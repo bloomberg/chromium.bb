@@ -14,14 +14,54 @@ namespace {
 // NOTE(shess): kFileMagic should not be a byte-wise palindrome, so
 // that byte-order changes force corruption.
 const int32 kFileMagic = 0x600D71FE;
-const int32 kFileVersion = 7;  // SQLite storage was 6...
+
+// Version history:
+// Version 6: aad08754/r2814 by erikkay@google.com on 2008-10-02 (sqlite)
+// Version 7: 6afe28a5/r37435 by shess@chromium.org on 2010-01-28
+// Version 8: ????????/r????? by shess@chromium.org on 2014-03-??
+const int32 kFileVersion = 8;
+
+// ReadAndVerifyHeader() returns this in case of error.
+const int32 kInvalidVersion = -1;
 
 // Header at the front of the main database file.
-struct FileHeader {
+struct FileHeaderV7 {
   int32 magic, version;
   uint32 add_chunk_count, sub_chunk_count;
   uint32 add_prefix_count, sub_prefix_count;
   uint32 add_hash_count, sub_hash_count;
+};
+
+// Starting with version 8, the storage is sorted and can be sharded to allow
+// updates to be done with lower memory requirements.  Newly written files will
+// be sharded to need less than this amount of memory during update.  Larger
+// values are preferred to minimize looping overhead during processing.
+const int64 kUpdateStorageBytes = 100 * 1024;
+
+// Prevent excessive sharding by setting a lower limit on the shard stride.
+// Smaller values should work fine, but very small values will probably lead to
+// poor performance.  Shard stride is indirectly related to
+// |kUpdateStorageBytes|, setting that very small will bump against this.
+const uint32 kMinShardStride = 1 << 24;
+
+// Strides over the entire SBPrefix space.
+const uint64 kMaxShardStride = GG_LONGLONG(1u) << 32;
+
+// Maximum SBPrefix value.
+const SBPrefix kMaxSBPrefix = ~0;
+
+// Header at the front of the main database file.
+struct FileHeaderV8 {
+  int32 magic, version;
+  uint32 add_chunk_count, sub_chunk_count;
+  uint32 shard_stride;
+  // TODO(shess): Is this where 64-bit will bite me?  Perhaps write a
+  // specialized read/write?
+};
+
+union FileHeader {
+  struct FileHeaderV7 v7;
+  struct FileHeaderV8 v8;
 };
 
 // Header for each chunk in the chunk-accumulation file.
@@ -30,22 +70,16 @@ struct ChunkHeader {
   uint32 add_hash_count, sub_hash_count;
 };
 
+// Header for each shard of data in the main database file.
+struct ShardHeader {
+  uint32 add_prefix_count, sub_prefix_count;
+  uint32 add_hash_count, sub_hash_count;
+};
+
 // Rewind the file.  Using fseek(2) because rewind(3) errors are
 // weird.
 bool FileRewind(FILE* fp) {
   int rv = fseek(fp, 0, SEEK_SET);
-  DCHECK_EQ(rv, 0);
-  return rv == 0;
-}
-
-// Move file read pointer forward by |bytes| relative to current position.
-bool FileSkip(size_t bytes, FILE* fp) {
-  // Although fseek takes negative values, for this case, we only want
-  // to skip forward.
-  DCHECK(static_cast<long>(bytes) >= 0);
-  if (static_cast<long>(bytes) < 0)
-    return false;
-  int rv = fseek(fp, static_cast<long>(bytes), SEEK_CUR);
   DCHECK_EQ(rv, 0);
   return rv == 0;
 }
@@ -104,20 +138,24 @@ bool ReadToContainer(CT* values, size_t count, FILE* fp,
   return true;
 }
 
-// Write all of |values| to |fp|, and fold the data into the checksum
-// in |context|, if non-NULL.  Returns true on succsess.
-template <typename CT>
-bool WriteContainer(const CT& values, FILE* fp,
-                    base::MD5Context* context) {
-  if (values.empty())
-    return true;
-
-  for (typename CT::const_iterator iter = values.begin();
-       iter != values.end(); ++iter) {
+// Write values between |beg| and |end| to |fp|, and fold the data into the
+// checksum in |context|, if non-NULL.  Returns true if all items successful.
+template <typename CTI>
+bool WriteRange(const CTI& beg, const CTI& end,
+                FILE* fp, base::MD5Context* context) {
+  for (CTI iter = beg; iter != end; ++iter) {
     if (!WriteItem(*iter, fp, context))
       return false;
   }
   return true;
+}
+
+// Write all of |values| to |fp|, and fold the data into the checksum
+// in |context|, if non-NULL.  Returns true if all items successful.
+template <typename CT>
+bool WriteContainer(const CT& values, FILE* fp,
+                    base::MD5Context* context) {
+  return WriteRange(values.begin(), values.end(), fp, context);
 }
 
 // Delete the chunks in |deleted| from |chunks|.
@@ -131,16 +169,37 @@ void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
   }
 }
 
+// base::MD5Final() modifies |context| in generating |digest|.  This wrapper
+// generates an intermediate digest without modifying the context.
+void MD5IntermediateDigest(base::MD5Digest* digest, base::MD5Context* context) {
+  base::MD5Context temp_context;
+  memcpy(&temp_context, context, sizeof(temp_context));
+  base::MD5Final(digest, &temp_context);
+}
+
+bool ReadAndVerifyChecksum(FILE* fp, base::MD5Context* context) {
+  base::MD5Digest calculated_digest;
+  MD5IntermediateDigest(&calculated_digest, context);
+
+  base::MD5Digest file_digest;
+  if (!ReadItem(&file_digest, fp, context))
+    return false;
+
+  return memcmp(&file_digest, &calculated_digest, sizeof(file_digest)) == 0;
+}
+
 // Sanity-check the header against the file's size to make sure our
 // vectors aren't gigantic.  This doubles as a cheap way to detect
 // corruption without having to checksum the entire file.
-bool FileHeaderSanityCheck(const base::FilePath& filename,
-                           const FileHeader& header) {
+bool FileHeaderV7SanityCheck(const base::FilePath& filename,
+                             const FileHeaderV7& header) {
+  DCHECK_EQ(header.version, 7);
+
   int64 size = 0;
   if (!base::GetFileSize(filename, &size))
     return false;
 
-  int64 expected_size = sizeof(FileHeader);
+  int64 expected_size = sizeof(FileHeaderV7);
   expected_size += header.add_chunk_count * sizeof(int32);
   expected_size += header.sub_chunk_count * sizeof(int32);
   expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
@@ -154,19 +213,385 @@ bool FileHeaderSanityCheck(const base::FilePath& filename,
   return true;
 }
 
-// This a helper function that reads header to |header|. Returns true if the
-// magic number is correct and santiy check passes.
-bool ReadAndVerifyHeader(const base::FilePath& filename,
-                         FILE* fp,
-                         FileHeader* header,
-                         base::MD5Context* context) {
-  if (!ReadItem(header, fp, context))
+// Helper function to read the file header and chunk TOC.  Rewinds |fp| and
+// initializes |context|.  The header is left in |header|, with the version
+// returned.  kInvalidVersion is returned for sanity check or checksum failure.
+int ReadAndVerifyHeader(const base::FilePath& filename,
+                        FileHeader* header,
+                        std::set<int32>* add_chunks,
+                        std::set<int32>* sub_chunks,
+                        FILE* fp,
+                        base::MD5Context* context) {
+  DCHECK(header);
+  DCHECK(add_chunks);
+  DCHECK(sub_chunks);
+  DCHECK(fp);
+  DCHECK(context);
+
+  int version = kInvalidVersion;
+
+  base::MD5Init(context);
+  if (!FileRewind(fp))
+    return kInvalidVersion;
+  if (!ReadItem(&header->v8, fp, context))
+    return kInvalidVersion;
+  if (header->v8.magic != kFileMagic)
+    return kInvalidVersion;
+
+  size_t add_chunks_count = 0;
+  size_t sub_chunks_count = 0;
+
+  if (header->v8.version == 7) {
+    version = 7;
+
+    // Reset the context and re-read the v7 header.
+    base::MD5Init(context);
+    if (!FileRewind(fp))
+      return kInvalidVersion;
+    if (!ReadItem(&header->v7, fp, context))
+      return kInvalidVersion;
+    if (header->v7.magic != kFileMagic || header->v7.version != 7)
+      return kInvalidVersion;
+    if (!FileHeaderV7SanityCheck(filename, header->v7))
+      return kInvalidVersion;
+
+    add_chunks_count = header->v7.add_chunk_count;
+    sub_chunks_count = header->v7.sub_chunk_count;
+  } else if (header->v8.version == kFileVersion) {
+    version = 8;
+    add_chunks_count = header->v8.add_chunk_count;
+    sub_chunks_count = header->v8.sub_chunk_count;
+  } else {
+    return kInvalidVersion;
+  }
+
+  if (!ReadToContainer(add_chunks, add_chunks_count, fp, context) ||
+      !ReadToContainer(sub_chunks, sub_chunks_count, fp, context)) {
+    return kInvalidVersion;
+  }
+
+  // v8 includes a checksum to validate the header.
+  if (version > 7 && !ReadAndVerifyChecksum(fp, context))
+    return kInvalidVersion;
+
+  return version;
+}
+
+// Helper function to write out the initial header and chunks-contained data.
+// Rewinds |fp|, initializes |context|, then writes a file header and
+// |add_chunks| and |sub_chunks|.
+bool WriteHeader(uint32 out_stride,
+                 const std::set<int32>& add_chunks,
+                 const std::set<int32>& sub_chunks,
+                 FILE* fp,
+                 base::MD5Context* context) {
+  if (!FileRewind(fp))
     return false;
-  if (header->magic != kFileMagic || header->version != kFileVersion)
+
+  base::MD5Init(context);
+  FileHeaderV8 header;
+  header.magic = kFileMagic;
+  header.version = kFileVersion;
+  header.add_chunk_count = add_chunks.size();
+  header.sub_chunk_count = sub_chunks.size();
+  header.shard_stride = out_stride;
+  if (!WriteItem(header, fp, context))
     return false;
-  if (!FileHeaderSanityCheck(filename, *header))
+
+  if (!WriteContainer(add_chunks, fp, context) ||
+      !WriteContainer(sub_chunks, fp, context))
     return false;
+
+  // Write out the header digest.
+  base::MD5Digest header_digest;
+  MD5IntermediateDigest(&header_digest, context);
+  if (!WriteItem(header_digest, fp, context))
+    return false;
+
   return true;
+}
+
+// Return |true| if the range is sorted by the given comparator.
+template <typename CTI, typename LESS>
+bool sorted(CTI beg, CTI end, LESS less) {
+  while ((end - beg) > 2) {
+    CTI n = beg++;
+    DCHECK(!less(*beg, *n));
+    if (less(*beg, *n))
+      return false;
+  }
+  return true;
+}
+
+// Merge |beg|..|end| into |container|.  Both should be sorted by the given
+// comparator, and the range iterators should not be derived from |container|.
+// Differs from std::inplace_merge() in that additional memory is not required
+// for linear performance.
+template <typename CT, typename CTI, typename COMP>
+void container_merge(CT* container, CTI beg, CTI end, const COMP& less) {
+  DCHECK(sorted(container->begin(), container->end(), less));
+  DCHECK(sorted(beg, end, less));
+
+  // Size the container to fit the results.
+  const size_t c_size = container->size();
+  container->resize(c_size + (end - beg));
+
+  // |c_end| points to the original endpoint, while |c_out| points to the
+  // endpoint that will scan from end to beginning while merging.
+  typename CT::iterator c_end = container->begin() + c_size;
+  typename CT::iterator c_out = container->end();
+
+  // While both inputs have data, move the greater to |c_out|.
+  while (c_end != container->begin() && end != beg) {
+    if (less(*(c_end - 1), *(end - 1))) {
+      *(--c_out) = *(--end);
+    } else {
+      *(--c_out) = *(--c_end);
+    }
+  }
+
+  // Copy any data remaining in the new range.
+  if (end != beg) {
+    // The original container data has been fully shifted.
+    DCHECK(c_end == container->begin());
+
+    // There is exactly the correct amount of space left.
+    DCHECK_EQ(c_out - c_end, end - beg);
+
+    std::copy(beg, end, container->begin());
+  }
+
+  DCHECK(sorted(container->begin(), container->end(), less));
+}
+
+// Collection of iterators used while stepping through StateInternal (see
+// below).
+class StateInternalPos {
+ public:
+  StateInternalPos(SBAddPrefixes::iterator add_prefixes_iter,
+                   SBSubPrefixes::iterator sub_prefixes_iter,
+                   std::vector<SBAddFullHash>::iterator add_hashes_iter,
+                   std::vector<SBSubFullHash>::iterator sub_hashes_iter)
+      : add_prefixes_iter_(add_prefixes_iter),
+        sub_prefixes_iter_(sub_prefixes_iter),
+        add_hashes_iter_(add_hashes_iter),
+        sub_hashes_iter_(sub_hashes_iter) {
+  }
+
+  SBAddPrefixes::iterator add_prefixes_iter_;
+  SBSubPrefixes::iterator sub_prefixes_iter_;
+  std::vector<SBAddFullHash>::iterator add_hashes_iter_;
+  std::vector<SBSubFullHash>::iterator sub_hashes_iter_;
+};
+
+// Helper to find the next shard boundary.
+template <class T>
+bool prefix_bounder(SBPrefix val, const T& elt) {
+  return val < elt.GetAddPrefix();
+}
+
+// Container for partial database state.  Includes add/sub prefixes/hashes, plus
+// aggregate operations on same.
+class StateInternal {
+ public:
+  explicit StateInternal(const std::vector<SBAddFullHash>& pending_adds)
+    : add_full_hashes_(pending_adds.begin(), pending_adds.end()) {
+  }
+
+  StateInternal() {}
+
+  // Append indicated amount of data from |fp|.
+  bool AppendData(size_t add_prefix_count, size_t sub_prefix_count,
+                  size_t add_hash_count, size_t sub_hash_count,
+                  FILE* fp, base::MD5Context* context) {
+    return
+        ReadToContainer(&add_prefixes_, add_prefix_count, fp, context) &&
+        ReadToContainer(&sub_prefixes_, sub_prefix_count, fp, context) &&
+        ReadToContainer(&add_full_hashes_, add_hash_count, fp, context) &&
+        ReadToContainer(&sub_full_hashes_, sub_hash_count, fp, context);
+  }
+
+  void ClearData() {
+    add_prefixes_.clear();
+    sub_prefixes_.clear();
+    add_full_hashes_.clear();
+    sub_full_hashes_.clear();
+  }
+
+  // Merge data from |beg|..|end| into receiver's state, then process the state.
+  // The current state and the range given should corrospond to the same sorted
+  // shard of data from different sources.  |add_del_cache| and |sub_del_cache|
+  // indicate the chunk ids which should be deleted during processing (see
+  // SBProcessSubs).
+  void MergeDataAndProcess(const StateInternalPos& beg,
+                           const StateInternalPos& end,
+                           const base::hash_set<int32>& add_del_cache,
+                           const base::hash_set<int32>& sub_del_cache) {
+    container_merge(&add_prefixes_,
+                    beg.add_prefixes_iter_,
+                    end.add_prefixes_iter_,
+                    SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+
+    container_merge(&sub_prefixes_,
+                    beg.sub_prefixes_iter_,
+                    end.sub_prefixes_iter_,
+                    SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+
+    container_merge(&add_full_hashes_,
+                    beg.add_hashes_iter_,
+                    end.add_hashes_iter_,
+                    SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+
+    container_merge(&sub_full_hashes_,
+                    beg.sub_hashes_iter_,
+                    end.sub_hashes_iter_,
+                    SBAddPrefixHashLess<SBSubFullHash, SBSubFullHash>);
+
+    SBProcessSubs(&add_prefixes_, &sub_prefixes_,
+                  &add_full_hashes_, &sub_full_hashes_,
+                  add_del_cache, sub_del_cache);
+  }
+
+  // Sort the data appropriately for the sharding, merging, and processing
+  // operations.
+  void SortData() {
+    std::sort(add_prefixes_.begin(), add_prefixes_.end(),
+              SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+    std::sort(sub_prefixes_.begin(), sub_prefixes_.end(),
+              SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+    std::sort(add_full_hashes_.begin(), add_full_hashes_.end(),
+              SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+    std::sort(sub_full_hashes_.begin(), sub_full_hashes_.end(),
+              SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+  }
+
+  // Iterator from the beginning of the state's data.
+  StateInternalPos StateBegin() {
+    return StateInternalPos(add_prefixes_.begin(),
+                            sub_prefixes_.begin(),
+                            add_full_hashes_.begin(),
+                            sub_full_hashes_.begin());
+  }
+
+  // An iterator pointing just after the last possible element of the shard
+  // indicated by |shard_max|.  Used to step through the state by shard.
+  // TODO(shess): Verify whether binary search really improves over linear.
+  // Merging or writing will immediately touch all of these elements.
+  StateInternalPos ShardEnd(const StateInternalPos& beg, SBPrefix shard_max) {
+    return StateInternalPos(
+        std::upper_bound(beg.add_prefixes_iter_, add_prefixes_.end(),
+                         shard_max, prefix_bounder<SBAddPrefix>),
+        std::upper_bound(beg.sub_prefixes_iter_, sub_prefixes_.end(),
+                         shard_max, prefix_bounder<SBSubPrefix>),
+        std::upper_bound(beg.add_hashes_iter_, add_full_hashes_.end(),
+                         shard_max, prefix_bounder<SBAddFullHash>),
+        std::upper_bound(beg.sub_hashes_iter_, sub_full_hashes_.end(),
+                         shard_max, prefix_bounder<SBSubFullHash>));
+  }
+
+  // Write a shard header and data for the shard starting at |beg| and ending at
+  // the element before |end|.
+  bool WriteShard(const StateInternalPos& beg, const StateInternalPos& end,
+                  FILE* fp, base::MD5Context* context) {
+    ShardHeader shard_header;
+    shard_header.add_prefix_count =
+        end.add_prefixes_iter_ - beg.add_prefixes_iter_;
+    shard_header.sub_prefix_count =
+        end.sub_prefixes_iter_ - beg.sub_prefixes_iter_;
+    shard_header.add_hash_count =
+        end.add_hashes_iter_ - beg.add_hashes_iter_;
+    shard_header.sub_hash_count =
+        end.sub_hashes_iter_ - beg.sub_hashes_iter_;
+
+    return
+        WriteItem(shard_header, fp, context) &&
+        WriteRange(beg.add_prefixes_iter_, end.add_prefixes_iter_,
+                   fp, context) &&
+        WriteRange(beg.sub_prefixes_iter_, end.sub_prefixes_iter_,
+                   fp, context) &&
+        WriteRange(beg.add_hashes_iter_, end.add_hashes_iter_,
+                   fp, context) &&
+        WriteRange(beg.sub_hashes_iter_, end.sub_hashes_iter_,
+                   fp, context);
+  }
+
+  SBAddPrefixes add_prefixes_;
+  SBSubPrefixes sub_prefixes_;
+  std::vector<SBAddFullHash> add_full_hashes_;
+  std::vector<SBSubFullHash> sub_full_hashes_;
+};
+
+// True if |val| is an even power of two.
+template <typename T>
+bool IsPowerOfTwo(const T& val) {
+  return val && (val & (val - 1)) == 0;
+}
+
+// Helper to read the entire database state, used by GetAddPrefixes() and
+// GetAddFullHashes().  Those functions are generally used only for smaller
+// files.  Returns false in case of errors reading the data.
+bool ReadDbStateHelper(const base::FilePath& filename,
+                       StateInternal* db_state) {
+  file_util::ScopedFILE file(base::OpenFile(filename, "rb"));
+  if (file.get() == NULL)
+    return false;
+
+  std::set<int32> add_chunks;
+  std::set<int32> sub_chunks;
+
+  base::MD5Context context;
+  FileHeader header;
+  const int version =
+      ReadAndVerifyHeader(filename, &header, &add_chunks, &sub_chunks,
+                          file.get(), &context);
+  if (version == kInvalidVersion)
+    return false;
+
+  if (version == 7) {
+    if (!db_state->AppendData(header.v7.add_prefix_count,
+                              header.v7.sub_prefix_count,
+                              header.v7.add_hash_count,
+                              header.v7.sub_hash_count,
+                              file.get(), &context)) {
+      return false;
+    }
+
+    // v7 data was not stored sorted.
+    db_state->SortData();
+  } else {
+    // Read until the shard start overflows, always at least one pass.
+    uint64 in_min = 0;
+    uint64 in_stride = header.v8.shard_stride;
+    if (!in_stride)
+      in_stride = kMaxShardStride;
+    if (!IsPowerOfTwo(in_stride))
+      return false;
+
+    do {
+      ShardHeader shard_header;
+      if (!ReadItem(&shard_header, file.get(), &context))
+        return false;
+
+      if (!db_state->AppendData(shard_header.add_prefix_count,
+                                shard_header.sub_prefix_count,
+                                shard_header.add_hash_count,
+                                shard_header.sub_hash_count,
+                                file.get(), &context)) {
+        return false;
+      }
+
+      in_min += in_stride;
+    } while (in_min <= kMaxSBPrefix);
+  }
+
+  if (!ReadAndVerifyChecksum(file.get(), &context))
+    return false;
+
+  int64 size = 0;
+  if (!base::GetFileSize(filename, &size))
+    return false;
+
+  return static_cast<int64>(ftell(file.get())) == size;
 }
 
 }  // namespace
@@ -258,15 +683,7 @@ bool SafeBrowsingStoreFile::CheckValidity() {
     bytes_left -= c;
   }
 
-  // Calculate the digest to this point.
-  base::MD5Digest calculated_digest;
-  base::MD5Final(&calculated_digest, &context);
-
-  // Read the stored digest and verify it.
-  base::MD5Digest file_digest;
-  if (!ReadItem(&file_digest, file_.get(), NULL))
-    return OnCorruptDatabase();
-  if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest))) {
+  if (!ReadAndVerifyChecksum(file_.get(), &context)) {
     RecordFormatEvent(FORMAT_EVENT_VALIDITY_CHECKSUM_FAILURE);
     return OnCorruptDatabase();
   }
@@ -293,48 +710,29 @@ bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
 
 bool SafeBrowsingStoreFile::GetAddPrefixes(SBAddPrefixes* add_prefixes) {
   add_prefixes->clear();
+  if (!base::PathExists(filename_))
+    return true;
 
-  base::ScopedFILE file(base::OpenFile(filename_, "rb"));
-  if (file.get() == NULL) return false;
-
-  FileHeader header;
-  if (!ReadAndVerifyHeader(filename_, file.get(), &header, NULL))
+  StateInternal db_state;
+  if (!ReadDbStateHelper(filename_, &db_state))
     return OnCorruptDatabase();
 
-  size_t add_prefix_offset = header.add_chunk_count * sizeof(int32) +
-      header.sub_chunk_count * sizeof(int32);
-  if (!FileSkip(add_prefix_offset, file.get()))
-    return false;
-
-  if (!ReadToContainer(add_prefixes, header.add_prefix_count, file.get(), NULL))
-    return false;
-
+  add_prefixes->swap(db_state.add_prefixes_);
   return true;
 }
 
 bool SafeBrowsingStoreFile::GetAddFullHashes(
     std::vector<SBAddFullHash>* add_full_hashes) {
   add_full_hashes->clear();
+  if (!base::PathExists(filename_))
+    return true;
 
-  base::ScopedFILE file(base::OpenFile(filename_, "rb"));
-  if (file.get() == NULL) return false;
-
-  FileHeader header;
-  if (!ReadAndVerifyHeader(filename_, file.get(), &header, NULL))
+  StateInternal db_state;
+  if (!ReadDbStateHelper(filename_, &db_state))
     return OnCorruptDatabase();
 
-  size_t offset =
-      header.add_chunk_count * sizeof(int32) +
-      header.sub_chunk_count * sizeof(int32) +
-      header.add_prefix_count * sizeof(SBAddPrefix) +
-      header.sub_prefix_count * sizeof(SBSubPrefix);
-  if (!FileSkip(offset, file.get()))
-    return false;
-
-  return ReadToContainer(add_full_hashes,
-                         header.add_hash_count,
-                         file.get(),
-                         NULL);
+  add_full_hashes->swap(db_state.add_full_hashes_);
+  return true;
 }
 
 bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
@@ -415,15 +813,26 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
     return true;
   }
 
+  base::MD5Context context;
   FileHeader header;
-  if (!ReadItem(&header, file.get(), NULL))
-      return OnCorruptDatabase();
-
-  if (header.magic != kFileMagic || header.version != kFileVersion) {
-    if (!strcmp(reinterpret_cast<char*>(&header.magic), "SQLite format 3")) {
-      RecordFormatEvent(FORMAT_EVENT_FOUND_SQLITE);
-    } else {
-      RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
+  const int version =
+      ReadAndVerifyHeader(filename_, &header,
+                          &add_chunks_cache_, &sub_chunks_cache_,
+                          file.get(), &context);
+  if (version == kInvalidVersion) {
+    FileHeaderV8 retry_header;
+    if (FileRewind(file.get()) && ReadItem(&retry_header, file.get(), NULL) &&
+        (retry_header.magic != kFileMagic ||
+         (retry_header.version != 8 && retry_header.version != 7))) {
+      // TODO(shess): Think on whether these histograms are generating any
+      // actionable data.  I kid you not, SQLITE happens many thousands of times
+      // per day, UNKNOWN about 3x higher than that.
+      if (!strcmp(reinterpret_cast<char*>(&retry_header.magic),
+                  "SQLite format 3")) {
+        RecordFormatEvent(FORMAT_EVENT_FOUND_SQLITE);
+      } else {
+        RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
+      }
     }
 
     // Close the file so that it can be deleted.
@@ -431,20 +840,6 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
 
     return OnCorruptDatabase();
   }
-
-  // TODO(shess): Under POSIX it is possible that this could size a
-  // file different from the file which was opened.
-  if (!FileHeaderSanityCheck(filename_, header))
-    return OnCorruptDatabase();
-
-  // Pull in the chunks-seen data for purposes of implementing
-  // |GetAddChunks()| and |GetSubChunks()|.  This data is sent up to
-  // the server at the beginning of an update.
-  if (!ReadToContainer(&add_chunks_cache_, header.add_chunk_count,
-                       file.get(), NULL) ||
-      !ReadToContainer(&sub_chunks_cache_, header.sub_chunk_count,
-                       file.get(), NULL))
-    return OnCorruptDatabase();
 
   file_.swap(file);
   new_file_.swap(new_file);
@@ -485,80 +880,25 @@ bool SafeBrowsingStoreFile::DoUpdate(
   CHECK(builder);
   CHECK(add_full_hashes_result);
 
-  SBAddPrefixes add_prefixes;
-  SBSubPrefixes sub_prefixes;
-  std::vector<SBAddFullHash> add_full_hashes;
-  std::vector<SBSubFullHash> sub_full_hashes;
-
-  // Read original data into the vectors.
-  if (!empty_) {
-    DCHECK(file_.get());
-
-    if (!FileRewind(file_.get()))
-      return OnCorruptDatabase();
-
-    base::MD5Context context;
-    base::MD5Init(&context);
-
-    // Read the file header and make sure it looks right.
-    FileHeader header;
-    if (!ReadAndVerifyHeader(filename_, file_.get(), &header, &context))
-      return OnCorruptDatabase();
-
-    // Re-read the chunks-seen data to get to the later data in the
-    // file and calculate the checksum.  No new elements should be
-    // added to the sets.
-    if (!ReadToContainer(&add_chunks_cache_, header.add_chunk_count,
-                         file_.get(), &context) ||
-        !ReadToContainer(&sub_chunks_cache_, header.sub_chunk_count,
-                         file_.get(), &context))
-      return OnCorruptDatabase();
-
-    if (!ReadToContainer(&add_prefixes, header.add_prefix_count,
-                         file_.get(), &context) ||
-        !ReadToContainer(&sub_prefixes, header.sub_prefix_count,
-                         file_.get(), &context) ||
-        !ReadToContainer(&add_full_hashes, header.add_hash_count,
-                         file_.get(), &context) ||
-        !ReadToContainer(&sub_full_hashes, header.sub_hash_count,
-                         file_.get(), &context))
-      return OnCorruptDatabase();
-
-    // Calculate the digest to this point.
-    base::MD5Digest calculated_digest;
-    base::MD5Final(&calculated_digest, &context);
-
-    // Read the stored checksum and verify it.
-    base::MD5Digest file_digest;
-    if (!ReadItem(&file_digest, file_.get(), NULL))
-      return OnCorruptDatabase();
-
-    if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest))) {
-      RecordFormatEvent(FORMAT_EVENT_UPDATE_CHECKSUM_FAILURE);
-      return OnCorruptDatabase();
-    }
-
-    // Close the file so we can later rename over it.
-    file_.reset();
-  }
-  DCHECK(!file_.get());
-
   // Rewind the temporary storage.
   if (!FileRewind(new_file_.get()))
     return false;
 
   // Get chunk file's size for validating counts.
-  int64 size = 0;
-  if (!base::GetFileSize(TemporaryFileForFilename(filename_), &size))
+  int64 update_size = 0;
+  if (!base::GetFileSize(TemporaryFileForFilename(filename_), &update_size))
     return OnCorruptDatabase();
 
   // Track update size to answer questions at http://crbug.com/72216 .
   // Log small updates as 1k so that the 0 (underflow) bucket can be
   // used for "empty" in SafeBrowsingDatabase.
   UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes",
-                       std::max(static_cast<int>(size / 1024), 1));
+                       std::max(static_cast<int>(update_size / 1024), 1));
 
-  // Append the accumulated chunks onto the vectors read from |file_|.
+  // Chunk updates to integrate.
+  StateInternal new_state(pending_adds);
+
+  // Read update chunks.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
 
@@ -576,73 +916,202 @@ bool SafeBrowsingStoreFile::DoUpdate(
     expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
     expected_size += header.add_hash_count * sizeof(SBAddFullHash);
     expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
-    if (expected_size > size)
+    if (expected_size > update_size)
       return false;
 
-    // TODO(shess): If the vectors were kept sorted, then this code
-    // could use std::inplace_merge() to merge everything together in
-    // sorted order.  That might still be slower than just sorting at
-    // the end if there were a large number of chunks.  In that case
-    // some sort of recursive binary merge might be in order (merge
-    // chunks pairwise, merge those chunks pairwise, and so on, then
-    // merge the result with the main list).
-    if (!ReadToContainer(&add_prefixes, header.add_prefix_count,
-                         new_file_.get(), NULL) ||
-        !ReadToContainer(&sub_prefixes, header.sub_prefix_count,
-                         new_file_.get(), NULL) ||
-        !ReadToContainer(&add_full_hashes, header.add_hash_count,
-                         new_file_.get(), NULL) ||
-        !ReadToContainer(&sub_full_hashes, header.sub_hash_count,
-                         new_file_.get(), NULL))
+    if (!new_state.AppendData(header.add_prefix_count, header.sub_prefix_count,
+                              header.add_hash_count, header.sub_hash_count,
+                              new_file_.get(), NULL)) {
       return false;
+    }
   }
 
-  // Append items from |pending_adds|.
-  add_full_hashes.insert(add_full_hashes.end(),
-                         pending_adds.begin(), pending_adds.end());
+  // The state was accumulated by chunk, sort by prefix.
+  new_state.SortData();
 
-  // Knock the subs from the adds and process deleted chunks.
-  SBProcessSubs(&add_prefixes, &sub_prefixes,
-                &add_full_hashes, &sub_full_hashes,
-                add_del_cache_, sub_del_cache_);
+  // These strides control how much data is loaded into memory per pass.
+  // Strides must be an even power of two.  |in_stride| will be derived from the
+  // input file.  |out_stride| will be derived from an estimate of the resulting
+  // file's size.  |process_stride| will be the max of both.
+  uint64 in_stride = kMaxShardStride;
+  uint64 out_stride = kMaxShardStride;
+  uint64 process_stride = 0;
+
+  // The header info is only used later if |!empty_|.  The v8 read loop only
+  // needs |in_stride|, while v7 needs to refer to header information.
+  base::MD5Context in_context;
+  int version = kInvalidVersion;
+  FileHeader header;
+
+  if (!empty_) {
+    DCHECK(file_.get());
+
+    version = ReadAndVerifyHeader(filename_, &header,
+                                  &add_chunks_cache_, &sub_chunks_cache_,
+                                  file_.get(), &in_context);
+    if (version == kInvalidVersion)
+      return OnCorruptDatabase();
+
+    if (version == 8 && header.v8.shard_stride)
+      in_stride = header.v8.shard_stride;
+
+    // The header checksum should have prevented this case, but the code will be
+    // broken if this is not correct.
+    if (!IsPowerOfTwo(in_stride))
+      return OnCorruptDatabase();
+  }
 
   // We no longer need to track deleted chunks.
   DeleteChunksFromSet(add_del_cache_, &add_chunks_cache_);
   DeleteChunksFromSet(sub_del_cache_, &sub_chunks_cache_);
 
-  // Write the new data to new_file_.
-  if (!FileRewind(new_file_.get()))
+  // Calculate |out_stride| to break the file down into reasonable shards.
+  {
+    int64 original_size = 0;
+    if (!empty_ && !base::GetFileSize(filename_, &original_size))
+      return OnCorruptDatabase();
+
+    // Approximate the final size as everything.  Subs and deletes will reduce
+    // the size, but modest over-sharding won't hurt much.
+    int64 shard_size = original_size + update_size;
+
+    // Keep splitting until a single stride of data fits the target.
+    size_t shifts = 0;
+    while (out_stride > kMinShardStride && shard_size > kUpdateStorageBytes) {
+      out_stride >>= 1;
+      shard_size >>= 1;
+      ++shifts;
+    }
+    UMA_HISTOGRAM_COUNTS("SB2.OutShardShifts", shifts);
+
+    DCHECK(IsPowerOfTwo(out_stride));
+  }
+
+  // Outer loop strides by the max of the input stride (to read integral shards)
+  // and the output stride (to write integral shards).
+  process_stride = std::max(in_stride, out_stride);
+  DCHECK(IsPowerOfTwo(process_stride));
+  DCHECK_EQ(0u, process_stride % in_stride);
+  DCHECK_EQ(0u, process_stride % out_stride);
+
+  // Start writing the new data to |new_file_|.
+  base::MD5Context out_context;
+  if (!WriteHeader(out_stride, add_chunks_cache_, sub_chunks_cache_,
+                   new_file_.get(), &out_context)) {
     return false;
+  }
 
-  base::MD5Context context;
-  base::MD5Init(&context);
+  // Start at the beginning of the SBPrefix space.
+  uint64 in_min = 0;
+  uint64 out_min = 0;
+  uint64 process_min = 0;
 
-  // Write a file header.
-  FileHeader header;
-  header.magic = kFileMagic;
-  header.version = kFileVersion;
-  header.add_chunk_count = add_chunks_cache_.size();
-  header.sub_chunk_count = sub_chunks_cache_.size();
-  header.add_prefix_count = add_prefixes.size();
-  header.sub_prefix_count = sub_prefixes.size();
-  header.add_hash_count = add_full_hashes.size();
-  header.sub_hash_count = sub_full_hashes.size();
-  if (!WriteItem(header, new_file_.get(), &context))
-    return false;
+  // Start at the beginning of the updates.
+  StateInternalPos new_pos = new_state.StateBegin();
 
-  // Write all the chunk data.
-  if (!WriteContainer(add_chunks_cache_, new_file_.get(), &context) ||
-      !WriteContainer(sub_chunks_cache_, new_file_.get(), &context) ||
-      !WriteContainer(add_prefixes, new_file_.get(), &context) ||
-      !WriteContainer(sub_prefixes, new_file_.get(), &context) ||
-      !WriteContainer(add_full_hashes, new_file_.get(), &context) ||
-      !WriteContainer(sub_full_hashes, new_file_.get(), &context))
-    return false;
+  // Re-usable container for shard processing.
+  StateInternal db_state;
 
-  // Write the checksum at the end.
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-  if (!WriteItem(digest, new_file_.get(), NULL))
+  // Track aggregate counts for histograms.
+  size_t add_prefix_count = 0;
+  size_t sub_prefix_count = 0;
+
+  do {
+    // Maximum element in the current shard.
+    SBPrefix process_max =
+        static_cast<SBPrefix>(process_min + process_stride - 1);
+    DCHECK_GT(process_max, process_min);
+
+    // Drop the data from previous pass.
+    db_state.ClearData();
+
+    // Fill the processing shard with one or more input shards.
+    if (!empty_) {
+      if (version == 7) {
+        // Treat v7 as a single-shard file.
+        DCHECK_EQ(in_min, 0u);
+        DCHECK_EQ(in_stride, kMaxShardStride);
+        DCHECK_EQ(process_stride, kMaxShardStride);
+        if (!db_state.AppendData(header.v7.add_prefix_count,
+                                 header.v7.sub_prefix_count,
+                                 header.v7.add_hash_count,
+                                 header.v7.sub_hash_count,
+                                 file_.get(), &in_context))
+          return OnCorruptDatabase();
+
+        // v7 data is not sorted correctly.
+        db_state.SortData();
+      } else {
+        do {
+          ShardHeader shard_header;
+          if (!ReadItem(&shard_header, file_.get(), &in_context))
+            return OnCorruptDatabase();
+
+          if (!db_state.AppendData(shard_header.add_prefix_count,
+                                   shard_header.sub_prefix_count,
+                                   shard_header.add_hash_count,
+                                   shard_header.sub_hash_count,
+                                   file_.get(), &in_context))
+            return OnCorruptDatabase();
+
+          in_min += in_stride;
+        } while (in_min <= kMaxSBPrefix && in_min < process_max);
+      }
+    }
+
+    // Shard the update data to match the database data, then merge the update
+    // data and process the results.
+    {
+      StateInternalPos new_end = new_state.ShardEnd(new_pos, process_max);
+      db_state.MergeDataAndProcess(new_pos, new_end,
+                                   add_del_cache_, sub_del_cache_);
+      new_pos = new_end;
+    }
+
+    // Collect the processed data for return to caller.
+    for (size_t i = 0; i < db_state.add_prefixes_.size(); ++i) {
+      builder->AddPrefix(db_state.add_prefixes_[i].prefix);
+    }
+    add_full_hashes_result->insert(add_full_hashes_result->end(),
+                                   db_state.add_full_hashes_.begin(),
+                                   db_state.add_full_hashes_.end());
+    add_prefix_count += db_state.add_prefixes_.size();
+    sub_prefix_count += db_state.sub_prefixes_.size();
+
+    // Write one or more shards of processed output.
+    StateInternalPos out_pos = db_state.StateBegin();
+    do {
+      SBPrefix out_max = static_cast<SBPrefix>(out_min + out_stride - 1);
+      DCHECK_GT(out_max, out_min);
+
+      StateInternalPos out_end = db_state.ShardEnd(out_pos, out_max);
+      if (!db_state.WriteShard(out_pos, out_end, new_file_.get(), &out_context))
+        return false;
+      out_pos = out_end;
+
+      out_min += out_stride;
+    } while (out_min == static_cast<SBPrefix>(out_min) &&
+             out_min < process_max);
+
+    process_min += process_stride;
+  } while (process_min <= kMaxSBPrefix);
+
+  // Verify the overall checksum.
+  if (!empty_) {
+    if (!ReadAndVerifyChecksum(file_.get(), &in_context))
+      return OnCorruptDatabase();
+
+    // TODO(shess): Verify EOF?
+
+    // Close the input file so the new file can be renamed over it.
+    file_.reset();
+  }
+  DCHECK(!file_.get());
+
+  // Write the overall checksum.
+  base::MD5Digest out_digest;
+  base::MD5Final(&out_digest, &out_context);
+  if (!WriteItem(out_digest, new_file_.get(), NULL))
     return false;
 
   // Trim any excess left over from the temporary chunk data.
@@ -660,15 +1129,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
     return false;
 
   // Record counts before swapping to caller.
-  UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_prefixes.size());
-  UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", sub_prefixes.size());
-
-  // Pass the resulting data off to the caller.
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    builder->AddPrefix(iter->prefix);
-  }
-  add_full_hashes_result->swap(add_full_hashes);
+  UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_prefix_count);
+  UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", sub_prefix_count);
 
   return true;
 }

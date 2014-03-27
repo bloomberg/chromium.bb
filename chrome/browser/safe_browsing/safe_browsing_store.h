@@ -53,6 +53,8 @@ struct SBAddPrefix {
   SBPrefix GetAddPrefix() const { return prefix; }
 };
 
+// TODO(shess): Measure the performance impact of switching this back to
+// std::vector<> once the v8 file format dominates.  Also SBSubPrefixes.
 typedef std::deque<SBAddPrefix> SBAddPrefixes;
 
 struct SBSubPrefix {
@@ -134,22 +136,13 @@ bool SBAddPrefixHashLess(const T& a, const U& b) {
 // matched items from all vectors.  Additionally remove items from
 // deleted chunks.
 //
-// TODO(shess): Since the prefixes are uniformly-distributed hashes,
-// there aren't many ways to organize the inputs for efficient
-// processing.  For this reason, the vectors are sorted and processed
-// in parallel.  At this time this code does the sorting internally,
-// but it might make sense to make sorting an API requirement so that
-// the storage can optimize for it.
+// The inputs must be sorted by SBAddPrefixLess or SBAddPrefixHashLess.
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    SBSubPrefixes* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
                    std::vector<SBSubFullHash>* sub_full_hashes,
                    const base::hash_set<int32>& add_chunks_deleted,
                    const base::hash_set<int32>& sub_chunks_deleted);
-
-// TODO(shess): This uses int32 rather than int because it's writing
-// specifically-sized items to files.  SBPrefix should likewise be
-// explicitly sized.
 
 // Abstract interface for storing data.
 class SafeBrowsingStore {

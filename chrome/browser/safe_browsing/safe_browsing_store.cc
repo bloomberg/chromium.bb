@@ -10,6 +10,17 @@
 
 namespace {
 
+// Return |true| if the range is sorted by the given comparator.
+template <typename CTI, typename LESS>
+bool sorted(CTI beg, CTI end, LESS less) {
+  while ((end - beg) > 2) {
+    CTI n = beg++;
+    if (less(*beg, *n))
+      return false;
+  }
+  return true;
+}
+
 // Find items matching between |subs| and |adds|, and remove them,
 // recording the item from |adds| in |adds_removed|.  To minimize
 // copies, the inputs are processing in parallel, so |subs| and |adds|
@@ -133,15 +144,15 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
   // to qualify things.  It becomes very arbitrary, though, and less
   // clear how things are working.
 
-  // Sort the inputs by the SBAddPrefix bits.
-  std::sort(add_prefixes->begin(), add_prefixes->end(),
-            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
-  std::sort(sub_prefixes->begin(), sub_prefixes->end(),
-            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
-  std::sort(add_full_hashes->begin(), add_full_hashes->end(),
-            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
-  std::sort(sub_full_hashes->begin(), sub_full_hashes->end(),
-            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+  // Make sure things are sorted appropriately.
+  DCHECK(sorted(add_prefixes->begin(), add_prefixes->end(),
+                SBAddPrefixLess<SBAddPrefix,SBAddPrefix>));
+  DCHECK(sorted(sub_prefixes->begin(), sub_prefixes->end(),
+                SBAddPrefixLess<SBSubPrefix,SBSubPrefix>));
+  DCHECK(sorted(add_full_hashes->begin(), add_full_hashes->end(),
+                SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>));
+  DCHECK(sorted(sub_full_hashes->begin(), sub_full_hashes->end(),
+                SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>));
 
   // Factor out the prefix subs.
   SBAddPrefixes removed_adds;

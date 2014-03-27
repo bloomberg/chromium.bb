@@ -178,6 +178,15 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash4mod));
   sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash4mod));
 
+  std::sort(add_prefixes.begin(), add_prefixes.end(),
+            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
+            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+  std::sort(add_hashes.begin(), add_hashes.end(),
+            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+  std::sort(sub_hashes.begin(), sub_hashes.end(),
+            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+
   const base::hash_set<int32> no_deletions;
   SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, no_deletions);
@@ -249,6 +258,15 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash3));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
 
+  std::sort(add_prefixes.begin(), add_prefixes.end(),
+            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
+            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+  std::sort(add_hashes.begin(), add_hashes.end(),
+            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+  std::sort(sub_hashes.begin(), sub_hashes.end(),
+            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+
   const base::hash_set<int32> no_deletions;
   base::hash_set<int32> add_deletions;
   add_deletions.insert(kAddChunk1);
@@ -267,6 +285,15 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
   EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
   EXPECT_TRUE(SBFullHashEqual(kHash3, sub_hashes[0].full_hash));
+
+  std::sort(add_prefixes.begin(), add_prefixes.end(),
+            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
+            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+  std::sort(add_hashes.begin(), add_hashes.end(),
+            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+  std::sort(sub_hashes.begin(), sub_hashes.end(),
+            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
 
   base::hash_set<int32> sub_deletions;
   sub_deletions.insert(kSubChunk1);
