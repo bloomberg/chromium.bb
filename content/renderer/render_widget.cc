@@ -69,6 +69,7 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_ANDROID)
+#include <android/keycodes.h>
 #include "base/android/sys_utils.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
@@ -1132,8 +1133,27 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     prevent_default = WillHandleMouseEvent(mouse_event);
   }
 
-  if (WebInputEvent::isKeyboardEventType(input_event->type))
+  if (WebInputEvent::isKeyboardEventType(input_event->type)) {
     context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
+#if defined(OS_ANDROID)
+    // The DPAD_CENTER key on Android has a dual semantic: (1) in the general
+    // case it should behave like a select key (i.e. causing a click if a button
+    // is focused). However, if a text field is focused (2), its intended
+    // behavior is to just show the IME and don't propagate the key.
+    // A typical use case is a web form: the DPAD_CENTER should bring up the IME
+    // when clicked on an input text field and cause the form submit if clicked
+    // when the submit button is focused, but not vice-versa.
+    // The UI layer takes care of translating DPAD_CENTER into a RETURN key,
+    // but at this point we have to swallow the event for the scenario (2).
+    const WebKeyboardEvent& key_event =
+        *static_cast<const WebKeyboardEvent*>(input_event);
+    if (key_event.nativeKeyCode == AKEYCODE_DPAD_CENTER &&
+        GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
+      OnShowImeIfNeeded();
+      prevent_default = true;
+    }
+#endif
+  }
 
   if (WebInputEvent::isGestureEventType(input_event->type)) {
     const WebGestureEvent& gesture_event =
