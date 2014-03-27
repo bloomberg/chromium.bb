@@ -27,9 +27,21 @@ def RunGN(sourceroot):
 
 
 def main(args):
+  for arg in sys.argv:
+    if arg.startswith('--root='):
+      sourceroot = arg.replace('--root=', '')
+      dotfile_path = os.path.join(sourceroot, '.gn')
+      if not os.path.exists(dotfile_path):
+        print >> sys.stderr, 'gn.py: "%s" not found, exiting.' % dotfile_path
+        sys.exit(1)
+      return RunGN(sourceroot)
+
   sourceroot = gclient_utils.FindFileUpwards('.gn')
   if not sourceroot:
-    print >> sys.stderr, '.gn file not found in any parent of the current path.'
+    print >> sys.stderr, ('gn.py: No .gn file found in any parent of '
+                          'the current path.')
+    print >> sys.stderr, ('\nYou need to either be inside a checkout, '
+                          'or use --root to specify the checkout root.')
     sys.exit(1)
   return RunGN(sourceroot)
 
