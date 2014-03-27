@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -73,11 +74,35 @@ class SkiaTextRenderer {
   //   third_party/skia/src/core/SkTextFormatParams.h
   void DrawDecorations(int x, int y, int width, bool underline, bool strike,
                        bool diagonal_strike);
+  // Finishes any ongoing diagonal strike run.
+  void EndDiagonalStrike();
   void DrawUnderline(int x, int y, int width);
   void DrawStrike(int x, int y, int width) const;
-  void DrawDiagonalStrike(int x, int y, int width) const;
 
  private:
+  // Helper class to draw a diagonal line with multiple pieces of different
+  // lengths and colors; to support text selection appearances.
+  class DiagonalStrike {
+   public:
+    DiagonalStrike(Canvas* canvas, Point start, const SkPaint& paint);
+    ~DiagonalStrike();
+
+    void AddPiece(int length, SkColor color);
+    void Draw();
+
+   private:
+    typedef std::pair<int, SkColor> Piece;
+
+    Canvas* canvas_;
+    const Point start_;
+    SkPaint paint_;
+    int total_length_;
+    std::vector<Piece> pieces_;
+
+    DISALLOW_COPY_AND_ASSIGN(DiagonalStrike);
+  };
+
+  Canvas* canvas_;
   SkCanvas* canvas_skia_;
   bool started_drawing_;
   SkPaint paint_;
@@ -85,6 +110,7 @@ class SkiaTextRenderer {
   skia::RefPtr<SkShader> deferred_fade_shader_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
+  scoped_ptr<DiagonalStrike> diagonal_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };

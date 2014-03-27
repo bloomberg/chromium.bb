@@ -878,6 +878,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
       preceding_segment_widths += segment_width;
     }
+
+    renderer.EndDiagonalStrike();
   }
 
   UndoCompositionAndSelectionStyles();

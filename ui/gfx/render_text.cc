@@ -160,7 +160,8 @@ namespace internal {
 const SkScalar kUnderlineMetricsNotSet = -1.0f;
 
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
-    : canvas_skia_(canvas->sk_canvas()),
+    : canvas_(canvas),
+      canvas_skia_(canvas->sk_canvas()),
       started_drawing_(false),
       underline_thickness_(kUnderlineMetricsNotSet),
       underline_position_(0.0f) {
@@ -279,8 +280,20 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width, bool underline,
     DrawUnderline(x, y, width);
   if (strike)
     DrawStrike(x, y, width);
-  if (diagonal_strike)
-    DrawDiagonalStrike(x, y, width);
+  if (diagonal_strike) {
+    if (!diagonal_)
+      diagonal_.reset(new DiagonalStrike(canvas_, Point(x, y), paint_));
+    diagonal_->AddPiece(width, paint_.getColor());
+  } else if (diagonal_) {
+    EndDiagonalStrike();
+  }
+}
+
+void SkiaTextRenderer::EndDiagonalStrike() {
+  if (diagonal_) {
+    diagonal_->Draw();
+    diagonal_.reset();
+  }
 }
 
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
@@ -302,15 +315,51 @@ void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
   canvas_skia_->drawRect(r, paint_);
 }
 
-void SkiaTextRenderer::DrawDiagonalStrike(int x, int y, int width) const {
+SkiaTextRenderer::DiagonalStrike::DiagonalStrike(Canvas* canvas,
+                                                 Point start,
+                                                 const SkPaint& paint)
+    : canvas_(canvas),
+      start_(start),
+      paint_(paint),
+      total_length_(0) {
+}
+
+SkiaTextRenderer::DiagonalStrike::~DiagonalStrike() {
+}
+
+void SkiaTextRenderer::DiagonalStrike::AddPiece(int length, SkColor color) {
+  pieces_.push_back(Piece(length, color));
+  total_length_ += length;
+}
+
+void SkiaTextRenderer::DiagonalStrike::Draw() {
   const SkScalar text_size = paint_.getTextSize();
   const SkScalar offset = SkScalarMul(text_size, kDiagonalStrikeMarginOffset);
+  const int thickness =
+      SkScalarCeilToInt(SkScalarMul(text_size, kLineThickness) * 2);
+  const int height = SkScalarCeilToInt(text_size - offset);
+  const Point end = start_ + Vector2d(total_length_, -height);
 
-  SkPaint paint(paint_);
-  paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setStrokeWidth(SkScalarMul(text_size, kLineThickness) * 2);
-  canvas_skia_->drawLine(x, y, x + width, y - text_size + offset, paint);
+  paint_.setAntiAlias(true);
+  paint_.setStrokeWidth(thickness);
+
+  const bool clipped = pieces_.size() > 1;
+  int x = start_.x();
+  for (size_t i = 0; i < pieces_.size(); ++i) {
+    paint_.setColor(pieces_[i].second);
+
+    if (clipped) {
+      canvas_->Save();
+      canvas_->ClipRect(Rect(x, 0, pieces_[i].first, start_.y() + thickness));
+    }
+
+    canvas_->DrawLine(start_, end, paint_);
+
+    if (clipped)
+      canvas_->Restore();
+
+    x += pieces_[i].first;
+  }
 }
 
 StyleIterator::StyleIterator(const BreakList<SkColor>& colors,

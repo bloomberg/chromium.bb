@@ -174,6 +174,8 @@ void RenderTextMac::DrawVisualText(Canvas* canvas) {
     renderer.DrawDecorations(run.origin.x(), run.origin.y(), run.width,
                              run.underline, run.strike, run.diagonal_strike);
   }
+
+  renderer.EndDiagonalStrike();
 }
 
 RenderTextMac::TextRun::TextRun()
