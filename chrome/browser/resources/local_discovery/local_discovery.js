@@ -532,7 +532,7 @@ cr.define('local_discovery', function() {
    * @private
    */
   function setupCloudPrintConnectorSection(disabled, label, allowed) {
-    if (!cr.isChromeOS && !cr.isMac) {
+    if (!cr.isChromeOS) {
       $('cloudPrintConnectorLabel').textContent = label;
       if (disabled || !allowed) {
         $('cloudPrintConnectorSetupButton').textContent =
@@ -561,7 +561,7 @@ cr.define('local_discovery', function() {
   }
 
   function removeCloudPrintConnectorSection() {
-    if (!cr.isChromeOS && !cr.isMac) {
+    if (!cr.isChromeOS) {
        var connectorSectionElm = $('cloud-print-connector-section');
        if (connectorSectionElm)
           connectorSectionElm.parentNode.removeChild(connectorSectionElm);

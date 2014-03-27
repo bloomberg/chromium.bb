@@ -17,8 +17,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS) && \
-  !defined(OS_MACOSX)
+#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 
