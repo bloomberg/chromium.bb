@@ -168,8 +168,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
   {
-    install_verifier_.reset(new InstallVerifier(ExtensionPrefs::Get(profile_),
-                                                profile_->GetRequestContext()));
+    install_verifier_.reset(
+        new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
     install_verifier_->Init();
 
     management_policy_.reset(new ManagementPolicy);

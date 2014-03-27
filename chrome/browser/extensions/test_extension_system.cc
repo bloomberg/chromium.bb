@@ -86,8 +86,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     bool autoupdate_enabled) {
   if (!ExtensionPrefs::Get(profile_))
     CreateExtensionPrefs(command_line, install_directory);
-  install_verifier_.reset(new InstallVerifier(ExtensionPrefs::Get(profile_),
-                                              NULL));
+  install_verifier_.reset(
+      new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
   // The ownership of |value_store_| is immediately transferred to state_store_,
   // but we keep a naked pointer to the TestingValueStore.
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());

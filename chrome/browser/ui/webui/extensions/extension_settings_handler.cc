@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
@@ -157,6 +158,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       registered_for_notifications_(false),
       warning_service_observer_(this),
       error_console_observer_(this),
+      extension_prefs_observer_(this),
       should_do_verification_check_(false) {
 }
 
@@ -178,6 +180,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       registered_for_notifications_(false),
       warning_service_observer_(this),
       error_console_observer_(this),
+      extension_prefs_observer_(this),
       should_do_verification_check_(false) {
 }
 
@@ -680,6 +683,12 @@ void ExtensionSettingsHandler::Observe(
   }
 }
 
+void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
+    const std::string& extension_id,
+    int disable_reasons) {
+  MaybeUpdateAfterNotification();
+}
+
 void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
   DCHECK(!extension_id_prompting_.empty());
 
@@ -815,7 +824,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
                         should_do_verification_check_);
   if (should_do_verification_check_) {
     should_do_verification_check_ = false;
-    extension_service_->VerifyAllExtensions(false);  // bootstrap=false.
+    ExtensionSystem::Get(Profile::FromWebUI(web_ui()))
+        ->install_verifier()
+        ->VerifyAllExtensions();
   }
 }
 

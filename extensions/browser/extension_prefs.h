@@ -11,6 +11,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -122,6 +123,14 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   typedef ScopedUpdate<base::ListValue, base::Value::TYPE_LIST>
       ScopedListUpdate;
 
+  class Observer {
+   public:
+    // Called when the reasons for an extension being disabled have changed.
+    virtual void OnExtensionDisableReasonsChanged(
+        const std::string& extension_id,
+        int disabled_reasons) = 0;
+  };
+
   // Creates and initializes an ExtensionPrefs object.
   // Does not take ownership of |prefs| and |extension_pref_value_map|.
   // If |extensions_disabled| is true, extension controlled preferences and
@@ -152,6 +161,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // |pref_service|. This is exposed for ProtectedPrefsWatcher because it needs
   // access to the extension ID list before the ExtensionService is initialized.
   static ExtensionIdList GetExtensionsFrom(const PrefService* pref_service);
+
+  // Add or remove an observer from the ExtensionPrefs.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns true if the specified external extension was uninstalled by the
   // user.
@@ -543,6 +556,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.
 
+  enum DisableReasonChange {
+    DISABLE_REASON_ADD,
+    DISABLE_REASON_REMOVE,
+    DISABLE_REASON_CLEAR
+  };
+
   // See the Create methods.
   ExtensionPrefs(PrefService* prefs,
                  const base::FilePath& root_dir,
@@ -598,6 +617,14 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Returns an immutable dictionary for extension |id|'s prefs, or NULL if it
   // doesn't exist.
   const base::DictionaryValue* GetExtensionPref(const std::string& id) const;
+
+  // Modifies the extensions disable reasons to add a new reason, remove an
+  // existing reason, or clear all reasons. Notifies observers if the set of
+  // DisableReasons has changed.
+  // If |change| is DISABLE_REASON_CLEAR, then |reason| is ignored.
+  void ModifyDisableReason(const std::string& extension_id,
+                           Extension::DisableReason reason,
+                           DisableReasonChange change);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.
@@ -671,6 +698,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   scoped_ptr<TimeProvider> time_provider_;
 
   bool extensions_disabled_;
+
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
 };

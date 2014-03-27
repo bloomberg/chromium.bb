@@ -747,27 +747,51 @@ int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
 
 void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
                                       Extension::DisableReason disable_reason) {
-  int new_value = GetDisableReasons(extension_id) |
-      static_cast<int>(disable_reason);
-  UpdateExtensionPref(extension_id, kPrefDisableReasons,
-                      new base::FundamentalValue(new_value));
+  ModifyDisableReason(extension_id, disable_reason, DISABLE_REASON_ADD);
 }
 
 void ExtensionPrefs::RemoveDisableReason(
     const std::string& extension_id,
     Extension::DisableReason disable_reason) {
-  int new_value = GetDisableReasons(extension_id) &
-      ~static_cast<int>(disable_reason);
-  if (new_value == Extension::DISABLE_NONE) {
-    UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
-  } else {
-    UpdateExtensionPref(extension_id, kPrefDisableReasons,
-                        new base::FundamentalValue(new_value));
-  }
+  ModifyDisableReason(extension_id, disable_reason, DISABLE_REASON_REMOVE);
 }
 
 void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
-  UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
+  ModifyDisableReason(
+      extension_id, Extension::DISABLE_NONE, DISABLE_REASON_CLEAR);
+}
+
+void ExtensionPrefs::ModifyDisableReason(const std::string& extension_id,
+                                         Extension::DisableReason reason,
+                                         DisableReasonChange change) {
+  int old_value = GetDisableReasons(extension_id);
+  int new_value = old_value;
+  switch (change) {
+    case DISABLE_REASON_ADD:
+      new_value |= static_cast<int>(reason);
+      break;
+    case DISABLE_REASON_REMOVE:
+      new_value &= ~static_cast<int>(reason);
+      break;
+    case DISABLE_REASON_CLEAR:
+      new_value = Extension::DISABLE_NONE;
+      break;
+  }
+
+  if (old_value == new_value)  // no change, return.
+    return;
+
+  if (new_value == Extension::DISABLE_NONE) {
+    UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
+  } else {
+    UpdateExtensionPref(extension_id,
+                        kPrefDisableReasons,
+                        new base::FundamentalValue(new_value));
+  }
+
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnExtensionDisableReasonsChanged(extension_id, new_value));
 }
 
 std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() {
@@ -1681,6 +1705,14 @@ ExtensionIdList ExtensionPrefs::GetExtensionsFrom(
       result.push_back(it.key());
   }
   return result;
+}
+
+void ExtensionPrefs::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ExtensionPrefs::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {

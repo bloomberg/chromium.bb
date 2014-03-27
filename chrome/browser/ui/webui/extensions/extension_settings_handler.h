@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_prefs.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
 
@@ -69,6 +70,7 @@ class ExtensionSettingsHandler
       public ui::SelectFileDialog::Listener,
       public ErrorConsole::Observer,
       public ExtensionInstallPrompt::Delegate,
+      public ExtensionPrefs::Observer,
       public ExtensionUninstallDialog::Delegate,
       public ExtensionWarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
@@ -136,6 +138,10 @@ class ExtensionSettingsHandler
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionPrefs::Observer implementation.
+  virtual void OnExtensionDisableReasonsChanged(const std::string& extension_id,
+                                                int disable_reasons) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
@@ -296,6 +302,11 @@ class ExtensionSettingsHandler
 
   // An observer to listen for when Extension errors are reported.
   ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
+
+  // An observer to listen for notable changes in the ExtensionPrefs, like
+  // a change in Disable Reasons.
+  ScopedObserver<ExtensionPrefs, ExtensionPrefs::Observer>
+      extension_prefs_observer_;
 
   // Whether we found any DISABLE_NOT_VERIFIED extensions and want to kick off
   // a verification check to try and rescue them.

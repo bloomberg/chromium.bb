@@ -185,37 +185,6 @@ class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
   DISALLOW_COPY_AND_ASSIGN(SharedModuleProvider);
 };
 
-enum VerifyAllSuccess {
-  VERIFY_ALL_BOOTSTRAP_SUCCESS = 0,
-  VERIFY_ALL_BOOTSTRAP_FAILURE,
-  VERIFY_ALL_NON_BOOTSTRAP_SUCCESS,
-  VERIFY_ALL_NON_BOOTSTRAP_FAILURE,
-
-  // Used in histograms. Do not remove/reorder any entries above, and the below
-  // MAX entry should always come last.
-
-  VERIFY_ALL_SUCCESS_MAX
-};
-
-void LogVerifyAllSuccessHistogram(bool bootstrap, bool success) {
-  VerifyAllSuccess result;
-  if (bootstrap && success)
-    result = VERIFY_ALL_BOOTSTRAP_SUCCESS;
-  else if (bootstrap && !success)
-    result = VERIFY_ALL_BOOTSTRAP_FAILURE;
-  else if (!bootstrap && success)
-    result = VERIFY_ALL_NON_BOOTSTRAP_SUCCESS;
-  else
-    result = VERIFY_ALL_NON_BOOTSTRAP_FAILURE;
-
-  UMA_HISTOGRAM_ENUMERATION("ExtensionService.VerifyAllSuccess",
-                            result, VERIFY_ALL_SUCCESS_MAX);
-}
-
-void LogAddVerifiedSuccess(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("ExtensionService.AddVerified", success);
-}
-
 }  // namespace
 
 // ExtensionService.
@@ -560,7 +529,6 @@ void ExtensionService::Init() {
     // rather than running immediately at startup.
     CheckForExternalUpdates();
 
-    MaybeBootstrapVerifier();
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
@@ -592,83 +560,6 @@ void ExtensionService::LoadGreylistFromPrefs() {
         state == extensions::BLACKLISTED_POTENTIALLY_UNWANTED ||
         state == extensions::BLACKLISTED_CWS_POLICY_VIOLATION)
       greylist_.Insert(*it);
-  }
-}
-
-void ExtensionService::MaybeBootstrapVerifier() {
-  InstallVerifier* verifier = system_->install_verifier();
-  bool do_bootstrap = false;
-
-  if (verifier->NeedsBootstrap()) {
-    do_bootstrap = true;
-  } else {
-    scoped_ptr<extensions::ExtensionSet> extensions =
-        registry_->GenerateInstalledExtensionsSet();
-    for (extensions::ExtensionSet::const_iterator i = extensions->begin();
-         i != extensions->end();
-         ++i) {
-      const Extension& extension = **i;
-
-      if (verifier->NeedsVerification(extension) &&
-          !verifier->IsKnownId(extension.id())) {
-        do_bootstrap = true;
-        break;
-      }
-    }
-  }
-  if (do_bootstrap)
-    VerifyAllExtensions(true);  // bootstrap=true.
-}
-
-void ExtensionService::VerifyAllExtensions(bool bootstrap) {
-  ExtensionIdSet to_add;
-  scoped_ptr<ExtensionSet> all_extensions =
-      registry_->GenerateInstalledExtensionsSet();
-
-  for (ExtensionSet::const_iterator i = all_extensions->begin();
-       i != all_extensions->end(); ++i) {
-    const Extension& extension = **i;
-
-    if (InstallVerifier::NeedsVerification(extension))
-      to_add.insert(extension.id());
-  }
-  system_->install_verifier()->AddMany(
-      to_add,
-      base::Bind(&ExtensionService::FinishVerifyAllExtensions,
-                 AsWeakPtr(),
-                 bootstrap));
-}
-
-void ExtensionService::FinishVerifyAllExtensions(bool bootstrap, bool success) {
-  LogVerifyAllSuccessHistogram(bootstrap, success);
-  if (success) {
-    // Check to see if any currently unverified extensions became verified.
-    InstallVerifier* verifier = system_->install_verifier();
-    const ExtensionSet& disabled_extensions = registry_->disabled_extensions();
-    for (ExtensionSet::const_iterator i = disabled_extensions.begin();
-         i != disabled_extensions.end(); ++i) {
-      const Extension& extension = **i;
-      int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
-      if (disable_reasons & Extension::DISABLE_NOT_VERIFIED &&
-          !verifier->MustRemainDisabled(&extension, NULL, NULL)) {
-        extension_prefs_->RemoveDisableReason(extension.id(),
-                                              Extension::DISABLE_NOT_VERIFIED);
-        // Notify interested observers (eg the extensions settings page) by
-        // sending an UNLOADED notification.
-        //
-        // TODO(asargent) - this is a slight hack because it's already
-        // disabled; the right solution might be to add a separate listener
-        // interface for DisableReason's changing. http://crbug.com/328916
-        UnloadedExtensionInfo details(&extension,
-                                      UnloadedExtensionInfo::REASON_DISABLE);
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-            content::Source<Profile>(profile_),
-            content::Details<UnloadedExtensionInfo>(&details));
-      }
-    }
-    // Might disable some extensions.
-    CheckManagementPolicy();
   }
 }
 
@@ -2247,10 +2138,8 @@ void ExtensionService::AddNewOrUpdatedExtension(
                                          page_ordinal,
                                          install_parameter);
   delayed_installs_.Remove(extension->id());
-  if (InstallVerifier::NeedsVerification(*extension)) {
-    system_->install_verifier()->Add(extension->id(),
-                                     base::Bind(LogAddVerifiedSuccess));
-  }
+  if (InstallVerifier::NeedsVerification(*extension))
+    system_->install_verifier()->VerifyExtension(extension->id());
   FinishInstallation(extension);
 }
 

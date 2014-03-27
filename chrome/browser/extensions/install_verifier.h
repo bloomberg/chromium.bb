@@ -13,8 +13,13 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -37,8 +42,7 @@ struct InstallSignature;
 // extensions installed from the webstore.
 class InstallVerifier : public ManagementPolicy::Provider {
  public:
-  InstallVerifier(ExtensionPrefs* prefs,
-                  net::URLRequestContextGetter* context_getter);
+  InstallVerifier(ExtensionPrefs* prefs, content::BrowserContext* context);
   virtual ~InstallVerifier();
 
   // Returns whether |extension| is of a type that needs verification.
@@ -48,11 +52,6 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // validating the stored signature.
   void Init();
 
-  // Do we need to be bootstrapped? (i.e. do we have a signature already). If
-  // this is true, then consumers of this class should use Add/AddMany to get
-  // an initial one so that MustRemainDisabled can actually check against it.
-  bool NeedsBootstrap();
-
   // Returns the timestamp of our InstallSignature, if we have one.
   base::Time SignatureTimestamp();
 
@@ -60,15 +59,11 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // tells us that it was invalid when we asked the server about it.
   bool IsKnownId(const std::string& id);
 
-  // A callback for indicating success/failure of adding new ids.
-  typedef base::Callback<void(bool)> AddResultCallback;
+  // Attempts to verify a single extension and add it to the verified list.
+  void VerifyExtension(const std::string& extension_id);
 
-  // Try adding a new |id| (or set of ids) to the list of verified ids. When
-  // this process is finished |callback| will be run with success/failure of
-  // the signature request (not necessarily whether the ids were verified).
-  void Add(const std::string& id, const AddResultCallback& callback);
-  void AddMany(const ExtensionIdSet& ids,
-               const AddResultCallback& callback);
+  // Attempts to verify all extensions.
+  void VerifyAllExtensions();
 
   // Call this to add a set of ids that will immediately be considered allowed,
   // and kick off an aysnchronous request to Add.
@@ -85,11 +80,13 @@ class InstallVerifier : public ManagementPolicy::Provider {
                                   base::string16* error) const OVERRIDE;
 
  private:
-  // We keep a list of operations to the current set of extensions - either
-  // additions or removals.
+  // We keep a list of operations to the current set of extensions.
   enum OperationType {
-    ADD,
-    REMOVE
+    ADD_SINGLE,         // Adding a single extension to be verified.
+    ADD_ALL,            // Adding all extensions to be verified.
+    ADD_ALL_BOOTSTRAP,  // Adding all extensions because of a bootstrapping.
+    ADD_PROVISIONAL,    // Adding one or more provisionally-allowed extensions.
+    REMOVE              // Remove one or more extensions.
   };
 
   // This is an operation we want to apply to the current set of verified ids.
@@ -99,11 +96,24 @@ class InstallVerifier : public ManagementPolicy::Provider {
     // This is the set of ids being either added or removed.
     ExtensionIdSet ids;
 
-    AddResultCallback callback;
-
-    explicit PendingOperation();
+    explicit PendingOperation(OperationType type);
     ~PendingOperation();
   };
+
+  // Returns the set of IDs for all extensions that potentially need to be
+  // verified.
+  ExtensionIdSet GetExtensionsToVerify() const;
+
+  // Bootstrap the InstallVerifier if we do not already have a signature, or if
+  // there are unknown extensions which need to be verified.
+  void MaybeBootstrapSelf();
+
+  // Try adding a new set of |ids| to the list of verified ids.
+  void AddMany(const ExtensionIdSet& ids, OperationType type);
+
+  // Record the result of the verification for the histograms, and notify the
+  // ExtensionPrefs if we verified all extensions.
+  void OnVerificationComplete(bool success, OperationType type) const;
 
   // Removes any no-longer-installed ids, requesting a new signature if needed.
   void GarbageCollect();
@@ -130,7 +140,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
   void SignatureCallback(scoped_ptr<InstallSignature> signature);
 
   ExtensionPrefs* prefs_;
-  net::URLRequestContextGetter* context_getter_;
+
+  // The context with which the InstallVerifier is associated.
+  content::BrowserContext* context_;
 
   // This is the most up-to-date signature, read out of |prefs_| during
   // initialization and updated anytime we get new id's added.
@@ -145,6 +157,8 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // A set of ids that have been provisionally added, which we're willing to
   // consider allowed until we hear back from the server signature request.
   ExtensionIdSet provisional_;
+
+  base::WeakPtrFactory<InstallVerifier> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallVerifier);
 };

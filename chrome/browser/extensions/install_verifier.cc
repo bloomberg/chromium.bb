@@ -13,16 +13,24 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_signer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/one_shot_event.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace extensions {
 
 namespace {
 
@@ -71,7 +79,7 @@ VerifyStatus GetExperimentStatus() {
 
 VerifyStatus GetCommandLineStatus() {
   const CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (!extensions::InstallSigner::GetForcedNotFromWebstore().empty())
+  if (!InstallSigner::GetForcedNotFromWebstore().empty())
     return ENFORCE;
 
   if (cmdline->HasSwitch(switches::kExtensionsInstallVerification)) {
@@ -98,19 +106,6 @@ bool ShouldFetchSignature() {
 bool ShouldEnforce() {
   return GetStatus() == ENFORCE;
 }
-
-}  // namespace
-
-namespace extensions {
-
-InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
-                                 net::URLRequestContextGetter* context_getter)
-    : prefs_(prefs), context_getter_(context_getter) {
-}
-
-InstallVerifier::~InstallVerifier() {}
-
-namespace {
 
 enum InitResult {
   INIT_NO_PREF = 0,
@@ -146,7 +141,50 @@ bool CanUseExtensionApis(const Extension& extension) {
   return extension.is_extension() || extension.is_legacy_packaged_app();
 }
 
+enum VerifyAllSuccess {
+  VERIFY_ALL_BOOTSTRAP_SUCCESS = 0,
+  VERIFY_ALL_BOOTSTRAP_FAILURE,
+  VERIFY_ALL_NON_BOOTSTRAP_SUCCESS,
+  VERIFY_ALL_NON_BOOTSTRAP_FAILURE,
+
+  // Used in histograms. Do not remove/reorder any entries above, and the below
+  // MAX entry should always come last.
+  VERIFY_ALL_SUCCESS_MAX
+};
+
+// Record the success or failure of verifying all extensions, and whether or
+// not it was a bootstrapping.
+void LogVerifyAllSuccessHistogram(bool bootstrap, bool success) {
+  VerifyAllSuccess result;
+  if (bootstrap && success)
+    result = VERIFY_ALL_BOOTSTRAP_SUCCESS;
+  else if (bootstrap && !success)
+    result = VERIFY_ALL_BOOTSTRAP_FAILURE;
+  else if (!bootstrap && success)
+    result = VERIFY_ALL_NON_BOOTSTRAP_SUCCESS;
+  else
+    result = VERIFY_ALL_NON_BOOTSTRAP_FAILURE;
+
+  // This used to be part of ExtensionService, but moved here. In order to keep
+  // our histograms accurate, the name is unchanged.
+  UMA_HISTOGRAM_ENUMERATION(
+      "ExtensionService.VerifyAllSuccess", result, VERIFY_ALL_SUCCESS_MAX);
+}
+
+// Record the success or failure of a single verification.
+void LogAddVerifiedSuccess(bool success) {
+  // This used to be part of ExtensionService, but moved here. In order to keep
+  // our histograms accurate, the name is unchanged.
+  UMA_HISTOGRAM_BOOLEAN("ExtensionService.AddVerified", success);
+}
+
 }  // namespace
+
+InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
+                                 content::BrowserContext* context)
+    : prefs_(prefs), context_(context), weak_factory_(this) {}
+
+InstallVerifier::~InstallVerifier() {}
 
 // static
 bool InstallVerifier::NeedsVerification(const Extension& extension) {
@@ -178,10 +216,15 @@ void InstallVerifier::Init() {
   } else {
     LogInitResultHistogram(INIT_NO_PREF);
   }
+
+  ExtensionSystem::Get(context_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&InstallVerifier::MaybeBootstrapSelf,
+                 weak_factory_.GetWeakPtr()));
 }
 
-bool InstallVerifier::NeedsBootstrap() {
-  return signature_.get() == NULL && ShouldFetchSignature();
+void InstallVerifier::VerifyAllExtensions() {
+  AddMany(GetExtensionsToVerify(), ADD_ALL);
 }
 
 base::Time InstallVerifier::SignatureTimestamp() {
@@ -196,18 +239,15 @@ bool InstallVerifier::IsKnownId(const std::string& id) {
                               ContainsKey(signature_->invalid_ids, id));
 }
 
-void InstallVerifier::Add(const std::string& id,
-                          const AddResultCallback& callback) {
+void InstallVerifier::VerifyExtension(const std::string& extension_id) {
   ExtensionIdSet ids;
-  ids.insert(id);
-  AddMany(ids, callback);
+  ids.insert(extension_id);
+  AddMany(ids, ADD_SINGLE);
 }
 
-void InstallVerifier::AddMany(const ExtensionIdSet& ids,
-                              const AddResultCallback& callback) {
+void InstallVerifier::AddMany(const ExtensionIdSet& ids, OperationType type) {
   if (!ShouldFetchSignature()) {
-    if (!callback.is_null())
-      callback.Run(true);
+    OnVerificationComplete(true, type);  // considered successful.
     return;
   }
 
@@ -215,17 +255,14 @@ void InstallVerifier::AddMany(const ExtensionIdSet& ids,
     ExtensionIdSet not_allowed_yet =
         base::STLSetDifference<ExtensionIdSet>(ids, signature_->ids);
     if (not_allowed_yet.empty()) {
-      if (!callback.is_null())
-        callback.Run(true);
+      OnVerificationComplete(true, type);  // considered successful.
       return;
     }
   }
 
   InstallVerifier::PendingOperation* operation =
-    new InstallVerifier::PendingOperation();
-  operation->type = InstallVerifier::ADD;
+      new InstallVerifier::PendingOperation(type);
   operation->ids.insert(ids.begin(), ids.end());
-  operation->callback = callback;
 
   operation_queue_.push(linked_ptr<PendingOperation>(operation));
 
@@ -236,7 +273,7 @@ void InstallVerifier::AddMany(const ExtensionIdSet& ids,
 
 void InstallVerifier::AddProvisional(const ExtensionIdSet& ids) {
   provisional_.insert(ids.begin(), ids.end());
-  AddMany(ids, AddResultCallback());
+  AddMany(ids, ADD_PROVISIONAL);
 }
 
 void InstallVerifier::Remove(const std::string& id) {
@@ -261,8 +298,7 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
     return;
 
   InstallVerifier::PendingOperation* operation =
-    new InstallVerifier::PendingOperation();
-  operation->type = InstallVerifier::REMOVE;
+      new InstallVerifier::PendingOperation(InstallVerifier::REMOVE);
   operation->ids = ids;
 
   operation_queue_.push(linked_ptr<PendingOperation>(operation));
@@ -334,9 +370,8 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   } else if (signature_.get() == NULL) {
     // If we don't have a signature yet, we'll temporarily consider every
     // extension from the webstore verified to avoid false positives on existing
-    // profiles hitting this code for the first time, and rely on consumers of
-    // this class to check NeedsBootstrap() and schedule a first check so we can
-    // get a signature.
+    // profiles hitting this code for the first time. The InstallVerifier
+    // will bootstrap itself once the ExtensionsSystem is ready.
     outcome = NO_SIGNATURE;
   } else if (!IsVerified(extension->id())) {
     if (!ContainsKey(signature_->invalid_ids, extension->id())) {
@@ -363,11 +398,82 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   return !verified;
 }
 
-InstallVerifier::PendingOperation::PendingOperation() {
-  type = InstallVerifier::ADD;
-}
+InstallVerifier::PendingOperation::PendingOperation(OperationType type)
+    : type(type) {}
 
 InstallVerifier::PendingOperation::~PendingOperation() {
+}
+
+ExtensionIdSet InstallVerifier::GetExtensionsToVerify() const {
+  ExtensionIdSet result;
+  scoped_ptr<ExtensionSet> extensions =
+      ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
+  for (ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end();
+       ++iter) {
+    if (NeedsVerification(**iter))
+      result.insert((*iter)->id());
+  }
+  return result;
+}
+
+void InstallVerifier::MaybeBootstrapSelf() {
+  bool needs_bootstrap = false;
+
+  ExtensionIdSet extension_ids = GetExtensionsToVerify();
+  if (signature_.get() == NULL && ShouldFetchSignature()) {
+    needs_bootstrap = true;
+  } else {
+    for (ExtensionIdSet::const_iterator iter = extension_ids.begin();
+         iter != extension_ids.end();
+         ++iter) {
+      if (!IsKnownId(*iter)) {
+        needs_bootstrap = true;
+        break;
+      }
+    }
+  }
+
+  if (needs_bootstrap)
+    AddMany(extension_ids, ADD_ALL_BOOTSTRAP);
+}
+
+void InstallVerifier::OnVerificationComplete(bool success,
+                                             OperationType type) const {
+  switch (type) {
+    case ADD_SINGLE:
+      LogAddVerifiedSuccess(success);
+      break;
+    case ADD_ALL:
+    case ADD_ALL_BOOTSTRAP:
+      LogVerifyAllSuccessHistogram(type == ADD_ALL_BOOTSTRAP, success);
+      if (success) {
+        // Iterate through the extensions and, if any are newly-verified and
+        // should have the DISABLE_NOT_VERIFIED reason lifted, do so.
+        const ExtensionSet& disabled_extensions =
+            ExtensionRegistry::Get(context_)->disabled_extensions();
+        for (ExtensionSet::const_iterator iter = disabled_extensions.begin();
+             iter != disabled_extensions.end();
+             ++iter) {
+          int disable_reasons = prefs_->GetDisableReasons((*iter)->id());
+          if (disable_reasons & Extension::DISABLE_NOT_VERIFIED &&
+              !MustRemainDisabled(*iter, NULL, NULL)) {
+            prefs_->RemoveDisableReason((*iter)->id(),
+                                        Extension::DISABLE_NOT_VERIFIED);
+          }
+        }
+
+        ExtensionSystem::Get(context_)
+            ->extension_service()
+            ->CheckManagementPolicy();
+      }
+      break;
+    // We don't need to check disable reasons or report UMA stats for
+    // provisional adds or removals.
+    case ADD_PROVISIONAL:
+    case REMOVE:
+      break;
+  }
 }
 
 void InstallVerifier::GarbageCollect() {
@@ -419,7 +525,7 @@ void InstallVerifier::BeginFetch() {
 
   // TODO(asargent) - It would be possible to coalesce all operations in the
   // queue into one fetch - we'd probably just need to change the queue to
-  // hold (set of ids, list of callbacks) pairs.
+  // hold (set of ids, list of operation type) pairs.
   CHECK(!operation_queue_.empty());
   const PendingOperation& operation = *operation_queue_.front();
 
@@ -427,19 +533,19 @@ void InstallVerifier::BeginFetch() {
   if (signature_.get()) {
     ids_to_sign.insert(signature_->ids.begin(), signature_->ids.end());
   }
-  if (operation.type == InstallVerifier::ADD) {
-    ids_to_sign.insert(operation.ids.begin(), operation.ids.end());
-  } else {
+  if (operation.type == InstallVerifier::REMOVE) {
     for (ExtensionIdSet::const_iterator i = operation.ids.begin();
          i != operation.ids.end(); ++i) {
       if (ContainsKey(ids_to_sign, *i))
         ids_to_sign.erase(*i);
     }
+  } else {  // All other operation types are some form of "ADD".
+    ids_to_sign.insert(operation.ids.begin(), operation.ids.end());
   }
 
-  signer_.reset(new InstallSigner(context_getter_, ids_to_sign));
+  signer_.reset(new InstallSigner(context_->GetRequestContext(), ids_to_sign));
   signer_->GetSignature(base::Bind(&InstallVerifier::SignatureCallback,
-                                   base::Unretained(this)));
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void InstallVerifier::SaveToPrefs() {
@@ -501,8 +607,7 @@ void InstallVerifier::SignatureCallback(
   }
 
   if (!success) {
-    if (!operation->callback.is_null())
-      operation->callback.Run(false);
+    OnVerificationComplete(false, operation->type);
 
     // TODO(asargent) - if this was something like a network error, we need to
     // do retries with exponential back off.
@@ -516,13 +621,11 @@ void InstallVerifier::SignatureCallback(
           provisional_, signature_->ids);
     }
 
-    if (!operation->callback.is_null())
-      operation->callback.Run(success);
+    OnVerificationComplete(success, operation->type);
   }
 
   if (!operation_queue_.empty())
     BeginFetch();
 }
-
 
 }  // namespace extensions
