@@ -35,6 +35,8 @@ class APIPermission {
     kUnknown = -1,
 
     // Real permissions.
+    kAccessibilityFeaturesModify,
+    kAccessibilityFeaturesRead,
     kActiveTab,
     kActivityLogPrivate,
     kAdView,

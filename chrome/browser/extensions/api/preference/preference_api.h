@@ -177,6 +177,8 @@ class PrefTransformerInterface {
 // classes.
 class PreferenceFunction : public ChromeSyncExtensionFunction {
  protected:
+  enum PermissionType { PERMISSION_TYPE_READ, PERMISSION_TYPE_WRITE };
+
   virtual ~PreferenceFunction();
 
   // Given an |extension_pref_key|, provides its |browser_pref_key| from the
@@ -185,6 +187,7 @@ class PreferenceFunction : public ChromeSyncExtensionFunction {
   // modify that pref. Sets |error_| if the extension doesn't have the needed
   // permission.
   bool ValidateBrowserPref(const std::string& extension_pref_key,
+                           PermissionType permission_type,
                            std::string* browser_pref_key);
 };
 

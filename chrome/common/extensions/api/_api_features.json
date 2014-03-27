@@ -9,6 +9,15 @@
 // type will require manually updating chrome/renderer/resources/dispatcher.cc.
 
 {
+  "accessibilityFeatures": [{
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:accessibilityFeatures.modify"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:accessibilityFeatures.read"],
+    "contexts": ["blessed_extension"]
+  }],
   "activityLogPrivate": {
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]

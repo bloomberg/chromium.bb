@@ -156,6 +156,7 @@
           }],
           ['chromeos==1', {
             'schema_files': [
+              'accessibility_features.json',
               'diagnostics.idl',
               'file_browser_handler_internal.json',
               'first_run_private.json',
