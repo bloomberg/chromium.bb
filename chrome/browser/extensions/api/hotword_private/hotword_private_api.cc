@@ -76,6 +76,16 @@ bool HotwordPrivateSetEnabledFunction::RunImpl() {
   return true;
 }
 
+bool HotwordPrivateSetAudioLoggingEnabledFunction::RunImpl() {
+  scoped_ptr<api::hotword_private::SetEnabled::Params> params(
+      api::hotword_private::SetEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  PrefService* prefs = GetProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, params->state);
+  return true;
+}
+
 bool HotwordPrivateGetStatusFunction::RunImpl() {
   api::hotword_private::StatusDetails result;
 

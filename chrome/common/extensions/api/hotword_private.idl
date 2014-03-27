@@ -39,6 +39,10 @@
     // Retrieves the current state of hotword search.
     // The result is put into a StatusDetails object.
     static void getStatus(StatusDetailsCallback callback);
+
+    // Sets the current enabled state of audio logging in the extension.
+    // True: logging enabled. False: no logging.
+    static void setAudioLoggingEnabled(boolean state, optional GenericDoneCallback callback);
   };
 
   interface Events {
