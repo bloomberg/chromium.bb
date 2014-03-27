@@ -101,7 +101,7 @@
   "media_perftests":{
     "description":"Microbenchmarks for media (media/) component.",
     "code":[
-      "chrome/src/media/media.gyp",
+      "chrome/src/media/media.gyp"
     ]
   },
   "memory.reload.2012Q3":{
