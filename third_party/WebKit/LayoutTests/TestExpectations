@@ -950,6 +950,7 @@ crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing
 crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
 crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
+crbug.com/357097 editing/context-menu-leak-document.html [ Failure ]
 
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
