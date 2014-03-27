@@ -431,7 +431,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 
   if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED) {
     use_core_animation_ = true;
-    ScopedCAActionDisabler disabler;
     background_layer_.reset([[CALayer alloc] init]);
     [background_layer_
         setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -505,8 +504,6 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
   if (!new_surface_needed && !new_context_needed)
     return true;
 
-  ScopedCAActionDisabler disabler;
-
   // Create the GL context and shaders.
   if (new_context_needed) {
     scoped_refptr<CompositingIOSurfaceContext> new_context =
@@ -540,14 +537,12 @@ void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
   if (software_layer_ || !use_core_animation_)
     return;
 
-  ScopedCAActionDisabler disabler;
-
-  // Create the layer.
   software_layer_.reset([[SoftwareLayer alloc]
       initWithRenderWidgetHostViewMac:this]);
   DCHECK(software_layer_);
 
-  // Make the layer visible.
+  // Disable the fade-in animation as the layer is added.
+  ScopedCAActionDisabler disabler;
   [background_layer_ addSublayer:software_layer_];
 }
 
@@ -555,6 +550,7 @@ void RenderWidgetHostViewMac::DestroySoftwareLayer() {
   if (!software_layer_)
     return;
 
+  // Disable the fade-out animation as the layer is removed.
   ScopedCAActionDisabler disabler;
   [software_layer_ removeFromSuperlayer];
   [software_layer_ disableRendering];
@@ -568,14 +564,12 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
   if (compositing_iosurface_layer_ || !use_core_animation_)
     return;
 
-  ScopedCAActionDisabler disabler;
-
-  // Create the layer.
   compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
       initWithRenderWidgetHostViewMac:this]);
   DCHECK(compositing_iosurface_layer_);
 
-  // Make the layer visible.
+  // Disable the fade-in animation as the layer is added.
+  ScopedCAActionDisabler disabler;
   [background_layer_ addSublayer:compositing_iosurface_layer_];
 }
 
@@ -583,6 +577,7 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer() {
   if (!compositing_iosurface_layer_)
     return;
 
+  // Disable the fade-out animation as the layer is removed.
   ScopedCAActionDisabler disabler;
   [compositing_iosurface_layer_ removeFromSuperlayer];
   [compositing_iosurface_layer_ disableCompositing];
@@ -782,22 +777,6 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
       render_widget_host_->GetBackingStore(false));
   if (backing_store)
     backing_store->ScaleFactorChanged(backing_store_scale_factor_);
-
-  ScopedCAActionDisabler disabler;
-
-  if (software_layer_) {
-    DestroySoftwareLayer();
-    EnsureSoftwareLayer();
-  }
-
-  // Dynamically calling setContentsScale on a CAOpenGLLayer for which
-  // setAsynchronous is dynamically toggled can result in flashes of corrupt
-  // content. Work around this by replacing the entire layer when the scale
-  // factor changes.
-  if (compositing_iosurface_layer_) {
-    DestroyCompositedIOSurfaceLayer();
-    EnsureCompositedIOSurfaceLayer();
-  }
 
   render_widget_host_->NotifyScreenInfoChanged();
 }
@@ -1470,6 +1449,10 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   } else {
     DrawIOSurfaceWithoutCoreAnimation();
   }
+
+  // The IOSurface's size may have changed, so re-layout the layers to take
+  // this into account. This may force an immediate draw.
+  LayoutLayers();
 }
 
 void RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
@@ -1969,6 +1952,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
   EnsureSoftwareLayer();
+  LayoutLayers();
   SendVSyncParametersToRenderer();
 
   // Draw the contents of the frame immediately. It is critical that this
@@ -2214,6 +2198,74 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   [cocoa_view_ displayIfNeeded];
   [software_layer_ displayIfNeeded];
   [compositing_iosurface_layer_ displayIfNeeded];
+}
+
+void RenderWidgetHostViewMac::LayoutLayers() {
+  if (!use_core_animation_)
+    return;
+
+  // Disable animation of the layer's resizing or change in contents scale.
+  ScopedCAActionDisabler disabler;
+
+  CGRect new_background_frame = NSRectToCGRect([cocoa_view() bounds]);
+
+  // Dynamically calling setContentsScale on a CAOpenGLLayer for which
+  // setAsynchronous is dynamically toggled can result in flashes of corrupt
+  // content. Work around this by replacing the entire layer when the scale
+  // factor changes.
+  if (compositing_iosurface_ &&
+      [compositing_iosurface_layer_
+          respondsToSelector:(@selector(contentsScale))]) {
+    if (compositing_iosurface_->scale_factor() !=
+        [compositing_iosurface_layer_ contentsScale]) {
+      DestroyCompositedIOSurfaceLayer();
+      EnsureCompositedIOSurfaceLayer();
+    }
+  }
+  if (compositing_iosurface_ && compositing_iosurface_layer_) {
+    CGRect layer_bounds = CGRectMake(
+      0,
+      0,
+      compositing_iosurface_->dip_io_surface_size().width(),
+      compositing_iosurface_->dip_io_surface_size().height());
+    CGPoint layer_position = CGPointMake(
+      0,
+      CGRectGetHeight(new_background_frame) - CGRectGetHeight(layer_bounds));
+    bool bounds_changed = !CGRectEqualToRect(
+        layer_bounds, [compositing_iosurface_layer_ bounds]);
+    [compositing_iosurface_layer_ setPosition:layer_position];
+    [compositing_iosurface_layer_ setBounds:layer_bounds];
+
+    // If the bounds changed, then draw the frame immediately, to ensure that
+    // content displayed is in sync with the window size.
+    if (bounds_changed) {
+      // Also, sometimes, especially when infobars are being removed, the
+      // setNeedsDisplay calls are dropped on the floor, and stale content is
+      // displayed. Calling displayIfNeeded will ensure that the right size
+      // frame is drawn to the screen.
+      // http://crbug.com/350817
+      [compositing_iosurface_layer_ setNeedsDisplay];
+      [compositing_iosurface_layer_ displayIfNeeded];
+    }
+  }
+
+  // Dynamically update the software layer's contents scale to match the
+  // software frame.
+  if (software_frame_manager_->HasCurrentFrame() &&
+      [software_layer_ respondsToSelector:(@selector(contentsScale))] &&
+      [software_layer_ respondsToSelector:(@selector(setContentsScale:))]) {
+    if (software_frame_manager_->GetCurrentFrameDeviceScaleFactor() !=
+        [software_layer_ contentsScale]) {
+      [software_layer_ setContentsScale:
+          software_frame_manager_->GetCurrentFrameDeviceScaleFactor()];
+    }
+  }
+  // Changing the software layer's bounds and position doesn't always result
+  // in the layer being anchored to the top-left. Set the layer's frame
+  // explicitly, since this is more reliable in practice.
+  if (software_layer_) {
+    [software_layer_ setFrame:new_background_frame];
+  }
 }
 
 SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
@@ -2966,16 +3018,13 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   if (!renderWidgetHostView_->render_widget_host_)
     return;
 
+  // Move the CALayers to their positions in the new view size. Note that
+  // this will not draw anything because the non-background layers' sizes
+  // didn't actually change.
+  renderWidgetHostView_->LayoutLayers();
+
   renderWidgetHostView_->render_widget_host_->SendScreenRects();
   renderWidgetHostView_->render_widget_host_->WasResized();
-
-  // Resize the CALayers to be drawn to.
-  ScopedCAActionDisabler disabler;
-  CGRect frame = NSRectToCGRect([renderWidgetHostView_->cocoa_view() bounds]);
-  [renderWidgetHostView_->software_layer_ setFrame:frame];
-  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
-  [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
-  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 
   // Wait for the frame that WasResize might have requested. If the view is
   // being made visible at a new size, then this call will have no effect
@@ -3961,13 +4010,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
     hasOpenMouseDown_ = NO;
   }
-
-  // Resize the view's layers to match the new window size.
-  ScopedCAActionDisabler disabler;
-  [renderWidgetHostView_->software_layer_
-      setFrame:NSRectToCGRect([self bounds])];
-  [renderWidgetHostView_->compositing_iosurface_layer_
-      setFrame:NSRectToCGRect([self bounds])];
 }
 
 - (void)undo:(id)sender {
@@ -4210,20 +4252,19 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (self = [super init]) {
     renderWidgetHostView_ = r;
 
-    ScopedCAActionDisabler disabler;
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+    [self setAnchorPoint:CGPointMake(0, 0)];
+    // Setting contents gravity is necessary to prevent the layer from being
+    // scaled during dyanmic resizes (especially with devtools open).
     [self setContentsGravity:kCAGravityTopLeft];
-    [self setFrame:NSRectToCGRect(
-        [renderWidgetHostView_->cocoa_view() bounds])];
-    if ([self respondsToSelector:(@selector(setContentsScale:))]) {
-      [self setContentsScale:
-          renderWidgetHostView_->backing_store_scale_factor_];
+    if (renderWidgetHostView_->software_frame_manager_->HasCurrentFrame() &&
+        [self respondsToSelector:(@selector(setContentsScale:))]) {
+      [self setContentsScale:renderWidgetHostView_->software_frame_manager_->
+          GetCurrentFrameDeviceScaleFactor()];
     }
 
     // Ensure that the transition between frames not be animated.
     [self setActions:@{ @"contents" : [NSNull null] }];
-
-    [self setNeedsDisplay];
   }
   return self;
 }
@@ -4246,7 +4287,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)disableRendering {
-  renderWidgetHostView_ = NULL;
+  // Disable the fade-out animation as the layer is removed.
+  ScopedCAActionDisabler disabler;
+  [self removeFromSuperlayer];
+  renderWidgetHostView_ = nil;
 }
 
 @end  // implementation SoftwareLayer
