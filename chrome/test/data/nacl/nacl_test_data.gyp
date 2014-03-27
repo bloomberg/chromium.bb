@@ -1034,6 +1034,10 @@
             '-nostdlib',
             '-shared',
           ],
+          'ldflags!': [
+            # Explicitly remove the -pthread flag to avoid a link time warning.
+            '-pthread',
+          ],
           'defines': [
             # The code depends on NaCl's headers. This is a macro for them.
             'NACL_LINUX=1',
