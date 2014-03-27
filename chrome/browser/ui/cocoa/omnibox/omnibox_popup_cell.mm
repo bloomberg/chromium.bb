@@ -305,7 +305,7 @@ NSAttributedString* CreateClassifiedAttributedString(
     prefixOffset = std::min(
         remainingWidth - prefixWidth, std::max(contentsOffset_,
                                                maxMatchContentsWidth_));
-    offset = std::max(0.0f, prefixOffset - *contentsMaxWidth);
+    offset = std::max<CGFloat>(0.0, prefixOffset - *contentsMaxWidth);
   } else { // The direction of contents is same as UI direction.
     // Ideally the offset should be |contentsOffset_|. If the max total width
     // (|prefixWidth| + |maxMatchContentsWidth_|) from offset will exceed the
