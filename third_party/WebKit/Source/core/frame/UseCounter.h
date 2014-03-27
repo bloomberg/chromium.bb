@@ -189,11 +189,9 @@ public:
         HTMLAppletElementLegacyCall = 151,
         HTMLEmbedElementLegacyCall = 152,
         HTMLObjectElementLegacyCall = 153,
-        BeforeLoadEvent = 154,
         GetMatchedCSSRules = 155,
         SVGFontInCSS = 156,
         AttributeSpecified = 162, // Removed in DOM4.
-        BeforeLoadEventInIsolatedWorld = 163,
         PrefixedAudioDecodedByteCount = 164,
         PrefixedVideoDecodedByteCount = 165,
         PrefixedVideoDecodedFrameCount = 172,
