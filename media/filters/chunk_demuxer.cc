@@ -702,10 +702,10 @@ void SourceState::OnSourceInitDone(bool success,
   base::ResetAndReturn(&init_cb_).Run(success, duration);
 }
 
-ChunkDemuxerStream::ChunkDemuxerStream(Type type)
+ChunkDemuxerStream::ChunkDemuxerStream(Type type, bool splice_frames_enabled)
     : type_(type),
-      state_(UNINITIALIZED) {
-}
+      state_(UNINITIALIZED),
+      splice_frames_enabled_(splice_frames_enabled) {}
 
 void ChunkDemuxerStream::StartReturningData() {
   DVLOG(1) << "ChunkDemuxerStream::StartReturningData()";
@@ -836,7 +836,8 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
   base::AutoLock auto_lock(lock_);
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
-    stream_.reset(new SourceBufferStream(config, log_cb));
+    stream_.reset(
+        new SourceBufferStream(config, log_cb, splice_frames_enabled_));
     return true;
   }
 
@@ -851,7 +852,8 @@ bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
 
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
-    stream_.reset(new SourceBufferStream(config, log_cb));
+    stream_.reset(
+        new SourceBufferStream(config, log_cb, splice_frames_enabled_));
     return true;
   }
 
@@ -864,7 +866,7 @@ void ChunkDemuxerStream::UpdateTextConfig(const TextTrackConfig& config,
   base::AutoLock auto_lock(lock_);
   DCHECK(!stream_);
   DCHECK_EQ(state_, UNINITIALIZED);
-  stream_.reset(new SourceBufferStream(config, log_cb));
+  stream_.reset(new SourceBufferStream(config, log_cb, splice_frames_enabled_));
 }
 
 void ChunkDemuxerStream::MarkEndOfStream() {
@@ -970,7 +972,8 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 
 ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
                            const NeedKeyCB& need_key_cb,
-                           const LogCB& log_cb)
+                           const LogCB& log_cb,
+                           bool splice_frames_enabled)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(NULL),
@@ -979,7 +982,8 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       enable_text_(false),
       log_cb_(log_cb),
       duration_(kNoTimestamp()),
-      user_specified_duration_(-1) {
+      user_specified_duration_(-1),
+      splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!need_key_cb_.is_null());
 }
@@ -1511,17 +1515,20 @@ ChunkDemuxer::CreateDemuxerStream(DemuxerStream::Type type) {
     case DemuxerStream::AUDIO:
       if (audio_)
         return NULL;
-      audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO));
+      audio_.reset(
+          new ChunkDemuxerStream(DemuxerStream::AUDIO, splice_frames_enabled_));
       return audio_.get();
       break;
     case DemuxerStream::VIDEO:
       if (video_)
         return NULL;
-      video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO));
+      video_.reset(
+          new ChunkDemuxerStream(DemuxerStream::VIDEO, splice_frames_enabled_));
       return video_.get();
       break;
     case DemuxerStream::TEXT: {
-      return new ChunkDemuxerStream(DemuxerStream::TEXT);
+      return new ChunkDemuxerStream(DemuxerStream::TEXT,
+                                    splice_frames_enabled_);
       break;
     }
     case DemuxerStream::UNKNOWN:

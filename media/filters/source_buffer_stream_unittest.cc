@@ -35,7 +35,7 @@ class SourceBufferStreamTest : public testing::Test {
       : accurate_durations_(false) {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new SourceBufferStream(video_config_, log_cb()));
+    stream_.reset(new SourceBufferStream(video_config_, log_cb(), true));
   }
 
   void SetMemoryLimit(int buffers_of_data) {
@@ -51,7 +51,7 @@ class SourceBufferStreamTest : public testing::Test {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, LogCB()));
+    stream_.reset(new SourceBufferStream(config, LogCB(), true));
     SetStreamInfo(2, 2);
   }
 
@@ -65,7 +65,7 @@ class SourceBufferStreamTest : public testing::Test {
                               NULL,
                               0,
                               false);
-    stream_.reset(new SourceBufferStream(config, LogCB()));
+    stream_.reset(new SourceBufferStream(config, LogCB(), true));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -3195,7 +3195,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, log_cb()));
+  stream_.reset(new SourceBufferStream(config, log_cb(), true));
   Seek(0);
   NewSegmentAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3204,7 +3204,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_Invalid_1) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, log_cb()));
+  stream_.reset(new SourceBufferStream(config, log_cb(), true));
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }

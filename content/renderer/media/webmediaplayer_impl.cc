@@ -1148,7 +1148,8 @@ void WebMediaPlayerImpl::StartPipeline() {
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
-        base::Bind(&LogMediaSourceError, media_log_));
+        base::Bind(&LogMediaSourceError, media_log_),
+        false);
     demuxer_.reset(chunk_demuxer_);
   }
 

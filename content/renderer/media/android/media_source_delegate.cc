@@ -153,11 +153,12 @@ void MediaSourceDelegate::InitializeMediaSource(
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
-      media::BindToCurrentLoop(base::Bind(
-          &MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
-      media::BindToCurrentLoop(base::Bind(
-          &MediaSourceDelegate::OnNeedKey, main_weak_this_)),
-      base::Bind(&LogMediaSourceError, media_log_)));
+      media::BindToCurrentLoop(
+          base::Bind(&MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
+      media::BindToCurrentLoop(
+          base::Bind(&MediaSourceDelegate::OnNeedKey, main_weak_this_)),
+      base::Bind(&LogMediaSourceError, media_log_),
+      false));
 
   // |this| will be retained until StopDemuxer() is posted, so Unretained() is
   // safe here.

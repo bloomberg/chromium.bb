@@ -252,18 +252,19 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
 // Media Source API.
 class MockMediaSource {
  public:
-  MockMediaSource(const std::string& filename, const std::string& mimetype,
+  MockMediaSource(const std::string& filename,
+                  const std::string& mimetype,
                   int initial_append_size)
       : file_path_(GetTestDataFilePath(filename)),
         current_position_(0),
         initial_append_size_(initial_append_size),
         mimetype_(mimetype),
         chunk_demuxer_(new ChunkDemuxer(
-            base::Bind(&MockMediaSource::DemuxerOpened,
-                       base::Unretained(this)),
+            base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
             base::Bind(&MockMediaSource::DemuxerNeedKey,
                        base::Unretained(this)),
-            LogCB())),
+            LogCB(),
+            false)),
         owned_chunk_demuxer_(chunk_demuxer_) {
 
     file_data_ = ReadTestDataFile(filename);

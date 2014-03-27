@@ -340,7 +340,8 @@ static int kDefaultVideoMemoryLimit = 150 * 1024 * 1024;
 namespace media {
 
 SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
-                                       const LogCB& log_cb)
+                                       const LogCB& log_cb,
+                                       bool splice_frames_enabled)
     : log_cb_(log_cb),
       current_config_index_(0),
       append_config_index_(0),
@@ -357,13 +358,15 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
-      splice_buffers_index_(0) {
+      splice_buffers_index_(0),
+      splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
 
 SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
-                                       const LogCB& log_cb)
+                                       const LogCB& log_cb,
+                                       bool splice_frames_enabled)
     : log_cb_(log_cb),
       current_config_index_(0),
       append_config_index_(0),
@@ -380,13 +383,15 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultVideoMemoryLimit),
       config_change_pending_(false),
-      splice_buffers_index_(0) {
+      splice_buffers_index_(0),
+      splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
 
 SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
-                                       const LogCB& log_cb)
+                                       const LogCB& log_cb,
+                                       bool splice_frames_enabled)
     : log_cb_(log_cb),
       current_config_index_(0),
       append_config_index_(0),
@@ -404,8 +409,8 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
-      splice_buffers_index_(0) {
-}
+      splice_buffers_index_(0),
+      splice_frames_enabled_(splice_frames_enabled) {}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
@@ -965,7 +970,8 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   // Handle splices between the existing buffers and the new buffers.  If a
   // splice is generated the timestamp and duration of the first buffer in
   // |new_buffers| will be modified.
-  GenerateSpliceFrame(new_buffers);
+  if (splice_frames_enabled_)
+    GenerateSpliceFrame(new_buffers);
 
   base::TimeDelta prev_timestamp = last_appended_buffer_timestamp_;
   bool prev_is_keyframe = last_appended_buffer_is_keyframe_;

@@ -53,11 +53,14 @@ class MEDIA_EXPORT SourceBufferStream {
   };
 
   SourceBufferStream(const AudioDecoderConfig& audio_config,
-                     const LogCB& log_cb);
+                     const LogCB& log_cb,
+                     bool splice_frames_enabled);
   SourceBufferStream(const VideoDecoderConfig& video_config,
-                     const LogCB& log_cb);
+                     const LogCB& log_cb,
+                     bool splice_frames_enabled);
   SourceBufferStream(const TextTrackConfig& text_config,
-                     const LogCB& log_cb);
+                     const LogCB& log_cb,
+                     bool splice_frames_enabled);
 
   ~SourceBufferStream();
 
@@ -394,6 +397,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // Indicates which of the splice buffers in |splice_buffer_| should be
   // handled out next.
   size_t splice_buffers_index_;
+
+  // Indicates that splice frame generation is enabled.
+  const bool splice_frames_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };
