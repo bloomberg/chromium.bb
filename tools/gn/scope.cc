@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "tools/gn/parse_tree.h"
+#include "tools/gn/template.h"
 
 namespace {
 
@@ -41,6 +42,7 @@ Scope::Scope(const Scope* parent)
 Scope::~Scope() {
   STLDeleteContainerPairSecondPointers(target_defaults_.begin(),
                                        target_defaults_.end());
+  STLDeleteContainerPairSecondPointers(templates_.begin(), templates_.end());
 }
 
 const Value* Scope::GetValue(const base::StringPiece& ident,
@@ -119,14 +121,14 @@ Value* Scope::SetValue(const base::StringPiece& ident,
   return &r.value;
 }
 
-bool Scope::AddTemplate(const std::string& name, const FunctionCallNode* decl) {
+bool Scope::AddTemplate(const std::string& name, scoped_ptr<Template> templ) {
   if (GetTemplate(name))
     return false;
-  templates_[name] = decl;
+  templates_[name] = templ.release();
   return true;
 }
 
-const FunctionCallNode* Scope::GetTemplate(const std::string& name) const {
+const Template* Scope::GetTemplate(const std::string& name) const {
   TemplateMap::const_iterator found = templates_.find(name);
   if (found != templates_.end())
     return found->second;
@@ -191,24 +193,28 @@ void Scope::GetCurrentScopeValues(KeyValueMap* output) const {
 }
 
 bool Scope::NonRecursiveMergeTo(Scope* dest,
+                                bool clobber_existing,
                                 const ParseNode* node_for_err,
                                 const char* desc_for_err,
                                 Err* err) const {
   // Values.
   for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
     const Value& new_value = i->second.value;
-    const Value* existing_value = dest->GetValue(i->first);
-    if (existing_value && new_value != *existing_value) {
-      // Value present in both the source and the dest.
-      std::string desc_string(desc_for_err);
-      *err = Err(node_for_err, "Value collision.",
-          "This " + desc_string + " contains \"" + i->first.as_string() + "\"");
-      err->AppendSubErr(Err(i->second.value, "defined here.",
-          "Which would clobber the one in your current scope"));
-      err->AppendSubErr(Err(*existing_value, "defined here.",
-          "Executing " + desc_string + " should not conflict with anything "
-          "in the current\nscope unless the values are identical."));
-      return false;
+    if (!clobber_existing) {
+      const Value* existing_value = dest->GetValue(i->first);
+      if (existing_value && new_value != *existing_value) {
+        // Value present in both the source and the dest.
+        std::string desc_string(desc_for_err);
+        *err = Err(node_for_err, "Value collision.",
+            "This " + desc_string + " contains \"" + i->first.as_string() +
+            "\"");
+        err->AppendSubErr(Err(i->second.value, "defined here.",
+            "Which would clobber the one in your current scope"));
+        err->AppendSubErr(Err(*existing_value, "defined here.",
+            "Executing " + desc_string + " should not conflict with anything "
+            "in the current\nscope unless the values are identical."));
+        return false;
+      }
     }
     dest->values_[i->first] = i->second;
   }
@@ -216,34 +222,42 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
   // Target defaults are owning pointers.
   for (NamedScopeMap::const_iterator i = target_defaults_.begin();
        i != target_defaults_.end(); ++i) {
-    if (dest->GetTargetDefaults(i->first)) {
-      // TODO(brettw) it would be nice to know the origin of a
-      // set_target_defaults so we can give locations for the colliding target
-      // defaults.
-      std::string desc_string(desc_for_err);
-      *err = Err(node_for_err, "Target defaults collision.",
-          "This " + desc_string + " contains target defaults for\n"
-          "\"" + i->first + "\" which would clobber one for the\n"
-          "same target type in your current scope. It's unfortunate that I'm "
-          "too stupid\nto tell you the location of where the target defaults "
-          "were set. Usually\nthis happens in the BUILDCONFIG.gn file.");
-      return false;
+    if (!clobber_existing) {
+      if (dest->GetTargetDefaults(i->first)) {
+        // TODO(brettw) it would be nice to know the origin of a
+        // set_target_defaults so we can give locations for the colliding target
+        // defaults.
+        std::string desc_string(desc_for_err);
+        *err = Err(node_for_err, "Target defaults collision.",
+            "This " + desc_string + " contains target defaults for\n"
+            "\"" + i->first + "\" which would clobber one for the\n"
+            "same target type in your current scope. It's unfortunate that I'm "
+            "too stupid\nto tell you the location of where the target defaults "
+            "were set. Usually\nthis happens in the BUILDCONFIG.gn file.");
+        return false;
+      }
     }
 
-    Scope* s = new Scope(settings_);
-    i->second->NonRecursiveMergeTo(s, node_for_err, "<SHOULDN'T HAPPEN>", err);
-    dest->target_defaults_[i->first] = s;
+    // Be careful to delete any pointer we're about to clobber.
+    Scope** dest_scope = &dest->target_defaults_[i->first];
+    if (*dest_scope)
+      delete *dest_scope;
+    *dest_scope = new Scope(settings_);
+    i->second->NonRecursiveMergeTo(*dest_scope, clobber_existing, node_for_err,
+                                   "<SHOULDN'T HAPPEN>", err);
   }
 
   // Sources assignment filter.
   if (sources_assignment_filter_) {
-    if (dest->GetSourcesAssignmentFilter()) {
-      // Sources assignment filter present in both the source and the dest.
-      std::string desc_string(desc_for_err);
-      *err = Err(node_for_err, "Assignment filter collision.",
-          "The " + desc_string + " contains a sources_assignment_filter which\n"
-          "would clobber the one in your current scope.");
-      return false;
+    if (!clobber_existing) {
+      if (dest->GetSourcesAssignmentFilter()) {
+        // Sources assignment filter present in both the source and the dest.
+        std::string desc_string(desc_for_err);
+        *err = Err(node_for_err, "Assignment filter collision.",
+            "The " + desc_string + " contains a sources_assignment_filter "
+            "which\nwould clobber the one in your current scope.");
+        return false;
+      }
     }
     dest->sources_assignment_filter_.reset(
         new PatternList(*sources_assignment_filter_));
@@ -252,23 +266,54 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
   // Templates.
   for (TemplateMap::const_iterator i = templates_.begin();
        i != templates_.end(); ++i) {
-    const FunctionCallNode* existing_template = dest->GetTemplate(i->first);
-    if (existing_template) {
-      // Rule present in both the source and the dest.
-      std::string desc_string(desc_for_err);
-      *err = Err(node_for_err, "Template collision.",
-          "This " + desc_string + " contains a template \"" + i->first + "\"");
-      err->AppendSubErr(Err(i->second->function(), "defined here.",
-          "Which would clobber the one in your current scope"));
-      err->AppendSubErr(Err(existing_template->function(), "defined here.",
-          "Executing " + desc_string + " should not conflict with anything "
-          "in the current\nscope."));
-      return false;
+    if (!clobber_existing) {
+      const Template* existing_template = dest->GetTemplate(i->first);
+      if (existing_template) {
+        // Rule present in both the source and the dest.
+        std::string desc_string(desc_for_err);
+        *err = Err(node_for_err, "Template collision.",
+            "This " + desc_string + " contains a template \"" +
+            i->first + "\"");
+        err->AppendSubErr(Err(i->second->GetDefinitionRange(), "defined here.",
+            "Which would clobber the one in your current scope"));
+        err->AppendSubErr(Err(existing_template->GetDefinitionRange(),
+            "defined here.",
+            "Executing " + desc_string + " should not conflict with anything "
+            "in the current\nscope."));
+        return false;
+      }
     }
-    dest->templates_.insert(*i);
+
+    // Be careful to delete any pointer we're about to clobber.
+    const Template** dest_template = &dest->templates_[i->first];
+    if (*dest_template)
+      delete *dest_template;
+    *dest_template = i->second;
   }
 
   return true;
+}
+
+scoped_ptr<Scope> Scope::MakeClosure() const {
+  scoped_ptr<Scope> result;
+  if (const_containing_) {
+    // We reached the top of the mutable scope stack. The result scope just
+    // references the const scope (which will never change).
+    result.reset(new Scope(const_containing_));
+  } else if (mutable_containing_) {
+    // There are more nested mutable scopes. Recursively go up the stack to
+    // get the closure.
+    result = mutable_containing_->MakeClosure();
+  } else {
+    // This is a standalone scope, just copy it.
+    result.reset(new Scope(settings_));
+  }
+
+  // Add in our variables and we're done.
+  Err err;
+  NonRecursiveMergeTo(result.get(), true, NULL, "<SHOULDN'T HAPPEN>", &err);
+  DCHECK(!err.has_error());
+  return result.Pass();
 }
 
 Scope* Scope::MakeTargetDefaults(const std::string& target_type) {

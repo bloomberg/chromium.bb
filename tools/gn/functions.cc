@@ -16,45 +16,9 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/template.h"
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
-
-namespace {
-
-// This is called when a template is invoked. When we see a template
-// declaration, that funciton is RunTemplate.
-Value RunTemplateInvocation(Scope* scope,
-                            const FunctionCallNode* invocation,
-                            const std::vector<Value>& args,
-                            BlockNode* block,
-                            const FunctionCallNode* rule,
-                            Err* err) {
-  if (!EnsureNotProcessingImport(invocation, scope, err))
-    return Value();
-
-  Scope block_scope(scope);
-  if (!FillTargetBlockScope(scope, invocation,
-                            invocation->function().value().as_string(),
-                            block, args, &block_scope, err))
-    return Value();
-
-  // Run the block for the rule invocation.
-  block->ExecuteBlockInScope(&block_scope, err);
-  if (err->has_error())
-    return Value();
-
-  // Now run the rule itself with that block as the current scope.
-  rule->block()->ExecuteBlockInScope(&block_scope, err);
-  if (err->has_error())
-    return Value();
-
-  block_scope.CheckForUnusedVars(err);
-  return Value();
-}
-
-}  // namespace
-
-// ----------------------------------------------------------------------------
 
 bool EnsureNotProcessingImport(const ParseNode* node,
                                const Scope* scope,
@@ -97,7 +61,7 @@ bool FillTargetBlockScope(const Scope* scope,
   // the block in.
   const Scope* default_scope = scope->GetTargetDefaults(target_type);
   if (default_scope) {
-    if (!default_scope->NonRecursiveMergeTo(block_scope, function,
+    if (!default_scope->NonRecursiveMergeTo(block_scope, false, function,
                                             "target defaults", err))
       return false;
   }
@@ -331,16 +295,29 @@ const char kDefined_Help[] =
     "  Returns true if the given argument is defined. This is most useful in\n"
     "  templates to assert that the caller set things up properly.\n"
     "\n"
+    "  You can pass an identifier:\n"
+    "    defined(foo)\n"
+    "  which will return true or false depending on whether foo is defined in\n"
+    "  the current scope.\n"
+    "\n"
+    "  You can also check a named scope:\n"
+    "    defined(foo.bar)\n"
+    "  which returns true if both foo is defined and bar is defined on the\n"
+    "  named scope foo. It will throw an error if foo is defined but is not\n"
+    "  a scope.\n"
+    "\n"
     "Example:\n"
     "\n"
     "  template(\"mytemplate\") {\n"
     "    # To help users call this template properly...\n"
-    "    assert(defined(sources), \"Sources must be defined\")\n"
+    "    assert(defined(invoker.sources), \"Sources must be defined\")\n"
     "\n"
     "    # If we want to accept an optional \"values\" argument, we don't\n"
     "    # want to dereference something that may not be defined.\n"
-    "    if (!defined(outputs)) {\n"
-    "      outputs = []\n"
+    "    if (defined(invoker.values)) {\n"
+    "      values = invoker.values\n"
+    "    } else {\n"
+    "      values = \"some default value\"\n"
     "    }\n"
     "  }\n";
 
@@ -349,17 +326,42 @@ Value RunDefined(Scope* scope,
                  const ListNode* args_list,
                  Err* err) {
   const std::vector<const ParseNode*>& args_vector = args_list->contents();
-  const IdentifierNode* identifier = NULL;
-  if (args_vector.size() != 1 ||
-      !(identifier = args_vector[0]->AsIdentifier())) {
-    *err = Err(function, "Bad argument to defined().",
-        "defined() takes one argument which should be an identifier.");
+  if (args_vector.size() != 1) {
+    *err = Err(function, "Wrong number of arguments to defined().",
+               "Expecting exactly one.");
     return Value();
   }
 
-  if (scope->GetValue(identifier->value().value()))
-    return Value(function, true);
-  return Value(function, false);
+  const IdentifierNode* identifier = args_vector[0]->AsIdentifier();
+  if (identifier) {
+    // Passed an identifier "defined(foo)".
+    if (scope->GetValue(identifier->value().value()))
+      return Value(function, true);
+    return Value(function, false);
+  }
+
+  const AccessorNode* accessor = args_vector[0]->AsAccessor();
+  if (accessor) {
+    // Passed an accessor "defined(foo.bar)".
+    if (accessor->member()) {
+      // The base of the accessor must be a scope if it's defined.
+      const Value* base = scope->GetValue(accessor->base().value());
+      if (!base)
+        return Value(function, false);
+      if (!base->VerifyTypeIs(Value::SCOPE, err))
+        return Value();
+
+      // Check the member inside the scope to see if its defined.
+      if (base->scope_value()->GetValue(accessor->member()->value().value()))
+        return Value(function, true);
+      return Value(function, false);
+    }
+  }
+
+  // Argument is invalid.
+  *err = Err(function, "Bad thing passed to defined().",
+      "It should be of the form defined(foo) or defined(foo.bar).");
+  return Value();
 }
 
 // getenv ----------------------------------------------------------------------
@@ -625,14 +627,13 @@ Value RunFunction(Scope* scope,
       function_map.find(name.value());
   if (found_function == function_map.end()) {
     // No built-in function matching this, check for a template.
-    const FunctionCallNode* rule =
+    const Template* templ =
         scope->GetTemplate(function->function().value().as_string());
-    if (rule) {
+    if (templ) {
       Value args = args_list->Execute(scope, err);
       if (err->has_error())
         return Value();
-      return RunTemplateInvocation(scope, function, args.list_value(), block,
-                                   rule, err);
+      return templ->Invoke(scope, function, args.list_value(), block, err);
     }
 
     *err = Err(name, "Unknown function.");

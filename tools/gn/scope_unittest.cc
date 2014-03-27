@@ -8,6 +8,21 @@
 #include "tools/gn/scope.h"
 #include "tools/gn/test_with_scope.h"
 
+namespace {
+
+bool HasStringValueEqualTo(const Scope* scope,
+                           const char* name,
+                           const char* expected_value) {
+  const Value* value = scope->GetValue(name);
+  if (!value)
+    return false;
+  if (value->type() != Value::STRING)
+    return false;
+  return value->string_value() == expected_value;
+}
+
+}  // namespace
+
 TEST(Scope, NonRecursiveMergeTo) {
   TestWithScope setup;
 
@@ -29,9 +44,25 @@ TEST(Scope, NonRecursiveMergeTo) {
     new_scope.SetValue("v", new_value, &assignment);
 
     Err err;
-    EXPECT_FALSE(new_scope.NonRecursiveMergeTo(
-        setup.scope(), &assignment, "error", &err));
+    EXPECT_FALSE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, false, &assignment, "error", &err));
     EXPECT_TRUE(err.has_error());
+  }
+
+  // The clobber flag should just overwrite colliding values.
+  {
+    Scope new_scope(setup.settings());
+    Value new_value(&assignment, "goodbye");
+    new_scope.SetValue("v", new_value, &assignment);
+
+    Err err;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, true, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+
+    const Value* found_value = new_scope.GetValue("v");
+    ASSERT_TRUE(found_value);
+    EXPECT_TRUE(old_value == *found_value);
   }
 
   // Don't flag values that technically collide but have the same value.
@@ -41,10 +72,46 @@ TEST(Scope, NonRecursiveMergeTo) {
     new_scope.SetValue("v", new_value, &assignment);
 
     Err err;
-    EXPECT_TRUE(new_scope.NonRecursiveMergeTo(
-        setup.scope(), &assignment, "error", &err));
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, false, &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
   }
+}
+
+TEST(Scope, MakeClosure) {
+  // Create 3 nested scopes [const root from setup] <- nested1 <- nested2.
+  TestWithScope setup;
+
+  // Make a pretend parse node with proper tracking that we can blame for the
+  // given value.
+  InputFile input_file(SourceFile("//foo"));
+  Token assignment_token(Location(&input_file, 1, 1), Token::STRING,
+      "\"hello\"");
+  LiteralNode assignment;
+  assignment.set_value(assignment_token);
+  setup.scope()->SetValue("on_root", Value(&assignment, "on_root"),
+                           &assignment);
+
+  // Root scope should be const from the nested caller's perspective.
+  Scope nested1(static_cast<const Scope*>(setup.scope()));
+  nested1.SetValue("on_one", Value(&assignment, "on_one"), &assignment);
+
+  Scope nested2(&nested1);
+  nested2.SetValue("on_one", Value(&assignment, "on_two"), &assignment);
+  nested2.SetValue("on_two", Value(&assignment, "on_two2"), &assignment);
+
+  // Making a closure from the root scope.
+  scoped_ptr<Scope> result = setup.scope()->MakeClosure();
+  EXPECT_FALSE(result->containing());  // Should have no containing scope.
+  EXPECT_TRUE(result->GetValue("on_root"));  // Value should be copied.
+
+  // Making a closure from the second nested scope.
+  result = nested2.MakeClosure();
+  EXPECT_EQ(setup.scope(),
+            result->containing());  // Containing scope should be the root.
+  EXPECT_TRUE(HasStringValueEqualTo(result.get(), "on_root", "on_root"));
+  EXPECT_TRUE(HasStringValueEqualTo(result.get(), "on_one", "on_two"));
+  EXPECT_TRUE(HasStringValueEqualTo(result.get(), "on_two", "on_two2"));
 }
 
 TEST(Scope, GetMutableValue) {

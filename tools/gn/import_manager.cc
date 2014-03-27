@@ -81,6 +81,6 @@ bool ImportManager::DoImport(const SourceFile& file,
     }
   }
 
-  return imported_scope->NonRecursiveMergeTo(scope, node_for_err,
+  return imported_scope->NonRecursiveMergeTo(scope, false, node_for_err,
                                              "import", err);
 }

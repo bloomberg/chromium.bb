@@ -82,7 +82,8 @@ Value RunSetDefaults(Scope* scope,
   // Now copy the values set on the scope we made into the free-floating one
   // (with no containing scope) used to hold the target defaults.
   Scope* dest = scope->MakeTargetDefaults(target_type);
-  block_scope.NonRecursiveMergeTo(dest, function, "<SHOULD NOT FAIL>", err);
+  block_scope.NonRecursiveMergeTo(dest, false, function,
+                                  "<SHOULD NOT FAIL>", err);
   return Value();
 }
 

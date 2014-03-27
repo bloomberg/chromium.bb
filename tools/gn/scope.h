@@ -21,6 +21,7 @@ class ImportManager;
 class ParseNode;
 class Settings;
 class TargetManager;
+class Template;
 
 // Scope for the script execution.
 //
@@ -128,11 +129,11 @@ class Scope {
                   const ParseNode* set_node);
 
   // Templates associated with this scope. A template can only be set once, so
-  // AddTemplate will fail and return NULL if a rule with that name already
+  // AddTemplate will fail and return false if a rule with that name already
   // exists. GetTemplate returns NULL if the rule doesn't exist, and it will
   // check all containing scoped rescursively.
-  bool AddTemplate(const std::string& name, const FunctionCallNode* decl);
-  const FunctionCallNode* GetTemplate(const std::string& name) const;
+  bool AddTemplate(const std::string& name, scoped_ptr<Template> templ);
+  const Template* GetTemplate(const std::string& name) const;
 
   // Marks the given identifier as (un)used in the current scope.
   void MarkUsed(const base::StringPiece& ident);
@@ -158,10 +159,13 @@ class Scope {
   // copied, neither will the reference to the containing scope (this is why
   // it's "non-recursive").
   //
-  // It is an error to merge a variable into a scope that already has something
-  // with that name in scope (meaning in that scope or in any of its containing
-  // scopes). If this happens, the error will be set and the function will
-  // return false.
+  // If clobber_existing is true, any existing values will be overwritten. In
+  // this mode, this function will never fail.
+  //
+  // If clobber_existing is false, it will be an error to merge a variable into
+  // a scope that already has something with that name in scope (meaning in
+  // that scope or in any of its containing scopes). If this happens, the error
+  // will be set and the function will return false.
   //
   // This is used in different contexts. When generating the error, the given
   // parse node will be blamed, and the given desc will be used to describe
@@ -169,9 +173,17 @@ class Scope {
   // would be "import" when doing an import, and the error string would say
   // something like "The import contains...".
   bool NonRecursiveMergeTo(Scope* dest,
+                           bool clobber_existing,
                            const ParseNode* node_for_err,
                            const char* desc_for_err,
                            Err* err) const;
+
+  // Constructs a scope that is a copy of the current one. Nested scopes will
+  // be collapsed until we reach a const containing scope. The resulting
+  // closure will reference the const containing scope as its containing scope
+  // (since we assume the const scope won't change, we don't have to copy its
+  // values).
+  scoped_ptr<Scope> MakeClosure() const;
 
   // Makes an empty scope with the given name. Returns NULL if the name is
   // already set.
@@ -267,9 +279,8 @@ class Scope {
   // scope's filter.
   scoped_ptr<PatternList> sources_assignment_filter_;
 
-  // Non-owning pointers, the function calls are owned by the input file which
-  // should be kept around by the input file manager.
-  typedef std::map<std::string, const FunctionCallNode*> TemplateMap;
+  // Owning pointers, must be deleted.
+  typedef std::map<std::string, const Template*> TemplateMap;
   TemplateMap templates_;
 
   // Opaque pointers. See SetProperty() above.
