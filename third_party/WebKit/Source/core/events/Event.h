@@ -86,17 +86,17 @@ public:
     {
         return adoptRefWillBeRefCountedGarbageCollected(new Event(type, false, false));
     }
-    static PassRefPtr<Event> createCancelable(const AtomicString& type)
+    static PassRefPtrWillBeRawPtr<Event> createCancelable(const AtomicString& type)
     {
-        return adoptRef(new Event(type, false, true));
+        return adoptRefWillBeRefCountedGarbageCollected(new Event(type, false, true));
     }
-    static PassRefPtr<Event> createBubble(const AtomicString& type)
+    static PassRefPtrWillBeRawPtr<Event> createBubble(const AtomicString& type)
     {
-        return adoptRef(new Event(type, true, false));
+        return adoptRefWillBeRefCountedGarbageCollected(new Event(type, true, false));
     }
-    static PassRefPtr<Event> createCancelableBubble(const AtomicString& type)
+    static PassRefPtrWillBeRawPtr<Event> createCancelableBubble(const AtomicString& type)
     {
-        return adoptRef(new Event(type, true, true));
+        return adoptRefWillBeRefCountedGarbageCollected(new Event(type, true, true));
     }
 
     static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
