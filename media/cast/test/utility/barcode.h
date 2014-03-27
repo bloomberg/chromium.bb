@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MEDIA_CAST_TEST_UTILITY_BARCODE_H_
+#define MEDIA_CAST_TEST_UTILITY_BARCODE_H_
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -49,3 +52,5 @@ bool DecodeBarcode(scoped_refptr<media::VideoFrame> output_frame, T* data) {
 }  // namespace test
 }  // namespace cast
 }  // namespace media
+
+#endif  // MEDIA_CAST_TEST_UTILITY_BARCODE_H_

@@ -83,7 +83,7 @@ void GetSsrcs(AudioReceiverConfig* audio_config) {
 
   test::InputBuilder input_rx(
       "Choose audio receiver SSRC.", DEFAULT_AUDIO_INCOMING_SSRC, 1, INT_MAX);
-  audio_config->incoming_ssrc = input_tx.GetIntInput();
+  audio_config->incoming_ssrc = input_rx.GetIntInput();
 }
 
 void GetSsrcs(VideoReceiverConfig* video_config) {
