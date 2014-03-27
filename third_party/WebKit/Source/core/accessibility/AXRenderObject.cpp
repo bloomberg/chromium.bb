@@ -1493,8 +1493,8 @@ double AXRenderObject::estimatedLoadingProgress() const
     if (isLoaded())
         return 1.0;
 
-    if (LocalFrame* frame = m_renderer->document().frame())
-        return frame->loader().progress().estimatedProgress();
+    if (Page* page = m_renderer->document().page())
+        return page->progress().estimatedProgress();
     return 0;
 }
 

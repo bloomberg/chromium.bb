@@ -146,6 +146,16 @@ public:
     // will never be called.
     virtual bool enumerateChosenDirectory(const WebString& path, WebFileChooserCompletion*) { return false; }
 
+    // Navigational --------------------------------------------------------
+
+    // These notifications bracket any loading that occurs in the WebView.
+    virtual void didStartLoading(bool toDifferentDocument) { }
+    virtual void didStopLoading() { }
+
+    // Notification that some progress was made loading the current page.
+    // loadProgress is a value between 0 (nothing loaded) and 1.0 (frame fully
+    // loaded).
+    virtual void didChangeLoadProgress(WebLocalFrame*, double loadProgress) { }
 
     // Editing -------------------------------------------------------------
 

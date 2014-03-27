@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/loader/ProgressTracker.h"
 
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -62,10 +61,8 @@ public:
     long long estimatedLength;
 };
 
-ProgressTracker::ProgressTracker(LocalFrame* frame)
-    : m_frame(frame)
-    , m_inProgress(false)
-    , m_totalPageAndResourceBytesToLoad(0)
+ProgressTracker::ProgressTracker()
+    : m_totalPageAndResourceBytesToLoad(0)
     , m_totalBytesReceived(0)
     , m_lastNotifiedProgressValue(0)
     , m_lastNotifiedProgressTime(0)
@@ -73,18 +70,17 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
     , m_progressNotificationTimeInterval(0.1)
     , m_finalProgressChangedSent(false)
     , m_progressValue(0)
+    , m_numProgressTrackedFrames(0)
 {
 }
 
 ProgressTracker::~ProgressTracker()
 {
-    if (m_inProgress)
-        progressCompleted();
 }
 
-PassOwnPtr<ProgressTracker> ProgressTracker::create(LocalFrame* frame)
+PassOwnPtr<ProgressTracker> ProgressTracker::create()
 {
-    return adoptPtr(new ProgressTracker(frame));
+    return adoptPtr(new ProgressTracker);
 }
 
 double ProgressTracker::estimatedProgress() const
@@ -102,35 +98,59 @@ void ProgressTracker::reset()
     m_lastNotifiedProgressValue = 0;
     m_lastNotifiedProgressTime = 0;
     m_finalProgressChangedSent = false;
+    m_numProgressTrackedFrames = 0;
+    m_originatingProgressFrame = nullptr;
 }
 
-void ProgressTracker::progressStarted()
+void ProgressTracker::progressStarted(LocalFrame* frame)
 {
-    if (!m_inProgress) {
+    WTF_LOG(Progress, "Progress started (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+
+    if (m_numProgressTrackedFrames == 0 || m_originatingProgressFrame == frame) {
         reset();
         m_progressValue = initialProgressValue;
-        m_frame->loader().client()->didStartLoading(NavigationToDifferentDocument);
+        m_originatingProgressFrame = frame;
+
+        m_originatingProgressFrame->loader().client()->postProgressStartedNotification(NavigationToDifferentDocument);
     }
-    m_inProgress = true;
-    InspectorInstrumentation::frameStartedLoading(m_frame);
+    m_numProgressTrackedFrames++;
+    InspectorInstrumentation::frameStartedLoading(frame);
 }
 
-void ProgressTracker::progressCompleted()
+void ProgressTracker::progressCompleted(LocalFrame* frame)
 {
-    ASSERT(m_inProgress);
-    m_inProgress = false;
+    WTF_LOG(Progress, "Progress completed (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+
+    if (m_numProgressTrackedFrames <= 0)
+        return;
+    m_numProgressTrackedFrames--;
+    if (!m_numProgressTrackedFrames || m_originatingProgressFrame == frame)
+        finalProgressComplete();
+}
+
+void ProgressTracker::finalProgressComplete()
+{
+    WTF_LOG(Progress, "Final progress complete (%p)", this);
+
+    RefPtr<LocalFrame> frame = m_originatingProgressFrame.release();
+
+    // Before resetting progress value be sure to send client a least one notification
+    // with final progress value.
     if (!m_finalProgressChangedSent) {
         m_progressValue = 1;
-        m_frame->loader().client()->progressEstimateChanged(m_progressValue);
+        frame->loader().client()->postProgressEstimateChangedNotification();
     }
+
     reset();
-    m_frame->loader().client()->didStopLoading();
-    InspectorInstrumentation::frameStoppedLoading(m_frame);
+    frame->loader().client()->postProgressFinishedNotification();
+    InspectorInstrumentation::frameStoppedLoading(frame.get());
 }
 
 void ProgressTracker::incrementProgress(unsigned long identifier, const ResourceResponse& response)
 {
-    if (!m_inProgress)
+    WTF_LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d, originating frame %p", this, m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+
+    if (m_numProgressTrackedFrames <= 0)
         return;
 
     long long estimatedLength = response.expectedContentLength();
@@ -154,6 +174,8 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
     if (!item)
         return;
 
+    RefPtr<LocalFrame> frame = m_originatingProgressFrame;
+
     unsigned bytesReceived = length;
     double increment, percentOfRemainingBytes;
     long long remainingBytes, estimatedBytesForPendingRequests;
@@ -164,7 +186,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
         item->estimatedLength = item->bytesReceived * 2;
     }
 
-    int numPendingOrLoadingRequests = m_frame->document()->fetcher()->requestCount();
+    int numPendingOrLoadingRequests = frame->loader().numPendingOrLoadingRequests(true);
     estimatedBytesForPendingRequests = progressItemDefaultEstimatedLength * numPendingOrLoadingRequests;
     remainingBytes = ((m_totalPageAndResourceBytesToLoad + estimatedBytesForPendingRequests) - m_totalBytesReceived);
     if (remainingBytes > 0)  // Prevent divide by 0.
@@ -173,7 +195,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
         percentOfRemainingBytes = 1.0;
 
     // For documents that use WebCore's layout system, treat first layout as the half-way point.
-    bool useClampedMaxProgress = !m_frame->view()->didFirstLayout();
+    bool useClampedMaxProgress = !frame->view()->didFirstLayout();
     double maxProgressValue = useClampedMaxProgress ? 0.5 : finalProgressValue;
     increment = (maxProgressValue - m_progressValue) * percentOfRemainingBytes;
     m_progressValue += increment;
@@ -185,13 +207,16 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
     double now = currentTime();
     double notifiedProgressTimeDelta = now - m_lastNotifiedProgressTime;
 
+    WTF_LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d", this, m_progressValue, m_numProgressTrackedFrames);
     double notificationProgressDelta = m_progressValue - m_lastNotifiedProgressValue;
-    if (notificationProgressDelta >= m_progressNotificationInterval || notifiedProgressTimeDelta >= m_progressNotificationTimeInterval) {
+    if ((notificationProgressDelta >= m_progressNotificationInterval ||
+         notifiedProgressTimeDelta >= m_progressNotificationTimeInterval) &&
+        m_numProgressTrackedFrames > 0) {
         if (!m_finalProgressChangedSent) {
             if (m_progressValue == 1)
                 m_finalProgressChangedSent = true;
 
-            m_frame->loader().client()->progressEstimateChanged(m_progressValue);
+            frame->loader().client()->postProgressEstimateChangedNotification();
 
             m_lastNotifiedProgressValue = m_progressValue;
             m_lastNotifiedProgressTime = now;

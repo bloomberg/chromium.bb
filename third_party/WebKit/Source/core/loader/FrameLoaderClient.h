@@ -122,9 +122,10 @@ namespace WebCore {
         virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
         virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;
 
-        virtual void didStartLoading(LoadStartType) = 0;
-        virtual void progressEstimateChanged(double progressEstimate) = 0;
-        virtual void didStopLoading() = 0;
+        // Maybe these should go into a ProgressTrackerClient some day
+        virtual void postProgressStartedNotification(LoadStartType) = 0;
+        virtual void postProgressEstimateChangedNotification() = 0;
+        virtual void postProgressFinishedNotification() = 0;
 
         virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
 

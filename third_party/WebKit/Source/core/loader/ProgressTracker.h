@@ -47,12 +47,13 @@ class ProgressTracker {
 public:
     ~ProgressTracker();
 
-    static PassOwnPtr<ProgressTracker> create(LocalFrame*);
+    static PassOwnPtr<ProgressTracker> create();
+    static unsigned long createUniqueIdentifier();
 
     double estimatedProgress() const;
 
-    void progressStarted();
-    void progressCompleted();
+    void progressStarted(LocalFrame*);
+    void progressCompleted(LocalFrame*);
 
     void incrementProgress(unsigned long identifier, const ResourceResponse&);
     void incrementProgress(unsigned long identifier, const char*, int);
@@ -62,12 +63,11 @@ public:
     long long totalBytesReceived() const { return m_totalBytesReceived; }
 
 private:
-    ProgressTracker(LocalFrame*);
+    ProgressTracker();
 
     void reset();
+    void finalProgressComplete();
 
-    LocalFrame* m_frame;
-    bool m_inProgress;
     long long m_totalPageAndResourceBytesToLoad;
     long long m_totalBytesReceived;
     double m_lastNotifiedProgressValue;
@@ -76,7 +76,9 @@ private:
     double m_progressNotificationTimeInterval;
     bool m_finalProgressChangedSent;
     double m_progressValue;
+    RefPtr<LocalFrame> m_originatingProgressFrame;
 
+    int m_numProgressTrackedFrames;
     HashMap<unsigned long, OwnPtr<ProgressItem> > m_progressItems;
 };
 

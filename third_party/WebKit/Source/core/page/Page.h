@@ -63,6 +63,7 @@ class PageLifecycleNotifier;
 class PlatformMouseEvent;
 class PluginData;
 class PointerLockController;
+class ProgressTracker;
 class Range;
 class RenderBox;
 class RenderObject;
@@ -160,6 +161,7 @@ public:
     PassRefPtr<ClientRectList> nonFastScrollableRects(const LocalFrame*);
 
     Settings& settings() const { return *m_settings; }
+    ProgressTracker& progress() const { return *m_progress; }
     BackForwardClient& backForward() const { return *m_backForwardClient; }
 
     UseCounter& useCounter() { return m_useCounter; }
@@ -250,6 +252,7 @@ private:
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     const OwnPtr<HistoryController> m_historyController;
+    const OwnPtr<ProgressTracker> m_progress;
     const OwnPtr<UndoStack> m_undoStack;
 
     RefPtr<LocalFrame> m_mainFrame;

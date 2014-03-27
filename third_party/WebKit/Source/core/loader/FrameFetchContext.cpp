@@ -159,26 +159,30 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceReq
 
 void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
-    m_frame->loader().progress().incrementProgress(identifier, r);
+    if (Page* page = m_frame->page())
+        page->progress().incrementProgress(identifier, r);
     m_frame->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
     InspectorInstrumentation::didReceiveResourceResponse(m_frame, identifier, ensureLoader(loader), r, resourceLoader);
 }
 
 void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, data, dataLength);
+    if (Page* page = m_frame->page())
+        page->progress().incrementProgress(identifier, data, dataLength);
     InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, 0, dataLength);
+    if (Page* page = m_frame->page())
+        page->progress().incrementProgress(identifier, 0, dataLength);
     InspectorInstrumentation::didReceiveData(m_frame, identifier, 0, dataLength, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime, int64_t encodedDataLength)
 {
-    m_frame->loader().progress().completeProgress(identifier);
+    if (Page* page = m_frame->page())
+        page->progress().completeProgress(identifier);
     m_frame->loader().client()->dispatchDidFinishLoading(loader, identifier);
 
     InspectorInstrumentation::didFinishLoading(m_frame, identifier, ensureLoader(loader), finishTime, encodedDataLength);
@@ -186,7 +190,8 @@ void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigne
 
 void FrameFetchContext::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
 {
-    m_frame->loader().progress().completeProgress(identifier);
+    if (Page* page = m_frame->page())
+        page->progress().completeProgress(identifier);
     InspectorInstrumentation::didFailLoading(m_frame, identifier, error);
 }
 

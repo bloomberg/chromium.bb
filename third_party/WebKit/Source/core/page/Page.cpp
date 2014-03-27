@@ -38,6 +38,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
+#include "core/loader/ProgressTracker.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -117,6 +118,7 @@ Page::Page(PageClients& pageClients)
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_historyController(adoptPtr(new HistoryController(this)))
+    , m_progress(ProgressTracker::create())
     , m_undoStack(UndoStack::create())
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)

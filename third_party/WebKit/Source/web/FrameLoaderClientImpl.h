@@ -98,9 +98,9 @@ public:
     virtual void dispatchWillRequestResource(WebCore::FetchRequest*) OVERRIDE;
     virtual void dispatchWillSendSubmitEvent(WebCore::HTMLFormElement*) OVERRIDE;
     virtual void dispatchWillSubmitForm(WebCore::HTMLFormElement*) OVERRIDE;
-    virtual void didStartLoading(WebCore::LoadStartType) OVERRIDE;
-    virtual void didStopLoading() OVERRIDE;
-    virtual void progressEstimateChanged(double progressEstimate) OVERRIDE;
+    virtual void postProgressStartedNotification(WebCore::LoadStartType) OVERRIDE;
+    virtual void postProgressEstimateChangedNotification() OVERRIDE;
+    virtual void postProgressFinishedNotification() OVERRIDE;
     virtual void loadURLExternally(const WebCore::ResourceRequest&, WebCore::NavigationPolicy, const String& suggestedName = String()) OVERRIDE;
     virtual bool navigateBackForward(int offset) const OVERRIDE;
     virtual void didAccessInitialDocument() OVERRIDE;

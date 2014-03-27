@@ -5042,9 +5042,9 @@ TEST_F(WebFrameTest, WebNodeImageContents)
 //    EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
 }
 
-class TestStartStopCallbackWebFrameClient : public WebFrameClient {
+class TestStartStopCallbackWebViewClient : public WebViewClient {
 public:
-    TestStartStopCallbackWebFrameClient()
+    TestStartStopCallbackWebViewClient()
         : m_startLoadingCount(0)
         , m_stopLoadingCount(0)
         , m_differentDocumentStartCount(0)
@@ -5076,9 +5076,9 @@ private:
 TEST_F(WebFrameTest, PushStateStartsAndStops)
 {
     registerMockedHttpURLLoad("push_state.html");
-    TestStartStopCallbackWebFrameClient client;
+    TestStartStopCallbackWebViewClient client;
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "push_state.html", true, &client);
+    webViewHelper.initializeAndLoad(m_baseURL + "push_state.html", true, 0, &client);
     runPendingTasks();
 
     EXPECT_EQ(client.startLoadingCount(), 2);

@@ -212,9 +212,9 @@ public:
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) OVERRIDE;
     virtual void dispatchWillSubmitForm(HTMLFormElement*) OVERRIDE;
 
-    virtual void didStartLoading(LoadStartType) OVERRIDE { }
-    virtual void progressEstimateChanged(double) OVERRIDE { }
-    virtual void didStopLoading() OVERRIDE { }
+    virtual void postProgressStartedNotification(LoadStartType) OVERRIDE { }
+    virtual void postProgressEstimateChangedNotification() OVERRIDE { }
+    virtual void postProgressFinishedNotification() OVERRIDE { }
 
     virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& = String()) OVERRIDE { }
 

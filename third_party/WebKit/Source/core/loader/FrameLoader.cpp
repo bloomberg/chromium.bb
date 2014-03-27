@@ -105,11 +105,48 @@ static bool needsHistoryItemRestore(FrameLoadType type)
     return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload || type == FrameLoadTypeReloadFromOrigin;
 }
 
+class FrameLoader::FrameProgressTracker {
+public:
+    static PassOwnPtr<FrameProgressTracker> create(LocalFrame* frame) { return adoptPtr(new FrameProgressTracker(frame)); }
+    ~FrameProgressTracker()
+    {
+        ASSERT(!m_inProgress || m_frame->page());
+        if (m_inProgress)
+            m_frame->page()->progress().progressCompleted(m_frame);
+    }
+
+    void progressStarted()
+    {
+        ASSERT(m_frame->page());
+        if (!m_inProgress)
+            m_frame->page()->progress().progressStarted(m_frame);
+        m_inProgress = true;
+    }
+
+    void progressCompleted()
+    {
+        ASSERT(m_inProgress);
+        ASSERT(m_frame->page());
+        m_inProgress = false;
+        m_frame->page()->progress().progressCompleted(m_frame);
+    }
+
+private:
+    FrameProgressTracker(LocalFrame* frame)
+        : m_frame(frame)
+        , m_inProgress(false)
+    {
+    }
+
+    LocalFrame* m_frame;
+    bool m_inProgress;
+};
+
 FrameLoader::FrameLoader(LocalFrame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
     , m_mixedContentChecker(frame)
-    , m_progressTracker(ProgressTracker::create(frame))
+    , m_progressTracker(FrameProgressTracker::create(m_frame))
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_fetchContext(FrameFetchContext::create(frame))
@@ -536,14 +573,14 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     // don't fire them for fragment redirection that happens in window.onload handler.
     // See https://bugs.webkit.org/show_bug.cgi?id=31838
     if (m_frame->document()->loadEventFinished())
-        m_client->didStartLoading(NavigationWithinSameDocument);
+        m_client->postProgressStartedNotification(NavigationWithinSameDocument);
 
     HistoryCommitType historyCommitType = updateBackForwardList == UpdateBackForwardList && m_currentItem ? StandardCommit : HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, data);
     m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
     if (m_frame->document()->loadEventFinished())
-        m_client->didStopLoading();
+        m_client->postProgressFinishedNotification();
 }
 
 void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy updateBackForwardList, ClientRedirectPolicy clientRedirect)
@@ -1048,6 +1085,17 @@ void FrameLoader::checkLoadComplete(DocumentLoader* documentLoader)
     if (documentLoader)
         documentLoader->checkLoadComplete();
     checkLoadComplete();
+}
+
+int FrameLoader::numPendingOrLoadingRequests(bool recurse) const
+{
+    if (!recurse)
+        return m_frame->document()->fetcher()->requestCount();
+
+    int count = 0;
+    for (LocalFrame* frame = m_frame; frame; frame = frame->tree().traverseNext(m_frame))
+        count += frame->document()->fetcher()->requestCount();
+    return count;
 }
 
 String FrameLoader::userAgent(const KURL& url) const

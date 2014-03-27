@@ -60,7 +60,6 @@ class FrameLoaderClient;
 class IconController;
 class NavigationAction;
 class Page;
-class ProgressTracker;
 class ResourceError;
 class ResourceResponse;
 class SecurityOrigin;
@@ -83,7 +82,6 @@ public:
     LocalFrame* frame() const { return m_frame; }
 
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
-    ProgressTracker& progress() const { return *m_progressTracker; }
 
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
@@ -112,6 +110,8 @@ public:
     void notifyIfInitialDocumentAccessed();
 
     bool isLoading() const;
+
+    int numPendingOrLoadingRequests(bool recurse) const;
 
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
@@ -238,7 +238,8 @@ private:
     mutable FrameLoaderStateMachine m_stateMachine;
     mutable MixedContentChecker m_mixedContentChecker;
 
-    OwnPtr<ProgressTracker> m_progressTracker;
+    class FrameProgressTracker;
+    OwnPtr<FrameProgressTracker> m_progressTracker;
 
     FrameState m_state;
     FrameLoadType m_loadType;
