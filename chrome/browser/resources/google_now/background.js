@@ -251,6 +251,29 @@ function recordEvent(event) {
 }
 
 /**
+ * Records a notification clicked event.
+ * @param {number|undefined} cardTypeId Card type ID.
+ */
+function recordNotificationClick(cardTypeId) {
+  if (cardTypeId !== undefined) {
+    chrome.metricsPrivate.recordSparseValue(
+        'GoogleNow.Card.Clicked', cardTypeId);
+  }
+}
+
+/**
+ * Records a button clicked event.
+ * @param {number|undefined} cardTypeId Card type ID.
+ * @param {number} buttonIndex Button Index
+ */
+function recordButtonClick(cardTypeId, buttonIndex) {
+  if (cardTypeId !== undefined) {
+    chrome.metricsPrivate.recordSparseValue(
+        'GoogleNow.Card.Button.Clicked' + buttonIndex, cardTypeId);
+  }
+}
+
+/**
  * Checks the result of the HTTP Request and updates the authentication
  * manager on any failure.
  * @param {string} token Authentication token to validate against an
@@ -803,9 +826,9 @@ function openUrl(url) {
  * Opens URL corresponding to the clicked part of the notification.
  * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID of
  *     the card.
- * @param {function((ActionUrls|undefined)): (string|undefined)} selector
- *     Function that extracts the url for the clicked area from the button
- *     action URLs info.
+ * @param {function(NotificationDataEntry): (string|undefined)} selector
+ *     Function that extracts the url for the clicked area from the
+ *     notification data entry.
  */
 function onNotificationClicked(chromeNotificationId, selector) {
   fillFromChromeLocalStorage({
@@ -813,11 +836,11 @@ function onNotificationClicked(chromeNotificationId, selector) {
     notificationsData: {}
   }).then(function(items) {
     /** @type {(NotificationDataEntry|undefined)} */
-    var notificationData = items.notificationsData[chromeNotificationId];
-    if (!notificationData)
+    var notificationDataEntry = items.notificationsData[chromeNotificationId];
+    if (!notificationDataEntry)
       return;
 
-    var url = selector(notificationData.actionUrls);
+    var url = selector(notificationDataEntry);
     if (!url)
       return;
 
@@ -1110,21 +1133,33 @@ authenticationManager.addListener(function() {
 instrumented.notifications.onClicked.addListener(
     function(chromeNotificationId) {
       chrome.metricsPrivate.recordUserAction('GoogleNow.MessageClicked');
-      onNotificationClicked(chromeNotificationId, function(actionUrls) {
-        return actionUrls && actionUrls.messageUrl;
-      });
-    });
+      onNotificationClicked(chromeNotificationId,
+          function(notificationDataEntry) {
+            var actionUrls = notificationDataEntry.actionUrls;
+            var url = actionUrls && actionUrls.messageUrl;
+            if (url) {
+              recordNotificationClick(notificationDataEntry.cardTypeId);
+            }
+            return url;
+          });
+        });
 
 instrumented.notifications.onButtonClicked.addListener(
     function(chromeNotificationId, buttonIndex) {
       chrome.metricsPrivate.recordUserAction(
           'GoogleNow.ButtonClicked' + buttonIndex);
-      onNotificationClicked(chromeNotificationId, function(actionUrls) {
-        var url = actionUrls.buttonUrls[buttonIndex];
-        verify(url !== undefined, 'onButtonClicked: no url for a button');
-        return url;
-      });
-    });
+      onNotificationClicked(chromeNotificationId,
+          function(notificationDataEntry) {
+            var actionUrls = notificationDataEntry.actionUrls;
+            var url = actionUrls.buttonUrls[buttonIndex];
+            if (url) {
+              recordButtonClick(notificationDataEntry.cardTypeId, buttonIndex);
+            } else {
+              verify(false, 'onButtonClicked: no url for a button');
+            }
+            return url;
+          });
+        });
 
 instrumented.notifications.onClosed.addListener(onNotificationClosed);
 

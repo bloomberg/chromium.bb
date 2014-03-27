@@ -60,7 +60,8 @@ var ChromeNotificationId;
  *   actionUrls: (ActionUrls|undefined),
  *   dismissal: Object,
  *   locationBased: (boolean|undefined),
- *   groupName: string
+ *   groupName: string,
+ *   cardTypeId: (number|undefined)
  * }}
  */
 var ReceivedNotification;
@@ -91,12 +92,13 @@ var CombinedCard;
  *
  * @typedef {{
  *   actionUrls: (ActionUrls|undefined),
+ *   cardTypeId: (number|undefined),
  *   timestamp: number,
  *   combinedCard: CombinedCard
  * }}
  *
  */
- var NotificationDataEntry;
+var NotificationDataEntry;
 
 /**
  * Names for tasks that can be created by the this file.
@@ -246,9 +248,11 @@ function buildCardSet() {
           winningCard.receivedNotification.actionUrls &&
           JSON.parse(JSON.stringify(
               winningCard.receivedNotification.actionUrls));
-
+      var winningCardTypeId = winningCard &&
+          winningCard.receivedNotification.cardTypeId;
       return {
         actionUrls: winningActionUrls,
+        cardTypeId: winningCardTypeId,
         timestamp: now,
         combinedCard: combinedCard
       };

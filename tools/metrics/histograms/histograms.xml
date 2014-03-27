@@ -7083,6 +7083,24 @@ other types of suffix sets.
   <summary>Http response codes in NetworkLocationRequest.</summary>
 </histogram>
 
+<histogram name="GoogleNow.Card.Button.Clicked0" enum="GoogleNowCardTypeId">
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <summary>Types of cards which received an index 0 button click.</summary>
+</histogram>
+
+<histogram name="GoogleNow.Card.Button.Clicked1" enum="GoogleNowCardTypeId">
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <summary>Types of cards which received an index 1 button click.</summary>
+</histogram>
+
+<histogram name="GoogleNow.Card.Clicked" enum="GoogleNowCardTypeId">
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <summary>Types of cards which received a notification click.</summary>
+</histogram>
+
 <histogram name="GoogleNow.Event" enum="GoogleNowEvent">
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
@@ -33599,6 +33617,13 @@ other types of suffix sets.
   <int value="4" label="CANT_CREATE_DIR"/>
   <int value="5" label="CANT_WRITE_TO_PATH"/>
   <int value="6" label="UNSET"/>
+</enum>
+
+<enum name="GoogleNowCardTypeId" type="int">
+  <summary>
+    Represents a card type ID. See cardTypeId in
+    chrome/browser/resources/google_now/background.js.
+  </summary>
 </enum>
 
 <enum name="GoogleNowEvent" type="int">

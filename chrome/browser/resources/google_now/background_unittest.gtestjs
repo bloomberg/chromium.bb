@@ -480,8 +480,10 @@ TEST_F(
       expectChromeLocalStorageGet(
           this, testNotificationDataRequest, testNotificationData);
 
-      this.mockLocalFunctions.expects(once()).selector(undefined).will(
-          returnValue(undefined));
+      this.mockLocalFunctions.expects(once())
+          .selector(eqJSON(
+              testNotificationData.notificationsData[testNotificationId]))
+          .will(returnValue(undefined));
 
       // Invoking the tested function.
       onNotificationClicked(
@@ -509,8 +511,10 @@ TEST_F(
 
       expectChromeLocalStorageGet(
           this, testNotificationDataRequest, testNotificationData);
-      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
-          returnValue(testActionUrl));
+      this.mockLocalFunctions.expects(once())
+          .selector(eqJSON(
+              testNotificationData.notificationsData[testNotificationId]))
+          .will(returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
           instrumented_tabs_create(
@@ -549,8 +553,10 @@ TEST_F(
 
       expectChromeLocalStorageGet(
           this, testNotificationDataRequest, testNotificationData);
-      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
-          returnValue(testActionUrl));
+      this.mockLocalFunctions.expects(once())
+          .selector(eqJSON(
+              testNotificationData.notificationsData[testNotificationId]))
+          .will(returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
           instrumented_tabs_create(
