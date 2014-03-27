@@ -141,9 +141,8 @@ static bool IsTemplateInstantiation(CXXRecordDecl* record) {
     // TODO: unsupported cases.
     case TSK_ExplicitInstantiationDeclaration:
       return false;
-    default:
-      assert(false && "Unknown template specialization kind");
   }
+  assert(false && "Unknown template specialization kind");
 }
 
 // This visitor collects the entry points for the checker.
@@ -189,8 +188,8 @@ class CheckFinalizerVisitor
    public:
     MightBeCollectedVisitor() : might_be_collected_(false) {}
     bool might_be_collected() { return might_be_collected_; }
-    void VisitMember(Member* edge) { might_be_collected_ = true; }
-    void VisitCollection(Collection* edge) {
+    void VisitMember(Member* edge) override { might_be_collected_ = true; }
+    void VisitCollection(Collection* edge) override {
       if (edge->on_heap()) {
         might_be_collected_ = !edge->is_root();
       } else {
@@ -267,7 +266,7 @@ class CheckFinalizerVisitor
 class CheckDispatchVisitor : public RecursiveASTVisitor<CheckDispatchVisitor> {
  public:
   CheckDispatchVisitor(RecordInfo* receiver)
-      : receiver_(receiver), dispatched_to_receiver_(false) { }
+      : receiver_(receiver), dispatched_to_receiver_(false) {}
 
   bool dispatched_to_receiver() { return dispatched_to_receiver_; }
 
@@ -399,7 +398,7 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
     return !gc_roots_.empty();
   }
 
-  void VisitValue(Value* edge) {
+  void VisitValue(Value* edge) override {
     // TODO: what should we do to check unions?
     if (edge->value()->record()->isUnion())
       return;
@@ -414,11 +413,11 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
     ContainsGCRoots(edge->value());
   }
 
-  void VisitPersistent(Persistent* edge) {
+  void VisitPersistent(Persistent* edge) override {
     gc_roots_.push_back(current_);
   }
 
-  void AtCollection(Collection* edge) {
+  void AtCollection(Collection* edge) override {
     if (edge->is_root())
       gc_roots_.push_back(current_);
   }
@@ -469,7 +468,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     invalid_fields_.push_back(std::make_pair(current_, edge));
   }
 
-  void VisitValue(Value* edge) {
+  void VisitValue(Value* edge) override {
     // TODO: what should we do to check unions?
     if (edge->value()->record()->isUnion())
       return;
@@ -530,9 +529,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresTracing);
     diag_fields_require_tracing_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
-    diag_class_contains_invalid_fields_ =
-        diagnostic_.getCustomDiagID(getErrorLevel(),
-                                    kClassContainsInvalidFields);
+    diag_class_contains_invalid_fields_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kClassContainsInvalidFields);
     diag_class_contains_gc_root_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
     diag_class_requires_finalization_ = diagnostic_.getCustomDiagID(
@@ -545,14 +543,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         getErrorLevel(), kMissingTraceDispatchMethod);
     diag_missing_finalize_dispatch_method_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kMissingFinalizeDispatchMethod);
-    diag_virtual_and_manual_dispatch_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kVirtualAndManualDispatch);
-    diag_missing_trace_dispatch_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kMissingTraceDispatch);
-    diag_missing_finalize_dispatch_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kMissingFinalizeDispatch);
-    diag_derives_non_stack_allocated_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kDerivesNonStackAllocated);
+    diag_virtual_and_manual_dispatch_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kVirtualAndManualDispatch);
+    diag_missing_trace_dispatch_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kMissingTraceDispatch);
+    diag_missing_finalize_dispatch_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kMissingFinalizeDispatch);
+    diag_derives_non_stack_allocated_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kDerivesNonStackAllocated);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -587,7 +585,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kManualDispatchMethodNote);
   }
 
-  virtual void HandleTranslationUnit(ASTContext& context) {
+  void HandleTranslationUnit(ASTContext& context) override {
     CollectVisitor visitor;
     visitor.TraverseDecl(context.getTranslationUnitDecl());
 
@@ -705,9 +703,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (!trace_dispatch && !finalize_dispatch)
       return;
 
-    CXXRecordDecl* base = trace_dispatch ?
-                          trace_dispatch->getParent() :
-                          finalize_dispatch->getParent();
+    CXXRecordDecl* base = trace_dispatch ? trace_dispatch->getParent()
+                                         : finalize_dispatch->getParent();
 
     // Check that dispatch methods are defined at the base.
     if (base == info->record()) {
@@ -867,7 +864,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   void DumpClass(RecordInfo* info) {
-    if (!json_) return;
+    if (!json_)
+      return;
 
     json_->OpenObject();
     json_->Write("name", info->record()->getQualifiedNameAsString());
@@ -876,7 +874,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
     class DumpEdgeVisitor : public RecursiveEdgeVisitor {
      public:
-      DumpEdgeVisitor(JsonWriter* json) : json_(json) { }
+      DumpEdgeVisitor(JsonWriter* json) : json_(json) {}
       void DumpEdge(RecordInfo* src,
                     RecordInfo* dst,
                     const string& lbl,
@@ -898,7 +896,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         point_->edge()->Accept(this);
       }
 
-      void AtValue(Value* e) {
+      void AtValue(Value* e) override {
         // The liveness kind of a path from the point to this value
         // is given by the innermost place that is non-strong.
         Edge::LivenessKind kind = Edge::kStrong;
@@ -915,11 +913,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
             }
           }
         }
-        DumpEdge(src_,
-                 e->value(),
-                 point_->field()->getNameAsString(),
-                 kind,
-                 loc_);
+        DumpEdge(
+            src_, e->value(), point_->field()->getNameAsString(), kind, loc_);
       }
 
      private:
@@ -1140,8 +1135,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, diag_overridden_non_virtual_trace_)
-        << info->record()
-        << overridden->getParent();
+        << info->record() << overridden->getParent();
     NoteOverriddenNonVirtualTrace(overridden);
   }
 
@@ -1181,8 +1175,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   void ReportMissingDispatch(const FunctionDecl* dispatch,
-                               RecordInfo* receiver,
-                               unsigned error) {
+                             RecordInfo* receiver,
+                             unsigned error) {
     SourceLocation loc = dispatch->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);

@@ -38,14 +38,14 @@ class EdgeVisitor {
 class RecursiveEdgeVisitor : public EdgeVisitor {
  public:
   // Overrides that recursively walk the edges and record the path.
-  virtual void VisitValue(Value*);
-  virtual void VisitRawPtr(RawPtr*);
-  virtual void VisitRefPtr(RefPtr*);
-  virtual void VisitOwnPtr(OwnPtr*);
-  virtual void VisitMember(Member*);
-  virtual void VisitWeakMember(WeakMember*);
-  virtual void VisitPersistent(Persistent*);
-  virtual void VisitCollection(Collection*);
+  virtual void VisitValue(Value*) override;
+  virtual void VisitRawPtr(RawPtr*) override;
+  virtual void VisitRefPtr(RefPtr*) override;
+  virtual void VisitOwnPtr(OwnPtr*) override;
+  virtual void VisitMember(Member*) override;
+  virtual void VisitWeakMember(WeakMember*) override;
+  virtual void VisitPersistent(Persistent*) override;
+  virtual void VisitCollection(Collection*) override;
 
  protected:
   typedef std::deque<Edge*> Context;
@@ -74,7 +74,7 @@ class Edge {
   enum NeedsTracingOption { kRecursive, kNonRecursive };
   enum LivenessKind { kWeak, kStrong, kRoot };
 
-  virtual ~Edge() { }
+  virtual ~Edge() {}
   virtual LivenessKind Kind() = 0;
   virtual void Accept(EdgeVisitor*) = 0;
   virtual bool NeedsFinalization() = 0;
@@ -96,12 +96,13 @@ class Edge {
 class Value : public Edge {
  public:
   explicit Value(RecordInfo* value) : value_(value) {};
-  bool IsValue() { return true; }
-  LivenessKind Kind() { return kStrong; }
-  bool NeedsFinalization();
-  TracingStatus NeedsTracing(NeedsTracingOption);
-  void Accept(EdgeVisitor* visitor) { visitor->VisitValue(this); }
+  bool IsValue() override { return true; }
+  LivenessKind Kind() override { return kStrong; }
+  bool NeedsFinalization() override;
+  TracingStatus NeedsTracing(NeedsTracingOption) override;
+  void Accept(EdgeVisitor* visitor) override { visitor->VisitValue(this); }
   RecordInfo* value() { return value_; }
+
  private:
   RecordInfo* value_;
 };
@@ -228,6 +229,7 @@ class Collection : public Edge {
     }
     return status;
   }
+
  private:
   RecordInfo* info_;
   Members members_;
@@ -235,4 +237,4 @@ class Collection : public Edge {
   bool is_root_;
 };
 
-#endif // TOOLS_BLINK_GC_PLUGIN_EDGE_H_
+#endif  // TOOLS_BLINK_GC_PLUGIN_EDGE_H_

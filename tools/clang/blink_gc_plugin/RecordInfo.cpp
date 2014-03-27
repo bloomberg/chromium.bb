@@ -144,7 +144,7 @@ RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {
   if (it != cache_.end())
     return &it->second;
   return &cache_.insert(std::make_pair(record, RecordInfo(record, this)))
-      .first->second;
+              .first->second;
 }
 
 bool RecordInfo::IsStackAllocated() {
@@ -320,8 +320,8 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
     if (Config::IsIgnoreAnnotated(field))
       continue;
     if (Edge* edge = CreateEdge(field->getType().getTypePtrOrNull())) {
-      fields->insert(std::make_pair(field, FieldPoint(field, edge)));
       fields_status = fields_status.LUB(edge->NeedsTracing(Edge::kRecursive));
+      fields->insert(std::make_pair(field, FieldPoint(field, edge)));
     }
   }
   fields_need_tracing_ = fields_status;
@@ -347,7 +347,7 @@ void RecordInfo::DetermineTracingMethods() {
         trace = *it;
       }
     } else if (it->getNameAsString() == kFinalizeName) {
-        finalize_dispatch_method_ = *it;
+      finalize_dispatch_method_ = *it;
     }
   }
   if (traceAfterDispatch) {
@@ -369,7 +369,7 @@ void RecordInfo::DetermineTracingMethods() {
       trace_dispatch_method_ = dispatch;
     }
     if (CXXMethodDecl* dispatch =
-        it->second.info()->GetFinalizeDispatchMethod()) {
+            it->second.info()->GetFinalizeDispatchMethod()) {
       assert(!finalize_dispatch_method_ &&
              "Multiple finalize dispatching methods");
       finalize_dispatch_method_ = dispatch;
