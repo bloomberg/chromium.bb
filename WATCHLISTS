@@ -733,7 +733,7 @@
                      'eugenis+clang@chromium.org',
                      'glider+clang@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
-    'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
+    'content': ['jam@chromium.org',
                 'darin-cc@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
