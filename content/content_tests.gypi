@@ -993,6 +993,7 @@
           ],
           'sources': [
             'app/mojo/mojo_browsertest.cc',
+            'browser/accessibility/accessibility_mode_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',

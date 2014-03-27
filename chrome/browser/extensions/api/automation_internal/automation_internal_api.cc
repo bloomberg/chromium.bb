@@ -214,10 +214,9 @@ bool AutomationInternalEnableCurrentTabFunction::RunImpl() {
   if (!rwh)
     return false;
 
-  // TODO(aboxhall): observe WebContents here - add to map??
   AutomationWebContentsObserver::CreateForWebContents(contents);
 
-  rwh->EnableFullAccessibilityMode();
+  rwh->EnableTreeOnlyAccessibilityMode();
 
   results_ = api::automation_internal::EnableCurrentTab::Results::Create(
       rwh->GetRoutingID());

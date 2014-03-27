@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/frame_messages.h"
+#include "content/common/view_message_enums.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
 #include "content/renderer/render_view_impl.h"
@@ -71,7 +72,7 @@ class RendererAccessibilityTest : public RenderViewTest {
     sink_ = &render_thread_->sink();
   }
 
-  void SetMode(unsigned int mode) {
+  void SetMode(AccessibilityMode mode) {
     view()->OnSetAccessibilityMode(mode);
   }
 

@@ -28,6 +28,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
+#include "content/renderer/accessibility/renderer_accessibility.h"
+#include "content/renderer/accessibility/renderer_accessibility_complete.h"
+#include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -2325,6 +2328,33 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());
+}
+
+TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
+  ASSERT_EQ(AccessibilityModeOff, view()->accessibility_mode());
+  ASSERT_EQ((RendererAccessibility*) NULL, view()->renderer_accessibility());
+
+  view()->OnSetAccessibilityMode(AccessibilityModeTreeOnly);
+  ASSERT_EQ(AccessibilityModeTreeOnly, view()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  ASSERT_EQ(RendererAccessibilityTypeComplete,
+            view()->renderer_accessibility()->GetType());
+
+  view()->OnSetAccessibilityMode(AccessibilityModeOff);
+  ASSERT_EQ(AccessibilityModeOff, view()->accessibility_mode());
+  ASSERT_EQ((RendererAccessibility*) NULL, view()->renderer_accessibility());
+
+  view()->OnSetAccessibilityMode(AccessibilityModeComplete);
+  ASSERT_EQ(AccessibilityModeComplete, view()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  ASSERT_EQ(RendererAccessibilityTypeComplete,
+            view()->renderer_accessibility()->GetType());
+
+  view()->OnSetAccessibilityMode(AccessibilityModeEditableTextOnly);
+  ASSERT_EQ(AccessibilityModeEditableTextOnly, view()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  ASSERT_EQ(RendererAccessibilityTypeFocusOnly,
+            view()->renderer_accessibility()->GetType());
 }
 
 }  // namespace content

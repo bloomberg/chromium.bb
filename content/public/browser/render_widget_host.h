@@ -206,6 +206,15 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Send a command to the renderer to turn on full accessibility.
   virtual void EnableFullAccessibilityMode() = 0;
 
+  // Check whether this RenderWidget has full accessibility mode.
+  virtual bool IsFullAccessibilityModeForTesting() = 0;
+
+  // Send a command to the renderer to turn on tree only accessibility.
+  virtual void EnableTreeOnlyAccessibilityMode() = 0;
+
+  // Check whether this RenderWidget has tree-only accessibility mode.
+  virtual bool IsTreeOnlyAccessibilityModeForTesting() = 0;
+
   // Forwards the given message to the renderer. These are called by
   // the view when it has received a message.
   virtual void ForwardMouseEvent(

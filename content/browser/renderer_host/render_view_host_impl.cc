@@ -1766,16 +1766,16 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 
 void RenderViewHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  if ((accessibility_mode() & AccessibilityModeFlagPlatform) && view_ &&
+  if ((accessibility_mode() != AccessibilityModeOff) && view_ &&
       IsRVHStateActive(rvh_state_)) {
-    view_->CreateBrowserAccessibilityManagerIfNeeded();
-    BrowserAccessibilityManager* manager =
-        view_->GetBrowserAccessibilityManager();
-    if (manager)
-      manager->OnAccessibilityEvents(params);
+    if (accessibility_mode() & AccessibilityModeFlagPlatform) {
+      view_->CreateBrowserAccessibilityManagerIfNeeded();
+      BrowserAccessibilityManager* manager =
+          view_->GetBrowserAccessibilityManager();
+      if (manager)
+        manager->OnAccessibilityEvents(params);
+    }
 
-    // TODO(aboxhall, dtseng): Only send notification when accessibility mode
-    // extension enabled.
     std::vector<AXEventNotificationDetails> details;
     for (unsigned int i = 0; i < params.size(); ++i) {
       const AccessibilityHostMsg_EventParams& param = params[i];
@@ -1812,11 +1812,14 @@ void RenderViewHostImpl::OnAccessibilityEvents(
 void RenderViewHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
   if (view_ && IsRVHStateActive(rvh_state_)) {
-    view_->CreateBrowserAccessibilityManagerIfNeeded();
-    BrowserAccessibilityManager* manager =
-        view_->GetBrowserAccessibilityManager();
-    if (manager)
-      manager->OnLocationChanges(params);
+    if (accessibility_mode() & AccessibilityModeFlagPlatform) {
+      view_->CreateBrowserAccessibilityManagerIfNeeded();
+      BrowserAccessibilityManager* manager =
+          view_->GetBrowserAccessibilityManager();
+      if (manager)
+        manager->OnLocationChanges(params);
+    }
+    // TODO(aboxhall): send location change events to web contents observers too
   }
 }
 

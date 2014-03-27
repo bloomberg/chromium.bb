@@ -20,6 +20,7 @@ AccessibilityMode CastToAccessibilityMode(unsigned int int_mode) {
   case AccessibilityModeOff:
   case AccessibilityModeComplete:
   case AccessibilityModeEditableTextOnly:
+  case AccessibilityModeTreeOnly:
     return mode;
   }
   DCHECK(false) << "Could not convert to AccessibilityMode: " << int_mode;

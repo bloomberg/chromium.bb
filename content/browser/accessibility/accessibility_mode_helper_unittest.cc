@@ -30,6 +30,10 @@ TEST(AccessibilityModeHelperTest, TestAddMode) {
       AccessibilityModeComplete,
       AddAccessibilityModeTo(AccessibilityModeEditableTextOnly,
                              AccessibilityModeComplete));
+  EXPECT_EQ(
+      AccessibilityModeComplete,
+      AddAccessibilityModeTo(AccessibilityModeEditableTextOnly,
+                             AccessibilityModeTreeOnly));
 }
 
 }  // namespace content

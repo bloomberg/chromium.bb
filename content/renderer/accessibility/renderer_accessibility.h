@@ -16,6 +16,18 @@ class WebDocument;
 namespace content {
 class RenderViewImpl;
 
+enum RendererAccessibilityType {
+  // Turns on Blink accessibility and provides a full accessibility
+  // implementation for when assistive technology is running.
+  RendererAccessibilityTypeComplete,
+
+  // Does not turn on Blink accessibility. Only sends a minimal accessible tree
+  // to the browser whenever focus changes. This mode is currently used to
+  // support opening the on-screen keyboard in response to touch events on
+  // Windows 8 in Metro mode.
+  RendererAccessibilityTypeFocusOnly
+};
+
 // The browser process implement native accessibility APIs, allowing
 // assistive technology (e.g., screen readers, magnifiers) to access and
 // control the web contents with high-level APIs. These APIs are also used
@@ -36,26 +48,28 @@ class RenderViewImpl;
 // This base class just contains common code and will not do anything by itself.
 // The two subclasses are:
 //
-//   RendererAccessibilityComplete - turns on WebKit accessibility and
+//   RendererAccessibilityComplete - turns on Blink accessibility and
 //       provides a full accessibility implementation for when
 //       assistive technology is running.
 //
-//   RendererAccessibilityFocusOnly - does not turn on WebKit
+//   RendererAccessibilityFocusOnly - does not turn on Blink
 //       accessibility. Only sends a minimal accessible tree to the
 //       browser whenever focus changes. This mode is currently used
 //       to support opening the on-screen keyboard in response to
 //       touch events on Windows 8 in Metro mode.
-//
-// What both subclasses have in common is that they are responsible for
 //
 class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
  public:
   explicit RendererAccessibility(RenderViewImpl* render_view);
   virtual ~RendererAccessibility();
 
-  // Called when an accessibility notification occurs in WebKit.
+  // Called when an accessibility notification occurs in Blink.
   virtual void HandleWebAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event) = 0;
+
+  // Gets the type of this RendererAccessibility object. Primarily intended for
+  // testing.
+  virtual RendererAccessibilityType GetType() = 0;
 
  protected:
   // Returns the main top-level document for this page, or NULL if there's

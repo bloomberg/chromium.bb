@@ -28,7 +28,7 @@ class RenderViewImpl;
 // complete accessibility support for assistive technology (as opposed to
 // partial support - see RendererAccessibilityFocusOnly).
 //
-// This version turns on WebKit's accessibility code and sends
+// This version turns on Blink's accessibility code and sends
 // a serialized representation of that tree whenever it changes. It also
 // handles requests from the browser to perform accessibility actions on
 // nodes in the tree (e.g., change focus, or click on a button).
@@ -46,6 +46,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // RendererAccessibility.
   virtual void HandleWebAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event) OVERRIDE;
+  virtual RendererAccessibilityType GetType() OVERRIDE;
 
   void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
 
@@ -96,10 +97,10 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
   void OnFatalError();
 
-  // Checks if a WebKit accessibility object is an editable text node.
+  // Checks if a Blink accessibility object is an editable text node.
   bool IsEditableText(const blink::WebAXObject& node);
 
-  // Recursively explore the tree of WebKit accessibility objects rooted
+  // Recursively explore the tree of Blink accessibility objects rooted
   // at |src|, and for each editable text node encountered, add a
   // corresponding WebAccessibility node as a child of |dst|.
   void RecursiveAddEditableTextNodesToTree(
@@ -107,7 +108,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
       ui::AXNodeData* dst);
 
   // Build a tree of serializable ui::AXNodeData nodes to send to the
-  // browser process, given a WebAXObject node from WebKit.
+  // browser process, given a WebAXObject node from Blink.
   // Modifies |dst| in-place, it's assumed to be empty.
   void BuildAccessibilityTree(const blink::WebAXObject& src,
                               bool include_children,
@@ -116,7 +117,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
 
-  // Events from WebKit are collected until they are ready to be
+  // Events from Blink are collected until they are ready to be
   // sent to the browser.
   std::vector<AccessibilityHostMsg_EventParams> pending_events_;
 

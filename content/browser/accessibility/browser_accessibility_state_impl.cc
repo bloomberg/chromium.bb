@@ -63,11 +63,14 @@ BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
 }
 
 void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
-  AddAccessibilityMode(AccessibilityModeComplete);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    return;
+  }
+  EnableAccessibility();
 }
 
 void BrowserAccessibilityStateImpl::EnableAccessibility() {
-  // We may want to do something different with this later.
   AddAccessibilityMode(AccessibilityModeComplete);
 }
 

@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool hidden,
                                 int32 next_page_id,
                                 const blink::WebScreenInfo& screen_info,
-                                unsigned int accessibility_mode);
+                                AccessibilityMode accessibility_mode);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
@@ -229,6 +229,10 @@ class CONTENT_EXPORT RenderViewImpl
 
   MediaStreamDispatcher* media_stream_dispatcher() {
     return media_stream_dispatcher_;
+  }
+
+  AccessibilityMode accessibility_mode() {
+    return accessibility_mode_;
   }
 
   RendererAccessibility* renderer_accessibility() {
@@ -778,6 +782,7 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnHandleKeyboardEvent);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnImeTypeChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetAccessibilityMode);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
@@ -929,7 +934,7 @@ class CONTENT_EXPORT RenderViewImpl
                            const base::string16& jscript,
                            int id,
                            bool notify_result);
-  void OnSetAccessibilityMode(unsigned int new_mode);
+  void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetBackground(const SkBitmap& background);
   void OnSetCompositionFromExistingText(
@@ -1310,7 +1315,7 @@ class CONTENT_EXPORT RenderViewImpl
   DevToolsAgent* devtools_agent_;
 
   // The current accessibility mode.
-  unsigned int accessibility_mode_;
+  AccessibilityMode accessibility_mode_;
 
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.

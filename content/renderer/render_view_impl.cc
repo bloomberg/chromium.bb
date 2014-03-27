@@ -929,7 +929,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool hidden,
     int32 next_page_id,
     const blink::WebScreenInfo& screen_info,
-    unsigned int accessibility_mode) {
+    AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(opener_id,
                               renderer_prefs,
@@ -4027,7 +4027,7 @@ void RenderViewImpl::OnSetBackground(const SkBitmap& background) {
   SetBackground(background);
 }
 
-void RenderViewImpl::OnSetAccessibilityMode(unsigned int new_mode) {
+void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
   if (accessibility_mode_ == new_mode)
     return;
   accessibility_mode_ = new_mode;
@@ -4038,7 +4038,7 @@ void RenderViewImpl::OnSetAccessibilityMode(unsigned int new_mode) {
   if (accessibility_mode_ == AccessibilityModeOff)
     return;
 
-  if (accessibility_mode_ & AccessibilityModeFlagPlatformFullTree)
+  if (accessibility_mode_ & AccessibilityModeFlagFullTree)
     renderer_accessibility_ = new RendererAccessibilityComplete(this);
 #if !defined(OS_ANDROID)
   else

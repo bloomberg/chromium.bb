@@ -93,7 +93,7 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
 
   if (node.isNull()) {
     // When focus is cleared, implicitly focus the document.
-    // TODO(dmazzoni): Make WebKit send this notification instead.
+    // TODO(dmazzoni): Make Blink send this notification instead.
     HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_BLUR);
   }
 }
@@ -104,7 +104,7 @@ void RendererAccessibilityComplete::DidFinishLoad(blink::WebFrame* frame) {
     return;
 
   // Check to see if the root accessibility object has changed, to work
-  // around WebKit bugs that cause AXObjectCache to be cleared
+  // around Blink bugs that cause AXObjectCache to be cleared
   // unnecessarily.
   // TODO(dmazzoni): remove this once rdar://5794454 is fixed.
   WebAXObject new_root = document.accessibilityObject();
@@ -165,6 +165,10 @@ void RendererAccessibilityComplete::HandleAXEvent(
   }
 }
 
+RendererAccessibilityType RendererAccessibilityComplete::GetType() {
+  return RendererAccessibilityTypeComplete;
+}
+
 RendererAccessibilityComplete::BrowserTreeNode::BrowserTreeNode() : id(0) {}
 
 RendererAccessibilityComplete::BrowserTreeNode::~BrowserTreeNode() {}
@@ -189,7 +193,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
       pending_events_;
   pending_events_.clear();
 
-  // Generate an event message from each WebKit event.
+  // Generate an event message from each Blink event.
   std::vector<AccessibilityHostMsg_EventParams> event_msgs;
 
   // Loop over each event and generate an updated event message.
@@ -202,7 +206,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     if (!obj.updateBackingStoreAndCheckValidity())
       continue;
 
-    // When we get a "selected children changed" event, WebKit
+    // When we get a "selected children changed" event, Blink
     // doesn't also send us events for each child that changed
     // selection state, so make sure we re-send that whole subtree.
     if (event.event_type ==
@@ -268,7 +272,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
       }
     }
 
-    // Allow WebKit to cache intermediate results since we're doing a bunch
+    // Allow Blink to cache intermediate results since we're doing a bunch
     // of read-only queries at once.
     root_object.startCachingComputedObjectAttributesUntilTreeMutates();
 
@@ -392,7 +396,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
 
       BrowserTreeNode* child = browser_id_map_[new_child_id];
       if (child && child->parent != browser_node) {
-        // The child is being reparented. Find the WebKit accessibility
+        // The child is being reparented. Find the Blink accessibility
         // object corresponding to the old parent, or the closest ancestor
         // still in the tree.
         BrowserTreeNode* parent = child->parent;

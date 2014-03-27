@@ -40,6 +40,10 @@ void RendererAccessibilityFocusOnly::HandleWebAccessibilityEvent(
   // Do nothing.
 }
 
+RendererAccessibilityType RendererAccessibilityFocusOnly::GetType() {
+  return RendererAccessibilityTypeFocusOnly;
+}
+
 void RendererAccessibilityFocusOnly::FocusedNodeChanged(const WebNode& node) {
   // Send the new accessible tree and post a native focus event.
   HandleFocusedNodeChanged(node, true);
@@ -69,7 +73,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   bool node_is_editable_text;
   // Check HasIMETextFocus first, because it will correctly handle
   // focus in a text box inside a ppapi plug-in. Otherwise fall back on
-  // checking the focused node in WebKit.
+  // checking the focused node in Blink.
   if (render_view_->HasIMETextFocus()) {
     node_has_focus = true;
     node_is_editable_text = true;
