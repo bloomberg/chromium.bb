@@ -2,7 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/unformatted.js"></script>
+<script src="resources/unformatted2.js"></script>
 <script>
 var test = function()
 {
@@ -15,7 +15,7 @@ var test = function()
     InspectorTest.runDebuggerTestSuite([
         function testBreakpointsSetInFormattedAndRemoveInOriginalSource(next)
         {
-            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
+            InspectorTest.showScriptSource("unformatted2.js", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
