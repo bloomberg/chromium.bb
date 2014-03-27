@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"

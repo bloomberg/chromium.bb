@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"

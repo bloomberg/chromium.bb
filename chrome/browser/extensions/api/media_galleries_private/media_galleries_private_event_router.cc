@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 #include "content/public/browser/browser_thread.h"

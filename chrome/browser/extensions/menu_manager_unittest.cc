@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
@@ -586,15 +585,14 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   {
     InSequence s;
     EXPECT_CALL(*mock_event_router,
-                DispatchEventToExtensionMock(
-                    item->extension_id(),
-                    extensions::event_names::kOnContextMenus,
-                    _,
-                    &profile,
-                    GURL(),
-                    EventRouter::USER_GESTURE_ENABLED))
-      .Times(1)
-      .WillOnce(SaveArg<2>(&list));
+                DispatchEventToExtensionMock(item->extension_id(),
+                                             MenuManager::kOnContextMenus,
+                                             _,
+                                             &profile,
+                                             GURL(),
+                                             EventRouter::USER_GESTURE_ENABLED))
+        .Times(1)
+        .WillOnce(SaveArg<2>(&list));
     EXPECT_CALL(*mock_event_router,
               DispatchEventToExtensionMock(
                   item->extension_id(),

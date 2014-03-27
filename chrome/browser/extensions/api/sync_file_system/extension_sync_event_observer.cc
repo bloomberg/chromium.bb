@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"

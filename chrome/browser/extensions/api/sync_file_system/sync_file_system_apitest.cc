@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"

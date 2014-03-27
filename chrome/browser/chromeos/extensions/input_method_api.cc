@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -62,10 +61,14 @@ bool StartImeFunction::RunImpl() {
 #endif
 }
 
+// static
+const char InputMethodAPI::kOnInputMethodChanged[] =
+    "inputMethodPrivate.onChanged";
+
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
-  ExtensionSystem::Get(context_)->event_router()->
-      RegisterObserver(this, event_names::kOnInputMethodChanged);
+  ExtensionSystem::Get(context_)->event_router()->RegisterObserver(
+      this, kOnInputMethodChanged);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<GetInputMethodFunction>();

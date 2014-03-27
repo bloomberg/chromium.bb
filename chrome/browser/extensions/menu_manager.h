@@ -269,6 +269,9 @@ class MenuManager : public content::NotificationObserver,
                     public base::SupportsWeakPtr<MenuManager>,
                     public KeyedService {
  public:
+  static const char kOnContextMenus[];
+  static const char kOnWebviewContextMenus[];
+
   MenuManager(Profile* profile, StateStore* store_);
   virtual ~MenuManager();
 

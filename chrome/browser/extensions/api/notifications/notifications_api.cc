@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -144,10 +143,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   virtual void Display() OVERRIDE { }
 
-  virtual void Error() OVERRIDE {
-    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    SendEvent(event_names::kOnNotificationError, args.Pass());
-  }
+  virtual void Error() OVERRIDE {}
 
   virtual void Close(bool by_user) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());

@@ -50,6 +50,8 @@ class StartImeFunction : public SyncExtensionFunction {
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:
+  static const char kOnInputMethodChanged[];
+
   explicit InputMethodAPI(content::BrowserContext* context);
   virtual ~InputMethodAPI();
 

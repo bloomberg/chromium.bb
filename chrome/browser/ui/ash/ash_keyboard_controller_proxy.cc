@@ -7,7 +7,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"

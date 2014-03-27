@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
@@ -297,6 +296,10 @@ bool MenuItem::PopulateURLPatterns(
   }
   return true;
 }
+
+// static
+const char MenuManager::kOnContextMenus[] = "contextMenus";
+const char MenuManager::kOnWebviewContextMenus[] = "webview.contextMenus";
 
 MenuManager::MenuManager(Profile* profile, StateStore* store)
     : profile_(profile), store_(store) {
@@ -699,8 +702,8 @@ void MenuManager::ExecuteCommand(Profile* profile,
   {
     // Dispatch to menu item's .onclick handler.
     scoped_ptr<Event> event(
-        new Event(webview_guest ? event_names::kOnWebviewContextMenus
-                                : event_names::kOnContextMenus,
+        new Event(webview_guest ? kOnWebviewContextMenus
+                                : kOnContextMenus,
                   scoped_ptr<base::ListValue>(args->DeepCopy())));
     event->restrict_to_browser_context = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;

@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_thread.h"
