@@ -211,9 +211,12 @@ class WallpaperManagerPolicyTest
       run_loop_->Quit();
   }
 
-  void StartLoop() {
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
+  // Runs the loop until wallpaper has changed at least |count| times in total.
+  void RunUntilWallpaperChangeCount(int count) {
+    while (wallpaper_change_count_ < count) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
   }
 
   std::string ConstructPolicy(const std::string& relative_path) const {
@@ -289,13 +292,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
 
   // First user: Wait until default wallpaper has been loaded (happens
   // automatically) and store color to recognize it later.
-  if (wallpaper_change_count_ == 0) {
-    LOG(INFO) << "No wallpaper change observed, yet.  Starting loop.";
-    StartLoop();
-  } else {
-    LOG(INFO) << "Wallpaper changed already " << wallpaper_change_count_
-              << " time(s).  Not starting loop.";
-  }
+  RunUntilWallpaperChangeCount(1);
   const SkColor original_background_color = GetAverageBackgroundColor();
 
   // Second user: Set wallpaper policy to blue image.  This should not result in
@@ -304,14 +301,14 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
 
   // First user: Set wallpaper policy to red image and verify average color.
   InjectPolicy(0, kRedImageFileName);
-  StartLoop();
+  RunUntilWallpaperChangeCount(2);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(User::POLICY, info.type);
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
-  StartLoop();
+  RunUntilWallpaperChangeCount(3);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(User::POLICY, info.type);
   ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
@@ -319,7 +316,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
   // First user: Clear wallpaper policy and verify that the default wallpaper is
   // set again.
   InjectPolicy(0, "");
-  StartLoop();
+  RunUntilWallpaperChangeCount(4);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(User::DEFAULT, info.type);
   ASSERT_EQ(original_background_color, GetAverageBackgroundColor());
@@ -327,6 +324,31 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
   // Check wallpaper change count to ensure that setting the second user's
   // wallpaper didn't have any effect.
   ASSERT_EQ(4, wallpaper_change_count_);
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
+                       PRE_PRE_WallpaperOnLoginScreen) {
+  RegisterUser(kTestUsers[0]);
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
+  LoginUser(kTestUsers[0]);
+
+  // Wait until default wallpaper has been loaded.
+  RunUntilWallpaperChangeCount(1);
+
+  // Set wallpaper policy to red image.
+  InjectPolicy(0, kRedImageFileName);
+
+  // Run until wallpaper has changed.
+  RunUntilWallpaperChangeCount(2);
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
+  // Wait for active pod's wallpaper to be loaded.
+  RunUntilWallpaperChangeCount(1);
+  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
 
 INSTANTIATE_TEST_CASE_P(WallpaperManagerPolicyTestInstantiation,
