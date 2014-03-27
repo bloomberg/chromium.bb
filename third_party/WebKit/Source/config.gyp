@@ -37,6 +37,7 @@
     # Requires building locally since GOMA doesn't yet support the plugin.
     'enable_oilpan%': 0,
     'blink_gc_plugin%': 0,
+    'blink_gc_plugin_dump_graph%': 0,
   },
   'targets': [
   {
@@ -105,7 +106,7 @@
         }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
-          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan))'],
+          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
         }],
       ],
     },
