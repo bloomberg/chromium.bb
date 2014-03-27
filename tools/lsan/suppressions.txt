@@ -97,4 +97,7 @@ leak:base::EnsureProcessTerminated
 # http://crbug.com/322671
 leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread
 
+# http://crbug.com/355641
+leak:TrayAccessibilityTest
+
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
