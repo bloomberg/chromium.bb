@@ -170,7 +170,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderL
         // Bounds for invisible layers are intentionally not calculated, and are
         // therefore not necessarily expected to be correct here. This is ok,
         // because they will be recomputed if the layer becomes visible.
-        if (!layer || !layer->subtreeIsInvisible()) {
+        if (!layer->subtreeIsInvisible() && lastRenderer->style()->visibility() == VISIBLE) {
             FloatRect rendererMappedResult = lastRenderer->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
 
             // Inspector creates renderers with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.

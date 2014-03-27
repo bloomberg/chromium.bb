@@ -28,6 +28,7 @@
 
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/compositing/CompositingPropertyUpdater.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/graphics/GraphicsLayerClient.h"
@@ -62,11 +63,6 @@ enum CompositingUpdateType {
 class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum BoundsUpdateType {
-        DoNotForceUpdate,
-        ForceUpdate,
-    };
-
     // FIXME: This constructor should take a reference.
     explicit RenderLayerCompositor(RenderView&);
     virtual ~RenderLayerCompositor();
@@ -333,9 +329,10 @@ private:
     // FIXME: This should absolutely not be mutable.
     mutable bool m_needsToRecomputeCompositingRequirements;
     bool m_needsToUpdateLayerTreeGeometry;
-    GraphicsLayerUpdater::UpdateType m_pendingUpdateType;
 
-    RenderLayerCompositor::BoundsUpdateType m_recomputeLayerBoundsUpdateType;
+    // FIXME: We should remove m_pendingUpdateType and propagate the bits with CompositingPropertyUpdater instead.
+    GraphicsLayerUpdater::UpdateType m_pendingUpdateType;
+    CompositingPropertyUpdater::UpdateType m_pendingPropertyUpdateType;
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;

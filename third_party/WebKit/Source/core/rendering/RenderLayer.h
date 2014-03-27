@@ -480,12 +480,22 @@ public:
 
     void clearAncestorDependentPropertyCache();
 
-    const IntRect& absoluteBoundingBox() { ASSERT(!m_needsToRecomputeBounds); return m_absoluteBoundingBox; }
-    void setAbsoluteBoundingBox(const IntRect&);
-    void clearNeedsToRecomputeBounds();
-    bool needsToRecomputeBounds() { return m_needsToRecomputeBounds; }
+    class AncestorDependentProperties {
+    public:
+        IntRect absoluteBoundingBox;
+    };
+
+    void setNeedsToUpdateAncestorDependentProperties();
+    bool childNeedsToUpdateAncestorDependantProperties() const { return m_childNeedsToUpdateAncestorDependantProperties; }
+    bool needsToUpdateAncestorDependentProperties() const { return m_needsToUpdateAncestorDependentProperties; }
+
+    void updateAncestorDependentProperties(const AncestorDependentProperties&);
+    void clearChildNeedsToUpdateAncestorDependantProperties();
+
+    const AncestorDependentProperties& ancestorDependentProperties() { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
 
 private:
+    // FIXME: Merge with AncestorDependentProperties.
     class AncestorDependentPropertyCache {
         WTF_MAKE_NONCOPYABLE(AncestorDependentPropertyCache);
     public:
@@ -713,7 +723,8 @@ private:
     const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
 
     unsigned m_hasFilterInfo : 1;
-    unsigned m_needsToRecomputeBounds : 1;
+    unsigned m_needsToUpdateAncestorDependentProperties : 1;
+    unsigned m_childNeedsToUpdateAncestorDependantProperties : 1;
 
     RenderLayerModelObject* m_renderer;
 
@@ -735,8 +746,6 @@ private:
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;
     LayoutUnit m_staticBlockPosition;
-
-    IntRect m_absoluteBoundingBox;
 
     OwnPtr<TransformationMatrix> m_transform;
 
@@ -778,6 +787,9 @@ private:
         // Used for invalidating this layer's contents on the squashing GraphicsLayer.
         IntSize offsetFromSquashingLayerOrigin;
     };
+
+    // FIXME: Merge m_ancestorDependentPropertyCache into m_ancestorDependentProperties;
+    AncestorDependentProperties m_ancestorDependentProperties;
 
     CompositingProperties m_compositingProperties;
 

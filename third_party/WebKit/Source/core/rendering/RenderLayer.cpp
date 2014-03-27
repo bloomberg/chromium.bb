@@ -126,7 +126,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_containsDirtyOverlayScrollbars(false)
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
-    , m_needsToRecomputeBounds(true)
+    , m_needsToUpdateAncestorDependentProperties(true)
+    , m_childNeedsToUpdateAncestorDependantProperties(true)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -1213,15 +1214,24 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
     return 0;
 }
 
-void RenderLayer::clearNeedsToRecomputeBounds()
+void RenderLayer::setNeedsToUpdateAncestorDependentProperties()
 {
-    m_needsToRecomputeBounds = false;
+    m_needsToUpdateAncestorDependentProperties = true;
+
+    for (RenderLayer* current = this; current && !current->m_childNeedsToUpdateAncestorDependantProperties; current = current->parent())
+        current->m_childNeedsToUpdateAncestorDependantProperties = true;
 }
 
-void RenderLayer::setAbsoluteBoundingBox(const IntRect& rect)
+void RenderLayer::updateAncestorDependentProperties(const AncestorDependentProperties& ancestorDependentProperties)
 {
-    m_absoluteBoundingBox = rect;
-    clearNeedsToRecomputeBounds();
+    m_ancestorDependentProperties = ancestorDependentProperties;
+    m_needsToUpdateAncestorDependentProperties = false;
+}
+
+void RenderLayer::clearChildNeedsToUpdateAncestorDependantProperties()
+{
+    ASSERT(!m_needsToUpdateAncestorDependentProperties);
+    m_childNeedsToUpdateAncestorDependantProperties = false;
 }
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
@@ -1426,6 +1436,8 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
         setLastChild(child);
 
     child->setParent(this);
+
+    setNeedsToUpdateAncestorDependentProperties();
 
     if (child->stackingNode()->isNormalFlowOnly())
         m_stackingNode->dirtyNormalFlowList();
@@ -3970,17 +3982,15 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     compositor()->updateStyleDeterminedCompositingReasons(this);
 
+    setNeedsToUpdateAncestorDependentProperties();
+
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
-    // FIXME: We could avoid doing this ancestor walk by keeping a childNeedsToRecomputeBounds bit
-    // and using that along with needsToRecomputeBounds to set this bit in a later layer tree walk
-    // e.g. during assignLayersToBackings or computeCompositingRequirements.
+    // FIXME: Move this work to CompositingPropertyUpdater::updateAncestorDependentProperties.
     if (RenderLayer* compositingLayer = enclosingCompositingLayer())
         compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
-    // FIXME: We only need to set this if something changed that can change our absolute bounding rect.
-    m_needsToRecomputeBounds = true;
 
     const RenderStyle* newStyle = renderer()->style();
 
