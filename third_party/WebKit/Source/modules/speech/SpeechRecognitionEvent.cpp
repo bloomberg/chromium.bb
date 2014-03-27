@@ -34,19 +34,19 @@ SpeechRecognitionEventInit::SpeechRecognitionEventInit()
 {
 }
 
-PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
+PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
 {
-    return adoptRef(new SpeechRecognitionEvent());
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionEvent());
 }
 
-PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
+PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
 {
-    return adoptRef(new SpeechRecognitionEvent(eventName, initializer));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionEvent(eventName, initializer));
 }
 
 PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
 {
-    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
 }
 
 PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult> result)
@@ -57,7 +57,7 @@ PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRef
         return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
     }
 
-    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr));
 }
 
 const AtomicString& SpeechRecognitionEvent::interfaceName() const

@@ -47,8 +47,8 @@ public:
 
 class SpeechRecognitionEvent FINAL : public Event {
 public:
-    static PassRefPtr<SpeechRecognitionEvent> create();
-    static PassRefPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create();
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
     virtual ~SpeechRecognitionEvent();
 
     static PassRefPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results);

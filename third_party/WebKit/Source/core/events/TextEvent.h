@@ -37,11 +37,11 @@ namespace WebCore {
     class TextEvent FINAL : public UIEvent {
     public:
 
-        static PassRefPtr<TextEvent> create();
-        static PassRefPtr<TextEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
-        static PassRefPtr<TextEvent> createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, bool shouldSmartReplace);
-        static PassRefPtr<TextEvent> createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
-        static PassRefPtr<TextEvent> createForDrop(PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
+        static PassRefPtrWillBeRawPtr<TextEvent> create();
+        static PassRefPtrWillBeRawPtr<TextEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
+        static PassRefPtrWillBeRawPtr<TextEvent> createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, bool shouldSmartReplace);
+        static PassRefPtrWillBeRawPtr<TextEvent> createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
+        static PassRefPtrWillBeRawPtr<TextEvent> createForDrop(PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
         virtual ~TextEvent();
 

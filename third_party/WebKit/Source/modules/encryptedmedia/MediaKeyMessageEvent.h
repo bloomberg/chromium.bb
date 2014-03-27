@@ -43,14 +43,14 @@ class MediaKeyMessageEvent FINAL : public Event {
 public:
     virtual ~MediaKeyMessageEvent();
 
-    static PassRefPtr<MediaKeyMessageEvent> create()
+    static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create()
     {
-        return adoptRef(new MediaKeyMessageEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyMessageEvent);
     }
 
-    static PassRefPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
     {
-        return adoptRef(new MediaKeyMessageEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyMessageEvent(type, initializer));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

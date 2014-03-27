@@ -41,14 +41,14 @@ class TrackEvent FINAL : public Event {
 public:
     virtual ~TrackEvent();
 
-    static PassRefPtr<TrackEvent> create()
+    static PassRefPtrWillBeRawPtr<TrackEvent> create()
     {
-        return adoptRef(new TrackEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new TrackEvent);
     }
 
-    static PassRefPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
     {
-        return adoptRef(new TrackEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new TrackEvent(type, initializer));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

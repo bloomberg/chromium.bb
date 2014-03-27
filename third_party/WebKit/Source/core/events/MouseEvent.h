@@ -50,20 +50,20 @@ struct MouseEventInit : public UIEventInit {
 
 class MouseEvent : public MouseRelatedEvent {
 public:
-    static PassRefPtr<MouseEvent> create()
+    static PassRefPtrWillBeRawPtr<MouseEvent> create()
     {
-        return adoptRef(new MouseEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent);
     }
 
-    static PassRefPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
+    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
         PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
 
-    static PassRefPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
+    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
 
-    static PassRefPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
+    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
 
     virtual ~MouseEvent();
 

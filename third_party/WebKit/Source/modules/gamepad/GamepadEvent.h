@@ -18,17 +18,17 @@ struct GamepadEventInit : public EventInit {
 
 class GamepadEvent FINAL : public Event {
 public:
-    static PassRefPtr<GamepadEvent> create()
+    static PassRefPtrWillBeRawPtr<GamepadEvent> create()
     {
-        return adoptRef(new GamepadEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent);
     }
-    static PassRefPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
+    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
     {
-        return adoptRef(new GamepadEvent(type, canBubble, cancelable, gamepad));
+        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent(type, canBubble, cancelable, gamepad));
     }
-    static PassRefPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
     {
-        return adoptRef(new GamepadEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent(type, initializer));
     }
     virtual ~GamepadEvent();
 

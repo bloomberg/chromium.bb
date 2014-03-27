@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InstallPhaseEvent> InstallPhaseEvent::create()
+PassRefPtrWillBeRawPtr<InstallPhaseEvent> InstallPhaseEvent::create()
 {
-    return adoptRef(new InstallPhaseEvent());
+    return adoptRefWillBeRefCountedGarbageCollected(new InstallPhaseEvent());
 }
 
 InstallPhaseEvent::~InstallPhaseEvent()

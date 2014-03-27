@@ -646,11 +646,11 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% endfor %}
     }
     {% if is_constructor_raises_exception %}
-    RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit, exceptionState);
+    RefPtrWillBeRawPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     {% else %}
-    RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
+    RefPtrWillBeRawPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
     {% endif %}
     {% if any_type_attributes and not interface_name == 'ErrorEvent' %}
     {# If we're in an isolated world, create a SerializedScriptValue and store

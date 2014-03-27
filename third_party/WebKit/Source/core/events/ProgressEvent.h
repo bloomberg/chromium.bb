@@ -40,17 +40,17 @@ struct ProgressEventInit : public EventInit {
 
 class ProgressEvent : public Event {
 public:
-    static PassRefPtr<ProgressEvent> create()
+    static PassRefPtrWillBeRawPtr<ProgressEvent> create()
     {
-        return adoptRef(new ProgressEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent);
     }
-    static PassRefPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
+    static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
     {
-        return adoptRef(new ProgressEvent(type, lengthComputable, loaded, total));
+        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent(type, lengthComputable, loaded, total));
     }
-    static PassRefPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
     {
-        return adoptRef(new ProgressEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent(type, initializer));
     }
 
     bool lengthComputable() const { return m_lengthComputable; }

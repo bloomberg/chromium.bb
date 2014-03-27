@@ -40,7 +40,7 @@ class WaitUntilObserver;
 
 class InstallPhaseEvent : public Event {
 public:
-    static PassRefPtr<InstallPhaseEvent> create();
+    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create();
 
     virtual ~InstallPhaseEvent();
 

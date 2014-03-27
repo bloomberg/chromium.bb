@@ -36,7 +36,7 @@ class GestureEvent FINAL : public MouseRelatedEvent {
 public:
     virtual ~GestureEvent() { }
 
-    static PassRefPtr<GestureEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const PlatformGestureEvent&);
+    static PassRefPtrWillBeRawPtr<GestureEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const PlatformGestureEvent&);
 
     virtual bool isGestureEvent() const OVERRIDE;
 

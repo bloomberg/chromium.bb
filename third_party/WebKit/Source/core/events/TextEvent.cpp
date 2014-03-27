@@ -31,29 +31,29 @@
 
 namespace WebCore {
 
-PassRefPtr<TextEvent> TextEvent::create()
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create()
 {
-    return adoptRef(new TextEvent);
+    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent);
 }
 
-PassRefPtr<TextEvent> TextEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
 {
-    return adoptRef(new TextEvent(view, data, inputType));
+    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, inputType));
 }
 
-PassRefPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
 {
-    return adoptRef(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
+    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
 }
 
-PassRefPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
 {
-    return adoptRef(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
+    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
 }
 
-PassRefPtr<TextEvent> TextEvent::createForDrop(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForDrop(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
 {
-    return adoptRef(new TextEvent(view, data, TextEventInputDrop));
+    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, TextEventInputDrop));
 }
 
 TextEvent::TextEvent()
