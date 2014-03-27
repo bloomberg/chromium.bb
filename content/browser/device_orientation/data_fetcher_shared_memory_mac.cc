@@ -64,9 +64,6 @@ void FetchOrientation(SuddenMotionSensor* sensor,
   double beta = kRad2deg * atan2(-axis_value[1], axis_value[2]);
   double gamma = kRad2deg * asin(axis_value[0]);
 
-  // TODO(aousterh): should absolute_ be set to false here?
-  // See crbug.com/136010.
-
   // Make sure that the interval boundaries comply with the specification. At
   // this point, beta is [-180, 180] and gamma is [-90, 90], but the spec has
   // the upper bound open on both.
@@ -120,22 +117,40 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
   DCHECK(buffer);
 
+  if (!sudden_motion_sensor_)
+    sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+  bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
-      if (!sudden_motion_sensor_)
-        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionMacAvailable",
-          sudden_motion_sensor_.get() != NULL);
-      return sudden_motion_sensor_.get() != NULL;
+          sudden_motion_sensor_available);
+      if (!sudden_motion_sensor_available) {
+        // No motion sensor available, fire an all-null event.
+        motion_buffer_->seqlock.WriteBegin();
+        motion_buffer_->data.allAvailableSensorsAreActive = true;
+        motion_buffer_->seqlock.WriteEnd();
+      }
+      return sudden_motion_sensor_available;
     case CONSUMER_TYPE_ORIENTATION:
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-      if (!sudden_motion_sensor_)
-        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationMacAvailable",
-          sudden_motion_sensor_.get() != NULL);
-      return sudden_motion_sensor_.get() != NULL;
+          sudden_motion_sensor_available);
+      if (sudden_motion_sensor_available) {
+        // On Mac we cannot provide absolute orientation.
+        orientation_buffer_->seqlock.WriteBegin();
+        orientation_buffer_->data.absolute = false;
+        orientation_buffer_->data.hasAbsolute = true;
+        orientation_buffer_->seqlock.WriteEnd();
+      } else {
+        // No motion sensor available, fire an all-null event.
+        orientation_buffer_->seqlock.WriteBegin();
+        orientation_buffer_->data.allAvailableSensorsAreActive = true;
+        orientation_buffer_->seqlock.WriteEnd();
+      }
+      return sudden_motion_sensor_available;
     default:
       NOTREACHED();
   }
