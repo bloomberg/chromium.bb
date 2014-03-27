@@ -224,7 +224,7 @@ void FillPhoneNumberField(const AutofillField& field,
 
 // Fills in the select control |field| with |value|.  If an exact match is not
 // found, falls back to alternate filling strategies based on the |type|.
-void FillSelectControl(const AutofillType& type,
+bool FillSelectControl(const AutofillType& type,
                        const base::string16& value,
                        const std::string& app_locale,
                        FormFieldData* field) {
@@ -232,29 +232,31 @@ void FillSelectControl(const AutofillType& type,
 
   // Guard against corrupted values passed over IPC.
   if (field->option_values.size() != field->option_contents.size())
-    return;
+    return false;
 
   if (value.empty())
-    return;
+    return false;
 
   // First, search for exact matches.
   if (SetSelectControlValue(value, field))
-    return;
+    return true;
 
   // If that fails, try specific fallbacks based on the field type.
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_STATE) {
-    FillStateSelectControl(value, field);
+    return FillStateSelectControl(value, field);
   } else if (storable_type == ADDRESS_HOME_COUNTRY) {
-    FillCountrySelectControl(value, app_locale, field);
+    return FillCountrySelectControl(value, app_locale, field);
   } else if (storable_type == CREDIT_CARD_EXP_MONTH) {
-    FillExpirationMonthSelectControl(value, field);
+    return FillExpirationMonthSelectControl(value, field);
   } else if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
              storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-    FillYearSelectControl(value, field);
+    return FillYearSelectControl(value, field);
   } else if (storable_type == CREDIT_CARD_TYPE) {
-    FillCreditCardTypeSelectControl(value, field);
+    return FillCreditCardTypeSelectControl(value, field);
   }
+
+  return false;
 }
 
 // Fills in the month control |field| with |value|.  |value| should be a date
@@ -389,22 +391,26 @@ bool AutofillField::IsFieldFillable() const {
 }
 
 // static
-void AutofillField::FillFormField(const AutofillField& field,
+bool AutofillField::FillFormField(const AutofillField& field,
                                   const base::string16& value,
                                   const std::string& app_locale,
                                   FormFieldData* field_data) {
   AutofillType type = field.Type();
 
-  if (type.GetStorableType() == PHONE_HOME_NUMBER)
+  if (type.GetStorableType() == PHONE_HOME_NUMBER) {
     FillPhoneNumberField(field, value, field_data);
-  else if (field_data->form_control_type == "select-one")
-    FillSelectControl(type, value, app_locale, field_data);
-  else if (field_data->form_control_type == "month")
-    FillMonthControl(value, field_data);
-  else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS)
+    return true;
+  } else if (field_data->form_control_type == "select-one") {
+    return FillSelectControl(type, value, app_locale, field_data);
+  } else if (field_data->form_control_type == "month") {
+    return FillMonthControl(value, field_data);
+  } else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
     FillStreetAddress(value, field_data);
-  else
-    field_data->value = value;
+    return true;
+  }
+
+  field_data->value = value;
+  return true;
 }
 
 }  // namespace autofill

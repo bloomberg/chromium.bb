@@ -497,14 +497,15 @@ void AutofillManager::FillOrPreviewForm(
       if ((*iter) == field) {
         base::string16 value = data_model->GetInfoForVariant(
             autofill_field->Type(), variant, app_locale_);
-        AutofillField::FillFormField(*autofill_field, value, app_locale_,
-                                     &(*iter));
-        // Mark the cached field as autofilled, so that we can detect when a
-        // user edits an autofilled field (for metrics).
-        autofill_field->is_autofilled = true;
+        if (AutofillField::FillFormField(
+            *autofill_field, value, app_locale_, &(*iter))) {
+          // Mark the cached field as autofilled, so that we can detect when a
+          // user edits an autofilled field (for metrics).
+          autofill_field->is_autofilled = true;
 
-        if (!is_credit_card && !value.empty())
-          manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+          if (!is_credit_card && !value.empty())
+            manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+        }
         break;
       }
     }
@@ -548,14 +549,15 @@ void AutofillManager::FillOrPreviewForm(
           (result.fields[i] == field ||
            result.fields[i].form_control_type == "select-one" ||
            result.fields[i].value.empty());
-      AutofillField::FillFormField(*cached_field, value, app_locale_,
-                                   &result.fields[i]);
-      // Mark the cached field as autofilled, so that we can detect when a user
-      // edits an autofilled field (for metrics).
-      form_structure->field(i)->is_autofilled = true;
+      if (AutofillField::FillFormField(
+          *cached_field, value, app_locale_, &result.fields[i])) {
+        // Mark the cached field as autofilled, so that we can detect when a
+        // user edits an autofilled field (for metrics).
+        form_structure->field(i)->is_autofilled = true;
 
-      if (should_notify)
-        manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+        if (should_notify)
+          manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+      }
     }
   }
 

@@ -67,8 +67,8 @@ class AutofillField : public FormFieldData {
 
   // Set |field_data|'s value to |value|.  Uses |field| and |app_locale| as
   // hints when filling exceptional cases like phone number values and <select>
-  // fields.
-  static void FillFormField(const AutofillField& field,
+  // fields. Returns |true| if the field has been filled, |false| otherwise.
+  static bool FillFormField(const AutofillField& field,
                             const base::string16& value,
                             const std::string& app_locale,
                             FormFieldData* field_data);

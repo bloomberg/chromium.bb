@@ -23,6 +23,8 @@ import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.autofill.AutofillPopup;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -44,7 +46,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
     private static final String EMAIL = "john@acme.inc";
     private static final String ORIGIN = "https://www.example.com";
 
-    private static final String PAGE_DATA = UrlUtils.encodeHtmlDataUri(
+    private static final String BASIC_PAGE_DATA = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\"" +
             "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
             "<body><form method=\"POST\">" +
@@ -56,28 +58,81 @@ public class AutofillPopupTest extends ChromeShellTestBase {
             "<input type=\"text\" id=\"zc\" autocomplete=\"postal-code\"><br>" +
             "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>" +
             "<input type=\"text\" id=\"ph\" autocomplete=\"tel\"><br>" +
+            "<input type=\"text\" id=\"fx\" autocomplete=\"fax\"><br>" +
+            "<select id=\"co\" autocomplete=\"country\"><br>" +
+            "<option value=\"BR\">Brazil</option>" +
+            "<option value=\"US\">United States</option>" +
+            "</select>" +
+            "<input type=\"submit\" />" +
+            "</form></body></html>");
+
+    private static final String INITIATING_ELEMENT_FILLED = UrlUtils.encodeHtmlDataUri(
+            "<html><head><meta name=\"viewport\"" +
+            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "<body><form method=\"POST\">" +
+            "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" value=\"J\"><br>" +
+            "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>" +
+            "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>" +
+            "<select id=\"co\" autocomplete=\"country\"><br>" +
+            "<option value=\"US\">United States</option>" +
+            "<option value=\"BR\">Brazil</option>" +
+            "</select>" +
+            "<input type=\"submit\" />" +
+            "</form></body></html>");
+
+    private static final String ANOTHER_ELEMENT_FILLED = UrlUtils.encodeHtmlDataUri(
+            "<html><head><meta name=\"viewport\"" +
+            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "<body><form method=\"POST\">" +
+            "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\"><br>" +
+            "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>" +
+            "<input type=\"text\" id=\"em\" autocomplete=\"email\" value=\"foo@example.com\"><br>" +
+            "<select id=\"co\" autocomplete=\"country\"><br>" +
+            "<option></option>" +
+            "<option value=\"BR\">Brazil</option>" +
+            "<option value=\"US\">United States</option>" +
+            "</select>" +
+            "<input type=\"submit\" />" +
+            "</form></body></html>");
+
+    private static final String INVALID_OPTION = UrlUtils.encodeHtmlDataUri(
+            "<html><head><meta name=\"viewport\"" +
+            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "<body><form method=\"POST\">" +
+            "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" value=\"J\"><br>" +
+            "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>" +
+            "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>" +
+            "<select id=\"co\" autocomplete=\"country\"><br>" +
+            "<option value=\"GB\">Great Britain</option>" +
+            "<option value=\"BR\">Brazil</option>" +
+            "</select>" +
             "<input type=\"submit\" />" +
             "</form></body></html>");
 
     private AutofillTestHelper mHelper;
+    private List<AutofillLogger.LogEntry> mAutofillLoggedEntries;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
-        launchChromeShellWithUrl(PAGE_DATA);
-        assertTrue(waitForActiveShellToBeDoneLoading());
-        mHelper = new AutofillTestHelper();
+        mAutofillLoggedEntries = new ArrayList<AutofillLogger.LogEntry>();
+        AutofillLogger.setLogger(
+            new AutofillLogger.Logger() {
+                @Override
+                public void didFillField(AutofillLogger.LogEntry logEntry) {
+                    mAutofillLoggedEntries.add(logEntry);
+                }}
+        );
     }
 
-    /**
-     * Tests that bringing up an Autofill and clicking on the first entry fills out the expected
-     * Autofill information.
-     */
-    @MediumTest
-    @Feature({"autofill"})
-    public void testClickAutofillPopupSuggestion()
+    private TestCallbackHelperContainer loadAndFillForm(
+            final String formDataUrl, final String inputText)
             throws InterruptedException, ExecutionException, TimeoutException {
+        launchChromeShellWithUrl(formDataUrl);
+        assertTrue(waitForActiveShellToBeDoneLoading());
+        mHelper = new AutofillTestHelper();
+
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
         final ContentView view = getActivity().getActiveContentView();
@@ -102,7 +157,8 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                view.getContentViewCore().getInputConnectionForTest().setComposingText("J", 1);
+                view.getContentViewCore().getInputConnectionForTest().setComposingText(
+                        inputText, 1);
             }
         });
 
@@ -119,6 +175,20 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
         waitForInputFieldFill(view, viewClient);
 
+        return viewClient;
+    }
+
+    /**
+     * Tests that bringing up an Autofill and clicking on the first entry fills out the expected
+     * Autofill information.
+     */
+    @MediumTest
+    @Feature({"autofill"})
+    public void testClickAutofillPopupSuggestion()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        TestCallbackHelperContainer viewClient = loadAndFillForm(BASIC_PAGE_DATA, "J");
+        final ContentView view = getActivity().getActiveContentView();
+
         assertEquals("First name did not match",
                 FIRST_NAME, DOMUtils.getNodeValue(view, viewClient, "fn"));
         assertEquals("Last name did not match",
@@ -129,12 +199,84 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 ADDRESS_LINE2, DOMUtils.getNodeValue(view, viewClient, "a2"));
         assertEquals("City did not match",
                 CITY, DOMUtils.getNodeValue(view, viewClient, "ct"));
-        assertEquals("Zip code des not match",
+        assertEquals("Zip code did not match",
                 ZIP_CODE, DOMUtils.getNodeValue(view, viewClient, "zc"));
-        assertEquals("Email does not match",
+        assertEquals("Country did not match",
+                COUNTRY, DOMUtils.getNodeValue(view, viewClient, "co"));
+        assertEquals("Email did not match",
                 EMAIL, DOMUtils.getNodeValue(view, viewClient, "em"));
-        assertEquals("Phone number does not match",
+        assertEquals("Phone number did not match",
                 PHONE_NUMBER, DOMUtils.getNodeValue(view, viewClient, "ph"));
+
+        final String profileFullName = FIRST_NAME + " " + LAST_NAME;
+        final int loggedEntries = 9;
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
+        assertLogged(FIRST_NAME, profileFullName);
+        assertLogged(LAST_NAME, profileFullName);
+        assertLogged(ADDRESS_LINE1, profileFullName);
+        assertLogged(ADDRESS_LINE2, profileFullName);
+        assertLogged(CITY, profileFullName);
+        assertLogged(ZIP_CODE, profileFullName);
+        assertLogged(COUNTRY, profileFullName);
+        assertLogged(EMAIL, profileFullName);
+        assertLogged(PHONE_NUMBER, profileFullName);
+    }
+
+    /**
+     * Tests that bringing up an Autofill and clicking on the partially filled first
+     * element will still fill the entire form (including the initiating element itself).
+     */
+    @MediumTest
+    @Feature({"autofill"})
+    public void testLoggingInitiatedElementFilled()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        loadAndFillForm(INITIATING_ELEMENT_FILLED, "o");
+        final String profileFullName = FIRST_NAME + " " + LAST_NAME;
+        final int loggedEntries = 4;
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
+        assertLogged(FIRST_NAME, profileFullName);
+        assertLogged(LAST_NAME, profileFullName);
+        assertLogged(EMAIL, profileFullName);
+        assertLogged(COUNTRY, profileFullName);
+    }
+
+    /**
+     * Tests that bringing up an Autofill and clicking on the empty first element
+     * will fill the all other elements except the previously filled email.
+     */
+    @MediumTest
+    @Feature({"autofill"})
+    public void testLoggingAnotherElementFilled()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        loadAndFillForm(ANOTHER_ELEMENT_FILLED, "J");
+        final String profileFullName = FIRST_NAME + " " + LAST_NAME;
+        final int loggedEntries = 3;
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
+        assertLogged(FIRST_NAME, profileFullName);
+        assertLogged(LAST_NAME, profileFullName);
+        assertLogged(COUNTRY, profileFullName);
+        // Email will not be logged since it already had some data.
+    }
+
+    /**
+     * Tests that selecting a value not present in <option> will not be filled.
+     */
+    @MediumTest
+    @Feature({"autofill"})
+    public void testNotLoggingInvalidOption()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        loadAndFillForm(INVALID_OPTION, "o");
+        final String profileFullName = FIRST_NAME + " " + LAST_NAME;
+        final int loggedEntries = 3;
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
+        assertLogged(FIRST_NAME, profileFullName);
+        assertLogged(LAST_NAME, profileFullName);
+        assertLogged(EMAIL, profileFullName);
+        // Country will not be logged since "US" is not a valid <option>.
     }
 
     // Wait and assert helper methods -------------------------------------------------------------
@@ -187,5 +329,15 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
                     }
                 }));
+    }
+
+    private void assertLogged(String autofilledValue, String profileFullName) {
+        for (AutofillLogger.LogEntry entry : mAutofillLoggedEntries) {
+            if (entry.getAutofilledValue().equals(autofilledValue) &&
+                entry.getProfileFullName().equals(profileFullName)) {
+                return;
+            }
+        }
+        fail("Logged entry not found [" + autofilledValue + "," + profileFullName + "]");
     }
 }
