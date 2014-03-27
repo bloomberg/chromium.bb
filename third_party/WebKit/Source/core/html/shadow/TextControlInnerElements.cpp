@@ -230,30 +230,11 @@ void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
         return;
     }
 
-    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
-        if (renderer() && renderer()->visibleToHitTesting()) {
-            if (LocalFrame* frame = document().frame()) {
-                frame->eventHandler().setCapturingMouseEventsNode(this);
-                m_capturing = true;
-            }
-        }
-        input->focus();
-        input->select();
+
+    if (event->type() == EventTypeNames::click && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
+        input->setValueForUser("");
+        input->onSearch();
         event->setDefaultHandled();
-    }
-    if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
-        if (m_capturing) {
-            if (LocalFrame* frame = document().frame()) {
-                frame->eventHandler().setCapturingMouseEventsNode(nullptr);
-                m_capturing = false;
-            }
-            if (hovered()) {
-                String oldValue = input->value();
-                input->setValueForUser("");
-                input->onSearch();
-                event->setDefaultHandled();
-            }
-        }
     }
 
     if (!event->defaultHandled())
